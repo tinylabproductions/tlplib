@@ -12,6 +12,10 @@ namespace com.tinylabproductions.TLPLib.Tween {
   public delegate AbstractGoTween TweenFutureCreator(GoTweenConfig config);
 
   public static class TweenFuture {
+    public static ITweenFuture a(AbstractGoTween tween) {
+      return new TweenFutureImpl(tween);
+    }
+
     public static ITweenFuture a(TweenFutureCreator creator) {
       return new TweenFutureImpl(creator);
     }
@@ -22,9 +26,9 @@ namespace com.tinylabproductions.TLPLib.Tween {
   class TweenFutureImpl : FutureImpl<Unit>, ITweenFuture {
     private readonly AbstractGoTween tween;
 
-    internal TweenFutureImpl(TweenFutureCreator creator) {
-      tween = creator(new GoTweenConfig().startPaused());
-      /* Don't you love when there are no appropriate events? */
+    internal TweenFutureImpl(AbstractGoTween tween) {
+      this.tween = tween;
+      /* Don't you love when there are no appropriate events that can be multi subscribed? */
       ASync.EveryFrame(() => {
         switch (tween.state) {
           case GoTweenState.Complete:
@@ -39,7 +43,10 @@ namespace com.tinylabproductions.TLPLib.Tween {
             return true;
         }
       });
-      
+    }
+
+    internal TweenFutureImpl(TweenFutureCreator creator) 
+    : this(creator(new GoTweenConfig().startPaused())) {
       tween.play();
     }
 
