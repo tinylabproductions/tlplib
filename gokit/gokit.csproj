@@ -81,6 +81,7 @@
     <Compile Include="GoKit\properties\abstracts\AbstractTweenProperty.cs" />
     <Compile Include="GoKit\properties\abstracts\AbstractVector3TweenProperty.cs" />
     <Compile Include="GoKit\properties\genericTypes\ColorTweenProperty.cs" />
+    <Compile Include="GoKit\properties\genericTypes\FloatCallbackTweenProperty.cs" />
     <Compile Include="GoKit\properties\genericTypes\FloatTweenProperty.cs" />
     <Compile Include="GoKit\properties\genericTypes\IGenericProperty.cs" />
     <Compile Include="GoKit\properties\genericTypes\IntTweenProperty.cs" />

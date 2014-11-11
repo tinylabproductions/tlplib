@@ -313,6 +313,13 @@ public class GoTweenConfig
 		
 		return this;
 	}
+
+  public GoTweenConfig floatCallbackProp(Action<float> setter, float startValue = 0, float endValue = 1, bool isRelative = false) {
+    var prop = new FloatCallbackTweenProperty(setter, startValue, endValue, isRelative);
+    _tweenProperties.Add(prop);
+
+    return this;
+  }
 	
 	#endregion
 	
