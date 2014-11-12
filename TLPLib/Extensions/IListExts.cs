@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
@@ -155,5 +156,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
       throw new IllegalStateException();
     }
+
+    public static ReadOnlyCollection<A> readOnly<A>(this IList<A> list) 
+    { return new ReadOnlyCollection<A>(list); }
   }
 }
