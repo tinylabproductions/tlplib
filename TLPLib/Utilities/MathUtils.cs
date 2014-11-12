@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  class MathUtils {
+  public static class MathUtils {
     public static Option<Vector2> LineIntersectionPoint(
       Vector2 ps1, Vector2 pe1, Vector2 ps2, Vector2 pe2
     ) {
@@ -139,6 +139,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
         return false;
       }
+    }
+
+    //Projects a vector onto a plane. The output is not normalized.
+    public static Vector3 ProjectVectorOnPlane(this Vector3 vector, Vector3 planeNormal) {
+      return vector - (Vector3.Dot(vector, planeNormal) * planeNormal);
     }
   }
 }
