@@ -112,6 +112,7 @@
     <Compile Include="Extensions\AnyExts.cs" />
     <Compile Include="Extensions\ArrayExts.cs" />
     <Compile Include="Extensions\BoolExts.cs" />
+    <Compile Include="Extensions\BoundsExts.cs" />
     <Compile Include="Extensions\ColorExts.cs" />
     <Compile Include="Extensions\ComponentExts.cs" />
     <Compile Include="Extensions\Editor\ArrayExtsTest.cs" />
