@@ -53,27 +53,8 @@ namespace com.tinylabproductions.TLPLib.Tween {
     public void destroy() { tween.destroy(); }
   }
 
-  class TweenFutureCompleted : ITweenFuture {
-    public Option<Unit> pureValue { get { return F.some(F.unit); } }
-    public Option<Try<Unit>> value { get { return pureValue.map(F.scs); } }
-
-    public CancellationToken onComplete(Act<Try<Unit>> action) {
-      action(F.scs(F.unit));
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public CancellationToken onSuccess(Act<Unit> action) {
-      action(F.unit);
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public CancellationToken onFailure(Act<Exception> action) {
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public Future<Unit> tapComplete(Act<Try<Unit>> action) { return this; }
-    public Future<Unit> tapSuccess(Act<Unit> action) { return this; }
-    public Future<Unit> tapFailure(Act<Exception> action) { return this; }
+  class TweenFutureCompleted : FutureImpl<Unit>, ITweenFuture {
+    public TweenFutureCompleted() { completeSuccess(F.unit); }
 
     public void destroy() {}
   }

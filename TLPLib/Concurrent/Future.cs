@@ -6,77 +6,6 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public static class FutureExts {
-    public static Future<B> map<A, B>(this Future<A> future, Fn<A, B> mapper) {
-      var p = new FutureImpl<B>();
-      future.onComplete(t => t.voidFold(
-        v => {
-          try { p.completeSuccess(mapper(v)); }
-          catch (Exception e) { p.completeError(e); }
-        },
-        p.completeError
-      ));
-      return p;
-    }
-
-    public static Future<B> flatMap<A, B>(
-      this Future<A> future, Fn<A, Future<B>> mapper
-    ) {
-      var p = new FutureImpl<B>();
-      future.onComplete(t => t.voidFold(
-        v => {
-          try { mapper(v).onComplete(p.complete); }
-          catch (Exception e) { p.completeError(e); }
-        },
-        p.completeError
-      ));
-      return p;
-    }
-
-    /* Given future and a recovery function return a new future, which 
-     * calls recovery function on exception in the original future and 
-     * completes the new function with value on Some or exception on None. */
-    public static Future<A> recover<A>(
-      this Future<A> future, Fn<Exception, Option<A>> recoverFn
-    ) {
-      var f = new FutureImpl<A>();
-      future.onComplete(t => t.voidFold(
-        f.completeSuccess, e => recoverFn(e).voidFold(
-          () => f.completeError(e), f.completeSuccess
-        ))
-      );
-      return f;
-    }
-
-    /* Given future and a recovery function return a new future, which 
-     * calls recovery function on exception in the original future and 
-     * completes the new function with value on Some or exception on None. */
-    public static Future<A> recover<A>(
-      this Future<A> future, Fn<Exception, Option<Future<A>>> recoverFn
-    ) {
-      var f = new FutureImpl<A>();
-      future.onComplete(t => t.voidFold(
-        f.completeSuccess, e => recoverFn(e).voidFold(
-          () => f.completeError(e), 
-          recoverFuture => recoverFuture.onComplete(f.complete)
-        ))
-      );
-      return f;
-    }
-
-    /* Waits until both futures yield a result. */
-    public static Future<Tpl<A, B>> zip<A, B>(
-      this Future<A> fa, Future<B> fb
-    ) {
-      var fab = new FutureImpl<Tpl<A, B>>();
-      Act tryComplete = 
-        () => fa.pureValue.zip(fb.pureValue).each(ab => fab.tryCompleteSuccess(ab));
-      fa.onComplete(ta => ta.voidFold(_ => tryComplete(), fab.completeError));
-      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), fab.completeError));
-      return fab;
-    }
-  }
-
   /** Coroutine based future **/
   public interface Future<A> {
     Option<Try<A>> value { get; }
@@ -87,6 +16,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     Future<A> tapComplete(Act<Try<A>> action);
     Future<A> tapSuccess(Act<A> action);
     Future<A> tapFailure(Act<Exception> action);
+    Future<B> map<B>(Fn<A, B> mapper);
+    Future<B> flatMap<B>(Fn<A, Future<B>> mapper);
+    /* Given future and a recovery function return a new future, which 
+     * calls recovery function on exception in the original future and 
+     * completes the new function with value on Some or exception on None. */
+    Future<A> recover(Fn<Exception, Option<A>> recoverFn);
+    /* Given future and a recovery function return a new future, which 
+     * calls recovery function on exception in the original future and 
+     * completes the new function with value on Some or exception on None. */
+    Future<A> recover(Fn<Exception, Option<Future<A>>> recoverFn);
+    /* Waits until both futures yield a result. */
+    Future<Tpl<A, B>> zip<B>(Future<B> fb);
   }
 
   /**
@@ -139,6 +80,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return a<Unit>(p => ASync.NextFrame(() => p.completeSuccess(F.unit)));
     }
 
+    public static Future<Unit> withDelay(float seconds) {
+      return a<Unit>(p => ASync.WithDelay(seconds, () => p.completeSuccess(F.unit)));
+    }
+
     /**
      * Converts enumerable of futures into future of enumerable that is completed
      * when all futures complete.
@@ -157,6 +102,27 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           results[fixedIdx] = value;
           completed++;
           if (completed == results.Length) future.tryCompleteSuccess(results);
+        });
+        f.onFailure(future.completeError);
+      };
+      return future;
+    }
+
+    /**
+     * Converts enumerable of futures into future of enumerable that is completed
+     * when all futures complete, but discards the value.
+     **/
+    public static Future<Unit> sequenceDV<A>(
+      this IEnumerable<Future<A>> enumerable
+    ) {
+      var completed = 0u;
+      var sourceFutures = enumerable.ToArray();
+      var future = new FutureImpl<Unit>();
+      for (var idx = 0; idx < sourceFutures.Length; idx++) {
+        var f = sourceFutures[idx]; 
+        f.onSuccess(value => {
+          completed++;
+          if (completed == sourceFutures.Length) future.tryCompleteSuccess(F.unit);
         });
         f.onFailure(future.completeError);
       };
@@ -199,6 +165,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
   }
 
+  delegate FutureImplementation FutureBuilder<in Elem, out FutureImplementation>()
+  where FutureImplementation : Future<Elem>, Promise<Elem>;
+
   class FutureImpl<A> : Future<A>, Promise<A> {
     public class CancellationTokenImpl : CancellationToken {
       private readonly Act<Try<A>> action;
@@ -216,6 +185,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return future.cancel(action);
       }
     }
+
+    static FutureBuilder<B, FutureImpl<B>> builder<B>() { return () => new FutureImpl<B>(); }
 
     private readonly IList<Act<Try<A>>> listeners = new List<Act<Try<A>>>();
 
@@ -280,6 +251,68 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void completed(Try<A> v) {
       foreach (var listener in listeners) listener(v);
       listeners.Clear();
+    }
+    
+    public Future<B> map<B>(Fn<A, B> mapper) { return mapImpl(builder<B>(), mapper); }
+
+    protected FI mapImpl<B, FI>(FutureBuilder<B, FI> builder, Fn<A, B> mapper)
+    where FI : Future<B>, Promise<B> {
+      var p = builder();
+      onComplete(t => t.voidFold(
+        v => {
+          try { p.completeSuccess(mapper(v)); }
+          catch (Exception e) { p.completeError(e); }
+        },
+        p.completeError
+      ));
+      return p;
+    }
+
+    public Future<B> flatMap<B>(Fn<A, Future<B>> mapper) 
+    { return flatMapImpl(builder<B>(), mapper); }
+
+    protected FI flatMapImpl<B, FI>(FutureBuilder<B, FI> builder, Fn<A, Future<B>> mapper) 
+    where FI : Future<B>, Promise<B> {
+      var p = builder();
+      onComplete(t => t.voidFold(
+        v => {
+          try { mapper(v).onComplete(p.complete); }
+          catch (Exception e) { p.completeError(e); }
+        },
+        p.completeError
+      ));
+      return p;
+    }
+
+    public Future<A> recover(Fn<Exception, Option<A>> recoverFn) {
+      var f = new FutureImpl<A>();
+      onComplete(t => t.voidFold(
+        f.completeSuccess, e => recoverFn(e).voidFold(
+          () => f.completeError(e), f.completeSuccess
+        ))
+      );
+      return f;
+    }
+
+    public Future<A> recover(Fn<Exception, Option<Future<A>>> recoverFn) {
+      var f = new FutureImpl<A>();
+      onComplete(t => t.voidFold(
+        f.completeSuccess, e => recoverFn(e).voidFold(
+          () => f.completeError(e), 
+          recoverFuture => recoverFuture.onComplete(f.complete)
+        ))
+      );
+      return f;
+    }
+
+    /* Waits until both futures yield a result. */
+    public Future<Tpl<A, B>> zip<B>(Future<B> fb) {
+      var fab = new FutureImpl<Tpl<A, B>>();
+      Act tryComplete = 
+        () => pureValue.zip(fb.pureValue).each(ab => fab.tryCompleteSuccess(ab));
+      onComplete(ta => ta.voidFold(_ => tryComplete(), fab.completeError));
+      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), fab.completeError));
+      return fab;
     }
 
     private bool cancel(Act<Try<A>> action) {
