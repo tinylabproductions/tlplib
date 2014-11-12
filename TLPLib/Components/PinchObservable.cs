@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
         var deltaMagnitudeDiff = prevTouchDistance - touchDistance;
 
-        _pinchDelta.push(deltaMagnitudeDiff / Screen.height);
+        _pinchDelta.push(deltaMagnitudeDiff);
       }
     }
   }
