@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib {
    * 
    * http://www.youtube.com/watch?v=WIXGUzRo3H0
    **/
-  class IllegalStateException : Exception {
+  public class IllegalStateException : Exception {
     public IllegalStateException() : base("How did I get here?") {}
     public IllegalStateException(string message) : base(message) {}
   }
