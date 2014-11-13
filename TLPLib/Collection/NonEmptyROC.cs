@@ -8,6 +8,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static NonEmptyROC<A> a<A>(A first, params A[] rest) 
     { return NonEmptyROC<A>.a(first, rest); }
 
+    public static NonEmptyROC<A> a<A>(A first, IList<A> rest) 
+    { return NonEmptyROC<A>.a(first, rest); }
+
     public static Option<NonEmptyROC<A>> fromList<A>(IList<A> list) 
     { return NonEmptyROC<A>.a(list); }
   }
@@ -16,8 +19,8 @@ namespace com.tinylabproductions.TLPLib.Collection {
   public class NonEmptyROC<A> : ReadOnlyCollection<A> {
     private NonEmptyROC(IList<A> list) : base(list) { }
 
-    public static NonEmptyROC<A> a(A first, params A[] rest) {
-      var arr = new A[rest.Length + 1];
+    public static NonEmptyROC<A> a(A first, IList<A> rest) {
+      var arr = new A[rest.Count + 1];
       arr[0] = first;
       rest.CopyTo(arr, 1);
       return new NonEmptyROC<A>(arr);
@@ -31,6 +34,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static NonEmptyROC2<A> a<A>(A first, A second, params A[] rest) 
     { return NonEmptyROC2<A>.a(first, second, rest); }
 
+    public static NonEmptyROC2<A> a<A>(A first, A second, IList<A> rest) 
+    { return NonEmptyROC2<A>.a(first, second, rest); }
+
     public static NonEmptyROC2<A> a<A>(A first, NonEmptyROC<A> rest) 
     { return NonEmptyROC2<A>.a(first, rest); }
 
@@ -42,8 +48,8 @@ namespace com.tinylabproductions.TLPLib.Collection {
   public class NonEmptyROC2<A> : ReadOnlyCollection<A> {
     private NonEmptyROC2(IList<A> list) : base(list) { }
 
-    public static NonEmptyROC2<A> a(A first, A second, params A[] rest) {
-      var arr = new A[rest.Length + 2];
+    public static NonEmptyROC2<A> a(A first, A second, IList<A> rest) {
+      var arr = new A[rest.Count + 2];
       arr[0] = first;
       arr[1] = second;
       rest.CopyTo(arr, 2);
