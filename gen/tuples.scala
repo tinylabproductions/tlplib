@@ -1,13 +1,23 @@
 import java.io._
 
+object TupleData {
+  def paramsRange(params: Int) = 1 to params
+  def genericParameterNames(genericParamPrefix: String, paramsRange: Range) =
+    paramsRange.map(n => s"$genericParamPrefix$n")
+  def typeSigGenerics(genericParameterNames: Seq[String]) =
+    genericParameterNames.mkString(", ")
+  def fullType(typename: String, typeSigGenerics: String) = s"$typename<$typeSigGenerics>"
+}
+
 class TupleData(
   typename: String, genericParamPrefix: String, params: Int,
   nextTuple: => Option[TupleData]
 ) {
-  val paramsRange = 1 to params
-  val genericParameterNames = paramsRange.map(n => s"$genericParamPrefix$n")
-  val typeSigGenerics = genericParameterNames.mkString(", ")
-  val fullType = s"$typename<$typeSigGenerics>"
+  val paramsRange = TupleData.paramsRange(params)
+  val genericParameterNames =
+    TupleData.genericParameterNames(genericParamPrefix, paramsRange)
+  val typeSigGenerics = TupleData.typeSigGenerics(genericParameterNames)
+  val fullType = TupleData.fullType(typename, typeSigGenerics)
   val paramArgNames = paramsRange.map(n => s"p$n")
   val paramArgNamesS = paramArgNames.mkString(", ")
   val paramArgs = genericParameterNames.zip(paramArgNames).map {
@@ -53,6 +63,19 @@ class TupleData(
   }
   lazy val adderS = adder.getOrElse("")
 
+  lazy val unshifter = nextTuple.map { nextT =>
+    val firstP = nextT.genericParameterNames.last
+    val nextTTypeSigGenerics = TupleData.typeSigGenerics({
+      val types = nextT.genericParameterNames
+      types.last +: types.dropRight(1)
+    })
+    val nextTFullType = TupleData.fullType(typename, nextTTypeSigGenerics)
+    s"public $nextTFullType unshift<$firstP>($firstP a) { " +
+      s"return new $nextTFullType(a, $propArgsS);" +
+    "}"
+  }
+  lazy val unshifterS = unshifter.getOrElse("")
+
   def fCsStr =
     s"public static $fullType t<$typeSigGenerics>($paramArgsS) " +
     s"{ return new $fullType($paramArgNamesS); }"
@@ -72,6 +95,8 @@ IComparable<$fullType>, IEquatable<$fullType> {
   public R ua<R>(Fn<$typeSigGenerics, R> f) { return f($propArgsS); }
 
   $adderS
+
+  $unshifterS
 
   public override string ToString() {
     return string.Format("($toStringFmtS)", $propArgsS);
