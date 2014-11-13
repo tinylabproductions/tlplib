@@ -164,7 +164,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       this IRxRef<Option<T>> subject, IEnumerable<Toggle> checkboxes,
       Fn<T, string> mapper, Fn<string, T> comapper
     ) {
-      Action uncheckAll = () => {
+      Act uncheckAll = () => {
         foreach (var cb in checkboxes) cb.isOn = false;
       };
       Act<Option<T>, string> check = (v, name) => 
