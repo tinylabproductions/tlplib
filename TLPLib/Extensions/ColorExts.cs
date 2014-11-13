@@ -3,7 +3,7 @@
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ColorExts {
     public static Color with(
-      this Color color, float r=-1, float g=1, float b=-1, float a=-1
+      this Color color, float r=-1, float g=-1, float b=-1, float a=-1
     ) {
       return new Color(
         r < 0 ? color.r : r,
