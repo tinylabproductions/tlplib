@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gokit", "gokit\gokit.csproj", "{DE6FC6C3-FBF5-4C19-A297-745A335A0EE7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tlplib-base", "TLPLib\tlplib-base.csproj", "{CF89FC35-A547-42C9-A006-39802FED77FB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tlplib-android", "tlplib-android\tlplib-android.csproj", "{017DC19D-ABF0-4BC9-9427-4454AE3BB802}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tlplib-editor", "tlplib-editor\tlplib-editor.csproj", "{04D6A501-695F-45B1-9F11-D3AC3C074D3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{017DC19D-ABF0-4BC9-9427-4454AE3BB802}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{017DC19D-ABF0-4BC9-9427-4454AE3BB802}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{017DC19D-ABF0-4BC9-9427-4454AE3BB802}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04D6A501-695F-45B1-9F11-D3AC3C074D3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04D6A501-695F-45B1-9F11-D3AC3C074D3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04D6A501-695F-45B1-9F11-D3AC3C074D3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04D6A501-695F-45B1-9F11-D3AC3C074D3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
