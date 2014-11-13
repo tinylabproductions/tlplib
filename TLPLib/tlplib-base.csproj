@@ -62,6 +62,7 @@
     <Compile Include="Collection\RandomList.cs" />
     <Compile Include="Collection\ReadOnlyException.cs" />
     <Compile Include="Collection\ReadOnlyLinkedList.cs" />
+    <Compile Include="Collection\RoDict.cs" />
     <Compile Include="Compare\Comparers\EnumComparers.cs" />
     <Compile Include="Compare\Comparers\KeyValuePairComparers.cs" />
     <Compile Include="Compare\Configuration.cs" />
