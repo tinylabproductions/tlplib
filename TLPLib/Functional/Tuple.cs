@@ -1,2147 +1,2169 @@
-﻿namespace System {
+namespace System {
 
-  [Serializable]
-  public struct Tpl<P1> :
-    IComparable<Tpl<P1>>, IEquatable<Tpl<P1>> {
-    public readonly P1 _1;
+[Serializable] public struct Tpl<P1> :
+IComparable<Tpl<P1>>, IEquatable<Tpl<P1>> {
+  public readonly P1 _1;
 
-    public Tpl(P1 p1) { _1 = p1; }
+  public Tpl(P1 p1) { _1 = p1; }
 
-    // Unapply.
-    public void ua(Act<P1> f) { f(_1); }
+  // Unapply.
+  public void ua(Act<P1> f) { f(_1); }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, R> f) { return f(_1); }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, R> f) { return f(_1); }
 
-    public Tpl<P1, P2> add<P2>(P2 a) { return new Tpl<P1, P2>(_1, a); }
+  public Tpl<P1, P2> add<P2>(P2 a) { return new Tpl<P1, P2>(_1, a);}
 
-    public override string ToString() {
-      return string.Format("({0})", _1);
-    }
+  public Tpl<P2, P1> unshift<P2>(P2 a) { return new Tpl<P2, P1>(a, _1);}
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1> && this.Equals((Tpl<P1>)o);
-    }
+  public override string ToString() {
+    return string.Format("({0})", _1);
+  }
 
-    public bool Equals(Tpl<P1> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1);
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1> && this.Equals((Tpl<P1>) o);
+  }
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        return hash;
-      }
-    }
+  public bool Equals(Tpl<P1> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1);
+  }
 
-    public int CompareTo(Tpl<P1> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1);
-      return c;
-    }
-
-    public static bool operator ==(Tpl<P1> lhs, Tpl<P1> rhs) {
-      return lhs.Equals(rhs);
-    }
-
-    public static bool operator !=(Tpl<P1> lhs, Tpl<P1> rhs) {
-      return !lhs.Equals(rhs);
-    }
-
-    public static bool operator >(Tpl<P1> lhs, Tpl<P1> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
-
-    public static bool operator <(Tpl<P1> lhs, Tpl<P1> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
-
-    public static bool operator >=(Tpl<P1> lhs, Tpl<P1> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
-
-    public static bool operator <=(Tpl<P1> lhs, Tpl<P1> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2> :
-    IComparable<Tpl<P1, P2>>, IEquatable<Tpl<P1, P2>> {
-    public readonly P1 _1; public readonly P2 _2;
+  public int CompareTo(Tpl<P1> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2) { _1 = p1; _2 = p2; }
+  public static bool operator == (Tpl<P1> lhs, Tpl<P1> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2> f) { f(_1, _2); }
+  public static bool operator != (Tpl<P1> lhs, Tpl<P1> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, R> f) { return f(_1, _2); }
+  public static bool operator > (Tpl<P1> lhs, Tpl<P1> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3> add<P3>(P3 a) { return new Tpl<P1, P2, P3>(_1, _2, a); }
+  public static bool operator < (Tpl<P1> lhs, Tpl<P1> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1})", _1, _2);
-    }
+  public static bool operator >= (Tpl<P1> lhs, Tpl<P1> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2> && this.Equals((Tpl<P1, P2>)o);
-    }
+  public static bool operator <= (Tpl<P1> lhs, Tpl<P1> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2);
-    }
+[Serializable] public struct Tpl<P1, P2> :
+IComparable<Tpl<P1, P2>>, IEquatable<Tpl<P1, P2>> {
+  public readonly P1 _1; public readonly P2 _2;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2) { _1 = p1; _2 = p2; }
 
-    public int CompareTo(Tpl<P1, P2> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2> f) { f(_1, _2); }
 
-    public static bool operator ==(Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, R> f) { return f(_1, _2); }
 
-    public static bool operator !=(Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3> add<P3>(P3 a) { return new Tpl<P1, P2, P3>(_1, _2, a);}
 
-    public static bool operator >(Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P3, P1, P2> unshift<P3>(P3 a) { return new Tpl<P3, P1, P2>(a, _1, _2);}
 
-    public static bool operator <(Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1})", _1, _2);
+  }
 
-    public static bool operator >=(Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2> && this.Equals((Tpl<P1, P2>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3> :
-    IComparable<Tpl<P1, P2, P3>>, IEquatable<Tpl<P1, P2, P3>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3;
+  public int CompareTo(Tpl<P1, P2> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3) { _1 = p1; _2 = p2; _3 = p3; }
+  public static bool operator == (Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3> f) { f(_1, _2, _3); }
+  public static bool operator != (Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, R> f) { return f(_1, _2, _3); }
+  public static bool operator > (Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4> add<P4>(P4 a) { return new Tpl<P1, P2, P3, P4>(_1, _2, _3, a); }
+  public static bool operator < (Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2})", _1, _2, _3);
-    }
+  public static bool operator >= (Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3> && this.Equals((Tpl<P1, P2, P3>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2> lhs, Tpl<P1, P2> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3);
-    }
+[Serializable] public struct Tpl<P1, P2, P3> :
+IComparable<Tpl<P1, P2, P3>>, IEquatable<Tpl<P1, P2, P3>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3) { _1 = p1; _2 = p2; _3 = p3; }
 
-    public int CompareTo(Tpl<P1, P2, P3> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3> f) { f(_1, _2, _3); }
 
-    public static bool operator ==(Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, R> f) { return f(_1, _2, _3); }
 
-    public static bool operator !=(Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4> add<P4>(P4 a) { return new Tpl<P1, P2, P3, P4>(_1, _2, _3, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P4, P1, P2, P3> unshift<P4>(P4 a) { return new Tpl<P4, P1, P2, P3>(a, _1, _2, _3);}
 
-    public static bool operator <(Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2})", _1, _2, _3);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3> && this.Equals((Tpl<P1, P2, P3>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4> :
-    IComparable<Tpl<P1, P2, P3, P4>>, IEquatable<Tpl<P1, P2, P3, P4>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4;
+  public int CompareTo(Tpl<P1, P2, P3> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; }
+  public static bool operator == (Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4> f) { f(_1, _2, _3, _4); }
+  public static bool operator != (Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, R> f) { return f(_1, _2, _3, _4); }
+  public static bool operator > (Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5> add<P5>(P5 a) { return new Tpl<P1, P2, P3, P4, P5>(_1, _2, _3, _4, a); }
+  public static bool operator < (Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3})", _1, _2, _3, _4);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4> && this.Equals((Tpl<P1, P2, P3, P4>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3> lhs, Tpl<P1, P2, P3> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4> :
+IComparable<Tpl<P1, P2, P3, P4>>, IEquatable<Tpl<P1, P2, P3, P4>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4> f) { f(_1, _2, _3, _4); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, R> f) { return f(_1, _2, _3, _4); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5> add<P5>(P5 a) { return new Tpl<P1, P2, P3, P4, P5>(_1, _2, _3, _4, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P5, P1, P2, P3, P4> unshift<P5>(P5 a) { return new Tpl<P5, P1, P2, P3, P4>(a, _1, _2, _3, _4);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3})", _1, _2, _3, _4);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4> && this.Equals((Tpl<P1, P2, P3, P4>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5> :
-    IComparable<Tpl<P1, P2, P3, P4, P5>>, IEquatable<Tpl<P1, P2, P3, P4, P5>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5;
+  public int CompareTo(Tpl<P1, P2, P3, P4> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; }
+  public static bool operator == (Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5> f) { f(_1, _2, _3, _4, _5); }
+  public static bool operator != (Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, R> f) { return f(_1, _2, _3, _4, _5); }
+  public static bool operator > (Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6> add<P6>(P6 a) { return new Tpl<P1, P2, P3, P4, P5, P6>(_1, _2, _3, _4, _5, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4})", _1, _2, _3, _4, _5);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5> && this.Equals((Tpl<P1, P2, P3, P4, P5>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4> lhs, Tpl<P1, P2, P3, P4> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5> :
+IComparable<Tpl<P1, P2, P3, P4, P5>>, IEquatable<Tpl<P1, P2, P3, P4, P5>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5> f) { f(_1, _2, _3, _4, _5); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, R> f) { return f(_1, _2, _3, _4, _5); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6> add<P6>(P6 a) { return new Tpl<P1, P2, P3, P4, P5, P6>(_1, _2, _3, _4, _5, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P6, P1, P2, P3, P4, P5> unshift<P6>(P6 a) { return new Tpl<P6, P1, P2, P3, P4, P5>(a, _1, _2, _3, _4, _5);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4})", _1, _2, _3, _4, _5);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5> && this.Equals((Tpl<P1, P2, P3, P4, P5>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6> f) { f(_1, _2, _3, _4, _5, _6); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, R> f) { return f(_1, _2, _3, _4, _5, _6); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7> add<P7>(P7 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7>(_1, _2, _3, _4, _5, _6, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5})", _1, _2, _3, _4, _5, _6);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5> lhs, Tpl<P1, P2, P3, P4, P5> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6> f) { f(_1, _2, _3, _4, _5, _6); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, R> f) { return f(_1, _2, _3, _4, _5, _6); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7> add<P7>(P7 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7>(_1, _2, _3, _4, _5, _6, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P7, P1, P2, P3, P4, P5, P6> unshift<P7>(P7 a) { return new Tpl<P7, P1, P2, P3, P4, P5, P6>(a, _1, _2, _3, _4, _5, _6);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5})", _1, _2, _3, _4, _5, _6);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7> f) { f(_1, _2, _3, _4, _5, _6, _7); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, R> f) { return f(_1, _2, _3, _4, _5, _6, _7); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8> add<P8>(P8 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8>(_1, _2, _3, _4, _5, _6, _7, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6})", _1, _2, _3, _4, _5, _6, _7);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6> lhs, Tpl<P1, P2, P3, P4, P5, P6> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7> f) { f(_1, _2, _3, _4, _5, _6, _7); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, R> f) { return f(_1, _2, _3, _4, _5, _6, _7); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8> add<P8>(P8 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8>(_1, _2, _3, _4, _5, _6, _7, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P8, P1, P2, P3, P4, P5, P6, P7> unshift<P8>(P8 a) { return new Tpl<P8, P1, P2, P3, P4, P5, P6, P7>(a, _1, _2, _3, _4, _5, _6, _7);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6})", _1, _2, _3, _4, _5, _6, _7);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8> f) { f(_1, _2, _3, _4, _5, _6, _7, _8); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> add<P9>(P9 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>(_1, _2, _3, _4, _5, _6, _7, _8, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7})", _1, _2, _3, _4, _5, _6, _7, _8);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8> f) { f(_1, _2, _3, _4, _5, _6, _7, _8); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> add<P9>(P9 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>(_1, _2, _3, _4, _5, _6, _7, _8, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P9, P1, P2, P3, P4, P5, P6, P7, P8> unshift<P9>(P9 a) { return new Tpl<P9, P1, P2, P3, P4, P5, P6, P7, P8>(a, _1, _2, _3, _4, _5, _6, _7, _8);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7})", _1, _2, _3, _4, _5, _6, _7, _8);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> add<P10>(P10 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(_1, _2, _3, _4, _5, _6, _7, _8, _9, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8})", _1, _2, _3, _4, _5, _6, _7, _8, _9);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> add<P10>(P10 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(_1, _2, _3, _4, _5, _6, _7, _8, _9, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P10, P1, P2, P3, P4, P5, P6, P7, P8, P9> unshift<P10>(P10 a) { return new Tpl<P10, P1, P2, P3, P4, P5, P6, P7, P8, P9>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8})", _1, _2, _3, _4, _5, _6, _7, _8, _9);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> add<P11>(P11 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> add<P11>(P11 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P11, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> unshift<P11>(P11 a) { return new Tpl<P11, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> add<P12>(P12 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> add<P12>(P12 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P12, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> unshift<P12>(P12 a) { return new Tpl<P12, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> add<P13>(P13 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> add<P13>(P13 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P13, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> unshift<P13>(P13 a) { return new Tpl<P13, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> add<P14>(P14 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> add<P14>(P14 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P14, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> unshift<P14>(P14 a) { return new Tpl<P14, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> add<P15>(P15 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> add<P15>(P15 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P15, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> unshift<P15>(P15 a) { return new Tpl<P15, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> add<P16>(P16 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> add<P16>(P16 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P16, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> unshift<P16>(P16 a) { return new Tpl<P16, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> add<P17>(P17 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> add<P17>(P17 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P17, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> unshift<P17>(P17 a) { return new Tpl<P17, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> add<P18>(P18 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
-  Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> add<P18>(P18 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P18, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> unshift<P18>(P18 a) { return new Tpl<P18, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
+Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> add<P19>(P19 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
-  Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
-  Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> add<P19>(P19 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P19, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> unshift<P19>(P19 a) { return new Tpl<P19, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
+Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
+Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
+hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> add<P20>(P20 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
-  Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
-  Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
-  Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> add<P20>(P20 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P20, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> unshift<P20>(P20 a) { return new Tpl<P20, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
+Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
+Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
+Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
+hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
+hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> add<P21>(P21 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
-  Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
-  Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
-  Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19) &&
-  Smooth.Collections.EqComparer<P20>.Default.Equals(_20, t._20);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> add<P21>(P21 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P21, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> unshift<P21>(P21 a) { return new Tpl<P21, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
+Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
+Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
+Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19) &&
+Smooth.Collections.EqComparer<P20>.Default.Equals(_20, t._20);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
+hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
+hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
+hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20; public readonly P21 _21;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
-    public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> add<P22>(P22 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, a); }
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21);
-    }
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>)o);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
-  Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
-  Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
-  Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19) &&
-  Smooth.Collections.EqComparer<P20>.Default.Equals(_20, t._20) &&
-  Smooth.Collections.EqComparer<P21>.Default.Equals(_21, t._21);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20; public readonly P21 _21;
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P21>.Default.GetHashCode(_21);
-        return hash;
-      }
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P21>.Default.Compare(_21, other._21);
-      return c;
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
-      return lhs.Equals(rhs);
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21); }
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> add<P22>(P22 a) { return new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, a);}
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public Tpl<P22, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> unshift<P22>(P22 a) { return new Tpl<P22, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21);}
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>) o);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
+Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
+Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
+Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19) &&
+Smooth.Collections.EqComparer<P20>.Default.Equals(_20, t._20) &&
+Smooth.Collections.EqComparer<P21>.Default.Equals(_21, t._21);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
+hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
+hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
+hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
+hash = 29 * hash + Smooth.Collections.EqComparer<P21>.Default.GetHashCode(_21);
+      return hash;
     }
   }
 
-  [Serializable]
-  public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> :
-    IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>> {
-    public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20; public readonly P21 _21; public readonly P22 _22;
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P21>.Default.Compare(_21, other._21);
+    return c;
+  }
 
-    public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21, P22 p22) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; _22 = p22; }
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
+    return lhs.Equals(rhs);
+  }
 
-    // Unapply.
-    public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22); }
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
+    return !lhs.Equals(rhs);
+  }
 
-    // Unapply with function.
-    public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22); }
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
 
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
 
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
 
-    public override string ToString() {
-      return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22);
-    }
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 
-    public override bool Equals(object o) {
-      return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>)o);
-    }
+[Serializable] public struct Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> :
+IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>> {
+  public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20; public readonly P21 _21; public readonly P22 _22;
 
-    public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> t) {
-      return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
-  Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
-  Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
-  Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
-  Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
-  Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
-  Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
-  Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
-  Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
-  Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
-  Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
-  Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
-  Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
-  Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
-  Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
-  Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
-  Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
-  Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
-  Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19) &&
-  Smooth.Collections.EqComparer<P20>.Default.Equals(_20, t._20) &&
-  Smooth.Collections.EqComparer<P21>.Default.Equals(_21, t._21) &&
-  Smooth.Collections.EqComparer<P22>.Default.Equals(_22, t._22);
-    }
+  public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21, P22 p22) { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; _22 = p22; }
 
-    public override int GetHashCode() {
-      unchecked {
-        int hash = 17;
-        hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P21>.Default.GetHashCode(_21);
-        hash = 29 * hash + Smooth.Collections.EqComparer<P22>.Default.GetHashCode(_22);
-        return hash;
-      }
-    }
+  // Unapply.
+  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> f) { f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22); }
 
-    public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> other) {
-      int c;
-      c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P21>.Default.Compare(_21, other._21); if (c != 0) { return c; }
-      c = Smooth.Collections.Comparer<P22>.Default.Compare(_22, other._22);
-      return c;
-    }
+  // Unapply with function.
+  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22); }
 
-    public static bool operator ==(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
-      return lhs.Equals(rhs);
-    }
+  
 
-    public static bool operator !=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
-      return !lhs.Equals(rhs);
-    }
+  
 
-    public static bool operator >(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
-      return lhs.CompareTo(rhs) > 0;
-    }
+  public override string ToString() {
+    return string.Format("({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21})", _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22);
+  }
 
-    public static bool operator <(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
-      return lhs.CompareTo(rhs) < 0;
-    }
+  public override bool Equals(object o) {
+    return o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> && this.Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>) o);
+  }
 
-    public static bool operator >=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
-      return lhs.CompareTo(rhs) >= 0;
-    }
+  public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> t) {
+    return Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
+Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
+Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
+Smooth.Collections.EqComparer<P4>.Default.Equals(_4, t._4) &&
+Smooth.Collections.EqComparer<P5>.Default.Equals(_5, t._5) &&
+Smooth.Collections.EqComparer<P6>.Default.Equals(_6, t._6) &&
+Smooth.Collections.EqComparer<P7>.Default.Equals(_7, t._7) &&
+Smooth.Collections.EqComparer<P8>.Default.Equals(_8, t._8) &&
+Smooth.Collections.EqComparer<P9>.Default.Equals(_9, t._9) &&
+Smooth.Collections.EqComparer<P10>.Default.Equals(_10, t._10) &&
+Smooth.Collections.EqComparer<P11>.Default.Equals(_11, t._11) &&
+Smooth.Collections.EqComparer<P12>.Default.Equals(_12, t._12) &&
+Smooth.Collections.EqComparer<P13>.Default.Equals(_13, t._13) &&
+Smooth.Collections.EqComparer<P14>.Default.Equals(_14, t._14) &&
+Smooth.Collections.EqComparer<P15>.Default.Equals(_15, t._15) &&
+Smooth.Collections.EqComparer<P16>.Default.Equals(_16, t._16) &&
+Smooth.Collections.EqComparer<P17>.Default.Equals(_17, t._17) &&
+Smooth.Collections.EqComparer<P18>.Default.Equals(_18, t._18) &&
+Smooth.Collections.EqComparer<P19>.Default.Equals(_19, t._19) &&
+Smooth.Collections.EqComparer<P20>.Default.Equals(_20, t._20) &&
+Smooth.Collections.EqComparer<P21>.Default.Equals(_21, t._21) &&
+Smooth.Collections.EqComparer<P22>.Default.Equals(_22, t._22);
+  }
 
-    public static bool operator <=(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
-      return lhs.CompareTo(rhs) <= 0;
+  public override int GetHashCode() {
+    unchecked {
+      int hash = 17;
+      hash = 29 * hash + Smooth.Collections.EqComparer<P1>.Default.GetHashCode(_1);
+hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
+hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
+hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
+hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
+hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
+hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
+hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
+hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
+hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
+hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
+hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
+hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
+hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
+hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
+hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
+hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
+hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
+hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
+hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
+hash = 29 * hash + Smooth.Collections.EqComparer<P21>.Default.GetHashCode(_21);
+hash = 29 * hash + Smooth.Collections.EqComparer<P22>.Default.GetHashCode(_22);
+      return hash;
     }
   }
+
+  public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> other) {
+    int c;
+    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P21>.Default.Compare(_21, other._21); if (c != 0) { return c; }
+c = Smooth.Collections.Comparer<P22>.Default.Compare(_22, other._22);
+    return c;
+  }
+
+  public static bool operator == (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
+    return lhs.Equals(rhs);
+  }
+
+  public static bool operator != (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
+    return !lhs.Equals(rhs);
+  }
+
+  public static bool operator > (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
+    return lhs.CompareTo(rhs) > 0;
+  }
+
+  public static bool operator < (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
+    return lhs.CompareTo(rhs) < 0;
+  }
+
+  public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
+    return lhs.CompareTo(rhs) >= 0;
+  }
+
+  public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) {
+    return lhs.CompareTo(rhs) <= 0;
+  }
+}
 }
