@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
   /* Non-empty Read-Only Collection */
   public class NonEmptyROC<A> : ReadOnlyCollection<A> {
-    private NonEmptyROC(IList<A> list) : base(list) { }
+    protected NonEmptyROC(IList<A> list) : base(list) { }
 
     public static NonEmptyROC<A> a(A first, IList<A> rest) {
       var arr = new A[rest.Count + 1];
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
   }
 
   /* Non-empty Read-Only Collection with at least 2 values*/
-  public class NonEmptyROC2<A> : ReadOnlyCollection<A> {
+  public class NonEmptyROC2<A> : NonEmptyROC<A> {
     private NonEmptyROC2(IList<A> list) : base(list) { }
 
     public static NonEmptyROC2<A> a(A first, A second, IList<A> rest) {
