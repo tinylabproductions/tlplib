@@ -46,9 +46,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\tlplib-android\tlplib-android.csproj">
       <Project>{017dc19d-abf0-4bc9-9427-4454ae3bb802}</Project>
       <Name>tlplib-android</Name>
@@ -57,6 +54,9 @@
       <Project>{cf89fc35-a547-42c9-a006-39802fed77fb}</Project>
       <Name>tlplib-base</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
