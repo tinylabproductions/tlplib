@@ -160,21 +160,21 @@ public struct Option<A> {
    * * None - returns Some(ifEmpty())
    * * Some - applies ifSome and returns None.
    */
-  public Option<B> swap<B>(Fn<B> ifEmpty, Act<A> ifSome) {
+  public Option<B> swap<B>(Fn<B> ifEmpty, Act<A> ifSome=null) {
     return fold(
       () => F.some(ifEmpty()),
       v => {
-        ifSome(v);
+        if (ifSome != null) ifSome(v);
         return F.none<B>();
       }
     );
   }
 
-  public Option<B> swap<B>(B ifEmpty, Act<A> ifSome) {
+  public Option<B> swap<B>(B ifEmpty, Act<A> ifSome=null) {
     return fold(
       () => F.some(ifEmpty),
       v => {
-        ifSome(v);
+        if (ifSome != null) ifSome(v);
         return F.none<B>();
       }
     );
