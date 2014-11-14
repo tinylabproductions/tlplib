@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -9,6 +10,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public interface IRxVal<A> : IObservable<A> {
     A value { get; }
     new IRxVal<B> map<B>(Fn<A, B> mapper);
+    IRxVal<Tpl<A, B>> zip<B>(IRxVal<B> ref2);
   }
 
   /**
@@ -67,6 +69,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       observer.push(value); // Emit current value on subscription.
       return subscription;
     }
+
+    public IRxVal<Tpl<A, B>> zip<B>(IRxVal<B> ref2) 
+    { return zipImpl(ref2, RxVal.builder(F.t(value, ref2.value))); }
   }
 
   /**

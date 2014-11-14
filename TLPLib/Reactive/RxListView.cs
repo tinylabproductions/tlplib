@@ -79,6 +79,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return mapImpl(mapper, RxVal.builder(mapper(value)));
     }
 
+    public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B>> zip<B>(IRxVal<B> ref2) 
+    { return zipImpl(ref2, RxVal.builder(F.t(value, ref2.value))); }
+
     private void submit() { submit(value); }
   }
 }
