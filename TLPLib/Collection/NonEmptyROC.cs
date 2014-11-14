@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
       return new NonEmptyROC2<A>(arr);
     }
 
-    public static Option<NonEmptyROC2<A>> a(IList<A> list) 
+    public new static Option<NonEmptyROC2<A>> a(IList<A> list) 
     { return (list.Count > 1).opt(() => new NonEmptyROC2<A>(list)); }
   }
 }
