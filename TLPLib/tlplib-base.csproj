@@ -81,6 +81,8 @@
     <Compile Include="Components\Forwarders\OnMouseClickForwarder.cs" />
     <Compile Include="Components\Forwarders\OnMouseClickBase.cs" />
     <Compile Include="Components\Forwarders\OnMouseClickCoordsForwarder.cs" />
+    <Compile Include="Components\RotateAnimation.cs" />
+    <Compile Include="Components\ScalePingPongAnimation.cs" />
     <Compile Include="Components\ScrollWheelObservable.cs" />
     <Compile Include="Components\DragObservable.cs" />
     <Compile Include="Components\Forwarders\CollisionEnter2DForwarder.cs" />
