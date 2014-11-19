@@ -176,6 +176,10 @@
     <Compile Include="SFCollections\LinkedListStepper.cs" />
     <Compile Include="Threads\OnMainThread.cs" />
     <Compile Include="Threads\OnMainThreadBehaviour.cs" />
+    <Compile Include="Tween\Behaviours\PositionTween.cs" />
+    <Compile Include="Tween\Behaviours\RotationTween.cs" />
+    <Compile Include="Tween\Behaviours\ScaleTween.cs" />
+    <Compile Include="Tween\Behaviours\BaseTween.cs" />
     <Compile Include="Tween\EnumerableThresholdChecker.cs" />
     <Compile Include="Tween\FuncTween.cs" />
     <Compile Include="Tween\GoF.cs" />
