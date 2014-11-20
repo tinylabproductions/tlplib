@@ -24,6 +24,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<B> flatMap<B>(Fn<A, IEnumerable<B>> mapper);
     /** Only emits events that pass the predicate. **/
     IObservable<A> filter(Fn<A, bool> predicate);
+    /** Only emits events that return some. **/
+    IObservable<B> collect<B>(Fn<A, Option<B>> collector);
     /**
      * Buffers values into a linked list of specified size. Oldest values 
      * are at the front of the buffer. Only emits `size` items at a time. When
@@ -305,6 +307,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return builder(obs => subscribe(val => {
         if (predicate(val)) obs.push(val);
       }));
+    }
+
+    public IObservable<B> collect<B>(Fn<A, Option<B>> collector) {
+      return collectImpl(collector, builder<B>());
+    }
+
+    protected O collectImpl<O, B>
+    (Fn<A, Option<B>> collector, ObserverBuilder<B, O> builder) {
+      return builder(obs => subscribe(val => collector(val).each(obs.push)));
     }
 
     public IObservable<ReadOnlyLinkedList<A>> buffer(int size) {

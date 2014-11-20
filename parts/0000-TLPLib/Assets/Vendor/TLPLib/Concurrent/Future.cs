@@ -110,6 +110,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
     public static bool LOG_EXCEPTIONS = true;
 
+    public static Future<A> a<A>(Act<Promise<A>> body) {
+      var f = new FutureImpl<A>();
+      body(f);
+      return f;
+    }
+
     public static Future<A> successful<A>(A value) {
       var f = new FutureImpl<A>();
       f.completeSuccess(value);

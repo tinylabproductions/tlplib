@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Android;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class Platform {
@@ -54,6 +55,9 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 #elif UNITY_OPERA
         return "opera";
 #endif
+        if (!Droid.hasSystemFeature("android.hardware.touchscreen")) {
+          return "tv";
+        }
       }
       if (name == PC) {
         switch (Application.platform) {

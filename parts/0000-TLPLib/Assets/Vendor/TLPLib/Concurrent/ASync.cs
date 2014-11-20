@@ -9,22 +9,23 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    private static CoroutineHelperBehaviour coroutineHelper(GameObject go) {
+    private static ASyncHelperBehaviour coroutineHelper(GameObject go) {
       return 
-        go.GetComponent<CoroutineHelperBehaviour>() ?? 
-        go.AddComponent<CoroutineHelperBehaviour>();
+        go.GetComponent<ASyncHelperBehaviour>() ?? 
+        go.AddComponent<ASyncHelperBehaviour>();
     }
 
-    private static CoroutineHelperBehaviour _behaviour;
+    // comparision with null goes through unity.
+    private static Option<ASyncHelperBehaviour> _behaviour = F.none<ASyncHelperBehaviour>();
 
-    private static CoroutineHelperBehaviour behaviour { get {
-      if (_behaviour == null) { 
-        const string name = "Coroutine Helper";
+    private static ASyncHelperBehaviour behaviour { get {
+      if (_behaviour.isEmpty) { 
+        const string name = "ASync Helper";
         var go = new GameObject(name);
         Object.DontDestroyOnLoad(go);
-        _behaviour = coroutineHelper(go);
+        _behaviour = F.some(coroutineHelper(go));
       }
-      return _behaviour;
+      return _behaviour.get;
     } }
 
     public static void init() { var _ = behaviour; }
@@ -61,6 +62,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var enumerator = WithDelayEnumerator(seconds, action);
       return new Coroutine(behaviour, enumerator);
     }
+
+    public static void OnMainThread(Act action) { behaviour.onMainThread(action);}
 
     public static Coroutine NextFrame(Action action) {
       return NextFrame(behaviour, action);
