@@ -76,6 +76,7 @@
     <Compile Include="Comparisons\FuncComparer.cs" />
     <Compile Include="Comparisons\FuncEqComparer.cs" />
     <Compile Include="Comparisons\IComparableComparer.cs" />
+    <Compile Include="Components\DestroyAfter.cs" />
     <Compile Include="Components\PinchObservable.cs" />
     <Compile Include="Components\Forwarders\OnKeyDownForwarder.cs" />
     <Compile Include="Components\Forwarders\OnMouseClickForwarder.cs" />
