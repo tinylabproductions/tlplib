@@ -35,14 +35,13 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEditor">
-      <HintPath>..\libs\unity-4.6.0f1\UnityEditor.dll</HintPath>
+    <Reference Include="UnityEditor, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\unity-4.6.0f3\UnityEditor.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine-windows">
-      <HintPath>..\libs\unity-4.6.0f1\UnityEngine-windows.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\libs\unity-4.6.0f1\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine-windows, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\unity-4.6.0f3\UnityEngine-windows.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
