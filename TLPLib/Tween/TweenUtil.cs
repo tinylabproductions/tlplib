@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ namespace com.tinylabproductions.TLPLib.Tween {
     private delegate void SetCurrentDestroyable(Destroyable tween);
     public delegate void SetCurrentTween(AbstractGoTween tween);
     public delegate void SetCurrentTweenFuture(ITweenFuture tween);
+    public delegate void SetNextTween(Fn<AbstractGoTween> tween);
+    public delegate void SetNextFuture(Fn<Future<Unit>> future);
 
     /* Allows you to have only one running tween per closure. */
     private static A withTweenDestroyable<A>(Fn<SetCurrentDestroyable, A> runTween) {
@@ -42,6 +45,27 @@ namespace com.tinylabproductions.TLPLib.Tween {
       return withTweenDestroyable(setDestroyable => 
         runTween(tween => setDestroyable(new Destroyable(tween)))
       );
+    }
+
+    /* Allows you to have only one running tween per closure.
+     * Chains tweens.
+     */
+    public static A withTweenChained<A>(Fn<SetNextTween, A> runTween) {
+      var current = Future.successful(F.unit);
+      return runTween(
+        f => current = current.flatMap(_ => TweenFuture.a(f()))
+      );
+    }
+
+    public static A withFutureChained<A>(Fn<SetNextFuture, A> runTween) {
+      var current = Future.successful(F.unit);
+      return runTween(
+        f => current = current.flatMap(_ => f())
+      );
+    }
+
+    public static void withFutureChained(Act<SetNextFuture> runTween) {
+      withFutureChained(set => { runTween(set); return F.unit; });
     }
 
     /* Allows you to have only one running tween per closure. */
