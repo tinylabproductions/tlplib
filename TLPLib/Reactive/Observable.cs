@@ -57,7 +57,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ISubscription subscribe(IObserver<A> observer);
     /** Emits first value to the future and unsubscribes. **/
     Future<A> toFuture();
-    /* Pipes values to given observer. */
+    /* Pipes values (but not finishes) to given observer. */
+    [Obsolete("Use #subscribe(observer.push) instead")]
     ISubscription pipeTo(IObserver<A> observer);
     /** Maps events coming from this observable. **/
     IObservable<B> map<B>(Fn<A, B> mapper);
@@ -130,8 +131,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<Tpl<Option<A>, A>> changesOpt();
     // Like changesOpt() but does not emit if old was None.
     IObservable<Tpl<A, A>> changes();
-    // Like changes() but only emits new values.
+    // Emits new values. Always emits first value and then emits changed values.
     IObservable<A> changedValues();
+    // Skips `count` values from the stream.
+    IObservable<A> skip(uint count);
   }
 
   public interface IObserver<in A> {
@@ -615,7 +618,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return subscribe(val => {
           action(obs, lastValue, val);
           lastValue = F.some(val);
-        });
+        }, obs.finish);
       });
     }
 
@@ -650,6 +653,21 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         else if (! EqComparer<A>.Default.Equals(lastValue.get, val))
           obs.push(val);
       }, builder);
+    }
+
+    public IObservable<A> skip(uint count) { return skipImpl(builder<A>(), count); }
+
+    protected O skipImpl<O>(ObserverBuilder<A, O> builder, uint count) {
+      return builder(obs => {
+        var skipped = 0u;
+        return subscribe(
+          value => {
+            if (skipped >= count) obs.push(value);
+            else skipped++;
+          },
+          obs.finish
+        );
+      });
     }
 
     private void onUnsubscribed() {
