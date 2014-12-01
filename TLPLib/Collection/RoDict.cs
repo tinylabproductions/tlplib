@@ -19,5 +19,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public IEnumerable<K> keys { get { return underlying.Keys; } }
     public IEnumerable<V> values { get { return underlying.Values; } }
     public Option<V> get(K key) { return underlying.get(key); }
+
+    public override string ToString() { return string.Format(
+      "RoDict<{0}, {1}>(underlying: {2})", typeof(K), typeof(V), underlying.asString()
+    ); }
   }
 }
