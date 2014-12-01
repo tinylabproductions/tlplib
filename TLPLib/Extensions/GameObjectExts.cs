@@ -45,24 +45,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return go.everyFrame(() => { a(); return true; });
     }
 
+    public static A EnsureComponent<A>(this GameObject go) where A : Component 
+    { return go.GetComponent<A>() ?? go.AddComponent<A>(); }
+
     public static IObservable<Vector2> mouseDrag(this GameObject go) {
-      return (
-        go.GetComponent<DragObservable>() ?? go.AddComponent<DragObservable>()
-      ).dragDelta;
+      return go.EnsureComponent<DragObservable>().dragDelta;
     }
 
     public static IObservable<Vector2> scrollWheel(this GameObject go) {
-      return (
-        go.GetComponent<ScrollWheelObservable>() ??
-        go.AddComponent<ScrollWheelObservable>()
-      ).scrollDelta;
+      return go.EnsureComponent<ScrollWheelObservable>().scrollDelta;
     }
 
     public static IObservable<float> pinch(this GameObject go) {
-      return (
-        go.GetComponent<PinchObservable>() ??
-        go.AddComponent<PinchObservable>()
-      ).pinchDelta;
+      return go.EnsureComponent<PinchObservable>().pinchDelta;
     }
 
     public static IObservable<KeyCode> keyDown(this GameObject go, KeyCode key) {

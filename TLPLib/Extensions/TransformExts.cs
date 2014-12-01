@@ -5,6 +5,15 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class TransformExts {
+    public static List<Transform> parents(this Transform t) {
+      var parents = new List<Transform>();
+      while (t.parent != null) {
+        t = t.parent;
+        parents.Add(t);
+      }
+      return parents;
+    }
+
     public static void positionBetween(
       this Transform t, Vector3 start, Vector3 end, float width
     ) {

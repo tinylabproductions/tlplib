@@ -105,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     private static void write(Tpl<string, DateTime, object> t) {
-      logfile.WriteLine(dt(t._2) + "|" + t._1 + t._3);
+      lock (logfile) { logfile.WriteLine(dt(t._2) + "|" + t._1 + t._3); }
     }
 
     private static string dt(DateTime t) {
