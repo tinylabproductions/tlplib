@@ -11,11 +11,12 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
     public int iterations = 1;
     public GoEaseType easing;
     public GoLoopType loopType;
+    GoTween tween;
 
     [UsedImplicitly] void Start() { runTween(); }
 
     private void runTween() {
-      var tween = new GoTween(
+      tween = new GoTween(
         transform, 
         duration,
         config(
@@ -29,5 +30,11 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
     }
 
     public abstract GoTweenConfig config(GoTweenConfig cfg);
+
+    [UsedImplicitly] void OnDestroy() {
+      if (tween != null) {
+        tween.destroy();
+      }
+    }
   }
 }
