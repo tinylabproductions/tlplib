@@ -118,6 +118,7 @@
     <Compile Include="Extensions\AndroidExts.cs" />
     <Compile Include="Extensions\AnyExts.cs" />
     <Compile Include="Extensions\ArrayExts.cs" />
+    <Compile Include="Extensions\DictionaryExts.cs" />
     <Compile Include="Extensions\BoolExts.cs" />
     <Compile Include="Extensions\BoundsExts.cs" />
     <Compile Include="Extensions\ColorExts.cs" />
