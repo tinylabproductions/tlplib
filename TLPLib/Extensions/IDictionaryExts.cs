@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IDictionaryExts {
@@ -14,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static V a<K, V>(this IDictionary<K, V> dict, K key) {
       return dict.get(key).fold(
         () => { throw new KeyNotFoundException(string.Format(
-          "Cannot find {0} in {1}", key, dict.asString()
+          "Cannot find {0} in {1}", key.debugObj(), dict.asString()
         )); },
         _ => _
       );

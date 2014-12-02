@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
@@ -16,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         let enumItem = item as IEnumerable
         select str ?? (
           enumItem == null 
-            ? item.ToString() : enumItem.asString(newlines, fullClasses)
+            ? item.debugObj() : enumItem.asString(newlines, fullClasses)
         )
       ).ToArray();
       var itemsStr = 
