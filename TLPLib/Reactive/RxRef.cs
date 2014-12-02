@@ -34,6 +34,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static ObserverBuilder<Elem, IRxVal<Elem>> builder<Elem>(Elem value) {
       return RxRef.builder(value);
     }
+
+    public static IRxVal<A> a<A>(A value) { return RxRef.a(value); }
   }
 
   public static class RxRef {
