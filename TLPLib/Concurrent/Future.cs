@@ -139,6 +139,29 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return future;
     }
 
+    /**
+     * Returns result from the first future that completes. If all futures fail, 
+     * returns the last error.
+     **/
+    public static Future<A> firstOfSuccessful<A>
+    (this IEnumerable<Future<A>> enumerable) {
+      var future = new FutureImpl<A>();
+      var completions = 0;
+      var futures = enumerable.ToList();
+      foreach (var f in futures) {
+        f.onComplete(t => {
+          completions++;
+          t.voidFold(
+            v => future.tryCompleteSuccess(v),
+            ex => {
+              if (completions == futures.Count) future.tryCompleteError(ex);
+            }
+          );
+        });
+      }
+      return future;
+    }
+
     public static Future<Unit> fromCoroutine(IEnumerator enumerator) {
       var f = new FutureImpl<Unit>();
       ASync.StartCoroutine(coroutineEnum(f, enumerator));

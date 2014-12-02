@@ -44,6 +44,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     } }
 
     public static string subname { get {
+#if UNITY_ANDROID
       if (name == ANDROID) {
 #if UNITY_AMAZON
         return "amazon";
@@ -59,6 +60,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 //          return "tv";
 //        }
       }
+#endif
       if (name == PC) {
         switch (Application.platform) {
           case RuntimePlatform.WindowsPlayer:
