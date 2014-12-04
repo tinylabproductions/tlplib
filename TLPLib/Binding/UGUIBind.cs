@@ -101,9 +101,10 @@ namespace com.tinylabproductions.TLPLib.Binding {
     ) {
       return withTween(set => subject.subscribe(value => {
         control.minValue = 0;
-        // 0 out of 0 yields full progress bar which is not what we want.
-        control.maxValue = value.value == 0 && value.storage == 0
-          ? 1 : value.storage;
+        control.maxValue =
+          // 0 out of 0 yields full progress bar which is not what we want.
+          value.value == 0 && value.storage == 0 ? 1 
+          : Math.Max(value.value, value.storage);
         set(Go.to(
           TF.a(() => control.value, v => control.value = v),
           TWEEN_DURATION, tCfg.floatProp(TF.Prop, value.value)
