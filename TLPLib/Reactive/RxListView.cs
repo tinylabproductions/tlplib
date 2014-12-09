@@ -82,6 +82,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B>> zip<B>(IRxVal<B> ref2) 
     { return zipImpl(ref2, RxVal.builder(F.t(value, ref2.value))); }
 
+    public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B, C>> zip<B, C>(IRxVal<B> ref2, IRxVal<C> ref3) 
+    { return zipImpl(ref2, ref3, RxVal.builder(F.t(value, ref2.value, ref3.value))); }
+
+    public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B, C, D>> zip<B, C, D>(
+      IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4
+    ) { return zipImpl(ref2, ref3, ref4, RxVal.builder(F.t(value, ref2.value, ref3.value, ref4.value))); }
+
+    public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B, C, D, E>> zip<B, C, D, E>(
+      IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4, IRxVal<E> ref5
+    ) { return zipImpl(
+      ref2, ref3, ref4, ref5, 
+      RxVal.builder(F.t(value, ref2.value, ref3.value, ref4.value, ref5.value))
+    ); }
+
     private void submit() { submit(value); }
   }
 }

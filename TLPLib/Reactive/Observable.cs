@@ -569,23 +569,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return zipImpl(other, builder<Tpl<A, B>>());
     }
 
-    public IObservable<Tpl<A, B, C>> zip<B, C>(IObservable<B> o1, IObservable<C> o2) {
-      return zip(o1).zip(o2).map(t => F.t(t._1._1, t._1._2, t._2));
-    }
-
-    public IObservable<Tpl<A, B, C, D>> zip<B, C, D>(
-      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3
-    ) {
-      return zip(o1, o2).zip(o3).map(t => F.t(t._1._1, t._1._2, t._1._3, t._2));
-    }
-
-    public IObservable<Tpl<A, B, C, D, E>> zip<B, C, D, E>(
-      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
-    ) {
-      return zip(o1, o2, o3).zip(o4).
-        map(t => F.t(t._1._1, t._1._2, t._1._3, t._1._4, t._2));
-    }
-
     protected O zipImpl<B, O>
     (IObservable<B> other, ObserverBuilder<Tpl<A, B>, O> builder) {
       return builder(obs => {
@@ -604,6 +587,45 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         });
         return s1.join(s2);
       });
+    }
+
+    public IObservable<Tpl<A, B, C>> zip<B, C>(IObservable<B> o1, IObservable<C> o2)
+    { return zipImpl(o1, o2, builder<Tpl<A, B, C>>()); }
+
+    protected O zipImpl<B, C, O>(
+      IObservable<B> o1, IObservable<C> o2, ObserverBuilder<Tpl<A, B, C>, O> builder
+    ) {
+      return builder(obs =>
+        zip(o1).zip(o2).map(t => F.t(t._1._1, t._1._2, t._2)).subscribe(obs)
+      );
+    }
+
+    public IObservable<Tpl<A, B, C, D>> zip<B, C, D>(
+      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3
+    ) { return zipImpl(o1, o2, o3, builder<Tpl<A, B, C, D>>()); }
+
+    protected O zipImpl<B, C, D, O>(
+      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, 
+      ObserverBuilder<Tpl<A, B, C, D>, O> builder
+    ) {
+      return builder(obs =>
+        zip(o1, o2).zip(o3).map(t => F.t(t._1._1, t._1._2, t._1._3, t._2)).
+          subscribe(obs)
+      );
+    }
+
+    public IObservable<Tpl<A, B, C, D, E>> zip<B, C, D, E>(
+      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
+    ) { return zipImpl(o1, o2, o3, o4, builder<Tpl<A, B, C, D, E>>()); }
+
+    protected O zipImpl<B, C, D, E, O>(
+      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4,
+      ObserverBuilder<Tpl<A, B, C, D, E>, O> builder
+    ) {
+      return builder(obs =>
+        zip(o1, o2, o3).zip(o4).map(t => F.t(t._1._1, t._1._2, t._1._3, t._1._4, t._2)).
+          subscribe(obs)
+      );
     }
 
     public IObservable<Tpl<Option<A>, A>> changesOpt() {
