@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     #region Misc
 
-    private static ISubscription withTween(
+    public static ISubscription withTween(
       Fn<Act<GoTween>, ISubscription> body
     ) {
       var tween = F.none<GoTween>();
