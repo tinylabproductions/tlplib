@@ -37,6 +37,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Object.Destroy(go);
     }
 
+    public static GameObject setParent(this GameObject go, Transform parent, bool worldPositionStays = false) {
+      go.transform.SetParent(parent, worldPositionStays);
+      return go;
+    }
+
+    public static GameObject setParent(this GameObject go, GameObject parent, bool worldPositionStays = false) {
+      return go.setParent(parent.transform, worldPositionStays);
+    }
+
     public static Coroutine everyFrame(this GameObject go, Fn<bool> f) {
       return ASync.EveryFrame(go, f);
     }
