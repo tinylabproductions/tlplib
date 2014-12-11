@@ -80,6 +80,7 @@
     <Compile Include="Comparisons\FuncEqComparer.cs" />
     <Compile Include="Comparisons\IComparableComparer.cs" />
     <Compile Include="Components\DestroyAfter.cs" />
+    <Compile Include="Components\RegionClickObservable.cs" />
     <Compile Include="Components\PinchObservable.cs" />
     <Compile Include="Components\Forwarders\OnKeyDownForwarder.cs" />
     <Compile Include="Components\Forwarders\OnMouseClickForwarder.cs" />
@@ -152,6 +153,7 @@
     <Compile Include="Iter\Iter.cs" />
     <Compile Include="Iter\IterExts.cs" />
     <Compile Include="Logger\Log.cs" />
+    <Compile Include="Logger\LogViewer.cs" />
     <Compile Include="Platform\BasePlatform.cs" />
     <Compile Include="Platform\Runtime.cs" />
     <Compile Include="Pools\KeyedPool.cs" />
@@ -204,7 +206,8 @@
   <PropertyGroup>
     <PostBuildEvent>mkdir "$(SolutionDir)\..\unity\Assets\Code\"
 cd "$(TargetDir)" &amp;&amp; $(SolutionDir)\..\tools\pdb2mdb "$(TargetName).dll"
-copy /y "$(TargetDir)\$(TargetName)."* "$(SolutionDir)\..\unity\Assets\Code\"</PostBuildEvent>
+copy /y "$(TargetDir)\$(TargetName)."* "$(SolutionDir)\..\unity\Assets\Code\"
+xcopy /y /i "$(ProjectDir)\..\Resources\". "$(SolutionDir)\..\unity\Assets\Resources\TLPLib\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

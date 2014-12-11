@@ -39,6 +39,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static void file(string prefix, object o) { FileLog.log(prefix, o); }
 
     public static string debugObj<A>(this A obj) { return obj + "(" + obj.GetHashCode() + ")"; }
+
+    public static string fileName {
+      get { return (FileLog.logfile.BaseStream as FileStream).Name; }
+    }
   }
 
   class FileLog {
@@ -47,8 +51,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
       new LinkedList<Tpl<string, DateTime, object>>();
 #endif
 
-    private readonly static StreamWriter logfile;
-    
+    public readonly static StreamWriter logfile;
+
     static FileLog() {
       var t = tryOpen(Application.temporaryCachePath + "/runtime.log");
       logfile = t._1;
