@@ -46,6 +46,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return go.setParent(parent.transform, worldPositionStays);
     }
 
+    public static GameObject instantiate(
+      this GameObject go, Vector3 position, Quaternion rotation
+    ) {
+      return (GameObject) Object.Instantiate(go, position, rotation);
+    }
+
+    public static GameObject instantiate(
+      this GameObject go
+    ) {
+      return (GameObject)Object.Instantiate(go);
+    }
+
     public static Coroutine everyFrame(this GameObject go, Fn<bool> f) {
       return ASync.EveryFrame(go, f);
     }
