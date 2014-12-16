@@ -37,11 +37,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEditor, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\unity-4.6.0f3\UnityEditor.dll</HintPath>
+      <HintPath>..\libs\unity-4.6.1p1\UnityEditor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine-windows, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\unity-4.6.0f3\UnityEngine-windows.dll</HintPath>
+      <HintPath>..\libs\unity-4.6.1p1\UnityEngine-windows.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
