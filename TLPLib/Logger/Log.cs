@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static string debugObj<A>(this A obj) { return obj + "(" + obj.GetHashCode() + ")"; }
 
     public static string fileName {
-      get { return (FileLog.logfile.BaseStream as FileStream).Name; }
+      get { return ((FileStream) FileLog.logfile.BaseStream).Name; }
     }
   }
 
