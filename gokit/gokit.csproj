@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine-windows, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\unity-4.6.1p1\UnityEngine-windows.dll</HintPath>
+      <HintPath>..\libs\unity\UnityEngine-windows.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
