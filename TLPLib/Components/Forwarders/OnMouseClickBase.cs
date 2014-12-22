@@ -8,9 +8,12 @@ namespace com.tinylabproductions.TLPLib.Components.Forwarders {
   public abstract class OnMouseClickBase : MonoBehaviour {
     private bool uguiBlocks;
     private Option<Vector3> downPosition;
+    protected new Collider collider;
 
-    protected void init(bool uguiBlocks) 
-    { this.uguiBlocks = uguiBlocks; }
+    protected void init(bool uguiBlocks) {
+      this.uguiBlocks = uguiBlocks;
+      collider = GetComponent<Collider>();
+    }
 
     [UsedImplicitly]
     private void OnMouseDown() {
