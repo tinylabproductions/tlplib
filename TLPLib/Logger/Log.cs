@@ -101,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       while (true) {
         var realPath = i == 0 ? path : path + "." + i;
         try { return F.t(open(realPath), realPath); }
-        catch (IOException e) {
+        catch (IOException) {
           if (File.Exists(realPath)) i++;
           else throw;
         }
