@@ -79,6 +79,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return mapImpl(mapper, RxVal.builder(mapper(value)));
     }
 
+    public IRxVal<B> flatMap<B>(Fn<ReadOnlyCollection<Option<A>>, IRxVal<B>> mapper) {
+      return flatMapImpl(mapper, RxVal.builder(mapper(value).value));
+    }
+
     public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B>> zip<B>(IRxVal<B> ref2) 
     { return zipImpl(ref2, RxVal.builder(F.t(value, ref2.value))); }
 
