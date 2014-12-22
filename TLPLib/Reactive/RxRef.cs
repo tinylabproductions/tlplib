@@ -10,6 +10,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public interface IRxVal<A> : IObservable<A> {
     A value { get; }
     new IRxVal<B> map<B>(Fn<A, B> mapper);
+    IRxVal<B> flatMap<B>(Fn<A, IRxVal<B>> mapper);
     IRxVal<Tpl<A, B>> zip<B>(IRxVal<B> ref2);
     IRxVal<Tpl<A, B, C>> zip<B, C>(IRxVal<B> ref2, IRxVal<C> ref3);
     IRxVal<Tpl<A, B, C, D>> zip<B, C, D>(IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4);
@@ -44,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxRef {
     public static ObserverBuilder<Elem, IRxRef<Elem>> builder<Elem>(Elem value) {
       return subscriptionFn => {
-        var rxRef = new RxRef<Elem>(value);
+        var rxRef = a(value);
         subscriptionFn(new Observer<Elem>(v => rxRef.value = v));
         return rxRef;
       };
@@ -67,6 +68,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public new IRxVal<B> map<B>(Fn<A, B> mapper) {
       return mapImpl(mapper, RxVal.builder(mapper(value)));
+    }
+
+    public IRxVal<B> flatMap<B>(Fn<A, IRxVal<B>> mapper) {
+      return flatMapImpl(mapper, RxVal.builder(mapper(value).value));
     }
 
     public override ISubscription subscribe(IObserver<A> observer) {
