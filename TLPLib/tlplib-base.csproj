@@ -63,6 +63,8 @@
     <Compile Include="Collection\ReadOnlyException.cs" />
     <Compile Include="Collection\ReadOnlyLinkedList.cs" />
     <Compile Include="Collection\RoDict.cs" />
+    <Compile Include="Collection\SLIst8.cs" />
+    <Compile Include="Collection\SLIst4.cs" />
     <Compile Include="Compare\Comparers\EnumComparers.cs" />
     <Compile Include="Compare\Comparers\KeyValuePairComparers.cs" />
     <Compile Include="Compare\Configuration.cs" />
