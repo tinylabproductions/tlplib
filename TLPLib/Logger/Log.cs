@@ -35,6 +35,11 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static void warn(object o) { file(P_WARN, o); }
     public static void error(Exception ex) { Debug.LogException(ex); }
     public static void error(object o) { Debug.LogError(o); }
+    
+    [Conditional("DEBUG")]
+    public static void inDebug(Act a) { a(); }
+
+    public static void stacktrace() { info(Environment.StackTrace); }
 
     public static void file(string prefix, object o) { FileLog.log(prefix, o); }
 
