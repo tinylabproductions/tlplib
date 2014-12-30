@@ -296,6 +296,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         this.active = active;
         this.observer = observer;
       }
+
+      public override string ToString() { return string.Format(
+        "Sub[subscription: {0}, active: {1}, observer: {2}]",
+        subscription, active, observer
+      ); }
     }
 
     // We need to preserve the order of subscriptions here.
@@ -708,6 +713,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (pendingRemovals != 0) {
         for (var idx = 0; idx < subscriptions.size;) {
           var sub = subscriptions[idx];
+#if DEBUG
+          if (sub.subscription == null) throw new IllegalStateException(
+            "sub="+sub+
+            "\nidx="+idx+
+            "\nsubscriptions="+subscriptions.asString()
+          );
+#endif
           if (!sub.subscription.isSubscribed) subscriptions.removeAt(idx);
           else idx++;
         }
