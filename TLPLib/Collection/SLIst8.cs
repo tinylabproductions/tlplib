@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Collection {
@@ -107,5 +109,11 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
       return value;
     }
+
+    public string asString() { return string.Format(
+      "SList8({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})",
+      s0, s1, s2, s3, s4, s5, s6, s7, 
+      F.opt(fallback).map(_ => _.asString(false)).getOrElse("-")
+    ); }
   }
 }
