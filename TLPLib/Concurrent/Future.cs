@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
@@ -104,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           if (completed == results.Length) future.tryCompleteSuccess(results);
         });
         f.onFailure(future.completeError);
-      };
+      }
       return future;
     }
 
@@ -125,7 +126,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           if (completed == sourceFutures.Length) future.tryCompleteSuccess(F.unit);
         });
         f.onFailure(future.completeError);
-      };
+      }
       return future;
     }
 
@@ -211,7 +212,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static FutureBuilder<B, FutureImpl<B>> builder<B>() { return () => new FutureImpl<B>(); }
 
-    private readonly IList<Act<Try<A>>> listeners = new List<Act<Try<A>>>();
+    private SList4<Act<Try<A>>> listeners = new SList4<Act<Try<A>>>();
 
     private Option<Try<A>> _value = F.none<Try<A>>();
     public Option<Try<A>> value { get { return _value; } }
@@ -251,7 +252,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public CancellationToken onComplete(Act<Try<A>> action) {
       return value.fold<CancellationToken>(() => {
-        listeners.Add(action);
+        lock (this) { listeners.add(action); }
         return new CancellationTokenImpl(action, this);
       }, v => {
         action(v);
@@ -272,8 +273,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<A> tapFailure(Act<Exception> action) { onFailure(action); return this; }
 
     public void completed(Try<A> v) {
-      foreach (var listener in listeners) listener(v);
-      listeners.Clear();
+      lock (this) {
+        for (var idx = 0; idx < listeners.size; idx++)
+          listeners[idx](v);
+
+        listeners.clear();
+      }
     }
     
     public Future<B> map<B>(Fn<A, B> mapper) { return mapImpl(builder<B>(), mapper); }
@@ -339,7 +344,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     private bool cancel(Act<Try<A>> action) {
-      return listeners.Remove(action);
+      lock (this) {
+        for (var idx = 0; idx < listeners.size; idx++) {
+          if (listeners[idx] == action) {
+            listeners.removeAt(idx);
+            return true;
+          }
+        }
+        return false;
+      }
     }
   }
 }
