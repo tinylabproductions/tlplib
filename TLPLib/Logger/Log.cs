@@ -35,13 +35,18 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static void warn(object o) { file(P_WARN, o); }
     public static void error(Exception ex) { Debug.LogException(ex); }
     public static void error(object o) { Debug.LogError(o); }
+    
+    [Conditional("DEBUG")]
+    public static void inDebug(Act a) { a(); }
+
+    public static void stacktrace() { info(Environment.StackTrace); }
 
     public static void file(string prefix, object o) { FileLog.log(prefix, o); }
 
     public static string debugObj<A>(this A obj) { return obj + "(" + obj.GetHashCode() + ")"; }
 
     public static string fileName {
-      get { return (FileLog.logfile.BaseStream as FileStream).Name; }
+      get { return ((FileStream) FileLog.logfile.BaseStream).Name; }
     }
   }
 
@@ -67,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       log("\n\n", "############ Log opened ############\n\n");
 
 #if MULTITHREADED
-      Application.RegisterLogCallbackThreaded(unityLogs);
+      Application.logMessageReceivedThreaded += unityLogs;
       new Thread(() => {
         while (true) {
           var tOpt = F.none<Tpl<string, DateTime, object>>();
@@ -84,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
         }
       }).Start();
 #else
-      Application.RegisterLogCallback(unityLogs);
+      Application.logMessageReceived += unityLogs;
 #endif
     }
 
@@ -101,7 +106,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       while (true) {
         var realPath = i == 0 ? path : path + "." + i;
         try { return F.t(open(realPath), realPath); }
-        catch (IOException e) {
+        catch (IOException) {
           if (File.Exists(realPath)) i++;
           else throw;
         }

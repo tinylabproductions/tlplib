@@ -296,11 +296,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         this.active = active;
         this.observer = observer;
       }
+
+      public override string ToString() { return string.Format(
+        "Sub[subscription: {0}, active: {1}, observer: {2}]",
+        subscription, active, observer
+      ); }
     }
 
     // We need to preserve the order of subscriptions here.
-    private readonly LinkedList<Sub> subscriptions = new LinkedList<Sub>();
-    private readonly LinkedList<A> pendingSubmits = new LinkedList<A>();
+    private SList8<Sub> subscriptions = new SList8<Sub>();
+    private SList8<A> pendingSubmits = new SList8<A>();
 
     // Are we currently iterating through subscriptions?
     bool iterating;
@@ -330,23 +335,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       if (iterating) {
         // Do not submit if iterating.
-        pendingSubmits.AddLast(value);
+        pendingSubmits.add(value);
         return;
       }
 
       // Mark a flag to prevent concurrent modification of subscriptions array.
       iterating = true;
       try {
-        subscriptions.iterateWhileChanged(sub => {
+        for (var idx = 0; idx < subscriptions.size; idx++) {
+          var sub = subscriptions[idx];
           if (sub.active && sub.subscription.isSubscribed) 
             sub.observer.push(value);
-        });
+        }
       }
       finally {
         iterating = false;
         afterIteration();
         // Process pending submits.
-        pendingSubmits.shift().each(submit);
+        if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
       }
     }
 
@@ -358,17 +364,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       finished = true;
       iterating = true;
-      foreach (var sub in subscriptions) {
+      for (var idx = 0; idx < subscriptions.size; idx++) {
+        var sub = subscriptions[idx];
         sub.observer.finish();
         sub.subscription.unsubscribe();
       }
       iterating = false;
       afterIteration();
-      subscriptions.Clear();
+      subscriptions.clear();
     }
 
     public int subscribers 
-    { get { return subscriptions.Count - pendingRemovals; } }
+    { get { return subscriptions.size - pendingRemovals; } }
 
     public ISubscription subscribe(Act<A> onChange) 
     { return subscribe(onChange, () => { }); }
@@ -378,7 +385,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public virtual ISubscription subscribe(IObserver<A> observer) {
       var subscription = new Subscription(onUnsubscribed);
-      subscriptions.AddLast(new Sub(subscription, !iterating, observer));
+      subscriptions.add(new Sub(subscription, !iterating, observer));
       // Subscribe to source if we have a first subscriber.
       sourceProps.each(_ => _.trySubscribe());
       return subscription;
@@ -704,7 +711,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     private void afterIteration() {
       if (pendingRemovals != 0) {
-        subscriptions.removeWhere(sub => ! sub.subscription.isSubscribed);
+        for (var idx = 0; idx < subscriptions.size;) {
+          var sub = subscriptions[idx];
+#if DEBUG
+          if (sub.subscription == null) throw new IllegalStateException(
+            "sub="+sub+
+            "\nidx="+idx+
+            "\nsubscriptions="+subscriptions.asString()
+          );
+#endif
+          if (!sub.subscription.isSubscribed) subscriptions.removeAt(idx);
+          else idx++;
+        }
         pendingRemovals = 0;
       }
       if (willFinish) {
