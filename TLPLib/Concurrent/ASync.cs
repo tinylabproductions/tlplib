@@ -63,7 +63,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, enumerator);
     }
 
-    public static void OnMainThread(Act action) { behaviour.onMainThread(action);}
+    public static void OnMainThread(Act action) { behaviour.onMainThread(action); }
+
+    public static Future<Unit> OnMainThreadF(Act action) {
+      return Future.a<Unit>(promise =>
+        OnMainThread(() => {
+          action();
+          promise.completeSuccess(F.unit);
+        })
+      );
+    }
+
+    public static Future<A> OnMainThread<A>(Fn<A> f) {
+      return Future.a<A>(promise => 
+        OnMainThread(() => promise.completeSuccess(f()))
+      );
+    }
 
     public static Coroutine NextFrame(Action action) {
       return NextFrame(behaviour, action);

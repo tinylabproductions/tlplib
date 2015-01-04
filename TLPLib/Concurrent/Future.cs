@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  /** Coroutine based future **/
+  /** Coroutine based future. Beware that this is not thread safe! **/
   public interface Future<A> {
     Option<Try<A>> value { get; }
     Option<A> pureValue { get; }
@@ -54,6 +55,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   public static class Future {
     public static bool LOG_EXCEPTIONS = true;
+    public static readonly Future<Unit> successfulUnit = successful(F.unit);
 
     public static Future<A> a<A>(Act<Promise<A>> body) {
       var f = new FutureImpl<A>();
@@ -252,7 +254,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public CancellationToken onComplete(Act<Try<A>> action) {
       return value.fold<CancellationToken>(() => {
-        lock (this) { listeners.add(action); }
+        listeners.add(action);
         return new CancellationTokenImpl(action, this);
       }, v => {
         action(v);
@@ -273,12 +275,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<A> tapFailure(Act<Exception> action) { onFailure(action); return this; }
 
     public void completed(Try<A> v) {
-      lock (this) {
-        for (var idx = 0; idx < listeners.size; idx++)
-          listeners[idx](v);
+      for (var idx = 0; idx < listeners.size; idx++)
+        listeners[idx](v);
 
-        listeners.clear();
-      }
+      listeners.clear();
     }
     
     public Future<B> map<B>(Fn<A, B> mapper) { return mapImpl(builder<B>(), mapper); }
@@ -315,10 +315,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<A> recover(Fn<Exception, Option<A>> recoverFn) {
       var f = new FutureImpl<A>();
       onComplete(t => t.voidFold(
-        f.completeSuccess, e => recoverFn(e).voidFold(
-          () => f.completeError(e), f.completeSuccess
-        ))
-      );
+        f.completeSuccess,
+        e => {
+          try {
+            recoverFn(e).voidFold(() => f.completeError(e), f.completeSuccess);
+          }
+          catch (Exception e1) { f.completeError(e1);}
+        }
+      ));
       return f;
     }
 
@@ -338,21 +342,19 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var fab = new FutureImpl<Tpl<A, B>>();
       Act tryComplete = 
         () => pureValue.zip(fb.pureValue).each(ab => fab.tryCompleteSuccess(ab));
-      onComplete(ta => ta.voidFold(_ => tryComplete(), fab.completeError));
-      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), fab.completeError));
+      onComplete(ta => ta.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
+      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
       return fab;
     }
 
     private bool cancel(Act<Try<A>> action) {
-      lock (this) {
-        for (var idx = 0; idx < listeners.size; idx++) {
-          if (listeners[idx] == action) {
-            listeners.removeAt(idx);
-            return true;
-          }
+      for (var idx = 0; idx < listeners.size; idx++) {
+        if (listeners[idx] == action) {
+          listeners.removeAt(idx);
+          return true;
         }
-        return false;
       }
+      return false;
     }
   }
 }
