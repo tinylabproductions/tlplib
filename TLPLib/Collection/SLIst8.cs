@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
       if (idx <= 5) s5 = s6;
       if (idx <= 6) s6 = s7;
       if (idx <= STATIC_SIZE - 1) {
-        if (fallback == null || fallback.Count > 0) s7 = default(A);
+        if (fallback == null || fallback.Count == 0) s7 = default(A);
         else {
           s7 = fallback[0];
           fallback.RemoveAt(0);
