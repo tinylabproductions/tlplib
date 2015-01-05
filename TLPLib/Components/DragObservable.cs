@@ -44,6 +44,10 @@ namespace com.tinylabproductions.TLPLib.Components {
     }
 
     static bool isMouseDown() { return Input.touchCount <= 1 && Input.GetMouseButtonDown(MOUSE_BUTTON); }
-    static bool isMouseUp() { return Input.touchCount > 1 || Input.GetMouseButtonUp(MOUSE_BUTTON); }
+
+    static bool isMouseUp() {
+      return Input.touchCount > 1 || Input.GetMouseButtonUp(MOUSE_BUTTON)
+        || Input.GetMouseButton(MOUSE_BUTTON) == false;
+    }
   }
 }
