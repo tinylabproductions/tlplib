@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
       if (idx <= 1) s1 = s2;
       if (idx <= 2) s2 = s3;
       if (idx <= STATIC_SIZE - 1) {
-        if (fallback == null || fallback.Count > 0) s3 = default(A);
+        if (fallback == null || fallback.Count == 0) s3 = default(A);
         else {
           s3 = fallback[0];
           fallback.RemoveAt(0);
