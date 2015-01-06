@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
         }
       }).Start();
 #else
-      Application.logMessageReceived += unityLogs;
+      Application.RegisterLogCallback(unityLogs);
 #endif
     }
 
