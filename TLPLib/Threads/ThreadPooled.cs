@@ -63,8 +63,8 @@ namespace com.tinylabproductions.TLPLib.Threads {
     public static Future<Unit> loopF(int count, Act<int> eachIndex, int chunks = 0) {
       return Future.a<Unit>(promise => loop(
         count, chunks,
-        () => ASync.OnMainThread(() => promise.tryCompleteSuccess(F.unit)), 
-        err => ASync.OnMainThread(() => promise.tryCompleteError(err)), 
+        () => ASync.OnMainThread(() => { promise.tryCompleteSuccess(F.unit); }), 
+        err => ASync.OnMainThread(() => { promise.tryCompleteError(err); }), 
         eachIndex
       ));
     }
