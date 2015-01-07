@@ -106,6 +106,7 @@
     <Compile Include="Concurrent\ASyncHelperBehaviour.cs" />
     <Compile Include="Concurrent\Coroutine.cs" />
     <Compile Include="Concurrent\Future.cs" />
+    <Compile Include="Concurrent\LatestCalculationExecutor.cs" />
     <Compile Include="Concurrent\NextPostRenderBehaviour.cs" />
     <Compile Include="Configuration\Config.cs" />
     <Compile Include="Configuration\ConfigBase.cs" />
