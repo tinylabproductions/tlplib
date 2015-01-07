@@ -14,12 +14,7 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace com.tinylabproductions.TLPLib.Logger {
-  /**
-   * Unity logging is dog slow, so we do our own logging to a file.
-   * 
-   * We also intercept unity logs here and add them to our own.
-   **/
-  public static class Log {
+  public class LogI {
     public const string P_TRACE = "[TRACE]> ";
     public const string P_DEBUG = "[DEBUG]> ";
     public const string P_INFO = "[INFO]> ";
@@ -27,21 +22,51 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public const string P_EXCEPTION = "[ERROR:EXCEPTION]> ";
     public const string P_ERROR = "[ERROR]> ";
 
+    public readonly string scope;
+
+    public LogI() { scope = ""; }
+    public LogI(string scope) { this.scope = scope; }
+
+    [Conditional("TRACE")] public void trace(object o) { file(P_TRACE, o); }
+    [Conditional("DEBUG")] public void debug(object o) { file(P_DEBUG, o); }
+    public void info(object o) { file(P_INFO, o); }
+    public void warn(object o) { file(P_WARN, o); }
+    public void error(Exception ex) { Debug.LogException(ex); }
+    public void error(object o) { Debug.LogError(o); }
+
+    [Conditional("DEBUG")]
+    public void inDebug(Act a) { a(); }
+
+    public void stacktrace() { info(Environment.StackTrace); }
+    public LogI scoped(string addedScope) { return new LogI(
+      scope == "" ? addedScope : scope + ">" + addedScope
+    ); }
+
+    void file(string prefix, object o) { FileLog.log(scopedPrefix(prefix), o); }
+
+    string scopedPrefix(string prefix) { return scope == "" ? prefix : prefix + "[" + scope + "] "; }
+  }
+
+  /**
+   * Unity logging is dog slow, so we do our own logging to a file.
+   * 
+   * We also intercept unity logs here and add them to our own.
+   **/
+  public static class Log {
+    public readonly static LogI logger = new LogI();
+
     [Conditional("TRACE")]
-    public static void trace(object o) { file(P_TRACE, o); }
+    public static void trace(object o) { logger.trace(o); }
     [Conditional("DEBUG")]
-    public static void debug(object o) { file(P_DEBUG, o); }
-    public static void info(object o) { file(P_INFO, o); }
-    public static void warn(object o) { file(P_WARN, o); }
-    public static void error(Exception ex) { Debug.LogException(ex); }
-    public static void error(object o) { Debug.LogError(o); }
-    
+    public static void debug(object o) { logger.debug(o); }
+    public static void info(object o) { logger.info(o); }
+    public static void warn(object o) { logger.warn(o); }
+    public static void error(Exception ex) { logger.error(ex); }
+    public static void error(object o) { logger.error(o); }
+
     [Conditional("DEBUG")]
-    public static void inDebug(Act a) { a(); }
-
-    public static void stacktrace() { info(Environment.StackTrace); }
-
-    public static void file(string prefix, object o) { FileLog.log(prefix, o); }
+    public static void inDebug(Act a) { logger.inDebug(a); }
+    public static void stacktrace() { logger.stacktrace(); }
 
     public static string debugObj<A>(this A obj) { return obj + "(" + obj.GetHashCode() + ")"; }
 
@@ -126,16 +151,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
       switch (type) {
         case LogType.Error:
         case LogType.Assert:
-          prefix = Log.P_ERROR;
+          prefix = LogI.P_ERROR;
           break;
         case LogType.Exception:
-          prefix = Log.P_EXCEPTION;
+          prefix = LogI.P_EXCEPTION;
           break;
         case LogType.Warning:
-          prefix = Log.P_WARN;
+          prefix = LogI.P_WARN;
           break;
         case LogType.Log:
-          prefix = Log.P_INFO;
+          prefix = LogI.P_INFO;
           break;
       }
       log(prefix, String.IsNullOrEmpty(stackTrace) ? message : message + "\n" + stackTrace);
