@@ -171,9 +171,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return f;
     }
 
+    public static Future<Unit> fromCoroutine(Coroutine coroutine) {
+      var f = new FutureImpl<Unit>();
+      ASync.StartCoroutine(coroutineEnum(f, coroutine));
+      return f;
+    }
+
     private static IEnumerator coroutineEnum
     (Promise<Unit> p, IEnumerator enumerator) {
       yield return ASync.StartCoroutine(enumerator);
+      p.completeSuccess(Unit.instance);
+    }
+
+    private static IEnumerator coroutineEnum
+    (Promise<Unit> p, Coroutine coroutine) {
+      yield return coroutine.backing;
       p.completeSuccess(Unit.instance);
     }
 
