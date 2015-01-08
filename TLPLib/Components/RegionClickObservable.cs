@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Annotations;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Iter;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
@@ -25,11 +25,10 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     public IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float time) {
       return regionIndex.withinTimeframe(sequence.Count, time).collect(list =>
-        list.iter().map(t => t._1).zipWithIndex().exists(t => sequence[t._2] != t._1)
+        list.Select(t => t._1).zipWithIndex().Any(t => sequence[t._2] != t._1)
           ? F.none<Unit>() : F.unit.some()
       );
     } 
-
 
     [UsedImplicitly]
     private void Update() {

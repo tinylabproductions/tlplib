@@ -158,10 +158,6 @@
     <Compile Include="Functional\Tuple.cs" />
     <Compile Include="Functional\Unit.cs" />
     <Compile Include="IllegalStateException.cs" />
-    <Compile Include="Iter\Editor\IterExtsTest.cs" />
-    <Compile Include="Iter\Editor\IterTest.cs" />
-    <Compile Include="Iter\Iter.cs" />
-    <Compile Include="Iter\IterExts.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Logger\LogViewer.cs" />
     <Compile Include="Platform\BasePlatform.cs" />

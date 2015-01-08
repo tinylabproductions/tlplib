@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Iter;
 using Smooth.Collections;
 using UnityEngine;
 
@@ -77,11 +75,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      * in returned observable.
      **/
     IObservable<B> flatMap<B>(Fn<A, IObservable<B>> mapper);
-    /** 
-     * Maps events coming from this observable and emits all events contained 
-     * in returned enumerable.
-     **/
-    IObservable<B> flatMap<B, Ctx>(Fn<A, Iter<B, Ctx>> mapper);
     /** Only emits events that pass the predicate. **/
     IObservable<A> filter(Fn<A, bool> predicate);
     /** Only emits events that return some. **/
@@ -344,8 +337,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       try {
         for (var idx = 0; idx < subscriptions.size; idx++) {
           var sub = subscriptions[idx];
-          if (sub.active && sub.subscription.isSubscribed) 
+          if (sub.active && sub.subscription.isSubscribed) {
             sub.observer.push(value);
+          }
         }
       }
       finally {
@@ -378,7 +372,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     { get { return subscriptions.size - pendingRemovals; } }
 
     public ISubscription subscribe(Act<A> onChange) 
-    { return subscribe(onChange, () => { }); }
+    { return subscribe(onChange, () => {}); }
 
     public ISubscription subscribe(Act<A> onChange, Act onFinish) 
     { return subscribe(new Observer<A>(onChange, onFinish)); }
@@ -424,15 +418,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return builder(obs => subscribe(val => {
         foreach (var b in mapper(val)) obs.push(b);
       }));
-    }
-
-    public IObservable<B> flatMap<B, Ctx>(Fn<A, Iter<B, Ctx>> mapper) {
-      return flatMapImpl(mapper, builder<B>());
-    }
-
-    public O flatMapImpl<B, Ctx, O>
-    (Fn<A, Iter<B, Ctx>> mapper, ObserverBuilder<B, O> builder) {
-      return builder(obs => subscribe(val => mapper(val).each(obs.push)));
     }
 
     public IObservable<B> flatMap<B>(Fn<A, IObservable<B>> mapper)

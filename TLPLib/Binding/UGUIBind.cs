@@ -1,8 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using com.tinylabproductions.TLPLib.Iter;
-using System.Collections.Generic;
 ﻿using System.Linq;
 ﻿using System;
 using System.Text.RegularExpressions;
@@ -169,7 +168,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
         foreach (var cb in checkboxes) cb.isOn = false;
       };
       Act<Option<T>, string> check = (v, name) => 
-        checkboxes.hIter().find(cb => cb.name == name).voidFold(
+        checkboxes.find(cb => cb.name == name).voidFold(
           () => {
             throw new Exception(String.Format(
               "Can't find checkbox with name {0} which was mapped from {1}",
@@ -185,17 +184,17 @@ namespace com.tinylabproductions.TLPLib.Binding {
       var subscription = subject.subscribe(v => 
         v.map(mapper).voidFold(uncheckAll, name => check(v, name))
       );
-      var withHandlers = checkboxes.hIter().map(cb => 
+      var withHandlers = checkboxes.Select(cb => 
         F.t(cb, new UnityAction<bool>(selected => {
           if (selected) subject.value = F.some(comapper(cb.name));
         }))
-      );
+      ).ToArray();
 
-      withHandlers.each(t => t._1.onValueChanged.AddListener(t._2));
+      foreach (var t in withHandlers) t._1.onValueChanged.AddListener(t._2);
 
       return new Subscription(() => {
         subscription.unsubscribe();
-        withHandlers.each(t => t._1.onValueChanged.RemoveListener(t._2));
+        foreach (var t in withHandlers) t._1.onValueChanged.RemoveListener(t._2);
       });
     }
 

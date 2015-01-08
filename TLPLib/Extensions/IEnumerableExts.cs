@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -34,6 +35,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static IEnumerable<A> Yield<A>(this A any) {
       yield return any;
+    }
+
+    public static Option<A> find<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
+      foreach (var a in enumerable) if (predicate(a)) return a.some();
+      return F.none<A>();
+    }
+
+    public static IEnumerable<Tpl<A, int>> zipWithIndex<A>(this IEnumerable<A> enumerable) {
+      var idx = 0;
+      foreach (var a in enumerable) {
+        yield return F.t(a, idx);
+        idx += 1;
+      }
     }
   }
 }
