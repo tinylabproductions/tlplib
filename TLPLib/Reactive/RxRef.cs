@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
 
@@ -40,6 +41,19 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static IRxVal<A> a<A>(A value) { return RxRef.a(value); }
+    public static IRxVal<A> cached<A>(A value) { return RxValCache<A>.get(value); }
+  }
+
+  static class RxValCache<A> {
+    static readonly Dictionary<A, IRxVal<A>> staticCache = new Dictionary<A, IRxVal<A>>();
+
+    public static IRxVal<A> get(A value) {
+      return staticCache.get(value).getOrElse(() => {
+        var cached = (IRxVal<A>) RxRef.a(value);
+        staticCache.Add(value, cached);
+        return cached;
+      });
+    }
   }
 
   public static class RxRef {
