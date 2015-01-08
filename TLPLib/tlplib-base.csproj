@@ -167,6 +167,7 @@
     <Compile Include="Pools\Pool.cs" />
     <Compile Include="Pools\PoolWithInitializer.cs" />
     <Compile Include="Pools\SystemPools.cs" />
+    <Compile Include="Profiling\Profile.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Reactive\Editor\IObservableTest.cs" />
     <Compile Include="Reactive\Observable.cs" />
