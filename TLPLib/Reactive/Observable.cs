@@ -335,16 +335,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // Mark a flag to prevent concurrent modification of subscriptions array.
       iterating = true;
       try {
-        Profiler.BeginSample("submit loop");
         for (var idx = 0; idx < subscriptions.size; idx++) {
           var sub = subscriptions[idx];
           if (sub.active && sub.subscription.isSubscribed) {
-            Profiler.BeginSample("loop step " + idx);
             sub.observer.push(value);
-            Profiler.EndSample();
           }
         }
-        Profiler.EndSample();
       }
       finally {
         iterating = false;
