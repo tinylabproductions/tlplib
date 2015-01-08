@@ -335,12 +335,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // Mark a flag to prevent concurrent modification of subscriptions array.
       iterating = true;
       try {
+        Profiler.BeginSample("submit loop");
         for (var idx = 0; idx < subscriptions.size; idx++) {
           var sub = subscriptions[idx];
           if (sub.active && sub.subscription.isSubscribed) {
+            Profiler.BeginSample("loop step " + idx);
             sub.observer.push(value);
+            Profiler.EndSample();
           }
         }
+        Profiler.EndSample();
       }
       finally {
         iterating = false;
@@ -569,14 +573,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         Action notify = () => lastSelf.each(aVal => lastOther.each(bVal =>
           obs.push(F.t(aVal, bVal))
         ));
-        var s1 = subscribe(val => {
-          lastSelf = F.some(val);
-          notify();
-        });
-        var s2 = other.subscribe(val => {
-          lastOther = F.some(val);
-          notify();
-        });
+        var s1 = subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = other.subscribe(val => { lastOther = F.some(val); notify(); });
         return s1.join(s2);
       });
     }
@@ -584,41 +582,81 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public IObservable<Tpl<A, B, C>> zip<B, C>(IObservable<B> o1, IObservable<C> o2)
     { return zipImpl(o1, o2, builder<Tpl<A, B, C>>()); }
 
-    protected O zipImpl<B, C, O>(
-      IObservable<B> o1, IObservable<C> o2, ObserverBuilder<Tpl<A, B, C>, O> builder
-    ) {
-      return builder(obs =>
-        zip(o1).zip(o2).map(t => F.t(t._1._1, t._1._2, t._2)).subscribe(obs)
-      );
+    protected O zipImpl<B, C, O>
+    (IObservable<B> o1, IObservable<C> o2, ObserverBuilder<Tpl<A, B, C>, O> builder) {
+      return builder(obs => {
+        var lastSelf = F.none<A>();
+        var lastO1 = F.none<B>();
+        var lastO2 = F.none<C>();
+        Action notify = () =>
+          lastSelf.each(aVal =>
+          lastO1.each(bVal =>
+          lastO2.each(cVal =>
+            obs.push(F.t(aVal, bVal, cVal))
+          )));
+        var s1 = subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        return s1.join(s2, s3);
+      });
+    }
+
+    protected O zipImpl<B, C, D, O>
+    (IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, ObserverBuilder<Tpl<A, B, C, D>, O> builder) {
+      return builder(obs => {
+        var lastSelf = F.none<A>();
+        var lastO1 = F.none<B>();
+        var lastO2 = F.none<C>();
+        var lastO3 = F.none<D>();
+        Action notify = () => 
+          lastSelf.each(aVal => 
+          lastO1.each(bVal =>
+          lastO2.each(cVal =>
+          lastO3.each(dVal =>
+            obs.push(F.t(aVal, bVal, cVal, dVal))
+          ))));
+        var s1 = subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); });
+        return s1.join(s2, s3, s4);
+      });
     }
 
     public IObservable<Tpl<A, B, C, D>> zip<B, C, D>(
       IObservable<B> o1, IObservable<C> o2, IObservable<D> o3
     ) { return zipImpl(o1, o2, o3, builder<Tpl<A, B, C, D>>()); }
 
-    protected O zipImpl<B, C, D, O>(
-      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, 
-      ObserverBuilder<Tpl<A, B, C, D>, O> builder
+    protected O zipImpl<B, C, D, E, O>(
+      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4, 
+      ObserverBuilder<Tpl<A, B, C, D, E>, O> builder
     ) {
-      return builder(obs =>
-        zip(o1, o2).zip(o3).map(t => F.t(t._1._1, t._1._2, t._1._3, t._2)).
-          subscribe(obs)
-      );
+      return builder(obs => {
+        var lastSelf = F.none<A>();
+        var lastO1 = F.none<B>();
+        var lastO2 = F.none<C>();
+        var lastO3 = F.none<D>();
+        var lastO4 = F.none<E>();
+        Action notify = () => 
+          lastSelf.each(aVal => 
+          lastO1.each(bVal =>
+          lastO2.each(cVal =>
+          lastO3.each(dVal =>
+          lastO4.each(eVal =>
+            obs.push(F.t(aVal, bVal, cVal, dVal, eVal))
+          )))));
+        var s1 = subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); });
+        var s5 = o4.subscribe(val => { lastO4 = F.some(val); notify(); });
+        return s1.join(s2, s3, s4, s5);
+      });
     }
 
     public IObservable<Tpl<A, B, C, D, E>> zip<B, C, D, E>(
       IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
     ) { return zipImpl(o1, o2, o3, o4, builder<Tpl<A, B, C, D, E>>()); }
-
-    protected O zipImpl<B, C, D, E, O>(
-      IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4,
-      ObserverBuilder<Tpl<A, B, C, D, E>, O> builder
-    ) {
-      return builder(obs =>
-        zip(o1, o2, o3).zip(o4).map(t => F.t(t._1._1, t._1._2, t._1._3, t._1._4, t._2)).
-          subscribe(obs)
-      );
-    }
 
     public IObservable<Tpl<Option<A>, A>> changesOpt() {
       return changesOptImpl(builder<Tpl<Option<A>, A>>());
