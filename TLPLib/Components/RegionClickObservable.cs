@@ -3,14 +3,16 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Annotations;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.InputUtils;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
+  /* Divides screen into X * Y grid and emits new region index when a pointer 
+   * moves between different regions. */
   public class RegionClickObservable : MonoBehaviour {
     private readonly Subject<int> _regionIndex = new Subject<int>();
     public IObservable<int> regionIndex { get { return _regionIndex; } }
-
 
     private int lastIndex = -1;
 
@@ -23,8 +25,9 @@ namespace com.tinylabproductions.TLPLib.Components {
       return this;
     }
 
-    public IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float time) {
-      return regionIndex.withinTimeframe(sequence.Count, time).collect(list =>
+    /* Emits event when a particular region index sequence is executed within X seconds */
+    public IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float timeS) {
+      return regionIndex.withinTimeframe(sequence.Count, timeS).collect(list =>
         list.Select(t => t._1).zipWithIndex().Any(t => sequence[t._2] != t._1)
           ? F.none<Unit>() : F.unit.some()
       );
@@ -32,8 +35,8 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     [UsedImplicitly]
     private void Update() {
-      if (Input.GetMouseButton(0)) {
-        var mp = (Vector2) Input.mousePosition;
+      if (Pointer.held) {
+        var mp = Pointer.currentPosition;
         int gridId = 0;
         gridId += Mathf.FloorToInt(mp.x / (Screen.width / gridWidth));
         gridId += gridWidth * Mathf.FloorToInt(mp.y / (Screen.height / gridHeight));

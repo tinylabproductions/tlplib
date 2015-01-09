@@ -1,47 +1,45 @@
-﻿using com.tinylabproductions.TLPLib.Annotations;
-using com.tinylabproductions.TLPLib.Concurrent;
+﻿using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.Forwarders {
-  public abstract class OnMouseClickBase : MonoBehaviour {
+  public abstract class OnPointerClickBase : MonoBehaviour {
     private bool uguiBlocks;
     private Option<Vector3> downPosition;
-    protected new Collider collider;
 
     protected void init(bool uguiBlocks) {
+      PointerHandlerBehaviour.init();
       this.uguiBlocks = uguiBlocks;
-      collider = GetComponent<Collider>();
     }
 
-    [UsedImplicitly]
-    private void OnMouseDown() {
-      if (uguiBlocks && EventSystem.current.IsPointerOverGameObject())
+    public void onPointerDown(Vector3 hitPoint) {
+      if (uguiBlocks && (
+        // Mouse
+        EventSystem.current.IsPointerOverGameObject(-1) ||
+        // Touch 0 - will not exist in EventSystem in onPointerUp.
+        (Input.touchCount >= 1 && EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+      )) {
+        Log.trace("ugui blocked onPointerDown @ " + hitPoint);
         return;
+      }
 
-      downPosition = F.some(Input.mousePosition);
-
-      ASync.EveryFrame(this, () => {
-        if (downPosition.isEmpty) return false;
-        var startPos = downPosition.get;
-        var diff = Input.mousePosition - startPos;
-        if (diff.sqrMagnitude >= DragObservable.dragThresholdSqr) {
-          downPosition = F.none<Vector3>();
-          return false;
-        }
-        return true;
-      });
+      downPosition = F.some(Camera.main.WorldToScreenPoint(hitPoint));
     }
 
-    [UsedImplicitly]
-    private void OnMouseUp() {
+    public void onPointerUp(Vector3 hitPoint) {
       if (downPosition.isEmpty) return;
-      if (uguiBlocks && EventSystem.current.IsPointerOverGameObject()) return;
-      mouseClick();
+
+      var startPos = downPosition.get;
+      var diff = Camera.main.WorldToScreenPoint(hitPoint) - startPos;
+      if (diff.sqrMagnitude < DragObservable.dragThresholdSqr) pointerClick(hitPoint);
+
       downPosition = F.none<Vector3>();
     }
 
-    protected abstract void mouseClick();
+    protected abstract void pointerClick(Vector3 hitPoint);
   }
 }

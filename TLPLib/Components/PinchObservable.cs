@@ -1,7 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Annotations;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
-using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {

@@ -87,12 +87,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return go.AddComponent<OnMouseClickForwarder>().init(uguiBlocks).onMouseClick;
     }
 
-    public static IObservable<Vector3> click(
-      this GameObject go, Camera camera, float raycastDistance = 1000,
-      bool uguiBlocks = true
+    public static IObservable<Vector3> clickCoords(
+      this GameObject go, bool uguiBlocks = true
     ) {
-      return go.AddComponent<OnMouseClickCoordsForwarder>().
-        init(uguiBlocks, camera, raycastDistance).onMouseClick;
+      return go.AddComponent<OnMouseClickCoordsForwarder>().init(uguiBlocks).onMouseClick;
     }
 
     public static IObservable<Unit> doubleClick(

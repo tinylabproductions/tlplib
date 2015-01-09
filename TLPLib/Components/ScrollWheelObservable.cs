@@ -1,5 +1,4 @@
 ﻿using com.tinylabproductions.TLPLib.Annotations;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
@@ -11,9 +10,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     [UsedImplicitly]
     private void Update() {
       var cur = Input.mouseScrollDelta;
-      if (cur.x != 0 || cur.y != 0) {
-        _scrollDelta.push(cur);
-      }
+      if (cur.x != 0 || cur.y != 0) _scrollDelta.push(cur);
     }
   }
 }

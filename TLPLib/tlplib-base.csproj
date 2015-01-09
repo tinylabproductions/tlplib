@@ -88,6 +88,7 @@
     <Compile Include="Comparisons\FuncComparer.cs" />
     <Compile Include="Comparisons\FuncEqComparer.cs" />
     <Compile Include="Comparisons\IComparableComparer.cs" />
+    <Compile Include="Components\PointerHandlerBehaviour.cs" />
     <Compile Include="Components\DestroyAfter.cs" />
     <Compile Include="Components\Forwarders\UIClickForwarder.cs" />
     <Compile Include="Components\RegionClickObservable.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="Functional\Tuple.cs" />
     <Compile Include="Functional\Unit.cs" />
     <Compile Include="IllegalStateException.cs" />
+    <Compile Include="InputUtils\Pointer.cs" />
     <Compile Include="Logger\Log.cs" />
     <Compile Include="Logger\LogViewer.cs" />
     <Compile Include="Platform\BasePlatform.cs" />
@@ -178,6 +180,7 @@
     <Compile Include="Reactive\RxRef.cs" />
     <Compile Include="Reactive\Subjects.cs" />
     <Compile Include="Reactive\Subscription.cs" />
+    <Compile Include="Reflection\Reflect.cs" />
     <Compile Include="SFCollections\Comparer.cs" />
     <Compile Include="SFCollections\CreateWithComparer.cs" />
     <Compile Include="SFCollections\EqComparer.cs" />

@@ -5,7 +5,7 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Binding;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.InputUtils;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -20,28 +20,30 @@ namespace com.tinylabproductions.TLPLib.Logger {
     int linesToShow = 20;
     int leftPadding;
 
-    Future<Unit> onClose;
+    readonly Future<Unit> onClose;
 
-    static bool isActive;
-    public static void instantiate() {
-      if (isActive) return;
-      isActive = true;
-      new LogViewer(new StreamReader(
-        new FileStream(Log.fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-      )).onClose.onSuccess(_ => isActive = false);
+    static LogViewer currentInstance;
+
+    public static LogViewer instantiate() {
+      if (currentInstance == null) {
+        currentInstance = new LogViewer(new StreamReader(
+          new FileStream(Log.fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+        ));
+        currentInstance.onClose.onSuccess(_ => currentInstance = null);
+      }
+      return currentInstance;
     }
 
     public LogViewer(StreamReader stream) {
-
       var binding = 
-        (Object.Instantiate(Resources.Load("TLPLib/Log Canvas")) as GameObject)
+        ((GameObject) Object.Instantiate(Resources.Load("TLPLib/Log Canvas")))
         .GetComponent<LogViewerBinding>();
 
       text = binding.text;
       binding.prev    .onClick.AddListener(() => { curLine -= linesToShow; refresh(); });
       binding.next    .onClick.AddListener(() => { curLine += linesToShow; refresh(); });
       binding.first   .onClick.AddListener(() => { curLine = 0;            refresh(); });
-      binding.last    .onClick.AddListener(() => { curLine = lines.Count;  refresh(); });
+      binding.last    .onClick.AddListener(moveToLast);
       binding.zoomIn  .onClick.AddListener(() => { linesToShow -= 3;       refresh(); });
       binding.zoomOut .onClick.AddListener(() => { linesToShow += 3;       refresh(); });
 
@@ -55,10 +57,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
       var startPos = new Vector2();
       int startCurLine = 0, startLeftPadding = 0;
       ASync.EveryFrame(binding.gameObject, () => {
-        var mp = (Vector2) Input.mousePosition;
+        var mp = Pointer.currentPosition;
         var delta = mp - startPos;
         if (scrollState == 0) { // idle
-          if (Input.GetMouseButtonDown(0)) {
+          if (Pointer.isDown) {
             scrollState = 1;
             startPos = mp;
             startCurLine = curLine;
@@ -66,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
           }
         }
         else if (scrollState == 1) { // waiting threshold
-          if (!Input.GetMouseButton(0)) scrollState = 0;
+          if (! Pointer.held) scrollState = 0;
           if (delta.sqrMagnitude > 10 * 10) {
             if (Math.Abs(delta.y) > Math.Abs(delta.x)) {
               scrollState = 2; // vertical
@@ -83,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
           else {
             leftPadding = startLeftPadding - Mathf.RoundToInt(delta.x / 5);
           }
-          if (!Input.GetMouseButton(0)) scrollState = 0;
+          if (! Pointer.held) scrollState = 0;
           refresh();
         }
         if (Input.mouseScrollDelta.y != 0) {
@@ -98,6 +100,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
       refresh();
     }
+
+    public void moveToLast() { curLine = lines.Count; refresh(); }
 
     void refresh() {
       curLine = Mathf.Clamp(curLine, 0, lines.Count - linesToShow);
