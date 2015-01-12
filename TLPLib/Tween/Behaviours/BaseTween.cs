@@ -4,7 +4,8 @@ using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
-  abstract class BaseTween : MonoBehaviour {
+  public abstract class BaseTween : MonoBehaviour {
+    public bool playOnStart = true;
     public float delay;
     public float duration = 1;
     public bool isFrom;
@@ -13,9 +14,8 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
     public GoLoopType loopType;
     GoTween tween;
 
-    [UsedImplicitly] void Start() { runTween(); }
-
-    private void runTween() {
+    [UsedImplicitly]
+    void Awake() {
       tween = new GoTween(
         transform, 
         duration,
@@ -26,7 +26,26 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
           setIterations(iterations, loopType).
           tap(_ => _.isFrom = isFrom)
         ));
+      if (!playOnStart) {
+        tween.autoRemoveOnComplete = false;
+      }
+      tween.pause();
       Go.addTween(tween);
+    }
+
+    [UsedImplicitly]
+    void Start() {
+      if (playOnStart) {
+        play();
+      }
+    }
+
+    public void play() {
+      tween.play();
+    }
+
+    public void restart() {
+      tween.restart();
     }
 
     public abstract GoTweenConfig config(GoTweenConfig cfg);
