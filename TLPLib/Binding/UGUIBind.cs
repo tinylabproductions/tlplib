@@ -222,7 +222,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     ) {
       return subject.bind(
         mapper, comapper,
-        text => control.textComponent.text = text,
+        text => control.text = text,
         handler => control.onValueChange.AddListener(handler),
         handler => control.onValueChange.RemoveListener(handler)
       );
