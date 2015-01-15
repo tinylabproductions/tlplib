@@ -194,8 +194,6 @@
     <Compile Include="Threads\OnMainThread.cs" />
     <Compile Include="Threads\OnMainThreadBehaviour.cs" />
     <Compile Include="Threads\ThreadPooled.cs" />
-    <Compile Include="Tween\Behaviours\TweenChain.cs" />
-    <Compile Include="Tween\Behaviours\TweenCompleteEvent.cs" />
     <Compile Include="Tween\Behaviours\ColorTween.cs" />
     <Compile Include="Tween\Behaviours\PositionTween.cs" />
     <Compile Include="Tween\Behaviours\RotationTween.cs" />
