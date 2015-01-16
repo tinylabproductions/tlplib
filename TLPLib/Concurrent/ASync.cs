@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -123,17 +122,32 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(Fn<bool> f) {
-      return EveryFrame(behaviour, f);
+      return EveryYieldInstruction(behaviour, null, f);
     }
 
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(GameObject go, Fn<bool> f) {
-      return EveryFrame(coroutineHelper(go), f);
+      return EveryYieldInstruction(coroutineHelper(go), null, f);
     }
 
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(MonoBehaviour behaviour, Fn<bool> f) {
-      var enumerator = EveryWaitEnumerator(null, f);
+      return EveryYieldInstruction(behaviour, null, f);
+    }
+
+    /* Do thing every yield instruction until f returns false. */
+    public static Coroutine EveryYieldInstruction(YieldInstruction wait, Fn<bool> f) {
+      return EveryYieldInstruction(behaviour, wait, f);
+    }
+
+    /* Do thing every yield instruction until f returns false. */
+    public static Coroutine EveryYieldInstruction(GameObject go, YieldInstruction wait, Fn<bool> f) {
+      return EveryYieldInstruction(coroutineHelper(go), wait, f);
+    }
+
+    /* Do thing every yield instruction until f returns false. */
+    public static Coroutine EveryYieldInstruction(MonoBehaviour behaviour, YieldInstruction wait, Fn<bool> f) {
+      var enumerator = EveryWaitEnumerator(wait, f);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -149,8 +163,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
-      var enumerator = EveryWaitEnumerator(new WaitForSeconds(seconds), f);
-      return new Coroutine(behaviour, enumerator);
+      return EveryYieldInstruction(behaviour, new WaitForSeconds(seconds), f);
     }
 
     /* Do async WWW request. Completes with WWWException if WWW fails. */
@@ -180,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
-    public static IEnumerator EveryWaitEnumerator(WaitForSeconds wait, Fn<bool> f) {
+    public static IEnumerator EveryWaitEnumerator(YieldInstruction wait, Fn<bool> f) {
       while (f()) yield return wait;
     }
 
@@ -189,6 +202,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static IObservable<Unit> onAppQuit
       { get { return behaviour.onQuit; } }
+
+    public static IObservable<Unit> onLateUpdate 
+      { get { return behaviour.onLateUpdate; } }
 
     /**
      * Takes a function that transforms an element into a future and 

@@ -20,12 +20,19 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public IObservable<Unit> onQuit { get { return _onQuit; } }
     private readonly Subject<Unit> _onQuit = new Subject<Unit>();
 
+    public IObservable<Unit> onLateUpdate { get { return _onLateUpdate; } }
+    private readonly Subject<Unit> _onLateUpdate = new Subject<Unit>();
+
     internal void Update() {
       lock (mainThreadActions) {
         if (mainThreadActions.isEmpty()) return;
         foreach (var action in mainThreadActions) action();
         mainThreadActions.Clear();
       }
+    }
+
+    internal void LateUpdate() {
+      _onLateUpdate.push(F.unit);
     }
 
     internal void OnApplicationPause(bool paused) {
