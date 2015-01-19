@@ -1,5 +1,4 @@
-﻿using System;
-using com.tinylabproductions.TLPLib.Annotations;
+﻿using com.tinylabproductions.TLPLib.Annotations;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 
@@ -12,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
     public int iterations = 1;
     public GoEaseType easing;
     public GoLoopType loopType;
-    GoTween tween;
+    public GoTween tween;
 
     [UsedImplicitly]
     void Awake() {
@@ -46,6 +45,14 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
 
     public void restart() {
       tween.restart();
+    }
+
+    public void playForward() {
+      tween.playForward();
+    }
+
+    public void playBackwards() {
+      tween.playBackwards();
     }
 
     public abstract GoTweenConfig config(GoTweenConfig cfg);
