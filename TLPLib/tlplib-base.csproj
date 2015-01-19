@@ -120,6 +120,7 @@
     <Compile Include="Data\MarkovChain.cs" />
     <Compile Include="Data\Point2D.cs" />
     <Compile Include="Data\PointBounds.cs" />
+    <Compile Include="Data\PrefValue.cs" />
     <Compile Include="Data\Range.cs" />
     <Compile Include="Data\Ref.cs" />
     <Compile Include="Data\Size2.cs" />
