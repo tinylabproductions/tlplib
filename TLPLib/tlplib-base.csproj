@@ -149,6 +149,7 @@
     <Compile Include="Extensions\Texture2DExts.cs" />
     <Compile Include="Extensions\TimeSpanExts.cs" />
     <Compile Include="Extensions\TransformExts.cs" />
+    <Compile Include="Extensions\UIExts.cs" />
     <Compile Include="Extensions\VectorExts.cs" />
     <Compile Include="Formats\SimpleJSON.cs" />
     <Compile Include="Functional\Either.cs" />
