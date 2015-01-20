@@ -29,6 +29,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       public A write(A value) {
         writer(key, value); 
         cache = value;
+        PlayerPrefs.Save();
         return value;
       }
     }
