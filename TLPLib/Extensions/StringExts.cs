@@ -37,5 +37,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         () => "cannot parse as bool: '" + str + "'", output
       );
     }
+
+    public static string limitLength(this string str, int length, string cutoff="...") 
+    { return str.Length <= length ? str : str.Substring(0, length) + cutoff; }
   }
 }
