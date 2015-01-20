@@ -89,8 +89,8 @@ namespace com.tinylabproductions.TLPLib.Data {
           var sb = new StringBuilder();
           var idx = 0;
           Act<string> storer = value => {
-            sb.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(value)));
             if (idx != 0) sb.Append('|');
+            sb.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(value)));
             idx++;
           };
           store(a, storer);
