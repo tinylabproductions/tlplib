@@ -49,5 +49,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         idx += 1;
       }
     }
+
+    public static Option<B> collectFirst<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+    ) {
+      foreach (var a in enumerable) {
+        var opt = collector(a);
+        if (opt.isDefined) return opt;
+      }
+      return F.none<B>();
+    }
   }
 }
