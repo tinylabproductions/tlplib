@@ -69,6 +69,9 @@
     <Compile Include="Collection\Editor\CarouselEmitterTest.cs" />
     <Compile Include="Collection\Editor\RandomListTest.cs" />
     <Compile Include="Collection\NonEmptyROC.cs" />
+    <Compile Include="Collection\PriorityQueue\HeapPriorityQueue.cs" />
+    <Compile Include="Collection\PriorityQueue\IPriorityQueue.cs" />
+    <Compile Include="Collection\PriorityQueue\PriorityQueueNode.cs" />
     <Compile Include="Collection\RandomList.cs" />
     <Compile Include="Collection\ReadOnlyException.cs" />
     <Compile Include="Collection\ReadOnlyLinkedList.cs" />
