@@ -162,6 +162,7 @@
     <Compile Include="Functional\Lazy.cs" />
     <Compile Include="Functional\Matching\Match.cs" />
     <Compile Include="Functional\Option.cs" />
+    <Compile Include="Functional\These.cs" />
     <Compile Include="Functional\Try.cs" />
     <Compile Include="Functional\Tuple.cs" />
     <Compile Include="Functional\Unit.cs" />
