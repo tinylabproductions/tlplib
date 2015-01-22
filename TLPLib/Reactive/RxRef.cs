@@ -16,6 +16,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IRxVal<Tpl<A, B, C>> zip<B, C>(IRxVal<B> ref2, IRxVal<C> ref3);
     IRxVal<Tpl<A, B, C, D>> zip<B, C, D>(IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4);
     IRxVal<Tpl<A, B, C, D, E>> zip<B, C, D, E>(IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4, IRxVal<E> ref5);
+    IRxVal<Tpl<A, A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      IRxVal<A1> o1, IRxVal<A2> o2, IRxVal<A3> o3, IRxVal<A4> o4,
+      IRxVal<A5> o5
+    );
   }
 
   /**
@@ -42,6 +46,26 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxVal<A> a<A>(A value) { return RxRef.a(value); }
     public static IRxVal<A> cached<A>(A value) { return RxValCache<A>.get(value); }
+
+    public static IRxVal<Option<B>> optFlatMap<A, B>(
+      this IRxVal<Option<A>> source, Fn<A, IRxVal<Option<B>>> extractor
+    ) {
+      return source.flatMap(aOpt =>
+        aOpt.map(extractor).getOrElse(cached(F.none<B>()))
+      );
+    }
+
+    public static IRxVal<Option<B>> optFlatMap<A, B>(
+      this IRxVal<Option<A>> source, Fn<A, Option<IRxVal<Option<B>>>> extractor
+    ) {
+      return source.flatMap(aOpt =>
+        aOpt.flatMap(extractor).getOrElse(cached(F.none<B>()))
+      );
+    }
+
+    public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) {
+      return rxOpt.fold(cached(F.none<A>()), val => val.map(a => a.some()));
+    }
   }
 
   static class RxValCache<A> {
@@ -111,6 +135,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) { return zipImpl(
       ref2, ref3, ref4, ref5, 
       RxVal.builder(F.t(value, ref2.value, ref3.value, ref4.value, ref5.value))
+    ); }
+
+    public IRxVal<Tpl<A, A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      IRxVal<A1> ref2, IRxVal<A2> ref3, IRxVal<A3> ref4, IRxVal<A4> ref5, IRxVal<A5> ref6
+    ) { return zipImpl(
+      ref2, ref3, ref4, ref5, ref6,
+      RxVal.builder(F.t(value, ref2.value, ref3.value, ref4.value, ref5.value, ref6.value))
     ); }
   }
 

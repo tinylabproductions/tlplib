@@ -100,6 +100,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       RxVal.builder(F.t(value, ref2.value, ref3.value, ref4.value, ref5.value))
     ); }
 
+    public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      IRxVal<A1> ref2, IRxVal<A2> ref3, IRxVal<A3> ref4, IRxVal<A4> ref5, IRxVal<A5> ref6
+    ) { return zipImpl(
+      ref2, ref3, ref4, ref5, ref6,
+      RxVal.builder(F.t(value, ref2.value, ref3.value, ref4.value, ref5.value, ref6.value))
+    ); }
+
     private void submit() { submit(value); }
   }
 }

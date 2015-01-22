@@ -119,6 +119,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<Tpl<A, B, C, D, E>> zip<B, C, D, E>(
       IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
     );
+    IObservable<Tpl<A, A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4,
+      IObservable<A5> o5
+    );
     // Returns pairs of (old, new) values when they are changing.
     // If there was no events before, old may be None.
     IObservable<Tpl<Option<A>, A>> changesOpt();
@@ -653,6 +657,40 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public IObservable<Tpl<A, B, C, D, E>> zip<B, C, D, E>(
       IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
     ) { return zipImpl(o1, o2, o3, o4, builder<Tpl<A, B, C, D, E>>()); }
+
+    protected O zipImpl<A1, A2, A3, A4, A5, O>(
+      IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5,
+      ObserverBuilder<Tpl<A, A1, A2, A3, A4, A5>, O> builder
+    ) {
+      return builder(obs => {
+        var lastSelf = F.none<A>();
+        var lastO1 = F.none<A1>();
+        var lastO2 = F.none<A2>();
+        var lastO3 = F.none<A3>();
+        var lastO4 = F.none<A4>();
+        var lastO5 = F.none<A5>();
+        Action notify = () => 
+          lastSelf.each(aVal => 
+          lastO1.each(a1Val =>
+          lastO2.each(a2Val =>
+          lastO3.each(a3Val =>
+          lastO4.each(a4Val =>
+          lastO5.each(a5Val =>
+            obs.push(F.t(aVal, a1Val, a2Val, a3Val, a4Val, a5Val))
+          ))))));
+        var s1 = subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); });
+        var s5 = o4.subscribe(val => { lastO4 = F.some(val); notify(); });
+        var s6 = o5.subscribe(val => { lastO5 = F.some(val); notify(); });
+        return s1.join(s2, s3, s4, s5, s6);
+      });
+    }
+
+    public IObservable<Tpl<A, A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5
+    ) { return zipImpl(o1, o2, o3, o4, o5, builder<Tpl<A, A1, A2, A3, A4, A5>>()); }
 
     public IObservable<Tpl<Option<A>, A>> changesOpt() {
       return changesOptImpl(builder<Tpl<Option<A>, A>>());
