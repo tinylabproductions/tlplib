@@ -129,6 +129,7 @@
     <Compile Include="Data\Ref.cs" />
     <Compile Include="Data\Size2.cs" />
     <Compile Include="Data\ValueWithStorage.cs" />
+    <Compile Include="Data\Ver.cs" />
     <Compile Include="Dispose\Disposable.cs" />
     <Compile Include="Dispose\DisposalQueue.cs" />
     <Compile Include="Dispose\SmoothDisposer.cs" />
