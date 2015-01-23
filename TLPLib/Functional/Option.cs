@@ -42,7 +42,7 @@ public struct Option<A> {
 
   public void onNone(Act action) { if (! isSome) action(); }
 
-  public Option<A> tap(Act<A> action) {
+  public Option<A> eachR(Act<A> action) {
     if (isSome) action(value);
     return this;
   }

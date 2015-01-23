@@ -12,6 +12,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     A value { get; }
     new IRxVal<B> map<B>(Fn<A, B> mapper);
     IRxVal<B> flatMap<B>(Fn<A, IRxVal<B>> mapper);
+    IRxVal<A> filter(Fn<A, bool> predicate, Fn<A> onFilter);
+    IRxVal<A> filter(Fn<A, bool> predicate, A onFilter);
     IRxVal<Tpl<A, B>> zip<B>(IRxVal<B> ref2);
     IRxVal<Tpl<A, B, C>> zip<B, C>(IRxVal<B> ref2, IRxVal<C> ref3);
     IRxVal<Tpl<A, B, C, D>> zip<B, C, D>(IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4);
@@ -32,20 +34,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IRxVal<A> asVal { get; }
   }
 
-  /* RxRef for mutable values. Cannot be changed, because the object itself is mutable. */
-  public interface IRxMutRef<A> : IRxVal<A> {
-    /* Execute change function and notify subscribers about the change. */
-    A change(Act<A> change);
-    /* Notify subscribers that the value inside has mutated. */
-    void changed();
-  }
-
   public static class RxVal {
     public static ObserverBuilder<Elem, IRxVal<Elem>> builder<Elem>(Elem value) {
       return RxRef.builder(value);
     }
 
-    public static IRxVal<A> a<A>(A value) { return RxRef.a(value); }
+    public static IRxVal<A> a<A>(
+      A value, Option<IEqualityComparer<A>> comparer = new Option<IEqualityComparer<A>>()
+    ) { return RxRef.a(value, comparer); }
+
+    public static IRxVal<A> a<A>(
+      A value, Fn<IObserver<A>, ISubscription> subscribeFn, 
+      Option<IEqualityComparer<A>> comparer = new Option<IEqualityComparer<A>>()
+    ) {
+      return RxRef.a(value, subscribeFn, comparer);
+    }
+
     public static IRxVal<A> cached<A>(A value) { return RxValCache<A>.get(value); }
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
@@ -83,19 +87,30 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   public static class RxRef {
     public static ObserverBuilder<Elem, IRxRef<Elem>> builder<Elem>(Elem value) {
-      return subscriptionFn => {
-        var rxRef = a(value);
-        subscriptionFn(new Observer<Elem>(v => rxRef.value = v));
-        return rxRef;
-      };
+      return subscribeFn => a(value, subscribeFn);
     }
 
-    public static IRxRef<A> a<A>(A value) {
-      return new RxRef<A>(value);
-    }
-
-    public static IRxRef<A> a<A>(A value, IEqualityComparer<A> comparer) {
+    public static IRxRef<A> a<A>(
+      A value, Option<IEqualityComparer<A>> comparer = new Option<IEqualityComparer<A>>()
+    ) {
       return new RxRef<A>(value, comparer);
+    }
+
+    public static IRxRef<A> a<A>(
+      A value, Fn<IObserver<A>, ISubscription> subscribeFn,
+      Option<IEqualityComparer<A>> comparer = new Option<IEqualityComparer<A>>()
+    ) {
+      return new RxRef<A>(value, subscribeFn, comparer);
+    }
+  }
+
+  public static class RxRefBase {
+    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, Fn<A> onFiltered) {
+      return a => predicate(a) ? a : onFiltered();
+    }
+
+    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, A onFiltered) {
+      return a => predicate(a) ? a : onFiltered;
     }
   }
 
@@ -103,7 +118,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     protected A _value;
     public A value { get { return _value; } }
 
-    protected RxRefBase(A initialValue) { _value = initialValue; }
+    protected RxRefBase(A initialValue) : base() { _value = initialValue; }
+    protected RxRefBase(
+      A initialValue, Fn<IObserver<A>, ISubscription> subscribeFn
+    ) : base(subscribeFn) { _value = initialValue; }
 
     public new IRxVal<B> map<B>(Fn<A, B> mapper) {
       return mapImpl(mapper, RxVal.builder(mapper(value)));
@@ -111,6 +129,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public IRxVal<B> flatMap<B>(Fn<A, IRxVal<B>> mapper) {
       return flatMapImpl(mapper, RxVal.builder(mapper(value).value));
+    }
+
+    public IRxVal<A> filter(Fn<A, bool> predicate, Fn<A> onFiltered) {
+      return map(RxRefBase.filterMapper(predicate, onFiltered));
+    }
+
+    public IRxVal<A> filter(Fn<A, bool> predicate, A onFiltered) {
+      return map(RxRefBase.filterMapper(predicate, onFiltered));
     }
 
     public override ISubscription subscribe(IObserver<A> observer) {
@@ -148,14 +174,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   /**
    * Mutable reference which is also an observable.
-   * 
-   * Notes:
-   * 
-   * * Beware that RxRef#value setter does not change the value immediately 
-   *   if you do it from a subscription to this observable. The value is only
-   *   changed when the value broadcast for current subscriber list is complete.
-   *   TODO: test this
-   * 
    **/
   public class RxRef<A> : RxRefBase<A>, IRxRef<A> {
     private static readonly IEqualityComparer<A> defaultComparer = EqComparer<A>.Default;
@@ -163,17 +181,28 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public new A value { 
       get { return _value; }
-      set { if (! comparer.Equals(_value, value)) submit(value); }
+      set { submit(value); }
     }
 
-    public RxRef(A initialValue) : base(initialValue) {
-      comparer = defaultComparer;
-      // Assign values to this ref when the subscribers get them.
-      subscribe(a => _value = a);
+    public RxRef(
+      A initialValue, Option<IEqualityComparer<A>> comparer=new Option<IEqualityComparer<A>>()
+    ) : base(initialValue) {
+      this.comparer = comparer.getOrElse(defaultComparer);
     }
 
-    public RxRef(A initialValue, IEqualityComparer<A> comparer) : base(initialValue) 
-    { this.comparer = comparer; }
+    public RxRef(
+      A initialValue, Fn<IObserver<A>, ISubscription> subscribeFn,
+      Option<IEqualityComparer<A>> comparer = new Option<IEqualityComparer<A>>()
+    ) : base(initialValue, subscribeFn) {
+      this.comparer = comparer.getOrElse(defaultComparer);
+    }
+
+    protected override void submit(A value) {
+      if (!comparer.Equals(_value, value)) {
+        _value = value;
+        base.submit(value);
+      }
+    }
 
     public IRxRef<B> comap<B>(Fn<A, B> mapper, Fn<B, A> comapper) {
       var bRef = mapImpl(mapper, RxRef.builder(mapper(value)));
@@ -182,21 +211,5 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public IRxVal<A> asVal { get { return this; } }
-  }
-
-  public class RxMutRef {
-    public static IRxMutRef<A> a<A>(A value) { return new RxMutRef<A>(value); }
-  }
-
-  public class RxMutRef<A> : RxRefBase<A>, IRxMutRef<A> {
-    public RxMutRef(A initialValue) : base(initialValue) {}
-
-    public A change(Act<A> change) {
-      change(_value);
-      changed();
-      return _value;
-    }
-
-    public void changed() { submit(_value); }
   }
 }

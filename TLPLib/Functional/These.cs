@@ -32,8 +32,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public bool isThat { get { return state == State.B; } }
     public bool isBoth { get { return state == State.BOTH; } }
 
-    public Option<A> thisValue { get { return isThis.opt(a); } }
-    public Option<B> thatValue { get { return isThat.opt(b); } }
+    public Option<A> thisValue { get { return (isThis || isBoth).opt(a); } }
+    public Option<B> thatValue { get { return (isThat || isBoth).opt(b); } }
     public Option<Tpl<A, B>> bothValue { get { return isBoth.opt(F.t(a, b)); } }
 
     public override string ToString() {
@@ -42,19 +42,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
                     : "Both(" + a + ", " + b + ")";
     }
 
-    public These<C, B> flatMapThis<C>(Fn<A, These<C, B>> mapper) {
+    public These<AA, B> flatMapThis<AA>(Fn<A, These<AA, B>> mapper) {
       switch (state) {
         case State.A: 
         case State.BOTH: 
           return mapper(a);
-        case State.B: return F.that<C, B>(b);
+        case State.B: return F.that<AA, B>(b);
       }
       throw new IllegalStateException();
     }
 
-    public These<A, C> flatMapThat<C>(Fn<B, These<A, C>> mapper) {
+    public These<A, BB> flatMapThat<BB>(Fn<B, These<A, BB>> mapper) {
       switch (state) {
-        case State.A: return F.thiz<A, C>(a);
+        case State.A: return F.thiz<A, BB>(a);
         case State.B: 
         case State.BOTH: 
           return mapper(b);
@@ -62,20 +62,29 @@ namespace com.tinylabproductions.TLPLib.Functional {
       throw new IllegalStateException();
     }
 
-    public These<C, B> mapThis<C>(Fn<A, C> mapper) {
+    public These<AA, B> mapThis<AA>(Fn<A, AA> mapper) {
       switch (state) {
-        case State.A: return F.thiz<C, B>(mapper(a));
-        case State.B: return F.that<C, B>(b);
+        case State.A: return F.thiz<AA, B>(mapper(a));
+        case State.B: return F.that<AA, B>(b);
         case State.BOTH: return F.both(mapper(a), b);
       }
       throw new IllegalStateException();
     }
 
-    public These<A, C> mapThat<C>(Fn<B, C> mapper) {
+    public These<A, BB> mapThat<BB>(Fn<B, BB> mapper) {
       switch (state) {
-        case State.A: return F.thiz<A, C>(a);
-        case State.B: return F.that<A, C>(mapper(b));
+        case State.A: return F.thiz<A, BB>(a);
+        case State.B: return F.that<A, BB>(mapper(b));
         case State.BOTH: return F.both(a, mapper(b));
+      }
+      throw new IllegalStateException();
+    }
+
+    public These<AA, BB> map<AA, BB>(Fn<A, AA> aMapper, Fn<B, BB> bMapper) {
+      switch (state) {
+        case State.A: return F.thiz<AA, BB>(aMapper(a));
+        case State.B: return F.that<AA, BB>(bMapper(b));
+        case State.BOTH: return F.both(aMapper(a), bMapper(b));
       }
       throw new IllegalStateException();
     }

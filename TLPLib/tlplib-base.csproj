@@ -40,7 +40,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -129,6 +129,8 @@
     <Compile Include="Data\Ref.cs" />
     <Compile Include="Data\Size2.cs" />
     <Compile Include="Data\ValueWithStorage.cs" />
+    <Compile Include="Data\Ver.cs" />
+    <Compile Include="Data\WeakRef.cs" />
     <Compile Include="Dispose\Disposable.cs" />
     <Compile Include="Dispose\DisposalQueue.cs" />
     <Compile Include="Dispose\SmoothDisposer.cs" />

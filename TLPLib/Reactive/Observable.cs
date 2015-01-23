@@ -5,6 +5,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Collections;
 using UnityEngine;
 
@@ -97,6 +98,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      * events when either observable emits them.
      **/
     IObservable<A> join<B>(IObservable<B> other) where B : A;
+    /* Joins events, but discards the values. */
+    IObservable<Unit> joinDiscard<X>(IObservable<X> other);
     /** 
      * Only emits an event if other event was not emmited in specified 
      * time range.
@@ -132,6 +135,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<A> changedValues();
     // Skips `count` values from the stream.
     IObservable<A> skip(uint count);
+    // Convert this observable to reactive value with given initial value.
+    IRxVal<A> toRxVal(A initial);
   }
 
   public interface IObserver<in A> {
@@ -325,7 +330,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       ));
     }
 
-    protected void submit(A value) {
+    protected virtual void submit(A value) {
       if (finished) throw new ObservableFinishedException(string.Format(
         "Observable {0} is finished, but #submit called with {1}", this, value
       ));
@@ -404,7 +409,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     protected O mapImpl<B, O>(Fn<A, B> mapper, ObserverBuilder<B, O> builder) {
-      return builder(obs => subscribe(val => obs.push(mapper(val))));
+      return builder(obs => subscribe(val => obs.push(mapper(val)), obs.finish));
     }
 
     public IObservable<Unit> discardValue() 
@@ -421,7 +426,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     (Fn<A, IEnumerable<B>> mapper, ObserverBuilder<B, O> builder) {
       return builder(obs => subscribe(val => {
         foreach (var b in mapper(val)) obs.push(b);
-      }));
+      }, obs.finish));
     }
 
     public IObservable<B> flatMap<B>(Fn<A, IObservable<B>> mapper)
@@ -431,10 +436,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     (Fn<A, IObservable<B>> mapper, ObserverBuilder<B, O> builder) {
       return builder(obs => {
         ISubscription innerSub = null;
-        Act innerUnsub = () => { if (innerSub != null) innerSub.unsubscribe(); };
+        Act innerUnsub = () => { if (innerSub != null) { innerSub.unsubscribe(); } };
         var thisSub = subscribe(val => {
           innerUnsub();
-          innerSub = mapper(val).subscribe(obs.push);
+          innerSub = mapper(val).subscribe(obs);
         });
         return thisSub.join(new Subscription(innerUnsub));
       });
@@ -507,6 +512,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     (IObservable<B> other, ObserverBuilder<A, O> builder) where B : A {
       return builder(obs =>
         subscribe(obs.push).join(other.subscribe(v => obs.push(v)))
+      );
+    }
+
+    public IObservable<Unit> joinDiscard<X>(IObservable<X> other) 
+    { return joinDiscardImpl(other, builder<Unit>()); }
+
+    protected O joinDiscardImpl<X, O>
+    (IObservable<X> other, ObserverBuilder<Unit, O> builder) {
+      return builder(obs =>
+        subscribe(_ => obs.push(F.unit)).join(other.subscribe(v => obs.push(F.unit)))
       );
     }
 
@@ -754,6 +769,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           obs.finish
         );
       });
+    }
+
+    public IRxVal<A> toRxVal(A initial) {
+      return RxVal.a(initial, subscribe);
     }
 
     private void onUnsubscribed() {

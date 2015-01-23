@@ -83,6 +83,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return flatMapImpl(mapper, RxVal.builder(mapper(value).value));
     }
 
+    public IRxVal<ReadOnlyCollection<Option<A>>> filter(
+      Fn<ReadOnlyCollection<Option<A>>, bool> predicate, 
+      Fn<ReadOnlyCollection<Option<A>>> onFilter
+    ) { return map(RxRefBase.filterMapper(predicate, onFilter)); }
+
+    public IRxVal<ReadOnlyCollection<Option<A>>> filter(
+      Fn<ReadOnlyCollection<Option<A>>, bool> predicate, 
+      ReadOnlyCollection<Option<A>> onFilter
+    ) { return map(RxRefBase.filterMapper(predicate, onFilter)); }
+
     public IRxVal<Tpl<ReadOnlyCollection<Option<A>>, B>> zip<B>(IRxVal<B> ref2) 
     { return zipImpl(ref2, RxVal.builder(F.t(value, ref2.value))); }
 
