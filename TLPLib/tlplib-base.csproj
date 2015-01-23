@@ -130,6 +130,7 @@
     <Compile Include="Data\Size2.cs" />
     <Compile Include="Data\ValueWithStorage.cs" />
     <Compile Include="Data\Ver.cs" />
+    <Compile Include="Data\WeakRef.cs" />
     <Compile Include="Dispose\Disposable.cs" />
     <Compile Include="Dispose\DisposalQueue.cs" />
     <Compile Include="Dispose\SmoothDisposer.cs" />
