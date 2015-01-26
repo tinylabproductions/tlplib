@@ -15,8 +15,12 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
 
     [UsedImplicitly]
     void Awake() {
+      init();
+    }
+
+    void init() {
       tween = new GoTween(
-        transform, 
+        transform,
         duration,
         config(
           new GoTweenConfig().
@@ -30,6 +34,14 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
       }
       tween.pause();
       Go.addTween(tween);
+    }
+
+    public void editorRefresh() {
+      if (tween != null) {
+        tween.destroy();
+      }
+      init();
+      play();
     }
 
     [UsedImplicitly]
