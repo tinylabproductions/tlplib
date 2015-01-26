@@ -314,7 +314,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     private SList8<A> pendingSubmits = new SList8<A>();
 
     // Are we currently iterating through subscriptions?
-    bool iterating;
+    protected bool iterating { get; private set; }
     // We were iterating when #finish was called, so we have to finish when we clean up.
     bool willFinish;
     // Is this observable finished and will not take any more submits.
@@ -342,7 +342,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (iterating) {
         // Do not submit if iterating.
         pendingSubmits.add(value);
-        return;
       }
 
       // Mark a flag to prevent concurrent modification of subscriptions array.
@@ -801,13 +800,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (pendingRemovals != 0) {
         for (var idx = 0; idx < subscriptions.size;) {
           var sub = subscriptions[idx];
-#if DEBUG
-          if (sub.subscription == null) throw new IllegalStateException(
-            "sub="+sub+
-            "\nidx="+idx+
-            "\nsubscriptions="+subscriptions.asString()
-          );
-#endif
           if (!sub.subscription.isSubscribed) subscriptions.removeAt(idx);
           else idx++;
         }

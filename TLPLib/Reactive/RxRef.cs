@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
@@ -176,8 +177,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * Mutable reference which is also an observable.
    **/
   public class RxRef<A> : RxRefBase<A>, IRxRef<A> {
-    private static readonly IEqualityComparer<A> defaultComparer = EqComparer<A>.Default;
-    private readonly IEqualityComparer<A> comparer;
+    static readonly IEqualityComparer<A> defaultComparer = EqComparer<A>.Default;
+    readonly IEqualityComparer<A> comparer;
+
+    SList8<A> pendingValueChanges = new SList8<A>();
 
     public new A value { 
       get { return _value; }
@@ -199,7 +202,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     protected override void submit(A value) {
       if (!comparer.Equals(_value, value)) {
-        _value = value;
+        if (!iterating) _value = value;
         base.submit(value);
       }
     }
