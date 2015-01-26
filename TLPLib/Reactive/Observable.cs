@@ -72,6 +72,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      **/
     IObservable<B> flatMap<B>(Fn<A, IEnumerable<B>> mapper);
     /** 
+     * Maps events coming from this observable and emits events from returned futures.
+     **/
+    IObservable<B> flatMap<B>(Fn<A, Future<B>> mapper);
+    /** 
      * Maps events coming from this observable and emits all events contained 
      * in returned observable.
      **/
@@ -443,6 +447,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         });
         return thisSub.join(new Subscription(innerUnsub));
       });
+    }
+
+    public IObservable<B> flatMap<B>(Fn<A, Future<B>> mapper) 
+    { return flatMapImpl(mapper, builder<B>()); }
+
+    public O flatMapImpl<B, O>
+    (Fn<A, Future<B>> mapper, ObserverBuilder<B, O> builder) {
+      return builder(obs => subscribe(a => mapper(a).onSuccess(obs.push)));
     }
 
     public IObservable<A> filter(Fn<A, bool> predicate) {
