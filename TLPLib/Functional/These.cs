@@ -103,8 +103,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
         case State.A: onA(a); break;
         case State.B: onB(b); break;
         case State.BOTH: onBoth(a, b); break;
+        default: throw new IllegalStateException();
       }
-      throw new IllegalStateException();
     }
 
     public Option<B> toOpt() { return thatValue; }
