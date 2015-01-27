@@ -110,6 +110,24 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Option<B> toOpt() { return thatValue; }
 
     public B getOrElse(Fn<A, B> onThis) { return isThat ? b : onThis(a); }
+
+    public These<AA, B> withThis<AA>(AA a) {
+      switch (state) {
+        case State.A: return new These<AA, B>(a);
+        case State.B: return new These<AA, B>(b);
+        case State.BOTH: return new These<AA, B>(a, b);
+      }
+      throw new IllegalStateException();
+    }
+
+    public These<A, BB> withThat<BB>(BB b) {
+      switch (state) {
+        case State.A: return new These<A, BB>(a);
+        case State.B: return new These<A, BB>(b);
+        case State.BOTH: return new These<A, BB>(a, b);
+      }
+      throw new IllegalStateException();
+    }
   }
 
   public static class These {
