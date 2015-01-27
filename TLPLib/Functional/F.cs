@@ -21,8 +21,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static These<A, B> thiz<A, B>(A value) { return new These<A, B>(value); }
     public static These<A, B> that<A, B>(B value) { return new These<A, B>(value); }
-    public static These<A, B> both<A, B>(A a, B b) { return new These<A, B>(a, b); }
-    public static Option<These<A, B>> these<A, B>(Option<A> aOpt, Option<B> bOpt) { return These.a(aOpt, bOpt); }
+    public static These<A, B> these<A, B>(A a, B b) { return new These<A, B>(a, b); }
+
+    public static These<A, B> these<A, B>(A a, Option<B> bOpt) 
+    { return bOpt.fold(() => thiz<A, B>(a), b => these(a, b)); }
+
+    public static These<A, B> these<A, B>(Option<A> aOpt, B b) 
+    { return aOpt.fold(() => that<A, B>(b), a => these(a, b)); }
+
+    public static Option<These<A, B>> these<A, B>(Option<A> aOpt, Option<B> bOpt) 
+    { return These.a(aOpt, bOpt); }
 
     // Exception thrower which "returns" a value for use in expressions.
     public static A throws<A>(Exception ex) { throw ex; }

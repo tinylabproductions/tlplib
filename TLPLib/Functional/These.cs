@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       switch (state) {
         case State.A: return F.thiz<AA, B>(mapper(a));
         case State.B: return F.that<AA, B>(b);
-        case State.BOTH: return F.both(mapper(a), b);
+        case State.BOTH: return F.these(mapper(a), b);
       }
       throw new IllegalStateException();
     }
@@ -75,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       switch (state) {
         case State.A: return F.thiz<A, BB>(a);
         case State.B: return F.that<A, BB>(mapper(b));
-        case State.BOTH: return F.both(a, mapper(b));
+        case State.BOTH: return F.these(a, mapper(b));
       }
       throw new IllegalStateException();
     }
@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       switch (state) {
         case State.A: return F.thiz<AA, BB>(aMapper(a));
         case State.B: return F.that<AA, BB>(bMapper(b));
-        case State.BOTH: return F.both(aMapper(a), bMapper(b));
+        case State.BOTH: return F.these(aMapper(a), bMapper(b));
       }
       throw new IllegalStateException();
     }
@@ -133,7 +133,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public static class These {
     public static Option<These<A, B>> a<A, B>(Option<A> aOpt, Option<B> bOpt) {
       if (aOpt.isEmpty && bOpt.isEmpty) return F.none<These<A, B>>();
-      if (aOpt.isDefined && bOpt.isDefined) return F.both(aOpt.get, bOpt.get).some();
+      if (aOpt.isDefined && bOpt.isDefined) return F.these(aOpt.get, bOpt.get).some();
       if (aOpt.isDefined) return F.thiz<A, B>(aOpt.get).some();
       if (bOpt.isDefined) return F.that<A, B>(bOpt.get).some();
       throw new IllegalStateException();
