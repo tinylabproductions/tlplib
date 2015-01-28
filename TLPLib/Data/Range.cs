@@ -59,6 +59,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       _to = to;
     }
 
+    public float lerp(float t) {
+      return Mathf.Lerp(from, to, t);
+    }
+
     public float random { get { return Rng.range(from, to); } }
 
     public EnumerableFRange by(float step) {
