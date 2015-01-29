@@ -38,6 +38,8 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static void sharePNG(string path, string title, string sharerText) {
       bridge.CallStatic("sharePNG", path, title, sharerText);
     }
+
+    public static void runOnUI(Act act) { current.Call("runOnUiThread", act); }
   }
 }
 #endif
