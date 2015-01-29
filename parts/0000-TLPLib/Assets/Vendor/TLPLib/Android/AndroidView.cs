@@ -18,7 +18,9 @@ namespace com.tinylabproductions.TLPLib.Android {
       view = new AndroidJavaClass("android.view.View");
     }
 
-    public static Future<bool> hideNavigationBar() {
+    /* If the layout is stable, screen space never changes, but navigation buttons just 
+     * become a black stripe and never hides. */
+    public static Future<bool> hideNavigationBar(bool stableLayout) {
       if (Application.isEditor) return Future.successful(false);
 
       Log.debug("Trying to hide android navigation bar.");
@@ -28,9 +30,9 @@ namespace com.tinylabproductions.TLPLib.Android {
         try {
           var flags =
             view.GetStatic<int>(FLAG_HIDE_NAVIGATION) |
-            view.GetStatic<int>(FLAG_STABLE_LAYOUT) |
             view.GetStatic<int>(FLAG_IMMERSIVE_STICKY) |
             view.GetStatic<int>(FLAG_FULLSCREEN);
+          if (stableLayout) flags |= view.GetStatic<int>(FLAG_STABLE_LAYOUT);
           var decor = activity.
             Call<AndroidJavaObject>("getWindow").
             Call<AndroidJavaObject>("getDecorView");
