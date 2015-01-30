@@ -782,9 +782,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    public IRxVal<A> toRxVal(A initial) {
-      return RxVal.a(initial, subscribe);
-    }
+    public IRxVal<A> toRxVal(A initial) { return RxVal.a(initial, subscribe); }
 
     private void onUnsubscribed() {
       pendingRemovals++;

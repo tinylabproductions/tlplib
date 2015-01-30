@@ -187,6 +187,7 @@
     <Compile Include="Reactive\RxList.cs" />
     <Compile Include="Reactive\RxListView.cs" />
     <Compile Include="Reactive\RxRef.cs" />
+    <Compile Include="Reactive\RxVal.cs" />
     <Compile Include="Reactive\Subjects.cs" />
     <Compile Include="Reactive\Subscription.cs" />
     <Compile Include="Reflection\Reflect.cs" />
