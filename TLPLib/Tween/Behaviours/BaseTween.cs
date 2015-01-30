@@ -1,6 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Annotations;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
   public abstract class BaseTween : MonoBehaviour {
@@ -11,15 +12,20 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
     public int iterations = 1;
     public GoEaseType easing;
     public GoLoopType loopType;
-    public GoTween tween;
+    GoTween _tween;
+    public GoTween tween { get { 
+      if (_tween == null) init();
+      return _tween;
+    } }
 
     [UsedImplicitly]
     void Awake() {
-      init();
+      if (_tween == null)
+        init();
     }
 
     void init() {
-      tween = new GoTween(
+      _tween = new GoTween(
         transform,
         duration,
         config(
@@ -30,15 +36,15 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
           tap(_ => _.isFrom = isFrom)
         ));
       if (!playOnStart) {
-        tween.autoRemoveOnComplete = false;
+        _tween.autoRemoveOnComplete = false;
       }
-      tween.pause();
-      Go.addTween(tween);
+      _tween.pause();
+      Go.addTween(_tween);
     }
 
     public void editorRefresh() {
-      if (tween != null) {
-        tween.destroy();
+      if (_tween != null) {
+        _tween.destroy();
       }
       init();
       play();
@@ -52,26 +58,26 @@ namespace com.tinylabproductions.TLPLib.Tween.Behaviours {
     }
 
     public void play() {
-      tween.play();
+      _tween.play();
     }
 
     public void restart() {
-      tween.restart();
+      _tween.restart();
     }
 
     public void playForward() {
-      tween.playForward();
+      _tween.playForward();
     }
 
     public void playBackwards() {
-      tween.playBackwards();
+      _tween.playBackwards();
     }
 
     public abstract GoTweenConfig config(GoTweenConfig cfg);
 
     [UsedImplicitly] void OnDestroy() {
-      if (tween != null) {
-        tween.destroy();
+      if (_tween != null) {
+        _tween.destroy();
       }
     }
   }

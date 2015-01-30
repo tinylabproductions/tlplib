@@ -205,6 +205,7 @@
     <Compile Include="Threads\OnMainThreadBehaviour.cs" />
     <Compile Include="Threads\ThreadPooled.cs" />
     <Compile Include="Tween\Behaviours\ColorTween.cs" />
+    <Compile Include="Tween\Behaviours\Vector2Tween.cs" />
     <Compile Include="Tween\Behaviours\PositionTween.cs" />
     <Compile Include="Tween\Behaviours\RotationTween.cs" />
     <Compile Include="Tween\Behaviours\FloatTween.cs" />
