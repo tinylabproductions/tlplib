@@ -183,6 +183,7 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Reactive\Editor\IObservableTest.cs" />
     <Compile Include="Reactive\Observable.cs" />
+    <Compile Include="Reactive\RxBase.cs" />
     <Compile Include="Reactive\RxDict.cs" />
     <Compile Include="Reactive\RxList.cs" />
     <Compile Include="Reactive\RxListView.cs" />
