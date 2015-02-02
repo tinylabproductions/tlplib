@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Collections;
@@ -141,6 +142,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<A> skip(uint count);
     // Convert this observable to reactive value with given initial value.
     IRxVal<A> toRxVal(A initial);
+    // If several events are emitted per same frame, only emit last one in late update.
+    IObservable<A> oncePerFrame();
   }
 
   public interface IObserver<in A> {
@@ -783,6 +786,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public IRxVal<A> toRxVal(A initial) { return RxVal.a(initial, subscribe); }
+
+    public IObservable<A> oncePerFrame() { return oncePerFrameImpl(builder<A>()); }
+
+    protected O oncePerFrameImpl<O>(ObserverBuilder<A, O> builder) {
+      return builder(obs => {
+        var last = F.none<A>();
+        var mySub = subscribe(v => last = v.some(), obs.finish);
+        var luSub = ASync.onLateUpdate.subscribe(_ => {
+          if (last.isSome) {
+            obs.push(last.get);
+            last = F.none<A>();
+          }
+        });
+        return mySub.join(luSub);
+      });
+    }
 
     private void onUnsubscribed() {
       pendingRemovals++;
