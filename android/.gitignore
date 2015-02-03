@@ -1,5 +1,4 @@
-bin
-gen
-out
-.idea
-*.iml
+/bin
+/out
+/gen
+*.meta

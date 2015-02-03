@@ -1,13 +1,14 @@
 package com.tinylabproductions.tlplib;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import com.unity3d.player.UnityPlayer;
+
 import java.io.File;
 
-/**
- * Created by arturas on 14.5.23.
- */
+@SuppressWarnings("UnusedDeclaration")
 public class Bridge {
   public static void sharePNG(String path, String title, String sharerText) {
     Intent shareIntent = new Intent();
@@ -19,5 +20,14 @@ public class Bridge {
     UnityPlayer.currentActivity.startActivity(
       Intent.createChooser(shareIntent, title)
     );
+  }
+
+  public static boolean isTablet() {
+    Activity current = UnityPlayer.currentActivity;
+    Configuration cfg = current.getResources().getConfiguration();
+    int sizeFlag = cfg.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+
+    return sizeFlag == Configuration.SCREENLAYOUT_SIZE_XLARGE
+        || sizeFlag == Configuration.SCREENLAYOUT_SIZE_LARGE;
   }
 }

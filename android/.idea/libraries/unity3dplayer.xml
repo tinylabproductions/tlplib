@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="unity3dplayer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/deps/unity3dplayer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

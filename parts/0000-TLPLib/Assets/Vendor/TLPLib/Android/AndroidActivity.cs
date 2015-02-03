@@ -5,6 +5,19 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android {
   public static class AndroidActivity {
+    public struct DPI {
+      public readonly float xDpi, yDpi;
+
+      public DPI(float xDpi, float yDpi) {
+        this.xDpi = xDpi;
+        this.yDpi = yDpi;
+      }
+
+      public override string ToString() {
+        return string.Format("DPI[xDpi: {0}, yDpi: {1}]", xDpi, yDpi);
+      }
+    }
+
     private static readonly AndroidJavaClass unityPlayer;
     private static readonly AndroidJavaClass bridge;
     public static readonly AndroidJavaObject current;
@@ -34,6 +47,8 @@ namespace com.tinylabproductions.TLPLib.Android {
         return "";
       }
     } }
+
+    public static bool isTablet { get { return bridge.CallStatic<bool>("isTablet"); } }
 
     public static void sharePNG(string path, string title, string sharerText) {
       bridge.CallStatic("sharePNG", path, title, sharerText);
