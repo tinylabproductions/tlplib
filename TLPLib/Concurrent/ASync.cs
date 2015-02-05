@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -63,6 +64,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static void OnMainThread(Act action) { behaviour.onMainThread(action); }
+
+    /* Stops this thread until action is executed in main thread. */
+    public static void OnMainThreadSync(Act action) {
+      var evt = new ManualResetEvent(false);
+      behaviour.onMainThread(() => {
+        action();
+        evt.Set();
+      });
+      evt.WaitOne();
+    }
 
     public static Future<Unit> OnMainThreadF(Act action) {
       return Future.a<Unit>(promise =>
