@@ -1,9 +1,7 @@
-﻿#if ! DEBUG
-#define MULTITHREADED
+﻿#define MULTITHREADED
 using System.Threading;
 using com.tinylabproductions.TLPLib.Extensions;
 using System.Collections.Generic;
-#endif
 
 using System;
 using System.Diagnostics;
@@ -97,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       log("\n\n", "############ Log opened ############\n\n");
 
 #if MULTITHREADED
-      Application.logMessageReceivedThreaded += unityLogs;
+      Application.RegisterLogCallbackThreaded(unityLogs);
       new Thread(() => {
         while (true) {
           var tOpt = F.none<Tpl<string, DateTime, object>>();
