@@ -11,5 +11,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static IObservable<Unit> uiClick(this GameObject go) 
     { return go.EnsureComponent<UIClickForwarder>().onClick; }
+
+    public static IObservable<Unit> uiDown(this GameObject go)
+    { return go.EnsureComponent<UIClickForwarder>().onDown; }
+
+    public static IObservable<Unit> uiUp(this GameObject go)
+    { return go.EnsureComponent<UIClickForwarder>().onUp; }
   }
 }
