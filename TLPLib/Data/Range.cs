@@ -41,6 +41,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.to = to;
     }
 
+    public uint median { get { return from + (to - from) / 2; } }
+
     public uint random { get { return (uint) Random.Range(from, to + 1); } }
 
     public override string ToString() { return string.Format("{0} - {1}", from, to); }
