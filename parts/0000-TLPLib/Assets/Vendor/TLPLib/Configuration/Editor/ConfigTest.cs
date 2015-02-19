@@ -1,11 +1,14 @@
 ﻿#if UNITY_TEST
 using System;
-using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
 
-namespace com.tinylabproductions.Configuration {
+namespace com.tinylabproductions.TLPLib.Configuration.Editor {
+  static class TestJson {
+    public static string json(this string json) { return json.Replace('\'', '"'); }
+  }
+
   [TestFixture]
   public class ConfigTest {
     private readonly static string json =
@@ -20,9 +23,20 @@ namespace com.tinylabproductions.Configuration {
         'float': 35.53,
         'float-list': [1.5, 2.5, 3.5],
         'bool': true,
-        'bool-list': [true, false]
+        'bool-list': [true, false],
+
+        'str-ref': '#REF=foo.bar.baz.str#',
+        'str-list-ref': '#REF=foo.bar.baz.str-list#',
+        'int-ref': '#REF=foo.bar.baz.int#',
+        'int-list-ref': '#REF=foo.bar.baz.int-list#',
+        'float-ref': '#REF=foo.bar.baz.float#',
+        'float-list-ref': '#REF=foo.bar.baz.float-list#',
+        'bool-ref': '#REF=foo.bar.baz.bool#',
+        'bool-list-ref': '#REF=foo.bar.baz.bool-list#',
+        'subconfig-ref': '#REF=foo.bar.baz#',
+        'subconfig-list-ref': '#REF=subconfig-list#'
       }
-    }
+    },
   },
   'subconfig': {
     'str': 'string',
@@ -64,13 +78,28 @@ namespace com.tinylabproductions.Configuration {
   'float': 35.53,
   'float-list': [1.5, 2.5, 3.5],
   'bool': true,
-  'bool-list': [true, false]
-}".Replace('\'', '"');
-    private static readonly IConfig config = new Config(JSON.Parse(json).AsObject);
-    private static readonly string[] nestValues = {"", "foo.bar.baz."};
+  'bool-list': [true, false],
 
-    private static void testNested(string key, Act<string> tester) 
-    { foreach (var nestValue in nestValues) tester(nestValue + key); }
+  'str-ref': '#REF=foo.bar.baz.str#',
+  'str-list-ref': '#REF=foo.bar.baz.str-list#',
+  'int-ref': '#REF=foo.bar.baz.int#',
+  'int-list-ref': '#REF=foo.bar.baz.int-list#',
+  'float-ref': '#REF=foo.bar.baz.float#',
+  'float-list-ref': '#REF=foo.bar.baz.float-list#',
+  'bool-ref': '#REF=foo.bar.baz.bool#',
+  'bool-list-ref': '#REF=foo.bar.baz.bool-list#',
+  'subconfig-ref': '#REF=foo.bar.baz#',
+  'subconfig-list-ref': '#REF=subconfig-list#'
+}".json();
+    private static readonly IConfig config = new Config(JSON.Parse(json).AsObject);
+    private static readonly string[] nestPrefixes = {"", "foo.bar.baz."};
+    private static readonly string[] nestSuffixes = {"", "-ref"};
+
+    private static void testNested(string key, Act<string> tester) {
+      foreach (var prefix in nestPrefixes) 
+        foreach (var suffix in nestSuffixes) 
+          tester(prefix + key + suffix);
+    }
 
     private static void testGetter<A>(
       string goodValueKey, A goodValue, string badValueKey, 

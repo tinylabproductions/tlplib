@@ -129,7 +129,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       });
     }
 
-    private static Either<string, A> fetch<A>(
+    private Either<string, A> fetch<A>(
       JSONClass current, string key, string part, Parser<A> parser
     ) {
       if (! current.Contains(part)) return F.left<string, A>(string.Format(
@@ -137,12 +137,31 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         part, key, current
       ));
       var node = current[part];
-      return parser(node).fold(
+
+      return followReference(node).flatMapRight(n => parser(n).fold(
         () => F.left<string, A>(string.Format(
           "Cannot convert part '{0}' from key '{1}' to {2}. {3} Contents: {4}",
-          part, key, typeof(A), node.GetType(), node
+          part, key, typeof(A), n.GetType(), n
         )), F.right<string, A>
-      );
+      ));
+    }
+
+    Either<string, JSONNode> followReference(JSONNode current) {
+      // references are specified with '#REF=...#'
+      if (
+        current.Value != null &&
+        current.Value.Length >= 6
+        && current.Value.Substring(0, 5) == "#REF="
+        && current.Value.Substring(current.Value.Length - 1, 1) == "#"
+      ) {
+        var key = current.Value.Substring(5, current.Value.Length - 6);
+        // ReSharper disable once RedundantTypeArgumentsOfMethod
+        // Mono compiler bug
+        return get<JSONNode>(key, F.some).mapLeft<string>(err =>
+          string.Format("While following reference {0}: {1}", current.Value, err)
+        );
+      }
+      else return F.right<string, JSONNode>(current);
     }
 
     public override string ToString() {

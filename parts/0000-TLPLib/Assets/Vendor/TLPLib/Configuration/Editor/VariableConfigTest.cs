@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   'str': 'string',
   'str2': 'string2',
   'str3': 'string3'
-}".Replace('\'', '"');
+}".json();
       var variables = F.dict(F.t("a", "a-var"), F.t("b", "b-var"));
       var cfg = new Config(JSON.Parse(json).AsObject);
 
@@ -101,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   'wp8': {
     'networks': [{'name': 'revmob'}],
   }
-}".Replace('\'', '"');
+}".json();
       var variables = F.dict(F.t("platform", "wp8"));
       var cfg = new Config(JSON.Parse(json).AsObject);
 

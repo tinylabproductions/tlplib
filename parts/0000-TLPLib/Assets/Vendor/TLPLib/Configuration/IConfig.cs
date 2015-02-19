@@ -11,6 +11,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
    * 
    * Paths are specified in "key.subkey.subsubkey" format.
    * 
+   * You can specify references by giving value in format of '#REF=some.config.key#'.
+   * 
    * Beware that *String methods will always return a value, even if you expect
    * types to not match. This is because the underlying JSON library treats all
    * types as strings internally.
