@@ -48,6 +48,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\unity\UnityEditor.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.UI">
+      <HintPath>..\libs\unity\UnityEditor.UI.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine-windows, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\unity\UnityEngine-windows.dll</HintPath>
