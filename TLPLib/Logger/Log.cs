@@ -95,6 +95,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
       log("\n\n", "############ Log opened ############\n\n");
 
 #if MULTITHREADED
+      // Seems to need both.
+      Application.logMessageReceived += unityLogs;
       Application.logMessageReceivedThreaded += unityLogs;
       new Thread(() => {
         while (true) {
