@@ -26,8 +26,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     internal void Update() {
       lock (mainThreadActions) {
         if (mainThreadActions.isEmpty()) return;
-        foreach (var action in mainThreadActions) action();
-        mainThreadActions.Clear();
+        while (mainThreadActions.Count != 0) {
+          var action = mainThreadActions.First.Value;
+          mainThreadActions.RemoveFirst();
+          action();
+        }
       }
     }
 
