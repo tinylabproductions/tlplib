@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       log("\n\n", "############ Log opened ############\n\n");
 
 #if MULTITHREADED
-      Application.RegisterLogCallbackThreaded(unityLogs);
+      Application.logMessageReceivedThreaded += unityLogs;
       new Thread(() => {
         while (true) {
           var tOpt = F.none<Tpl<string, DateTime, object>>();
@@ -112,7 +112,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
         }
       }).Start();
 #else
-      Application.RegisterLogCallback(unityLogs);
+      Application.logMessageReceived += unityLogs;
 #endif
     }
 
