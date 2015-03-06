@@ -795,8 +795,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         var mySub = subscribe(v => last = v.some(), obs.finish);
         var luSub = ASync.onLateUpdate.subscribe(_ => {
           if (last.isSome) {
-            obs.push(last.get);
-            last = F.none<A>();
+            // Clear last before pushing, because exception makes it loop forever.
+            var val = last.get;
+            last = new Option<A>();
+            obs.push(val);
           }
         });
         return mySub.join(luSub);
