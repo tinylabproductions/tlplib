@@ -79,6 +79,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region Ops
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
+      this IRxVal<Option<A>> source, Fn<A, IRxVal<B>> extractor
+    ) {
+      return source.flatMap(aOpt =>
+        aOpt.map(extractor).map(rxVal => rxVal.map(val => val.some()))
+        .getOrElse(cached(F.none<B>()))
+      );
+    }
+
+    public static IRxVal<Option<B>> optFlatMap<A, B>(
       this IRxVal<Option<A>> source, Fn<A, IRxVal<Option<B>>> extractor
     ) {
       return source.flatMap(aOpt =>
