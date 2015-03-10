@@ -518,6 +518,27 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
+    public IObservable<Queue<Tpl<A, float>>> timeBufferQueue(float seconds) {
+      return timeBufferQueueImpl(seconds, builder<Queue<Tpl<A, float>>>());
+    }
+
+    protected O timeBufferQueueImpl<O>
+    (float seconds, ObserverBuilder<Queue<Tpl<A, float>>, O> builder) {
+      return builder(obs => {
+        var buffer = new Queue<Tpl<A, float>>();
+        return subscribe(val => {
+          var lastTime = Time.time;
+          buffer.Enqueue(F.t(val, lastTime));
+          if (buffer.Peek()._2 + seconds <= lastTime) {
+            // Remove items which are too old.
+            while (buffer.Peek()._2 + seconds < lastTime)
+              buffer.Dequeue();
+            obs.push(buffer);
+          }
+        });
+      });
+    }
+
     public IObservable<A> join<B>(IObservable<B> other) where B : A {
       return joinImpl(other, builder<A>());
     }
