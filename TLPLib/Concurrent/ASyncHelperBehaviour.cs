@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -10,8 +11,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Actions that need to be executed in the main thread. */
     private static readonly LinkedList<Act> mainThreadActions = new LinkedList<Act>();
 
+    static Thread mainThread;
+
     public void onMainThread(Act action) {
       lock (mainThreadActions) mainThreadActions.AddLast(action);
+    }
+
+    public bool isMainThread() {
+      return mainThread == Thread.CurrentThread;
     }
 
     public IObservable<bool> onPause { get { return _onPause; } }
@@ -22,6 +29,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public IObservable<Unit> onLateUpdate { get { return _onLateUpdate; } }
     private readonly Subject<Unit> _onLateUpdate = new Subject<Unit>();
+
+    internal void Start() {
+      mainThread = Thread.CurrentThread;
+    }
 
     internal void Update() {
       lock (mainThreadActions) {

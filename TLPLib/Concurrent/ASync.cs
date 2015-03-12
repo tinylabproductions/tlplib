@@ -65,6 +65,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static void OnMainThread(Act action) { behaviour.onMainThread(action); }
 
+    public static bool isMainThread() { return behaviour.isMainThread(); }
+
     /* Stops this thread until action is executed in main thread. */
     public static void OnMainThreadSync(Act action) {
       var evt = new ManualResetEvent(false);
