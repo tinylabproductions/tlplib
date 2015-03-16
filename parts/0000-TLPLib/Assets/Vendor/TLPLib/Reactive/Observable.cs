@@ -121,7 +121,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return everyFrameInstance ?? (
         everyFrameInstance = new Observable<Unit>(observer => {
           var cr = ASync.StartCoroutine(everyFrameCR(observer));
-          return new Subscription(() => ASync.StopCoroutine(cr));
+          return new Subscription(cr.stop);
         })
       );
     } }
@@ -142,7 +142,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #endif
       return new Observable<DateTime>(observer => {
         var cr = ASync.StartCoroutine(interval(observer, intervalS, delayS));
-        return new Subscription(() => ASync.StopCoroutine(cr));
+        return new Subscription(cr.stop);
       });
     }
 
