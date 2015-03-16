@@ -75,8 +75,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   class FileLog {
 #if MULTITHREADED
-    private static readonly LinkedList<Tpl<string, DateTime, object>> messages = 
+    static readonly LinkedList<Tpl<string, DateTime, object>> messages = 
       new LinkedList<Tpl<string, DateTime, object>>();
+    static readonly AutoResetEvent hasMessagesEvt = new AutoResetEvent(false);
 #endif
 
     public readonly static StreamWriter logfile;
@@ -110,7 +111,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
           }
 
           tOpt.each(write);
-          Thread.Sleep(0);
+          hasMessagesEvt.WaitOne();
         }
       }).Start();
 #else
@@ -170,6 +171,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       var t = F.t(prefix, DateTime.Now, o);
 #if MULTITHREADED
       lock(messages) messages.AddLast(t);
+      hasMessagesEvt.Set();
 #else
       write(t);
 #endif
