@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     /* scope of the config, "" if root, "foo.bar.baz" if nested. */
     string scope { get; }
 
-    /* value if found, ArgumentException if not found. */
+    /* value if found, ConfigFetchException if not found. */
 
     #region getters
 
@@ -55,24 +55,24 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #endregion
 
-    /* Left(error message) on error, Right(value) if found. */
+    /* Left(ConfigFetchError) on error, Right(value) if found. */
 
     #region either getters
 
-    Either<string, string> eitherString(string key);
-    Either<string, IList<string>> eitherStringList(string key);
-    Either<string, int> eitherInt(string key);
-    Either<string, IList<int>> eitherIntList(string key);
-    Either<string, float> eitherFloat(string key);
-    Either<string, IList<float>> eitherFloatList(string key);
-    Either<string, bool> eitherBool(string key);
-    Either<string, IList<bool>> eitherBoolList(string key);
-    Either<string, IConfig> eitherSubConfig(string key);
-    Either<string, IList<IConfig>> eitherSubConfigList(string key);
+    Either<ConfigFetchError, string> eitherString(string key);
+    Either<ConfigFetchError, IList<string>> eitherStringList(string key);
+    Either<ConfigFetchError, int> eitherInt(string key);
+    Either<ConfigFetchError, IList<int>> eitherIntList(string key);
+    Either<ConfigFetchError, float> eitherFloat(string key);
+    Either<ConfigFetchError, IList<float>> eitherFloatList(string key);
+    Either<ConfigFetchError, bool> eitherBool(string key);
+    Either<ConfigFetchError, IList<bool>> eitherBoolList(string key);
+    Either<ConfigFetchError, IConfig> eitherSubConfig(string key);
+    Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key);
 
     #endregion
 
-    /* Success(value) if found, Error(ArgumentException) if not found. */
+    /* Success(value) if found, Error(ConfigFetchException) if not found. */
 
     #region try getters
 
@@ -88,5 +88,39 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Try<IList<IConfig>> trySubConfigList(string key);
 
     #endregion
+  }
+  
+  public struct ConfigFetchError {
+    public enum Kind { KEY_NOT_FOUND, WRONG_TYPE, BROKEN_REFERENCE }
+
+    public readonly Kind kind;
+    public readonly string message;
+
+    public ConfigFetchError(Kind kind, string message) {
+      this.kind = kind;
+      this.message = message;
+    }
+
+    public static ConfigFetchError keyNotFound(string message) 
+    { return new ConfigFetchError(Kind.KEY_NOT_FOUND, message); }
+
+    public static ConfigFetchError wrongType(string message) 
+    { return new ConfigFetchError(Kind.WRONG_TYPE, message); }
+
+    public static ConfigFetchError brokenRef(string message) 
+    { return new ConfigFetchError(Kind.BROKEN_REFERENCE, message); }
+
+    public override string ToString() {
+      return string.Format(
+        "ConfigFetchError[kind: {0}, message: {1}]", kind, message
+      );
+    }
+  }
+
+  public class ConfigFetchException : Exception {
+    public readonly ConfigFetchError error;
+
+    public ConfigFetchException(ConfigFetchError error) : base(error.ToString()) 
+    { this.error = error; }
   }
 }

@@ -108,12 +108,12 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
       testNested(goodValueKey, key => Assert.AreEqual(
         goodValue, fetcher(key), "it should fetch value for " + key
       ));
-      testNested("nothing", key => Assert.Throws<ArgumentException>(
+      testNested("nothing", key => Assert.Throws<ConfigFetchException>(
         () => fetcher(key),
         "it should throw exception on non-existant value for " + key
       ));
       if (badValueKey != null)
-        testNested(badValueKey, key => Assert.Throws<ArgumentException>(
+        testNested(badValueKey, key => Assert.Throws<ConfigFetchException>(
           () => fetcher(key),
           "it should throw exception on wrong type for " + key
         ));
@@ -144,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
 
     private static void testEither<A>(
       string goodValueKey, A goodValue, string badValueKey,
-      Fn<string, Either<string, A>> fetcher
+      Fn<string, Either<ConfigFetchError, A>> fetcher
     ) {
       testNested(goodValueKey, key => {
         var value = fetcher(key);

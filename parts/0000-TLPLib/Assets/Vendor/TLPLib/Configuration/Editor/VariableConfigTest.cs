@@ -1,4 +1,5 @@
-﻿#if UNITY_TEST
+﻿using System.Collections.Generic;
+#if UNITY_TEST
 using System.Linq;
 using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
@@ -94,6 +95,70 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
     }
 
     [Test]
+    public void BailOnBadDataTest() {
+      var json =
+@"{
+  'a-var': {
+    'b-var': {
+      'float': 'this-is-string'
+    },
+    'float': '#REF=float-ne#',
+  },
+  'float': 3.5,
+}".json();
+      var variables = F.dict(F.t("a", "a-var"), F.t("b", "b-var"));
+      var cfg = new Config(JSON.Parse(json).AsObject);
+
+      var cfgab = new VariableConfig(
+        cfg, variables, new[] {new[] {"a", "b"}, new[] {"a"}}
+      );
+      Assert.AreEqual(
+        F.some(ConfigFetchError.Kind.WRONG_TYPE), 
+        cfgab.eitherFloat("float").leftValue.map(_ => _.kind)
+      );
+      Assert.AreEqual(
+        F.some(ConfigFetchError.Kind.KEY_NOT_FOUND), 
+        cfgab.eitherFloat("float-ne").leftValue.map(_ => _.kind)
+      );
+
+      var cfga = new VariableConfig(
+        cfg, variables, new[] {new[] {"a"}}
+      );
+      Assert.AreEqual(
+        F.some(ConfigFetchError.Kind.BROKEN_REFERENCE),
+        cfga.eitherFloat("float").leftValue.map(_ => _.kind)
+      );
+      Assert.AreEqual(
+        F.some(ConfigFetchError.Kind.KEY_NOT_FOUND),
+        cfga.eitherFloat("float-ne").leftValue.map(_ => _.kind)
+      );
+
+      var cfgb = new VariableConfig(
+        cfg, variables, new[] {new[] {"b"}}
+      );
+      Assert.AreEqual(
+        F.none<ConfigFetchError.Kind>(),
+        cfgb.eitherFloat("float").leftValue.map(_ => _.kind)
+      );
+      Assert.AreEqual(
+        F.some(ConfigFetchError.Kind.KEY_NOT_FOUND),
+        cfgb.eitherFloat("float-ne").leftValue.map(_ => _.kind)
+      );
+
+      var cfgNone = new VariableConfig(
+        cfg, variables, new[] {new string[] {}}
+      );
+      Assert.AreEqual(
+        F.none<ConfigFetchError.Kind>(),
+        cfgNone.eitherFloat("float").leftValue.map(_ => _.kind)
+      );
+      Assert.AreEqual(
+        F.some(ConfigFetchError.Kind.KEY_NOT_FOUND),
+        cfgNone.eitherFloat("float-ne").leftValue.map(_ => _.kind)
+      );
+    }
+
+    [Test]
     public void InjectedSubconfigsTest() {
       var json =
 @"{
@@ -105,8 +170,8 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
       var variables = F.dict(F.t("platform", "wp8"));
       var cfg = new Config(JSON.Parse(json).AsObject);
 
-      var plainCfg = new VariableConfig(cfg, variables, new[] { new string[] { } });
-      var wp8Cfg = new VariableConfig(cfg, variables, new[] {new[] {"platform"}});
+      var plainCfg = new VariableConfig(cfg, variables, new IList<string>[] { new string[] { } });
+      var wp8Cfg = new VariableConfig(cfg, variables, new IList<string>[] {new[] {"platform"}});
       Assert.AreEqual(
         "admob",
         plainCfg.getSubConfigList("networks")[0].getString("name")

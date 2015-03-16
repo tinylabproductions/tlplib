@@ -80,90 +80,90 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherString(key).
-        fold<Try<string>>(tryArgEx<string>, F.scs);
+        fold<Try<string>>(tryEx<string>, F.scs);
     }
 
     public Try<IList<string>> tryStringList(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherStringList(key).
-        fold<Try<IList<string>>>(tryArgEx<IList<string>>, F.scs);
+        fold<Try<IList<string>>>(tryEx<IList<string>>, F.scs);
     }
 
     public Try<int> tryInt(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherInt(key).
-        fold<Try<int>>(tryArgEx<int>, F.scs);
+        fold<Try<int>>(tryEx<int>, F.scs);
     }
 
     public Try<IList<int>> tryIntList(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherIntList(key).
-        fold<Try<IList<int>>>(tryArgEx<IList<int>>, F.scs);
+        fold<Try<IList<int>>>(tryEx<IList<int>>, F.scs);
     }
 
     public Try<float> tryFloat(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherFloat(key).
-        fold<Try<float>>(tryArgEx<float>, F.scs);
+        fold<Try<float>>(tryEx<float>, F.scs);
     }
 
     public Try<IList<float>> tryFloatList(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherFloatList(key).
-        fold<Try<IList<float>>>(tryArgEx<IList<float>>, F.scs);
+        fold<Try<IList<float>>>(tryEx<IList<float>>, F.scs);
     }
 
     public Try<bool> tryBool(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherBool(key).
-        fold<Try<bool>>(tryArgEx<bool>, F.scs);
+        fold<Try<bool>>(tryEx<bool>, F.scs);
     }
 
     public Try<IList<bool>> tryBoolList(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherBoolList(key).
-        fold<Try<IList<bool>>>(tryArgEx<IList<bool>>, F.scs);
+        fold<Try<IList<bool>>>(tryEx<IList<bool>>, F.scs);
     }
 
     public Try<IConfig> trySubConfig(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherSubConfig(key).
-        fold<Try<IConfig>>(tryArgEx<IConfig>, F.scs);
+        fold<Try<IConfig>>(tryEx<IConfig>, F.scs);
     }
 
     public Try<IList<IConfig>> trySubConfigList(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
       return eitherSubConfigList(key).
-        fold<Try<IList<IConfig>>>(tryArgEx<IList<IConfig>>, F.scs);
+        fold<Try<IList<IConfig>>>(tryEx<IList<IConfig>>, F.scs);
     }
 
-    private static Try<A> tryArgEx<A>(string msg) {
-      return F.err<A>(new ArgumentException(msg));
+    private static Try<A> tryEx<A>(ConfigFetchError error) {
+      return F.err<A>(new ConfigFetchException(error));
     }
 
     #endregion
 
     #region either getters
 
-    public abstract Either<string, string> eitherString(string key);
-    public abstract Either<string, IList<string>> eitherStringList(string key);
-    public abstract Either<string, int> eitherInt(string key);
-    public abstract Either<string, IList<int>> eitherIntList(string key);
-    public abstract Either<string, float> eitherFloat(string key);
-    public abstract Either<string, IList<float>> eitherFloatList(string key);
-    public abstract Either<string, bool> eitherBool(string key);
-    public abstract Either<string, IList<bool>> eitherBoolList(string key);
-    public abstract Either<string, IConfig> eitherSubConfig(string key);
-    public abstract Either<string, IList<IConfig>> eitherSubConfigList(string key);
+    public abstract Either<ConfigFetchError, string> eitherString(string key);
+    public abstract Either<ConfigFetchError, IList<string>> eitherStringList(string key);
+    public abstract Either<ConfigFetchError, int> eitherInt(string key);
+    public abstract Either<ConfigFetchError, IList<int>> eitherIntList(string key);
+    public abstract Either<ConfigFetchError, float> eitherFloat(string key);
+    public abstract Either<ConfigFetchError, IList<float>> eitherFloatList(string key);
+    public abstract Either<ConfigFetchError, bool> eitherBool(string key);
+    public abstract Either<ConfigFetchError, IList<bool>> eitherBoolList(string key);
+    public abstract Either<ConfigFetchError, IConfig> eitherSubConfig(string key);
+    public abstract Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key);
 
     #endregion
   }

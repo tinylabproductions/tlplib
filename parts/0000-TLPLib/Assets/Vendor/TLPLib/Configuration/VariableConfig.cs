@@ -48,37 +48,37 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override string scope { get { return underlying.scope; } }
 
-    public override Either<string, string> eitherString(string key) 
+    public override Either<ConfigFetchError, string> eitherString(string key) 
     { return injected(key, k => underlying.eitherString(k)); }
 
-    public override Either<string, IList<string>> eitherStringList(string key) 
+    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key) 
     { return injected(key, k => underlying.eitherStringList(k)); }
 
-    public override Either<string, int> eitherInt(string key) 
+    public override Either<ConfigFetchError, int> eitherInt(string key) 
     { return injected(key, k => underlying.eitherInt(k)); }
 
-    public override Either<string, IList<int>> eitherIntList(string key) 
+    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key) 
     { return injected(key, k => underlying.eitherIntList(k)); }
 
-    public override Either<string, float> eitherFloat(string key) 
+    public override Either<ConfigFetchError, float> eitherFloat(string key) 
     { return injected(key, k => underlying.eitherFloat(k)); }
 
-    public override Either<string, IList<float>> eitherFloatList(string key) 
+    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key) 
     { return injected(key, k => underlying.eitherFloatList(k)); }
 
-    public override Either<string, bool> eitherBool(string key)
+    public override Either<ConfigFetchError, bool> eitherBool(string key)
     { return injected(key, k => underlying.eitherBool(k)); }
 
-    public override Either<string, IList<bool>> eitherBoolList(string key) 
+    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key) 
     { return injected(key, k => underlying.eitherBoolList(k)); }
 
-    public override Either<string, IConfig> eitherSubConfig(string key) {
+    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug.
       return underlying.eitherSubConfig(key).mapRight<IConfig>(wrapConfig);
     }
 
-    public override Either<string, IList<IConfig>> eitherSubConfigList(
+    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(
       string key
     ) {
       return injected(key, k => underlying.eitherSubConfigList(k).mapRight(lst =>
@@ -93,15 +93,18 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     /* Checks all the keys, returns the last value if none of them 
      * return a value. */
-    private Either<string, A> injected<A>(
-      string key, Fn<string, Either<string, A>> getter
+    private Either<ConfigFetchError, A> injected<A>(
+      string key, Fn<string, Either<ConfigFetchError, A>> getter
     ) {
       var keys = injectToKey(key, combinations, variables).GetEnumerator();
 
       keys.MoveNext();
       var current = getter(keys.Current);
       while (keys.MoveNext()) {
-        if (current.isRight) return current;
+        if (
+          current.isRight || 
+          (current.isLeft && current.leftValue.get.kind != ConfigFetchError.Kind.KEY_NOT_FOUND)
+        ) return current;
         current = getter(keys.Current);
       }
 

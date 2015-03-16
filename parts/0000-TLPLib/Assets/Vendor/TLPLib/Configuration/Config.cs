@@ -33,60 +33,61 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     private readonly string _scope;
     public override string scope { get { return _scope; } }
 
-    private readonly JSONClass configuration;
+    readonly JSONClass root, scopedRoot;
 
-    public Config(JSONClass configuration, string scope="") {
+    public Config(JSONClass root, JSONClass scopedRoot=null, string scope="") {
       _scope = scope;
-      this.configuration = configuration;
+      this.root = root;
+      this.scopedRoot = scopedRoot ?? root;
     }
 
     #region either getters
 
-    public override Either<string, string> eitherString(string key) 
+    public override Either<ConfigFetchError, string> eitherString(string key) 
     { return get(key, stringParser); }
 
-    public override Either<string, IList<string>> eitherStringList(string key) 
+    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key) 
     { return getList(key, stringParser); }
 
-    public override Either<string, int> eitherInt(string key) 
+    public override Either<ConfigFetchError, int> eitherInt(string key) 
     { return get(key, intParser); }
 
-    public override Either<string, IList<int>> eitherIntList(string key) 
+    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key) 
     { return getList(key, intParser); }
 
-    public override Either<string, float> eitherFloat(string key) 
+    public override Either<ConfigFetchError, float> eitherFloat(string key) 
     { return get(key, floatParser); }
 
-    public override Either<string, IList<float>> eitherFloatList(string key) 
+    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key) 
     { return getList(key, floatParser); }
 
-    public override Either<string, bool> eitherBool(string key) 
+    public override Either<ConfigFetchError, bool> eitherBool(string key) 
     { return get(key, boolParser); }
 
-    public override Either<string, IList<bool>> eitherBoolList(string key) 
+    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key) 
     { return getList(key, boolParser); }
 
-    public override Either<string, IConfig> eitherSubConfig(string key) 
+    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) 
     { return fetchSubConfig(key); }
 
-    public override Either<string, IList<IConfig>> eitherSubConfigList(string key) 
+    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key) 
     { return fetchSubConfigList(key); }
 
     #endregion
 
-    private Either<string, IConfig> fetchSubConfig(string key) {
+    private Either<ConfigFetchError, IConfig> fetchSubConfig(string key) {
       return get(key, jsClassParser).mapRight(n => 
-        (IConfig) new Config(n, scope == "" ? key : scope + "." + key)
+        (IConfig) new Config(root, n, scope == "" ? key : scope + "." + key)
       );
     }
 
-    private Either<string, IList<IConfig>> fetchSubConfigList(string key) {
+    private Either<ConfigFetchError, IList<IConfig>> fetchSubConfigList(string key) {
       return getList(key, jsClassParser).mapRight(nList => {
         var lst = F.emptyList<IConfig>(nList.Count);
         // ReSharper disable once LoopCanBeConvertedToQuery
         for (var idx = 0; idx < nList.Count; idx++) {
           var n = nList[idx];
-          lst.Add(new Config(n, string.Format(
+          lst.Add(new Config(root, n, string.Format(
             "{0}[{1}]", scope == "" ? key : scope + "." + key, idx
           )));
         }
@@ -94,10 +95,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       });
     }
 
-    private Either<string, A> get<A>(string key, Parser<A> parser) {
+    Either<ConfigFetchError, A> get<A>(string key, Parser<A> parser, JSONClass current = null) {
       var parts = split(key);
 
-      var current = configuration;
+      current = current ?? scopedRoot;
       foreach (var part in parts.dropRight(1)) {
         var either = fetch(current, key, part, jsClassParser);
         if (either.isLeft) return either.mapRight(_ => default(A));
@@ -111,7 +112,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return key.Split('.');
     }
 
-    private Either<string, IList<A>> getList<A>(
+    private Either<ConfigFetchError, IList<A>> getList<A>(
       string key, Parser<A> parser
     ) {
       return get(key, n => F.some(n.AsArray)).flatMapRight(arr => {
@@ -120,33 +121,34 @@ namespace com.tinylabproductions.TLPLib.Configuration {
           var node = arr[idx];
           var parsed = parser(node);
           if (parsed.isDefined) list.Add(parsed.get);
-          else return F.left<string, IList<A>>(string.Format(
+          else return F.left<ConfigFetchError, IList<A>>(ConfigFetchError.wrongType(string.Format(
             "Cannot convert '{0}'[{1}] to {2}: {3}",
             key, idx, typeof(A), node
-          ));
+          )));
         }
-        return F.right<string, IList<A>>(list);
+        return F.right<ConfigFetchError, IList<A>>(list);
       });
     }
 
-    private Either<string, A> fetch<A>(
+    private Either<ConfigFetchError, A> fetch<A>(
       JSONClass current, string key, string part, Parser<A> parser
     ) {
-      if (! current.Contains(part)) return F.left<string, A>(string.Format(
-        "Cannot find part '{0}' from key '{1}' in {2}",
-        part, key, current
-      ));
+      if (!current.Contains(part)) 
+        return F.left<ConfigFetchError, A>(ConfigFetchError.keyNotFound(string.Format(
+          "Cannot find part '{0}' from key '{1}' in {2}",
+          part, key, current
+        )));
       var node = current[part];
 
       return followReference(node).flatMapRight(n => parser(n).fold(
-        () => F.left<string, A>(string.Format(
+        () => F.left<ConfigFetchError, A>(ConfigFetchError.wrongType(string.Format(
           "Cannot convert part '{0}' from key '{1}' to {2}. {3} Contents: {4}",
           part, key, typeof(A), n.GetType(), n
-        )), F.right<string, A>
+        ))), F.right<ConfigFetchError, A>
       ));
     }
 
-    Either<string, JSONNode> followReference(JSONNode current) {
+    Either<ConfigFetchError, JSONNode> followReference(JSONNode current) {
       // references are specified with '#REF=...#'
       if (
         current.Value != null &&
@@ -157,16 +159,19 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         var key = current.Value.Substring(5, current.Value.Length - 6);
         // ReSharper disable once RedundantTypeArgumentsOfMethod
         // Mono compiler bug
-        return get<JSONNode>(key, F.some).mapLeft<string>(err =>
-          string.Format("While following reference {0}: {1}", current.Value, err)
+        // References are always followed from the root tree.
+        return get<JSONNode>(key, F.some, root).mapLeft(err =>
+          ConfigFetchError.brokenRef(
+            string.Format("While following reference {0}: {1}", current.Value, err)
+          )
         );
       }
-      else return F.right<string, JSONNode>(current);
+      else return F.right<ConfigFetchError, JSONNode>(current);
     }
 
     public override string ToString() {
       return string.Format(
-        "Config(scope: \"{0}\", data: {1})", scope, configuration
+        "Config(scope: \"{0}\", data: {1})", scope, scopedRoot
       );
     }
   }
