@@ -75,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return go.EnsureComponent<ScrollWheelObservable>().scrollDelta;
     }
 
-    public static IObservable<float> pinch(this GameObject go) {
+    public static IObservable<Tpl<float, float>> pinch(this GameObject go) {
       return go.EnsureComponent<PinchObservable>().pinchDelta;
     }
 
