@@ -206,6 +206,53 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
     } }
 
+    public struct TlpTouch {
+      public readonly int fingerId;
+      public readonly Vector2 position;
+      public readonly Vector2 positionDelta;
+      public readonly int tapCount;
+      public readonly TouchPhase phase;
+
+      public TlpTouch(int fingerId, Vector2 position, Vector2 positionDelta, int tapCount, TouchPhase phase) {
+        this.fingerId = fingerId;
+        this.position = position;
+        this.positionDelta = positionDelta;
+        this.tapCount = tapCount;
+        this.phase = phase;
+      }
+    }
+
+    private static IObservable<List<TlpTouch>> touchesInstance;
+
+    public static IObservable<List<TlpTouch>> touches {
+      get {
+        if (touchesInstance != null) return touchesInstance;
+        var touchList = new List<TlpTouch>();
+        var previousPos = new Vector2();
+        var previousPhase = TouchPhase.Ended;
+        return touchesInstance = everyFrame.map(_ => {
+          touchList.Clear();
+          if (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) {
+            var curPos = (Vector2) Input.mousePosition;
+            var curPhase = Input.GetMouseButtonDown(0)
+              ? TouchPhase.Began
+              : Input.GetMouseButtonUp(0)
+                ? TouchPhase.Ended
+                : curPos == previousPos ? TouchPhase.Moved : TouchPhase.Stationary;
+            if (previousPhase == TouchPhase.Ended) previousPos = curPos;
+            touchList.Add(new TlpTouch(-100, curPos, curPos-previousPos, 0, curPhase));
+            previousPos = curPos;
+            previousPhase = curPhase;
+          }
+          for (var i = 0; i < Input.touchCount; i++) {
+            var t = Input.GetTouch(i);
+            touchList.Add(new TlpTouch(t.fingerId, t.position, t.deltaPosition, t.tapCount, t.phase));
+          }
+          return touchList;
+        });
+      }
+    }
+
     public static IObservable<DateTime> interval(float intervalS, float delayS) 
     { return interval(intervalS, F.some(delayS)); }
 
