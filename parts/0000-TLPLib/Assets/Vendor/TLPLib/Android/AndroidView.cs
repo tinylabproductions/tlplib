@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     /* If the layout is stable, screen space never changes, but navigation buttons just 
      * become a black stripe and never hides. */
     public static Future<bool> hideNavigationBar(bool stableLayout) {
-      if (Application.isEditor) return Future.successful(false);
+      if (Application.platform != RuntimePlatform.Android) return Future.successful(false);
 
       Log.debug("Trying to hide android navigation bar.");
       var activity = AndroidActivity.current;
