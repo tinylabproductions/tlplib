@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ColorExts {
@@ -41,6 +42,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Color32 with32Alpha(this Color32 color, int alpha) {
       return color.with32(a: alpha);
+    }
+
+    public static Color modifyBrightness(this Color rgb, Fn<float, float> f) {
+      var hsv = rgb.RGBToHSV();
+      hsv.b = f(hsv.b);
+      return hsv.HSVToRGB();
+    }
+
+    public static Color modifySaturation(this Color rgb, Fn<float, float> f) {
+      var hsv = rgb.RGBToHSV();
+      hsv.g = f(hsv.g);
+      return hsv.HSVToRGB();
     }
 
     public static Color RGBToHSV(this Color rgb) {
@@ -145,6 +158,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         white.b = Mathf.Clamp(white.b, 0.0f, 1f);
       }
       return white;
+    }
+
+    public static string toHex(this Color32 color) {
+      return color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
     }
   }
 }
