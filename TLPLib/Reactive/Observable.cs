@@ -144,6 +144,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IRxVal<A> toRxVal(A initial);
     // If several events are emitted per same frame, only emit last one in late update.
     IObservable<A> oncePerFrame();
+
+    IObservable<A> setLogging(bool value);
   }
 
   public interface IObserver<in A> {
@@ -209,14 +211,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public struct TlpTouch {
       public readonly int fingerId;
       public readonly Vector2 position;
-      public readonly Vector2 positionDelta;
+      public readonly Vector2 previousPosition;
       public readonly int tapCount;
       public readonly TouchPhase phase;
 
-      public TlpTouch(int fingerId, Vector2 position, Vector2 positionDelta, int tapCount, TouchPhase phase) {
+      public TlpTouch(int fingerId, Vector2 position, Vector2 previousPosition, int tapCount, TouchPhase phase) {
         this.fingerId = fingerId;
         this.position = position;
-        this.positionDelta = positionDelta;
+        this.previousPosition=previousPosition;
         this.tapCount = tapCount;
         this.phase = phase;
       }
@@ -226,31 +228,49 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IObservable<List<TlpTouch>> touches {
       get {
-        if (touchesInstance != null) return touchesInstance;
-        var touchList = new List<TlpTouch>();
-        var previousPos = new Vector2();
-        var previousPhase = TouchPhase.Ended;
-        return touchesInstance = everyFrame.map(_ => {
-          touchList.Clear();
-          if (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) {
-            var curPos = (Vector2) Input.mousePosition;
-            var curPhase = Input.GetMouseButtonDown(0)
-              ? TouchPhase.Began
-              : Input.GetMouseButtonUp(0)
-                ? TouchPhase.Ended
-                : curPos == previousPos ? TouchPhase.Moved : TouchPhase.Stationary;
-            if (previousPhase == TouchPhase.Ended) previousPos = curPos;
-            touchList.Add(new TlpTouch(-100, curPos, curPos-previousPos, 0, curPhase));
-            previousPos = curPos;
-            previousPhase = curPhase;
-          }
-          for (var i = 0; i < Input.touchCount; i++) {
-            var t = Input.GetTouch(i);
-            touchList.Add(new TlpTouch(t.fingerId, t.position, t.deltaPosition, t.tapCount, t.phase));
-          }
-          return touchList;
-        });
+        return touchesInstance ?? (touchesInstance = createTouchesInstance());
       }
+    }
+
+    static IObservable<List<TlpTouch>> createTouchesInstance() {
+      var touchList = new List<TlpTouch>();
+      var previousMousePos = new Vector2();
+      var previousMousePhase = TouchPhase.Ended;
+      var prevPositions = new Dictionary<int, Vector2>();
+      return everyFrame.map(_ => {
+        touchList.Clear();
+        if (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) {
+          var curPos = (Vector2) Input.mousePosition;
+          var curPhase = Input.GetMouseButtonDown(0)
+            ? TouchPhase.Began
+            : Input.GetMouseButtonUp(0)
+              ? TouchPhase.Ended
+              : curPos == previousMousePos ? TouchPhase.Moved : TouchPhase.Stationary;
+          if (previousMousePhase == TouchPhase.Ended) previousMousePos = curPos;
+          touchList.Add(new TlpTouch(-100, curPos, previousMousePos, 0, curPhase));
+          previousMousePos = curPos;
+          previousMousePhase = curPhase;
+        }
+        for (var i = 0; i < Input.touchCount; i++) {
+          var t = Input.GetTouch(i);
+          var id = t.fingerId;
+          var previousPos = t.position;
+          if (t.phase != TouchPhase.Began) {
+            if (!prevPositions.TryGetValue(id, out previousPos)) {
+              previousPos = t.position;
+            }
+            prevPositions[id] = t.position;
+          }
+          else {
+            previousPos = t.position;
+          }
+          if (t.phase == TouchPhase.Canceled || t.phase == TouchPhase.Ended) {
+            prevPositions.Remove(id);
+          }
+          touchList.Add(new TlpTouch(t.fingerId, t.position, previousPos, t.tapCount, t.phase));
+        }
+        return touchList;
+      });
     }
 
     public static IObservable<DateTime> interval(float intervalS, float delayS) 
@@ -374,6 +394,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     private readonly Option<SourceProperties> sourceProps;
 
+    bool doLogging;
+
     protected Observable() {
       sourceProps = F.none<SourceProperties>();
     }
@@ -385,6 +407,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     protected virtual void submit(A value) {
+      if (doLogging) {
+        Log.debug("[Observable] submit: " + value);
+      }
+
       if (finished) throw new ObservableFinishedException(string.Format(
         "Observable {0} is finished, but #submit called with {1}", this, value
       ));
@@ -440,10 +466,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     { return subscribe(new Observer<A>(onChange, onFinish)); }
 
     public virtual ISubscription subscribe(IObserver<A> observer) {
+      if (doLogging) {
+        Log.debug("[Observable] subscribe: " + observer);
+      }
       var subscription = new Subscription(onUnsubscribed);
       subscriptions.add(new Sub(subscription, !iterating, observer));
       // Subscribe to source if we have a first subscriber.
-      sourceProps.each(_ => _.trySubscribe());
+      sourceProps.each(_ => {
+        var res = _.trySubscribe();
+        if (doLogging && res) {
+          Log.debug("[Observable] Subscribe to source");
+        }
+      });
       return subscription;
     }
 
@@ -857,6 +891,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public IObservable<A> oncePerFrame() { return oncePerFrameImpl(builder<A>()); }
 
+    public IObservable<A> setLogging(bool value) {
+      doLogging = value;
+      return this;
+    }
+
     protected O oncePerFrameImpl<O>(ObserverBuilder<A, O> builder) {
       return builder(obs => {
         var last = F.none<A>();
@@ -880,14 +919,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       // Unsubscribe from source if we don't have any subscribers that are
       // subscribed to us.
-      if (subscribers == 0) sourceProps.each(_ => _.tryUnsubscribe());
+      if (subscribers == 0) {
+        if (doLogging) {
+          Log.debug("[Observable] unsubscribe from source");
+        }
+        sourceProps.each(_ => _.tryUnsubscribe());
+      }
     }
 
     private void afterIteration() {
       if (pendingRemovals != 0) {
         for (var idx = 0; idx < subscriptions.size;) {
           var sub = subscriptions[idx];
-          if (!sub.subscription.isSubscribed) subscriptions.removeAt(idx);
+          if (!sub.subscription.isSubscribed) {
+            if (doLogging) {
+              Log.debug("[Observable] remove sub: " + sub);
+            }
+            subscriptions.removeAt(idx);
+          }
           else idx++;
         }
         pendingRemovals = 0;
