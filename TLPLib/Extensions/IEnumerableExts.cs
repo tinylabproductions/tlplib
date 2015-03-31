@@ -59,5 +59,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       return F.none<B>();
     }
+
+    public static Option<A> reduceLeft<A>(
+      this IEnumerable<A> enumerable, Fn<A, A, A> f
+    ) {
+      if (enumerable.Any()) {
+        return enumerable.Aggregate((a, b) => f(a, b)).some();
+      }
+      return F.none<A>();
+    }
   }
 }
