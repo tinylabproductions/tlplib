@@ -23,12 +23,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       var future = new FutureImpl<Return>();
 
+      queue.Enqueue(F.t(parameters, future));
+
       if (executeImmediately) {
-        doQueryQueue(parameters, future);
+        takeNextFromQueue();
       }
       else {
         Log.debug(name + ".query - currently executing a query, adding to queue");
-        queue.Enqueue(F.t(parameters, future));
       }
 
       return future;
