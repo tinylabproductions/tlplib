@@ -11,7 +11,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     /* If you store this as a value in type custom PrefValue, you'll get back a default value. */
     public const string CUSTOM_DEFAULT = "";
 
-    public struct Val<A> {
+    // Should be class (not struct) because .write mutates object.
+    public class Val<A> {
       readonly string key;
       readonly Act<string, A> writer;
       A cache;
