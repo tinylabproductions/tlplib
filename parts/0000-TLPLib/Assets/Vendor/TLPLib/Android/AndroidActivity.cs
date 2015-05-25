@@ -1,6 +1,6 @@
 ﻿#if UNITY_ANDROID
 using System;
-using System.Threading;
+using Assets.Vendor.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
@@ -58,46 +58,35 @@ namespace com.tinylabproductions.TLPLib.Android {
 
     public static void runOnUI(Act act) { current.Call("runOnUiThread", new AndroidJavaRunnable(act)); }
 
-    public static A runOnUIBlocking<A>(Func<A> f) {
-      return new UIThreadOperation<A>(f).execute();
+    public static A runOnUIBlocking<A>(Fn<A> f) {
+      return new SyncOtherThreadOp<A>(AndroidUIThreadExecutor.a(f)).execute();
     }
 
     public static void runOnUIBlocking(Act act) {
-      new UIThreadOperation<Unit>(() => { act(); return new Unit(); }).execute();
+      new SyncOtherThreadOp<Unit>(AndroidUIThreadExecutor.a(() => { act(); return new Unit(); })).execute();
     }
-
   }
 
-  public class UIThreadOperation<A> {
-    readonly AutoResetEvent evt = new AutoResetEvent(false);
-    readonly int timeoutMs;
-    readonly Func<A> func;
+  public static class AndroidUIThreadExecutor {
+    public static AndroidUIThreadExecutor<A> a<A>(Fn<A> code) { return new AndroidUIThreadExecutor<A>(code); }
+  }
 
-    Exception completedException;
-    A result;
+  public class AndroidUIThreadExecutor<A> : OtherThreadExecutor<A> {
+    readonly Fn<A> code;
 
-    public UIThreadOperation(Func<A> func, int timeoutMs = 1000) {
-      this.func = func;
-      this.timeoutMs = timeoutMs;
+    public AndroidUIThreadExecutor(Fn<A> code) {
+      this.code = code;
     }
 
-    public A execute() {
-      AndroidActivity.runOnUI(onUI);
-      evt.WaitOne(timeoutMs);
-      if (completedException != null) throw completedException;
-      return result;
-    }
-
-    void onUI() {
-      try {
-        result = func();
-      }
-      catch (Exception e) {
-        completedException = e;
-      }
-      finally {
-        evt.Set();
-      }
+    public void execute(Act<A> onSuccess, Act<Exception> onError) {
+      AndroidActivity.runOnUI(() => {
+        try {
+          onSuccess(code());
+        }
+        catch (Exception e) {
+          onError(e);
+        }
+      });
     }
   }
 }
