@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       bridge.CallStatic("sharePNG", path, title, sharerText);
     }
 
-    public static void runOnUI(Act act) { current.Call("runOnUiThread", act); }
+    public static void runOnUI(Act act) { current.Call("runOnUiThread", new AndroidJavaRunnable(act)); }
 
     public static A runOnUIBlocking<A>(Func<A> f) {
       return new UIThreadOperation<A>(f).execute();
