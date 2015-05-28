@@ -71,6 +71,8 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static AndroidUIThreadExecutor<A> a<A>(Fn<A> code) { return new AndroidUIThreadExecutor<A>(code); }
   }
 
+  // This takes 10 ms on galaxy S5
+  // 1 ms on Acer A110
   public class AndroidUIThreadExecutor<A> : OtherThreadExecutor<A> {
     readonly Fn<A> code;
 
