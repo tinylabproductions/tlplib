@@ -23,6 +23,8 @@ namespace com.tinylabproductions.TLPLib.Android {
     private static readonly AndroidJavaClass unityPlayer;
     private static readonly AndroidJavaClass bridge;
     public static readonly AndroidJavaObject current;
+    public static readonly AndroidJavaObject context;
+    public static readonly AndroidJavaObject packageManager;
     public static AndroidJavaObject activity { get { return current; } }
     
     static AndroidActivity() {
@@ -30,6 +32,8 @@ namespace com.tinylabproductions.TLPLib.Android {
       unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
       bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
       current = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+      context = current.Call<AndroidJavaObject>("getApplicationContext");
+      packageManager = context.Call<AndroidJavaObject>("getPackageManager");
     }
 
     /* Get application package name. */
