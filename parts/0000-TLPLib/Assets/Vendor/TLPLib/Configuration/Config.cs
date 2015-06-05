@@ -135,8 +135,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) {
       if (!current.Contains(part)) 
         return F.left<ConfigFetchError, A>(ConfigFetchError.keyNotFound(string.Format(
-          "Cannot find part '{0}' from key '{1}' in {2}",
-          part, key, current
+          "Cannot find part '{0}' from key '{1}' in {2} [scope='{3}']",
+          part, key, current, scope
         )));
       var node = current[part];
 
