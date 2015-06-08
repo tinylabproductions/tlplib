@@ -72,6 +72,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key) 
     { return injected(key, k => underlying.eitherBoolList(k)); }
 
+    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key) 
+    { return injected(key, k => underlying.eitherDateTime(k)); }
+
+    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key) 
+    { return injected(key, k => underlying.eitherDateTimeList(k)); }
+
     public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug.
