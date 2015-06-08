@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void require<T>(
       this T any, bool requirement, string message, params object[] args
-      ) {
+    ) {
       if (! requirement)
         throw new RequirementFailedError(string.Format(message, args));
     }

@@ -29,6 +29,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     private static readonly Parser<int> intParser = n => n.Value.parseInt().rightValue;
     private static readonly Parser<float> floatParser = n => n.Value.parseFloat().rightValue;
     private static readonly Parser<bool> boolParser = n => n.Value.parseBool().rightValue;
+    private static readonly Parser<DateTime> dateTimeParser = n => n.Value.parseDateTime().rightValue;
 
     private readonly string _scope;
     public override string scope { get { return _scope; } }
@@ -66,6 +67,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key) 
     { return getList(key, boolParser); }
+
+    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key) 
+    { return get(key, dateTimeParser); }
+
+    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key) 
+    { return getList(key, dateTimeParser); }
 
     public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) 
     { return fetchSubConfig(key); }

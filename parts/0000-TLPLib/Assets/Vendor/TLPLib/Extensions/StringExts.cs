@@ -10,6 +10,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
+    public static Either<string, uint> parseUInt(this String str) {
+      uint output;
+      return uint.TryParse(str, out output).either(
+        () => "cannot parse as uint: '" + str + "'", output
+      );
+    }
+
     public static Either<string, long> parseLong(this String str) {
       long output;
       return long.TryParse(str, out output).either(
@@ -36,6 +43,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return bool.TryParse(str, out output).either(
         () => "cannot parse as bool: '" + str + "'", output
       );
+    }
+
+    public static Either<Exception, DateTime> parseDateTime(this String str) {
+      try {
+        return F.right<Exception, DateTime>(DateTime.Parse(str));
+      }
+      catch (Exception e) {
+        return F.left<Exception, DateTime>(e);
+      }
     }
   }
 }

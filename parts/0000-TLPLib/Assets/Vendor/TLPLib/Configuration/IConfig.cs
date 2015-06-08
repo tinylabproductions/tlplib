@@ -33,6 +33,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     IList<float> getFloatList(string key);
     bool getBool(string key);
     IList<bool> getBoolList(string key);
+    DateTime getDateTime(string key);
+    IList<DateTime> getDateTimeList(string key);
     IConfig getSubConfig(string key);
     IList<IConfig> getSubConfigList(string key);
 
@@ -50,6 +52,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Option<IList<float>> optFloatList(string key);
     Option<bool> optBool(string key);
     Option<IList<bool>> optBoolList(string key);
+    Option<DateTime> optDateTime(string key);
+    Option<IList<DateTime>> optDateTimeList(string key);
     Option<IConfig> optSubConfig(string key);
     Option<IList<IConfig>> optSubConfigList(string key);
 
@@ -67,6 +71,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Either<ConfigFetchError, IList<float>> eitherFloatList(string key);
     Either<ConfigFetchError, bool> eitherBool(string key);
     Either<ConfigFetchError, IList<bool>> eitherBoolList(string key);
+    Either<ConfigFetchError, DateTime> eitherDateTime(string key);
+    Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key);
     Either<ConfigFetchError, IConfig> eitherSubConfig(string key);
     Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key);
 
@@ -84,6 +90,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Try<IList<float>> tryFloatList(string key);
     Try<bool> tryBool(string key);
     Try<IList<bool>> tryBoolList(string key);
+    Try<DateTime> tryDateTime(string key);
+    Try<IList<DateTime>> tryDateTimeList(string key);
     Try<IConfig> trySubConfig(string key);
     Try<IList<IConfig>> trySubConfigList(string key);
 

@@ -33,6 +33,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public IList<bool> getBoolList(string key) 
     { return tryBoolList(key).getOrThrow; }
 
+    public DateTime getDateTime(string key) 
+    { return tryDateTime(key).getOrThrow; }
+
+    public IList<DateTime> getDateTimeList(string key) 
+    { return tryDateTimeList(key).getOrThrow; }
+
     public IConfig getSubConfig(string key) 
     { return trySubConfig(key).getOrThrow; }
     public IList<IConfig> getSubConfigList(string key) 
@@ -65,6 +71,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public Option<IList<bool>> optBoolList(string key) 
     { return eitherBoolList(key).toOpt(); }
+
+    public Option<DateTime> optDateTime(string key) 
+    { return eitherDateTime(key).toOpt(); }
+
+    public Option<IList<DateTime>> optDateTimeList(string key) 
+    { return eitherDateTimeList(key).toOpt(); }
 
     public Option<IConfig> optSubConfig(string key) 
     { return eitherSubConfig(key).toOpt(); }
@@ -132,6 +144,20 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         fold<Try<IList<bool>>>(tryEx<IList<bool>>, F.scs);
     }
 
+    public Try<DateTime> tryDateTime(string key) {
+      // ReSharper disable once RedundantTypeArgumentsOfMethod
+      // Mono compiler bug
+      return eitherDateTime(key).
+        fold<Try<DateTime>>(tryEx<DateTime>, F.scs);
+    }
+
+    public Try<IList<DateTime>> tryDateTimeList(string key) {
+      // ReSharper disable once RedundantTypeArgumentsOfMethod
+      // Mono compiler bug
+      return eitherDateTimeList(key).
+        fold<Try<IList<DateTime>>>(tryEx<IList<DateTime>>, F.scs);
+    }
+
     public Try<IConfig> trySubConfig(string key) {
       // ReSharper disable once RedundantTypeArgumentsOfMethod
       // Mono compiler bug
@@ -162,6 +188,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public abstract Either<ConfigFetchError, IList<float>> eitherFloatList(string key);
     public abstract Either<ConfigFetchError, bool> eitherBool(string key);
     public abstract Either<ConfigFetchError, IList<bool>> eitherBoolList(string key);
+    public abstract Either<ConfigFetchError, DateTime> eitherDateTime(string key);
+    public abstract Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key);
     public abstract Either<ConfigFetchError, IConfig> eitherSubConfig(string key);
     public abstract Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key);
 
