@@ -32,8 +32,8 @@ namespace com.tinylabproductions.TLPLib.Android {
       unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
       bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
       current = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-      context = current.Call<AndroidJavaObject>("getApplicationContext");
-      packageManager = context.Call<AndroidJavaObject>("getPackageManager");
+      context = current.cjo("getApplicationContext");
+      packageManager = context.cjo("getPackageManager");
     }
 
     /* Get application package name. */
@@ -42,11 +42,23 @@ namespace com.tinylabproductions.TLPLib.Android {
     } }
 
     /* Get version code for the application package name. */
-    public static string versionCode { get {
+    public static int versionCode { get {
       try {
-        return activity.cjo("getPackageManager").
+        return packageManager.
           cjo("getPackageInfo", packageName, 0).
-          Get<int>("versionCode").ToString();
+          Get<int>("versionCode");
+      }
+      catch (Exception e) {
+        Log.error(e);
+        return 0;
+      }
+    } }
+
+    public static string versionName { get {
+      try {
+        return packageManager.
+          cjo("getPackageInfo", packageName, 0).
+          Get<string>("versionName");
       }
       catch (Exception e) {
         Log.error(e);
