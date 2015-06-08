@@ -83,7 +83,8 @@ namespace com.tinylabproductions.TLPLib.ABTest {
     public static ABTest fromConfig(string name, IConfig cfg) {
       return new ABTest(
         name,
-        cfg.getSubConfigList("variants").Select(ABTestVariant.fromConfig).ToList().AsReadOnly(),
+        // ReSharper disable once ConvertClosureToMethodGroup - Mono compiler bug
+        cfg.getSubConfigList("variants").Select(c => ABTestVariant.fromConfig(c)).ToList().AsReadOnly(),
         cfg.optDateTime("start_at"), cfg.optDateTime("end_at"), 
         cfg.optString("seed").getOrElse(name)
       );
