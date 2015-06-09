@@ -1,5 +1,6 @@
 ﻿using System;
 using Assets.Vendor.TLPLib.Components.Forwarders;
+using com.tinylabproductions.TLPLib.Components;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -50,6 +51,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         go.GetComponent<OnMouseDownForwarder>() ?? 
         go.AddComponent<OnMouseDownForwarder>()
       ).onMouseDown;
+    }
+
+    public static A EnsureComponent<A>(this GameObject go) where A : Component {
+      return go.GetComponent<A>() ?? go.AddComponent<A>();
+    }
+
+    public static IObservable<Unit> uiClick(this GameObject go) {
+      return go.EnsureComponent<UIClickForwarder>().onClick;
     }
   }
 }
