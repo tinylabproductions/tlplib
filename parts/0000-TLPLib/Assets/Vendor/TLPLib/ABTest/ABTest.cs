@@ -101,10 +101,12 @@ namespace com.tinylabproductions.TLPLib.ABTest {
       var hashBytes = sha.ComputeHash(Encoding.ASCII.GetBytes(seed + clientId));
       var variantId = hashBytes.Sum(t => Convert.ToInt32(t)) % positiveWeightSum();
 
+      // variantId = 0 .. N-1
+      // sum = 1 .. N
       var sum = 0;
       foreach (var variant in variants) {
         sum += variant.chanceWeight;
-        if (sum >= variantId) return variant;
+        if (sum > variantId) return variant;
       }
 
       throw new IllegalStateException("Shouldn't get here");
