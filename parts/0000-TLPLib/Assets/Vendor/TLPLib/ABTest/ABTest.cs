@@ -10,7 +10,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.ABTest {
   public struct ABTest : IEquatable<ABTest> {
-    readonly static SHA256 sha = SHA256.Create();
+    readonly static SHA256Managed sha = new SHA256Managed();
 
     public readonly string name;
     public readonly ReadOnlyCollection<ABTestVariant> variants;
