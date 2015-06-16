@@ -66,6 +66,10 @@ namespace com.tinylabproductions.TLPLib.Android {
       }
     } }
 
+    public static string rateURL { get {
+        return "market://details?id=" + packageName;
+    } }
+
     public static bool isTablet { get { return bridge.CallStatic<bool>("isTablet"); } }
 
     public static void sharePNG(string path, string title, string sharerText) {
