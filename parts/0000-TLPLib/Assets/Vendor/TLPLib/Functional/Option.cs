@@ -167,6 +167,50 @@ public
   /* A quick way to get None instance for this options type. */
   public Option<A> none { get { return F.none<A>(); } }
 
+  #region Equality
+
+#if UNITY_IOS
+  protected bool Equals(Option<A> other) {
+    return EqualityComparer<A>.Default.Equals(value, other.value) && isSome == other.isSome;
+  }
+
+  public override bool Equals(object obj) {
+    if (ReferenceEquals(null, obj)) return false;
+    if (ReferenceEquals(this, obj)) return true;
+    if (obj.GetType() != this.GetType()) return false;
+    return Equals((Option<A>) obj);
+  }
+
+  public override int GetHashCode() {
+    unchecked {
+      return (EqualityComparer<A>.Default.GetHashCode(value) * 397) ^ isSome.GetHashCode();
+    }
+  }
+
+  sealed class ValueIsSomeEqualityComparer : IEqualityComparer<Option<A>> {
+    public bool Equals(Option<A> x, Option<A> y) {
+      if (ReferenceEquals(x, y)) return true;
+      if (ReferenceEquals(x, null)) return false;
+      if (ReferenceEquals(y, null)) return false;
+      if (x.GetType() != y.GetType()) return false;
+      return EqualityComparer<A>.Default.Equals(x.value, y.value) && x.isSome == y.isSome;
+    }
+
+    public int GetHashCode(Option<A> obj) {
+      unchecked {
+        return (EqualityComparer<A>.Default.GetHashCode(obj.value) * 397) ^ obj.isSome.GetHashCode();
+      }
+    }
+  }
+
+  static readonly IEqualityComparer<Option<A>> valueIsSomeComparerInstance = new ValueIsSomeEqualityComparer();
+
+  public static IEqualityComparer<Option<A>> valueIsSomeComparer
+  {
+    get { return valueIsSomeComparerInstance; }
+  }
+
+#else
   public override bool Equals(object o) {
     return o is Option<A> && Equals((Option<A>)o);
   }
@@ -186,6 +230,9 @@ public
   public static bool operator != (Option<A> lhs, Option<A> rhs) {
     return !lhs.Equals(rhs);
   }
+#endif
+
+  #endregion
 
   public override string ToString() {
     return isSome ? "Some(" + value + ")" : "None";

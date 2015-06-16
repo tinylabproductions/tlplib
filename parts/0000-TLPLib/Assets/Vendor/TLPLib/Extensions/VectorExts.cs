@@ -14,8 +14,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
     ) {
 #if UNITY_IOS
-      if (x == null) x = new Option<float>();
-      if (y == null) y = new Option<float>();
+      if (null == x) x = new Option<float>();
+      if (null == y) y = new Option<float>();
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y));
     }
@@ -33,9 +33,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
     ) {
 #if UNITY_IOS
-      if (x == null) x = new Option<float>();
-      if (y == null) y = new Option<float>();
-      if (z == null) z = new Option<float>();
+      if (null == x) x = new Option<float>();
+      if (null == y) y = new Option<float>();
+      if (null == z) z = new Option<float>();
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
     }
