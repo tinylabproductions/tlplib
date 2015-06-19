@@ -52,17 +52,26 @@ namespace Smooth.Platform {
 				return BasePlatform.Xbox360;
 			case RuntimePlatform.PS3:
 				return BasePlatform.Ps3;
+#if UNITY_3_5
 			case RuntimePlatform.FlashPlayer:
 				return BasePlatform.Flash;
 			case RuntimePlatform.NaCl:
 				return BasePlatform.NaCl;
+#endif
 #if !UNITY_3_5 && !UNITY_4_0 && !UNITY_4_1
 			case RuntimePlatform.WP8Player:
 				return BasePlatform.Wp8;
+#if UNITY_4_2 || UNITY_4_3 || UNITY_4_5 || UNITY_4_6
 			case RuntimePlatform.MetroPlayerX86:
 			case RuntimePlatform.MetroPlayerX64:
 			case RuntimePlatform.MetroPlayerARM:
 				return BasePlatform.Metro;
+#else
+      case RuntimePlatform.WSAPlayerX86:
+      case RuntimePlatform.WSAPlayerX64:
+      case RuntimePlatform.WSAPlayerARM:
+        return BasePlatform.Metro;
+#endif
 			case RuntimePlatform.BlackBerryPlayer:
 				return BasePlatform.BlackBerry;
 			case RuntimePlatform.TizenPlayer:

@@ -25,10 +25,17 @@ namespace com.tinylabproductions.TLPLib.Utilities {
           return IOS;
         case RuntimePlatform.WP8Player: 
           return WP8;
-        case RuntimePlatform.MetroPlayerARM:
-        case RuntimePlatform.MetroPlayerX64:
-        case RuntimePlatform.MetroPlayerX86:
+#if UNITY_4_2 || UNITY_4_3 || UNITY_4_5 || UNITY_4_6
+			  case RuntimePlatform.MetroPlayerX86:
+			  case RuntimePlatform.MetroPlayerX64:
+			  case RuntimePlatform.MetroPlayerARM:
+				  return METRO;
+#else
+        case RuntimePlatform.WSAPlayerX86:
+        case RuntimePlatform.WSAPlayerX64:
+        case RuntimePlatform.WSAPlayerARM:
           return METRO;
+#endif
         case RuntimePlatform.BlackBerryPlayer:
           return BLACKBERRY;
         case RuntimePlatform.WindowsWebPlayer:
