@@ -27,11 +27,11 @@ namespace Smooth.Compare.Comparers {
 		[StructLayout(LayoutKind.Explicit)]
 		internal struct Converter
 		{
-			[FieldOffset(0)]
+      [FieldOffset(0)]
+      public Int32 value;
+      
+      [FieldOffset(0)]
 			public T t;
-			
-			[FieldOffset(0)]
-			public Int32 value;
 		}
 	}
 
