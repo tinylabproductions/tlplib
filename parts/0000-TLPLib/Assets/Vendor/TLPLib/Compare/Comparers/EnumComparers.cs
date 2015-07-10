@@ -59,10 +59,10 @@ namespace Smooth.Compare.Comparers {
 		internal struct Converter
 		{
 			[FieldOffset(0)]
-			public T t;
-			
-			[FieldOffset(0)]
 			public Int64 value;
+
+      [FieldOffset(0)]
+      public T t;
 		}
 	}
 
