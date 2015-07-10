@@ -12,7 +12,13 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
   [ComVisible(false)]
   [DebuggerDisplay("Count = {Count}")]
-  public struct ReadOnlyLinkedList<A> : IEnumerable<A> {
+  public
+#if UNITY_IOS
+    class
+#else
+    struct
+#endif
+  ReadOnlyLinkedList<A> : IEnumerable<A> {
     private readonly LinkedList<A> backing;
 
     public ReadOnlyLinkedList(LinkedList<A> backingList) {
