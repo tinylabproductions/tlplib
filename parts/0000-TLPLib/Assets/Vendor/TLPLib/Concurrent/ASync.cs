@@ -145,6 +145,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return f;
     }
 
+    readonly static ASyncOneAtATimeQueue<Fn<WWW>, WWW> wwwsQueue = new ASyncOneAtATimeQueue<Fn<WWW>, WWW>(
+      "wwwsQueue", 
+      (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
+    );
+
+    public static Future<WWW> queryWWW(Fn<WWW> createWWW) {
+      return wwwsQueue.query(createWWW);
+    }
+
     public static IEnumerator WWWEnumerator(WWW www, Promise<WWW> promise) {
       yield return www;
       if (String.IsNullOrEmpty(www.error))
