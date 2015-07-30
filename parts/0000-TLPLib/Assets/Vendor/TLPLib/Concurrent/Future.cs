@@ -71,8 +71,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var fab = new FutureImpl<Tpl<A, B>>();
       Act tryComplete = 
         () => fa.pureValue.zip(fb.pureValue).each(ab => fab.tryCompleteSuccess(ab));
-      fa.onComplete(ta => ta.voidFold(_ => tryComplete(), fab.completeError));
-      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), fab.completeError));
+      fa.onComplete(ta => ta.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
+      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
       return fab;
     }
   }
