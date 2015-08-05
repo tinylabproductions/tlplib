@@ -258,8 +258,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       if (ret) {
         if (Future.LOG_EXCEPTIONS) v.exception.each(Log.error);
         _value = F.some(v);
+        // completed should be called only once
+        completed(v);
       }
-      completed(v);
       return ret;
     }
 
