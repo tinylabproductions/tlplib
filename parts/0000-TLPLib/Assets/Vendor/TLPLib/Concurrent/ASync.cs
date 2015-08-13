@@ -15,17 +15,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         go.AddComponent<ASyncHelperBehaviour>();
     }
 
-    // comparision with null goes through unity.
-    private static Option<ASyncHelperBehaviour> _behaviour = F.none<ASyncHelperBehaviour>();
+    private static ASyncHelperBehaviour _behaviour;
 
     private static ASyncHelperBehaviour behaviour { get {
-      if (_behaviour.isEmpty) { 
+      if (((System.Object)_behaviour) == null) { 
         const string name = "ASync Helper";
         var go = new GameObject(name);
         Object.DontDestroyOnLoad(go);
-        _behaviour = F.some(coroutineHelper(go));
+        _behaviour = coroutineHelper(go);
       }
-      return _behaviour.get;
+      return _behaviour;
     } }
 
     public static void init() { var _ = behaviour; }
