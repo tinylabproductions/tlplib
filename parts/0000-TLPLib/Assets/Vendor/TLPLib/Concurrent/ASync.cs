@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return _behaviour;
     } }
 
-    public static void init() { var _ = behaviour; }
+    public static void init() { behaviour.Update(); }
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
