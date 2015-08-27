@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
   public static class Log {
     [Conditional("UNITY_EDITOR"), Conditional("LOG_DEBUG")]
     public static void debug(object o) { Debug.Log("[DEBUG]> " + o); }
-    public static void info(object o) { Debug.LogWarning("[INFO]> " + o); }
+    public static void info(object o) { Debug.Log("[INFO]> " + o); }
     public static void warn(object o) { Debug.LogWarning("[WARN]> " + o); }
     public static void error(Exception ex) { Debug.LogException(ex); }
     public static void error(object o) { Debug.LogError("[ERROR]> " + o); }

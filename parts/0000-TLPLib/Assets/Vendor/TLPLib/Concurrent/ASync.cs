@@ -149,7 +149,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
     );
 
-    public static Future<WWW> queryWWW(Fn<WWW> createWWW) {
+    /* Do async WWW request, but only do one WWW request at a time - there was an IL2CPP bug where
+       having several WWWs executing at once crashed the runtime. */
+    public static Future<WWW> oneAtATimeWWW(Fn<WWW> createWWW) {
       return wwwsQueue.query(createWWW);
     }
 
