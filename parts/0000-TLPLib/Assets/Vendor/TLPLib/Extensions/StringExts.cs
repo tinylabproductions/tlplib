@@ -53,5 +53,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         return F.left<Exception, DateTime>(e);
       }
     }
+
+    public static string trimTo(this string s, int length) { return s.Length > length ? s.Substring(0, length) : s; }
   }
 }

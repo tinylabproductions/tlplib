@@ -128,9 +128,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return f;
     }
 
-    public static Future<A> unfullfiled<A>() {
-      return new FutureImpl<A>();
-    }
+    public static Future<A> unfullfiled<A>() { return UnfullfilledFutureImpl<A>.instance; }
 
     /**
      * Converts enumerable of futures into future of enumerable that is completed
@@ -215,6 +213,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
   }
 
+  /* Future that will never be fullfilled. */
+  class UnfullfilledFutureImpl<A> : Future<A> {
+    public readonly static Future<A> instance = new UnfullfilledFutureImpl<A>();
+    UnfullfilledFutureImpl() {} 
+
+    public Option<Try<A>> value { get { return F.none<Try<A>>(); } }
+    public Option<A> pureValue { get { return F.none<A>(); } }
+    public CancellationToken onComplete(Act<Try<A>> action) { return Future.FinishedCancellationToken.instance; }
+    public CancellationToken onSuccess(Act<A> action) { return Future.FinishedCancellationToken.instance; ; }
+    public CancellationToken onFailure(Act<Exception> action) { return Future.FinishedCancellationToken.instance; ; }
+  }
+
   class FutureImpl<A> : Future<A>, Promise<A> {
     public class CancellationTokenImpl : CancellationToken {
       private readonly Act<Try<A>> action;
@@ -235,10 +245,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     private readonly IList<Act<Try<A>>> listeners = new List<Act<Try<A>>>();
 
-    private Option<Try<A>> _value = F.none<Try<A>>();
+    private Option<Try<A>> _value;
     public Option<Try<A>> value { get { return _value; } }
     public Option<A> pureValue 
     { get { return _value.flatMap(t => t.fold(F.some, _ => F.none<A>())); } }
+
+    public FutureImpl() { _value = F.none<Try<A>>(); }
 
     public void complete(Try<A> v) {
       if (! tryComplete(v)) throw new IllegalStateException(string.Format(

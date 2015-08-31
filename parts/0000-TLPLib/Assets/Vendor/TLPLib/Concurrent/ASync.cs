@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -137,10 +138,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, enumerator);
     }
 
+    [Obsolete("use wrapWWW instead")]
+    public static Future<WWW> www(Fn<WWW> createWWW) { return wrapWWW(createWWW()); }
+
     /* Do async WWW request. Completes with WWWException if WWW fails. */
-    public static Future<WWW> www(Fn<WWW> createWWW) {
+    public static Future<WWW> wrapWWW(WWW www) {
       var f = new FutureImpl<WWW>();
-      StartCoroutine(WWWEnumerator(createWWW(), f));
+      StartCoroutine(WWWEnumerator(www, f));
       return f;
     }
 
@@ -155,12 +159,23 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return wwwsQueue.query(createWWW);
     }
 
-    public static IEnumerator WWWEnumerator(WWW www, Promise<WWW> promise) {
+    public static IEnumerator WWWEnumerator(WWW www) {
       yield return www;
-      if (String.IsNullOrEmpty(www.error))
-        promise.completeSuccess(www);
-      else
-        promise.completeError(new WWWException(www));
+    }
+
+    /* Wait until enumerator is completed and then do action */
+    public static IEnumerator afterThis(this IEnumerator enumerator, Act action) {
+      while (enumerator.MoveNext()) yield return enumerator.Current;
+      action();
+    }
+
+    public static IEnumerator WWWEnumerator(WWW www, Promise<WWW> promise) {
+      return WWWEnumerator(www).afterThis(() => {
+        if (string.IsNullOrEmpty(www.error))
+          promise.completeSuccess(www);
+        else
+          promise.completeError(new WWWException(www));
+      });
     }
 
     public static IEnumerator WithDelayEnumerator(
