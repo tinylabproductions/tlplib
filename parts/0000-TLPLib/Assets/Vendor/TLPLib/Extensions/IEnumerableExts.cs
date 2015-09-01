@@ -34,5 +34,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> Yield<A>(this A any) {
       yield return any;
     }
+
+    public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
+      foreach (var el in enumerable) f(el);
+    }
   }
 }
