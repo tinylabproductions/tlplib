@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Android {
           future.completeSuccess(true);
         }
         catch (Exception e) {
-          Log.warn(
+          Log.debug(
             "Error while trying to hide navigation bar on android: " + e
           );
           future.completeSuccess(false);
