@@ -29,6 +29,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
       this.fileInfo = fileInfo;
     }
 
+    /* Is this trace frame is in our application code? */
+    public bool inApp { get { return !method.StartsWith("UnityEngine."); } }
+
     public override string ToString() {
       return method + fileInfo.fold(string.Empty, fi => " (at " + fi.ToString() + ")");
     }

@@ -215,7 +215,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     public static Dictionary<string, object> backtraceElemToJson(this BacktraceElem bt) {
       var json = new Dictionary<string, object> {
         {"function", bt.method},
-        {"in_app", bt.fileInfo.isDefined}
+        {"in_app", bt.inApp}
       };
       if (bt.fileInfo.isDefined) {
         var fi = bt.fileInfo.get;
