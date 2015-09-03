@@ -81,6 +81,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface Future<A> {
     Option<Try<A>> value { get; }
     Option<A> pureValue { get; }
+    /* If you are using onComplete, you must handle errors as well. */
     CancellationToken onComplete(Act<Try<A>> action);
     CancellationToken onSuccess(Act<A> action);
     CancellationToken onFailure(Act<Exception> action);
@@ -108,8 +109,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public static class Future {
-    public static bool LOG_EXCEPTIONS = true;
-
     public static Future<A> a<A>(Act<Promise<A>> body) {
       var f = new FutureImpl<A>();
       body(f);
@@ -227,30 +226,42 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   class FutureImpl<A> : Future<A>, Promise<A> {
     public class CancellationTokenImpl : CancellationToken {
-      private readonly Act<Try<A>> action;
+      private readonly FutureListener listener;
       private readonly FutureImpl<A> future;
-      public bool isCancelled { get; private set; } 
+      public bool isCancelled { get; private set; }
 
-      public CancellationTokenImpl(Act<Try<A>> action, FutureImpl<A> future) {
-        this.action = action;
+      public CancellationTokenImpl(FutureListener listener, FutureImpl<A> future) {
+        this.listener = listener;
         this.future = future;
         isCancelled = false;
       }
 
       public bool cancel() {
         isCancelled = true;
-        return future.cancel(action);
+        return future.cancel(listener);
       }
     }
 
-    private readonly IList<Act<Try<A>>> listeners = new List<Act<Try<A>>>();
+    public struct FutureListener {
+      public readonly Act<Try<A>> handler;
+      public readonly bool handlesErrors;
+
+      public FutureListener(bool handlesErrors, Act<Try<A>> handler) {
+        this.handlesErrors = handlesErrors;
+        this.handler = handler;
+      }
+    }
+
+    private readonly IList<FutureListener> listeners = new List<FutureListener>();
 
     private Option<Try<A>> _value;
     public Option<Try<A>> value { get { return _value; } }
     public Option<A> pureValue 
     { get { return _value.flatMap(t => t.fold(F.some, _ => F.none<A>())); } }
 
-    public FutureImpl() { _value = F.none<Try<A>>(); }
+    public FutureImpl() {
+      _value = F.none<Try<A>>();
+    }
 
     public void complete(Try<A> v) {
       if (! tryComplete(v)) throw new IllegalStateException(string.Format(
@@ -268,7 +279,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       // Cannot use fold here because of iOS AOT.
       var ret = value.isEmpty;
       if (ret) {
-        if (Future.LOG_EXCEPTIONS) v.exception.each(Log.error);
+        // If no listeners are handling our errors - report them to error log.
+        if (!listeners.Any(l => l.handlesErrors)) v.exception.each(Log.error);
         _value = F.some(v);
         // completed should be called only once
         completed(v);
@@ -284,18 +296,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return tryComplete(F.err<A>(ex));
     }
 
-    public CancellationToken onComplete(Act<Try<A>> action) {
+    private CancellationToken onComplete(FutureListener listener) {
       return value.fold<Try<A>, CancellationToken>(() => {
-        listeners.Add(action);
-        return new CancellationTokenImpl(action, this);
+        listeners.Add(listener);
+        return new CancellationTokenImpl(listener, this);
       }, v => {
-        action(v);
+        listener.handler(v);
         return Future.FinishedCancellationToken.instance;
       });
     }
 
+    public CancellationToken onComplete(Act<Try<A>> action) {
+      return onComplete(new FutureListener(true, action));
+    }
+
     public CancellationToken onSuccess(Act<A> action) {
-      return onComplete(t => t.value.each(action));
+      return onComplete(new FutureListener(false, t => t.value.each(action)));
     }
 
     public CancellationToken onFailure(Act<Exception> action) {
@@ -303,11 +319,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public void completed(Try<A> v) {
-      foreach (var listener in listeners) listener(v);
+      foreach (var listener in listeners) listener.handler(v);
       listeners.Clear();
     }
 
-    private bool cancel(Act<Try<A>> action) {
+    private bool cancel(FutureListener action) {
       return listeners.Remove(action);
     }
   }
