@@ -109,6 +109,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public static class Future {
+    public class TimeoutException<A> : Exception {
+      public readonly Future<A> future;
+      public readonly float timeoutSeconds;
+
+      public TimeoutException(Future<A> future, float timeoutSeconds)
+      : base(string.Format("Future {0} timed out after {1} seconds", future, timeoutSeconds)) {
+        this.future = future;
+        this.timeoutSeconds = timeoutSeconds;
+      }
+    }
+
     public static Future<A> a<A>(Act<Promise<A>> body) {
       var f = new FutureImpl<A>();
       body(f);
@@ -128,6 +139,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Future<A> unfullfiled<A>() { return UnfullfilledFutureImpl<A>.instance; }
+
+    public static Future<A> delay<A>(float seconds, Fn<A> createValue) {
+      var f = new FutureImpl<A>();
+      ASync.WithDelay(seconds, () => f.complete(F.doTry(createValue)));
+      return f;
+    }
 
     /**
      * Converts enumerable of futures into future of enumerable that is completed
@@ -192,6 +209,23 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var f = new FutureImpl<Unit>();
       ASync.StartCoroutine(coroutineEnum(f, enumerator));
       return f;
+    }
+
+    /* Waits at most `timeoutSeconds` for the future to complete. Completes with 
+       exception produced by `onTimeout` on timeout. */
+    public static Future<A> timeout<A>(
+      this Future<A> future, float timeoutSeconds, Fn<Exception> onTimeout
+    ) {
+      var timeoutF = delay<A>(timeoutSeconds, () => { throw onTimeout(); });
+      return new[] { future, timeoutF }.firstOf();
+    }
+
+    /* Waits at most `timeoutSeconds` for the future to complete. Completes with 
+       TimeoutException<A> on timeout. */
+    public static Future<A> timeout<A>(
+      this Future<A> future, float timeoutSeconds
+    ) {
+      return future.timeout(timeoutSeconds, () => new TimeoutException<A>(future, timeoutSeconds));
     }
 
     private static IEnumerator coroutineEnum
