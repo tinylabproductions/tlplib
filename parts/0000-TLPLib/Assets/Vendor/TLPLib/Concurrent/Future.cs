@@ -143,12 +143,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       for (var idx = 0; idx < sourceFutures.Length; idx++) {
         var f = sourceFutures[idx]; 
         var fixedIdx = idx;
-        f.onSuccess(value => {
-          results[fixedIdx] = value;
-          completed++;
-          if (completed == results.Length) future.tryCompleteSuccess(results);
-        });
-        f.onFailure(future.completeError);
+        f.onComplete(t => t.voidFold(
+          value => {
+            results[fixedIdx] = value;
+            completed++;
+            if (completed == results.Length) future.tryCompleteSuccess(results);
+          },
+          e => future.tryCompleteError(e)
+        ));
       };
       return future;
     }
