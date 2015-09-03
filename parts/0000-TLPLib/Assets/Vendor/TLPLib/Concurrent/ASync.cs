@@ -139,10 +139,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Obsolete("use wrapWWW instead")]
-    public static Future<WWW> www(Fn<WWW> createWWW) { return wrapWWW(createWWW()); }
+    public static Future<WWW> www(Fn<WWW> createWWW) { return wwwFuture(createWWW()); }
 
     /* Do async WWW request. Completes with WWWException if WWW fails. */
-    public static Future<WWW> wrapWWW(WWW www) {
+    public static Future<WWW> wwwFuture(this WWW www) {
       var f = new FutureImpl<WWW>();
       StartCoroutine(WWWEnumerator(www, f));
       return f;
