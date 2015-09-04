@@ -138,7 +138,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, enumerator);
     }
 
-    [Obsolete("use wrapWWW instead")]
+    [Obsolete("use wwwFuture instead")]
     public static Future<WWW> www(Fn<WWW> createWWW) { return wwwFuture(createWWW()); }
 
     /* Do async WWW request. Completes with WWWException if WWW fails. */

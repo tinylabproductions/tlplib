@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   /* See IConfig. */
   public class Config : ConfigBase {
     public static Future<IConfig> apply(string url) {
-      return ASync.www(() => new WWW(url)).map(www => {
+      return new WWW(url).wwwFuture().map(www => {
         var json = JSON.Parse(www.text).AsObject;
         if (json == null) throw new Exception(string.Format(
           "Cannot parse url '{0}' contents as JSON object:\n{1}", 
