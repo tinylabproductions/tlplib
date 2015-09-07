@@ -4,18 +4,52 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   /* See IConfig. */
   public class Config : ConfigBase {
-    public static Future<IConfig> apply(string url) {
+    public class WrongContentType : Exception {
+      public readonly string url, expectedContentType, actualContentType;
+
+      public WrongContentType(string url, string expectedContentType, string actualContentType) 
+      : base(
+        $"Expected 'Content-Type' in '{url}' to be '{expectedContentType}', but it was '{actualContentType}'"
+      ) {
+        this.url = url;
+        this.expectedContentType = expectedContentType;
+        this.actualContentType = actualContentType;
+      }
+    }
+
+    public class ParsingError : Exception {
+      public readonly string url, jsonString;
+
+      public ParsingError(string url, string jsonString) : base(
+        $"Cannot parse url '{url}' contents as JSON object:\n{jsonString}"
+      ) {
+        this.url = url;
+        this.jsonString = jsonString;
+      }
+    }
+
+    /**
+     * Fetches JSON config from URL. Checks its content type before parsing.
+     *
+     * Throws WrongContentType if unexpected content type is found. 
+     * Throws ParsingError if JSON could not be parsed,.
+     **/
+    public static Future<IConfig> apply(string url, string expectedContentType= "application/json") {
       return new WWW(url).wwwFuture().map(www => {
+        var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
+        // Sometimes we get redirected to internet paygate, which returns HTML 
+        // instead of our content.
+        if (contentType != expectedContentType)
+          throw new WrongContentType(url, expectedContentType, contentType);
+
         var json = JSON.Parse(www.text).AsObject;
-        if (json == null) throw new Exception(string.Format(
-          "Cannot parse url '{0}' contents as JSON object:\n{1}", 
-          url, www.text
-        ));
+        if (json == null) throw new ParsingError(url, www.text);
         return (IConfig) new Config(json);
       });
     }
@@ -31,13 +65,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     private static readonly Parser<bool> boolParser = n => n.Value.parseBool().rightValue;
     private static readonly Parser<DateTime> dateTimeParser = n => n.Value.parseDateTime().rightValue;
 
-    private readonly string _scope;
-    public override string scope { get { return _scope; } }
+    public override string scope { get; }
 
     readonly JSONClass root, scopedRoot;
 
     public Config(JSONClass root, JSONClass scopedRoot=null, string scope="") {
-      _scope = scope;
+      this.scope = scope;
       this.root = root;
       this.scopedRoot = scopedRoot ?? root;
     }
