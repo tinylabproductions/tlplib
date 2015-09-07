@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Android {
 
       Log.debug("Trying to hide android navigation bar.");
       var activity = AndroidActivity.current;
-      var future = new FutureImpl<bool>();
+      var future = new FutureImpl<bool>("[AndroidView.hideNavigationBar]");
       activity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
         try {
           var flags =
