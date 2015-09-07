@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
@@ -37,6 +38,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
       foreach (var el in enumerable) f(el);
+    }
+
+    public static Option<A> find<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
+      foreach (var a in enumerable) if (predicate(a)) return F.some(a);
+      return F.none<A>();
     }
   }
 }
