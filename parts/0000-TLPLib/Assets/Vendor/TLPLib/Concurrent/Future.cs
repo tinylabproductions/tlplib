@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class FutureExts {
@@ -77,7 +78,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return fab;
     }
 
-    /* Gives future a name to log out in the errors. */
+    public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
+      var rx = RxRef.a(F.none<A>());
+      future.onSuccess(a => rx.value = F.some(a));
+      return rx;
+    }
   }
 
   /** Coroutine based future **/
