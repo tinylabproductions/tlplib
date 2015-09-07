@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /* Execute asynchronous things one at a time. Useful for wrapping not 
@@ -18,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public Future<Return> query(Params parameters) {
-      var future = new FutureImpl<Return>();
+      var future = new FutureImpl<Return>("[ASyncOneAtATimeQueue#query]");
 
       theFuture.onComplete(_ => doQuery(parameters, future));
       theFuture = future;

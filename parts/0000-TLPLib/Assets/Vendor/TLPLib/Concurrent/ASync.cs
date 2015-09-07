@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
-using Object = UnityEngine.Object;
+using Object = System.Object;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
@@ -19,10 +17,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     private static ASyncHelperBehaviour _behaviour;
 
     private static ASyncHelperBehaviour behaviour { get {
-      if (((System.Object)_behaviour) == null) { 
+      if (((Object)_behaviour) == null) { 
         const string name = "ASync Helper";
         var go = new GameObject(name);
-        Object.DontDestroyOnLoad(go);
+        UnityEngine.Object.DontDestroyOnLoad(go);
         _behaviour = coroutineHelper(go);
       }
       return _behaviour;
@@ -33,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
     ) {
-      var f = new FutureImpl<A>();
+      var f = new FutureImpl<A>("[ASync.StartCoroutine]");
       behaviour.StartCoroutine(coroutine(f));
       return f;
     }
@@ -143,7 +141,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do async WWW request. Completes with WWWException if WWW fails. */
     public static Future<WWW> wwwFuture(this WWW www) {
-      var f = new FutureImpl<WWW>();
+      var f = new FutureImpl<WWW>("[ASync.wwwFuture]");
       StartCoroutine(WWWEnumerator(www, f));
       return f;
     }
@@ -191,6 +189,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator EveryWaitEnumerator(WaitForSeconds wait, Fn<bool> f) {
+      // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
       while (f()) yield return wait;
     }
 

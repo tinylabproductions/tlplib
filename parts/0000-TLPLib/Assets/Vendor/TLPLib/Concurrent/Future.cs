@@ -7,8 +7,8 @@ using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class FutureExts {
-    public static Future<B> map<A, B>(this Future<A> future, Fn<A, B> mapper) {
-      var p = new FutureImpl<B>();
+    public static Future<B> map<A, B>(this Future<A> future, Fn<A, B> mapper, string name=null) {
+      var p = new FutureImpl<B>(name ?? $"{future.name}.map");
       future.onComplete(t => t.voidFold(
         v => {
           try { p.completeSuccess(mapper(v)); }
@@ -20,9 +20,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Future<B> flatMap<A, B>(
-      this Future<A> future, Fn<A, Future<B>> mapper
+      this Future<A> future, Fn<A, Future<B>> mapper, string name=null
     ) {
-      var p = new FutureImpl<B>();
+      var p = new FutureImpl<B>(name ?? $"{future.name}.flatMap");
       future.onComplete(t => t.voidFold(
         v => {
           try { mapper(v).onComplete(p.complete); }
@@ -37,9 +37,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * calls recovery function on exception in the original future and 
      * completes the new function with value on Some or exception on None. */
     public static Future<A> recover<A>(
-      this Future<A> future, Fn<Exception, Option<A>> recoverFn
+      this Future<A> future, Fn<Exception, Option<A>> recoverFn, string name=null
     ) {
-      var f = new FutureImpl<A>();
+      var f = new FutureImpl<A>(name ?? $"{future.name}.recover");
       future.onComplete(t => t.voidFold(
         f.completeSuccess, e => recoverFn(e).voidFold(
           () => f.completeError(e), f.completeSuccess
@@ -52,9 +52,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * calls recovery function on exception in the original future and 
      * completes the new function with value on Some or exception on None. */
     public static Future<A> recover<A>(
-      this Future<A> future, Fn<Exception, Option<Future<A>>> recoverFn
+      this Future<A> future, Fn<Exception, Option<Future<A>>> recoverFn, 
+      string name=null
     ) {
-      var f = new FutureImpl<A>();
+      var f = new FutureImpl<A>(name ?? $"{future.name}.recover(future)");
       future.onComplete(t => t.voidFold(
         f.completeSuccess, e => recoverFn(e).voidFold(
           () => f.completeError(e), 
@@ -66,19 +67,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Waits until both futures yield a result. */
     public static Future<Tpl<A, B>> zip<A, B>(
-      this Future<A> fa, Future<B> fb
+      this Future<A> fa, Future<B> fb, string name=null
     ) {
-      var fab = new FutureImpl<Tpl<A, B>>();
+      var fab = new FutureImpl<Tpl<A, B>>(name ?? $"({fa.name},{fb.name})");
       Act tryComplete = 
         () => fa.pureValue.zip(fb.pureValue).each(ab => fab.tryCompleteSuccess(ab));
       fa.onComplete(ta => ta.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
       fb.onComplete(tb => tb.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
       return fab;
     }
+
+    /* Gives future a name to log out in the errors. */
   }
 
   /** Coroutine based future **/
   public interface Future<A> {
+    string name { get; }
     Option<Try<A>> value { get; }
     Option<A> pureValue { get; }
     /* If you are using onComplete, you must handle errors as well. */
@@ -120,28 +124,28 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    public static Future<A> a<A>(Act<Promise<A>> body) {
-      var f = new FutureImpl<A>();
+    public static Future<A> a<A>(Act<Promise<A>> body, string name="[Future.a]") {
+      var f = new FutureImpl<A>(name);
       body(f);
       return f;
     }
 
-    public static Future<A> successful<A>(A value) {
-      var f = new FutureImpl<A>();
+    public static Future<A> successful<A>(A value, string name="[Future.successful]") {
+      var f = new FutureImpl<A>(name);
       f.completeSuccess(value);
       return f;
     }
 
-    public static Future<A> failed<A>(Exception ex) {
-      var f = new FutureImpl<A>();
+    public static Future<A> failed<A>(Exception ex, string name="[Future.failed]") {
+      var f = new FutureImpl<A>(name);
       f.completeError(ex);
       return f;
     }
 
     public static Future<A> unfullfiled<A>() { return UnfullfilledFutureImpl<A>.instance; }
 
-    public static Future<A> delay<A>(float seconds, Fn<A> createValue) {
-      var f = new FutureImpl<A>();
+    public static Future<A> delay<A>(float seconds, Fn<A> createValue, string name=null) {
+      var f = new FutureImpl<A>(name ?? $"[Future.delay({seconds})]");
       ASync.WithDelay(seconds, () => f.complete(F.doTry(createValue)));
       return f;
     }
@@ -151,13 +155,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * when all futures complete.
      **/
     public static Future<A[]> sequence<A>(
-      this IEnumerable<Future<A>> enumerable
+      this IEnumerable<Future<A>> enumerable, string name=null
     ) {
       var completed = 0u;
-      var sourceFutures = enumerable.ToArray();
-      var results = new A[sourceFutures.Length];
-      var future = new FutureImpl<A[]>();
-      for (var idx = 0; idx < sourceFutures.Length; idx++) {
+      var sourceFutures = enumerable.ToList();
+      var results = new A[sourceFutures.Count];
+      var future = new FutureImpl<A[]>(name ?? $"[Future.sequence({sourceFutures.Count})]");
+      for (var idx = 0; idx < sourceFutures.Count; idx++) {
         var f = sourceFutures[idx]; 
         var fixedIdx = idx;
         f.onComplete(t => t.voidFold(
@@ -168,7 +172,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           },
           e => future.tryCompleteError(e)
         ));
-      };
+      }
       return future;
     }
 
@@ -176,8 +180,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Returns result from the first future that completes.
      **/
     public static Future<A> firstOf<A>
-    (this IEnumerable<Future<A>> enumerable) {
-      var future = new FutureImpl<A>();
+    (this IEnumerable<Future<A>> enumerable, string name="[Future.firstOf]") {
+      var future = new FutureImpl<A>(name);
       foreach (var f in enumerable) f.onComplete(v => future.tryComplete(v));
       return future;
     }
@@ -187,10 +191,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * returns the last error.
      **/
     public static Future<A> firstOfSuccessful<A>
-    (this IEnumerable<Future<A>> enumerable) {
-      var future = new FutureImpl<A>();
-      var completions = 0;
+    (this IEnumerable<Future<A>> enumerable, string name=null) {
       var futures = enumerable.ToList();
+      var future = new FutureImpl<A>(name ?? $"[Future.firstOfSuccessful({futures.Count})]");
+      var completions = 0;
       foreach (var f in futures) {
         f.onComplete(t => {
           completions++;
@@ -205,8 +209,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return future;
     }
 
-    public static Future<Unit> fromCoroutine(IEnumerator enumerator) {
-      var f = new FutureImpl<Unit>();
+    public static Future<Unit> fromCoroutine(IEnumerator enumerator, string name="[Future.fromCoroutine]") {
+      var f = new FutureImpl<Unit>(name);
       ASync.StartCoroutine(coroutineEnum(f, enumerator));
       return f;
     }
@@ -251,13 +255,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   /* Future that will never be fullfilled. */
   class UnfullfilledFutureImpl<A> : Future<A> {
     public readonly static Future<A> instance = new UnfullfilledFutureImpl<A>();
-    UnfullfilledFutureImpl() {} 
+    UnfullfilledFutureImpl() {}
 
+    public string name => "unfullfilled-future";
     public Option<Try<A>> value { get { return F.none<Try<A>>(); } }
     public Option<A> pureValue { get { return F.none<A>(); } }
     public CancellationToken onComplete(Act<Try<A>> action) { return Future.FinishedCancellationToken.instance; }
-    public CancellationToken onSuccess(Act<A> action) { return Future.FinishedCancellationToken.instance; ; }
-    public CancellationToken onFailure(Act<Exception> action) { return Future.FinishedCancellationToken.instance; ; }
+    public CancellationToken onSuccess(Act<A> action) { return Future.FinishedCancellationToken.instance; }
+    public CancellationToken onFailure(Act<Exception> action) { return Future.FinishedCancellationToken.instance; }
   }
 
   class FutureImpl<A> : Future<A>, Promise<A> {
@@ -291,11 +296,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     private readonly IList<FutureListener> listeners = new List<FutureListener>();
 
     private Option<Try<A>> _value;
+    public string name { get; }
     public Option<Try<A>> value { get { return _value; } }
     public Option<A> pureValue 
     { get { return _value.flatMap(t => t.fold(F.some, _ => F.none<A>())); } }
 
-    public FutureImpl() {
+    public FutureImpl(string name) {
+      this.name = name;
       _value = F.none<Try<A>>();
     }
 
@@ -315,8 +322,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       // Cannot use fold here because of iOS AOT.
       var ret = value.isEmpty;
       if (ret) {
-        // If no listeners are handling our errors - report them to error log.
-        if (!listeners.Any(l => l.handlesErrors)) v.exception.each(Log.error);
+        // If no listeners are handling our errors - report them to log.
+        if (!listeners.Any(l => l.handlesErrors))
+          v.exception.each(e => Log.info($"Unhandled exception for future '{name}': {e.Message}"));
         _value = F.some(v);
         // completed should be called only once
         completed(v);

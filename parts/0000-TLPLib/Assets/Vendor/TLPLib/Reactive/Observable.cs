@@ -149,8 +149,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IObservable<Tpl<P1, P2, P3, P4>> Tpl<P1, P2, P3, P4>(
       IObservable<P1> o1, IObservable<P2> o2, IObservable<P3> o3, IObservable<P4> o4
     ) {
-      return o1.zip<P2>(o2).zip<P3>(o3).zip<P4>(o4).
-        map<Tpl<P1, P2, P3, P4>>(t => F.t(t._1._1._1, t._1._1._2, t._1._2, t._2));
+      return o1.zip(o2).zip(o3).zip(o4).
+        map(t => F.t(t._1._1._1, t._1._1._2, t._1._2, t._2));
     }
 
     private static IEnumerator everyFrameCR(IObserver<Unit> observer) {
@@ -273,7 +273,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public Future<A> toFuture() {
-      var f = new FutureImpl<A>();
+      var f = new FutureImpl<A>("[IObservable#toFuture]");
       var subscription = subscribe(f.completeSuccess);
       f.onComplete(_ => subscription.unsubscribe());
       return f;
