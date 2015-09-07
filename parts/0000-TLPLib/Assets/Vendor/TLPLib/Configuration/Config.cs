@@ -4,7 +4,6 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
