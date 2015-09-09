@@ -225,7 +225,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> timeout<A>(
       this Future<A> future, float timeoutSeconds, Fn<Exception> onTimeout
     ) {
-      var timeoutF = delay<A>(timeoutSeconds, () => { throw onTimeout(); });
+      // TODO: test me
+      var timeoutF = delay(timeoutSeconds, () => future.value.fold(
+        // onTimeout() might have side effects, so we only need to execute it if 
+        // there is no value in the original future once the timeout hits.
+        () => F.throws<A>(onTimeout()),
+        @try => @try.getOrThrow
+      ));
       return new[] { future, timeoutF }.firstOf();
     }
 
