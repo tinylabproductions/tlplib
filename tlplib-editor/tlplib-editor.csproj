@@ -75,7 +75,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir "$(SolutionDir)\..\unity\Assets\Code\Editor"
-cd "$(TargetDir)" &amp;&amp; $(SolutionDir)\..\tools\pdb2mdb "$(TargetName).dll"
+rem cd "$(TargetDir)" &amp;&amp; $(SolutionDir)\..\tools\pdb2mdb "$(TargetName).dll"
 copy /y "$(TargetDir)\$(TargetName)."* "$(SolutionDir)\..\unity\Assets\Code\Editor"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

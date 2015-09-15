@@ -71,7 +71,7 @@
   <PropertyGroup>
     <PostBuildEvent>set TARGET_DIR="$(SolutionDir)\..\unity\Assets\Plugins\Android\"
 mkdir "%25TARGET_DIR%25"
-cd "$(TargetDir)" &amp;&amp; $(SolutionDir)\..\tools\pdb2mdb "$(TargetName).dll"
+rem cd "$(TargetDir)" &amp;&amp; $(SolutionDir)\..\tools\pdb2mdb "$(TargetName).dll"
 copy /y "$(TargetDir)\$(TargetName)."* "%25TARGET_DIR%25"
 copy /y "$(ProjectDir)\Resources\*" "%25TARGET_DIR%25"</PostBuildEvent>
   </PropertyGroup>
