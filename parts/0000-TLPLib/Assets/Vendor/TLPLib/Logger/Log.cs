@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -16,7 +17,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
   public static class Log {
     public enum Level { ERROR, WARN, INFO, DEBUG }
 
-    public static Level level = Application.isEditor ? Level.DEBUG : Level.INFO;
+    public static Level level = 
+      Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
 
     /* Compile time version of debug. */
     [Conditional("UNITY_EDITOR"), Conditional("LOG_DEBUG")]
@@ -39,6 +41,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [Conditional("UNITY_EDITOR")]
     public static void editor(object o) { EditorLog.log(o); }
+
+    public static Option<Level> levelFromString(string s) {
+      switch (s) {
+        case "debug": return F.some(Level.DEBUG);
+        case "info": return F.some(Level.INFO);
+        case "warn": return F.some(Level.WARN);
+        case "error": return F.some(Level.ERROR);
+        default: return F.none<Level>();
+      }
+    }
   }
 
   class EditorLog {
