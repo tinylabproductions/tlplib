@@ -5,16 +5,38 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace com.tinylabproductions.TLPLib.Logger {
+  /**
+   * This double checks logging levels because string concatenation is more 
+   * expensive than boolean check.
+   *
+   * The general rule of thumb is that if your log object doesn't need any 
+   * processing you can call appropriate logging method by itself. If it does
+   * need processing, you should use `if (Log.isDebug) Log.rdebug("foo=" + foo);` style.
+   **/
   public static class Log {
+    public enum Level { ERROR, WARN, INFO, DEBUG }
+
+    public static Level level = Application.isEditor ? Level.DEBUG : Level.INFO;
+
+    /* Compile time version of debug. */
     [Conditional("UNITY_EDITOR"), Conditional("LOG_DEBUG")]
-    public static void debug(object o) { Debug.Log("[DEBUG]> " + o); }
-    public static void info(object o) { Debug.Log("[INFO]> " + o); }
-    public static void warn(object o) { Debug.LogWarning("[WARN]> " + o); }
+    public static void cdebug(object o) { rdebug(o); }
+
+    /* Runtime version of debug. */
+    public static void rdebug(object o) { if (isDebug) Debug.Log("[DEBUG]> " + o); }
+    public static bool isDebug => level >= Level.DEBUG;
+
+    public static void info(object o) { if (isInfo) Debug.Log("[INFO]> " + o); }
+    public static bool isInfo => level >= Level.INFO;
+
+    public static void warn(object o) { if (isWarn) Debug.LogWarning("[WARN]> " + o); }
+    public static bool isWarn => level >= Level.WARN;
+
     public static void error(Exception ex) { Debug.LogException(ex); }
     public static void error(object o) { Debug.LogError("[ERROR]> " + o); }
-    public static void error(object o, Exception ex) {
-      error($"{o}: {ex.Message}\n{ex.StackTrace}");
-    }
+    public static void error(object o, Exception ex)
+      { error($"{o}: {ex.Message}\n{ex.StackTrace}"); }
+
     [Conditional("UNITY_EDITOR")]
     public static void editor(object o) { EditorLog.log(o); }
   }

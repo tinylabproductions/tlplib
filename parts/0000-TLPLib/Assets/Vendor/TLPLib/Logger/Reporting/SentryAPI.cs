@@ -113,10 +113,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       string loggerName, DSN dsn, ErrorReporter.AppInfo appInfo,
       ExtraData addExtraData
     ) {
-      return (data => ASync.NextFrame(() => Log.debug(
-        $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" + 
-        message(loggerName, dsn.keys, appInfo, data, addExtraData)
-      )));
+      return (data => ASync.NextFrame(() => {
+        if (Log.isInfo) Log.info(
+          $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
+          message(loggerName, dsn.keys, appInfo, data, addExtraData)
+        );
+      }));
     }
 
     public static SentryMessage message(

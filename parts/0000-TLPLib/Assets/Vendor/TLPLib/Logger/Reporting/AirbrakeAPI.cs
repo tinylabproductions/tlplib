@@ -32,9 +32,9 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     public static ErrorReporter.OnError createEditorOnError(
       string apiKey, ErrorReporter.AppInfo appInfo
     ) {
-      return (data => ASync.NextFrame(() => Log.debug(
-        "Airbrake error:\n\n" + data + "\n" + xml(apiKey, appInfo, data)
-      )));
+      return (data => ASync.NextFrame(() => {
+        if (Log.isInfo) Log.info("Airbrake error:\n\n" + data + "\n" + xml(apiKey, appInfo, data));
+      }));
     }
 
     public static AirbrakeXML xml(

@@ -46,14 +46,18 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static public void trackWWWSend(string prefix, WWW www, Dictionary<string, string> headers) {
       ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
-        if (!string.IsNullOrEmpty(www.error)) Log.debug(
-          prefix + " send failed with: " + www.error + 
-          "\nRequest headers=" + headers.asString() +
-          "\nResponse headers=" + www.responseHeaders.asString()
-        );
-        else if (Debug.isDebugBuild) Log.debug(
-          prefix + " send succeeded with response headers=" + www.responseHeaders.asString()
-        );
+        if (!string.IsNullOrEmpty(www.error)) {
+          if (Log.isInfo) Log.info(
+            prefix + " send failed with: " + www.error + 
+            "\nRequest headers=" + headers.asString() +
+            "\nResponse headers=" + www.responseHeaders.asString()
+          );
+        }
+        else {
+          if (Debug.isDebugBuild && Log.isInfo) Log.info(
+            prefix + " send succeeded with response headers=" + www.responseHeaders.asString()
+          );
+        }
       }));
     }
   }
