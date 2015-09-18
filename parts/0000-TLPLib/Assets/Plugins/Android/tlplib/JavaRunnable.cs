@@ -6,6 +6,7 @@ namespace com.tinylabproductions.TLPLib.Android {
    * Better AndroidJavaRunnableProxy which implements standard java.lang.Object 
    * methods in case someone wants to call them.
    **/
+#if UNITY_ANDROID
   public class JavaRunnable : AndroidJavaProxy {
     public readonly Action runnable;
 
@@ -29,4 +30,5 @@ namespace com.tinylabproductions.TLPLib.Android {
       return new JavaRunnable(runnable);
     }
   }
+#endif
 }
