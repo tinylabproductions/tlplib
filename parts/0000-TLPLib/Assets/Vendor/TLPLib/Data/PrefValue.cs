@@ -33,6 +33,13 @@ namespace com.tinylabproductions.TLPLib.Data {
         PlayerPrefs.Save();
         return value;
       }
+
+      // You should not write to Val when using RxRef
+      public RxRef<A> toRxRef() {
+        var rx = new RxRef<A>(read);
+        rx.subscribe(v => write(v));
+        return rx;
+      } 
     }
 
     public static Val<string> str(string key, string defaultVal) {
