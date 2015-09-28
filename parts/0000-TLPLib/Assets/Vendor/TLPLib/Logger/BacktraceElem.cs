@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -30,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     /* Is this trace frame is in our application code? */
-    public bool inApp { get { return !method.StartsWith("UnityEngine."); } }
+    public bool inApp { get { return !method.StartsWith("UnityEngine.") && !method.StartsWith("com.tinylabproductions.TLPLib.Logger."); } }
 
     public override string ToString() {
       return method + fileInfo.fold(string.Empty, fi => " (at " + fi.ToString() + ")");
@@ -46,12 +48,77 @@ com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveN
     public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?)( \(at (.*?):(\d+)\))?$");
 
     public static List<BacktraceElem> parseUnityBacktrace(string backtrace) {
+      // backtrace may be empty in release mode.
+      if (string.IsNullOrEmpty(backtrace)) {
+        // TODO: we can optimize this to make less garbage
+        var trace = new StackTrace(0, true);
+        var frames = trace.GetFrames();
+        if (frames == null) return new List<BacktraceElem>();
+        return frames.Select(frame => {
+          var method = methodStringFromFrame(frame);
+          if (frame.GetFileLineNumber() == 0)
+            return new BacktraceElem(method, F.none<FileInfo>());
+          else
+            return new BacktraceElem(method, F.some(new FileInfo(frame.GetFileName(), frame.GetFileLineNumber())));
+        }).Where(bt => bt.inApp).ToList();
+      }
       return Regex.Split(backtrace, "\n")
         .Select(s => s.Trim())
         .Where(s => !string.IsNullOrEmpty(s))
         // ReSharper disable once ConvertClosureToMethodGroup
         .Select(s => parseUnityBacktraceLine(s))
         .ToList();
+    }
+
+    // Copied from StackTrace.ToString decompiled source
+    static string methodStringFromFrame(StackFrame sf) {
+      var sb = new StringBuilder();
+      MethodBase mb = sf.GetMethod();
+      if (mb != null) {
+        Type t = mb.DeclaringType;
+        // if there is a type (non global method) print it
+        if (t != null) {
+          sb.Append(t.FullName.Replace('+', '.'));
+          sb.Append(".");
+        }
+        sb.Append(mb.Name);
+
+        // deal with the generic portion of the method 
+        if (mb is MethodInfo && ((MethodInfo) mb).IsGenericMethod) {
+          Type[] typars = ((MethodInfo) mb).GetGenericArguments();
+          sb.Append("[");
+          int k = 0;
+          bool fFirstTyParam = true;
+          while (k < typars.Length) {
+            if (fFirstTyParam == false)
+              sb.Append(",");
+            else
+              fFirstTyParam = false;
+
+            sb.Append(typars[k].Name);
+            k++;
+          }
+          sb.Append("]");
+        }
+
+        // arguments printing
+        sb.Append("(");
+        ParameterInfo[] pi = mb.GetParameters();
+        bool fFirstParam = true;
+        for (int j = 0; j < pi.Length; j++) {
+          if (fFirstParam == false)
+            sb.Append(", ");
+          else
+            fFirstParam = false;
+
+          String typeName = "<UnknownType>";
+          if (pi[j].ParameterType != null)
+            typeName = pi[j].ParameterType.Name;
+          sb.Append(typeName + " " + pi[j].Name);
+        }
+        sb.Append(")");
+      }
+      return sb.ToString();
     }
 
     public static BacktraceElem parseUnityBacktraceLine(string line) {
