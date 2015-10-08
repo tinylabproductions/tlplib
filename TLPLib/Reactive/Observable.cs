@@ -133,11 +133,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     );
     // Returns pairs of (old, new) values when they are changing.
     // If there was no events before, old may be None.
-    IObservable<Tpl<Option<A>, A>> changesOpt();
+    IObservable<Tpl<Option<A>, A>> changesOpt(Fn<A, A, bool> areEqual = null);
     // Like changesOpt() but does not emit if old was None.
-    IObservable<Tpl<A, A>> changes();
+    IObservable<Tpl<A, A>> changes(Fn<A, A, bool> areEqual=null);
     // Emits new values. Always emits first value and then emits changed values.
-    IObservable<A> changedValues();
+    IObservable<A> changedValues(Fn<A, A, bool> areEqual = null);
     // Skips `count` values from the stream.
     IObservable<A> skip(uint count);
     // Convert this observable to reactive value with given initial value.
@@ -823,8 +823,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5
     ) { return zipImpl(o1, o2, o3, o4, o5, builder<Tpl<A, A1, A2, A3, A4, A5>>()); }
 
-    public IObservable<Tpl<Option<A>, A>> changesOpt() {
-      return changesOptImpl(builder<Tpl<Option<A>, A>>());
+    public IObservable<Tpl<Option<A>, A>> changesOpt(Fn<A, A, bool> areEqual=null) {
+      return changesOptImpl(areEqual ?? EqComparer<A>.Default.Equals, builder<Tpl<Option<A>, A>>());
     }
 
     private O changesBase<Elem, O>(
@@ -839,35 +839,35 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    protected O changesOptImpl<O>(ObserverBuilder<Tpl<Option<A>, A>, O> builder) {
+    protected O changesOptImpl<O>(Fn<A, A, bool> areEqual, ObserverBuilder<Tpl<Option<A>, A>, O> builder) {
       return changesBase((obs, lastValue, val) => {
         var valueChanged = lastValue.fold(
           () => true,
-          lastVal => EqComparer<A>.Default.Equals(lastVal, val)
+          lastVal => !areEqual(lastVal, val)
         );
         if (valueChanged) obs.push(F.t(lastValue, val));
       }, builder);
     }
 
-    public IObservable<Tpl<A, A>> changes() {
-      return changesImpl(builder<Tpl<A, A>>());
+    public IObservable<Tpl<A, A>> changes(Fn<A, A, bool> areEqual=null) {
+      return changesImpl(areEqual ?? EqComparer<A>.Default.Equals, builder<Tpl<A, A>>());
     }
 
-    protected O changesImpl<O>(ObserverBuilder<Tpl<A, A>, O> builder) {
+    protected O changesImpl<O>(Fn<A, A, bool> areEqual, ObserverBuilder<Tpl<A, A>, O> builder) {
       return changesBase((obs, lastValue, val) => lastValue.each(lastVal => {
-        if (! EqComparer<A>.Default.Equals(lastVal, val))
+        if (! areEqual(lastVal, val))
           obs.push(F.t(lastVal, val));
       }), builder);
     }
 
-    public IObservable<A> changedValues() {
-      return changedValuesImpl(builder<A>());
+    public IObservable<A> changedValues(Fn<A, A, bool> areEqual=null) {
+      return changedValuesImpl(areEqual ?? EqComparer<A>.Default.Equals, builder<A>());
     }
 
-    protected O changedValuesImpl<O>(ObserverBuilder<A, O> builder) {
+    protected O changedValuesImpl<O>(Fn<A, A, bool> areEqual, ObserverBuilder<A, O> builder) {
       return changesBase((obs, lastValue, val) => {
         if (lastValue.isEmpty) obs.push(val);
-        else if (! EqComparer<A>.Default.Equals(lastValue.get, val))
+        else if (! areEqual(lastValue.get, val))
           obs.push(val);
       }, builder);
     }
