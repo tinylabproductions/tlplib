@@ -96,5 +96,24 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IObservable<Unit> doubleClick(
       this GameObject go, float intervalS = DOUBLE_CLICK_INTERVAL, bool uguiBlocks = true
     ) { return go.click(uguiBlocks).withinTimeframe(2, intervalS).discardValue(); }
+
+    // Modified from unity decompiled dll.
+    // Added includeInactive parameter.
+    public static T getComponentInChildren<T>(this GameObject go, bool includeInactive) where T : Component {
+      if (includeInactive || go.activeInHierarchy) {
+        var component = go.GetComponent<T>();
+        if (component != null)
+          return component;
+      }
+      var transform = go.transform;
+      if (transform != null) {
+        foreach (Component component in transform) {
+          var componentInChildren = component.gameObject.getComponentInChildren<T>(includeInactive);
+          if (componentInChildren != null)
+            return componentInChildren;
+        }
+      }
+      return null;
+    }
   }
 }
