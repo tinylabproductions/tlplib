@@ -103,6 +103,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
     }
 
+    public static IRxVal<Option<B>> optMap<A, B>(
+      this IRxVal<Option<A>> source, Fn<A, B> mapper
+    ) {
+      return source.map(aOpt => aOpt.map(mapper));
+    }
+
     public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) {
       return rxOpt.fold(cached(F.none<A>()), val => val.map(a => a.some()));
     }
