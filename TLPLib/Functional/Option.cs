@@ -179,5 +179,11 @@ public struct Option<A> {
       }
     );
   }
+  
+  // Casts value to desired type
+  // returns None if cast fails
+  public Option<B> ofType<B>() where B : class {
+    return F.opt(value as B);
+  }
 }
 }
