@@ -53,7 +53,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static A instantiate<A>(this A obj) where A : Object {
-      return (A) Object.Instantiate(obj);
+      return Object.Instantiate(obj);
+    }
+
+    public static A instantiateAsSibling<A>(this A obj, bool worldPositionStays = false) where A : MonoBehaviour {
+      var newObj = Object.Instantiate(obj);
+      newObj.transform.SetParent(obj.transform.parent, worldPositionStays);
+      return newObj;
     }
 
     public static Coroutine everyFrame(this GameObject go, Fn<bool> f) {
