@@ -57,12 +57,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\gokit\gokit.csproj">
-      <Project>{de6fc6c3-fbf5-4c19-a297-745a335a0ee7}</Project>
-      <Name>gokit</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Binding\UGUIBind.cs" />
     <Compile Include="Collection\BiMap.cs" />
     <Compile Include="Collection\CarouselEmitter.cs" />
@@ -228,6 +222,12 @@
     <Compile Include="Utilities\Rng.cs" />
     <Compile Include="Utilities\ScreenUtils.cs" />
     <Compile Include="WWWException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\gokit\gokit.csproj">
+      <Project>{de6fc6c3-fbf5-4c19-a297-745a335a0ee7}</Project>
+      <Name>gokit</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
