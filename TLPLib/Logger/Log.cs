@@ -144,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     private static string dt(DateTime t) {
-      return string.Format("{0}:{1}:{2}.{3}", t.Hour, t.Minute, t.Second, t.Millisecond);
+      return $"{t.Hour}:{t.Minute}:{t.Second}.{t.Millisecond}";
     }
 
     private static void unityLogs(string message, string stackTrace, LogType type) {
@@ -164,7 +164,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
           prefix = LogI.P_INFO;
           break;
       }
-      log(prefix, String.IsNullOrEmpty(stackTrace) ? message : message + "\n" + stackTrace);
+      log(prefix, string.IsNullOrEmpty(stackTrace) ? message : message + "\n" + stackTrace);
     }
 
     public static void log(string prefix, object o) {
