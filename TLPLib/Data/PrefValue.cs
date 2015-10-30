@@ -7,11 +7,12 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /* PlayerPrefs backed reactive value. */
+  // NOTE: do not make this a struct.
   public static class PrefValue {
     /* If you store this as a value in type custom PrefValue, you'll get back a default value. */
     public const string CUSTOM_DEFAULT = "";
 
-    public struct Val<A> {
+    public class Val<A> {
       readonly string key;
       readonly Act<string, A> writer;
       A cache;
