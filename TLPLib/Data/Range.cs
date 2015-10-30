@@ -33,8 +33,28 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  public struct URange {
+  public struct URange : IEquatable<URange> {
     public readonly uint from, to;
+
+    #region Equality
+
+    public bool Equals(URange other) {
+      return @from == other.@from && to == other.to;
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is URange && Equals((URange) obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked { return ((int) @from * 397) ^ (int) to; }
+    }
+
+    public static bool operator ==(URange left, URange right) { return left.Equals(right); }
+    public static bool operator !=(URange left, URange right) { return !left.Equals(right); }
+
+    #endregion
 
     public URange(uint from, uint to) {
       this.from = from;
@@ -45,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public uint random { get { return (uint) Random.Range(from, to + 1); } }
 
-    public override string ToString() { return string.Format("{0} - {1}", from, to); }
+    public override string ToString() { return $"{@from} - {to}"; }
   }
 
   [Serializable]
