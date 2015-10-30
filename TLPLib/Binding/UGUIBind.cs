@@ -18,6 +18,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     private static readonly Regex intFilter = new Regex(@"\D");
 
     public static readonly Fn<string, string> strMapper = _ => _;
+    public static readonly Fn<bool, bool> boolMapper = _ => _;
     public static readonly Fn<int, string> intMapper = _ => _.ToString();
     public static readonly Fn<string, int> intComapper = text => {
       var filtered = intFilter.Replace(text, "");
@@ -216,11 +217,22 @@ namespace com.tinylabproductions.TLPLib.Binding {
       return subject.bind(control, uintMapper, uintComapper);
     }
 
+    public static ISubscription bind(
+      this IRxRef<bool> subject, Toggle control
+    ) {
+      return subject.bind<bool, bool>(
+        boolMapper, boolMapper,
+        b => control.isOn = b,
+        handler => control.onValueChanged.AddListener(handler),
+        handler => control.onValueChanged.RemoveListener(handler)
+      );
+    }
+
     public static ISubscription bind<T>(
       this IRxRef<T> subject, InputField control,
       Fn<T, string> mapper, Fn<string, T> comapper
     ) {
-      return subject.bind(
+      return subject.bind<T, string>(
         mapper, comapper,
         text => control.text = text,
         handler => control.onValueChange.AddListener(handler),
@@ -228,16 +240,16 @@ namespace com.tinylabproductions.TLPLib.Binding {
       );
     }
 
-    public static ISubscription bind<A>(
+    public static ISubscription bind<A, B>(
       this IRxRef<A> subject, 
-      Fn<A, string> mapper, Fn<string, A> comapper,
-      Act<string> changeControlText,
-      Act<UnityAction<string>> subscribeToControlChanged,
-      Act<UnityAction<string>> unsubscribeToControlChanged
+      Fn<A, B> mapper, Fn<B, A> comapper,
+      Act<B> changeControlText,
+      Act<UnityAction<B>> subscribeToControlChanged,
+      Act<UnityAction<B>> unsubscribeToControlChanged
     ) {
       var f = mapper.andThen(changeControlText);
       var subscription = subject.subscribe(f);
-      UnityAction<string> handler = value => subject.value = comapper(value);
+      UnityAction<B> handler = value => subject.value = comapper(value);
       subscribeToControlChanged(handler);
       return new Subscription(() => {
         unsubscribeToControlChanged(handler);
