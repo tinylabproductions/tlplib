@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -30,6 +31,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         fullClasses ? type.FullName : type.Name,
         itemsStr
       );
+    }
+
+    public static string mkString<A>(
+      this IEnumerable<A> e, string separator, string start = null, string end = null
+    ) {
+      var sb = new StringBuilder();
+      if (start != null) sb.Append(start);
+      var first = true;
+      foreach (var a in e) {
+        if (first) first = false;
+        else sb.Append(separator);
+        sb.Append(a);
+      }
+      if (end != null) sb.Append(end);
+      return sb.ToString();
     }
 
     public static IEnumerable<A> Yield<A>(this A any) {
