@@ -138,7 +138,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
         {"App:LoadedLevel", tag(Application.loadedLevel)},
         {"App:LoadedLevelName", tag(Application.loadedLevelName)},
-        {"App:IsLoadingLevel", tag(Application.isLoadingLevel)},
         {"App:LevelCount", tag(Application.levelCount)},
         {"App:Platform", tag(Application.platform)},
         {"App:UnityVersion", tag(Application.unityVersion)},
