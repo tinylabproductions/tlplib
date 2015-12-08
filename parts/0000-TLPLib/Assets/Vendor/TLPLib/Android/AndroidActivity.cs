@@ -66,11 +66,17 @@ namespace com.tinylabproductions.TLPLib.Android {
       }
     } }
 
-    public static string rateURL { get {
-        return "market://details?id=" + packageName;
-    } }
+    public static string rateURL => "market://details?id=" + packageName;
 
-    public static bool isTablet { get { return bridge.CallStatic<bool>("isTablet"); } }
+    static Option<bool> _isTablet = F.none<bool>();
+
+    public static bool isTablet { get {
+      if (_isTablet.isEmpty) {
+        // cache result
+        _isTablet = F.some(bridge.CallStatic<bool>("isTablet"));
+      }
+      return _isTablet.get;
+    } }
 
     public static void sharePNG(string path, string title, string sharerText) {
       bridge.CallStatic("sharePNG", path, title, sharerText);
