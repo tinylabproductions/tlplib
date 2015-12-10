@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using Object = System.Object;
@@ -134,6 +135,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
       var enumerator = EveryWaitEnumerator(new WaitForSeconds(seconds), f);
       return new Coroutine(behaviour, enumerator);
+    }
+
+    public static void WithDelayFixedUpdate(GameObject go, float delay, Act act) {
+      // TODO: probably this needs to be rewritten to use only one global component for fixed update
+      go.AddComponent<ASyncFixedUpdateHelperBehaviour>().init(delay, act);
     }
 
     [Obsolete("use wwwFuture instead")]
