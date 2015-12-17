@@ -205,18 +205,15 @@ namespace com.tinylabproductions.TLPLib.Configuration {
           $"[scope='{scope}']"
         ));
       var node = current[part];
-      Debug.Log($"key={key} part={part} parser={parser} node={node}");
 
-      return followReference(node).flatMapRight(n => {
-        var parsed = parser(n);
-        Debug.Log($"parsed={parsed}");
-        return parsed.fold(
+      return followReference(node).flatMapRight(n => 
+        parser(n).fold(
           () => F.left<ConfigFetchError, A>(ConfigFetchError.wrongType(
             $"Cannot convert part '{part}' from key '{key}' to {typeof (A)}. Type={n.GetType()}" +
             $" Contents: {n}"
           )), F.right<ConfigFetchError, A>
-        );
-      });
+        )
+      );
     }
 
     Either<ConfigFetchError, object> followReference(object current) {
