@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
+using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         if (contentType != expectedContentType)
           throw new WrongContentType(url, expectedContentType, contentType);
 
-        var json = JSON.Parse(www.text).AsObject;
+        var json = (Dictionary<string, object>) Json.Deserialize(www.text);
         if (json == null) throw new ParsingError(url, www.text);
         return (IConfig) new Config(json);
       });
@@ -69,20 +69,36 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     // Implementation
 
-    delegate Option<A> Parser<A>(JSONNode node);
+    delegate Option<A> Parser<A>(object node);
 
-    static readonly Parser<JSONClass> jsClassParser = n => F.opt(n.AsObject);
-    static readonly Parser<string> stringParser = n => F.some(n.Value);
-    static readonly Parser<int> intParser = n => n.Value.parseInt().rightValue;
-    static readonly Parser<float> floatParser = n => n.Value.parseFloat().rightValue;
-    static readonly Parser<bool> boolParser = n => n.Value.parseBool().rightValue;
-    static readonly Parser<DateTime> dateTimeParser = n => n.Value.parseDateTime().rightValue;
+    static readonly Parser<Dictionary<string, object>> jsClassParser = 
+      n => F.opt(n as Dictionary<string, object>);
+    static readonly Parser<string> stringParser = n => F.some(n as string);
+    static Option<A> castA<A>(object a) {
+      return a is A ? F.some((A) a) : F.none<A>();
+    }
+
+    static readonly Parser<int> intParser = n => {
+      if (n is long) return F.some((int) (long) n);
+      else if (n is int) return F.some((int) n);
+      else return Option<int>.None;
+    };
+    static readonly Parser<float> floatParser = n => {
+      if (n is double) return F.some((float) (double) n);
+      else if (n is float) return F.some((float) n);
+      else if (n is long) return F.some((float) (long) n);
+      else if (n is int) return F.some((float) (int) n);
+      else return Option<float>.None;
+    };
+    static readonly Parser<bool> boolParser = n => castA<bool>(n);
+    static readonly Parser<DateTime> dateTimeParser = 
+      n => F.opt(n as string).flatMap(_ => _.parseDateTime().rightValue);
 
     public override string scope { get; }
 
-    readonly JSONClass root, scopedRoot;
+    readonly Dictionary<string, object> root, scopedRoot;
 
-    public Config(JSONClass root, JSONClass scopedRoot=null, string scope="") {
+    public Config(Dictionary<string, object> root, Dictionary<string, object> scopedRoot=null, string scope="") {
       this.scope = scope;
       this.root = root;
       this.scopedRoot = scopedRoot ?? root;
@@ -146,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       });
     }
 
-    Either<ConfigFetchError, A> get<A>(string key, Parser<A> parser, JSONClass current = null) {
+    Either<ConfigFetchError, A> get<A>(string key, Parser<A> parser, Dictionary<string, object> current = null) {
       var parts = split(key);
 
       current = current ?? scopedRoot;
@@ -166,7 +182,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Either<ConfigFetchError, IList<A>> getList<A>(
       string key, Parser<A> parser
     ) {
-      return get(key, n => F.some(n.AsArray)).flatMapRight(arr => {
+      return get(key, n => F.some(n as List<object>)).flatMapRight(arr => {
         var list = new List<A>(arr.Count);
         for (var idx = 0; idx < arr.Count; idx++) {
           var node = arr[idx];
@@ -181,38 +197,44 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     Either<ConfigFetchError, A> fetch<A>(
-      JSONClass current, string key, string part, Parser<A> parser
+      Dictionary<string, object> current, string key, string part, Parser<A> parser
     ) {
-      if (!current.Contains(part)) 
+      if (!current.ContainsKey(part)) 
         return F.left<ConfigFetchError, A>(ConfigFetchError.keyNotFound(
-          $"Cannot find part '{part}' from key '{key}' in {current} " +
+          $"Cannot find part '{part}' from key '{key}' in {current.asString()} " +
           $"[scope='{scope}']"
         ));
       var node = current[part];
+      Debug.Log($"key={key} part={part} parser={parser} node={node}");
 
-      return followReference(node).flatMapRight(n => parser(n).fold(
-        () => F.left<ConfigFetchError, A>(ConfigFetchError.wrongType(
-          $"Cannot convert part '{part}' from key '{key}' to {typeof (A)}. {n.GetType()}" +
-          $" Contents: {n}"
-        )), F.right<ConfigFetchError, A>
-      ));
+      return followReference(node).flatMapRight(n => {
+        var parsed = parser(n);
+        Debug.Log($"parsed={parsed}");
+        return parsed.fold(
+          () => F.left<ConfigFetchError, A>(ConfigFetchError.wrongType(
+            $"Cannot convert part '{part}' from key '{key}' to {typeof (A)}. Type={n.GetType()}" +
+            $" Contents: {n}"
+          )), F.right<ConfigFetchError, A>
+        );
+      });
     }
 
-    Either<ConfigFetchError, JSONNode> followReference(JSONNode current) {
+    Either<ConfigFetchError, object> followReference(object current) {
+      var str = current as string;
       // references are specified with '#REF=...#'
       if (
-        current.Value != null &&
-        current.Value.Length >= 6
-        && current.Value.Substring(0, 5) == "#REF="
-        && current.Value.Substring(current.Value.Length - 1, 1) == "#"
+        str != null &&
+        str.Length >= 6
+        && str.Substring(0, 5) == "#REF="
+        && str.Substring(str.Length - 1, 1) == "#"
       ) {
-        var key = current.Value.Substring(5, current.Value.Length - 6);
+        var key = str.Substring(5, str.Length - 6);
         // References are always followed from the root tree.
         return get(key, F.some, root).mapLeft(err =>
-          ConfigFetchError.brokenRef($"While following reference {current.Value}: {err}")
+          ConfigFetchError.brokenRef($"While following reference {str}: {err}")
         );
       }
-      else return F.right<ConfigFetchError, JSONNode>(current);
+      else return F.right<ConfigFetchError, object>(current);
     }
 
     public override string ToString() {
