@@ -139,7 +139,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static void WithDelayFixedUpdate(GameObject go, float delay, Act act) {
       // TODO: probably this needs to be rewritten to use only one global component for fixed update
-      go.AddComponent<ASyncFixedUpdateHelperBehaviour>().init(delay, act);
+      if (delay < 1e-6) {
+        // if delay is 0 call immediately
+        // this is because we don't want to wait a single fixed update
+        act();
+      }
+      else {
+        go.AddComponent<ASyncFixedUpdateHelperBehaviour>().init(delay, act);
+      }
     }
 
     [Obsolete("use wwwFuture instead")]
