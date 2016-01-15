@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this A self, Vector3? position=null, Quaternion? rotation=null, 
       Transform parent=null
     ) where A : Component {
-      var cloned = (GameObject) Object.Instantiate(self.gameObject);
+      var cloned = Object.Instantiate(self.gameObject);
       if (position != null) cloned.transform.position = (Vector3) position;
       if (rotation != null) cloned.transform.rotation = (Quaternion) rotation;
       if (parent != null) cloned.transform.parent = parent;
