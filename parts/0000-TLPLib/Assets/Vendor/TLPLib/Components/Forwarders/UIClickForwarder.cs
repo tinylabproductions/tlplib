@@ -4,8 +4,8 @@ using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
   public class UIClickForwarder : UIBehaviour, IPointerClickHandler {
-    private Subject<Unit> _onClick = new Subject<Unit>();
-    public IObservable<Unit> onClick { get { return _onClick; } }
+    Subject<Unit> _onClick = new Subject<Unit>();
+    public IObservable<Unit> onClick => _onClick;
 
     public void OnPointerClick(PointerEventData eventData) {
       if (eventData.button == PointerEventData.InputButton.Left && IsActive())
