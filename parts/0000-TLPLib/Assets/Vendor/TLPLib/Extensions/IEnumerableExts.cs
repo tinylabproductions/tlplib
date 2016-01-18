@@ -60,5 +60,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in enumerable) if (predicate(a)) return F.some(a);
       return F.none<A>();
     }
+
+    public static IEnumerable<Tpl<A, int>> zipWithIndex<A>(this IEnumerable<A> enumerable) {
+      var idx = 0;
+      foreach (var a in enumerable) {
+        yield return F.t(a, idx);
+        idx += 1;
+      }
+    }
   }
 }
