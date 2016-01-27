@@ -57,10 +57,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return go.GetComponent<A>() ?? go.AddComponent<A>();
     }
 
-    public static IObservable<Unit> uiClick(this GameObject go) {
-      return go.EnsureComponent<UIClickForwarder>().onClick;
-    }
-
     // Modified from unity decompiled dll.
     // Added includeInactive parameter.
     public static T getComponentInChildren<T>(this GameObject go, bool includeInactive) where T : Component {
