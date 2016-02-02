@@ -15,9 +15,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public class LazyImpl<A> : Lazy<A> {
-    private A obj;
+    A obj;
     public bool initialized { get; private set; }
-    private readonly Fn<A> initializer;
+    readonly Fn<A> initializer;
 
     public LazyImpl(Fn<A> initializer) {
       this.initializer = initializer;

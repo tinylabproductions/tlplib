@@ -153,7 +153,7 @@ public
   }
 
   public bool exists(A a, IEqualityComparer<A> comparer) {
-    return isSome && comparer.Equals(value, a); ;
+    return isSome && comparer.Equals(value, a);
   }
 
   public bool isDefined { get { return isSome; } }
@@ -165,7 +165,7 @@ public
   } }
 
   /* A quick way to get None instance for this options type. */
-  public Option<A> none { get { return F.none<A>(); } }
+  public Option<A> none => F.none<A>();
 
   #region Equality
 

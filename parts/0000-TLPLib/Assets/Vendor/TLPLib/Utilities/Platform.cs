@@ -12,6 +12,17 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public const string PC = "pc";
     public const string OTHER = "other";
 
+    public const string SUBNAME_AMAZON = "amazon";
+    public const string SUBNAME_OUYA = "ouya";
+    public const string SUBNAME_GAMESTICK = "gamestick";
+    public const string SUBNAME_OPERA = "opera";
+    public const string SUBNAME_TV = "tv";
+    public const string SUBNAME_WINDOWS = "windows";
+    public const string SUBNAME_OSX = "osx";
+    public const string SUBNAME_OSX_DASHBOARD = "osx-dashboard";
+    public const string SUBNAME_LINUX = "linux";
+    public const string SUBNAME_NONE = "";
+
     public static string fullName { get {
       var sub = subname;
       return sub == "" ? name : name + "-" + subname;
@@ -55,41 +66,41 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 #if UNITY_ANDROID
       if (name == ANDROID) {
 #if UNITY_AMAZON
-        return "amazon";
+        return SUBNAME_AMAZON;
 #elif UNITY_OUYA
-        return "ouya";
+        return SUBNAME_OUYA;
 #elif UNITY_GAMESTICK
-        return "gamestick";
+        return SUBNAME_GAMESTICK;
 #elif UNITY_OPERA
-        return "opera";
+        return SUBNAME_OPERA;
 #endif
         if (!Droid.hasSystemFeature("android.hardware.touchscreen")) {
-          return "tv";
+          return SUBNAME_TV;
         }
       }
 #endif
       if (name == PC) {
         switch (Application.platform) {
           case RuntimePlatform.WindowsPlayer:
-            return "windows";
+            return SUBNAME_WINDOWS;
           case RuntimePlatform.OSXPlayer:
-            return "osx";
+            return SUBNAME_OSX;
           case RuntimePlatform.OSXDashboardPlayer:
-            return "osx-dashboard";
+            return SUBNAME_OSX_DASHBOARD;
           case RuntimePlatform.LinuxPlayer:
-            return "linux";
+            return SUBNAME_LINUX;
         }
       }
       if (name == WEB) {
         switch (Application.platform) {
           case RuntimePlatform.WindowsWebPlayer:
-            return "windows";
+            return SUBNAME_WINDOWS;
           case RuntimePlatform.OSXWebPlayer:
-            return "osx";
+            return SUBNAME_OSX;
         }
       }
 
-      return "";
+      return SUBNAME_NONE;
     } }
   }
 }
