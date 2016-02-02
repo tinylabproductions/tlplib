@@ -3,9 +3,9 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DebugConsoleBinding : MonoBehaviour {
-    public GameObject buttonHolder, logEntriesHolder;
+    public GameObject commandGroupsHolder, commandsHolder, logEntriesHolder;
+    public Text commandGroupLabel, logEntryPrefab;
     public ButtonBinding buttonPrefab;
     public Button closeButton;
-    public Text logEntryPrefab;
   }
 }

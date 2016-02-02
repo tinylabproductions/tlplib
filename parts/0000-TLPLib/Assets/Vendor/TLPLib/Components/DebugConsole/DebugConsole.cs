@@ -4,31 +4,39 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
-using static UnityEngine.GameObject;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DConsole {
     public struct Command {
-      public readonly string name;
+      public readonly string cmdGroup, name;
       public readonly Act run;
 
-      public Command(string name, Act run) {
+      public Command(string cmdGroup, string name, Act run) {
+        this.cmdGroup = cmdGroup;
         this.name = name;
         this.run = run;
+      }
+    }
+
+    struct Instance {
+      public readonly DebugConsoleBinding view;
+
+      public Instance(DebugConsoleBinding view) {
+        this.view = view;
       }
     }
 
     public static DConsole instance { get; } = new DConsole();
 
     DConsole() {
-      register(new Command("Self-test to log", () => Log.rdebug("Debug console self-test.")));
+      registrarFor(nameof(DConsole)).register("Self-test", () => "self-test");
     }
 
-    readonly List<Command> _commands = new List<Command>();
-    public IEnumerable<Command> commands => _commands;
+    readonly Dictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
+    public bool enabled { get; private set; }
 
-    Option<DebugConsoleBinding> view = F.none<DebugConsoleBinding>();
+    Option<Instance> current = F.none<Instance>();
 
     public static readonly int[] DEFAULT_SEQUENCE = { 0, 1, 3, 2, 0, 2, 3, 1, 0 };
 
@@ -44,6 +52,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var obs = go.AddComponent<RegionClickObservable>();
         obs.init(2, 2).sequenceWithinTimeframe(sequence, 3)
         .subscribe(_ => { instance.show(binding); });
+
+      instance.enabled = true;
+
       return obs;
     }
 
@@ -61,7 +72,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public void register(Command command) { _commands.Add(command); }
+    public void register(Command command) {
+      var list = commands.get(command.cmdGroup).getOrElse(() => {
+        var lst = new List<Command>();
+        commands[command.cmdGroup] = lst;
+        return lst;
+      });
+      list.Add(command);
+    }
 
     public DConsoleRegistrar registrarFor(string prefix) {
       return new DConsoleRegistrar(this, prefix);
@@ -72,56 +90,94 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var view = binding.clone();
 
-      foreach (var command in commands) {
-        var button = view.buttonPrefab.clone();
-        // Parent of RectTransform is being set with parent property. 
-        // Consider using the SetParent method instead, with the worldPositionStays 
-        // argument set to false. This will retain local orientation and scale rather 
-        // than world orientation and scale, which can prevent common UI scaling issues.
-        button.GetComponent<RectTransform>().
-          SetParent(view.buttonHolder.transform, worldPositionStays: false);
-        button.text.text = command.name;
-        button.button.onClick.AddListener(() => command.run());
+      foreach (var commandGroup in commands) {
+        var button = addButton(view.buttonPrefab, view.commandGroupsHolder.transform);
+        button.text.text = commandGroup.Key;
+        button.button.onClick.AddListener(() => showGroup(view, commandGroup.Key, commandGroup.Value));
       }
 
       Application.logMessageReceived += onLogMessageReceived;
-
       view.closeButton.onClick.AddListener(destroy);
 
-      this.view = F.some(view);
+      current = new Instance(view).some();
+    }
+
+    void showGroup(DebugConsoleBinding view, string groupName, IEnumerable<Command> commands) {
+      view.commandGroupLabel.text = groupName;
+      foreach (var t in view.commandsHolder.transform.children()) Object.Destroy(t.gameObject);
+      foreach (var command in commands) {
+        var button = addButton(view.buttonPrefab, view.commandsHolder.transform);
+        button.text.text = command.name;
+        button.button.onClick.AddListener(() => command.run());
+      }
+    }
+
+    static ButtonBinding addButton(ButtonBinding prefab, Transform target) {
+      var button = prefab.clone();
+      // Parent of RectTransform is being set with parent property. 
+      // Consider using the SetParent method instead, with the worldPositionStays 
+      // argument set to false. This will retain local orientation and scale rather 
+      // than world orientation and scale, which can prevent common UI scaling issues.
+      button.GetComponent<RectTransform>().SetParent(target, worldPositionStays: false);
+      return button;
     }
 
     void onLogMessageReceived(string message, string stackTrace, LogType type) {
-      view.each(v => {
-        var entry = v.logEntryPrefab.clone();
-        entry.text = $"{DateTime.Now}  {type}  {message}";
-        entry.rectTransform.SetParent(
-          v.logEntriesHolder.transform, worldPositionStays: false
+      current.each(instance => {
+        var entry = instance.view.logEntryPrefab.clone();
+        var shortText = $"{DateTime.Now}  {type}  {message}";
+
+        entry.text = shortText;
+        entry.GetComponent<RectTransform>().SetParent(
+          instance.view.logEntriesHolder.transform, worldPositionStays: false
         );
         entry.transform.SetAsFirstSibling();
       });
     }
 
     public void destroy() {
-      view.each(v => {
+      current.each(i => {
         Application.logMessageReceived -= onLogMessageReceived;
-        Object.Destroy(v.gameObject);
+        Object.Destroy(i.view.gameObject);
       });
-      view = F.none<DebugConsoleBinding>();
+      current = current.none;
     }
   }
 
+  public delegate Option<Obj> HasObjFn<Obj>();
+
   public struct DConsoleRegistrar {
     public readonly DConsole console;
-    public readonly string prefix;
+    public readonly string commandGroup;
 
-    public DConsoleRegistrar(DConsole console, string prefix) {
+    public DConsoleRegistrar(DConsole console, string commandGroup) {
       this.console = console;
-      this.prefix = prefix;
+      this.commandGroup = commandGroup;
     }
+
+    static readonly HasObjFn<Unit> unitSomeFn = () => F.some(F.unit);
 
     public void register(string name, Act run) {
-      console.register(new DConsole.Command($"[{prefix}] {name}", run));
+      register(name, () => { run(); return F.unit; });
     }
+    public void register<A>(string name, Fn<A> run) {
+      register(name, unitSomeFn, _ => run());
+    }
+    public void register<Obj>(string name, HasObjFn<Obj> objOpt, Act<Obj> run) {
+      register(name, objOpt, obj => { run(obj); return F.unit; });
+    }
+    public void register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, A> run) {
+      var prefixedName = $"[{commandGroup}] {name}";
+      console.register(new DConsole.Command(commandGroup, name, () => {
+        var opt = objOpt();
+        if (opt.isDefined) {
+          var returnValue = run(opt.get);
+          Log.rdebug($"{prefixedName} done: {returnValue}");
+        }
+        else Log.rdebug($"{prefixedName} not running: {typeof(Obj)} is None.");
+      }));
+    }
+
+    public bool enabled => console.enabled;
   }
 }
