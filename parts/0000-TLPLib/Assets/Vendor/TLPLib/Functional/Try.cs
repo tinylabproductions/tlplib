@@ -29,9 +29,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public bool isSuccess { get { return _exception == null; } }
     public bool isError { get { return _exception != null; } }
 
-    public Option<A> value { get {
-      return isSuccess ? F.some(_value) : F.none<A>();
-    } }
+    public Option<A> value => isSuccess ? F.some(_value) : F.none<A>();
+    public Option<A> toOption => value;
 
     public Option<Exception> exception { get {
       return isSuccess ? F.none<Exception>() : F.some(_exception);
