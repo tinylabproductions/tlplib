@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -30,6 +32,27 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return (IRxVal<Elem>) rxRef;
       };
     }
+
+    /* Returns first value that satisfies the predicate. */
+    public static IRxVal<Option<A>> firstThat<A>(this IEnumerable<IRxVal<A>> vals, Fn<A, bool> predicate) {
+      var val = RxRef.a(F.none<A>());
+
+      // TODO: this is probably suboptimal.
+      Act rescan = () => {
+        foreach (var rxVal in vals.Where(rxVal => predicate(rxVal.value))) {
+          val.value = F.some(rxVal.value);
+          return;
+        }
+        val.value = F.none<A>();
+      };
+
+      foreach (var rxVal in vals) rxVal.subscribe(_ => rescan());
+
+      return val;
+    }
+
+    public static IRxVal<bool> anyOf(this IEnumerable<IRxVal<bool>> vals, bool searchForTrue=true) 
+      { return vals.firstThat(b => searchForTrue ? b : !b).map(_ => _.isDefined); }
   }
 
   public static class RxRef {
