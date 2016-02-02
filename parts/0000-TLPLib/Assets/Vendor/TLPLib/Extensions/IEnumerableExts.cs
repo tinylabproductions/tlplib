@@ -68,5 +68,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         idx += 1;
       }
     }
+
+    public static IEnumerable<B> collect<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+    ) {
+      foreach (var a in enumerable) {
+        var bOpt = collector(a);
+        if (bOpt.isDefined) yield return bOpt.get;
+      }
+    }
   }
 }
