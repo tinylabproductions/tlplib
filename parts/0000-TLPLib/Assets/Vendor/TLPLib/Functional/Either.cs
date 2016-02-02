@@ -42,6 +42,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<A, C> flatMapRight<C>(Fn<B, Either<A, C>> mapper) 
       { return fold(F.left<A, C>, mapper); }
 
+    public Either<AA, BB> map<AA, BB>(Fn<A, AA> leftMapper, Fn<B, BB> rightMapper) 
+      { return fold(v => F.left<AA, BB>(leftMapper(v)), v => F.right<AA, BB>(rightMapper(v))); }
+
     public Either<C, B> mapLeft<C>(Fn<A, C> mapper) 
       { return fold(v => F.left<C, B>(mapper(v)), F.right<C, B>); }
 
