@@ -14,6 +14,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         throw new RequirementFailedError(string.Format(message, args));
     }
 
+    public static void locally(this object any, Act local) { local(); }
+
     public static T locally<T>(this object any, Fn<T> local) {
       return local();
     }
@@ -26,5 +28,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       tapper(any);
       return any;
     }
+
+    public static Option<A> opt<A>(this A a) where A : class { return F.opt(a); }
+    public static Option<A> some<A>(this A a) { return F.some(a); }
   }
 }
