@@ -34,16 +34,16 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     readonly Dictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
-    public bool enabled { get; private set; }
+    public static bool enabled => Log.isDebug;
 
     Option<Instance> current = F.none<Instance>();
 
     public static readonly int[] DEFAULT_SEQUENCE = { 0, 1, 3, 2, 0, 2, 3, 1, 0 };
 
     public static RegionClickObservable registerDebugSequence(
-      DebugConsoleBinding binding,
-      int[] sequence=null
+      DebugConsoleBinding binding=null, int[] sequence=null
     ) {
+      binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       sequence = sequence ?? DEFAULT_SEQUENCE;
 
       var go = new GameObject {name = "Debug Console initiator"};
@@ -53,23 +53,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         obs.init(2, 2).sequenceWithinTimeframe(sequence, 3)
         .subscribe(_ => { instance.show(binding); });
 
-      instance.enabled = true;
-
       return obs;
-    }
-
-    public static Option<RegionClickObservable> registerDebugSequenceIfDebug(
-      DebugConsoleBinding binding,
-      int[] sequence = null
-    ) {
-      if (Log.isDebug) {
-        Log.info("Registering debug console");
-        return F.some(registerDebugSequence(binding, sequence));
-      }
-      else {
-        Log.info("Debug console not registered, turn on debug log level.");
-        return F.none<RegionClickObservable>();
-      }
     }
 
     public void register(Command command) {
@@ -178,6 +162,6 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }));
     }
 
-    public bool enabled => console.enabled;
+    public bool enabled => DConsole.enabled;
   }
 }

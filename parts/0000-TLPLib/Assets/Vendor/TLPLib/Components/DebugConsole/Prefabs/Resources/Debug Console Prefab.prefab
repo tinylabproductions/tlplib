@@ -356,7 +356,7 @@ GameObject:
   - 114: {fileID: 11484068}
   - 114: {fileID: 11429770}
   m_Layer: 5
-  m_Name: Debug Console
+  m_Name: Debug Console Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
