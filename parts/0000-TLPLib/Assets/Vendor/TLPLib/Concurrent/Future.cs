@@ -90,6 +90,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     string name { get; }
     Option<Try<A>> value { get; }
     Option<A> pureValue { get; }
+    Option<Exception> pureError { get; }
     /* If you are using onComplete, you must handle errors as well. */
     CancellationToken onComplete(Act<Try<A>> action);
     CancellationToken onSuccess(Act<A> action);
@@ -123,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       public readonly float timeoutSeconds;
 
       public TimeoutException(Future<A> future, float timeoutSeconds)
-      : base(string.Format("Future {0} timed out after {1} seconds", future, timeoutSeconds)) {
+      : base($"Future {future} timed out after {timeoutSeconds} seconds") {
         this.future = future;
         this.timeoutSeconds = timeoutSeconds;
       }
@@ -269,8 +270,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     UnfullfilledFutureImpl() {}
 
     public string name => "unfullfilled-future";
-    public Option<Try<A>> value { get { return F.none<Try<A>>(); } }
-    public Option<A> pureValue { get { return F.none<A>(); } }
+    public Option<Try<A>> value => F.none<Try<A>>();
+    public Option<A> pureValue => F.none<A>();
+    public Option<Exception> pureError => F.none<Exception>();
     public CancellationToken onComplete(Act<Try<A>> action) { return Future.FinishedCancellationToken.instance; }
     public CancellationToken onSuccess(Act<A> action) { return Future.FinishedCancellationToken.instance; }
     public CancellationToken onFailure(Act<Exception> action) { return Future.FinishedCancellationToken.instance; }
@@ -304,13 +306,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    private readonly IList<FutureListener> listeners = new List<FutureListener>();
+    readonly IList<FutureListener> listeners = new List<FutureListener>();
 
-    private Option<Try<A>> _value;
+    Option<Try<A>> _value;
     public string name { get; }
-    public Option<Try<A>> value { get { return _value; } }
-    public Option<A> pureValue 
-    { get { return _value.flatMap(t => t.fold(F.some, _ => F.none<A>())); } }
+    public Option<Try<A>> value => _value;
+    public Option<A> pureValue => _value.flatMap(t => t.toOption);
+    public Option<Exception> pureError => _value.flatMap(t => t.exception);
 
     public FutureImpl(string name) {
       this.name = name;
