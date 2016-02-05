@@ -31,10 +31,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Option<A> value => isSuccess ? F.some(_value) : F.none<A>();
     public Option<A> toOption => value;
-
-    public Option<Exception> exception { get {
-      return isSuccess ? F.none<Exception>() : F.some(_exception);
-    } }
+    public Option<Exception> exception => isSuccess ? F.none<Exception>() : F.some(_exception);
 
     public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) {
       return isSuccess ? onValue(_value) : onException(_exception);
