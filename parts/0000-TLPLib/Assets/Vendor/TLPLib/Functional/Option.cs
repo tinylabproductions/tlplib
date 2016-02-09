@@ -92,6 +92,10 @@ public static class Option {
     return opt.isDefined ? func(opt.get) : F.none<B>();
   }
 
+  public static Option<A> flatten<A>(this Option<Option<A>> opt) {
+    return opt.isDefined ? opt.get : F.none<A>();
+  }
+
   public static Option<Tpl<A, B>> zip<A, B>(
     this Option<A> opt1, Option<B> opt2
   ) {
