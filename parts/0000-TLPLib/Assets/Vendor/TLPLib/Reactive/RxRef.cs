@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
 
@@ -53,6 +54,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxVal<bool> anyOf(this IEnumerable<IRxVal<bool>> vals, bool searchForTrue=true) 
       { return vals.firstThat(b => searchForTrue ? b : !b).map(_ => _.isDefined); }
+
+    public static IRxVal<A> extractFuture<A>(
+      this Future<IRxVal<A>> future, A whileNotCompleted
+    ) {
+      var rx = RxRef.a(whileNotCompleted);
+      future.onSuccess(rx2 => rx2.subscribe(v => rx.value = v));
+      return rx;
+    }
   }
 
   public static class RxRef {
