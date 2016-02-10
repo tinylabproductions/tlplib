@@ -15,5 +15,6 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public PathStr dirname => new PathStr(Path.GetDirectoryName(path));
 
     public override string ToString() { return path; }
+    public string unixString => ToString().Replace(@"\", "/");
   }
 }
