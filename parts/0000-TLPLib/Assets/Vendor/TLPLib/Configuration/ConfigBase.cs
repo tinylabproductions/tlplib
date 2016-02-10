@@ -21,6 +21,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public IList<int> getIntList(string key) 
     { return tryIntList(key).getOrThrow; }
 
+    public long getLong(string key)
+    { return tryLong(key).getOrThrow; }
+
+    public IList<long> getLongList(string key)
+    { return tryLongList(key).getOrThrow; }
+
     public float getFloat(string key) 
     { return tryFloat(key).getOrThrow; }
 
@@ -60,6 +66,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public Option<IList<int>> optIntList(string key) 
     { return eitherIntList(key).toOpt(); }
 
+    public Option<long> optLong(string key)
+    { return eitherLong(key).toOpt(); }
+
+    public Option<IList<long>> optLongList(string key)
+    { return eitherLongList(key).toOpt(); }
+
     public Option<float> optFloat(string key) 
     { return eitherFloat(key).toOpt(); }
 
@@ -89,87 +101,55 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region try getters
 
     public Try<string> tryString(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherString(key).
-        fold<Try<string>>(tryEx<string>, F.scs);
+      return eitherString(key).fold(tryEx<string>, F.scs);
     }
 
     public Try<IList<string>> tryStringList(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherStringList(key).
-        fold<Try<IList<string>>>(tryEx<IList<string>>, F.scs);
+      return eitherStringList(key).fold(tryEx<IList<string>>, F.scs);
     }
 
     public Try<int> tryInt(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherInt(key).
-        fold<Try<int>>(tryEx<int>, F.scs);
+      return eitherInt(key).fold(tryEx<int>, F.scs);
     }
 
     public Try<IList<int>> tryIntList(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherIntList(key).
-        fold<Try<IList<int>>>(tryEx<IList<int>>, F.scs);
+      return eitherIntList(key).fold(tryEx<IList<int>>, F.scs);
     }
 
+    public Try<long> tryLong(string key) { return eitherLong(key).fold(tryEx<long>, F.scs); }
+
+    public Try<IList<long>> tryLongList(string key) { return eitherLongList(key).fold(tryEx<IList<long>>, F.scs); }
+
     public Try<float> tryFloat(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherFloat(key).
-        fold<Try<float>>(tryEx<float>, F.scs);
+      return eitherFloat(key).fold(tryEx<float>, F.scs);
     }
 
     public Try<IList<float>> tryFloatList(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherFloatList(key).
-        fold<Try<IList<float>>>(tryEx<IList<float>>, F.scs);
+      return eitherFloatList(key).fold(tryEx<IList<float>>, F.scs);
     }
 
     public Try<bool> tryBool(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherBool(key).
-        fold<Try<bool>>(tryEx<bool>, F.scs);
+      return eitherBool(key).fold(tryEx<bool>, F.scs);
     }
 
     public Try<IList<bool>> tryBoolList(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherBoolList(key).
-        fold<Try<IList<bool>>>(tryEx<IList<bool>>, F.scs);
+      return eitherBoolList(key).fold(tryEx<IList<bool>>, F.scs);
     }
 
     public Try<DateTime> tryDateTime(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherDateTime(key).
-        fold<Try<DateTime>>(tryEx<DateTime>, F.scs);
+      return eitherDateTime(key).fold(tryEx<DateTime>, F.scs);
     }
 
     public Try<IList<DateTime>> tryDateTimeList(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherDateTimeList(key).
-        fold<Try<IList<DateTime>>>(tryEx<IList<DateTime>>, F.scs);
+      return eitherDateTimeList(key).fold(tryEx<IList<DateTime>>, F.scs);
     }
 
     public Try<IConfig> trySubConfig(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherSubConfig(key).
-        fold<Try<IConfig>>(tryEx<IConfig>, F.scs);
+      return eitherSubConfig(key).fold(tryEx<IConfig>, F.scs);
     }
 
     public Try<IList<IConfig>> trySubConfigList(string key) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug
-      return eitherSubConfigList(key).
-        fold<Try<IList<IConfig>>>(tryEx<IList<IConfig>>, F.scs);
+      return eitherSubConfigList(key).fold(tryEx<IList<IConfig>>, F.scs);
     }
 
     private static Try<A> tryEx<A>(ConfigFetchError error) {
@@ -184,6 +164,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public abstract Either<ConfigFetchError, IList<string>> eitherStringList(string key);
     public abstract Either<ConfigFetchError, int> eitherInt(string key);
     public abstract Either<ConfigFetchError, IList<int>> eitherIntList(string key);
+    public abstract Either<ConfigFetchError, long> eitherLong(string key);
+    public abstract Either<ConfigFetchError, IList<long>> eitherLongList(string key);
     public abstract Either<ConfigFetchError, float> eitherFloat(string key);
     public abstract Either<ConfigFetchError, IList<float>> eitherFloatList(string key);
     public abstract Either<ConfigFetchError, bool> eitherBool(string key);

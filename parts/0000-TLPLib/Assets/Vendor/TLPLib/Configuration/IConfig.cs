@@ -29,6 +29,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     IList<string> getStringList(string key);
     int getInt(string key);
     IList<int> getIntList(string key);
+    long getLong(string key);
+    IList<long> getLongList(string key);
     float getFloat(string key);
     IList<float> getFloatList(string key);
     bool getBool(string key);
@@ -48,6 +50,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Option<IList<string>> optStringList(string key);
     Option<int> optInt(string key);
     Option<IList<int>> optIntList(string key);
+    Option<long> optLong(string key);
+    Option<IList<long>> optLongList(string key);
     Option<float> optFloat(string key);
     Option<IList<float>> optFloatList(string key);
     Option<bool> optBool(string key);
@@ -67,6 +71,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Either<ConfigFetchError, IList<string>> eitherStringList(string key);
     Either<ConfigFetchError, int> eitherInt(string key);
     Either<ConfigFetchError, IList<int>> eitherIntList(string key);
+    Either<ConfigFetchError, long> eitherLong(string key);
+    Either<ConfigFetchError, IList<long>> eitherLongList(string key);
     Either<ConfigFetchError, float> eitherFloat(string key);
     Either<ConfigFetchError, IList<float>> eitherFloatList(string key);
     Either<ConfigFetchError, bool> eitherBool(string key);
@@ -86,6 +92,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Try<IList<string>> tryStringList(string key);
     Try<int> tryInt(string key);
     Try<IList<int>> tryIntList(string key);
+    Try<long> tryLong(string key);
+    Try<IList<long>> tryLongList(string key);
     Try<float> tryFloat(string key);
     Try<IList<float>> tryFloatList(string key);
     Try<bool> tryBool(string key);
@@ -119,9 +127,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     { return new ConfigFetchError(Kind.BROKEN_REFERENCE, message); }
 
     public override string ToString() {
-      return string.Format(
-        "ConfigFetchError[kind: {0}, message: {1}]", kind, message
-      );
+      return $"ConfigFetchError[kind: {kind}, message: {message}]";
     }
   }
 

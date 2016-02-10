@@ -9,8 +9,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
    * key overrides based on variables. */
   public class VariableConfig : ConfigBase {
     public readonly IConfig underlying;
-    private readonly Dictionary<string, string> variables;
-    private readonly IList<IList<string>> combinations;
+    readonly Dictionary<string, string> variables;
+    readonly IList<IList<string>> combinations;
 
     /* [param variables] variable name -> value pairs
      * 
@@ -40,10 +40,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     public override string ToString() {
-      return string.Format(
-        "VariableConfig(variables: {0}, combinations: {1}, underlying: {2})", 
-        variables.asString(false), combinations.asString(false), underlying
-      );
+      return $"VariableConfig(variables: {variables.asString(false)}, combinations: {combinations.asString(false)}, underlying: {underlying})";
     }
 
     public override string scope { get { return underlying.scope; } }
@@ -59,6 +56,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override Either<ConfigFetchError, IList<int>> eitherIntList(string key) 
     { return injected(key, k => underlying.eitherIntList(k)); }
+
+    public override Either<ConfigFetchError, long> eitherLong(string key)
+    { return injected(key, k => underlying.eitherLong(k)); }
+
+    public override Either<ConfigFetchError, IList<long>> eitherLongList(string key)
+    { return injected(key, k => underlying.eitherLongList(k)); }
 
     public override Either<ConfigFetchError, float> eitherFloat(string key) 
     { return injected(key, k => underlying.eitherFloat(k)); }

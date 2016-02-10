@@ -83,6 +83,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       else if (n is int) return F.some((int) n);
       else return Option<int>.None;
     };
+    static readonly Parser<long> longParser = n => {
+      if (n is long) return F.some((long) n);
+      else if (n is int) return F.some((long) (int) n);
+      else return Option<long>.None;
+    };
     static readonly Parser<float> floatParser = n => {
       if (n is double) return F.some((float) (double) n);
       else if (n is float) return F.some((float) n);
@@ -117,6 +122,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override Either<ConfigFetchError, IList<int>> eitherIntList(string key) 
     { return getList(key, intParser); }
+
+    public override Either<ConfigFetchError, long> eitherLong(string key) 
+    { return get(key, longParser); }
+
+    public override Either<ConfigFetchError, IList<long>> eitherLongList(string key) 
+    { return getList(key, longParser); }
 
     public override Either<ConfigFetchError, float> eitherFloat(string key) 
     { return get(key, floatParser); }
