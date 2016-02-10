@@ -99,7 +99,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    public static ErrorReporter.OnError createOnError(
+    public static ErrorReporter.OnError createSendOnError(
       string loggerName, Uri reportingUrl, ApiKeys keys, ErrorReporter.AppInfo appInfo,
       ExtraData addExtraData
     ) {
@@ -109,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       });
     }
 
-    public static ErrorReporter.OnError createEditorOnError(
+    public static ErrorReporter.OnError createLogOnError(
       string loggerName, DSN dsn, ErrorReporter.AppInfo appInfo,
       ExtraData addExtraData
     ) {
