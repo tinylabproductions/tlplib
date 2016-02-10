@@ -337,7 +337,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       if (ret) {
         // If no listeners are handling our errors - report them to log.
         if (!listeners.Any(l => l.handlesErrors))
-          v.exception.each(e => Log.info($"Unhandled exception for future '{name}': {e.Message}"));
+          v.exception.each(e => Log.error($"Unhandled exception for future '{name}': {e.Message}", e));
         _value = F.some(v);
         // completed should be called only once
         completed(v);
