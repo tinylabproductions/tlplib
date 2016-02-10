@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -34,10 +35,27 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static void warn(object o) { if (isWarn) Debug.LogWarning("[WARN]> " + o); }
     public static bool isWarn => level >= Level.WARN;
 
-    public static void error(Exception ex) { Debug.LogException(ex); }
+    public static void error(Exception ex) { error(exToStr(ex)); }
     public static void error(object o) { Debug.LogError("[ERROR]> " + o); }
-    public static void error(object o, Exception ex)
-      { error($"{o}: {ex.Message}\n{ex.StackTrace}"); }
+    public static void error(object o, Exception ex) { error(exToStr(ex, o)); }
+
+    public static string exToStr(Exception ex, object o=null) {
+      var sb = new StringBuilder();
+      if (o != null) sb.AppendLine(o.ToString());
+      sb.AppendLine(exToStrOneLine(ex));
+      var stacktrace = ex.StackTrace;
+
+      ex = ex.InnerException;
+      while (ex != null)
+      {
+        sb.AppendLine($"Caused by {exToStrOneLine(ex)}");
+        ex = ex.InnerException;
+      }
+      sb.AppendLine(stacktrace);
+      return sb.ToString();
+    }
+
+    static string exToStrOneLine(Exception ex) { return $"{ex.GetType()}: {ex.Message}"; }
 
     [Conditional("UNITY_EDITOR")]
     public static void editor(object o) { EditorLog.log(o); }
