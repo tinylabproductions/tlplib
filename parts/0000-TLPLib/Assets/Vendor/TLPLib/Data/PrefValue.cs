@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         cache = read(key, defaultValue);
       }
 
-      public A read { get { return cache; } }
+      public A read => cache;
 
       public A write(A value) {
         writer(key, value); 
