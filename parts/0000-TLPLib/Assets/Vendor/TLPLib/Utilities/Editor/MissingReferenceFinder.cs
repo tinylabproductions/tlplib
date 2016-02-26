@@ -11,6 +11,7 @@ public class MissingReferencesFinder : MonoBehaviour {
   public static void findMissingReferencesInCurrentScene() {
     var objects = getSceneObjects();
     findMissingReferences(SceneManager.GetActiveScene().name, objects);
+    Debug.Log("findMissingReferencesInCurrentScene finished");
   }
 
   [MenuItem("Tools/Show Missing Object References in all scenes", false, 51)]
@@ -23,6 +24,7 @@ public class MissingReferencesFinder : MonoBehaviour {
       findMissingReferences(scene.path, getSceneObjects(), $"({i}/{scenes.Length}) {SceneManager.GetActiveScene().name}");
     }
     EditorUtility.ClearProgressBar();
+    Debug.Log("missingReferencesInAllScenes finished");
   }
 
   [MenuItem("Tools/Show Missing Object References in assets", false, 52)]
@@ -31,6 +33,7 @@ public class MissingReferencesFinder : MonoBehaviour {
     var objs = allAssets.Select(a => AssetDatabase.LoadAssetAtPath(a, typeof(GameObject)) as GameObject).Where(a => a != null).ToArray();
 
     findMissingReferences("Project", objs);
+    Debug.Log("missingReferencesInAssets finished");
   }
 
   static void findMissingReferences(string context, GameObject[] objects, string progressInfo = "findMissingReferences") {
@@ -41,8 +44,6 @@ public class MissingReferencesFinder : MonoBehaviour {
     foreach (var go in objects) {
       EditorUtility.DisplayProgressBar("findMissingReferences", progressInfo, (float) scanned++ / objects.Length);
       var components = go.GetComponents<Component>();
-
-      Debug.Log(go.name);
 
       foreach (var c in components) {
         if (!c) {
