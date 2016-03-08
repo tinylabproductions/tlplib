@@ -2,10 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
-using Object = System.Object;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
@@ -18,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     private static ASyncHelperBehaviour _behaviour;
 
     private static ASyncHelperBehaviour behaviour { get {
-      if (((Object)_behaviour) == null) { 
+      if (((object)_behaviour) == null) { 
         const string name = "ASync Helper";
         var go = new GameObject(name);
         UnityEngine.Object.DontDestroyOnLoad(go);
@@ -27,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return _behaviour;
     } }
 
-    public static void init() { behaviour.Update(); }
+    public static void init() { var init = behaviour; }
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
@@ -62,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, enumerator);
     }
 
-    public static void OnMainThread(Act action) { behaviour.onMainThread(action);}
+    public static void OnMainThread(Act action) { Threads.OnMainThread.run(action);}
 
     public static Coroutine NextFrame(Action action) {
       return NextFrame(behaviour, action);
@@ -206,11 +204,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       while (f()) yield return wait;
     }
 
-    public static IObservable<bool> onAppPause 
-      { get { return behaviour.onPause; } }
+    public static IObservable<bool> onAppPause => behaviour.onPause;
 
-    public static IObservable<Unit> onAppQuit
-      { get { return behaviour.onQuit; } }
+    public static IObservable<Unit> onAppQuit => behaviour.onQuit;
 
     /**
      * Takes a function that transforms an element into a future and 
