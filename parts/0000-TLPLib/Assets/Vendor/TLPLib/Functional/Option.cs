@@ -34,6 +34,10 @@ public static class Option {
     return opt.isDefined ? opt.get : orElse;
   }
 
+  public static A getOrNull<A>(this Option<A> opt) where A : class {
+    return opt.isDefined ? opt.get : null;
+  }
+
   public static Option<A> createOrTap<A>(
     this Option<A> opt, Fn<A> ifEmpty, Act<A> ifNonEmpty
   ) {
