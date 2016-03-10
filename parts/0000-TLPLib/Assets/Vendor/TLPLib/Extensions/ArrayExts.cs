@@ -6,8 +6,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static A[] addOne<A>(this A[] arr, A a) {
       var newArr = new A[arr.LongLength + 1];
       arr.CopyTo(newArr, 0);
-      arr[arr.LongLength] = a;
-      return arr;
+      newArr[arr.LongLength] = a;
+      return newArr;
     }
 
     public static A[] concat<A>(this A[] a, params A[][] others) {
