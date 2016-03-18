@@ -13,6 +13,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     new A value { get; set; }
     /** Returns a new ref that is bound to this ref and vice versa. **/
     IRxRef<B> comap<B>(Fn<A, B> mapper, Fn<B, A> comapper);
+    IRxVal<A> toVal();
   }
 
   public static class RxRef {
@@ -53,6 +54,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       bRef.subscribe(b => value = comapper(b));
       return bRef;
     }
+
+    public IRxVal<A> toVal() { return this; }
 
     public void push(A pushedValue) { value = pushedValue; }
 
