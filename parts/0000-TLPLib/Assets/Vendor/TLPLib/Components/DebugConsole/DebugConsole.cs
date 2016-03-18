@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
@@ -30,7 +31,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static DConsole instance { get; } = new DConsole();
 
     DConsole() {
-      registrarFor(nameof(DConsole)).register("Self-test", () => "self-test");
+      var r = registrarFor(nameof(DConsole));
+      r.register("Self-test", () => "self-test");
+      r.register("Future Self-test", () => Future.delay(1, () => "after 1 s"));
     }
 
     readonly Dictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
@@ -147,16 +150,30 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public void register<A>(string name, Fn<A> run) {
       register(name, unitSomeFn, _ => run());
     }
+    public void register<A>(string name, Fn<Future<A>> run) {
+      register(name, unitSomeFn, _ => run());
+    }
     public void register<Obj>(string name, HasObjFn<Obj> objOpt, Act<Obj> run) {
       register(name, objOpt, obj => { run(obj); return F.unit; });
     }
     public void register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, A> run) {
+      register(name, objOpt, obj => Future.successful(run(obj)));
+    }
+    public void register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, Future<A>> run) {
       var prefixedName = $"[{commandGroup}] {name}";
       console.register(new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
         if (opt.isDefined) {
-          var returnValue = run(opt.get);
-          Log.rdebug($"{prefixedName} done: {returnValue}");
+          var returnFuture = run(opt.get);
+          Act<Try<A>> onComplete = t => Log.rdebug($"{prefixedName} done: {t}");
+          // Check perhaps it is completed immediately.
+          returnFuture.value.voidFold(
+            () => {
+              Log.rdebug($"{prefixedName} starting.");
+              returnFuture.onComplete(onComplete);
+            },
+            onComplete
+          );
         }
         else Log.rdebug($"{prefixedName} not running: {typeof(Obj)} is None.");
       }));
