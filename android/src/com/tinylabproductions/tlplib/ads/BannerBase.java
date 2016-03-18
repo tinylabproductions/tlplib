@@ -61,10 +61,22 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
         activity.addContentView(banner, params);
 
         Log.d(TAG(), "Banner added to UI.");
-        setVisibilityUI(false);
+        setVisibilityRunsOnUiThread(false);
     }
 
-    protected void setVisibilityUI(boolean visible) {
+    @Override
+    public final void load() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadRunsOnUiThread();
+            }
+        });
+    }
+
+    protected abstract void loadRunsOnUiThread();
+
+    protected void setVisibilityRunsOnUiThread(boolean visible) {
         if (banner != null) {
             banner.setVisibility(visible ? View.VISIBLE : View.GONE);
             Log.d(TAG(), "Banner visible=" + visible);
@@ -77,28 +89,32 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                setVisibilityUI(visible);
+                setVisibilityRunsOnUiThread(visible);
             }
         });
     }
 
     @SuppressWarnings("unused")
-    public void destroy() {
+    public final void destroy() {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (banner == null) return;
-                ViewGroup parent = (ViewGroup) banner.getParent();
-                if (parent != null) {
-                    beforeDestroy();
-                    parent.removeView(banner);
-                    afterDestroy();
-                }
-                banner = null;
+                destroyRunsOnUiThread();
             }
         });
     }
 
-    protected void beforeDestroy() {}
-    protected void afterDestroy() {}
+    protected void destroyRunsOnUiThread() {
+        if (banner == null) return;
+        ViewGroup parent = (ViewGroup) banner.getParent();
+        if (parent != null) {
+            beforeDestroyRunsOnUiThread();
+            parent.removeView(banner);
+            afterDestroyRunsOnUiThread();
+        }
+        banner = null;
+    }
+
+    protected void beforeDestroyRunsOnUiThread() {}
+    protected void afterDestroyRunsOnUiThread() {}
 }
