@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -137,9 +138,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Future<A> successful<A>(A value, string name="[Future.successful]") {
-      var f = new FutureImpl<A>(name);
-      f.completeSuccess(value);
-      return f;
+      return new SuccessfulFutureImpl<A>(value, name);
     }
 
     public static Future<A> failed<A>(Exception ex, string name="[Future.failed]") {
@@ -261,6 +260,34 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       public bool isCancelled { get { return true; } }
       public bool cancel() { return false; }
+    }
+  }
+
+  class SuccessfulFutureImpl<A> : Future<A> {
+    readonly A _value;
+    public string name { get; }
+
+    public SuccessfulFutureImpl(A value, string name = "completed future") {
+      _value = value;
+      this.name = name;
+    }
+
+    public Option<A> pureValue => _value.some();
+    public Option<Try<A>> value => new Try<A>(_value).some();
+    public Option<Exception> pureError => F.none<Exception>();
+
+    public CancellationToken onComplete(Act<Try<A>> action) {
+      action(new Try<A>(_value));
+      return Future.FinishedCancellationToken.instance;
+    }
+
+    public CancellationToken onSuccess(Act<A> action) {
+      action(_value);
+      return Future.FinishedCancellationToken.instance;
+    }
+
+    public CancellationToken onFailure(Act<Exception> action) {
+      return Future.FinishedCancellationToken.instance;
     }
   }
 
