@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public ReadOnlyCollection<Option<A>> value 
       { get { return viewValues.AsReadOnly(); } }
-
+    
     private int _startIndex = -1;
 
     public int startIndex {
@@ -65,6 +65,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       for (var i = 0; i < windowSize; i++) viewValues.Add(F.none<A>());
 
       this.startIndex = startIndex;
+    }
+
+    public override ISubscription subscribe(Act<ReadOnlyCollection<Option<A>>> onChange)
+      { return subscribe(onChange, emitCurrent: true); }
+
+    public ISubscription subscribe(
+      Act<ReadOnlyCollection<Option<A>>> onChange, bool emitCurrent
+    ) {
+      var subscription = base.subscribe(onChange);
+      if (emitCurrent) onChange(value); // Emit current value on subscription.
+      return subscription;
     }
 
     public int mapIndex(int viewIndex) {
