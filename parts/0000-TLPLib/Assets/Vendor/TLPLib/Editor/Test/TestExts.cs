@@ -1,7 +1,12 @@
-﻿using NUnit.Framework;
+﻿using System.Collections;
+using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public static class TestExts {
+    public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) {
+      Assert.IsEmpty(enumerable, message);
+    }
+
     public static void shouldBeTrue(this bool b, string message = null) {
       Assert.True(b, message);
     }
