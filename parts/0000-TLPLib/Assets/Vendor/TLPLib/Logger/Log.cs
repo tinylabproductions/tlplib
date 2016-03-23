@@ -127,6 +127,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
     protected override void logError(string s) { Debug.LogError(s); }
   }
 
+  public class NoOpLog : LogBase {
+    public static readonly NoOpLog instance = new NoOpLog();
+    NoOpLog() {}
+
+    protected override void logDebug(string s) {}
+    protected override void logInfo(string s) {}
+    protected override void logWarn(string s) {}
+    protected override void logError(string s) {}
+  }
+
   class EditorLog {
     public static readonly string logfilePath;
     public static readonly StreamWriter logfile;
