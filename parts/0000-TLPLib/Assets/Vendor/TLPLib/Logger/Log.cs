@@ -16,28 +16,31 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * need processing, you should use `if (Log.isDebug) Log.rdebug("foo=" + foo);` style.
    **/
   public static class Log {
-    public enum Level { ERROR, WARN, INFO, DEBUG }
+    public enum Level { NONE, ERROR, WARN, INFO, DEBUG }
 
-    public static Level level = 
+    public static readonly Level defaultLogLevel = 
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
+
+    public static ILog defaultLogger => UnityLog.instance;
 
     /* Compile time version of debug. */
     [Conditional("UNITY_EDITOR"), Conditional("LOG_DEBUG")]
     public static void cdebug(object o) { rdebug(o); }
 
     /* Runtime version of debug. */
-    public static void rdebug(object o) { if (isDebug) Debug.Log("[DEBUG]> " + o); }
-    public static bool isDebug => level >= Level.DEBUG;
+    public static void rdebug(object o) { UnityLog.instance.debug(o); }
+    public static bool isDebug => UnityLog.instance.isDebug;
 
-    public static void info(object o) { if (isInfo) Debug.Log("[INFO]> " + o); }
-    public static bool isInfo => level >= Level.INFO;
+    public static void info(object o) { UnityLog.instance.info(o); }
+    public static bool isInfo => UnityLog.instance.isInfo;
 
-    public static void warn(object o) { if (isWarn) Debug.LogWarning("[WARN]> " + o); }
-    public static bool isWarn => level >= Level.WARN;
+    public static void warn(object o) { UnityLog.instance.warn(o); }
+    public static bool isWarn => UnityLog.instance.isWarn;
 
-    public static void error(Exception ex) { error(exToStr(ex)); }
-    public static void error(object o) { Debug.LogError("[ERROR]> " + o); }
-    public static void error(object o, Exception ex) { error(exToStr(ex, o)); }
+    public static void error(Exception ex) { UnityLog.instance.error(ex); }
+    public static void error(object o) { UnityLog.instance.error(o); }
+    public static void error(object o, Exception ex) { UnityLog.instance.error(o, ex); }
+    public static bool isError => UnityLog.instance.isError;
 
     public static string exToStr(Exception ex, object o=null) {
       var sb = new StringBuilder();
@@ -66,9 +69,62 @@ namespace com.tinylabproductions.TLPLib.Logger {
         case "info": return F.some(Level.INFO);
         case "warn": return F.some(Level.WARN);
         case "error": return F.some(Level.ERROR);
+        case "none": return F.some(Level.NONE);
         default: return F.none<Level>();
       }
     }
+  }
+
+  public interface ILog {
+    Log.Level level { get; set; }
+    /* Runtime version of debug. */
+    void debug(object o);
+    bool isDebug { get; }
+    void info(object o);
+    bool isInfo { get; }
+    void warn(object o);
+    bool isWarn { get; }
+    void error(Exception ex);
+    void error(object o);
+    void error(object o, Exception ex);
+  }
+
+  public static class ILogExts {
+    /* Backwards compatibility */
+    [Obsolete("Use debug() instead.")]
+    public static void rdebug(this ILog log, object o) { log.debug(o); }
+  }
+
+  public abstract class LogBase : ILog {
+    public Log.Level level { get; set; } = Log.defaultLogLevel;
+
+    public bool isDebug => level >= Log.Level.DEBUG;
+    public void debug(object o) { if (isDebug) logDebug($"[DEBUG]> {o}"); }
+    protected abstract void logDebug(string s);
+
+    public bool isInfo => level >= Log.Level.INFO;
+    public void info(object o) { if (isInfo) logInfo($"[INFO]> {o}"); }
+    protected abstract void logInfo(string s);
+
+    public bool isWarn => level >= Log.Level.WARN;
+    public void warn(object o) { if (isWarn) logWarn($"[WARN]> {o}"); }
+    protected abstract void logWarn(string s);
+
+    public bool isError => level >= Log.Level.ERROR;
+    public void error(Exception ex) { error(Log.exToStr(ex)); }
+    public void error(object o, Exception ex) { error(Log.exToStr(ex, o)); }
+    public void error(object o) { logError($"[ERROR]> {o}"); }
+    protected abstract void logError(string s);
+  }
+
+  public class UnityLog : LogBase {
+    public static readonly UnityLog instance = new UnityLog();
+    UnityLog() {}
+
+    protected override void logDebug(string s) { Debug.Log(s); }
+    protected override void logInfo(string s) { Debug.Log(s); }
+    protected override void logWarn(string s) { Debug.LogWarning(s); }
+    protected override void logError(string s) { Debug.LogError(s); }
   }
 
   class EditorLog {
