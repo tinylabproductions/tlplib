@@ -142,9 +142,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Future<A> failed<A>(Exception ex, string name="[Future.failed]") {
-      var f = new FutureImpl<A>(name);
-      f.completeError(ex);
-      return f;
+      return new FailedFutureImpl<A>(ex, name);
     }
 
     public static Future<A> unfullfiled<A>() { return UnfullfilledFutureImpl<A>.instance; }
@@ -287,6 +285,34 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public CancellationToken onFailure(Act<Exception> action) {
+      return Future.FinishedCancellationToken.instance;
+    }
+  }
+
+  class FailedFutureImpl<A> : Future<A> {
+    readonly Exception exception;
+    public string name { get; }
+
+    public FailedFutureImpl(Exception exception, string name = "failed future") {
+      this.exception = exception;
+      this.name = name;
+    }
+
+    public Option<A> pureValue => F.none<A>();
+    public Option<Try<A>> value => F.err<A>(exception).some();
+    public Option<Exception> pureError => exception.some();
+
+    public CancellationToken onComplete(Act<Try<A>> action) {
+      action(F.err<A>(exception));
+      return Future.FinishedCancellationToken.instance;
+    }
+
+    public CancellationToken onSuccess(Act<A> action) {
+      return Future.FinishedCancellationToken.instance;
+    }
+
+    public CancellationToken onFailure(Act<Exception> action) {
+      action(exception);
       return Future.FinishedCancellationToken.instance;
     }
   }
