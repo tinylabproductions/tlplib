@@ -77,5 +77,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         if (bOpt.isDefined) yield return bOpt.get;
       }
     }
+
+    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) {
+      return new HashSet<A>(enumerable);
+    }
   }
 }
