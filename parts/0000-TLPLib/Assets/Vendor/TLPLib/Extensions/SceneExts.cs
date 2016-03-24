@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine.SceneManagement;
 
-namespace Assets.Vendor.TLPLib.Extensions {
+namespace com.tinylabproductions.TLPLib.Extensions {
   public static class SceneExts {
     // includes inactive objects
     // may not work on scene awake
