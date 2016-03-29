@@ -243,7 +243,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     (this IEnumerable<Future<Either<A, B>>> enumerable)
     { return enumerable.firstOfWhere(e => e.rightValue); }
     
-    // TODO: test me
     public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
     (this IEnumerable<Future<Either<A, B>>> enumerable) {
       var futures = enumerable.ToArray();
@@ -265,7 +264,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Either<B, A>> timeout<A, B>(
       this Future<A> future, float timeoutSeconds, Fn<B> onTimeout
     ) {
-      // TODO: test me
+      // TODO: test me - how? Unity test runner doesn't support delays.
       var timeoutF = delay(timeoutSeconds, () => future.value.fold(
         // onTimeout() might have side effects, so we only need to execute it if 
         // there is no value in the original future once the timeout hits.
