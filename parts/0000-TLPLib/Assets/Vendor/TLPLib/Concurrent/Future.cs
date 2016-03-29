@@ -225,8 +225,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      **/
     public static Future<Option<B>> firstOfWhere<A, B>
     (this IEnumerable<Future<A>> enumerable, Fn<A, Option<B>> predicate) {
+      var futures = enumerable.ToList();
       var future = new FutureImpl<Option<B>>();
-      foreach (var f in enumerable) f.onComplete(a => future.tryComplete(predicate(a)));
+
+      var completed = 0;
+      foreach (var f in futures)
+        f.onComplete(a => {
+          completed++;
+          var res = predicate(a);
+          if (res.isDefined) future.complete(res);
+          else if (completed == futures.Count) future.tryComplete(F.none<B>());
+        });
       return future;
     }
 

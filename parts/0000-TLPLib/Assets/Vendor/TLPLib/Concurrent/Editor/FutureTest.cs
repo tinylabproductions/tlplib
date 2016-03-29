@@ -1,168 +1,109 @@
-﻿#if UNITY_TEST
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
-using UnityEngine;
 
+namespace com.tinylabproductions.TLPLib.Concurrent {
+  static class FT {
+    public static readonly Fn<int, Either<int, string>> left = F.left<int, string>;
+    public static readonly Fn<string, Either<int, string>> right = F.right<int, string>;
 
-namespace Assets.Vendor.TLPLib.Concurrent {
-  [TestFixture]
-  public class FutureTest {
-    struct LogEntry {
-      public readonly string message, stacktrace;
-      public readonly LogType type;
+    public static IEnumerable<Future<A>> addUnfullfilled<A>(this IEnumerable<Future<A>> futures)
+      { return futures.Concat(Future.unfullfiled<A>().Yield()); }
+  }
 
-      public LogEntry(string message, string stacktrace, LogType type) {
-        this.message = message;
-        this.stacktrace = stacktrace;
-        this.type = type;
-      }
-
-      public override string ToString() {
-        return string.Format("message: {0}, type: {1}", message, type);
-      }
-    }
-
-    static ReadOnlyCollection<LogEntry> withLogs(Act f) {
-      var entries = new List<LogEntry>();
-      Application.LogCallback logger = (message, stacktrace, type) => {
-        entries.Add(new LogEntry(message, stacktrace, type));
-      };
-      Application.logMessageReceived += logger;
-      try { f(); }
-      finally { Application.logMessageReceived -= logger; }
-      return entries.AsReadOnly();
-    }
-
-    static void assertErrors(ReadOnlyCollection<LogEntry> entries, int count) {
-      Assert.AreEqual(count, entries.Count);
-      Assert.True(entries.All(e => e.type == LogType.Exception), "all entries must be exceptions: " + entries.asString());
-    }
-
-    static void failedFuture(Act<Future<int>> registerCallbacks) {
-      Act failFuture = null;
-      var f = Future.a<int>(p => failFuture = () => p.completeError(new Exception()));
-      registerCallbacks(f);
-      failFuture();
-    }
-
-    static void failedMappedFuture(Act<Future<int>> registerCallbacks) {
-      failedFuture(f => registerCallbacks(f.map(_ => _ * 2)));
-    }
-
-    static void failedMapped2Future(Act<Future<int>, Future<int>> registerCallbacks) {
-      failedFuture(f => registerCallbacks(f.map(_ => _ * 2), f.map(_ => _ * 3)));
+  public class FutureTestFirstOf {
+    [Test]
+    public void WhenHasCompleted() {
+      new[] {
+        Future.unfullfiled<int>(),
+        Future.unfullfiled<int>(),
+        Future.successful(1),
+        Future.unfullfiled<int>(),
+        Future.unfullfiled<int>()
+      }.firstOf().value.get.shouldEqual(1);
     }
 
     [Test]
-    public void testFutureWithNoHandlesLogsErrors() {
-      var entries = withLogs(() => failedFuture(f => {}));
-      assertErrors(entries, 1);
+    public void WhenNoCompleted() {
+      new[] {
+        Future.unfullfiled<int>(),
+        Future.unfullfiled<int>(),
+        Future.unfullfiled<int>(),
+        Future.unfullfiled<int>()
+      }.firstOf().value.shouldEqual(F.none<int>());
+    }
+  }
+
+  public class FutureTestFirstOfWhere {
+    [Test]
+    public void ItemFound() {
+      new[] {1, 3, 5, 6, 7}.
+        Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
+        value.get.shouldEqual(6.some());
     }
 
     [Test]
-    public void testFutureWithOnSuccessLogsErrors() {
-      var entries = withLogs(() => failedFuture(f => f.onSuccess(_ => {})));
-      assertErrors(entries, 1);
+    public void ItemNotFound() {
+      new[] {1, 3, 5, 7}.
+        Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
+        value.get.shouldBeNone();
     }
 
     [Test]
-    public void testFutureWithOnFailureDoesNotLogErrors() {
-      var entries = withLogs(() => failedFuture(f => f.onFailure(_ => {})));
-      assertErrors(entries, 0);
+    public void ItemNotFoundNotCompleted() {
+      new[] {1, 3, 5, 7}.Select(Future.successful).addUnfullfilled().
+        firstOfWhere(i => (i % 2 == 0).opt(i)).
+        value.shouldBeNone();
+    }
+  }
+
+  public class FutureTestFirstOfSuccessful {
+    [Test]
+    public void RightFound() {
+      new[] { FT.left(1), FT.left(3), FT.left(5), FT.right("6"), FT.left(7) }.
+        Select(Future.successful).firstOfSuccessful().
+        value.get.shouldBeSome("6");
     }
 
     [Test]
-    public void testMappedFutureWithNoHandlesLogsErrors() {
-      var entries = withLogs(() => failedMappedFuture(f => {}));
-      assertErrors(entries, 1);
+    public void RightNotFound() {
+      new[] { FT.left(1), FT.left(3), FT.left(5), FT.left(7) }.
+        Select(Future.successful).firstOfSuccessful().
+        value.get.shouldBeNone();
     }
 
     [Test]
-    public void testMappedFutureWithOnSuccessLogsErrors() {
-      var entries = withLogs(() => failedMappedFuture(f => f.onSuccess(_ => {})));
-      assertErrors(entries, 1);
+    public void RightNotFoundNoComplete() {
+      new[] { FT.left(1), FT.left(3), FT.left(5), FT.left(7) }.
+        Select(Future.successful).addUnfullfilled().firstOfSuccessful().
+        value.shouldBeNone();
+    }
+  }
+
+  public class FutureTestFirstOfSuccessfulCollect {
+    [Test]
+    public void ItemFound() {
+      new [] { FT.left(1), FT.left(2), FT.right("a"), FT.left(3) }.
+        Select(Future.successful).firstOfSuccessfulCollect().value.get.
+        shouldEqual(F.right<int[], string>("a"));
     }
 
     [Test]
-    public void testMappedFutureWithOnFailureDoesNotLogErrors() {
-      var entries = withLogs(() => failedMappedFuture(f => f.onFailure(_ => {})));
-      assertErrors(entries, 0);
+    public void ItemNotFound() {
+      new [] { FT.left(1), FT.left(2), FT.left(3), FT.left(4) }.
+        Select(Future.successful).firstOfSuccessfulCollect().value.get.
+        leftValue.get.asString().shouldEqual(new[] { 1, 2, 3, 4 }.asString());
     }
 
     [Test]
-    public void testMappedFutureWithOnCompleteDoesNotLogErrors() {
-      var entries = withLogs(() => failedMappedFuture(f => f.onComplete(_ => {})));
-      assertErrors(entries, 0);
-    }
-
-    [Test]
-    public void testMapped2FutureWithNoHandlesLogsErrors() {
-      var entries = withLogs(() => failedMapped2Future((f1, f2) => {}));
-      assertErrors(entries, 2);
-    }
-
-    [Test]
-    public void testMapped2FutureWithOnSuccessLogsErrors() {
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => {
-          f1.onSuccess(_ => {});
-          f2.onSuccess(_ => {});
-        })),
-        2
-      );
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => f1.onSuccess(_ => {}))),
-        2
-      );
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => f2.onSuccess(_ => {}))),
-        2
-      );
-    }
-
-    [Test]
-    public void testMapped2FutureWithOnFailureDoesNotLogErrors() {
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => {
-          f1.onFailure(_ => {});
-          f2.onFailure(_ => {});
-        })),
-        0
-      );
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => f1.onFailure(_ => {}))),
-        1
-      );
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => f2.onFailure(_ => {}))),
-        1
-      );
-    }
-
-    [Test]
-    public void testMapped2FutureWithOnCompleteDoesNotLogErrors() {
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => {
-          f1.onComplete(_ => {});
-          f2.onComplete(_ => {});
-        })),
-        0
-      );
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => f1.onComplete(_ => {}))),
-        1
-      );
-      assertErrors(
-        withLogs(() => failedMapped2Future((f1, f2) => f2.onComplete(_ => {}))),
-        1
-      );
+    public void ItemNotFoundNoCompletion() {
+      new [] { FT.left(1), FT.left(2), FT.left(3), FT.left(4) }.
+        Select(Future.successful).addUnfullfilled().
+        firstOfSuccessfulCollect().value.shouldEqual(F.none<Either<int[], string>>());
     }
   }
 }
-
-#endif
