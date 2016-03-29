@@ -78,6 +78,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
+    public static Option<B> collectFirst<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+    ) {
+      foreach (var a in enumerable) {
+        var bOpt = collector(a);
+        if (bOpt.isDefined) return bOpt;
+      }
+      return F.none<B>();
+    }
+
     public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) {
       return new HashSet<A>(enumerable);
     }

@@ -273,8 +273,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public Future<A> toFuture() {
-      var f = new FutureImpl<A>("[IObservable#toFuture]");
-      var subscription = subscribe(f.completeSuccess);
+      var f = new FutureImpl<A>();
+      var subscription = subscribe(f.complete);
       f.onComplete(_ => subscription.unsubscribe());
       return f;
     }
@@ -424,29 +424,19 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public IObservable<Tpl<A, B, C>> zip<B, C>(IObservable<B> o1, IObservable<C> o2) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug.
-      return zip<B>(o1).zip<C>(o2).
-        map<Tpl<A, B, C>>(t => F.t(t._1._1, t._1._2, t._2));
+      return zip(o1).zip(o2).map(t => F.t(t._1._1, t._1._2, t._2));
     }
 
     public IObservable<Tpl<A, B, C, D>> zip<B, C, D>(
       IObservable<B> o1, IObservable<C> o2, IObservable<D> o3
     ) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug.
-      return zip<B, C>(o1, o2).zip<D>(o3).
-        map<Tpl<A, B, C, D>>(t => F.t(t._1._1, t._1._2, t._1._3, t._2));
+      return zip(o1, o2).zip(o3).map(t => F.t(t._1._1, t._1._2, t._1._3, t._2));
     }
 
     public IObservable<Tpl<A, B, C, D, E>> zip<B, C, D, E>(
       IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
     ) {
-      // ReSharper disable once RedundantTypeArgumentsOfMethod
-      // Mono compiler bug.
-      return zip<B, C, D>(o1, o2, o3).zip<E>(o4).map<Tpl<A, B, C, D, E>>(t => 
-        F.t(t._1._1, t._1._2, t._1._3, t._1._4, t._2)
-      );
+      return zip(o1, o2, o3).zip(o4).map(t => F.t(t._1._1, t._1._2, t._1._3, t._1._4, t._2));
     }
 
     protected O zipImpl<B, O>

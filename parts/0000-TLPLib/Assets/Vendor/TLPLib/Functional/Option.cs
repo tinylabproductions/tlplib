@@ -148,6 +148,8 @@ public
     else ifEmpty();
   }
 
+  public void voidCata(Act<A> ifNonEmpty, Action ifEmpty) { voidFold(ifEmpty, ifNonEmpty); }
+
   public Option<A> filter(Fn<A, bool> predicate) {
     return (isSome ? (predicate(value) ? this : F.none<A>()) : this);
   }

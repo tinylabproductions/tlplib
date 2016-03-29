@@ -67,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this Future<IRxVal<A>> future, A whileNotCompleted
     ) {
       var rx = RxRef.a(whileNotCompleted);
-      future.onSuccess(rx2 => rx2.subscribe(v => rx.value = v));
+      future.onComplete(rx2 => rx2.subscribe(v => rx.value = v));
       return rx;
     }
   }

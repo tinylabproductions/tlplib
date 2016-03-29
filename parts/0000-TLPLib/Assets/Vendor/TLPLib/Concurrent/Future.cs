@@ -4,98 +4,103 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class FutureExts {
-    public static Future<B> map<A, B>(this Future<A> future, Fn<A, B> mapper, string name=null) {
-      var p = new FutureImpl<B>(name ?? $"{future.name}.map");
-      future.onComplete(t => t.voidFold(
-        v => {
-          try { p.completeSuccess(mapper(v)); }
-          catch (Exception e) { p.completeError(e); }
-        },
-        p.completeError
-      ));
-      return p;
+    public static Future<B> map<A, B>(this Future<A> future, Fn<A, B> mapper) {
+      return Future.a<B>(p => future.onComplete(v => p.complete(mapper(v))));
     }
+
+    public static Future<Either<Err, To>> mapE<From, To, Err>(
+      this Future<Either<Err, From>> future, Fn<From, To> mapper
+    ) { return future.map(e => e.mapRight(mapper)); }
+
+    public static Future<Either<Err, To>> mapE<From, To, Err>(
+      this Future<Either<Err, From>> future, Fn<From, Either<Err, To>> mapper
+    ) { return future.map(e => e.flatMapRight(mapper)); }
+
+    public static Future<Option<To>> mapO<From, To>(
+      this Future<Option<From>> future, Fn<From, To> mapper
+    ) { return future.map(opt => opt.map(mapper)); }
 
     public static Future<B> flatMap<A, B>(
-      this Future<A> future, Fn<A, Future<B>> mapper, string name=null
+      this Future<A> future, Fn<A, Future<B>> mapper
     ) {
-      var p = new FutureImpl<B>(name ?? $"{future.name}.flatMap");
-      future.onComplete(t => t.voidFold(
-        v => {
-          try { mapper(v).onComplete(p.complete); }
-          catch (Exception e) { p.completeError(e); }
-        },
-        p.completeError
+      return Future.a<B>(p => 
+        future.onComplete(v => mapper(v).onComplete(p.complete))
+      );
+    }
+
+    public static Future<Option<B>> flatMapO<A, B>(
+      this Future<Option<A>> future, Fn<A, Future<Option<B>>> mapper
+    ) {
+      return future.flatMap(opt => opt.fold(
+        () => Future.successful(F.none<B>()),
+        mapper
       ));
-      return p;
     }
 
-    /* Given future and a recovery function return a new future, which 
-     * calls recovery function on exception in the original future and 
-     * completes the new function with value on Some or exception on None. */
-    public static Future<A> recover<A>(
-      this Future<A> future, Fn<Exception, Option<A>> recoverFn, string name=null
+    public static Future<Either<Err, To>> flatMapE<From, To, Err>(
+      this Future<Either<Err, From>> future, Fn<From, Future<To>> mapper
     ) {
-      var f = new FutureImpl<A>(name ?? $"{future.name}.recover");
-      future.onComplete(t => t.voidFold(
-        f.completeSuccess, e => recoverFn(e).voidFold(
-          () => f.completeError(e), f.completeSuccess
-        ))
-      );
-      return f;
+      return future.flatMap(e => e.fold(
+        err => Future.successful(Either<Err, To>.Left(err)),
+        from => mapper(from).map(Either<Err, To>.Right)
+      ));
     }
 
-    /* Given future and a recovery function return a new future, which 
-     * calls recovery function on exception in the original future and 
-     * completes the new function with value on Some or exception on None. */
-    public static Future<A> recover<A>(
-      this Future<A> future, Fn<Exception, Option<Future<A>>> recoverFn, 
-      string name=null
+    public static Future<Either<Err, To>> flatMapE<From, To, Err>(
+      this Future<Either<Err, From>> future, Fn<From, Future<Either<Err, To>>> mapper
     ) {
-      var f = new FutureImpl<A>(name ?? $"{future.name}.recover(future)");
-      future.onComplete(t => t.voidFold(
-        f.completeSuccess, e => recoverFn(e).voidFold(
-          () => f.completeError(e), 
-          recoverFuture => recoverFuture.onComplete(f.complete)
-        ))
-      );
-      return f;
+      return future.flatMap(e => e.fold(
+        err => Future.successful(Either<Err, To>.Left(err)),
+        mapper
+      ));
+    }
+
+    public static Future<Try<To>> flatMapT<From, To>(
+      this Future<Try<From>> future, Fn<From, Future<To>> mapper
+    ) {
+      return future.flatMap(t => t.fold(
+        from => mapper(from).map(F.scs),
+        err => Future.successful(F.err<To>(err))
+      ));
+    }
+
+    /** Complete the future with the right side, never complete if left side occurs. **/
+    public static Future<B> dropError<A, B>(this Future<Either<A, B>> future) {
+      return Future.a<B>(p => future.onSuccess(p.complete));
     }
 
     /* Waits until both futures yield a result. */
     public static Future<Tpl<A, B>> zip<A, B>(
       this Future<A> fa, Future<B> fb, string name=null
     ) {
-      var fab = new FutureImpl<Tpl<A, B>>(name ?? $"({fa.name},{fb.name})");
-      Act tryComplete = 
-        () => fa.pureValue.zip(fb.pureValue).each(ab => fab.tryCompleteSuccess(ab));
-      fa.onComplete(ta => ta.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
-      fb.onComplete(tb => tb.voidFold(_ => tryComplete(), e => fab.tryCompleteError(e)));
+      var fab = new FutureImpl<Tpl<A, B>>();
+      Act tryComplete = () => fa.value.zip(fb.value).each(ab => fab.tryComplete(ab));
+      fa.onComplete(a => tryComplete());
+      fb.onComplete(b => tryComplete());
       return fab;
     }
 
     public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
       var rx = RxRef.a(F.none<A>());
-      future.onSuccess(a => rx.value = F.some(a));
+      future.onComplete(a => rx.value = F.some(a));
       return rx;
     }
+
+    public static CancellationToken onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action)
+      { return future.onComplete(e => e.rightValue.each(action)); }
+
+    public static CancellationToken onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action)
+      { return future.onComplete(e => e.leftValue.each(action)); }
   }
 
   /** Coroutine based future **/
   public interface Future<A> {
-    string name { get; }
-    Option<Try<A>> value { get; }
-    Option<A> pureValue { get; }
-    Option<Exception> pureError { get; }
-    /* If you are using onComplete, you must handle errors as well. */
-    CancellationToken onComplete(Act<Try<A>> action);
-    CancellationToken onSuccess(Act<A> action);
-    CancellationToken onFailure(Act<Exception> action);
+    Option<A> value { get; }
+    CancellationToken onComplete(Act<A> action);
   }
 
   /**
@@ -107,50 +112,79 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     bool cancel();
   }
 
+  public static class PromiseExts {
+    public static void completeSuccess<Err, Val>(this Promise<Either<Err, Val>> p, Val value) {
+      p.complete(Either<Err, Val>.Right(value));
+    }
+
+    public static void completeSuccess<Val>(this Promise<Try<Val>> p, Val value) {
+      p.complete(F.scs(value));
+    }
+
+    public static void tryCompleteSuccess<Err, Val>(this Promise<Either<Err, Val>> p, Val value) {
+      p.tryComplete(Either<Err, Val>.Right(value));
+    }
+
+    public static void tryCompleteSuccess<Val>(this Promise<Try<Val>> p, Val value) {
+      p.tryComplete(F.scs(value));
+    }
+
+    public static void completeError<Err, Val>(this Promise<Either<Err, Val>> p, Err error) {
+      p.complete(Either<Err, Val>.Left(error));
+    }
+
+    public static void completeError<Val>(this Promise<Try<Val>> p, Exception error) {
+      p.complete(F.err<Val>(error));
+    }
+
+    public static void tryCompleteError<Err, Val>(this Promise<Either<Err, Val>> p, Err error) {
+      p.tryComplete(Either<Err, Val>.Left(error));
+    }
+
+    public static void tryCompleteError<Val>(this Promise<Try<Val>> p, Exception error) {
+      p.tryComplete(F.err<Val>(error));
+    }
+  }
+
   /** Couroutine based promise **/
-  public interface Promise<A> {
+  public interface Promise<in A> {
     /** Complete with value, exception if already completed. **/
-    void complete(Try<A> v);
-    void completeSuccess(A v);
-    void completeError(Exception ex);
+    void complete(A v);
     /** Complete with value, return false if already completed. **/
-    bool tryComplete(Try<A> v);
-    bool tryCompleteSuccess(A v);
-    bool tryCompleteError(Exception ex);
+    bool tryComplete(A v);
   }
 
   public static class Future {
-    public class TimeoutException<A> : Exception {
-      public readonly Future<A> future;
+    public struct Timeout {
       public readonly float timeoutSeconds;
 
-      public TimeoutException(Future<A> future, float timeoutSeconds)
-      : base($"Future {future} timed out after {timeoutSeconds} seconds") {
-        this.future = future;
+      public Timeout(float timeoutSeconds) {
         this.timeoutSeconds = timeoutSeconds;
       }
+
+      public override string ToString() { return $"{nameof(Timeout)}[in {timeoutSeconds}s]"; }
     }
 
-    public static Future<A> a<A>(Act<Promise<A>> body, string name="[Future.a]") {
-      var f = new FutureImpl<A>(name);
+    public class TimeoutException : Exception {
+      public readonly Timeout timeout;
+
+      public TimeoutException(Timeout timeout) : base($"Future timed out: {timeout}") {}
+    }
+
+    public static Future<A> a<A>(Act<Promise<A>> body) {
+      var f = new FutureImpl<A>();
       body(f);
       return f;
     }
 
-    public static Future<A> successful<A>(A value, string name="[Future.successful]") {
-      return new SuccessfulFutureImpl<A>(value, name);
-    }
-
-    public static Future<A> failed<A>(Exception ex, string name="[Future.failed]") {
-      return new FailedFutureImpl<A>(ex, name);
+    public static Future<A> successful<A>(A value) {
+      return new SuccessfulFutureImpl<A>(value);
     }
 
     public static Future<A> unfullfiled<A>() { return UnfullfilledFutureImpl<A>.instance; }
 
-    public static Future<A> delay<A>(float seconds, Fn<A> createValue, string name=null) {
-      var f = new FutureImpl<A>(name ?? $"[Future.delay({seconds})]");
-      ASync.WithDelay(seconds, () => f.complete(F.doTry(createValue)));
-      return f;
+    public static Future<A> delay<A>(float seconds, Fn<A> createValue) {
+      return a<A>(p => ASync.WithDelay(seconds, () => p.complete(createValue())));
     }
 
     /**
@@ -163,18 +197,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var completed = 0u;
       var sourceFutures = enumerable.ToList();
       var results = new A[sourceFutures.Count];
-      var future = new FutureImpl<A[]>(name ?? $"[Future.sequence({sourceFutures.Count})]");
+      var future = new FutureImpl<A[]>();
       for (var idx = 0; idx < sourceFutures.Count; idx++) {
         var f = sourceFutures[idx]; 
         var fixedIdx = idx;
-        f.onComplete(t => t.voidFold(
-          value => {
-            results[fixedIdx] = value;
-            completed++;
-            if (completed == results.Length) future.tryCompleteSuccess(results);
-          },
-          e => future.tryCompleteError(e)
-        ));
+        f.onComplete(value => {
+          results[fixedIdx] = value;
+          completed++;
+          if (completed == results.Length) future.tryComplete(results);
+        });
       }
       return future;
     }
@@ -182,79 +213,78 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /**
      * Returns result from the first future that completes.
      **/
-    public static Future<A> firstOf<A>
-    (this IEnumerable<Future<A>> enumerable, string name="[Future.firstOf]") {
-      var future = new FutureImpl<A>(name);
+    public static Future<A> firstOf<A>(this IEnumerable<Future<A>> enumerable) {
+      var future = new FutureImpl<A>();
       foreach (var f in enumerable) f.onComplete(v => future.tryComplete(v));
       return future;
     }
 
     /**
-     * Returns result from the first future that completes. If all futures fail, 
-     * returns the last error.
+     * Returns result from the first future that satisfies the predicate as a Some. 
+     * If all futures do not satisfy the predicate returns None.
      **/
-    public static Future<A> firstOfSuccessful<A>
-    (this IEnumerable<Future<A>> enumerable, string name=null) {
-      var futures = enumerable.ToList();
-      var future = new FutureImpl<A>(name ?? $"[Future.firstOfSuccessful({futures.Count})]");
-      var completions = 0;
-      foreach (var f in futures) {
-        f.onComplete(t => {
-          completions++;
-          t.voidFold(
-            v => future.tryCompleteSuccess(v),
-            ex => {
-              if (completions == futures.Count) future.tryCompleteError(ex);
-            }
-          );
-        });
-      }
+    public static Future<Option<B>> firstOfWhere<A, B>
+    (this IEnumerable<Future<A>> enumerable, Fn<A, Option<B>> predicate) {
+      var future = new FutureImpl<Option<B>>();
+      foreach (var f in enumerable) f.onComplete(a => future.tryComplete(predicate(a)));
       return future;
     }
 
-    public static Future<Unit> fromCoroutine(IEnumerator enumerator, string name="[Future.fromCoroutine]") {
-      var f = new FutureImpl<Unit>(name);
+    public static Future<Option<B>> firstOfSuccessful<A, B>
+    (this IEnumerable<Future<Either<A, B>>> enumerable)
+    { return enumerable.firstOfWhere(e => e.rightValue); }
+    
+    // TODO: test me
+    public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
+    (this IEnumerable<Future<Either<A, B>>> enumerable) {
+      var futures = enumerable.ToArray();
+      return futures.firstOfSuccessful().map(opt => opt.fold(
+        /* If this future is completed, then all futures are completed with lefts. */
+        () => Either<A[], B>.Left(futures.Select(f => f.value.get.leftValue.get).ToArray()),
+        Either<A[], B>.Right
+      ));
+    }
+
+    public static Future<Unit> fromCoroutine(IEnumerator enumerator) {
+      var f = new FutureImpl<Unit>();
       ASync.StartCoroutine(coroutineEnum(f, enumerator));
       return f;
     }
 
     /* Waits at most `timeoutSeconds` for the future to complete. Completes with 
        exception produced by `onTimeout` on timeout. */
-    public static Future<A> timeout<A>(
-      this Future<A> future, float timeoutSeconds, Fn<Exception> onTimeout
+    public static Future<Either<B, A>> timeout<A, B>(
+      this Future<A> future, float timeoutSeconds, Fn<B> onTimeout
     ) {
       // TODO: test me
       var timeoutF = delay(timeoutSeconds, () => future.value.fold(
         // onTimeout() might have side effects, so we only need to execute it if 
         // there is no value in the original future once the timeout hits.
-        () => F.throws<A>(onTimeout()),
-        @try => @try.getOrThrow
+        () => onTimeout().left().r<A>(),
+        v => v.right().l<B>()
       ));
-      return new[] { future, timeoutF }.firstOf();
+      return new[] { future.map(v => v.right().l<B>()), timeoutF }.firstOf();
     }
 
     /* Waits at most `timeoutSeconds` for the future to complete. Completes with 
        TimeoutException<A> on timeout. */
-    public static Future<A> timeout<A>(
+    public static Future<Either<Timeout, A>> timeout<A>(
       this Future<A> future, float timeoutSeconds
     ) {
-      return future.timeout(timeoutSeconds, () => new TimeoutException<A>(future, timeoutSeconds));
+      return future.timeout(
+        timeoutSeconds, 
+        () => new Timeout(timeoutSeconds)
+      );
     }
 
-    private static IEnumerator coroutineEnum
-    (Promise<Unit> p, IEnumerator enumerator) {
+    static IEnumerator coroutineEnum(Promise<Unit> p, IEnumerator enumerator) {
       yield return ASync.StartCoroutine(enumerator);
-      p.completeSuccess(Unit.instance);
+      p.complete(Unit.instance);
     }
 
     public class FinishedCancellationToken : CancellationToken {
-      private static FinishedCancellationToken _instance;
-
-      public static FinishedCancellationToken instance { get {
-        return _instance ?? (_instance = new FinishedCancellationToken());
-      } }
-
-      private FinishedCancellationToken() {}
+      public static readonly FinishedCancellationToken instance = new FinishedCancellationToken();
+      FinishedCancellationToken() {}
 
       public bool isCancelled { get { return true; } }
       public bool cancel() { return false; }
@@ -263,72 +293,26 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   class SuccessfulFutureImpl<A> : Future<A> {
     readonly A _value;
-    public string name { get; }
 
-    public SuccessfulFutureImpl(A value, string name = "completed future") {
+    public SuccessfulFutureImpl(A value) {
       _value = value;
-      this.name = name;
     }
 
-    public Option<A> pureValue => _value.some();
-    public Option<Try<A>> value => new Try<A>(_value).some();
-    public Option<Exception> pureError => F.none<Exception>();
+    public Option<A> value => _value.some();
 
-    public CancellationToken onComplete(Act<Try<A>> action) {
-      action(new Try<A>(_value));
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public CancellationToken onSuccess(Act<A> action) {
+    public CancellationToken onComplete(Act<A> action) {
       action(_value);
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public CancellationToken onFailure(Act<Exception> action) {
-      return Future.FinishedCancellationToken.instance;
-    }
-  }
-
-  class FailedFutureImpl<A> : Future<A> {
-    readonly Exception exception;
-    public string name { get; }
-
-    public FailedFutureImpl(Exception exception, string name = "failed future") {
-      this.exception = exception;
-      this.name = name;
-    }
-
-    public Option<A> pureValue => F.none<A>();
-    public Option<Try<A>> value => F.err<A>(exception).some();
-    public Option<Exception> pureError => exception.some();
-
-    public CancellationToken onComplete(Act<Try<A>> action) {
-      action(F.err<A>(exception));
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public CancellationToken onSuccess(Act<A> action) {
-      return Future.FinishedCancellationToken.instance;
-    }
-
-    public CancellationToken onFailure(Act<Exception> action) {
-      action(exception);
       return Future.FinishedCancellationToken.instance;
     }
   }
 
   /* Future that will never be fullfilled. */
   class UnfullfilledFutureImpl<A> : Future<A> {
-    public readonly static Future<A> instance = new UnfullfilledFutureImpl<A>();
+    public static readonly Future<A> instance = new UnfullfilledFutureImpl<A>();
     UnfullfilledFutureImpl() {}
 
-    public string name => "unfullfilled-future";
-    public Option<Try<A>> value => F.none<Try<A>>();
-    public Option<A> pureValue => F.none<A>();
-    public Option<Exception> pureError => F.none<Exception>();
-    public CancellationToken onComplete(Act<Try<A>> action) { return Future.FinishedCancellationToken.instance; }
-    public CancellationToken onSuccess(Act<A> action) { return Future.FinishedCancellationToken.instance; }
-    public CancellationToken onFailure(Act<Exception> action) { return Future.FinishedCancellationToken.instance; }
+    public Option<A> value => F.none<A>();
+    public CancellationToken onComplete(Act<A> action) { return Future.FinishedCancellationToken.instance; }
   }
 
   class FutureImpl<A> : Future<A>, Promise<A> {
@@ -350,64 +334,38 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public struct FutureListener {
-      public readonly Act<Try<A>> handler;
-      public readonly bool handlesErrors;
+      public readonly Act<A> handler;
 
-      public FutureListener(bool handlesErrors, Act<Try<A>> handler) {
-        this.handlesErrors = handlesErrors;
+      public FutureListener(Act<A> handler) {
         this.handler = handler;
       }
     }
 
     readonly IList<FutureListener> listeners = new List<FutureListener>();
 
-    Option<Try<A>> _value;
-    public string name { get; }
-    public Option<Try<A>> value => _value;
-    public Option<A> pureValue => _value.flatMap(t => t.toOption);
-    public Option<Exception> pureError => _value.flatMap(t => t.exception);
+    public Option<A> value { get; private set; }
 
-    public FutureImpl(string name) {
-      this.name = name;
-      _value = F.none<Try<A>>();
+    public FutureImpl() { value = F.none<A>(); }
+
+    public void complete(A v) {
+      if (! tryComplete(v)) throw new IllegalStateException(
+        $"Try to complete future with \"{v}\" but it is already " + $"completed with \"{value.get}\""
+      );
     }
 
-    public void complete(Try<A> v) {
-      if (! tryComplete(v)) throw new IllegalStateException(string.Format(
-        "Try to complete future with \"{0}\" but it is already " +
-        "completed with \"{1}\"",
-        v, value.get
-      ));
-    }
-
-    public void completeSuccess(A v) { complete(F.scs(v)); }
-
-    public void completeError(Exception ex) { complete(F.err<A>(ex)); }
-
-    public bool tryComplete(Try<A> v) {
+    public bool tryComplete(A v) {
       // Cannot use fold here because of iOS AOT.
       var ret = value.isEmpty;
       if (ret) {
-        // If no listeners are handling our errors - report them to log.
-        if (!listeners.Any(l => l.handlesErrors))
-          v.exception.each(e => Log.error($"Unhandled exception for future '{name}': {e.Message}", e));
-        _value = F.some(v);
+        value = F.some(v);
         // completed should be called only once
         completed(v);
       }
       return ret;
     }
 
-    public bool tryCompleteSuccess(A v) {
-      return tryComplete(F.scs(v));
-    }
-
-    public bool tryCompleteError(Exception ex) {
-      return tryComplete(F.err<A>(ex));
-    }
-
-    private CancellationToken onComplete(FutureListener listener) {
-      return value.fold<Try<A>, CancellationToken>(() => {
+    CancellationToken onComplete(FutureListener listener) {
+      return value.fold<A, CancellationToken>(() => {
         listeners.Add(listener);
         return new CancellationTokenImpl(listener, this);
       }, v => {
@@ -416,24 +374,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public CancellationToken onComplete(Act<Try<A>> action) {
-      return onComplete(new FutureListener(true, action));
+    public CancellationToken onComplete(Act<A> action) {
+      return onComplete(new FutureListener(action));
     }
 
-    public CancellationToken onSuccess(Act<A> action) {
-      return onComplete(new FutureListener(false, t => t.value.each(action)));
-    }
-
-    public CancellationToken onFailure(Act<Exception> action) {
-      return onComplete(t => t.exception.each(action));
-    }
-
-    public void completed(Try<A> v) {
+    public void completed(A v) {
       foreach (var listener in listeners) listener.handler(v);
       listeners.Clear();
     }
 
-    private bool cancel(FutureListener action) {
+    bool cancel(FutureListener action) {
       return listeners.Remove(action);
     }
   }

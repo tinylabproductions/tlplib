@@ -2,6 +2,11 @@
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
+  public static class EitherExts {
+    public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e)
+      { return e.flatMapRight(_ => _); }
+  }
+
   public 
 #if UNITY_IOS
   class
@@ -58,6 +63,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
       { if (isLeft) onLeft(_leftValue); else onRight(_rightValue); }
 
     public Option<B> toOpt() { return rightValue; }
+
+    public Try<B> toTry(Fn<A, Exception> onLeft)
+      { return fold(a => F.err<B>(onLeft(a)), F.scs); }
   }
 
   public static class EitherBuilderExts {

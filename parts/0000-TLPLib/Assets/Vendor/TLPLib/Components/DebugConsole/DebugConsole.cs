@@ -165,7 +165,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         var opt = objOpt();
         if (opt.isDefined) {
           var returnFuture = run(opt.get);
-          Act<Try<A>> onComplete = t => Log.rdebug($"{prefixedName} done: {t}");
+          Act<A> onComplete = t => Log.rdebug($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.
           returnFuture.value.voidFold(
             () => {

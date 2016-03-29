@@ -9,13 +9,24 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Configuration {
   /* See IConfig. */
   public class Config : ConfigBase {
-    public class ConfigError : Exception {
-      public ConfigError(string message) : base(message) {}
+    public abstract class ConfigError {
+      public readonly string message;
+
+      protected ConfigError(string message) { this.message = message; }
+
+      public override string ToString() { return $"{nameof(ConfigError)}[{message}]"; }
     }
 
     /** Errors which happen because retrieval fails. */
     public class ConfigRetrievalError : ConfigError {
       public ConfigRetrievalError(string message) : base(message) {}
+    }
+
+    public class ConfigWWWError : ConfigRetrievalError {
+      public readonly WWWError error;
+
+      public ConfigWWWError(WWWError error) : base($"WWW error (url={error.www.url}): {error.error}")
+        { this.error = error; }
     }
 
     public class WrongContentType : ConfigRetrievalError {
@@ -53,18 +64,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
      * Throws WrongContentType if unexpected content type is found. 
      * Throws ParsingError if JSON could not be parsed,.
      **/
-    public static Future<IConfig> apply(string url, string expectedContentType= "application/json") {
-      return new WWW(url).wwwFuture().map(www => {
-        var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
-        // Sometimes we get redirected to internet paygate, which returns HTML 
-        // instead of our content.
-        if (contentType != expectedContentType)
-          throw new WrongContentType(url, expectedContentType, contentType);
+    public static Future<Either<ConfigError, IConfig>> apply(
+      string url, string expectedContentType= "application/json"
+    ) {
+      return new WWW(url).wwwFuture().map(wwwE => wwwE.fold(
+        err => Either<ConfigError, IConfig>.Left(new ConfigWWWError(err)),
+        www => {
+          var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
+          // Sometimes we get redirected to internet paygate, which returns HTML 
+          // instead of our content.
+          if (contentType != expectedContentType)
+            return Either<ConfigError, IConfig>.Left(
+              new WrongContentType(url, expectedContentType, contentType)
+            );
 
-        var json = (Dictionary<string, object>) Json.Deserialize(www.text);
-        if (json == null) throw new ParsingError(url, www.text);
-        return (IConfig) new Config(json);
-      });
+          var json = (Dictionary<string, object>) Json.Deserialize(www.text);
+          return json == null 
+            ? Either<ConfigError, IConfig>.Left(new ParsingError(url, www.text)) 
+            : Either<ConfigError, IConfig>.Right(new Config(json));
+        })
+      );
     }
 
     // Implementation

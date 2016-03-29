@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public Future<Return> query(Params parameters) {
-      var future = new FutureImpl<Return>("[ASyncOneAtATimeQueue#query]");
+      var future = new FutureImpl<Return>();
 
       theFuture.onComplete(_ => doQuery(parameters, future));
       theFuture = future;

@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
     ) {
-      var f = new FutureImpl<A>("[ASync.StartCoroutine]");
+      var f = new FutureImpl<A>();
       behaviour.StartCoroutine(coroutine(f));
       return f;
     }
@@ -147,24 +147,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    [Obsolete("use wwwFuture instead")]
-    public static Future<WWW> www(Fn<WWW> createWWW) { return wwwFuture(createWWW()); }
-
-    /* Do async WWW request. Completes with WWWException if WWW fails. */
-    public static Future<WWW> wwwFuture(this WWW www) {
-      var f = new FutureImpl<WWW>("[ASync.wwwFuture]");
+    /* Do async WWW request. */
+    public static Future<Either<WWWError, WWW>> wwwFuture(this WWW www) {
+      var f = new FutureImpl<Either<WWWError, WWW>>();
       StartCoroutine(WWWEnumerator(www, f));
       return f;
     }
 
-    readonly static ASyncOneAtATimeQueue<Fn<WWW>, WWW> wwwsQueue = new ASyncOneAtATimeQueue<Fn<WWW>, WWW>(
-      "wwwsQueue", 
-      (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
-    );
+    static readonly ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>> wwwsQueue = 
+      new ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>>(
+        "wwwsQueue", 
+        (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
+      );
 
     /* Do async WWW request, but only do one WWW request at a time - there was an IL2CPP bug where
        having several WWWs executing at once crashed the runtime. */
-    public static Future<WWW> oneAtATimeWWW(Fn<WWW> createWWW) {
+    public static Future<Either<WWWError, WWW>> oneAtATimeWWW(Fn<WWW> createWWW) {
       return wwwsQueue.query(createWWW);
     }
 
@@ -178,13 +176,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
-    public static IEnumerator WWWEnumerator(WWW www, Promise<WWW> promise) {
-      return WWWEnumerator(www).afterThis(() => {
-        if (string.IsNullOrEmpty(www.error))
-          promise.completeSuccess(www);
-        else
-          promise.completeError(new WWWException(www));
-      });
+    public static IEnumerator WWWEnumerator(WWW www, Promise<Either<WWWError, WWW>> promise) {
+      return WWWEnumerator(www).afterThis(() => 
+        promise.complete(
+          string.IsNullOrEmpty(www.error) 
+          ? F.right<WWWError, WWW>(www)
+          : F.left<WWWError, WWW>(new WWWError(www))
+        )
+      );
     }
 
     public static IEnumerator WithDelayEnumerator(
@@ -219,16 +218,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Returns reactive value that can be used to observe current stage
      * of the application.
      **/
-    public static IRxVal<Option<Try<B>>> inAsyncSeq<A, B>(
+    public static IRxVal<Option<B>> inAsyncSeq<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Future<B>> asyncAction
     ) {
-      var rxRef = RxRef.a(F.none<Try<B>>());
+      var rxRef = RxRef.a(F.none<B>());
       inAsyncSeq(enumerable.GetEnumerator(), rxRef, asyncAction);
       return rxRef;
     }
 
-    private static void inAsyncSeq<A, B>(
-      IEnumerator<A> e, IRxRef<Option<Try<B>>> rxRef, 
+    static void inAsyncSeq<A, B>(
+      IEnumerator<A> e, IRxRef<Option<B>> rxRef, 
       Fn<A, Future<B>> asyncAction
     ) {
       if (! e.MoveNext()) return;
