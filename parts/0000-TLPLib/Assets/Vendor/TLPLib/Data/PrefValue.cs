@@ -58,15 +58,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       return new Val<bool>(key, defaultVal, GetBool, SetBool);
     }
 
-    static bool GetBool(string key, bool defaultVal) 
+    public static bool GetBool(string key, bool defaultVal) 
     { return int2bool(PlayerPrefs.GetInt(key, bool2int(defaultVal))); }
 
-    static void SetBool(string key, bool value) 
+    public static void SetBool(string key, bool value) 
     { PlayerPrefs.SetInt(key, bool2int(value)); }
 
     static bool int2bool(int i) { return i != 0; }
     static int bool2int(bool b) { return b ? 1 : 0; }
-
 
     /* Provide custom mapping. It uses string representation inside and returns 
      * default value if string is empty. */
