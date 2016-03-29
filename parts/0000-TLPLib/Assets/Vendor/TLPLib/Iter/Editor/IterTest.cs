@@ -1,5 +1,4 @@
-﻿#if UNITY_TEST
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -7,6 +6,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Iter;
 using NUnit.Framework;
 
+namespace com.tinylabproductions.TLPLib.Iter {
 [TestFixture]
 public class IterTest {
   readonly List<int> list = F.list(1, 2, 3, 4, 5, 6, 7, 8);
@@ -939,4 +939,4 @@ public class IterTest {
 
 #endregion
 }
-#endif
+}

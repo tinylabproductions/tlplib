@@ -1,9 +1,14 @@
-﻿#if UNITY_TEST
+﻿using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [TestFixture]
   public class ArrayExtsTest {
+    [Test]
+    public void AddOneTest() {
+      new[] {1}.addOne(2).shouldEqual(new [] {1, 2});
+    }
+
     [Test]
     public void ConcatTest1() {
       var a = new[] {1, 2, 3};
@@ -22,4 +27,3 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
   }
 }
-#endif

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-#if UNITY_TEST
 using System.Linq;
+using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
@@ -8,6 +8,9 @@ using NUnit.Framework;
 namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   [TestFixture]
   public class VariableConfigTest {
+    Dictionary<string, object> parse(string json)
+    { return (Dictionary<string, object>) Json.Deserialize(json); }
+
     [Test]
     public void InjectToKeySingleTest() {
       Assert.AreEqual(
@@ -63,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   'str3': 'string3'
 }".json();
       var variables = F.dict(F.t("a", "a-var"), F.t("b", "b-var"));
-      var cfg = new Config(JSON.Parse(json).AsObject);
+      var cfg = new Config(parse(json));
 
       var cfgab = new VariableConfig(
         cfg, variables, new[] {new[] {"a", "b"}, new[] {"a"}}
@@ -107,7 +110,7 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   'float': 3.5,
 }".json();
       var variables = F.dict(F.t("a", "a-var"), F.t("b", "b-var"));
-      var cfg = new Config(JSON.Parse(json).AsObject);
+      var cfg = new Config(parse(json));
 
       var cfgab = new VariableConfig(
         cfg, variables, new[] {new[] {"a", "b"}, new[] {"a"}}
@@ -168,7 +171,7 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   }
 }".json();
       var variables = F.dict(F.t("platform", "wp8"));
-      var cfg = new Config(JSON.Parse(json).AsObject);
+      var cfg = new Config(parse(json));
 
       var plainCfg = new VariableConfig(cfg, variables, new IList<string>[] { new string[] { } });
       var wp8Cfg = new VariableConfig(cfg, variables, new IList<string>[] {new[] {"platform"}});
@@ -183,4 +186,3 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
     }
   }
 }
-#endif

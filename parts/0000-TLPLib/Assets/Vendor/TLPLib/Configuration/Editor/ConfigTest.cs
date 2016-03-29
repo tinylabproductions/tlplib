@@ -1,10 +1,11 @@
-﻿#if UNITY_TEST
-using System;
+﻿using System;
+using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
 
-namespace com.tinylabproductions.TLPLib.Configuration.Editor {
+namespace com.tinylabproductions.TLPLib.Configuration {
   static class TestJson {
     public static string json(this string json) { return json.Replace('\'', '"'); }
   }
@@ -91,7 +92,9 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
   'subconfig-ref': '#REF=foo.bar.baz#',
   'subconfig-list-ref': '#REF=subconfig-list#'
 }".json();
-    private static readonly IConfig config = new Config(JSON.Parse(json).AsObject);
+    private static readonly IConfig config = new Config(
+      (Dictionary<string, object>) Json.Deserialize(json)
+    );
     private static readonly string[] nestPrefixes = {"", "foo.bar.baz."};
     private static readonly string[] nestSuffixes = {"", "-ref"};
 
@@ -324,4 +327,3 @@ namespace com.tinylabproductions.TLPLib.Configuration.Editor {
     #endregion
   }
 }
-#endif

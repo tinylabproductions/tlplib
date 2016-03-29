@@ -1,5 +1,4 @@
-﻿#if UNITY_TEST
-using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Logger {
@@ -41,4 +40,3 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
   }
 }
-#endif

@@ -19,7 +19,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       if (((object)_behaviour) == null) { 
         const string name = "ASync Helper";
         var go = new GameObject(name);
-        UnityEngine.Object.DontDestroyOnLoad(go);
+        // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
+        // be part of an editor script.
+        if (! Application.isEditor) UnityEngine.Object.DontDestroyOnLoad(go);
         _behaviour = coroutineHelper(go);
       }
       return _behaviour;
