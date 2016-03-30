@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         var go = new GameObject(name);
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
         // be part of an editor script.
-        if (! Application.isEditor) UnityEngine.Object.DontDestroyOnLoad(go);
+        if (Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(go);
         _behaviour = coroutineHelper(go);
       }
       return _behaviour;
