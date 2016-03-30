@@ -233,7 +233,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         f.onComplete(a => {
           completed++;
           var res = predicate(a);
-          if (res.isDefined) future.complete(res);
+          if (res.isDefined) future.tryComplete(res);
           else if (completed == futures.Count) future.tryComplete(F.none<B>());
         });
       return future;

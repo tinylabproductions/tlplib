@@ -28,6 +28,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Test]
+    public void WhenHasMultipleCompleted() {
+      new[] {
+        Future.unfullfiled<int>(),
+        Future.unfullfiled<int>(),
+        Future.successful(1),
+        Future.unfullfiled<int>(),
+        Future.successful(2),
+        Future.unfullfiled<int>()
+      }.firstOf().value.get.shouldEqual(1);
+    }
+
+    [Test]
     public void WhenNoCompleted() {
       new[] {
         Future.unfullfiled<int>(),
@@ -42,6 +54,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void ItemFound() {
       new[] {1, 3, 5, 6, 7}.
+        Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
+        value.get.shouldEqual(6.some());
+    }
+    [Test]
+    public void MultipleItemsFound() {
+      new[] {1, 3, 5, 6, 7, 8}.
         Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
         value.get.shouldEqual(6.some());
     }
@@ -70,6 +88,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Test]
+    public void MultipleRightsFound() {
+      new[] { FT.left(1), FT.left(3), FT.left(5), FT.right("6"), FT.left(7), FT.right("8") }.
+        Select(Future.successful).firstOfSuccessful().
+        value.get.shouldBeSome("6");
+    }
+
+    [Test]
     public void RightNotFound() {
       new[] { FT.left(1), FT.left(3), FT.left(5), FT.left(7) }.
         Select(Future.successful).firstOfSuccessful().
@@ -88,6 +113,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void ItemFound() {
       new [] { FT.left(1), FT.left(2), FT.right("a"), FT.left(3) }.
+        Select(Future.successful).firstOfSuccessfulCollect().value.get.
+        shouldEqual(F.right<int[], string>("a"));
+    }
+
+    [Test]
+    public void MultipleItemsFound() {
+      new [] { FT.left(1), FT.left(2), FT.right("a"), FT.left(3), FT.right("b") }.
         Select(Future.successful).firstOfSuccessfulCollect().value.get.
         shouldEqual(F.right<int[], string>("a"));
     }
