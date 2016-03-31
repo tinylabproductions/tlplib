@@ -23,10 +23,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     public class ConfigWWWError : ConfigRetrievalError {
+      /* This is the reporting URL */
+      public readonly string url;
       public readonly WWWError error;
 
-      public ConfigWWWError(WWWError error) : base($"WWW error (url={error.www.url}): {error.error}")
-        { this.error = error; }
+      public ConfigWWWError(string url, WWWError error) : base($"WWW error (url={url}): {error.error}") {
+        this.url = url;
+        this.error = error;
+      }
     }
 
     public class WrongContentType : ConfigRetrievalError {
@@ -61,26 +65,32 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     /**
      * Fetches JSON config from URL. Checks its content type before parsing.
      *
+     * If reportUrl != null, uses that in error reports. One use of it is adding a
+     * timestamp query string parameter to the request URL to avoid caching, but using
+     * an url without timestamp when reporting errors to your error tracker, because 
+     * otherwise one error can trigger a thousand errors because the url always changes.
+     *
      * Throws WrongContentType if unexpected content type is found. 
      * Throws ParsingError if JSON could not be parsed,.
      **/
     public static Future<Either<ConfigError, IConfig>> apply(
-      string url, string expectedContentType= "application/json"
+      string fetchUrl, string reportUrl=null, string expectedContentType= "application/json"
     ) {
-      return new WWW(url).wwwFuture().map(wwwE => wwwE.fold(
-        err => Either<ConfigError, IConfig>.Left(new ConfigWWWError(err)),
+      reportUrl = reportUrl ?? fetchUrl;
+      return new WWW(fetchUrl).wwwFuture().map(wwwE => wwwE.fold(
+        err => Either<ConfigError, IConfig>.Left(new ConfigWWWError(reportUrl, err)),
         www => {
           var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
           // Sometimes we get redirected to internet paygate, which returns HTML 
           // instead of our content.
           if (contentType != expectedContentType)
             return Either<ConfigError, IConfig>.Left(
-              new WrongContentType(url, expectedContentType, contentType)
+              new WrongContentType(reportUrl, expectedContentType, contentType)
             );
 
           var json = (Dictionary<string, object>) Json.Deserialize(www.text);
           return json == null 
-            ? Either<ConfigError, IConfig>.Left(new ParsingError(url, www.text)) 
+            ? Either<ConfigError, IConfig>.Left(new ParsingError(reportUrl, www.text)) 
             : Either<ConfigError, IConfig>.Right(new Config(json));
         })
       );
