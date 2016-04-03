@@ -25,30 +25,29 @@ namespace com.tinylabproductions.TLPLib.Android {
 
       if (Log.isDebug) Log.rdebug("Trying to hide android navigation bar.");
       var activity = AndroidActivity.current;
-      var future = new FutureImpl<bool>();
-      AndroidActivity.runOnUI(() => {
-        try {
-          var flags =
-            view.GetStatic<int>(FLAG_HIDE_NAVIGATION) |
-            view.GetStatic<int>(FLAG_IMMERSIVE_STICKY) |
-            view.GetStatic<int>(FLAG_FULLSCREEN);
-          if (stableLayout) flags |= view.GetStatic<int>(FLAG_STABLE_LAYOUT);
-          var decor = activity.
-            Call<AndroidJavaObject>("getWindow").
-            Call<AndroidJavaObject>("getDecorView");
-          decor.Call("setSystemUiVisibility", flags);
-          if (Log.isDebug) Log.rdebug("Hiding android navigation bar succeeded.");
-          future.complete(true);
-        }
-        catch (Exception e) {
-          if (Log.isDebug) Log.rdebug(
-            "Error while trying to hide navigation bar on android: " + e
-          );
-          future.complete(false);
-        }
+      return Future<bool>.async(p => {
+        AndroidActivity.runOnUI(() => {
+          try {
+            var flags =
+              view.GetStatic<int>(FLAG_HIDE_NAVIGATION) |
+              view.GetStatic<int>(FLAG_IMMERSIVE_STICKY) |
+              view.GetStatic<int>(FLAG_FULLSCREEN);
+            if (stableLayout) flags |= view.GetStatic<int>(FLAG_STABLE_LAYOUT);
+            var decor = activity.
+              Call<AndroidJavaObject>("getWindow").
+              Call<AndroidJavaObject>("getDecorView");
+            decor.Call("setSystemUiVisibility", flags);
+            if (Log.isDebug) Log.rdebug("Hiding android navigation bar succeeded.");
+            p.complete(true);
+          }
+          catch (Exception e) {
+            if (Log.isDebug) Log.rdebug(
+              "Error while trying to hide navigation bar on android: " + e
+            );
+            p.complete(false);
+          }
+        });
       });
-
-      return future;
     }
   }
 #endif

@@ -273,10 +273,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public Future<A> toFuture() {
-      var f = new FutureImpl<A>();
-      var subscription = subscribe(f.complete);
-      f.onComplete(_ => subscription.unsubscribe());
-      return f;
+      return Future<A>.async((p, f) => {
+        var subscription = subscribe(p.complete);
+        f.onComplete(_ => subscription.unsubscribe());
+      });
     }
 
     public IObservable<B> map<B>(Fn<A, B> mapper) {

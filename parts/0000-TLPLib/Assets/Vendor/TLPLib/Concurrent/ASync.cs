@@ -32,9 +32,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
     ) {
-      var f = new FutureImpl<A>();
-      behaviour.StartCoroutine(coroutine(f));
-      return f;
+      return Future<A>.async(p => behaviour.StartCoroutine(coroutine(p)));
     }
 
     public static Coroutine StartCoroutine(IEnumerator coroutine) {
@@ -151,9 +149,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do async WWW request. */
     public static Future<Either<WWWError, WWW>> wwwFuture(this WWW www) {
-      var f = new FutureImpl<Either<WWWError, WWW>>();
-      StartCoroutine(WWWEnumerator(www, f));
-      return f;
+      return Future<Either<WWWError, WWW>>.async(p => StartCoroutine(WWWEnumerator(www, p)));
     }
 
     static readonly ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>> wwwsQueue = 

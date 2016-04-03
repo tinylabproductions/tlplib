@@ -15,12 +15,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public Future<Return> query(Params parameters) {
-      var future = new FutureImpl<Return>();
-
-      theFuture.onComplete(_ => doQuery(parameters, future));
-      theFuture = future;
-
-      return future;
+      return Future<Return>.async((p, f) => {
+        theFuture.onComplete(_ => doQuery(parameters, p));
+        theFuture = f;
+      });
     }
   }
 }
