@@ -28,5 +28,13 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldBeNone<A>(this Option<A> a, string message=null) {
       a.shouldEqual(F.none<A>(), message);
     }
+
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) {
+      either.shouldEqual(F.left<A, B>(expected), message);
+    }
+
+    public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) {
+      either.shouldEqual(F.right<A, B>(expected), message);
+    }
   }
 }
