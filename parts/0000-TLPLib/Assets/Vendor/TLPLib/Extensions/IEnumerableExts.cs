@@ -94,5 +94,47 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) {
       return new HashSet<A>(enumerable);
     }
+
+    /** Partitions enumerable into two lists using a predicate: (all false elements, all true elements) **/
+    public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
+      var trues = new List<A>();
+      var falses = new List<A>();
+      foreach (var a in enumerable) (predicate(a) ? trues : falses).Add(a);
+      return Partitioned.a(trues, falses);
+    }
+  }
+
+  public struct Partitioned<A> : IEquatable<Partitioned<A>> {
+    public readonly List<A> trues, falses;
+
+    public Partitioned(List<A> trues, List<A> falses) {
+      this.trues = trues;
+      this.falses = falses;
+    }
+
+    public bool Equals(Partitioned<A> other) {
+      throw new InvalidOperationException(
+        "Can't compare two partitioned datasets, because their lists are mutable!"
+      );
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is Partitioned<A> && Equals((Partitioned<A>) obj);
+    }
+
+    public override int GetHashCode() { return base.GetHashCode(); }
+
+    public override string ToString() {
+      return $"{nameof(Partitioned)}[" +
+             $"{nameof(trues)}: {trues.asString()}, " +
+             $"{nameof(falses)}: {falses.asString()}" +
+             $"]";
+    }
+  }
+  public static class Partitioned {
+    public static Partitioned<A> a<A>(List<A> trues, List<A> falses) {
+      return new Partitioned<A>(trues, falses);
+    }
   }
 }

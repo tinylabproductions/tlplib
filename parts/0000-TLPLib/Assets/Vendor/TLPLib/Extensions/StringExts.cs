@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -54,6 +55,33 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
+    public static string toBase64(this string source, Encoding encoding = null) {
+      encoding = encoding ?? Encoding.UTF8;
+      return Convert.ToBase64String(encoding.GetBytes(source));
+    }
+
+    public static string fromBase64(this string source, Encoding encoding = null) {
+      encoding = encoding ?? Encoding.UTF8;
+      return encoding.GetString(Convert.FromBase64String(source));
+    }
+
     public static string trimTo(this string s, int length) { return s.Length > length ? s.Substring(0, length) : s; }
+
+    /* Repeats string multiple times. */
+    public static string repeat(this string s, int times) {
+      if (times < 0) throw new ArgumentException($"{nameof(times)} must be >= 0, was {times}");
+      if (times == 0) return "";
+      if (times == 1) return s;
+      var sb = new StringBuilder(s.Length * times);
+      for (var idx = 0; idx < times; idx++) sb.Append(s);
+      return sb.ToString();
+    }
+
+    public static bool isEmpty(this string s) { return s.Length == 0; }
+    public static bool nonEmpty(this string s) { return s.Length != 0; }
+
+    public static string ensureStartsWith(this string s, string prefix) {
+      return s.StartsWith(prefix) ? s : $"{prefix}{s}";
+    }
   }
 }
