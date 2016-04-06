@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public delegate void OnError(ErrorData data);
 
-    static public void registerToUnity(OnError onError, bool logWarnings) {
+    public static void registerToUnity(OnError onError, bool logWarnings) {
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         if (
           type == LogType.Assert || type == LogType.Error || type == LogType.Exception
@@ -44,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       };
     }
 
-    static public void trackWWWSend(string prefix, WWW www, Dictionary<string, string> headers) {
+    public static void trackWWWSend(string prefix, WWW www, Dictionary<string, string> headers) {
       ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
         if (!string.IsNullOrEmpty(www.error)) {
           if (Log.isInfo) Log.info(
