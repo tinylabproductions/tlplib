@@ -43,5 +43,10 @@ namespace com.tinylabproductions.TLPLib.Data {
         var x = new VersionNumber(1, 2, 3, '.') + new VersionNumber(1, 2, 3, '-');
       });
     }
+
+    [Test]
+    public void TestWithSeparator() {
+      new VersionNumber(1, 1, 1).withSeparator('~').shouldEqual(new VersionNumber(1, 1, 1, '~'));
+    }
   }
 }

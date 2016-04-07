@@ -16,6 +16,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.separator = separator;
     }
 
+    public VersionNumber withSeparator(char separator) {
+      return new VersionNumber(major, minor, bugfix, separator);
+    }
+
     public static VersionNumber operator +(VersionNumber a, VersionNumber b) {
       if (a.separator != b.separator) throw new ArgumentException(
         $"separators do not match! '{a.separator}' / '{b.separator}'"
