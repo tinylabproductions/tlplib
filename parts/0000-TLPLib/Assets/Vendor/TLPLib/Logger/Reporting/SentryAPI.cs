@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   public static class SentryAPI {
@@ -68,7 +70,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         const string userAgent = "raven-unity-tlplib/HEAD";
         var headers = new Dictionary<string, string> {
           {"User-Agent", userAgent},
-          {"Content-Type", "application/json"}, {
+          {"Content-Type", "application/json"},
+          {
             "X-Sentry-Auth",
             $"Sentry sentry_version=7, sentry_client={userAgent}, " +
             $"sentry_timestamp={timestamp.toUnixTimestamp()}, " +
@@ -136,9 +139,11 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         // max tag name length = 32
         {"ProductName", tag(appInfo.productName)},
         {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
-        {"App:LoadedLevel", tag(Application.loadedLevel)},
-        {"App:LoadedLevelName", tag(Application.loadedLevelName)},
-        {"App:LevelCount", tag(Application.levelCount)},
+        {"App:LoadedLevelNames", tag(
+          Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
+          Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
+        )},
+        {"App:LevelCount", tag(SceneManager.sceneCountInBuildSettings)},
         {"App:Platform", tag(Application.platform)},
         {"App:UnityVersion", tag(Application.unityVersion)},
         {"App:Version", tag(Application.version)},

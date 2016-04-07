@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -181,13 +182,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WWWEnumerator(WWW www, Promise<Either<WWWError, WWW>> promise) {
-      return WWWEnumerator(www).afterThis(() => 
-        promise.complete(
-          string.IsNullOrEmpty(www.error) 
-          ? F.right<WWWError, WWW>(www)
-          : F.left<WWWError, WWW>(new WWWError(www))
-        )
-      );
+      return WWWEnumerator(www).afterThis(() => promise.complete(www.toEither()));
     }
 
     public static IEnumerator WithDelayEnumerator(

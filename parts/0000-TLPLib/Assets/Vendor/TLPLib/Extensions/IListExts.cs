@@ -146,5 +146,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
       throw new IllegalStateException();
     }
+
+    public static Option<A> headOption<A>(this IList<A> list)
+      { return list.Count == 0 ? F.none<A>() : list[0].some(); }
   }
 }

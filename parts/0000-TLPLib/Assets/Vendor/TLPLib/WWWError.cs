@@ -6,5 +6,7 @@ namespace com.tinylabproductions.TLPLib {
 
     public WWWError(WWW www) { this.www = www; }
     public string error => www.error;
+
+    public override string ToString() { return $"{nameof(WWWError)}[{error}]"; }
   }
 }
