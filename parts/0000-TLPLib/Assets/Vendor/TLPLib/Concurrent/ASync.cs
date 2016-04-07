@@ -135,15 +135,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, enumerator);
     }
 
-    public static void WithDelayFixedUpdate(GameObject go, float delay, Act act) {
+    /* Returns action that cancels our delayed call. */
+    public static Act WithDelayFixedUpdate(GameObject go, float delay, Act act) {
       // TODO: probably this needs to be rewritten to use only one global component for fixed update
       if (delay < 1e-6) {
         // if delay is 0 call immediately
         // this is because we don't want to wait a single fixed update
         act();
+        return () => { };
       }
       else {
-        go.AddComponent<ASyncFixedUpdateHelperBehaviour>().init(delay, act);
+        var component = go.AddComponent<ASyncFixedUpdateHelperBehaviour>();
+        component.init(delay, act);
+        return () => {
+          if (component) UnityEngine.Object.Destroy(component);
+        };
       }
     }
 
