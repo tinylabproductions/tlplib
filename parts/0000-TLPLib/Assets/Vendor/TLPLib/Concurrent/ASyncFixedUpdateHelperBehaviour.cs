@@ -1,9 +1,9 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  class ASyncFixedUpdateHelperBehaviour : MonoBehaviour {
+  class ASyncFixedUpdateHelperBehaviour : MonoBehaviour, IMB_FixedUpdate {
     float timeLeft;
     Act act;
 
@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this.act = act;
     }
 
-    internal void FixedUpdate() {
+    public void FixedUpdate() {
       if (act == null) {
         // Fixed update gets called before init
         // Don't ask me why
