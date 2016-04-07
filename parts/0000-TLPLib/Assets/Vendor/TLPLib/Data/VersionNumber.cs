@@ -30,10 +30,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public string asString { get {
       var sb = new StringBuilder();
       sb.Append(major);
-      if (minor != 0 || bugfix != 0) {
-        sb.Append(separator);
-        sb.Append(minor);
-      }
+      sb.Append(separator);
+      sb.Append(minor);
       if (bugfix != 0) {
         sb.Append(separator);
         sb.Append(bugfix);

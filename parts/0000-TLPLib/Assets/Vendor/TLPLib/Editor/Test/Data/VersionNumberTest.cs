@@ -11,8 +11,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Test]
     public void TestAsString() {
       foreach (var s in separators) {
-        new VersionNumber(0, 0, 0, s).asString.shouldEqual("0");
-        new VersionNumber(1, 0, 0, s).asString.shouldEqual("1");
+        new VersionNumber(0, 0, 0, s).asString.shouldEqual($"0{s}0");
+        new VersionNumber(1, 0, 0, s).asString.shouldEqual($"1{s}0");
         new VersionNumber(1, 1, 0, s).asString.shouldEqual($"1{s}1");
         new VersionNumber(1, 0, 1, s).asString.shouldEqual($"1{s}0{s}1");
         new VersionNumber(1, 1, 1, s).asString.shouldEqual($"1{s}1{s}1");
