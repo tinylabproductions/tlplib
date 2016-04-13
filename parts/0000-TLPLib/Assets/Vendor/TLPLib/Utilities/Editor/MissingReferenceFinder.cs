@@ -43,12 +43,12 @@ public class MissingReferencesFinder : MonoBehaviour {
     var nullRefs = 0;
     foreach (var go in objects) {
       EditorUtility.DisplayProgressBar("findMissingReferences", progressInfo, (float) scanned++ / objects.Length);
-      var components = go.GetComponents<Component>();
+      var components = go.GetComponentsInChildren<Component>();
 
       foreach (var c in components) {
         if (!c) {
           missingComponents++;
-          Debug.LogError("Missing Component in GO: " + fullPath(go), go);
+          Debug.LogError("Missing Component in GO or children: " + fullPath(go), go);
           continue;
         }
 
@@ -60,7 +60,7 @@ public class MissingReferencesFinder : MonoBehaviour {
             if (sp.objectReferenceValue == null
                 && sp.objectReferenceInstanceIDValue != 0) {
               missingRefs++;
-              showError(ERR, context, go, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name));
+              showError(ERR, context, c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name));
             }
           }
         }
@@ -72,7 +72,7 @@ public class MissingReferencesFinder : MonoBehaviour {
         foreach (var field in notNullFields) {
           if ((field.GetValue(c) as Object) == null) {
             nullRefs++;
-            showError(ERR2, context, go, c.GetType().Name, field.Name);
+            showError(ERR2, context, c.gameObject, c.GetType().Name, field.Name);
           }
         }
       }
@@ -84,9 +84,8 @@ public class MissingReferencesFinder : MonoBehaviour {
   }
 
   static GameObject[] getSceneObjects() {
-    return Resources.FindObjectsOfTypeAll<GameObject>()
-        .Where(go => string.IsNullOrEmpty(AssetDatabase.GetAssetPath(go))
-               && go.hideFlags == HideFlags.None).ToArray();
+    return SceneManager.GetActiveScene().GetRootGameObjects()
+        .Where(go => go.hideFlags == HideFlags.None).ToArray();
   }
 
   const string ERR = "Missing Ref in: [{3}]{0}. Component: {1}, Property: {2}";
