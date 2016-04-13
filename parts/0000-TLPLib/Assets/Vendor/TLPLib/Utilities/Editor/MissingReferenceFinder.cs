@@ -16,12 +16,14 @@ public class MissingReferencesFinder : MonoBehaviour {
 
   [MenuItem("Tools/Show Missing Object References in all scenes", false, 51)]
   public static void missingReferencesInAllScenes() {
-    var scenes = EditorBuildSettings.scenes.ToArray();
+    var scenes = AssetDatabase.GetAllAssetPaths().Where(p => p.EndsWith(".unity")).ToArray();
     for (var i = 0; i < scenes.Length; i++) {
       var scene = scenes[i];
-      EditorUtility.DisplayProgressBar("missingReferencesInAllScenes", scene.path, (float)i++ / scenes.Length);
-      EditorSceneManager.OpenScene(scene.path);
-      findMissingReferences(scene.path, getSceneObjects(), $"({i}/{scenes.Length}) {SceneManager.GetActiveScene().name}");
+      if (EditorUtility.DisplayCancelableProgressBar("missingReferencesInAllScenes", scene, (float) i++ / scenes.Length)) {
+        break;
+      }
+      EditorSceneManager.OpenScene(scene);
+      findMissingReferences(scene, getSceneObjects(), false);
     }
     EditorUtility.ClearProgressBar();
     Debug.Log("missingReferencesInAllScenes finished");
@@ -29,6 +31,8 @@ public class MissingReferencesFinder : MonoBehaviour {
 
   [MenuItem("Tools/Show Missing Object References in assets", false, 52)]
   public static void missingReferencesInAssets() {
+    EditorUtility.DisplayProgressBar("missingReferencesInAssets", "missingReferencesInAssets", 0);
+
     var allAssets = AssetDatabase.GetAllAssetPaths();
     var objs = allAssets.Select(a => AssetDatabase.LoadAssetAtPath(a, typeof(GameObject)) as GameObject).Where(a => a != null).ToArray();
 
@@ -36,13 +40,15 @@ public class MissingReferencesFinder : MonoBehaviour {
     Debug.Log("missingReferencesInAssets finished");
   }
 
-  static void findMissingReferences(string context, GameObject[] objects, string progressInfo = "findMissingReferences") {
+  static void findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
     var scanned = 0;
     var missingComponents = 0;
     var missingRefs = 0;
     var nullRefs = 0;
     foreach (var go in objects) {
-      EditorUtility.DisplayProgressBar("findMissingReferences", progressInfo, (float) scanned++ / objects.Length);
+      if (useProgress) {
+        EditorUtility.DisplayProgressBar("findMissingReferences", "findMissingReferences", (float) scanned++ / objects.Length);
+      }
       var components = go.GetComponentsInChildren<Component>();
 
       foreach (var c in components) {
@@ -77,7 +83,9 @@ public class MissingReferencesFinder : MonoBehaviour {
         }
       }
     }
-    EditorUtility.ClearProgressBar();
+    if (useProgress) {
+      EditorUtility.ClearProgressBar();
+    }
     if (missingComponents + missingRefs + nullRefs > 0) {
       Debug.LogError($"[{context}] Missing components: {missingComponents} Missing Refs: {missingRefs} Null Refs: {nullRefs}");
     }
