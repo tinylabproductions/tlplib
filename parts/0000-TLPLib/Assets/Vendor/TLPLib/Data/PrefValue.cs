@@ -58,6 +58,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       return new Val<bool>(key, defaultVal, GetBool, SetBool);
     }
 
+    public static Val<DateTime> dateTime(string key, DateTime defaultVal) {
+      return new Val<DateTime>(key, defaultVal, GetDate, SetDate);
+    }
+
     public static bool GetBool(string key, bool defaultVal) 
     { return int2bool(PlayerPrefs.GetInt(key, bool2int(defaultVal))); }
 
@@ -66,6 +70,20 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     static bool int2bool(int i) { return i != 0; }
     static int bool2int(bool b) { return b ? 1 : 0; }
+
+    public static DateTime GetDate(string key, DateTime defaultVal)
+    { return deserializeDate(PlayerPrefs.GetString(key, serializeDate(defaultVal))); }
+
+    public static void SetDate(string key, DateTime value) 
+    { PlayerPrefs.SetString(key, serializeDate(value)); }
+
+    static string serializeDate(DateTime date) {
+      return date.ToBinary().ToString();
+    }
+
+    static DateTime deserializeDate(string s) {
+      return DateTime.FromBinary(long.Parse(s));
+    }
 
     /* Provide custom mapping. It uses string representation inside and returns 
      * default value if string is empty. */
