@@ -166,8 +166,8 @@ public
     return isSome && comparer.Equals(value, a);
   }
 
-  public bool isDefined { get { return isSome; } }
-  public bool isEmpty { get { return ! isSome; } }
+  public bool isDefined => isSome;
+  public bool isEmpty => ! isSome;
 
   public A get { get {
     if (isSome) return value;
@@ -245,7 +245,17 @@ public
   #endregion
 
   public override string ToString() {
-    return isSome ? "Some(" + value + ")" : "None";
+    return isSome ? $"Some({value})" : "None";
   }
+
+  public Either<A, B> toLeft<B>(B right)
+    { return isSome ? Either<A, B>.Left(value) : Either<A, B>.Right(right); }
+  public Either<A, B> toLeft<B>(Fn<B> right)
+    { return isSome ? Either<A, B>.Left(value) : Either<A, B>.Right(right()); }
+
+  public Either<B, A> toRight<B>(B left)
+    { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left); }
+  public Either<B, A> toRight<B>(Fn<B> left)
+    { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left()); }
 }
 }
