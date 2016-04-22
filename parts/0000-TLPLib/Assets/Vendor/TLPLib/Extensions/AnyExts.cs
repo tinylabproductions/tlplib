@@ -31,5 +31,22 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Option<A> opt<A>(this A a) where A : class { return F.opt(a); }
     public static Option<A> some<A>(this A a) { return F.some(a); }
+
+    public static CastBuilder<A> cast<A>(this A a) where A : class { return new CastBuilder<A>(a); }
+  }
+
+  public struct CastBuilder<From> where From : class {
+    public readonly From from;
+
+    public CastBuilder(From @from) { this.@from = @from; }
+
+    public Either<string, To> toE<To>() where To : class, From {
+      var to = @from as To;
+      return to == null
+        ? Either<string, To>.Left($"Can't cast {typeof(From)} to {typeof(To)}")
+        : Either<string, To>.Right(to);
+    }
+
+    public To to<To>() where To : class, From { return toE<To>().rightOrThrow; }
   }
 }
