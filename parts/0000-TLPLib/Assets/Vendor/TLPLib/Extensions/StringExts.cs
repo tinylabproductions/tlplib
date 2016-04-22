@@ -80,8 +80,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isEmpty(this string s) { return s.Length == 0; }
     public static bool nonEmpty(this string s) { return s.Length != 0; }
 
-    public static string ensureStartsWith(this string s, string prefix) {
-      return s.StartsWith(prefix) ? s : $"{prefix}{s}";
-    }
+    public static string ensureStartsWith(this string s, string prefix)
+      { return s.StartsWith(prefix) ? s : $"{prefix}{s}"; }
+
+    public static string ensureEndsWith(this string s, string suffix)
+      { return s.EndsWith(suffix) ? s : $"{s}{suffix}"; }
+
+    public static string ensureDoesNotStartWith(this string s, string prefix)
+      { return s.StartsWith(prefix) ? s.Substring(prefix.Length) : s; }
+
+    public static string ensureDoesNotEndWith(this string s, string suffix)
+      { return s.EndsWith(suffix) ? s.Substring(0, s.Length - suffix.Length) : s; }
   }
 }

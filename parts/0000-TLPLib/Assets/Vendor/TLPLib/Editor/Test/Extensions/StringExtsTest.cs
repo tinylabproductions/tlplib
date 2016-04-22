@@ -56,4 +56,37 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       "bar".ensureStartsWith("foo").shouldEqual("foobar");
     }
   }
+
+  public class StringTestEnsureEndsWith {
+    [Test]
+    public void WhenEnds() {
+      "foobar".ensureEndsWith("bar").shouldEqual("foobar");
+    }
+    [Test]
+    public void WhenDoesNotEnd() {
+      "bar".ensureEndsWith("foo").shouldEqual("barfoo");
+    }
+  }
+
+  public class StringTestEnsureDoesNotStartWith {
+    [Test]
+    public void WhenStarts() {
+      "foobar".ensureDoesNotStartWith("foo").shouldEqual("bar");
+    }
+    [Test]
+    public void WhenDoesNotEnd() {
+      "bar".ensureDoesNotStartWith("foo").shouldEqual("bar");
+    }
+  }
+
+  public class StringTestEnsureDoesNotEndWith {
+    [Test]
+    public void WhenEnds() {
+      "foobar".ensureDoesNotEndWith("bar").shouldEqual("foo");
+    }
+    [Test]
+    public void WhenDoesNotEnd() {
+      "bar".ensureDoesNotEndWith("foo").shouldEqual("bar");
+    }
+  }
 }
