@@ -66,6 +66,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Try<B> toTry(Fn<A, Exception> onLeft)
       { return fold(a => F.err<B>(onLeft(a)), F.scs); }
+
+    public A leftOrThrow { get {
+      if (isLeft) return _leftValue;
+      throw new WrongEitherSideException($"Expected to have Left, but had {this}.");
+    } }
+
+    public B rightOrThrow { get {
+      if (isRight) return _rightValue;
+      throw new WrongEitherSideException($"Expected to have Right, but had {this}.");
+    } }
+  }
+
+  public class WrongEitherSideException : Exception {
+    public WrongEitherSideException(string message) : base(message) {}
   }
 
   public static class EitherBuilderExts {
