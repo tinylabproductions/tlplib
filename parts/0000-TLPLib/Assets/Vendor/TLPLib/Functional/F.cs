@@ -40,6 +40,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new LinkedList<A>(args);
     }
 
+    public static HashSet<A> hashSet<A>(params A[] args) {
+      var hs = new HashSet<A>();
+      foreach (var a in args) hs.Add(a);
+      return hs;
+    }
+
     public static List<A> emptyList<A>(int capacity=0) {
       return new List<A>(capacity);
     }
