@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public struct BacktraceElem {
-    public struct FileInfo {
+    public struct FileInfo : IEquatable<FileInfo> {
       public readonly string file;
       public readonly int lineNo;
 
@@ -19,6 +17,39 @@ namespace com.tinylabproductions.TLPLib.Logger {
         this.file = file;
         this.lineNo = lineNo;
       }
+
+      #region Equality
+
+      public bool Equals(FileInfo other) {
+        return string.Equals(file, other.file) && lineNo == other.lineNo;
+      }
+
+      public override bool Equals(object obj) {
+        if (ReferenceEquals(null, obj)) return false;
+        return obj is FileInfo && Equals((FileInfo) obj);
+      }
+
+      public override int GetHashCode() {
+        unchecked { return ((file != null ? file.GetHashCode() : 0) * 397) ^ lineNo; }
+      }
+
+      public static bool operator ==(FileInfo left, FileInfo right) { return left.Equals(right); }
+      public static bool operator !=(FileInfo left, FileInfo right) { return !left.Equals(right); }
+
+      sealed class FileLineNoEqualityComparer : IEqualityComparer<FileInfo> {
+        public bool Equals(FileInfo x, FileInfo y) {
+          return string.Equals(x.file, y.file) && x.lineNo == y.lineNo;
+        }
+
+        public int GetHashCode(FileInfo obj) {
+          unchecked { return ((obj.file != null ? obj.file.GetHashCode() : 0) * 397) ^ obj.lineNo; }
+        }
+      }
+
+      static readonly IEqualityComparer<FileInfo> FileLineNoComparerInstance = new FileLineNoEqualityComparer();
+      public static IEqualityComparer<FileInfo> fileLineNoComparer { get { return FileLineNoComparerInstance; } }
+
+      #endregion
 
       public override string ToString() { return file + ":" + lineNo; }
     }
