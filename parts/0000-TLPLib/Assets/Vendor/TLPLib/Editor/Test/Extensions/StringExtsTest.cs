@@ -3,6 +3,24 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  public class StringTestNonEmptyOpt {
+    [Test]
+    public void WhenStringNull() {
+      ((string) null).nonEmptyOpt().shouldBeNone();
+    }
+
+    [Test]
+    public void WhenStringEmpty() {
+      "".nonEmptyOpt().shouldBeNone();
+    }
+
+    [Test]
+    public void WhenStringNonEmpty() {
+      " ".nonEmptyOpt().shouldBeSome(" ");
+      "foo".nonEmptyOpt().shouldBeSome("foo");
+    }
+  }
+
   public class StringTestBase64Conversions {
     const string raw = "Aladdin:OpenSesame", encoded = "QWxhZGRpbjpPcGVuU2VzYW1l";
 
