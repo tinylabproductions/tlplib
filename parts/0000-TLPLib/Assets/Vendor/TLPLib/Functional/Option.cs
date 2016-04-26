@@ -67,6 +67,10 @@ public static class Option {
     return opt.isSome ? ifNonEmpty(opt.get) : ifEmpty;
   }
 
+  public static B fold<A, B>(this Option<A> opt, B ifEmpty, B ifNonEmpty) {
+    return opt.isSome ? ifNonEmpty : ifEmpty;
+  }
+
   // Alias for #fold with elements switched up.
   public static B cata<A, B>(this Option<A> opt, Fn<A, B> ifNonEmpty, Fn<B> ifEmpty) {
     return opt.fold(ifEmpty, ifNonEmpty);
