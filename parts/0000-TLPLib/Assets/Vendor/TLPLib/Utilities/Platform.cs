@@ -1,32 +1,33 @@
 ﻿using com.tinylabproductions.TLPLib.Android;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class Platform {
-    public const string ANDROID = "android";
-    public const string IOS = "ios";
-    public const string WP8 = "wp8";
-    public const string METRO = "metro";
-    public const string BLACKBERRY = "blackberry";
-    public const string WEB = "web";
-    public const string PC = "pc";
-    public const string OTHER = "other";
+    public const string
+      ANDROID = "android",
+      IOS = "ios",
+      WP8 = "wp8",
+      METRO = "metro",
+      BLACKBERRY = "blackberry",
+      WEB = "web",
+      PC = "pc",
+      OTHER = "other",
 
-    public const string SUBNAME_AMAZON = "amazon";
-    public const string SUBNAME_OUYA = "ouya";
-    public const string SUBNAME_GAMESTICK = "gamestick";
-    public const string SUBNAME_OPERA = "opera";
-    public const string SUBNAME_TV = "tv";
-    public const string SUBNAME_WINDOWS = "windows";
-    public const string SUBNAME_OSX = "osx";
-    public const string SUBNAME_OSX_DASHBOARD = "osx-dashboard";
-    public const string SUBNAME_LINUX = "linux";
-    public const string SUBNAME_NONE = "";
+      SUBNAME_AMAZON = "amazon",
+      SUBNAME_OUYA = "ouya",
+      SUBNAME_GAMESTICK = "gamestick",
+      SUBNAME_OPERA = "opera",
+      SUBNAME_TV = "tv",
+      SUBNAME_WINDOWS = "windows",
+      SUBNAME_OSX = "osx",
+      SUBNAME_OSX_DASHBOARD = "osx-dashboard",
+      SUBNAME_LINUX = "linux",
+      SUBNAME_WILDTANGENT = "wildtangent",
+      SUBNAME_NONE = "";
 
-    public static string fullName { get {
-      var sub = subname;
-      return sub == "" ? name : name + "-" + subname;
-    } }
+    public static string fullName => subname.nonEmptyOpt().fold(name, s => $"{name}-{s}");
 
     public static string name { get {
       switch (Application.platform) {
@@ -73,10 +74,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         return SUBNAME_GAMESTICK;
 #elif UNITY_OPERA
         return SUBNAME_OPERA;
+#elif UNITY_WILDTANGENT
+        return SUBNAME_WILDTANGENT;
 #endif
-        if (!Droid.hasSystemFeature("android.hardware.touchscreen")) {
-          return SUBNAME_TV;
-        }
+        if (!Droid.hasSystemFeature("android.hardware.touchscreen")) return SUBNAME_TV;
       }
 #endif
       if (name == PC) {
