@@ -104,12 +104,21 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static ErrorReporter.OnError createSendOnError(
       string loggerName, Uri reportingUrl, ApiKeys keys, ErrorReporter.AppInfo appInfo,
-      ExtraData addExtraData
+      ExtraData addExtraData, bool onlySendUniqueErrors
     ) {
-      return (data => {
+      var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
+
+      return data => {
         var msg = message(loggerName, keys, appInfo, data, addExtraData);
-        ASync.NextFrame(() => msg.send(reportingUrl));
-      });
+        Action send = () => ASync.NextFrame(() => msg.send(reportingUrl));
+        sentJsonsOpt.voidFold(
+          send,
+          sentJsons => {
+            if (sentJsons.Add(msg.json)) send();
+            else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
+          }
+        );
+      };
     }
 
     public static ErrorReporter.OnError createLogOnError(
