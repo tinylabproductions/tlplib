@@ -88,7 +88,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public delegate void AddTag(string name, string value);
       public delegate void AddExtra(string name, string value);
 
-      public readonly static ExtraData noExtraData = new ExtraData(_ => {}, _ => {});
+      public static readonly ExtraData noExtraData = new ExtraData(_ => {}, _ => {});
 
       public readonly Act<AddTag> addTags;
       public readonly Act<AddExtra> addExtras;
