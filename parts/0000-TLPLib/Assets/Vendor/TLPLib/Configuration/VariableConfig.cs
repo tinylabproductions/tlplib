@@ -45,6 +45,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override string scope { get { return underlying.scope; } }
 
+    public override Either<ConfigFetchError, object> eitherObject(string key) 
+    { return injected(key, k => underlying.eitherObject(k)); }
+
     public override Either<ConfigFetchError, string> eitherString(string key) 
     { return injected(key, k => underlying.eitherString(k)); }
 

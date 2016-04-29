@@ -49,13 +49,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       switch (whichOne) {
         case OneOf.Choice.A:
           onA(_aValue);
-          break;
+          return;
         case OneOf.Choice.B:
           onB(_bValue);
-          break;
+          return;
         case OneOf.Choice.C:
           onC(_cValue);
-          break;
+          return;
       }
       throw new IllegalStateException("Unreachable code");
     }
