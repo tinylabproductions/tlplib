@@ -9,6 +9,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region getters
 
+    public object getObject(string key) 
+    { return tryObject(key).getOrThrow; }
+
     public string getString(string key) 
     { return tryString(key).getOrThrow; }
 
@@ -53,6 +56,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #endregion
 
     #region opt getters
+
+    public Option<object> optObject(string key) 
+    { return eitherObject(key).toOpt(); }
 
     public Option<string> optString(string key) 
     { return eitherString(key).toOpt(); }
@@ -99,6 +105,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #endregion
 
     #region try getters
+
+    public Try<object> tryObject(string key) {
+      return eitherObject(key).fold(tryEx<object>, F.scs);
+    }
 
     public Try<string> tryString(string key) {
       return eitherString(key).fold(tryEx<string>, F.scs);
@@ -160,6 +170,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region either getters
 
+    public abstract Either<ConfigFetchError, object> eitherObject(string key);
     public abstract Either<ConfigFetchError, string> eitherString(string key);
     public abstract Either<ConfigFetchError, IList<string>> eitherStringList(string key);
     public abstract Either<ConfigFetchError, int> eitherInt(string key);

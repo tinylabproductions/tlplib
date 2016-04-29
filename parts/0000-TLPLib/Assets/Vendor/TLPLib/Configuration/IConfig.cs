@@ -21,6 +21,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region getters
 
+    object getObject(string key);
     string getString(string key);
     IList<string> getStringList(string key);
     int getInt(string key);
@@ -42,6 +43,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region opt getters
 
+    Option<object> optObject(string key);
     Option<string> optString(string key);
     Option<IList<string>> optStringList(string key);
     Option<int> optInt(string key);
@@ -63,6 +65,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region either getters
 
+    Either<ConfigFetchError, object> eitherObject(string key);
     Either<ConfigFetchError, string> eitherString(string key);
     Either<ConfigFetchError, IList<string>> eitherStringList(string key);
     Either<ConfigFetchError, int> eitherInt(string key);
@@ -84,6 +87,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region try getters
 
+    Try<object> tryObject(string key);
     Try<string> tryString(string key);
     Try<IList<string>> tryStringList(string key);
     Try<int> tryInt(string key);

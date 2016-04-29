@@ -102,6 +102,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     static readonly Parser<Dictionary<string, object>> jsClassParser = 
       n => F.opt(n as Dictionary<string, object>);
+    static readonly Parser<object> objectParser = n => F.some(n);
     static readonly Parser<string> stringParser = n => F.some(n as string);
     static Option<A> castA<A>(object a) {
       return a is A ? F.some((A) a) : F.none<A>();
@@ -139,6 +140,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     #region either getters
+
+    public override Either<ConfigFetchError, object> eitherObject(string key) 
+    { return get(key, objectParser); }
 
     public override Either<ConfigFetchError, string> eitherString(string key) 
     { return get(key, stringParser); }
