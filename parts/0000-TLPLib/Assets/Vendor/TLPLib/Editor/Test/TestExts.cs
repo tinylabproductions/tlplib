@@ -1,7 +1,9 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public static class TestExts {
@@ -21,6 +23,10 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.AreEqual(expected, a, message);
     }
 
+    public static void shouldEqual<A>(this HashSet<A> a, HashSet<A> expected, string message=null) {
+      Assert.That(a, new SetEquals<A>(expected), message);
+    }
+
     public static void shouldBeSome<A>(this Option<A> a, A expected, string message=null) {
       a.shouldEqual(expected.some(), message);
     }
@@ -35,6 +41,21 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) {
       either.shouldEqual(F.right<A, B>(expected), message);
+    }
+  }
+
+  public class SetEquals<A> : Constraint {
+    public readonly HashSet<A> expected;
+
+    public SetEquals(HashSet<A> expected) { this.expected = expected; }
+
+    public override bool Matches(object actualO) {
+      return F.opt(actualO as HashSet<A>).fold(false, expected.SetEquals);
+    }
+
+    public override void WriteDescriptionTo(MessageWriter writer) {
+      writer.WriteExpectedValue(expected);
+      writer.WriteActualValue(actual);
     }
   }
 }
