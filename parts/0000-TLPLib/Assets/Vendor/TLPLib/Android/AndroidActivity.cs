@@ -20,26 +20,22 @@ namespace com.tinylabproductions.TLPLib.Android {
       }
     }
 
-    private static readonly AndroidJavaClass unityPlayer;
-    private static readonly AndroidJavaClass bridge;
-    public static readonly AndroidJavaObject current;
-    public static readonly AndroidJavaObject context;
-    public static readonly AndroidJavaObject packageManager;
-    public static AndroidJavaObject activity { get { return current; } }
-    
+    static readonly AndroidJavaClass bridge;
+    public static readonly AndroidJavaObject current, context, packageManager;
+    /* Application package name. */
+    public static readonly string packageName;
+    public static AndroidJavaObject activity => current;
+
     static AndroidActivity() {
       if (Application.isEditor) return;
-      unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-      bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
-      current = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-      context = current.cjo("getApplicationContext");
-      packageManager = context.cjo("getPackageManager");
+      using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
+        bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
+        current = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        context = current.cjo("getApplicationContext");
+        packageManager = context.cjo("getPackageManager");
+        packageName = activity.c<string>("getPackageName");
+      }
     }
-
-    /* Get application package name. */
-    public static string packageName { get {
-      return activity.c<string>("getPackageName");
-    } }
 
     /* Get version code for the application package name. */
     public static int versionCode { get {
