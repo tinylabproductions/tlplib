@@ -90,16 +90,6 @@ public static class Option {
     return opt.map(_ => (B) _);
   }
 
-  public static Option<B> map<A, B>(this Option<A> opt, Fn<A, B> func) {
-    return opt.isDefined ? F.some(func(opt.get)) : F.none<B>();
-  }
-
-  public static Option<B> flatMap<A, B>(
-    this Option<A> opt, Fn<A, Option<B>> func
-  ) {
-    return opt.isDefined ? func(opt.get) : F.none<B>();
-  }
-
   public static Option<A> flatten<A>(this Option<Option<A>> opt) {
     return opt.isDefined ? opt.get : F.none<A>();
   }
@@ -247,6 +237,14 @@ public
 #endif
 
   #endregion
+
+  public Option<B> map<B>(Fn<A, B> func) {
+    return isDefined ? F.some(func(get)) : F.none<B>();
+  }
+
+  public Option<B> flatMap<B>(Fn<A, Option<B>> func) {
+    return isDefined ? func(get) : F.none<B>();
+  }
 
   public override string ToString() {
     return isSome ? $"Some({value})" : "None";
