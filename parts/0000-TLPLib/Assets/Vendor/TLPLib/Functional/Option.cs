@@ -17,9 +17,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 public static class Option {
   public static IEnumerable<A> asEnum<A, B>(this Option<B> opt)
   where B : A {
-    return opt.isDefined 
-      ? (IEnumerable<A>) opt.get.Yield() 
-      : Enumerable.Empty<A>();
+    return opt.isDefined ? ((A) opt.get).Yield() : Enumerable.Empty<A>();
   }
 
   public static IEnumerable<A> asEnum<A>(this Option<A> opt) {
