@@ -4,15 +4,15 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-/** 
+/**
  * Hack to glue-on contravariant type parameter requirements
- * 
+ *
  * http://stackoverflow.com/questions/1188354/can-i-specify-a-supertype-relation-in-c-sharp-generic-constraints
- * 
+ *
  * Beware that this causes boxing for value types.
- * 
- * Also Mono compiler seems to be a lot happier with generic extension 
- * methods, than instance ones. 
+ *
+ * Also Mono compiler seems to be a lot happier with generic extension
+ * methods, than instance ones.
  **/
 public static class Option {
   public static IEnumerable<A> asEnum<A, B>(this Option<B> opt)
@@ -101,13 +101,13 @@ public static class Option {
   }
 }
 
-public 
+public
 #if UNITY_IOS
   class
 #else
-  struct 
+  struct
 #endif
-	Option<A> 
+  Option<A>
 {
   public static Option<A> None { get { return new Option<A>(); } }
 
@@ -123,7 +123,7 @@ public
     isSome = true;
   }
 
-  public A getOrThrow(Fn<Exception> getEx) 
+  public A getOrThrow(Fn<Exception> getEx)
     { return isSome ? value : F.throws<A>(getEx()); }
 
   public void each(Act<A> action) { if (isSome) action(value); }
@@ -236,6 +236,8 @@ public
 
   #endregion
 
+  public OptionEnumerator<A> GetEnumerator() { return new OptionEnumerator<A>(this); }
+
   public Option<B> map<B>(Fn<A, B> func) {
     return isDefined ? F.some(func(get)) : F.none<B>();
   }
@@ -257,5 +259,22 @@ public
     { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left); }
   public Either<B, A> toRight<B>(Fn<B> left)
     { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left()); }
+}
+
+// TODO: test me
+public struct OptionEnumerator<A> {
+  public readonly Option<A> option;
+  bool read;
+
+  public OptionEnumerator(Option<A> option) : this() { this.option = option; }
+
+  public bool MoveNext() { return !read; }
+
+  public void Reset() { read = false; }
+
+  public A Current { get {
+    read = true;
+    return option.get;
+  } }
 }
 }
