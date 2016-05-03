@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using com.tinylabproductions.TLPLib.Assertions;
 using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -68,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.ABTest {
     #endregion
 
     public ABTest(
-      string name, ReadOnlyCollection<ABTestVariant> variants, 
+      string name, ReadOnlyCollection<ABTestVariant> variants,
       Option<DateTime> startAt, Option<DateTime> endAt, string seed
     ) {
       variants.require(variants.Count > 0, "variants list must be non-empty!");
@@ -85,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.ABTest {
         name,
         // ReSharper disable once ConvertClosureToMethodGroup - Mono compiler bug
         cfg.getSubConfigList("variants").Select(c => ABTestVariant.fromConfig(c)).ToList().AsReadOnly(),
-        cfg.optDateTime("start_at"), cfg.optDateTime("end_at"), 
+        cfg.optDateTime("start_at"), cfg.optDateTime("end_at"),
         cfg.optString("seed").getOrElse(name)
       );
     }
@@ -118,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.ABTest {
     }
 
     public override string ToString() { return string.Format(
-      "ABTest[name: {0}, variants: {1}, startAt: {2}, endAt: {3}, seed: {4}]", 
+      "ABTest[name: {0}, variants: {1}, startAt: {2}, endAt: {3}, seed: {4}]",
       name, variants.asString(false), startAt, endAt, seed
     ); }
   }
