@@ -15,89 +15,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
  * methods, than instance ones.
  **/
 public static class Option {
-  public static IEnumerable<A> asEnum<A, B>(this Option<B> opt)
-  where B : A {
-    return opt.isDefined ? ((A) opt.get).Yield() : Enumerable.Empty<A>();
-  }
-
-  public static IEnumerable<A> asEnum<A>(this Option<A> opt) {
-    return opt.isDefined ? opt.get.Yield() : Enumerable.Empty<A>();
-  }
-
-  public static A getOrElse<A>(this Option<A> opt, Fn<A> orElse) {
-    return opt.isDefined ? opt.get : orElse();
-  }
-
-  public static A getOrElse<A>(this Option<A> opt, A orElse) {
-    return opt.isDefined ? opt.get : orElse;
+  public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt)
+  where Child : Base {
+    return opt.isDefined ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
   }
 
   public static A getOrNull<A>(this Option<A> opt) where A : class {
     return opt.isDefined ? opt.get : null;
   }
 
-  public static Option<A> createOrTap<A>(
-    this Option<A> opt, Fn<A> ifEmpty, Act<A> ifNonEmpty
-  ) {
-    if (opt.isEmpty) return new Option<A>(ifEmpty());
-
-    ifNonEmpty(opt.get);
-    return opt;
-  }
-
-  public static Option<A> orElse<A>(this Option<A> opt, Fn<Option<A>> other) {
-    return opt.isDefined ? opt : other();
-  }
-
-  public static Option<A> orElse<A>(this Option<A> opt, Option<A> other) {
-    return opt.isDefined ? opt : other;
-  }
-
-  public static A orNull<A>(this Option<A> opt) where A : class {
-    return opt.fold(() => null, _ => _);
-  }
-
-  public static B fold<A, B>(this Option<A> opt, Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) {
-    return opt.isSome ? ifNonEmpty(opt.get) : ifEmpty();
-  }
-
-  public static B fold<A, B>(this Option<A> opt, B ifEmpty, Fn<A, B> ifNonEmpty) {
-    return opt.isSome ? ifNonEmpty(opt.get) : ifEmpty;
-  }
-
-  public static B fold<A, B>(this Option<A> opt, B ifEmpty, B ifNonEmpty) {
-    return opt.isSome ? ifNonEmpty : ifEmpty;
-  }
-
-  // Alias for #fold with elements switched up.
-  public static B cata<A, B>(this Option<A> opt, Fn<A, B> ifNonEmpty, Fn<B> ifEmpty) {
-    return opt.fold(ifEmpty, ifNonEmpty);
-  }
-
-  // Alias for #fold with elements switched up.
-  public static B cata<A, B>(this Option<A> opt, Fn<A, B> ifNonEmpty, B ifEmpty) {
-    return opt.fold(ifEmpty, ifNonEmpty);
-  }
-
-  public static void voidFold<A>(this Option<A> opt, Action ifEmpty, Act<A> ifNonEmpty) {
-    if (opt.isSome) ifNonEmpty(opt.get);
-    else ifEmpty();
-  }
-  // Downcast an option.
-  public static Option<B> to<A, B>(this Option<A> opt) where A : B {
-    return opt.map(_ => (B) _);
-  }
+  public static A orNull<A>(this Option<A> opt) where A : class { return opt.getOrNull(); }
 
   public static Option<A> flatten<A>(this Option<Option<A>> opt) {
     return opt.isDefined ? opt.get : F.none<A>();
-  }
-
-  public static Option<Tpl<A, B>> zip<A, B>(
-    this Option<A> opt1, Option<B> opt2
-  ) {
-    return opt1.isDefined && opt2.isDefined
-      ? F.some(F.t(opt1.get, opt2.get))
-      : F.none<Tpl<A, B>>();
   }
 }
 
@@ -259,16 +189,70 @@ public
     { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left); }
   public Either<B, A> toRight<B>(Fn<B> left)
     { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left()); }
+
+  public IEnumerable<A> asEnum() {
+    return isDefined ? get.Yield() : Enumerable.Empty<A>();
+  }
+
+  public A getOrElse(Fn<A> orElse) {
+    return isDefined ? get : orElse();
+  }
+
+  public A getOrElse(A orElse) {
+    return isDefined ? get : orElse;
+  }
+
+  public Option<A> createOrTap(Fn<A> ifEmpty, Act<A> ifNonEmpty) {
+    if (isEmpty) return new Option<A>(ifEmpty());
+
+    ifNonEmpty(get);
+    return this;
+  }
+
+  public Option<A> orElse(Fn<Option<A>> other) {
+    return isDefined ? this : other();
+  }
+
+  public Option<A> orElse(Option<A> other) {
+    return isDefined ? this : other;
+  }
+
+  public B fold<B>(Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) {
+    return isSome ? ifNonEmpty(get) : ifEmpty();
+  }
+
+  public B fold<B>(B ifEmpty, Fn<A, B> ifNonEmpty) {
+    return isSome ? ifNonEmpty(get) : ifEmpty;
+  }
+
+  public B fold<B>(B ifEmpty, B ifNonEmpty) {
+    return isSome ? ifNonEmpty : ifEmpty;
+  }
+
+  // Alias for #fold with elements switched up.
+  public B cata<B>(Fn<A, B> ifNonEmpty, Fn<B> ifEmpty) {
+    return fold(ifEmpty, ifNonEmpty);
+  }
+
+  // Alias for #fold with elements switched up.
+  public B cata<B>(Fn<A, B> ifNonEmpty, B ifEmpty) {
+    return fold(ifEmpty, ifNonEmpty);
+  }
+
+  public Option<Tpl<A, B>> zip<B>(Option<B> opt2) {
+    return isDefined && opt2.isDefined
+      ? F.some(F.t(get, opt2.get))
+      : F.none<Tpl<A, B>>();
+  }
 }
 
-// TODO: test me
 public struct OptionEnumerator<A> {
   public readonly Option<A> option;
   bool read;
 
   public OptionEnumerator(Option<A> option) : this() { this.option = option; }
 
-  public bool MoveNext() { return !read; }
+  public bool MoveNext() { return option.isDefined && !read; }
 
   public void Reset() { read = false; }
 
