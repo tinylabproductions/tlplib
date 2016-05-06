@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Assets.Code.Utils;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -31,6 +32,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static DConsole instance { get; } = new DConsole();
 
     DConsole() {
+
       var r = registrarFor(nameof(DConsole));
       r.register("Self-test", () => "self-test");
       r.register("Future Self-test", () => Future.delay(1, () => "after 1 s"));
@@ -50,6 +52,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       sequence = sequence ?? DEFAULT_SEQUENCE;
 
       var go = new GameObject {name = "Debug Console initiator"};
+
       Object.DontDestroyOnLoad(go);
 
       var obs = go.AddComponent<RegionClickObservable>();
@@ -76,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       destroy();
 
       var view = binding.clone();
-
+      Object.DontDestroyOnLoad(view);
       foreach (var commandGroup in commands) {
         var button = addButton(view.buttonPrefab, view.commandGroupsHolder.transform);
         button.text.text = commandGroup.Key;
@@ -101,9 +104,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     static ButtonBinding addButton(ButtonBinding prefab, Transform target) {
       var button = prefab.clone();
-      // Parent of RectTransform is being set with parent property. 
-      // Consider using the SetParent method instead, with the worldPositionStays 
-      // argument set to false. This will retain local orientation and scale rather 
+      // Parent of RectTransform is being set with parent property.
+      // Consider using the SetParent method instead, with the worldPositionStays
+      // argument set to false. This will retain local orientation and scale rather
       // than world orientation and scale, which can prevent common UI scaling issues.
       button.GetComponent<RectTransform>().SetParent(target, worldPositionStays: false);
       return button;
