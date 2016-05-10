@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
     /* This should really be used only for debugging. It is pretty slow. */
     public static String asString(
-      this IEnumerable enumerable, 
+      this IEnumerable enumerable,
       bool newlines=true, bool fullClasses=false
     ) {
       var items = (
@@ -17,11 +17,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         let str = item as String // String is IEnumerable as well
         let enumItem = item as IEnumerable
         select str ?? (
-          enumItem == null 
+          enumItem == null
             ? item.ToString() : enumItem.asString(newlines, fullClasses)
         )
       ).ToArray();
-      var itemsStr = 
+      var itemsStr =
         string.Join(string.Format(",{0} ", newlines ? "\n " : ""), items);
       if (items.Length != 0 && newlines) itemsStr = "\n  " + itemsStr + "\n";
 
