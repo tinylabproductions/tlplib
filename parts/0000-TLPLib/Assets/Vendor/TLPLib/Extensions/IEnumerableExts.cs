@@ -72,6 +72,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable)
       { return enumerable.SelectMany(_ => _.asEnum()); }
 
+    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable)
+      { return enumerable.SelectMany(_ => _); }
+
     public static IEnumerable<B> collect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
