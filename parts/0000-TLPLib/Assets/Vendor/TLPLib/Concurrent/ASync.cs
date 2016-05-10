@@ -9,15 +9,15 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
     private static ASyncHelperBehaviour coroutineHelper(GameObject go) {
-      return 
-        go.GetComponent<ASyncHelperBehaviour>() ?? 
+      return
+        go.GetComponent<ASyncHelperBehaviour>() ??
         go.AddComponent<ASyncHelperBehaviour>();
     }
 
     private static ASyncHelperBehaviour _behaviour;
 
     private static ASyncHelperBehaviour behaviour { get {
-      if (((object)_behaviour) == null) { 
+      if (((object)_behaviour) == null) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return _behaviour;
     } }
 
-    public static void init() { var init = behaviour; }
+    static ASync() { var _ = behaviour; }
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
@@ -159,9 +159,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return Future<Either<WWWError, WWW>>.async(p => StartCoroutine(WWWEnumerator(www, p)));
     }
 
-    static readonly ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>> wwwsQueue = 
+    static readonly ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>> wwwsQueue =
       new ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>>(
-        "wwwsQueue", 
+        "wwwsQueue",
         (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
       );
 
@@ -207,13 +207,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static IObservable<Unit> onAppQuit => behaviour.onQuit;
 
     /**
-     * Takes a function that transforms an element into a future and 
+     * Takes a function that transforms an element into a future and
      * applies it to all elements in given sequence.
-     * 
+     *
      * However instead of applying all elements concurrently it waits
      * for the future from previous element to complete before applying
      * the next element.
-     * 
+     *
      * Returns reactive value that can be used to observe current stage
      * of the application.
      **/
@@ -226,7 +226,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     static void inAsyncSeq<A, B>(
-      IEnumerator<A> e, IRxRef<Option<B>> rxRef, 
+      IEnumerator<A> e, IRxRef<Option<B>> rxRef,
       Fn<A, Future<B>> asyncAction
     ) {
       if (! e.MoveNext()) return;

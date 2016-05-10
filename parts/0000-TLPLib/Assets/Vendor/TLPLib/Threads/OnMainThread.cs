@@ -14,11 +14,12 @@ namespace com.tinylabproductions.TLPLib.Threads {
       ASync.EveryFrame(onUpdate);
     }
 
-    /* Explicit initialization. */
+    /* Explicit initialization - we need to initialize from Unity main thread
+       and this is the only way to do it.  */
     public static void init() { }
 
     /* Run the given action in the main thread. */
-    public static void run(Act action) 
+    public static void run(Act action)
     { lock (actions) { actions.Enqueue(action); } }
 
     private static bool onUpdate() {
