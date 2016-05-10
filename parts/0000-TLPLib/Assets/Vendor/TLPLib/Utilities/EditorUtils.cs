@@ -1,15 +1,15 @@
-﻿using System.Diagnostics;
-using UnityEngine;
+﻿using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class EditorUtils {
-    [Conditional("UNITY_EDITOR")]
     public static void recordEditorChanges(this Object o, string name) {
+#if UNITY_EDITOR
       Undo.RecordObject(o, name);
       EditorUtility.SetDirty(o);
+#endif
     }
   }
 }
