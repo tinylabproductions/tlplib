@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     static void failWithPrefix(string prefix, string message) {
-      Assert.Fail(prefix != null ? $"{prefix}: " : "" + message);
+      Assert.Fail(prefix != null ? $"{prefix}\n" : "" + message);
     }
   }
 
