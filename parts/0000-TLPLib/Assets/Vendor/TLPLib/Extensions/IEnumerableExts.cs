@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     // AOT safe version of ToDictionary.
     public static Dictionary<K, V> toDict<A, K, V>(
-      this IList<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
+      this IEnumerable<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
     ) {
       var dict = new Dictionary<K, V>();
       // ReSharper disable once LoopCanBeConvertedToQuery
