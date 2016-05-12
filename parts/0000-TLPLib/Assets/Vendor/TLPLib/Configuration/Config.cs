@@ -98,53 +98,84 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     // Implementation
 
-    delegate Option<A> Parser<A>(object node);
+    public delegate Option<A> Parser<A>(object node);
 
-    static readonly Parser<Dictionary<string, object>> jsClassParser =
+    public static readonly Parser<Dictionary<string, object>> jsClassParser =
       n => F.opt(n as Dictionary<string, object>);
-    static readonly Parser<object> objectParser = n => F.some(n);
-    static readonly Parser<string> stringParser = n => F.some(n as string);
-    static Option<A> castA<A>(object a) {
-      return a is A ? F.some((A) a) : F.none<A>();
-    }
+    public static readonly Parser<object> objectParser = n => F.some(n);
+    public static readonly Parser<string> stringParser = n => F.some(n as string);
+    public static Option<A> castA<A>(object a) { return a is A ? F.some((A) a) : F.none<A>(); }
 
-    static readonly Parser<int> intParser = n => {
-      if (n is long) {
-        var l = (long) n;
-        // TODO: test
-        return l < int.MinValue || l > int.MaxValue ? Option<int>.None : F.some((int) l);
+    public static readonly Parser<int> intParser = n => {
+      try {
+        if (n is ulong) return F.some((int)(ulong)n);
+        if (n is long) return F.some((int)(long)n);
+        if (n is uint) return F.some((int)(uint)n);
+        if (n is int) return F.some((int)n);
       }
-      else if (n is int) return F.some((int) n);
-      else return Option<int>.None;
+      catch (OverflowException) {}
+      return Option<int>.None;
     };
-    static readonly Parser<uint> uintParser = n => {
-      if (n is long) {
-        var l = (long) n;
-        // TODO: test
-        return l < 0 || l > uint.MaxValue ? Option<uint>.None : F.some((uint) l);
+    public static readonly Parser<uint> uintParser = n => {
+      try {
+        if (n is ulong) return F.some((uint)(ulong)n);
+        if (n is long) return F.some((uint)(long)n);
+        if (n is uint) return F.some((uint)n);
+        if (n is int) return F.some((uint)(int)n);
       }
-      else if (n is int) {
-        var i = (int) n;
-        // TODO: test
-        return i < 0 ? Option<uint>.None : F.some((uint) i);
+      catch (OverflowException) {}
+      return Option<uint>.None;
+    };
+    public static readonly Parser<long> longParser = n => {
+      try {
+        if (n is ulong) return F.some((long)(ulong)n);
+        if (n is long) return F.some((long)n);
+        if (n is uint) return F.some((long)(uint)n);
+        if (n is int) return F.some((long)(int)n);
       }
-      else return Option<uint>.None;
+      catch (OverflowException) {}
+      return Option<long>.None;
     };
-    static readonly Parser<long> longParser = n => {
-      if (n is long) return F.some((long) n);
-      else if (n is int) return F.some((long) (int) n);
-      else return Option<long>.None;
+    public static readonly Parser<ulong> ulongParser = n => {
+      try {
+        if (n is ulong) return F.some((ulong) n);
+        if (n is long) return F.some((ulong) (long) n);
+        if (n is uint) return F.some((ulong) (uint) n);
+        if (n is int) return F.some((ulong) (int) n);
+      }
+      catch (OverflowException) { }
+      return Option<ulong>.None;
     };
-    static readonly Parser<float> floatParser = n => {
-      if (n is double) return F.some((float) (double) n);
-      else if (n is float) return F.some((float) n);
-      else if (n is long) return F.some((float) (long) n);
-      else if (n is int) return F.some((float) (int) n);
-      else return Option<float>.None;
+    public static readonly Parser<float> floatParser = n => {
+      try {
+        if (n is double) return F.some((float) (double) n);
+        if (n is float) return F.some((float) n);
+        if (n is long) return F.some((float) (long) n);
+        if (n is ulong) return F.some((float) (ulong) n);
+        if (n is int) return F.some((float) (int) n);
+        if (n is uint) return F.some((float) (uint) n);
+      }
+      catch (OverflowException) {}
+      return Option<float>.None;
     };
-    static readonly Parser<bool> boolParser = n => castA<bool>(n);
-    static readonly Parser<DateTime> dateTimeParser =
-      n => F.opt(n as string).flatMap(_ => _.parseDateTime().rightValue);
+    public static readonly Parser<double> doubleParser = n => {
+      try {
+        if (n is double) return F.some((double) n);
+        if (n is float) return F.some((double) (float) n);
+        if (n is long) return F.some((double) (long) n);
+        if (n is ulong) return F.some((double) (ulong) n);
+        if (n is int) return F.some((double) (int) n);
+        if (n is uint) return F.some((double) (uint) n);
+      }
+      catch (OverflowException) { }
+      return Option<double>.None;
+    };
+    public static readonly Parser<bool> boolParser = n => castA<bool>(n);
+
+    public static readonly Parser<DateTime> dateTimeParser = n =>
+      n is DateTime
+      ? F.some((DateTime) n)
+      : F.opt(n as string).flatMap(_ => _.parseDateTime().rightValue);
 
     public override string scope { get; }
 
@@ -164,70 +195,64 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public override Either<ConfigFetchError, string> eitherString(string key)
     { return get(key, stringParser); }
 
-    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key)
-    { return getList(key, stringParser); }
-
     public override Either<ConfigFetchError, int> eitherInt(string key)
     { return get(key, intParser); }
-
-    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key)
-    { return getList(key, intParser); }
 
     public override Either<ConfigFetchError, uint> eitherUInt(string key)
     { return get(key, uintParser); }
 
-    public override Either<ConfigFetchError, IList<uint>> eitherUIntList(string key)
-    { return getList(key, uintParser); }
-
     public override Either<ConfigFetchError, long> eitherLong(string key)
     { return get(key, longParser); }
 
-    public override Either<ConfigFetchError, IList<long>> eitherLongList(string key)
-    { return getList(key, longParser); }
+    public override Either<ConfigFetchError, ulong> eitherULong(string key)
+    { return get(key, ulongParser); }
 
     public override Either<ConfigFetchError, float> eitherFloat(string key)
     { return get(key, floatParser); }
 
-    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key)
-    { return getList(key, floatParser); }
+    public override Either<ConfigFetchError, double> eitherDouble(string key)
+    { return get(key, doubleParser); }
 
     public override Either<ConfigFetchError, bool> eitherBool(string key)
     { return get(key, boolParser); }
 
-    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key)
-    { return getList(key, boolParser); }
-
     public override Either<ConfigFetchError, DateTime> eitherDateTime(string key)
     { return get(key, dateTimeParser); }
 
-    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key)
-    { return getList(key, dateTimeParser); }
-
-    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key)
-    { return fetchSubConfig(key); }
-
-    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key)
-    { return fetchSubConfigList(key); }
-
-    #endregion
-
-    Either<ConfigFetchError, IConfig> fetchSubConfig(string key) {
+    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) {
       return get(key, jsClassParser).mapRight(n =>
-        (IConfig) new Config(root, n, scope == "" ? key : scope + "." + key)
+        (IConfig)new Config(root, n, scope == "" ? key : scope + "." + key)
       );
     }
 
-    Either<ConfigFetchError, IList<IConfig>> fetchSubConfigList(string key) {
-      return getList(key, jsClassParser).mapRight(nList => {
+    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key) {
+      return eitherList(key, jsClassParser).mapRight(nList => {
         var lst = F.emptyList<IConfig>(nList.Count);
         // ReSharper disable once LoopCanBeConvertedToQuery
         for (var idx = 0; idx < nList.Count; idx++) {
           var n = nList[idx];
           lst.Add(new Config(root, n, $"{(scope == "" ? key : scope + "." + key)}[{idx}]"));
         }
-        return (IList<IConfig>) lst;
+        return (IList<IConfig>)lst;
       });
     }
+
+    public override Either<ConfigFetchError, IList<A>> eitherList<A>(string key, Parser<A> parser) {
+      return get(key, n => F.some(n as List<object>)).flatMapRight(arr => {
+        var list = new List<A>(arr.Count);
+        for (var idx = 0; idx < arr.Count; idx++) {
+          var node = arr[idx];
+          var parsed = parser(node);
+          if (parsed.isDefined) list.Add(parsed.get);
+          else return F.left<ConfigFetchError, IList<A>>(ConfigFetchError.wrongType(
+            $"Cannot convert '{key}'[{idx}] to {typeof(A)}: {node}"
+          ));
+        }
+        return F.right<ConfigFetchError, IList<A>>(list);
+      });
+    }
+
+    #endregion
 
     Either<ConfigFetchError, A> get<A>(string key, Parser<A> parser, Dictionary<string, object> current = null) {
       var parts = split(key);
@@ -244,23 +269,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     static string[] split(string key) {
       return key.Split('.');
-    }
-
-    Either<ConfigFetchError, IList<A>> getList<A>(
-      string key, Parser<A> parser
-    ) {
-      return get(key, n => F.some(n as List<object>)).flatMapRight(arr => {
-        var list = new List<A>(arr.Count);
-        for (var idx = 0; idx < arr.Count; idx++) {
-          var node = arr[idx];
-          var parsed = parser(node);
-          if (parsed.isDefined) list.Add(parsed.get);
-          else return F.left<ConfigFetchError, IList<A>>(ConfigFetchError.wrongType(
-            $"Cannot convert '{key}'[{idx}] to {typeof (A)}: {node}"
-          ));
-        }
-        return F.right<ConfigFetchError, IList<A>>(list);
-      });
     }
 
     Either<ConfigFetchError, A> fetch<A>(

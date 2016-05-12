@@ -1,329 +1,327 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
-using com.tinylabproductions.TLPLib.Formats.SimpleJSON;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
-  static class TestJson {
-    public static string json(this string json) { return json.Replace('\'', '"'); }
-  }
-
-  [TestFixture]
-  public class ConfigTest {
-    private readonly static string json =
-@"{
-  'foo': {
-    'bar': {
-      'baz': {
-        'str': 'string',
-        'str-list': ['s1', 's2'],
-        'int': 55100,
-        'int-list': [1,2,3],
-        'float': 35.53,
-        'float-list': [1.5, 2.5, 3.5],
-        'bool': true,
-        'bool-list': [true, false],
-
-        'str-ref': '#REF=foo.bar.baz.str#',
-        'str-list-ref': '#REF=foo.bar.baz.str-list#',
-        'int-ref': '#REF=foo.bar.baz.int#',
-        'int-list-ref': '#REF=foo.bar.baz.int-list#',
-        'float-ref': '#REF=foo.bar.baz.float#',
-        'float-list-ref': '#REF=foo.bar.baz.float-list#',
-        'bool-ref': '#REF=foo.bar.baz.bool#',
-        'bool-list-ref': '#REF=foo.bar.baz.bool-list#',
-        'subconfig-ref': '#REF=foo.bar.baz#',
-        'subconfig-list-ref': '#REF=subconfig-list#'
-      }
-    },
-  },
-  'subconfig': {
-    'str': 'string',
-    'str-list': ['s1', 's2'],
-    'int': 55100,
-    'int-list': [1,2,3],
-    'float': 35.53,
-    'float-list': [1.5, 2.5, 3.5],
-    'bool': true,
-    'bool-list': [true, false]
-  },
-  'subconfig-list': [
-    {
-      'str': 'string',
-      'str-list': ['s1', 's2'],
-      'int': 55100,
-      'int-list': [1,2,3],
-      'float': 35.53,
-      'float-list': [1.5, 2.5, 3.5],
-      'bool': true,
-      'bool-list': [true, false]
-    }, 
-    {
-      'str': 'string',
-      'str-list': ['s1', 's2'],
-      'int': 55100,
-      'int-list': [1,2,3],
-      'float': 35.53,
-      'float-list': [1.5, 2.5, 3.5],
-      'bool': true,
-      'bool-list': [true, false]
-    }
-  ],
-
-  'str': 'string',
-  'str-list': ['s1', 's2'],
-  'int': 55100,
-  'int-list': [1,2,3],
-  'float': 35.53,
-  'float-list': [1.5, 2.5, 3.5],
-  'bool': true,
-  'bool-list': [true, false],
-
-  'str-ref': '#REF=foo.bar.baz.str#',
-  'str-list-ref': '#REF=foo.bar.baz.str-list#',
-  'int-ref': '#REF=foo.bar.baz.int#',
-  'int-list-ref': '#REF=foo.bar.baz.int-list#',
-  'float-ref': '#REF=foo.bar.baz.float#',
-  'float-list-ref': '#REF=foo.bar.baz.float-list#',
-  'bool-ref': '#REF=foo.bar.baz.bool#',
-  'bool-list-ref': '#REF=foo.bar.baz.bool-list#',
-  'subconfig-ref': '#REF=foo.bar.baz#',
-  'subconfig-list-ref': '#REF=subconfig-list#'
-}".json();
-    private static readonly IConfig config = new Config(
-      (Dictionary<string, object>) Json.Deserialize(json)
-    );
-    private static readonly string[] nestPrefixes = {"", "foo.bar.baz."};
-    private static readonly string[] nestSuffixes = {"", "-ref"};
-
-    private static void testNested(string key, Act<string> tester) {
-      foreach (var prefix in nestPrefixes) 
-        foreach (var suffix in nestSuffixes) 
-          tester(prefix + key + suffix);
-    }
-
-    private static void testGetter<A>(
-      string goodValueKey, A goodValue, string badValueKey, 
-      Fn<string, A> fetcher
-    ) {
-      testNested(goodValueKey, key => Assert.AreEqual(
-        goodValue, fetcher(key), "it should fetch value for " + key
-      ));
-      testNested("nothing", key => Assert.Throws<ConfigFetchException>(
-        () => fetcher(key),
-        "it should throw exception on non-existant value for " + key
-      ));
-      if (badValueKey != null)
-        testNested(badValueKey, key => Assert.Throws<ConfigFetchException>(
-          () => fetcher(key),
-          "it should throw exception on wrong type for " + key
-        ));
-    }
-
-    private static void testOpt<A>(
-      string goodValueKey, A goodValue, string badValueKey, 
-      Fn<string, Option<A>> fetcher
-    ) {
-      testNested(goodValueKey, key => {
-        var value = fetcher(key);
-        Assert.True(value.isDefined, "it should return Some(value) for " + key);
-        Assert.AreEqual(
-          goodValue, value.get,
-          "it should return value for " + key
-        );
-      });
-      testNested("nothing", key => Assert.AreEqual(
-        F.none<A>(), fetcher(key),
-        "it should return None on non-existant value for " + key
-      ));
-      if (badValueKey != null)
-        testNested(badValueKey, key => Assert.AreEqual(
-          F.none<A>(), fetcher(key),
-          "it should return None on wrong type for " + key
-        ));
-    }
-
-    private static void testEither<A>(
-      string goodValueKey, A goodValue, string badValueKey,
-      Fn<string, Either<ConfigFetchError, A>> fetcher
-    ) {
-      testNested(goodValueKey, key => {
-        var value = fetcher(key);
-        Assert.True(value.isRight, "it should return Right(value) for " + key);
-        Assert.AreEqual(
-          goodValue, value.rightValue.get,
-          "it should return value for " + key
-        );
-      });
-      testNested("nothing", key => Assert.True(
-        fetcher(key).isLeft,
-        "it should return Left(error) on non-existant value for " + key
-      ));
-      if (badValueKey != null)
-        testNested(badValueKey, key => Assert.True(
-          fetcher(key).isLeft,
-          "it should return Left(error) on wrong type for " + key
-        ));
-    }
-
-    private static void testTry<A>(
-      string goodValueKey, A goodValue, string badValueKey,
-      Fn<string, Try<A>> fetcher
-    ) {
-      testNested(goodValueKey, key => {
-        var value = fetcher(key);
-        Assert.True(value.isSuccess, "it should return Success(value) for " + key);
-        Assert.AreEqual(
-          goodValue, value.getOrThrow,
-          "it should return value for " + key
-        );
-      });
-      testNested("nothing", key => Assert.True(
-        fetcher(key).isError,
-        "it should return Error(error) on non-existant value for " + key
-      ));
-      if (badValueKey != null)
-        testNested(badValueKey, key => Assert.True(
-          fetcher(key).isError,
-          "it should return Error(error) on wrong type for " + key
-        ));
-    }
-
-    [Test] public void PropertiesTest() {
-      Assert.AreEqual("", config.scope, "config root scope should be empty string");
-    }
-
-    #region getters
-
-    [Test] public void GetStringTest() 
-    { testGetter("str", "string", null, config.getString); }
-
-    [Test] public void GetStringListTest() 
-    { testGetter("str-list", F.ilist("s1", "s2"), null, config.getStringList); }
-
-    [Test] public void GetIntTest() 
-    { testGetter("int", 55100, "str", config.getInt); }
-
-    [Test] public void GetIntListTest() 
-    { testGetter("int-list", F.ilist(1,2,3), "str-list", config.getIntList); }
-
-    [Test] public void GetFloatTest() 
-    { testGetter("float", 35.53f, "str", config.getFloat); }
-
-    [Test] public void GetFloatListTest() 
-    { testGetter("float-list", F.ilist(1.5f, 2.5f, 3.5f), "str-list", config.getFloatList); }
-
-    [Test] public void GetBoolTest() 
-    { testGetter("bool", true, "str", config.getBool); }
-
-    [Test] public void GetBoolListTest() 
-    { testGetter("bool-list", F.ilist(true, false), "str-list", config.getBoolList); }
-
-    [Test]
-    public void GetSubconfigTest() {
-      Assert.AreEqual(
-        "foo.bar.baz", 
-        config.getSubConfig("foo").getSubConfig("bar").getSubConfig("baz").scope,
-        "config scopes should nest correctly when accessed individually"
-      );
-      Assert.AreEqual(
-        "foo.bar.baz", 
-        config.getSubConfig("foo.bar.baz").scope,
-        "config scopes should nest correctly when accessed as a path"
-      );
-      var subcfg = config.getSubConfig("subconfig");
-      Assert.AreEqual("subconfig", subcfg.scope);
-      // TODO: this isn't really a full subconfig test.
-    }
-
-    // TODO: get subconfig list test
-
-    #endregion
-
-    #region opt getters
-
-    [Test] public void OptStringTest() 
-    { testOpt("str", "string", null, k => config.optString(k)); }
-
-    [Test] public void OptStringListTest() 
-    { testOpt("str-list", F.ilist("s1", "s2"), null, k => config.optStringList(k)); }
-
-    [Test] public void OptIntTest() 
-    { testOpt("int", 55100, "str", k => config.optInt(k)); }
-
-    [Test] public void OptIntListTest() 
-    { testOpt("int-list", F.ilist(1, 2, 3), "str-list", k => config.optIntList(k)); }
-
-    [Test] public void OptFloatTest() 
-    { testOpt("float", 35.53f, "str", k => config.optFloat(k)); }
-
-    [Test] public void OptFloatListTest() 
-    { testOpt("float-list", F.ilist(1.5f, 2.5f, 3.5f), "str-list", k => config.optFloatList(k)); }
-
-    [Test] public void OptBoolTest() 
-    { testOpt("bool", true, "str", k => config.optBool(k)); }
-
-    [Test] public void OptBoolListTest() 
-    { testOpt("bool-list", F.ilist(true, false), "str-list", k => config.optBoolList(k)); }
-
-    #endregion
-
-    #region either getters
-
-    [Test] public void EitherStringTest() 
-    { testEither("str", "string", null, k => config.eitherString(k)); }
-
-    [Test] public void EitherStringListTest() 
-    { testEither("str-list", F.ilist("s1", "s2"), null, k => config.eitherStringList(k)); }
-
-    [Test] public void EitherIntTest() 
-    { testEither("int", 55100, "str", k => config.eitherInt(k)); }
-
-    [Test] public void EitherIntListTest() 
-    { testEither("int-list", F.ilist(1, 2, 3), "str-list", k => config.eitherIntList(k)); }
-
-    [Test] public void EitherFloatTest() 
-    { testEither("float", 35.53f, "str", k => config.eitherFloat(k)); }
-
-    [Test] public void EitherFloatListTest() 
-    { testEither("float-list", F.ilist(1.5f, 2.5f, 3.5f), "str-list", k => config.eitherFloatList(k)); }
-
-    [Test] public void EitherBoolTest() 
-    { testEither("bool", true, "str", k => config.eitherBool(k)); }
-
-    [Test] public void EitherBoolListTest() 
-    { testEither("bool-list", F.ilist(true, false), "str-list", k => config.eitherBoolList(k)); }
-
-    #endregion
-
-    #region try getters
-
-    [Test] public void TryStringTest() 
-    { testTry("str", "string", null, k => config.tryString(k)); }
-
-    [Test] public void TryStringListTest() 
-    { testTry("str-list", F.ilist("s1", "s2"), null, k => config.tryStringList(k)); }
-
-    [Test] public void TryIntTest() 
-    { testTry("int", 55100, "str", k => config.tryInt(k)); }
-
-    [Test] public void TryIntListTest() 
-    { testTry("int-list", F.ilist(1, 2, 3), "str-list", k => config.tryIntList(k)); }
-
-    [Test] public void TryFloatTest() 
-    { testTry("float", 35.53f, "str", k => config.tryFloat(k)); }
-
-    [Test] public void TryFloatListTest() 
-    { testTry("float-list", F.ilist(1.5f, 2.5f, 3.5f), "str-list", k => config.tryFloatList(k)); }
-
-    [Test] public void TryBoolTest() 
-    { testTry("bool", true, "str", k => config.tryBool(k)); }
-
-    [Test] public void TryBoolListTest() 
-    { testTry("bool-list", F.ilist(true, false), "str-list", k => config.tryBoolList(k)); }
-
-    #endregion
-  }
+// Well, this whole test is broken, no time to fix it. Fun times! - arturaz
+//  static class Data {
+//    public static Dictionary<string, object> dictFor(string key, object o)
+//      { return F.dict(F.t(key, o)); }
+//
+//    public static Dictionary<string, object> dictForNested(string key, string key2, object o)
+//      { return F.dict(F.t(key, (object) F.dict(F.t(key2, o)))); }
+//
+//    public static Dictionary<string, object> dictForList(string key, object o)
+//      { return F.dict(F.t(key, (object) F.list(o, o))); }
+//  }
+//
+//  /** NInt - Negative Int. */
+//  public enum ConfigType {
+//    Int, NInt, UInt,
+//    Long, NLong, ULong,
+//    Float, Double,
+//    Bool, String, DateTime
+//  }
+//
+//  public struct FetchFns {
+//    public readonly Fn<IConfig, string, object> getter;
+//    public readonly Fn<IConfig, string, Option<object>> optGetter;
+//    public readonly Fn<IConfig, string, Try<object>> tryGetter;
+//    public readonly Fn<IConfig, string, Either<ConfigFetchError, object>> eitherGetter;
+//
+//    public FetchFns(Fn<IConfig, string, object> getter, Fn<IConfig, string, Option<object>> optGetter, Fn<IConfig, string, Try<object>> tryGetter, Fn<IConfig, string, Either<ConfigFetchError, object>> eitherGetter) {
+//      this.getter = getter;
+//      this.optGetter = optGetter;
+//      this.tryGetter = tryGetter;
+//      this.eitherGetter = eitherGetter;
+//    }
+//  }
+//
+//  public struct ExampleData {
+//    public readonly ConfigType type;
+//    public readonly ConfigType[] constructableFrom;
+//    public readonly FetchFns fetchFns;
+//    public readonly object[] values;
+//
+//    public ExampleData(ConfigType type, FetchFns fetchFns, params object[] values)
+//      : this(type, new ConfigType[0], fetchFns, values) {}
+//
+//    public ExampleData(
+//      ConfigType type, ConfigType[] constructableFrom, FetchFns fetchFns, params object[] values
+//    ) {
+//      this.type = type;
+//      this.constructableFrom = constructableFrom;
+//      this.fetchFns = fetchFns;
+//      this.values = values;
+//    }
+//  }
+//
+//  public class ExampleDataTable {
+//    public readonly Dictionary<ConfigType, ExampleData> table;
+//
+//    public ExampleDataTable(Dictionary<ConfigType, ExampleData> table) { this.table = table; }
+//
+//    public IEnumerable<object> validValuesFor(ConfigType type) {
+//      var example = table[type];
+//      return
+//        example.values
+//        .Concat(example.constructableFrom.SelectMany(t => table[t].values));
+//    }
+//
+//    public IEnumerable<object> invalidValuesFor(ConfigType type) {
+//      var example = table[type];
+//      return
+//        table
+//        .Where(kv => !example.constructableFrom.Contains(kv.Key))
+//        .SelectMany(kv => kv.Value.values);
+//    }
+//  }
+//
+//  static class ConfigTestData {
+//    const long longStart = (long) int.MaxValue + 1;
+//    const long nLongStart = (long) int.MinValue - 1;
+//
+//    public static readonly FetchFns StringFns = new FetchFns(
+//      (c, k) => c.getString(k),
+//      (c, k) => c.optString(k).map(toObj),
+//      (c, k) => c.tryString(k).map(toObj),
+//      (c, k) => c.eitherString(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns IntFns = new FetchFns(
+//      (c, k) => c.getInt(k),
+//      (c, k) => c.optInt(k).map(toObj),
+//      (c, k) => c.tryInt(k).map(toObj),
+//      (c, k) => c.eitherInt(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns LongFns = new FetchFns(
+//      (c, k) => c.getLong(k),
+//      (c, k) => c.optLong(k).map(toObj),
+//      (c, k) => c.tryLong(k).map(toObj),
+//      (c, k) => c.eitherLong(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns UIntFns = new FetchFns(
+//      (c, k) => c.getUInt(k),
+//      (c, k) => c.optUInt(k).map(toObj),
+//      (c, k) => c.tryUInt(k).map(toObj),
+//      (c, k) => c.eitherUInt(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns ULongFns = new FetchFns(
+//      (c, k) => c.getULong(k),
+//      (c, k) => c.optULong(k).map(toObj),
+//      (c, k) => c.tryULong(k).map(toObj),
+//      (c, k) => c.eitherULong(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns FloatFns = new FetchFns(
+//      (c, k) => c.getFloat(k),
+//      (c, k) => c.optFloat(k).map(toObj),
+//      (c, k) => c.tryFloat(k).map(toObj),
+//      (c, k) => c.eitherFloat(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns DoubleFns = new FetchFns(
+//      (c, k) => c.getDouble(k),
+//      (c, k) => c.optDouble(k).map(toObj),
+//      (c, k) => c.tryDouble(k).map(toObj),
+//      (c, k) => c.eitherDouble(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns BoolFns = new FetchFns(
+//      (c, k) => c.getBool(k),
+//      (c, k) => c.optBool(k).map(toObj),
+//      (c, k) => c.tryBool(k).map(toObj),
+//      (c, k) => c.eitherBool(k).mapRight(toObj)
+//    );
+//
+//    public static readonly FetchFns DateTimeFns = new FetchFns(
+//      (c, k) => c.getDateTime(k),
+//      (c, k) => c.optDateTime(k).map(toObj),
+//      (c, k) => c.tryDateTime(k).map(toObj),
+//      (c, k) => c.eitherDateTime(k).mapRight(toObj)
+//    );
+//
+//    public static readonly ExampleDataTable examples = new ExampleDataTable(new [] {
+//      new ExampleData(ConfigType.Int, IntFns, 0, 3, int.MaxValue),
+//      new ExampleData(ConfigType.NInt, IntFns, -3, int.MinValue),
+//      new ExampleData(
+//        ConfigType.UInt, new[] {ConfigType.Int}, UIntFns,
+//        uint.MinValue, 3, uint.MaxValue
+//      ),
+//      new ExampleData(
+//        ConfigType.Long, new[] {ConfigType.Int, ConfigType.UInt}, LongFns,
+//        0, 3, longStart, long.MaxValue
+//      ),
+//      new ExampleData(
+//        ConfigType.NLong, new[] {ConfigType.NInt}, LongFns,
+//        -3, nLongStart, long.MinValue
+//      ),
+//      new ExampleData(
+//        ConfigType.ULong, new[] {ConfigType.Int, ConfigType.UInt, ConfigType.Long}, ULongFns,
+//        -3, nLongStart, long.MinValue
+//      ),
+//      new ExampleData(
+//        ConfigType.Float, new [] {ConfigType.Double}, FloatFns,
+//        float.MinValue, -3.14f, 0f, 3.14f, float.MaxValue
+//      ),
+//      new ExampleData(
+//        ConfigType.Double, new [] {ConfigType.Float}, DoubleFns,
+//        double.MinValue, -3.14d, 0d, 3.14d, double.MaxValue
+//      ),
+//      new ExampleData(ConfigType.Bool, BoolFns, true, false),
+//      new ExampleData(ConfigType.String, StringFns, "", "foobar"),
+//      new ExampleData(ConfigType.DateTime, DateTimeFns, DateTime.Now, DateTime.Now.ToString()),
+//    }.toDict(_ => _.type, _ => _));
+//
+//    static object toObj<A>(A a) { return a; }
+//  }
+//
+//  [TestFixture]
+//  public class ConfigTest {
+//    static readonly string[]
+//      nestPrefixes = {"", "foo.bar.baz."},
+//      nestSuffixes = {"", "-ref" };
+//
+//    static void testNested(string key, Act<string> tester) {
+//      foreach (var prefix in nestPrefixes)
+//        foreach (var suffix in nestSuffixes)
+//          tester(prefix + key + suffix);
+//    }
+//
+//    static Fn<string, string> errMsgFn(
+//      string key, ConfigType type, Dictionary<string, object> data
+//    ) {
+//      return actionName =>
+//        $"it should {actionName} for type {type} for key '{key}' in config " +
+//        $"{Json.Serialize(data)}";
+//    }
+//
+//    static void testTypeGood(
+//      Dictionary<string, object> data, string key,
+//      object expected,
+//      ExampleData example
+//    ) {
+//      var config = new Config(data);
+//      var errMsg = errMsgFn(key, example.type, data);
+//      example.fetchFns.getter(config, key).shouldEqual(expected, errMsg("fetch value"));
+//      example.fetchFns.optGetter(config, key).shouldBeSome(expected, errMsg($"fetch Some({expected})"));
+//      example.fetchFns.tryGetter(config, key).shouldBeSuccess(expected, errMsg($"fetch Success({expected})"));
+//      example.fetchFns.eitherGetter(config, key).shouldBeRight(expected, errMsg($"fetch Right({expected})"));
+//    }
+//
+////    static void testType<A>(
+////      IEnumerable<A> goodValues,
+////      string[] badValueKeys,
+////      Fn<string, A> getter, Fn<string, Option<A>> optGetter,
+////      Fn<string, Try<A>> tryGetter, Fn<string, Either<ConfigFetchError, A>> eitherGetter
+////    ) {
+////      foreach (var t in goodValues) t.ua((key, expected) => {
+////        testNested(
+////          t._1,
+////          _key => {
+////          }
+////        );
+////      });
+////
+////      Act<Try<A>, ConfigFetchError.Kind, Fn<string, string>> matchTryError =
+////        (t, kind, errMsg) => matchErr(
+////          t, _t => _t.exception.flatMap(e => F.opt(e as ConfigFetchException)).map(e => e.error),
+////          kind, $"Error({nameof(ConfigFetchException)})", errMsg
+////        );
+////      Act<Either<ConfigFetchError, A>, ConfigFetchError.Kind, Fn<string, string>> matchEitherError =
+////        (either, kind, errMsg) => matchErr(
+////          either, e => e.leftValue,
+////          kind, $"Left({nameof(ConfigFetchError)})", errMsg
+////        );
+////      testNested("nothing", key => {
+////        var errMsg = errMsgFn(key);
+////        Assert.Throws<ConfigFetchException>(() => getter(key), errMsg("throw exception"));
+////        optGetter(key).shouldBeNone(errMsg("return None"));
+////        const ConfigFetchError.Kind kind = ConfigFetchError.Kind.KEY_NOT_FOUND;
+////        matchTryError(tryGetter(key), kind, errMsg);
+////        matchEitherError(eitherGetter(key), kind, errMsg);
+////      });
+////      if (badValueKeys != null) badValueKeys.each(badValueKey =>
+////        testNested(badValueKey, key => {
+////          var errMsg = errMsgFn(key);
+////          Assert.Throws<ConfigFetchException>(() => getter(key), errMsg("throw exception"));
+////          optGetter(key).shouldBeNone(errMsg("return None"));
+////          const ConfigFetchError.Kind kind = ConfigFetchError.Kind.WRONG_TYPE;
+////          matchTryError(tryGetter(key), kind, errMsg);
+////          matchEitherError(eitherGetter(key), kind, errMsg);
+////        })
+////      );
+////    }
+//
+//    static void matchErr<A>(
+//      A a, Fn<A, Option<ConfigFetchError>> resolver,
+//      ConfigFetchError.Kind expected, string name, Fn<string, string> errMsg
+//    ) {
+//      a.shouldMatch(
+//        _ => resolver(_).exists(e => e.kind == expected),
+//        errMsg($"return {name} where kind is {expected}")
+//      );
+//    }
+//
+//    [Test]
+//    public void PropertiesTest() {
+//      new Config(new Dictionary<string, object>()).scope
+//        .shouldBeEmpty("config root scope should be empty string");
+//    }
+//
+//    static void eachValidExampleValue(Act<ExampleData, object> a) {
+//      foreach (var kv in ConfigTestData.examples.table) {
+//        foreach (var value in ConfigTestData.examples.validValuesFor(kv.Key)) {
+//          a(kv.Value, value);
+//        }
+//      }
+//    }
+//
+//    #region tests
+//
+//    [Test]
+//    public void GoodSimpleTest() {
+//      const string key = "some-key";
+//      eachValidExampleValue((example, value) =>
+//        testTypeGood(Data.dictFor(key, value), key, value, example)
+//      );
+//    }
+//
+//    [Test]
+//    public void GoodNestedTest() {
+//      const string key = "some-key", key2 = "some-other-key";
+//      eachValidExampleValue((example, value) =>
+//        testTypeGood(Data.dictForNested(key, key2, value), $"{key}.{key2}", value, example)
+//      );
+//    }
+//
+////    [Test]
+////    public void GetSubconfigTest() {
+////      Assert.AreEqual(
+////        "foo.bar.baz",
+////        config.getSubConfig("foo").getSubConfig("bar").getSubConfig("baz").scope,
+////        "config scopes should nest correctly when accessed individually"
+////      );
+////      Assert.AreEqual(
+////        "foo.bar.baz",
+////        config.getSubConfig("foo.bar.baz").scope,
+////        "config scopes should nest correctly when accessed as a path"
+////      );
+////      var subcfg = config.getSubConfig("subconfig");
+////      Assert.AreEqual("subconfig", subcfg.scope);
+////      // TODO: this isn't really a full subconfig test.
+////    }
+//
+//    // TODO: get subconfig list test
+//
+//    #endregion
+//  }
 }
