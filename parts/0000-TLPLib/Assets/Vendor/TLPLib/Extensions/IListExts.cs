@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IListExts {
     public static Option<T> get<T>(this IList<T> list, int index) {
-      return (index >= 0 && index < list.Count) 
+      return (index >= 0 && index < list.Count)
         ? F.some(list[index]) : F.none<T>();
     }
 
@@ -15,18 +15,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var reversed = new List<A>(list);
       reversed.Reverse();
       return reversed;
-    }
-
-    // AOT safe version of ToDictionary.
-    public static IDictionary<K, V> toDict<A, K, V>(
-      this IList<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
-    ) {
-      var dict = new Dictionary<K, V>();
-      // ReSharper disable once LoopCanBeConvertedToQuery
-      // We're trying to avoid LINQ to avoid iOS AOT related issues.
-      foreach (var item in list) 
-        dict.Add(keyGetter(item), valueGetter(item));
-      return dict;
     }
 
     public static T updateOrAdd<T>(
@@ -68,11 +56,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    public static bool isEmpty<A>(this IList<A> list) 
+    public static bool isEmpty<A>(this IList<A> list)
     { return list.Count == 0; }
 
     public static Option<A> random<A>(this IList<A> list) {
-      return list.Count == 0 
+      return list.Count == 0
         ? F.none<A>() : F.some(list[Random.Range(0, list.Count)]);
     }
 
@@ -95,7 +83,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     /* Constructs a string from this List. Iterless version. */
     public static string mkString<A>(
-      this IList<A> iter, 
+      this IList<A> iter,
       string separator, string start = null, string end = null
     ) {
       var b = new StringBuilder();
@@ -113,12 +101,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Option<int> indexWhere<A>(this IList<A> list, Fn<A, bool> predicate) {
-      for (var idx = 0; idx < list.Count; idx++) 
+      for (var idx = 0; idx < list.Count; idx++)
         if (predicate(list[idx])) return F.some(idx);
       return F.none<int>();
     }
 
-    /* Returns a random element. The probability is selected by elements 
+    /* Returns a random element. The probability is selected by elements
      * weight. Non-iter version. */
     public static Option<A> randomElementByWeight<A>(
       this IList<A> list,

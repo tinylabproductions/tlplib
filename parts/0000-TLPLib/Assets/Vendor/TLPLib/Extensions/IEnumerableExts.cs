@@ -48,6 +48,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return sb.ToString();
     }
 
+    // AOT safe version of ToDictionary.
+    public static Dictionary<K, V> toDict<A, K, V>(
+      this IList<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
+    ) {
+      var dict = new Dictionary<K, V>();
+      // ReSharper disable once LoopCanBeConvertedToQuery
+      // We're trying to avoid LINQ to avoid iOS AOT related issues.
+      foreach (var item in list)
+        dict.Add(keyGetter(item), valueGetter(item));
+      return dict;
+    }
+
     public static IEnumerable<A> Yield<A>(this A any) {
       yield return any;
     }
