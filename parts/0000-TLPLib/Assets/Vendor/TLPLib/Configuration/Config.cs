@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public class WrongContentType : ConfigRetrievalError {
       public readonly string url, expectedContentType, actualContentType;
 
-      public WrongContentType(string url, string expectedContentType, string actualContentType) 
+      public WrongContentType(string url, string expectedContentType, string actualContentType)
       : base(
         $"Expected 'Content-Type' in '{url}' to be '{expectedContentType}', but it was '{actualContentType}'"
       ) {
@@ -67,10 +67,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
      *
      * If reportUrl != null, uses that in error reports. One use of it is adding a
      * timestamp query string parameter to the request URL to avoid caching, but using
-     * an url without timestamp when reporting errors to your error tracker, because 
+     * an url without timestamp when reporting errors to your error tracker, because
      * otherwise one error can trigger a thousand errors because the url always changes.
      *
-     * Throws WrongContentType if unexpected content type is found. 
+     * Throws WrongContentType if unexpected content type is found.
      * Throws ParsingError if JSON could not be parsed,.
      **/
     public static Future<Either<ConfigError, IConfig>> apply(
@@ -81,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         err => Either<ConfigError, IConfig>.Left(new ConfigWWWError(reportUrl, err)),
         www => {
           var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
-          // Sometimes we get redirected to internet paygate, which returns HTML 
+          // Sometimes we get redirected to internet paygate, which returns HTML
           // instead of our content.
           if (contentType != expectedContentType)
             return Either<ConfigError, IConfig>.Left(
@@ -89,8 +89,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
             );
 
           var json = (Dictionary<string, object>) Json.Deserialize(www.text);
-          return json == null 
-            ? Either<ConfigError, IConfig>.Left(new ParsingError(reportUrl, www.text)) 
+          return json == null
+            ? Either<ConfigError, IConfig>.Left(new ParsingError(reportUrl, www.text))
             : Either<ConfigError, IConfig>.Right(new Config(json));
         })
       );
@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     delegate Option<A> Parser<A>(object node);
 
-    static readonly Parser<Dictionary<string, object>> jsClassParser = 
+    static readonly Parser<Dictionary<string, object>> jsClassParser =
       n => F.opt(n as Dictionary<string, object>);
     static readonly Parser<object> objectParser = n => F.some(n);
     static readonly Parser<string> stringParser = n => F.some(n as string);
@@ -109,9 +109,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     static readonly Parser<int> intParser = n => {
-      if (n is long) return F.some((int) (long) n);
+      if (n is long) {
+        var l = (long) n;
+        // TODO: test
+        return l < int.MinValue || l > int.MaxValue ? Option<int>.None : F.some((int) l);
+      }
       else if (n is int) return F.some((int) n);
       else return Option<int>.None;
+    };
+    static readonly Parser<uint> uintParser = n => {
+      if (n is long) {
+        var l = (long) n;
+        // TODO: test
+        return l < 0 || l > uint.MaxValue ? Option<uint>.None : F.some((uint) l);
+      }
+      else if (n is int) {
+        var i = (int) n;
+        // TODO: test
+        return i < 0 ? Option<uint>.None : F.some((uint) i);
+      }
+      else return Option<uint>.None;
     };
     static readonly Parser<long> longParser = n => {
       if (n is long) return F.some((long) n);
@@ -126,7 +143,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       else return Option<float>.None;
     };
     static readonly Parser<bool> boolParser = n => castA<bool>(n);
-    static readonly Parser<DateTime> dateTimeParser = 
+    static readonly Parser<DateTime> dateTimeParser =
       n => F.opt(n as string).flatMap(_ => _.parseDateTime().rightValue);
 
     public override string scope { get; }
@@ -141,55 +158,61 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region either getters
 
-    public override Either<ConfigFetchError, object> eitherObject(string key) 
+    public override Either<ConfigFetchError, object> eitherObject(string key)
     { return get(key, objectParser); }
 
-    public override Either<ConfigFetchError, string> eitherString(string key) 
+    public override Either<ConfigFetchError, string> eitherString(string key)
     { return get(key, stringParser); }
 
-    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key) 
+    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key)
     { return getList(key, stringParser); }
 
-    public override Either<ConfigFetchError, int> eitherInt(string key) 
+    public override Either<ConfigFetchError, int> eitherInt(string key)
     { return get(key, intParser); }
 
-    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key) 
+    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key)
     { return getList(key, intParser); }
 
-    public override Either<ConfigFetchError, long> eitherLong(string key) 
+    public override Either<ConfigFetchError, uint> eitherUInt(string key)
+    { return get(key, uintParser); }
+
+    public override Either<ConfigFetchError, IList<uint>> eitherUIntList(string key)
+    { return getList(key, uintParser); }
+
+    public override Either<ConfigFetchError, long> eitherLong(string key)
     { return get(key, longParser); }
 
-    public override Either<ConfigFetchError, IList<long>> eitherLongList(string key) 
+    public override Either<ConfigFetchError, IList<long>> eitherLongList(string key)
     { return getList(key, longParser); }
 
-    public override Either<ConfigFetchError, float> eitherFloat(string key) 
+    public override Either<ConfigFetchError, float> eitherFloat(string key)
     { return get(key, floatParser); }
 
-    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key) 
+    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key)
     { return getList(key, floatParser); }
 
-    public override Either<ConfigFetchError, bool> eitherBool(string key) 
+    public override Either<ConfigFetchError, bool> eitherBool(string key)
     { return get(key, boolParser); }
 
-    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key) 
+    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key)
     { return getList(key, boolParser); }
 
-    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key) 
+    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key)
     { return get(key, dateTimeParser); }
 
-    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key) 
+    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key)
     { return getList(key, dateTimeParser); }
 
-    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) 
+    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key)
     { return fetchSubConfig(key); }
 
-    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key) 
+    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key)
     { return fetchSubConfigList(key); }
 
     #endregion
 
     Either<ConfigFetchError, IConfig> fetchSubConfig(string key) {
-      return get(key, jsClassParser).mapRight(n => 
+      return get(key, jsClassParser).mapRight(n =>
         (IConfig) new Config(root, n, scope == "" ? key : scope + "." + key)
       );
     }
@@ -243,14 +266,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Either<ConfigFetchError, A> fetch<A>(
       Dictionary<string, object> current, string key, string part, Parser<A> parser
     ) {
-      if (!current.ContainsKey(part)) 
+      if (!current.ContainsKey(part))
         return F.left<ConfigFetchError, A>(ConfigFetchError.keyNotFound(
           $"Cannot find part '{part}' from key '{key}' in {current.asString()} " +
           $"[scope='{scope}']"
         ));
       var node = current[part];
 
-      return followReference(node).flatMapRight(n => 
+      return followReference(node).flatMapRight(n =>
         parser(n).fold(
           () => F.left<ConfigFetchError, A>(ConfigFetchError.wrongType(
             $"Cannot convert part '{part}' from key '{key}' to {typeof (A)}. Type={n.GetType()}" +

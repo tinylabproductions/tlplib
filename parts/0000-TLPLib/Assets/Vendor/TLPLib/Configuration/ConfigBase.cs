@@ -9,20 +9,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region getters
 
-    public object getObject(string key) 
+    public object getObject(string key)
     { return tryObject(key).getOrThrow; }
 
-    public string getString(string key) 
+    public string getString(string key)
     { return tryString(key).getOrThrow; }
 
-    public IList<string> getStringList(string key) 
+    public IList<string> getStringList(string key)
     { return tryStringList(key).getOrThrow; }
 
-    public int getInt(string key) 
+    public int getInt(string key)
     { return tryInt(key).getOrThrow; }
 
-    public IList<int> getIntList(string key) 
+    public IList<int> getIntList(string key)
     { return tryIntList(key).getOrThrow; }
+
+    public uint getUInt(string key)
+    { return tryUInt(key).getOrThrow; }
+
+    public IList<uint> getUIntList(string key)
+    { return tryUIntList(key).getOrThrow; }
 
     public long getLong(string key)
     { return tryLong(key).getOrThrow; }
@@ -30,47 +36,53 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public IList<long> getLongList(string key)
     { return tryLongList(key).getOrThrow; }
 
-    public float getFloat(string key) 
+    public float getFloat(string key)
     { return tryFloat(key).getOrThrow; }
 
-    public IList<float> getFloatList(string key) 
+    public IList<float> getFloatList(string key)
     { return tryFloatList(key).getOrThrow; }
 
-    public bool getBool(string key) 
+    public bool getBool(string key)
     { return tryBool(key).getOrThrow; }
 
-    public IList<bool> getBoolList(string key) 
+    public IList<bool> getBoolList(string key)
     { return tryBoolList(key).getOrThrow; }
 
-    public DateTime getDateTime(string key) 
+    public DateTime getDateTime(string key)
     { return tryDateTime(key).getOrThrow; }
 
-    public IList<DateTime> getDateTimeList(string key) 
+    public IList<DateTime> getDateTimeList(string key)
     { return tryDateTimeList(key).getOrThrow; }
 
-    public IConfig getSubConfig(string key) 
+    public IConfig getSubConfig(string key)
     { return trySubConfig(key).getOrThrow; }
-    public IList<IConfig> getSubConfigList(string key) 
+    public IList<IConfig> getSubConfigList(string key)
     { return trySubConfigList(key).getOrThrow; }
 
     #endregion
 
     #region opt getters
 
-    public Option<object> optObject(string key) 
+    public Option<object> optObject(string key)
     { return eitherObject(key).toOpt(); }
 
-    public Option<string> optString(string key) 
+    public Option<string> optString(string key)
     { return eitherString(key).toOpt(); }
 
-    public Option<IList<string>> optStringList(string key) 
+    public Option<IList<string>> optStringList(string key)
     { return eitherStringList(key).toOpt(); }
 
-    public Option<int> optInt(string key) 
+    public Option<int> optInt(string key)
     { return eitherInt(key).toOpt(); }
 
-    public Option<IList<int>> optIntList(string key) 
+    public Option<IList<int>> optIntList(string key)
     { return eitherIntList(key).toOpt(); }
+
+    public Option<uint> optUInt(string key)
+    { return eitherUInt(key).toOpt(); }
+
+    public Option<IList<uint>> optUIntList(string key)
+    { return eitherUIntList(key).toOpt(); }
 
     public Option<long> optLong(string key)
     { return eitherLong(key).toOpt(); }
@@ -78,28 +90,28 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public Option<IList<long>> optLongList(string key)
     { return eitherLongList(key).toOpt(); }
 
-    public Option<float> optFloat(string key) 
+    public Option<float> optFloat(string key)
     { return eitherFloat(key).toOpt(); }
 
-    public Option<IList<float>> optFloatList(string key) 
+    public Option<IList<float>> optFloatList(string key)
     { return eitherFloatList(key).toOpt(); }
 
-    public Option<bool> optBool(string key) 
+    public Option<bool> optBool(string key)
     { return eitherBool(key).toOpt(); }
 
-    public Option<IList<bool>> optBoolList(string key) 
+    public Option<IList<bool>> optBoolList(string key)
     { return eitherBoolList(key).toOpt(); }
 
-    public Option<DateTime> optDateTime(string key) 
+    public Option<DateTime> optDateTime(string key)
     { return eitherDateTime(key).toOpt(); }
 
-    public Option<IList<DateTime>> optDateTimeList(string key) 
+    public Option<IList<DateTime>> optDateTimeList(string key)
     { return eitherDateTimeList(key).toOpt(); }
 
-    public Option<IConfig> optSubConfig(string key) 
+    public Option<IConfig> optSubConfig(string key)
     { return eitherSubConfig(key).toOpt(); }
 
-    public Option<IList<IConfig>> optSubConfigList(string key) 
+    public Option<IList<IConfig>> optSubConfigList(string key)
     { return eitherSubConfigList(key).toOpt(); }
 
     #endregion
@@ -124,6 +136,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public Try<IList<int>> tryIntList(string key) {
       return eitherIntList(key).fold(tryEx<IList<int>>, F.scs);
+    }
+
+    public Try<uint> tryUInt(string key) {
+      return eitherUInt(key).fold(tryEx<uint>, F.scs);
+    }
+
+    public Try<IList<uint>> tryUIntList(string key) {
+      return eitherUIntList(key).fold(tryEx<IList<uint>>, F.scs);
     }
 
     public Try<long> tryLong(string key) { return eitherLong(key).fold(tryEx<long>, F.scs); }
@@ -175,6 +195,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public abstract Either<ConfigFetchError, IList<string>> eitherStringList(string key);
     public abstract Either<ConfigFetchError, int> eitherInt(string key);
     public abstract Either<ConfigFetchError, IList<int>> eitherIntList(string key);
+    public abstract Either<ConfigFetchError, uint> eitherUInt(string key);
+    public abstract Either<ConfigFetchError, IList<uint>> eitherUIntList(string key);
     public abstract Either<ConfigFetchError, long> eitherLong(string key);
     public abstract Either<ConfigFetchError, IList<long>> eitherLongList(string key);
     public abstract Either<ConfigFetchError, float> eitherFloat(string key);

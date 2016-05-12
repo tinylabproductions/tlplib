@@ -5,7 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
-  /* IConfig that allows string, int, float, bool, list (including config) 
+  /* IConfig that allows string, int, float, bool, list (including config)
    * key overrides based on variables. */
   public class VariableConfig : ConfigBase {
     public readonly IConfig underlying;
@@ -13,9 +13,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     readonly IList<IList<string>> combinations;
 
     /* [param variables] variable name -> value pairs
-     * 
-     * [param combinations] [[varname, varname, ...], ...] combinations that 
-     * need to be checked when fetching a key. So if you have 
+     *
+     * [param combinations] [[varname, varname, ...], ...] combinations that
+     * need to be checked when fetching a key. So if you have
      * [["a", "b"], ["b"]] specified, following keys will be checked if you
      * try to fetch "some.key":
      * - "some.a.b.key"
@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
      * - "some.key"
      */
     public VariableConfig(
-      IConfig underlying, Dictionary<string, string> variables, 
+      IConfig underlying, Dictionary<string, string> variables,
       IList<IList<string>> combinations
     ) {
       this.underlying = underlying;
@@ -45,20 +45,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override string scope { get { return underlying.scope; } }
 
-    public override Either<ConfigFetchError, object> eitherObject(string key) 
+    public override Either<ConfigFetchError, object> eitherObject(string key)
     { return injected(key, k => underlying.eitherObject(k)); }
 
-    public override Either<ConfigFetchError, string> eitherString(string key) 
+    public override Either<ConfigFetchError, string> eitherString(string key)
     { return injected(key, k => underlying.eitherString(k)); }
 
-    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key) 
+    public override Either<ConfigFetchError, IList<string>> eitherStringList(string key)
     { return injected(key, k => underlying.eitherStringList(k)); }
 
-    public override Either<ConfigFetchError, int> eitherInt(string key) 
+    public override Either<ConfigFetchError, int> eitherInt(string key)
     { return injected(key, k => underlying.eitherInt(k)); }
 
-    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key) 
+    public override Either<ConfigFetchError, IList<int>> eitherIntList(string key)
     { return injected(key, k => underlying.eitherIntList(k)); }
+
+    public override Either<ConfigFetchError, uint> eitherUInt(string key)
+    { return injected(key, k => underlying.eitherUInt(k)); }
+
+    public override Either<ConfigFetchError, IList<uint>> eitherUIntList(string key)
+    { return injected(key, k => underlying.eitherUIntList(k)); }
 
     public override Either<ConfigFetchError, long> eitherLong(string key)
     { return injected(key, k => underlying.eitherLong(k)); }
@@ -66,22 +72,22 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public override Either<ConfigFetchError, IList<long>> eitherLongList(string key)
     { return injected(key, k => underlying.eitherLongList(k)); }
 
-    public override Either<ConfigFetchError, float> eitherFloat(string key) 
+    public override Either<ConfigFetchError, float> eitherFloat(string key)
     { return injected(key, k => underlying.eitherFloat(k)); }
 
-    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key) 
+    public override Either<ConfigFetchError, IList<float>> eitherFloatList(string key)
     { return injected(key, k => underlying.eitherFloatList(k)); }
 
     public override Either<ConfigFetchError, bool> eitherBool(string key)
     { return injected(key, k => underlying.eitherBool(k)); }
 
-    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key) 
+    public override Either<ConfigFetchError, IList<bool>> eitherBoolList(string key)
     { return injected(key, k => underlying.eitherBoolList(k)); }
 
-    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key) 
+    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key)
     { return injected(key, k => underlying.eitherDateTime(k)); }
 
-    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key) 
+    public override Either<ConfigFetchError, IList<DateTime>> eitherDateTimeList(string key)
     { return injected(key, k => underlying.eitherDateTimeList(k)); }
 
     public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) {
@@ -100,10 +106,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       ));
     }
 
-    private IConfig wrapConfig(IConfig c) 
+    private IConfig wrapConfig(IConfig c)
     { return new VariableConfig(c, variables, combinations); }
 
-    /* Checks all the keys, returns the last value if none of them 
+    /* Checks all the keys, returns the last value if none of them
      * return a value. */
     private Either<ConfigFetchError, A> injected<A>(
       string key, Fn<string, Either<ConfigFetchError, A>> getter
@@ -114,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       var current = getter(keys.Current);
       while (keys.MoveNext()) {
         if (
-          current.isRight || 
+          current.isRight ||
           (current.isLeft && current.leftValue.get.kind != ConfigFetchError.Kind.KEY_NOT_FOUND)
         ) return current;
         current = getter(keys.Current);
@@ -125,11 +131,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     /* Injects combinations into key. */
     public static IEnumerable<string> injectToKey(
-      string key, IList<IList<string>> combinations, 
+      string key, IList<IList<string>> combinations,
       Dictionary<string, string> variables
     ) {
       var injected = injectToKey(
-        key, 
+        key,
         combinations.Select(combination =>
           string.Join(".", combination.Select(var => variables[var]).ToArray())
         )
@@ -146,8 +152,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         foreach (var part in parts) yield return part + "." + key;
       else
         foreach (var part in parts)
-          yield return 
-            key.Substring(0, lastIndex) + "." + part + 
+          yield return
+            key.Substring(0, lastIndex) + "." + part +
             key.Substring(lastIndex);
     }
   }

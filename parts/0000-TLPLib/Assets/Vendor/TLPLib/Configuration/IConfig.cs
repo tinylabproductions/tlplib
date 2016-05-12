@@ -4,13 +4,13 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   /**
-   * Config class that fetches JSON configuration from `url`. Contents of 
+   * Config class that fetches JSON configuration from `url`. Contents of
    * `url` are expected to be a JSON object.
-   * 
+   *
    * Create one with `Config.apply(url)` or `new Config(json)`.
-   * 
+   *
    * Paths are specified in "key.subkey.subsubkey" format.
-   * 
+   *
    * You can specify references by giving value in format of '#REF=some.config.key#'.
    **/
   public interface IConfig {
@@ -26,6 +26,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     IList<string> getStringList(string key);
     int getInt(string key);
     IList<int> getIntList(string key);
+    uint getUInt(string key);
+    IList<uint> getUIntList(string key);
     long getLong(string key);
     IList<long> getLongList(string key);
     float getFloat(string key);
@@ -48,6 +50,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Option<IList<string>> optStringList(string key);
     Option<int> optInt(string key);
     Option<IList<int>> optIntList(string key);
+    Option<uint> optUInt(string key);
+    Option<IList<uint>> optUIntList(string key);
     Option<long> optLong(string key);
     Option<IList<long>> optLongList(string key);
     Option<float> optFloat(string key);
@@ -70,6 +74,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Either<ConfigFetchError, IList<string>> eitherStringList(string key);
     Either<ConfigFetchError, int> eitherInt(string key);
     Either<ConfigFetchError, IList<int>> eitherIntList(string key);
+    Either<ConfigFetchError, uint> eitherUInt(string key);
+    Either<ConfigFetchError, IList<uint>> eitherUIntList(string key);
     Either<ConfigFetchError, long> eitherLong(string key);
     Either<ConfigFetchError, IList<long>> eitherLongList(string key);
     Either<ConfigFetchError, float> eitherFloat(string key);
@@ -92,6 +98,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Try<IList<string>> tryStringList(string key);
     Try<int> tryInt(string key);
     Try<IList<int>> tryIntList(string key);
+    Try<uint> tryUInt(string key);
+    Try<IList<uint>> tryUIntList(string key);
     Try<long> tryLong(string key);
     Try<IList<long>> tryLongList(string key);
     Try<float> tryFloat(string key);
@@ -105,7 +113,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #endregion
   }
-  
+
   public struct ConfigFetchError {
     public enum Kind { KEY_NOT_FOUND, WRONG_TYPE, BROKEN_REFERENCE }
 
@@ -117,13 +125,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       this.message = message;
     }
 
-    public static ConfigFetchError keyNotFound(string message) 
+    public static ConfigFetchError keyNotFound(string message)
     { return new ConfigFetchError(Kind.KEY_NOT_FOUND, message); }
 
-    public static ConfigFetchError wrongType(string message) 
+    public static ConfigFetchError wrongType(string message)
     { return new ConfigFetchError(Kind.WRONG_TYPE, message); }
 
-    public static ConfigFetchError brokenRef(string message) 
+    public static ConfigFetchError brokenRef(string message)
     { return new ConfigFetchError(Kind.BROKEN_REFERENCE, message); }
 
     public override string ToString() {
@@ -134,7 +142,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   public class ConfigFetchException : Exception {
     public readonly ConfigFetchError error;
 
-    public ConfigFetchException(ConfigFetchError error) : base(error.ToString()) 
+    public ConfigFetchException(ConfigFetchError error) : base(error.ToString())
     { this.error = error; }
   }
 }
