@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -27,6 +28,11 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.That(a, new SetEquals<A>(expected), message);
     }
 
+    public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
+      if (! predicate(a))
+        failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
+    }
+
     public static void shouldBeSome<A>(this Option<A> a, A expected, string message=null) {
       a.shouldEqual(expected.some(), message);
     }
@@ -41,6 +47,25 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) {
       either.shouldEqual(F.right<A, B>(expected), message);
+    }
+
+    public static void shouldBeError<A>(this Try<A> _try, Type exceptionType, string message = null) {
+      Act<string> fail = msg => failWithPrefix(message, msg);
+      _try.exception.voidFold(
+        () => fail($"Expected {_try} to be an error of {exceptionType}"),
+        e => {
+          if (!exceptionType.IsInstanceOfType(e))
+            fail($"Expected {_try} to be of type {exceptionType}");
+        }
+      );
+    }
+
+    public static void shouldBeSuccess<A>(this Try<A> _try, A expected, string message = null) {
+      _try.shouldEqual(F.scs(expected), message);
+    }
+
+    static void failWithPrefix(string prefix, string message) {
+      Assert.Fail(prefix != null ? $"{prefix}: " : "" + message);
     }
   }
 
