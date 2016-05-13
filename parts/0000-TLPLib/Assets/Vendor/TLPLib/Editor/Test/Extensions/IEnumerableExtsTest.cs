@@ -4,6 +4,65 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  public class IEnumerableTestAsString {
+    [Test]
+    public void TestList() {
+      F.list(1, 2, 3).asString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");
+      F.list(1, 2, 3).asString(newlines: false, fullClasses: false).shouldEqual("List`1[1, 2, 3]");
+      F.list("1", "2", "3").asString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");
+      F.list("1", "2", "3").asString(newlines: false, fullClasses: false).shouldEqual("List`1[1, 2, 3]");
+    }
+
+    [Test]
+    public void TestNestedList() {
+      F.list(F.list(1, 2), F.list(3)).asString().shouldEqual(
+@"List`1[
+  List`1[
+    1,
+    2
+  ],
+  List`1[
+    3
+  ]
+]"
+      );
+      F.list(F.list("1", "2"), F.list("3")).asString(newlines:true, fullClasses:false).shouldEqual(
+@"List`1[
+  List`1[
+    1,
+    2
+  ],
+  List`1[
+    3
+  ]
+]"
+      );
+    }
+
+    [Test]
+    public void TestDictionary() {
+      F.dict(F.t(1, 2), F.t(2, 3)).asString(newlines: true, fullClasses: false)
+        .shouldEqual("Dictionary`2[\n  [1, 2],\n  [2, 3]\n]");
+    }
+
+    [Test]
+    public void TestNestedDictionary() {
+      var dict = F.dict(
+        F.t(1, F.dict(F.t(2, "2"))),
+        F.t(2, F.dict(F.t(3, "3")))
+      );
+      dict.asString(newlines:true, fullClasses:false).shouldEqual(
+@"Dictionary`2[
+  [1, Dictionary`2[
+    [2, 2]
+  ],
+  [2, Dictionary`2[
+    [3, 3]
+  ]
+]");
+    }
+  }
+
   public class IEnumerableTestPartition {
     [Test]
     public void TestEquals() {
@@ -11,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         var s = F.list(1, 2);
         var p1 = s.partition(_ => true);
         var p2 = s.partition(_ => false);
-        var isEqual = p1.Equals(p2);
+        var __ = p1.Equals(p2);
       });
     }
 

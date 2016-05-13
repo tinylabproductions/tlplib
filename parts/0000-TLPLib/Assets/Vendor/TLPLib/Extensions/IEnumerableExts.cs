@@ -8,29 +8,47 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
     /* This should really be used only for debugging. It is pretty slow. */
-    public static String asString(
+    public static string asString(
       this IEnumerable enumerable,
       bool newlines=true, bool fullClasses=false
     ) {
-      var items = (
-        from object item in enumerable
-        let str = item as String // String is IEnumerable as well
-        let enumItem = item as IEnumerable
-        select str ?? (
-          enumItem == null
-            ? item.ToString() : enumItem.asString(newlines, fullClasses)
-        )
-      ).ToArray();
-      var itemsStr =
-        string.Join(string.Format(",{0} ", newlines ? "\n " : ""), items);
-      if (items.Length != 0 && newlines) itemsStr = "\n  " + itemsStr + "\n";
+      var sb = new StringBuilder();
+      asStringRec(enumerable, sb, newlines, fullClasses, 1);
+      return sb.ToString();
+    }
 
+    static void asStringRec(
+      IEnumerable enumerable, StringBuilder sb,
+      bool newlines, bool fullClasses, int indent = 0
+    ) {
       var type = enumerable.GetType();
-      return string.Format(
-        "{0}[{1}]",
-        fullClasses ? type.FullName : type.Name,
-        itemsStr
-      );
+      sb.Append(fullClasses ? type.FullName : type.Name);
+      sb.Append('[');
+
+      var first = true;
+      foreach (var item in enumerable) {
+        if (!first) sb.Append(',');
+        if (newlines) {
+          sb.Append('\n');
+          for (var idx = 0; idx < indent; idx++) sb.Append("  ");
+        }
+        else if (!first) sb.Append(' ');
+
+        var str = item as string; // String is IEnumerable as well
+        if (str != null) sb.Append(str);
+        else {
+          var enumItem = item as IEnumerable;
+          if (enumItem != null) asStringRec(enumItem, sb, newlines, fullClasses, indent + 1);
+          else sb.Append(item);
+        }
+        first = false;
+      }
+
+      if (newlines) {
+        sb.Append('\n');
+        for (var idx = 0; idx < indent - 1; idx++) sb.Append("  ");
+      }
+      sb.Append(']');
     }
 
     public static string mkString<A>(
