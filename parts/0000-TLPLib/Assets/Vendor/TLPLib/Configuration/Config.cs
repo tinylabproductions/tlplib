@@ -51,15 +51,85 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       public ConfigContentError(string message) : base(message) {}
     }
 
-    public class ParsingError : ConfigContentError {
-      public readonly string url, jsonString;
+    public class ParsingErrorWithUrl : ConfigContentError {
+      public readonly string url;
+      public readonly ParsingError error;
 
-      public ParsingError(string url, string jsonString) : base(
-        $"Cannot parse url '{url}' contents as JSON object:\n{jsonString}"
+      public ParsingErrorWithUrl(string url, ParsingError error) : base(
+        $"Cannot parse url '{url}' contents as JSON object:\n{error.jsonString}"
       ) {
         this.url = url;
+        this.error = error;
+      }
+    }
+
+    public struct ParsingError {
+      public readonly string jsonString;
+
+      public ParsingError(string jsonString) {
         this.jsonString = jsonString;
       }
+
+      public ParsingErrorWithUrl withUrl(string url) {
+        return new ParsingErrorWithUrl(url, this);
+      }
+    }
+
+    public struct IConfigWithSource {
+      public readonly IConfig config;
+      public readonly string sourceJson;
+
+      public IConfigWithSource(IConfig config, string sourceJson) {
+        this.config = config;
+        this.sourceJson = sourceJson;
+      }
+    }
+
+    public struct Urls {
+      public readonly string fetchUrl, reportUrl;
+
+      public Urls(string fetchUrl) : this(fetchUrl, fetchUrl) {}
+
+      public Urls(string fetchUrl, string reportUrl) {
+        this.fetchUrl = fetchUrl;
+        this.reportUrl = reportUrl;
+      }
+    }
+
+    /**
+     * Fetches JSON config from URL. Checks its content type.
+     *
+     * If reportUrl != null, uses that in error reports. One use of it is adding a
+     * timestamp query string parameter to the request URL to avoid caching, but using
+     * an url without timestamp when reporting errors to your error tracker, because
+     * otherwise one error can trigger a thousand errors because the url always changes.
+     *
+     * Throws WrongContentType if unexpected content type is found.
+     **/
+    public static Future<Either<ConfigError, string>> fetch(
+      Urls urls, string expectedContentType="application/json"
+    ) {
+      return new WWW(urls.fetchUrl).wwwFuture().map(wwwE => wwwE.fold(
+        err => Either<ConfigError, string>.Left(new ConfigWWWError(urls.reportUrl, err)),
+        www => {
+          var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
+          // Sometimes we get redirected to internet paygate, which returns HTML
+          // instead of our content.
+          if (contentType != expectedContentType)
+            return Either<ConfigError, string>.Left(
+              new WrongContentType(urls.reportUrl, expectedContentType, contentType)
+            );
+
+          return Either<ConfigError, string>.Right(www.text);
+        })
+      );
+    }
+
+    public static Either<ParsingError, IConfig> parseJson(string json) {
+      var jsonDict = (Dictionary<string, object>)Json.Deserialize(json);
+      return jsonDict == null
+        ? Either<ParsingError, IConfig>.Left(new ParsingError(json))
+        : Either<ParsingError, IConfig>.Right(new Config(jsonDict));
     }
 
     /**
@@ -73,26 +143,16 @@ namespace com.tinylabproductions.TLPLib.Configuration {
      * Throws WrongContentType if unexpected content type is found.
      * Throws ParsingError if JSON could not be parsed,.
      **/
-    public static Future<Either<ConfigError, IConfig>> apply(
-      string fetchUrl, string reportUrl=null, string expectedContentType= "application/json"
+    public static Future<Either<ConfigError, IConfigWithSource>> apply(
+      Urls urls, string expectedContentType="application/json"
     ) {
-      reportUrl = reportUrl ?? fetchUrl;
-      return new WWW(fetchUrl).wwwFuture().map(wwwE => wwwE.fold(
-        err => Either<ConfigError, IConfig>.Left(new ConfigWWWError(reportUrl, err)),
-        www => {
-          var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
-          // Sometimes we get redirected to internet paygate, which returns HTML
-          // instead of our content.
-          if (contentType != expectedContentType)
-            return Either<ConfigError, IConfig>.Left(
-              new WrongContentType(reportUrl, expectedContentType, contentType)
-            );
-
-          var json = (Dictionary<string, object>) Json.Deserialize(www.text);
-          return json == null
-            ? Either<ConfigError, IConfig>.Left(new ParsingError(reportUrl, www.text))
-            : Either<ConfigError, IConfig>.Right(new Config(json));
-        })
+      return fetch(urls, expectedContentType).map(e =>
+        e.flatMapRight(json =>
+          parseJson(json).map(
+            err => (ConfigError)err.withUrl(urls.reportUrl),
+            cfg => new IConfigWithSource(cfg, json)
+          )
+        )
       );
     }
 
