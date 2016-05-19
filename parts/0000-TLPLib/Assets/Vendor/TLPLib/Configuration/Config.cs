@@ -132,17 +132,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         : Either<ParsingError, IConfig>.Right(new Config(jsonDict));
     }
 
-    /**
-     * Fetches JSON config from URL. Checks its content type before parsing.
-     *
-     * If reportUrl != null, uses that in error reports. One use of it is adding a
-     * timestamp query string parameter to the request URL to avoid caching, but using
-     * an url without timestamp when reporting errors to your error tracker, because
-     * otherwise one error can trigger a thousand errors because the url always changes.
-     *
-     * Throws WrongContentType if unexpected content type is found.
-     * Throws ParsingError if JSON could not be parsed,.
-     **/
     public static Future<Either<ConfigError, IConfigWithSource>> apply(
       Urls urls, string expectedContentType="application/json"
     ) {
