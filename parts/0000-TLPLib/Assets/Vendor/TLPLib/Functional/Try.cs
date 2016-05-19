@@ -1,11 +1,11 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  public 
+  public
 #if UNITY_IOS
 	class
 #else
-	struct 
+	struct
 #endif
 	Try<A> {
 
@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 	public Try() {}
 #endif
 
-    public Try(A value) { 
+    public Try(A value) {
       _value = value;
       _exception = null;
     }
@@ -32,6 +32,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Option<A> value => isSuccess ? F.some(_value) : F.none<A>();
     public Option<A> toOption => value;
     public Option<Exception> exception => isSuccess ? F.none<Exception>() : F.some(_exception);
+
+    public Either<Exception, A> toEither =>
+      fold(Either<Exception, A>.Right, Either<Exception, A>.Left);
 
     public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) {
       return isSuccess ? onValue(_value) : onException(_exception);
