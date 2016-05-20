@@ -37,6 +37,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return a<A>(p => ASync.WithDelay(seconds, () => p.complete(createValue())));
     }
 
+    public static Future<A> delay<A>(float seconds, A value) {
+      return a<A>(p => ASync.WithDelay(seconds, () => p.complete(value)));
+    }
+
     /**
      * Converts enumerable of futures into future of enumerable that is completed
      * when all futures complete.
@@ -70,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /**
-     * Returns result from the first future that satisfies the predicate as a Some. 
+     * Returns result from the first future that satisfies the predicate as a Some.
      * If all futures do not satisfy the predicate returns None.
      **/
     public static Future<Option<B>> firstOfWhere<A, B>
@@ -91,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Option<B>> firstOfSuccessful<A, B>
     (this IEnumerable<Future<Either<A, B>>> enumerable)
     { return enumerable.firstOfWhere(e => e.rightValue); }
-    
+
     public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
     (this IEnumerable<Future<Either<A, B>>> enumerable) {
       var futures = enumerable.ToArray();
@@ -106,14 +110,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return Future<Unit>.async(p => ASync.StartCoroutine(coroutineEnum(p, enumerator)));
     }
 
-    /* Waits at most `timeoutSeconds` for the future to complete. Completes with 
+    /* Waits at most `timeoutSeconds` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
     public static Future<Either<B, A>> timeout<A, B>(
       this Future<A> future, float timeoutSeconds, Fn<B> onTimeout
     ) {
       // TODO: test me - how? Unity test runner doesn't support delays.
       var timeoutF = delay(timeoutSeconds, () => future.value.fold(
-        // onTimeout() might have side effects, so we only need to execute it if 
+        // onTimeout() might have side effects, so we only need to execute it if
         // there is no value in the original future once the timeout hits.
         () => onTimeout().left().r<A>(),
         v => v.right().l<B>()
@@ -121,13 +125,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new[] { future.map(v => v.right().l<B>()), timeoutF }.firstOf();
     }
 
-    /* Waits at most `timeoutSeconds` for the future to complete. Completes with 
+    /* Waits at most `timeoutSeconds` for the future to complete. Completes with
        TimeoutException<A> on timeout. */
     public static Future<Either<Timeout, A>> timeout<A>(
       this Future<A> future, float timeoutSeconds
     ) {
       return future.timeout(
-        timeoutSeconds, 
+        timeoutSeconds,
         () => new Timeout(timeoutSeconds)
       );
     }
