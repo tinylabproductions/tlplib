@@ -16,6 +16,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     void setInt(string name, int value);
     float getFloat(string name, float defaultValue);
     void setFloat(string name, float value);
+    void save();
   }
 
   class PlayerPrefsBackend : IPrefValueBackend {
@@ -28,6 +29,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void setInt(string name, int value) { PlayerPrefs.SetInt(name, value); }
     public float getFloat(string name, float defaultValue) { return PlayerPrefs.GetFloat(name, defaultValue); }
     public void setFloat(string name, float value) { PlayerPrefs.SetFloat(name, value); }
+    public void save() { PlayerPrefs.Save(); }
   }
 
 #if UNITY_EDITOR
@@ -41,6 +43,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void setInt(string name, int value) { EditorPrefs.SetInt(name, value); }
     public float getFloat(string name, float defaultValue) { return EditorPrefs.GetFloat(name, defaultValue); }
     public void setFloat(string name, float value) { EditorPrefs.SetFloat(name, value); }
+    public void save() {}
   }
 #endif
 
@@ -52,22 +55,30 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
 
-    public PrefVal<string> str(string key, string defaultVal) {
-      return new PrefVal<string>(key, defaultVal, backend.getString, backend.setString);
+    public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite=true) {
+      return new PrefVal<string>(
+        key, defaultVal, backend.getString, backend.setString, backend, saveOnEveryWrite
+      );
     }
 
-    public PrefVal<int> integer(string key, int defaultVal) {
-      return new PrefVal<int>(key, defaultVal, backend.getInt, backend.setInt);
+    public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite = true) {
+      return new PrefVal<int>(
+        key, defaultVal, backend.getInt, backend.setInt, backend, saveOnEveryWrite
+      );
     }
 
-    public PrefVal<float> flt(string key, float defaultVal) {
-      return new PrefVal<float>(key, defaultVal, backend.getFloat, backend.setFloat);
+    public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite = true) {
+      return new PrefVal<float>(
+        key, defaultVal, backend.getFloat, backend.setFloat, backend, saveOnEveryWrite
+      );
     }
 
     #region bool
 
-    public PrefVal<bool> boolean(string key, bool defaultVal) {
-      return new PrefVal<bool>(key, defaultVal, GetBool, SetBool);
+    public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = true) {
+      return new PrefVal<bool>(
+        key, defaultVal, GetBool, SetBool, backend, saveOnEveryWrite
+      );
     }
 
     public bool GetBool(string key, bool defaultVal)
@@ -83,8 +94,10 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #region DateTime
 
-    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal) {
-      return new PrefVal<DateTime>(key, defaultVal, GetDate, SetDate);
+    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = true) {
+      return new PrefVal<DateTime>(
+        key, defaultVal, GetDate, SetDate, backend, saveOnEveryWrite
+      );
     }
 
     public DateTime GetDate(string key, DateTime defaultVal)
@@ -108,12 +121,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     /* Provide custom mapping. It uses string representation inside and returns
      * default value if string is empty. */
     public PrefVal<A> custom<A>(
-      string key, A defaultVal, Fn<A, string> map, Fn<string, A> comap
+      string key, A defaultVal, Fn<A, string> map, Fn<string, A> comap, bool saveOnEveryWrite=true
     ) {
       return new PrefVal<A>(
         key, defaultVal,
         (_key, _defaultVal) => GetCustom(_key, _defaultVal, comap),
-        (_key, value) => SetCustom(key, value, map)
+        (_key, value) => SetCustom(key, value, map),
+        backend, saveOnEveryWrite
       );
     }
 
@@ -129,7 +143,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     /* Custom mapping with Base64 strings as backing storage. */
     public PrefVal<A> base64<A>(
-      string key, A defaultVal, Act<A, Act<string>> store, Fn<IEnumerable<string>, A> read
+      string key, A defaultVal, Act<A, Act<string>> store, Fn<IEnumerable<string>, A> read,
+      bool saveOnEveryWrite = true
     ) {
       return custom(
         key, defaultVal, a => {
@@ -145,15 +160,18 @@ namespace com.tinylabproductions.TLPLib.Data {
         },
         str => read(str.Split('|').Select(b64 =>
           Encoding.UTF8.GetString(Convert.FromBase64String(b64))
-        ))
+        )),
+        saveOnEveryWrite: saveOnEveryWrite
       );
     }
   }
 
   // Should be class (not struct) because .write mutates object.
   public class PrefVal<A> {
+    readonly IPrefValueBackend backend;
     readonly string key;
     readonly Act<string, A> writer;
+    readonly bool saveOnEveryWrite;
 
     A _value;
     public A value {
@@ -161,15 +179,18 @@ namespace com.tinylabproductions.TLPLib.Data {
       set {
         writer(key, value);
         _value = value;
-        PlayerPrefs.Save();
+        if (saveOnEveryWrite) backend.save();
       }
     }
 
     public PrefVal(
-      string key, A defaultValue, Fn<string, A, A> reader, Act<string, A> writer
+      string key, A defaultValue, Fn<string, A, A> reader, Act<string, A> writer,
+      IPrefValueBackend backend, bool saveOnEveryWrite
     ) {
       this.key = key;
       this.writer = writer;
+      this.backend = backend;
+      this.saveOnEveryWrite = saveOnEveryWrite;
       value = reader(key, defaultValue);
     }
 
@@ -185,6 +206,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       var rx = new RxRef<A>(read);
       rx.subscribe(v => write(v));
       return rx;
+    }
+
+    public void forceSave() {
+      backend.save();
     }
   }
 
