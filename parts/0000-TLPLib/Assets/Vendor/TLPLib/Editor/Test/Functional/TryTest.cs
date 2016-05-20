@@ -1,9 +1,8 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
-namespace com.tinylabproductions.TLPLib.Editor.Test.Functional {
+namespace com.tinylabproductions.TLPLib.Functional {
   class TestException : Exception {}
 
   public class TryTestMap {
