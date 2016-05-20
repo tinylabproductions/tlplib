@@ -59,9 +59,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isEmpty<A>(this IList<A> list)
     { return list.Count == 0; }
 
-    public static Option<A> random<A>(this IList<A> list) {
+    public static Option<A> random<A>(this IList<A> list)
+      { return list.randomIndex().map(idx => list[idx]); }
+
+    public static Option<int> randomIndex<A>(this IList<A> list) {
       return list.Count == 0
-        ? F.none<A>() : F.some(list[Random.Range(0, list.Count)]);
+        ? F.none<int>() : F.some(Random.Range(0, list.Count));
     }
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {
