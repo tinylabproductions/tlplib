@@ -4,78 +4,94 @@ using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace com.tinylabproductions.TLPLib.Data {
-  /* PlayerPrefs backed reactive value. */
-  public static class PrefValue {
+  public interface IPrefValueBackend {
+    string getString(string name, string defaultValue);
+    void setString(string name, string value);
+    int getInt(string name, int defaultValue);
+    void setInt(string name, int value);
+    float getFloat(string name, float defaultValue);
+    void setFloat(string name, float value);
+  }
+
+  class PlayerPrefsBackend : IPrefValueBackend {
+    public static readonly PlayerPrefsBackend instance = new PlayerPrefsBackend();
+    PlayerPrefsBackend() {}
+
+    public string getString(string name, string defaultValue) { return PlayerPrefs.GetString(name, defaultValue); }
+    public void setString(string name, string value) { PlayerPrefs.SetString(name, value); }
+    public int getInt(string name, int defaultValue) { return PlayerPrefs.GetInt(name, defaultValue); }
+    public void setInt(string name, int value) { PlayerPrefs.SetInt(name, value); }
+    public float getFloat(string name, float defaultValue) { return PlayerPrefs.GetFloat(name, defaultValue); }
+    public void setFloat(string name, float value) { PlayerPrefs.SetFloat(name, value); }
+  }
+
+#if UNITY_EDITOR
+  class EditorPrefsBackend : IPrefValueBackend {
+    public static readonly EditorPrefsBackend instance = new EditorPrefsBackend();
+    EditorPrefsBackend() {}
+
+    public string getString(string name, string defaultValue) { return EditorPrefs.GetString(name, defaultValue); }
+    public void setString(string name, string value) { EditorPrefs.SetString(name, value); }
+    public int getInt(string name, int defaultValue) { return EditorPrefs.GetInt(name, defaultValue); }
+    public void setInt(string name, int value) { EditorPrefs.SetInt(name, value); }
+    public float getFloat(string name, float defaultValue) { return EditorPrefs.GetFloat(name, defaultValue); }
+    public void setFloat(string name, float value) { EditorPrefs.SetFloat(name, value); }
+  }
+#endif
+
+  public class PrefValStorage {
     /* If you store this as a value in type custom PrefValue, you'll get back a default value. */
     public const string CUSTOM_DEFAULT = "";
 
-    // Should be class (not struct) because .write mutates object.
-    public class Val<A> {
-      readonly string key;
-      readonly Act<string, A> writer;
-      A cache;
+    readonly IPrefValueBackend backend;
 
-      public Val(
-        string key, A defaultValue, Fn<string, A, A> read, Act<string, A> write
-      ) {
-        this.key = key;
-        writer = write;
-        cache = read(key, defaultValue);
-      }
+    public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
 
-      public A read => cache;
-
-      public A write(A value) {
-        writer(key, value); 
-        cache = value;
-        PlayerPrefs.Save();
-        return value;
-      }
-
-      // You should not write to Val when using RxRef
-      public RxRef<A> toRxRef() {
-        var rx = new RxRef<A>(read);
-        rx.subscribe(v => write(v));
-        return rx;
-      } 
+    public PrefVal<string> str(string key, string defaultVal) {
+      return new PrefVal<string>(key, defaultVal, backend.getString, backend.setString);
     }
 
-    public static Val<string> str(string key, string defaultVal) {
-      return new Val<string>(key, defaultVal, PlayerPrefs.GetString, PlayerPrefs.SetString);
+    public PrefVal<int> integer(string key, int defaultVal) {
+      return new PrefVal<int>(key, defaultVal, backend.getInt, backend.setInt);
     }
 
-    public static Val<int> integer(string key, int defaultVal) {
-      return new Val<int>(key, defaultVal, PlayerPrefs.GetInt, PlayerPrefs.SetInt);
+    public PrefVal<float> flt(string key, float defaultVal) {
+      return new PrefVal<float>(key, defaultVal, backend.getFloat, backend.setFloat);
     }
 
-    public static Val<float> flt(string key, float defaultVal) {
-      return new Val<float>(key, defaultVal, PlayerPrefs.GetFloat, PlayerPrefs.SetFloat);
+    #region bool
+
+    public PrefVal<bool> boolean(string key, bool defaultVal) {
+      return new PrefVal<bool>(key, defaultVal, GetBool, SetBool);
     }
 
-    public static Val<bool> boolean(string key, bool defaultVal) {
-      return new Val<bool>(key, defaultVal, GetBool, SetBool);
-    }
+    public bool GetBool(string key, bool defaultVal)
+    { return int2bool(backend.getInt(key, bool2int(defaultVal))); }
 
-    public static Val<DateTime> dateTime(string key, DateTime defaultVal) {
-      return new Val<DateTime>(key, defaultVal, GetDate, SetDate);
-    }
-
-    public static bool GetBool(string key, bool defaultVal) 
-    { return int2bool(PlayerPrefs.GetInt(key, bool2int(defaultVal))); }
-
-    public static void SetBool(string key, bool value) 
-    { PlayerPrefs.SetInt(key, bool2int(value)); }
+    public void SetBool(string key, bool value)
+    { backend.setInt(key, bool2int(value)); }
 
     static bool int2bool(int i) { return i != 0; }
     static int bool2int(bool b) { return b ? 1 : 0; }
 
-    public static DateTime GetDate(string key, DateTime defaultVal)
-    { return deserializeDate(PlayerPrefs.GetString(key, serializeDate(defaultVal))); }
+    #endregion
 
-    public static void SetDate(string key, DateTime value) 
-    { PlayerPrefs.SetString(key, serializeDate(value)); }
+    #region DateTime
+
+    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal) {
+      return new PrefVal<DateTime>(key, defaultVal, GetDate, SetDate);
+    }
+
+    public DateTime GetDate(string key, DateTime defaultVal)
+    { return deserializeDate(backend.getString(key, serializeDate(defaultVal))); }
+
+    public void SetDate(string key, DateTime value)
+    { backend.setString(key, serializeDate(value)); }
 
     static string serializeDate(DateTime date) {
       return date.ToBinary().ToString();
@@ -85,28 +101,34 @@ namespace com.tinylabproductions.TLPLib.Data {
       return DateTime.FromBinary(long.Parse(s));
     }
 
-    /* Provide custom mapping. It uses string representation inside and returns 
+    #endregion
+
+    #region Custom
+
+    /* Provide custom mapping. It uses string representation inside and returns
      * default value if string is empty. */
-    public static Val<A> custom<A>(
+    public PrefVal<A> custom<A>(
       string key, A defaultVal, Fn<A, string> map, Fn<string, A> comap
     ) {
-      return new Val<A>(
-        key, defaultVal, 
+      return new PrefVal<A>(
+        key, defaultVal,
         (_key, _defaultVal) => GetCustom(_key, _defaultVal, comap),
         (_key, value) => SetCustom(key, value, map)
       );
     }
 
-    static A GetCustom<A>(string key, A defaultVal, Fn<string, A> parse) {
-      var str = PlayerPrefs.GetString(key, CUSTOM_DEFAULT);
+    A GetCustom<A>(string key, A defaultVal, Fn<string, A> parse) {
+      var str = backend.getString(key, CUSTOM_DEFAULT);
       return str == CUSTOM_DEFAULT ? defaultVal : parse(str);
     }
 
-    static void SetCustom<A>(string key, A value, Fn<A, string> serialize) 
-    { PlayerPrefs.SetString(key, serialize(value)); }
+    void SetCustom<A>(string key, A value, Fn<A, string> serialize)
+    { backend.setString(key, serialize(value)); }
+
+    #endregion
 
     /* Custom mapping with Base64 strings as backing storage. */
-    public static Val<A> base64<A>(
+    public PrefVal<A> base64<A>(
       string key, A defaultVal, Act<A, Act<string>> store, Fn<IEnumerable<string>, A> read
     ) {
       return custom(
@@ -121,10 +143,56 @@ namespace com.tinylabproductions.TLPLib.Data {
           store(a, storer);
           return sb.ToString();
         },
-        str => read(str.Split('|').Select(b64 => 
+        str => read(str.Split('|').Select(b64 =>
           Encoding.UTF8.GetString(Convert.FromBase64String(b64))
         ))
       );
     }
+  }
+
+  // Should be class (not struct) because .write mutates object.
+  public class PrefVal<A> {
+    readonly string key;
+    readonly Act<string, A> writer;
+
+    A _value;
+    public A value {
+      get { return _value; }
+      set {
+        writer(key, value);
+        _value = value;
+        PlayerPrefs.Save();
+      }
+    }
+
+    public PrefVal(
+      string key, A defaultValue, Fn<string, A, A> reader, Act<string, A> writer
+    ) {
+      this.key = key;
+      this.writer = writer;
+      value = reader(key, defaultValue);
+    }
+
+    public A read => value;
+
+    public A write(A value) {
+      this.value = value;
+      return value;
+    }
+
+    // You should not write to Val when using RxRef
+    public RxRef<A> toRxRef() {
+      var rx = new RxRef<A>(read);
+      rx.subscribe(v => write(v));
+      return rx;
+    }
+  }
+
+  /* PlayerPrefs backed reactive value. */
+  public static class PrefVal {
+    public static readonly PrefValStorage player = new PrefValStorage(PlayerPrefsBackend.instance);
+#if UNITY_EDITOR
+    public static readonly PrefValStorage editor = new PrefValStorage(EditorPrefsBackend.instance);
+#endif
   }
 }
