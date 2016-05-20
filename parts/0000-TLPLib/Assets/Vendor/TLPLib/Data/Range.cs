@@ -20,9 +20,9 @@ namespace com.tinylabproductions.TLPLib.Data {
   public struct Range {
     // No it can't, Unity...
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
-    [SerializeField] private int _from, _to;
-    public int from { get { return _from; } }
-    public int to { get { return _to; } }
+    [SerializeField] int _from, _to;
+    public int from => _from;
+    public int to => _to;
 
     public Range(int from, int to) {
       _from = from;
@@ -30,7 +30,40 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public int random { get { return Random.Range(from, to + 1); } }
+
+    public RangeEnumerator GetEnumerator() { return new RangeEnumerator(from, to); }
   }
+
+  public struct RangeEnumerator {
+    public readonly int start, end;
+    bool firstElement;
+
+    public RangeEnumerator(int start, int end) {
+      this.start = start;
+      this.end = end;
+      firstElement = default(bool);
+      Current = default(int);
+      Reset();
+    }
+
+    public bool MoveNext() {
+      if (firstElement && Current <= end) {
+        firstElement = false;
+        return true;
+      }
+      if (Current == end) return false;
+      Current++;
+      return Current <= end;
+    }
+
+    public void Reset() {
+      firstElement = true;
+      Current = start;
+    }
+
+    public int Current { get; set; }
+  }
+
 
   [Serializable]
   public struct URange {
