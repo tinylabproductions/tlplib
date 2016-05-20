@@ -7,6 +7,8 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
    * IValueObservable is an observable which has a current value.
+   *
+   * It should only emit events if the value changes.
    **/
   public interface IValueObservable<A> : IObservable<A> {
     A value { get; }
@@ -19,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public interface IRxVal<A> : IValueObservable<A> {
     new IRxVal<B> map<B>(Fn<A, B> mapper);
   }
-  
+
   public static class RxVal {
     public static ObserverBuilder<Elem, IRxVal<Elem>> builder<Elem>(Elem value) {
       return RxRef.builder(value);
@@ -60,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return val;
     }
 
-    public static IRxVal<bool> anyOf(this IEnumerable<IRxVal<bool>> vals, bool searchForTrue=true) 
+    public static IRxVal<bool> anyOf(this IEnumerable<IRxVal<bool>> vals, bool searchForTrue=true)
       { return vals.firstThat(b => searchForTrue ? b : !b).map(_ => _.isDefined); }
 
     public static IRxVal<A> extractFuture<A>(
@@ -70,5 +72,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       future.onComplete(rx2 => rx2.subscribe(v => rx.value = v));
       return rx;
     }
+
+    /**
+     * Convert IValueObservable<A> to IObservable<B>.
+     *
+     * Useful for converting from RxVal to event source. For example
+     * ```someRxVal.map(_ => F.unit)``` would only emit one event, because
+     * the backing value would still be IValueObservable.
+     *
+     * Thus we'd need to use ```someRxVal.toEventSource(_ => F.unit)```.
+     **/
+    public static IObservable<B> toEventSource<A, B>(
+      this IValueObservable<A> o, Fn<A, B> mapper
+    ) {
+      return new Observable<B>(obs => o.subscribe(v => obs.push(mapper(v))));
+    }
+
+    public static IObservable<Unit> toEventSource<A>(this IValueObservable<A> o)
+      { return o.toEventSource(_ => F.unit); }
   }
 }
