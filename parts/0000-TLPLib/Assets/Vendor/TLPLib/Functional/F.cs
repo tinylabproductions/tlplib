@@ -73,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return dict;
     }
 
-    public static Unit unit { get { return Unit.instance; } }
+    public static Unit unit => Unit.instance;
 
     public static Lazy<A> lazy<A>(Fn<A> func) {
       return new LazyImpl<A>(func);
