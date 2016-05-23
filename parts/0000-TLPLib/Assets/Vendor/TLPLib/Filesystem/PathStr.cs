@@ -6,7 +6,9 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
   public struct PathStr : IEquatable<PathStr> {
     public readonly string path;
 
-    public PathStr(string path) { this.path = path; }
+    public PathStr(string path) {
+      this.path = path.Replace(Path.DirectorySeparatorChar == '/' ? '\\' : '/', Path.DirectorySeparatorChar);
+    }
 
     #region Equality
 
@@ -47,8 +49,13 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public static implicit operator string(PathStr s) { return s.path; }
 
     public PathStr dirname => new PathStr(Path.GetDirectoryName(path));
+    public PathStr basename => new PathStr(Path.GetFileName(path));
+
+    public PathStr ensureBeginsWith(PathStr p) {
+      return path.StartsWith(p.path) ? this : p / path;
+    }
 
     public override string ToString() { return path; }
-    public string unixString => ToString().Replace(@"\", "/");
+    public string unixString => ToString().Replace('\\', '/');
   }
 }
