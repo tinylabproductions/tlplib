@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       { return e.flatMapRight(_ => _); }
   }
 
-  public 
+  public
 #if UNITY_IOS
   class
 #else
@@ -41,25 +41,25 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return isLeft ? "Left(" + _leftValue + ")" : "Right(" + _rightValue + ")";
     }
 
-    public Either<C, B> flatMapLeft<C>(Fn<A, Either<C, B>> mapper) 
+    public Either<C, B> flatMapLeft<C>(Fn<A, Either<C, B>> mapper)
       { return fold(mapper, F.right<C, B>); }
 
-    public Either<A, C> flatMapRight<C>(Fn<B, Either<A, C>> mapper) 
+    public Either<A, C> flatMapRight<C>(Fn<B, Either<A, C>> mapper)
       { return fold(F.left<A, C>, mapper); }
 
-    public Either<AA, BB> map<AA, BB>(Fn<A, AA> leftMapper, Fn<B, BB> rightMapper) 
+    public Either<AA, BB> map<AA, BB>(Fn<A, AA> leftMapper, Fn<B, BB> rightMapper)
       { return fold(v => F.left<AA, BB>(leftMapper(v)), v => F.right<AA, BB>(rightMapper(v))); }
 
-    public Either<C, B> mapLeft<C>(Fn<A, C> mapper) 
+    public Either<C, B> mapLeft<C>(Fn<A, C> mapper)
       { return fold(v => F.left<C, B>(mapper(v)), F.right<C, B>); }
 
-    public Either<A, C> mapRight<C>(Fn<B, C> mapper) 
+    public Either<A, C> mapRight<C>(Fn<B, C> mapper)
       { return fold(F.left<A, C>, v => F.right<A, C>(mapper(v))); }
 
-    public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight) 
+    public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight)
       { return isLeft ? onLeft(_leftValue) : onRight(_rightValue); }
 
-    public void voidFold(Act<A> onLeft, Act<B> onRight) 
+    public void voidFold(Act<A> onLeft, Act<B> onRight)
       { if (isLeft) onLeft(_leftValue); else onRight(_rightValue); }
 
     public Option<B> toOpt() { return rightValue; }
@@ -91,11 +91,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public 
+  public
 #if UNITY_IOS
     class
 #else
-    struct 
+    struct
 #endif
     LeftEitherBuilder<A> {
     public readonly A leftValue;
@@ -107,11 +107,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<A, B> r<B>() { return new Either<A, B>(leftValue); }
   }
 
-  public 
+  public
 #if UNITY_IOS
     class
 #else
-    struct 
+    struct
 #endif
     RightEitherBuilder<B> {
     public readonly B rightValue;
