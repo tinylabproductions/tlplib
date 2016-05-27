@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -13,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #else
   struct
 #endif
-  Either<A, B> {
+  Either<A, B> : IEquatable<Either<A, B>> {
     public static Either<A, B> Left(A value) { return new Either<A, B>(value); }
     public static Either<A, B> Right(B value) { return new Either<A, B>(value); }
 
@@ -31,6 +32,34 @@ namespace com.tinylabproductions.TLPLib.Functional {
       _rightValue = value;
       _isLeft = false;
     }
+
+    #region Equality
+
+    public bool Equals(Either<A, B> other) {
+      return _isLeft == other._isLeft && (
+        (_isLeft && Smooth.Collections.EqComparer<A>.Default.Equals(_leftValue, other._leftValue)) ||
+        (!_isLeft && Smooth.Collections.EqComparer<B>.Default.Equals(_rightValue, other._rightValue))
+      );
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is Either<A, B> && Equals((Either<A, B>) obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked {
+        var hashCode = Smooth.Collections.EqComparer<A>.Default.GetHashCode(_leftValue);
+        hashCode = (hashCode * 397) ^ Smooth.Collections.EqComparer<B>.Default.GetHashCode(_rightValue);
+        hashCode = (hashCode * 397) ^ _isLeft.GetHashCode();
+        return hashCode;
+      }
+    }
+
+    public static bool operator ==(Either<A, B> left, Either<A, B> right) { return left.Equals(right); }
+    public static bool operator !=(Either<A, B> left, Either<A, B> right) { return !left.Equals(right); }
+
+    #endregion
 
     public bool isLeft { get { return _isLeft; } }
     public bool isRight { get { return ! _isLeft; } }
