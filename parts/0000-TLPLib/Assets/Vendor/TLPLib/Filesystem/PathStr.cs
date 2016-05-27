@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   public struct PathStr : IEquatable<PathStr> {
@@ -9,6 +11,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public PathStr(string path) {
       this.path = path.Replace(Path.DirectorySeparatorChar == '/' ? '\\' : '/', Path.DirectorySeparatorChar);
     }
+    public static PathStr a(string path) { return new PathStr(path); }
 
     #region Equality
 
@@ -57,5 +60,16 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
     public override string ToString() { return path; }
     public string unixString => ToString().Replace('\\', '/');
+  }
+
+  public static class PathStrExts {
+    static Option<PathStr> onCondition(this string s, bool condition)
+      { return (condition && s != null).opt(new PathStr(s)); }
+
+    public static Option<PathStr> asFile(this string s)
+      { return s.onCondition(File.Exists(s)); }
+
+    public static Option<PathStr> asDirectory(this string s)
+      { return s.onCondition(Directory.Exists(s)); }
   }
 }
