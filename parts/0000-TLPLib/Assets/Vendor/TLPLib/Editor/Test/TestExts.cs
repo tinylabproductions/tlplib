@@ -45,7 +45,27 @@ namespace com.tinylabproductions.TLPLib.Test {
       either.shouldEqual(F.left<A, B>(expected), message);
     }
 
+    public static void shouldBeLeftEnum<A, B>(
+      this Either<A, B> either, A expected, string message = null
+    ) where A : IEnumerable {
+      foreach (var a in either.leftValue) {
+        a.shouldEqual(expected, message);
+        return;
+      }
+      either.shouldEqual(F.left<A, B>(expected), message);
+    }
+
     public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) {
+      either.shouldEqual(F.right<A, B>(expected), message);
+    }
+
+    public static void shouldBeRightEnum<A, B>(
+      this Either<A, B> either, B expected, string message = null
+    ) where B : IEnumerable {
+      foreach (var b in either.rightValue) {
+        b.shouldEqual(expected, message);
+        return;
+      }
       either.shouldEqual(F.right<A, B>(expected), message);
     }
 
