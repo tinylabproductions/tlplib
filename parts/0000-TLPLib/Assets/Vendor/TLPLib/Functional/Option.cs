@@ -29,6 +29,12 @@ public static class Option {
   public static Option<A> flatten<A>(this Option<Option<A>> opt) {
     return opt.isDefined ? opt.get : F.none<A>();
   }
+
+  public static Either<A, Option<B>> extract<A, B>(this Option<Either<A, B>> o) {
+    foreach (var e in o)
+      return e.fold(Either<A, Option<B>>.Left, b => Either<A, Option<B>>.Right(b.some()));
+    return Either<A, Option<B>>.Right(F.none<B>());
+  }
 }
 
 public
