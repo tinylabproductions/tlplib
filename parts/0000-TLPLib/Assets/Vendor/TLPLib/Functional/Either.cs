@@ -98,12 +98,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public A leftOrThrow { get {
       if (isLeft) return _leftValue;
-      throw new WrongEitherSideException($"Expected to have Left, but had {this}.");
+      throw new WrongEitherSideException($"Expected to have Left({typeof(A)}), but had {this}.");
     } }
 
     public B rightOrThrow { get {
       if (isRight) return _rightValue;
-      throw new WrongEitherSideException($"Expected to have Right, but had {this}.");
+      throw new WrongEitherSideException($"Expected to have Right({typeof(B)}), but had {this}.");
     } }
   }
 
