@@ -159,44 +159,88 @@ IComparable<$fullType>, IEquatable<$fullType> {
   }
 }"""
 
-  def eitherCsStr = params match {
-    case 1 => s"""
-public static Either<ImmutableList<A>, B> validation<A, B>(
+  def eitherCsStr = {
+    val tupledReturnType = s"Either<ImmutableList<A>, Tpl<$typeSigGenerics>>"
+
+    def tupleRights =
+"""
+  foreach (var b in e1.rightValue)
+    foreach (var c in e2.rightValue)
+      return Either<ImmutableList<A>, Tpl<P1, P2>>.Right(F.t(b, c));
+"""
+    def addTupleRights =
+s"""
+  foreach (var tpl in e1.rightValue)
+    foreach (var value in e2.rightValue)
+      return $tupledReturnType.Right(tpl.add(value));
+"""
+
+    def addErrors =
+s"""
+  var arr = e1.leftValue.fold(ImmutableList<A>.Empty, _ => _);
+  foreach (var a in e2.leftValue) arr = arr.Add(a);
+  return $tupledReturnType.Left(arr);
+"""
+
+    def addMultiErrors =
+s"""
+  var arr = e1.leftValue.fold(ImmutableList<A>.Empty, _ => _);
+  foreach (var arr2 in e2.leftValue)
+    foreach (var a in arr2) arr = arr.Add(a);
+  return $tupledReturnType.Left(arr);
+"""
+
+    params match {
+      case 1 => s"""
+public static Either<ImmutableList<A>, B> asValidation<A, B>(
   this Either<A, B> e1
 ) { return e1.mapLeft(ImmutableList.Create); }
       """
-    case 2 => s"""
-public static Either<ImmutableList<A>, Tpl<B, C>> validation<A, B, C>(
-  this Either<A, B> e1, Either<A, C> e2
+      case 2 => s"""
+public static Either<ImmutableList<A>, Tpl<P1, P2>> validateAnd<A, P1, P2>(
+  this Either<A, P1> e1, Either<A, P2> e2
 ) {
-  foreach (var b in e1.rightValue)
-    foreach (var c in e2.rightValue)
-      return Either<ImmutableList<A>, Tpl<B, C>>.Right(F.t(b, c));
+  $tupleRights
   var arr = ImmutableList<A>.Empty;
   foreach (var a in e1.leftValue) arr = arr.Add(a);
   foreach (var a in e2.leftValue) arr = arr.Add(a);
-  return Either<ImmutableList<A>, Tpl<B, C>>.Left(arr);
+  return Either<ImmutableList<A>, Tpl<P1, P2>>.Left(arr);
+}
+
+public static Either<ImmutableList<A>, Tpl<P1, P2>> and<A, P1, P2>(
+  this Either<ImmutableList<A>, P1> e1, Either<A, P2> e2
+) {
+  $tupleRights
+  $addErrors
+}
+
+public static Either<ImmutableList<A>, Tpl<P1, P2>> and<A, P1, P2>(
+  this Either<ImmutableList<A>, P1> e1, Either<ImmutableList<A>, P2> e2
+) {
+  $tupleRights
+  $addMultiErrors
 }
      """
-    case _ =>
-      val inputTplGenParams = TupleData.typeSigGenerics(genericParameterNames.dropRight(1))
-      val returnType = s"Either<ImmutableList<A>, Tpl<$typeSigGenerics>>"
-      s"""
-public static $returnType validation<A, $typeSigGenerics>(
+      case _ =>
+        val inputTplGenParams = TupleData.typeSigGenerics(genericParameterNames.dropRight(1))
+        s"""
+public static $tupledReturnType and<A, $typeSigGenerics>(
   this Either<ImmutableList<A>, Tpl<$inputTplGenParams>> e1,
   Either<A, ${genericParameterNames.last}> e2
 ) {
-  foreach (var tpl in e1.rightValue)
-    foreach (var value in e2.rightValue)
-      return $returnType.Right(tpl.add(value));
-  foreach (var _arr in e1.leftValue) {
-    var arr = _arr;
-    foreach (var a in e2.leftValue) arr = arr.Add(a);
-    return $returnType.Left(arr);
-  }
-  throw new IllegalStateException();
+  $addTupleRights
+  $addErrors
 }
-       """.stripMargin
+
+public static $tupledReturnType and<A, $typeSigGenerics>(
+  this Either<ImmutableList<A>, Tpl<$inputTplGenParams>> e1,
+  Either<ImmutableList<A>, ${genericParameterNames.last}> e2
+) {
+  $addTupleRights
+  $addMultiErrors
+}
+       """
+    }
   }
 }
 
