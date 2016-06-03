@@ -35,6 +35,9 @@ public static class Option {
       return e.fold(Either<A, Option<B>>.Left, b => Either<A, Option<B>>.Right(b.some()));
     return Either<A, Option<B>>.Right(F.none<B>());
   }
+
+  public static Option<Base> cast<Child, Base>(this Option<Child> o) where Child : Base
+    { return o.isDefined ? F.some((Base) o.get) : F.none<Base>(); }
 }
 
 public
