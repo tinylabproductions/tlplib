@@ -66,7 +66,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action)
       { future.onComplete(e => e.rightValue.each(action)); }
 
+    public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future)
+    { return future.map(e => e.rightValue); }
+
     public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action)
       { future.onComplete(e => e.leftValue.each(action)); }
+
+    public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future)
+    { return future.map(e => e.leftValue); }
   }
 }
