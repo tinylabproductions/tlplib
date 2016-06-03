@@ -153,34 +153,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public class OptionTestOrElseFunction {
-    [Test]
-    public void WhenSome() {
-      var option = new Option<string>("this is a set option");
-      option.orElse(() => new Option<string>("if it was not set now it is")).shouldEqual(option);
-    }
-    [Test]
-    public void WhenNone() {
-      var option = new Option<string>();
-      var newOption = new Option<string>("if it was not set now it is");
-      option.orElse(() => newOption).shouldEqual(newOption);
-    }
-  }
-
-  public class OptionTestOrElseValue {
-    [Test]
-    public void WhenSome() {
-      var option = new Option<string>("this is a set option");
-      option.orElse(new Option<string>("if it was not set now it is")).shouldEqual(option);
-    }
-    [Test]
-    public void WhenNone() {
-      var option = new Option<string>();
-      var newOption = new Option<string>("if it was not set now it is");
-      option.orElse(newOption).shouldEqual(newOption);
-    }
-  }
-
   public class OptionTestOrNull {
     [Test]
     public void WhenSome() {
@@ -211,6 +183,37 @@ namespace com.tinylabproductions.TLPLib.Functional {
       var ran = false;
       foreach (var number in test) ran = true;
       ran.shouldBeFalse();
+    }
+  }
+
+  public class OptionTestOperatorTrue {
+    [Test]
+    public void WhenTrue() {
+      var wasTrue = false;
+      if (F.some(3)) wasTrue = true;
+      wasTrue.shouldBeTrue();
+    }
+
+    [Test]
+    public void WhenFalse() {
+      var wasTrue = false;
+      if (F.none<int>()) wasTrue = true;
+      wasTrue.shouldBeFalse();
+    }
+  }
+
+  public class OptionTestOperatorOr {
+    [Test]
+    public void WhenSome() {
+      var option = new Option<string>("this is a set option");
+      (option || new Option<string>("if it was not set now it is")).shouldEqual(option);
+    }
+
+    [Test]
+    public void WhenNone() {
+      var option = new Option<string>();
+      var newOption = new Option<string>("if it was not set now it is");
+      (option || newOption).shouldEqual(newOption);
     }
   }
 }

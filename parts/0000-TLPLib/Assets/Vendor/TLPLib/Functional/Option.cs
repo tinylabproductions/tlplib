@@ -215,13 +215,11 @@ public
     return this;
   }
 
-  public Option<A> orElse(Fn<Option<A>> other) {
-    return isDefined ? this : other();
-  }
+  [Obsolete("Use opt1 || opt2")]
+  public Option<A> orElse(Fn<Option<A>> other) { return this || other(); }
 
-  public Option<A> orElse(Option<A> other) {
-    return isDefined ? this : other;
-  }
+  [Obsolete("Use opt1 || opt2")]
+  public Option<A> orElse(Option<A> other) { return this || other; }
 
   public B fold<B>(Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) {
     return isSome ? ifNonEmpty(get) : ifEmpty();
@@ -250,6 +248,22 @@ public
       ? F.some(F.t(get, opt2.get))
       : F.none<Tpl<A, B>>();
   }
+
+  public static bool operator true(Option<A> opt) { return opt.isDefined; }
+
+  /**
+    * Required by |.
+    * 
+    * http://stackoverflow.com/questions/686424/what-are-true-and-false-operators-in-c#comment43525525_686473
+    * The only situation where operator false matters, seems to be if MyClass also overloads 
+    * the operator &, in a suitable way. So you can say MyClass conj = GetMyClass1() & GetMyClass2();.
+    * Then with operator false you can short-circuit and say 
+    * MyClass conj = GetMyClass1() && GetMyClass2();, using && instead of &. That will only 
+    * evaluate the second operand if the first one is not "false".  
+    **/
+  public static bool operator false(Option<A> opt) { return opt.isEmpty; }
+
+  public static Option<A> operator |(Option<A> o1, Option<A> o2) { return o1 ? o1 : o2; }
 }
 
 public struct OptionEnumerator<A> {
