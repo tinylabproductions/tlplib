@@ -11,11 +11,16 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [SerializeField, HideInInspector] string _sceneName;
 
-    public string sceneName => Application.isEditor ? (scene ? scene.name : "") : _sceneName;
+    public string sceneName { get {
+#if UNITY_EDITOR
+      prepareForRuntime();
+#endif
+      return _sceneName;
+    } }
 
 #if UNITY_EDITOR
     public void prepareForRuntime() {
-      _sceneName = scene.name;
+      if (scene) _sceneName = scene.name;
     }
 #endif
   }
