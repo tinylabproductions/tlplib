@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public string getString(string name, string defaultValue) { return PlayerPrefs.GetString(name, defaultValue); }
     public void setString(string name, string value) { PlayerPrefs.SetString(name, value); }
     public int getInt(string name, int defaultValue) { return PlayerPrefs.GetInt(name, defaultValue); }
-    public uint getUint(string name, uint defaultValue) { return unchecked((uint)EditorPrefs.GetInt(name, unchecked((int)defaultValue))); }
+    public uint getUint(string name, uint defaultValue) { return unchecked((uint)PlayerPrefs.GetInt(name, unchecked((int)defaultValue))); }
     public void setInt(string name, int value) { PlayerPrefs.SetInt(name, value); }
     public void setUint(string name, uint value) { PlayerPrefs.SetInt(name, unchecked((int)value)); }
     public float getFloat(string name, float defaultValue) { return PlayerPrefs.GetFloat(name, defaultValue); }
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public int getInt(string name, int defaultValue) { return EditorPrefs.GetInt(name, defaultValue); }
     public uint getUint(string name, uint defaultValue) { return unchecked((uint)EditorPrefs.GetInt(name, unchecked((int)defaultValue))); }
     public void setInt(string name, int value) { EditorPrefs.SetInt(name, value); }
-    public void setUint(string name, uint value) { PlayerPrefs.SetInt(name, unchecked((int)value)); }
+    public void setUint(string name, uint value) { EditorPrefs.SetInt(name, unchecked((int)value)); }
     public float getFloat(string name, float defaultValue) { return EditorPrefs.GetFloat(name, defaultValue); }
     public void setFloat(string name, float value) { EditorPrefs.SetFloat(name, value); }
     public void save() {}
