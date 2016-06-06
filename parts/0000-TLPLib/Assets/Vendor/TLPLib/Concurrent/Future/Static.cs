@@ -41,6 +41,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return a<A>(p => ASync.WithDelay(seconds, () => p.complete(value)));
     }
 
+    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue) {
+      return a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(createValue())));
+    }
+
+    public static Future<A> delayFrames<A>(int framesToSkip, A value) {
+      return a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(value)));
+    }
+
     /**
      * Converts enumerable of futures into future of enumerable that is completed
      * when all futures complete.
