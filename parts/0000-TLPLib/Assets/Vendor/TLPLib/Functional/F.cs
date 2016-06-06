@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -58,6 +59,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
       var arr = new A[size];
       for (var idx = 0; idx < size; idx++) arr[idx] = creator(idx);
       return arr;
+    }
+
+    public static ImmutableArray<A> iArrayFill<A>(int size, Fn<int, A> creator) {
+      var arr = ImmutableArray.CreateBuilder<A>(size);
+      for (var idx = 0; idx < size; idx++) arr[idx] = creator(idx);
+      return arr.MoveToImmutable();
     }
 
     public static List<A> listFill<A>(int size, Fn<int, A> creator) {
