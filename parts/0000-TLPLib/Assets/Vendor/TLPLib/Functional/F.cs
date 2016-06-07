@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static ImmutableArray<A> iArrayFill<A>(int size, Fn<int, A> creator) {
       var arr = ImmutableArray.CreateBuilder<A>(size);
-      for (var idx = 0; idx < size; idx++) arr[idx] = creator(idx);
+      for (var idx = 0; idx < size; idx++) arr.Add(creator(idx));
       return arr.MoveToImmutable();
     }
 
