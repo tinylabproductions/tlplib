@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
