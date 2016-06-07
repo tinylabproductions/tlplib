@@ -16,17 +16,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * need processing, you should use `if (Log.isDebug) Log.rdebug("foo=" + foo);` style.
    **/
   public static class Log {
-    public enum Level { NONE, ERROR, WARN, INFO, DEBUG }
+    public enum Level { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
 
     public static readonly Level defaultLogLevel = 
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
 
     public static ILog defaultLogger => UnityLog.instance;
 
-    /* Compile time version of debug. */
-    [Conditional("UNITY_EDITOR"), Conditional("LOG_DEBUG")]
-    public static void cdebug(object o) { rdebug(o); }
-
+    public static void verbose(object o) { UnityLog.instance.verbose(o); }
+    public static bool isVerbose => UnityLog.instance.isVerbose;
+    
     /* Runtime version of debug. */
     public static void rdebug(object o) { UnityLog.instance.debug(o); }
     public static bool isDebug => UnityLog.instance.isDebug;
@@ -98,6 +97,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
   public abstract class LogBase : ILog {
     public Log.Level level { get; set; } = Log.defaultLogLevel;
 
+    public bool isVerbose => level >= Log.Level.VERBOSE;
+    public void verbose(object o) { if (isVerbose) logVerbose($"[VERBOSE]> {o}"); }
+    protected abstract void logVerbose(string s);
+
     public bool isDebug => level >= Log.Level.DEBUG;
     public void debug(object o) { if (isDebug) logDebug($"[DEBUG]> {o}"); }
     protected abstract void logDebug(string s);
@@ -121,6 +124,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
 
+    protected override void logVerbose(string s) { Debug.Log(s); }
     protected override void logDebug(string s) { Debug.Log(s); }
     protected override void logInfo(string s) { Debug.Log(s); }
     protected override void logWarn(string s) { Debug.LogWarning(s); }
@@ -131,6 +135,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly NoOpLog instance = new NoOpLog();
     NoOpLog() {}
 
+    protected override void logVerbose(string s) {}
     protected override void logDebug(string s) {}
     protected override void logInfo(string s) {}
     protected override void logWarn(string s) {}
