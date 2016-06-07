@@ -22,13 +22,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       public ConfigRetrievalError(string message) : base(message) {}
     }
 
+    public class ConfigTimeoutError : ConfigRetrievalError {
+      public readonly string reportingUrl;
+      public readonly Future.Timeout timeout;
+
+      public ConfigTimeoutError(string reportingUrl, Future.Timeout timeout)
+        : base($"Timed out (url={reportingUrl}): {timeout}")
+      {
+        this.reportingUrl = reportingUrl;
+        this.timeout = timeout;
+      }
+    }
+
     public class ConfigWWWError : ConfigRetrievalError {
-      /* This is the reporting URL */
-      public readonly string url;
+      public readonly string reportingUrl;
       public readonly WWWError error;
 
-      public ConfigWWWError(string url, WWWError error) : base($"WWW error (url={url}): {error.error}") {
-        this.url = url;
+      public ConfigWWWError(string reportingUrl, WWWError error) 
+        : base($"WWW error (url={reportingUrl}): {error.error}")
+      {
+        this.reportingUrl = reportingUrl;
         this.error = error;
       }
     }
@@ -107,22 +120,30 @@ namespace com.tinylabproductions.TLPLib.Configuration {
      * Throws WrongContentType if unexpected content type is found.
      **/
     public static Future<Either<ConfigError, string>> fetch(
-      Urls urls, string expectedContentType="application/json"
+      Urls urls, float timeoutS, string expectedContentType="application/json"
     ) {
-      return new WWW(urls.fetchUrl).wwwFuture().map(wwwE => wwwE.fold(
-        err => Either<ConfigError, string>.Left(new ConfigWWWError(urls.reportUrl, err)),
-        www => {
-          var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
-          // Sometimes we get redirected to internet paygate, which returns HTML
-          // instead of our content.
-          if (contentType != expectedContentType)
-            return Either<ConfigError, string>.Left(
-              new WrongContentType(urls.reportUrl, expectedContentType, contentType)
-            );
+      return new WWW(urls.fetchUrl).wwwFuture()
+        .timeout(timeoutS).map(wwwE => 
+          wwwE.map(
+            timeout => (ConfigRetrievalError) new ConfigTimeoutError(urls.reportUrl, timeout),
+            e => e.mapLeft(err => (ConfigRetrievalError) new ConfigWWWError(urls.reportUrl, err))
+          )
+          .flatten()
+        )
+        .map(wwwE => wwwE.fold(
+          Either<ConfigError, string>.Left,
+          www => {
+            var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
+            // Sometimes we get redirected to internet paygate, which returns HTML
+            // instead of our content.
+            if (contentType != expectedContentType)
+              return Either<ConfigError, string>.Left(
+                new WrongContentType(urls.reportUrl, expectedContentType, contentType)
+              );
 
-          return Either<ConfigError, string>.Right(www.text);
-        })
-      );
+            return Either<ConfigError, string>.Right(www.text);
+          })
+        );
     }
 
     public static Either<ParsingError, IConfig> parseJson(string json) {
@@ -133,9 +154,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     public static Future<Either<ConfigError, IConfigWithSource>> apply(
-      Urls urls, string expectedContentType="application/json"
+      Urls urls, float timeoutS, string expectedContentType="application/json"
     ) {
-      return fetch(urls, expectedContentType).map(e =>
+      return fetch(urls, timeoutS, expectedContentType).map(e =>
         e.flatMapRight(json =>
           parseJson(json).map(
             err => (ConfigError)err.withUrl(urls.reportUrl),
