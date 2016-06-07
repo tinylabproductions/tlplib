@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
@@ -118,6 +119,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return Future<Unit>.async(p => ASync.StartCoroutine(coroutineEnum(p, enumerator)));
     }
 
+    public static Future<A> fromBusyLoop<A>(
+      Fn<Option<A>> checker, YieldInstruction delay=null
+    ) { return Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker))); }
+
     /* Waits at most `timeoutSeconds` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
     public static Future<Either<B, A>> timeout<A, B>(
@@ -142,6 +147,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         timeoutSeconds,
         () => new Timeout(timeoutSeconds)
       );
+    }
+
+    static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Fn<Option<A>> checker) {
+      var valOpt = checker();
+      while (valOpt.isEmpty) {
+        yield return delay;
+        valOpt = checker();
+      }
+      p.complete(valOpt.get);
     }
 
     static IEnumerator coroutineEnum(Promise<Unit> p, IEnumerator enumerator) {
