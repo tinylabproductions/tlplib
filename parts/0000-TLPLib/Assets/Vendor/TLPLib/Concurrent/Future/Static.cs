@@ -115,11 +115,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
     (this IEnumerable<Future<Either<A, B>>> enumerable) {
+      return enumerable.firstOfSuccessfulCollect(_ => _.ToArray());
+;   }
+
+    public static Future<Either<Collection, B>> firstOfSuccessfulCollect<A, B, Collection>(
+      this IEnumerable<Future<Either<A, B>>> enumerable,
+      Fn<IEnumerable<A>, Collection> collector
+    ) {
       var futures = enumerable.ToArray();
       return futures.firstOfSuccessful().map(opt => opt.fold(
         /* If this future is completed, then all futures are completed with lefts. */
-        () => Either<A[], B>.Left(futures.Select(f => f.value.get.leftValue.get).ToArray()),
-        Either<A[], B>.Right
+        () => Either<Collection, B>.Left(collector(futures.Select(f => f.value.get.leftValue.get))),
+        Either<Collection, B>.Right
       ));
     }
 
