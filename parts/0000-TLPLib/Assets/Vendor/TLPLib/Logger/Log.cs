@@ -76,6 +76,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   public interface ILog {
     Log.Level level { get; set; }
+    void verbose(object o);
+    bool isVerbose { get; }
     /* Runtime version of debug. */
     void debug(object o);
     bool isDebug { get; }
