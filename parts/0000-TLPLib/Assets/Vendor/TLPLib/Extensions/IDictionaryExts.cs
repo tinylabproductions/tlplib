@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static V getOrUpdate<K, V>(
      this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
-   ) {
+    ) {
       return dict.getOrElse(key, () => {
         var v = ifNotFound();
         dict.Add(key, v);
@@ -25,6 +25,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       V outVal;
       return dict.TryGetValue(key, out outVal) ? outVal : orElse();
+    }
+
+    /* as #[], but has a better error message */
+    public static V a<K, V>(this IDictionary<K, V> dict, K key) {
+      foreach (var val in dict.get(key)) return val;
+      throw new KeyNotFoundException($"Cannot find {key} in {dict.asString()}");
     }
   }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public class BiMap<A, B> : IEnumerable<KeyValuePair<A, B>>  {
@@ -33,12 +34,12 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public Option<A> get(B key) { return b2a.get(key); }
 
     public B this[A key] {
-      get { return a2b[key]; }
+      get { return a2b.a(key); }
       set { Add(key, value); }
     }
 
     public A this[B key] {
-      get { return b2a[key]; }
+      get { return b2a.a(key); }
       set { Add(value, key); }
     }
 
