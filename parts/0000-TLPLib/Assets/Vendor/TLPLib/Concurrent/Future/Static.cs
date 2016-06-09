@@ -16,13 +16,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       public override string ToString() { return $"{nameof(Timeout)}[in {timeoutSeconds}s]"; }
     }
-
+    
     public class TimeoutException : Exception {
       public readonly Timeout timeout;
 
       public TimeoutException(Timeout timeout) : base($"Future timed out: {timeout}") {
         this.timeout = timeout;
       }
+    }
+
+    public struct Timing {
+      public readonly float seconds;
+
+      public Timing(float seconds) { this.seconds = seconds; }
+
+      public override string ToString() => $"{nameof(Timing)}({seconds}s)";
     }
 
     public static Future<A> a<A>(Act<Promise<A>> action)
@@ -107,11 +115,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
     (this IEnumerable<Future<Either<A, B>>> enumerable) {
+      return enumerable.firstOfSuccessfulCollect(_ => _.ToArray());
+;   }
+
+    public static Future<Either<Collection, B>> firstOfSuccessfulCollect<A, B, Collection>(
+      this IEnumerable<Future<Either<A, B>>> enumerable,
+      Fn<IEnumerable<A>, Collection> collector
+    ) {
       var futures = enumerable.ToArray();
       return futures.firstOfSuccessful().map(opt => opt.fold(
         /* If this future is completed, then all futures are completed with lefts. */
-        () => Either<A[], B>.Left(futures.Select(f => f.value.get.leftValue.get).ToArray()),
-        Either<A[], B>.Right
+        () => Either<Collection, B>.Left(collector(futures.Select(f => f.value.get.leftValue.get))),
+        Either<Collection, B>.Right
       ));
     }
 
@@ -147,6 +162,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         timeoutSeconds,
         () => new Timeout(timeoutSeconds)
       );
+    }
+
+    /** Measures how much time has passed from call to timed to future completion. **/
+    public static Future<Tpl<A, Timing>> timed<A>(this Future<A> future) {
+      var startTime = Time.realtimeSinceStartup;
+      return future.map(a => {
+        var time = Time.realtimeSinceStartup - startTime;
+        return F.t(a, new Timing(time));
+      });
     }
 
     static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Fn<Option<A>> checker) {

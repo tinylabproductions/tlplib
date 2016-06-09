@@ -23,33 +23,34 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     }
 
     public class ConfigTimeoutError : ConfigRetrievalError {
-      public readonly string reportingUrl;
+      public readonly Urls urls;
       public readonly Future.Timeout timeout;
 
-      public ConfigTimeoutError(string reportingUrl, Future.Timeout timeout)
-        : base($"Timed out (url={reportingUrl}): {timeout}")
+      public ConfigTimeoutError(Urls urls, Future.Timeout timeout)
+        : base($"Timed out (url={urls}): {timeout}")
       {
-        this.reportingUrl = reportingUrl;
+        this.urls = urls;
         this.timeout = timeout;
       }
     }
 
     public class ConfigWWWError : ConfigRetrievalError {
-      public readonly string reportingUrl;
+      public readonly Urls urls;
       public readonly WWWError error;
 
-      public ConfigWWWError(string reportingUrl, WWWError error) 
-        : base($"WWW error (url={reportingUrl}): {error.error}")
+      public ConfigWWWError(Urls urls, WWWError error) 
+        : base($"WWW error (urls={urls}): {error.error}")
       {
-        this.reportingUrl = reportingUrl;
+        this.urls = urls;
         this.error = error;
       }
     }
 
     public class WrongContentType : ConfigRetrievalError {
-      public readonly string url, expectedContentType, actualContentType;
+      public readonly Urls url;
+      public readonly string expectedContentType, actualContentType;
 
-      public WrongContentType(string url, string expectedContentType, string actualContentType)
+      public WrongContentType(Urls url, string expectedContentType, string actualContentType)
       : base(
         $"Expected 'Content-Type' in '{url}' to be '{expectedContentType}', but it was '{actualContentType}'"
       ) {
@@ -59,32 +60,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       }
     }
 
-    /** Errors which happen because the developers screwed up config content. */
-    public class ConfigContentError : ConfigError {
-      public ConfigContentError(string message) : base(message) {}
-    }
-
-    public class ParsingErrorWithUrl : ConfigContentError {
-      public readonly string url;
-      public readonly ParsingError error;
-
-      public ParsingErrorWithUrl(string url, ParsingError error) : base(
-        $"Cannot parse url '{url}' contents as JSON object:\n{error.jsonString}"
-      ) {
-        this.url = url;
-        this.error = error;
-      }
-    }
-
     public struct ParsingError {
       public readonly string jsonString;
 
       public ParsingError(string jsonString) {
         this.jsonString = jsonString;
-      }
-
-      public ParsingErrorWithUrl withUrl(string url) {
-        return new ParsingErrorWithUrl(url, this);
       }
     }
 
@@ -125,8 +105,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return new WWW(urls.fetchUrl).wwwFuture()
         .timeout(timeoutS).map(wwwE => 
           wwwE.map(
-            timeout => (ConfigRetrievalError) new ConfigTimeoutError(urls.reportUrl, timeout),
-            e => e.mapLeft(err => (ConfigRetrievalError) new ConfigWWWError(urls.reportUrl, err))
+            timeout => (ConfigRetrievalError) new ConfigTimeoutError(urls, timeout),
+            e => e.mapLeft(err => (ConfigRetrievalError) new ConfigWWWError(urls, err))
           )
           .flatten()
         )
@@ -138,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
             // instead of our content.
             if (contentType != expectedContentType)
               return Either<ConfigError, string>.Left(
-                new WrongContentType(urls.reportUrl, expectedContentType, contentType)
+                new WrongContentType(urls, expectedContentType, contentType)
               );
 
             return Either<ConfigError, string>.Right(www.text);
@@ -151,19 +131,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return jsonDict == null
         ? Either<ParsingError, IConfig>.Left(new ParsingError(json))
         : Either<ParsingError, IConfig>.Right(new Config(jsonDict));
-    }
-
-    public static Future<Either<ConfigError, IConfigWithSource>> apply(
-      Urls urls, float timeoutS, string expectedContentType="application/json"
-    ) {
-      return fetch(urls, timeoutS, expectedContentType).map(e =>
-        e.flatMapRight(json =>
-          parseJson(json).map(
-            err => (ConfigError)err.withUrl(urls.reportUrl),
-            cfg => new IConfigWithSource(cfg, json)
-          )
-        )
-      );
     }
 
     // Implementation
