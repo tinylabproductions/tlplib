@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Future that will never be completed. */
-    public static readonly Future<A> unfullfilled = 
+    public static readonly Future<A> unfulfilled = 
       new Future<A>(new OneOf<A, UnfullfilledFuture, FutureImpl<A>>(new UnfullfilledFuture()));
 
     /* Asynchronous heap based future which can be completed later. */
@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<B> map<B>(Fn<A, B> mapper) {
       return implementation.fold(
         v => Future<B>.successful(mapper(v)), 
-        _ => Future<B>.unfullfilled,
+        _ => Future<B>.unfulfilled,
         f => Future<B>.async(p => f.onComplete(v => p.complete(mapper(v))))
       );
     }
@@ -67,14 +67,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<B> flatMap<B>(Fn<A, Future<B>> mapper) {
       return implementation.fold(
         mapper,
-        _ => Future<B>.unfullfilled,
+        _ => Future<B>.unfulfilled,
         f => Future<B>.async(p => f.onComplete(v => mapper(v).onComplete(p.complete)))
       );
     }
 
     /* Waits until both futures yield a result. */
     public Future<Tpl<A, B>> zip<B>(Future<B> fb) {
-      if (implementation.isB || fb.implementation.isB) return Future<Tpl<A, B>>.unfullfilled;
+      if (implementation.isB || fb.implementation.isB) return Future<Tpl<A, B>>.unfulfilled;
       if (implementation.isA && fb.implementation.isA)
         return Future.successful(F.t(implementation.__unsafeGetA, fb.implementation.__unsafeGetA));
 

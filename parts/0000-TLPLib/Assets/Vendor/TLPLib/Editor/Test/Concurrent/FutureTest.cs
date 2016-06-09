@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static readonly Fn<string, Either<int, string>> right = F.right<int, string>;
 
     public static IEnumerable<Future<A>> addUnfullfilled<A>(this IEnumerable<Future<A>> futures)
-      { return futures.Concat(Future.unfullfiled<A>().Yield()); }
+      { return futures.Concat(Future.unfulfilled<A>().Yield()); }
 
     public static void shouldBeSuccessful<A>(this Future<A> f, A a) {
       f.type.shouldEqual(FutureType.Successful);
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenUnfullfilled() {
-      var f = Future.unfullfiled<int>();
+      var f = Future.unfulfilled<int>();
       var result = 0;
       f.onComplete(i => result = i);
       result.shouldEqual(0, "it should not run the function");
@@ -67,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenUnfullfilled() {
-      Future<int>.unfullfilled.map(mapper).shouldBeUnfullfilled();
+      Future<int>.unfulfilled.map(mapper).shouldBeUnfullfilled();
     }
 
     [Test]
@@ -84,11 +84,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   public class FutureTestFlatMap {
     readonly Fn<int, Future<int>> successfulMapper = i => Future.successful(i * 2);
-    readonly Fn<int, Future<int>> unfullfilledMapper = i => Future<int>.unfullfilled;
+    readonly Fn<int, Future<int>> unfullfilledMapper = i => Future<int>.unfulfilled;
 
     readonly Future<int>
       successful = Future.successful(1),
-      unfullfilled = Future<int>.unfullfilled;
+      unfullfilled = Future<int>.unfulfilled;
 
     [Test]
     public void SuccessfulToSuccessful() {
@@ -155,7 +155,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var called = false;
       var f2 = f.flatMap(_ => {
         called = true;
-        return Future<int>.unfullfilled;
+        return Future<int>.unfulfilled;
       });
       f2.type.shouldEqual(FutureType.ASync);
       f2.value.shouldBeNone();
@@ -192,8 +192,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WhenEitherSideUnfullfilled() {
       foreach (var t in new[] {
-        F.t("X-O", Future.unfullfiled<int>(), Future.successful(1)),
-        F.t("O-X", Future.successful(1), Future.unfullfiled<int>())
+        F.t("X-O", Future.unfulfilled<int>(), Future.successful(1)),
+        F.t("O-X", Future.successful(1), Future.unfulfilled<int>())
       }) t.ua((name, fa, fb) => fa.zip(fb).shouldBeUnfullfilled(name));
     }
 
@@ -226,33 +226,33 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WhenHasCompleted() {
       new[] {
-        Future.unfullfiled<int>(),
-        Future.unfullfiled<int>(),
+        Future.unfulfilled<int>(),
+        Future.unfulfilled<int>(),
         Future.successful(1),
-        Future.unfullfiled<int>(),
-        Future.unfullfiled<int>()
+        Future.unfulfilled<int>(),
+        Future.unfulfilled<int>()
       }.firstOf().value.get.shouldEqual(1);
     }
 
     [Test]
     public void WhenHasMultipleCompleted() {
       new[] {
-        Future.unfullfiled<int>(),
-        Future.unfullfiled<int>(),
+        Future.unfulfilled<int>(),
+        Future.unfulfilled<int>(),
         Future.successful(1),
-        Future.unfullfiled<int>(),
+        Future.unfulfilled<int>(),
         Future.successful(2),
-        Future.unfullfiled<int>()
+        Future.unfulfilled<int>()
       }.firstOf().value.get.shouldEqual(1);
     }
 
     [Test]
     public void WhenNoCompleted() {
       new[] {
-        Future.unfullfiled<int>(),
-        Future.unfullfiled<int>(),
-        Future.unfullfiled<int>(),
-        Future.unfullfiled<int>()
+        Future.unfulfilled<int>(),
+        Future.unfulfilled<int>(),
+        Future.unfulfilled<int>(),
+        Future.unfulfilled<int>()
       }.firstOf().value.shouldEqual(F.none<int>());
     }
   }

@@ -2,45 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
-    public struct Timeout {
-      public readonly float timeoutSeconds;
-
-      public Timeout(float timeoutSeconds) {
-        this.timeoutSeconds = timeoutSeconds;
-      }
-
-      public override string ToString() { return $"{nameof(Timeout)}[in {timeoutSeconds}s]"; }
-    }
-    
-    public class TimeoutException : Exception {
-      public readonly Timeout timeout;
-
-      public TimeoutException(Timeout timeout) : base($"Future timed out: {timeout}") {
-        this.timeout = timeout;
-      }
-    }
-
-    public struct Timing {
-      public readonly float seconds;
-
-      public Timing(float seconds) { this.seconds = seconds; }
-
-      public override string ToString() => $"{nameof(Timing)}({seconds}s)";
-    }
-
     public static Future<A> a<A>(Act<Promise<A>> action)
       { return Future<A>.async(action); }
 
     public static Future<A> successful<A>(A value)
       { return Future<A>.successful(value); }
 
-    public static Future<A> unfullfiled<A>()
-      { return Future<A>.unfullfilled; }
+    public static Future<A> unfulfilled<A>()
+      { return Future<A>.unfulfilled; }
 
     public static Future<A> delay<A>(float seconds, Fn<A> createValue) {
       return a<A>(p => ASync.WithDelay(seconds, () => p.complete(createValue())));
@@ -116,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
     (this IEnumerable<Future<Either<A, B>>> enumerable) {
       return enumerable.firstOfSuccessfulCollect(_ => _.ToArray());
-;   }
+    }
 
     public static Future<Either<Collection, B>> firstOfSuccessfulCollect<A, B, Collection>(
       this IEnumerable<Future<Either<A, B>>> enumerable,
@@ -155,21 +130,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Waits at most `timeoutSeconds` for the future to complete. Completes with
        TimeoutException<A> on timeout. */
-    public static Future<Either<Timeout, A>> timeout<A>(
+    public static Future<Either<Duration, A>> timeout<A>(
       this Future<A> future, float timeoutSeconds
-    ) {
-      return future.timeout(
-        timeoutSeconds,
-        () => new Timeout(timeoutSeconds)
-      );
-    }
+    ) => future.timeout(timeoutSeconds, () => new Duration(timeoutSeconds));
 
     /** Measures how much time has passed from call to timed to future completion. **/
-    public static Future<Tpl<A, Timing>> timed<A>(this Future<A> future) {
+    public static Future<Tpl<A, Duration>> timed<A>(this Future<A> future) {
       var startTime = Time.realtimeSinceStartup;
       return future.map(a => {
         var time = Time.realtimeSinceStartup - startTime;
-        return F.t(a, new Timing(time));
+        return F.t(a, new Duration(time));
       });
     }
 
