@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       }
     }
 
-    public struct Urls {
+    public struct Urls : IEquatable<Urls> {
       // C# calls URLs URIs. See http://stackoverflow.com/a/1984225/935259 for distinction.
       /** Actual URL this config needs to be fetched. **/
       public readonly Uri fetchUrl;
@@ -78,6 +78,29 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         this.fetchUrl = fetchUrl;
         this.reportUrl = reportUrl;
       }
+
+      public override string ToString() => 
+        $"{nameof(Config)}.{nameof(Urls)}[fetch={fetchUrl}, report={reportUrl}]";
+
+      #region Equality
+
+      public bool Equals(Urls other) {
+        return Equals(fetchUrl, other.fetchUrl) && Equals(reportUrl, other.reportUrl);
+      }
+
+      public override bool Equals(object obj) {
+        if (ReferenceEquals(null, obj)) return false;
+        return obj is Urls && Equals((Urls) obj);
+      }
+
+      public override int GetHashCode() {
+        unchecked { return ((fetchUrl != null ? fetchUrl.GetHashCode() : 0) * 397) ^ (reportUrl != null ? reportUrl.GetHashCode() : 0); }
+      }
+
+      public static bool operator ==(Urls left, Urls right) { return left.Equals(right); }
+      public static bool operator !=(Urls left, Urls right) { return !left.Equals(right); }
+
+      #endregion
     }
 
     /**
