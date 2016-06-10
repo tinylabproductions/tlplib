@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
@@ -9,56 +10,49 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Configuration {
   /* See IConfig. */
   public class Config : ConfigBase {
-    public abstract class ConfigError {
+    #region Fetch errors
+
+    public abstract class ConfigFetchError {
+      public readonly Urls urls;
       public readonly string message;
 
-      protected ConfigError(string message) { this.message = message; }
-
-      public override string ToString() { return $"{nameof(ConfigError)}[{message}]"; }
-    }
-
-    /** Errors which happen because retrieval fails. */
-    public class ConfigRetrievalError : ConfigError {
-      public ConfigRetrievalError(string message) : base(message) {}
-    }
-
-    public class ConfigTimeoutError : ConfigRetrievalError {
-      public readonly Urls urls;
-      public readonly Future.Timeout timeout;
-
-      public ConfigTimeoutError(Urls urls, Future.Timeout timeout)
-        : base($"Timed out (url={urls}): {timeout}")
-      {
+      protected ConfigFetchError(Urls urls, string message) {
+        this.message = message;
         this.urls = urls;
-        this.timeout = timeout;
       }
+
+      public override string ToString() { return $"{nameof(ConfigFetchError)}[{urls}, {message}]"; }
     }
 
-    public class ConfigWWWError : ConfigRetrievalError {
-      public readonly Urls urls;
+    public class ConfigTimeoutError : ConfigFetchError {
+      public readonly Duration timeout;
+
+      public ConfigTimeoutError(Urls urls, Duration timeout)
+      : base(urls, $"Timed out: {timeout}")
+      { this.timeout = timeout; }
+    }
+
+    public class ConfigWWWError : ConfigFetchError {
       public readonly WWWError error;
 
       public ConfigWWWError(Urls urls, WWWError error) 
-        : base($"WWW error (urls={urls}): {error.error}")
-      {
-        this.urls = urls;
-        this.error = error;
-      }
+      : base(urls, $"WWW error: {error.error}")
+      { this.error = error; }
     }
 
-    public class WrongContentType : ConfigRetrievalError {
-      public readonly Urls url;
+    public class WrongContentType : ConfigFetchError {
       public readonly string expectedContentType, actualContentType;
 
-      public WrongContentType(Urls url, string expectedContentType, string actualContentType)
+      public WrongContentType(Urls urls, string expectedContentType, string actualContentType)
       : base(
-        $"Expected 'Content-Type' in '{url}' to be '{expectedContentType}', but it was '{actualContentType}'"
+        urls, $"Expected 'Content-Type' to be '{expectedContentType}', but it was '{actualContentType}'"
       ) {
-        this.url = url;
         this.expectedContentType = expectedContentType;
         this.actualContentType = actualContentType;
       }
     }
+
+    #endregion
 
     public struct ParsingError {
       public readonly string jsonString;
@@ -68,22 +62,19 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       }
     }
 
-    public struct IConfigWithSource {
-      public readonly IConfig config;
-      public readonly string sourceJson;
-
-      public IConfigWithSource(IConfig config, string sourceJson) {
-        this.config = config;
-        this.sourceJson = sourceJson;
-      }
-    }
-
     public struct Urls {
-      public readonly string fetchUrl, reportUrl;
+      // C# calls URLs URIs. See http://stackoverflow.com/a/1984225/935259 for distinction.
+      /** Actual URL this config needs to be fetched. **/
+      public readonly Uri fetchUrl;
+      /** 
+       * URL used in reporting. For example you might want to not 
+       * include timestamp when sending the URL to your error logger.
+       **/
+      public readonly Uri reportUrl;
 
-      public Urls(string fetchUrl) : this(fetchUrl, fetchUrl) {}
+      public Urls(Uri fetchUrl) : this(fetchUrl, fetchUrl) {}
 
-      public Urls(string fetchUrl, string reportUrl) {
+      public Urls(Uri fetchUrl, Uri reportUrl) {
         this.fetchUrl = fetchUrl;
         this.reportUrl = reportUrl;
       }
@@ -92,36 +83,31 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     /**
      * Fetches JSON config from URL. Checks its content type.
      *
-     * If reportUrl != null, uses that in error reports. One use of it is adding a
-     * timestamp query string parameter to the request URL to avoid caching, but using
-     * an url without timestamp when reporting errors to your error tracker, because
-     * otherwise one error can trigger a thousand errors because the url always changes.
-     *
      * Throws WrongContentType if unexpected content type is found.
      **/
-    public static Future<Either<ConfigError, string>> fetch(
+    public static Future<Either<ConfigFetchError, string>> fetch(
       Urls urls, float timeoutS, string expectedContentType="application/json"
     ) {
-      return new WWW(urls.fetchUrl).wwwFuture()
+      return new WWW(urls.fetchUrl.ToString()).wwwFuture()
         .timeout(timeoutS).map(wwwE => 
           wwwE.map(
-            timeout => (ConfigRetrievalError) new ConfigTimeoutError(urls, timeout),
-            e => e.mapLeft(err => (ConfigRetrievalError) new ConfigWWWError(urls, err))
+            timeout => (ConfigFetchError) new ConfigTimeoutError(urls, timeout),
+            e => e.mapLeft(err => (ConfigFetchError) new ConfigWWWError(urls, err))
           )
           .flatten()
         )
         .map(wwwE => wwwE.fold(
-          Either<ConfigError, string>.Left,
+          Either<ConfigFetchError, string>.Left,
           www => {
             var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
             // Sometimes we get redirected to internet paygate, which returns HTML
             // instead of our content.
             if (contentType != expectedContentType)
-              return Either<ConfigError, string>.Left(
+              return Either<ConfigFetchError, string>.Left(
                 new WrongContentType(urls, expectedContentType, contentType)
               );
 
-            return Either<ConfigError, string>.Right(www.text);
+            return Either<ConfigFetchError, string>.Right(www.text);
           })
         );
     }
@@ -226,43 +212,43 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region either getters
 
-    public override Either<ConfigFetchError, object> eitherObject(string key)
+    public override Either<Configuration.ConfigFetchError, object> eitherObject(string key)
     { return get(key, objectParser); }
 
-    public override Either<ConfigFetchError, string> eitherString(string key)
+    public override Either<Configuration.ConfigFetchError, string> eitherString(string key)
     { return get(key, stringParser); }
 
-    public override Either<ConfigFetchError, int> eitherInt(string key)
+    public override Either<Configuration.ConfigFetchError, int> eitherInt(string key)
     { return get(key, intParser); }
 
-    public override Either<ConfigFetchError, uint> eitherUInt(string key)
+    public override Either<Configuration.ConfigFetchError, uint> eitherUInt(string key)
     { return get(key, uintParser); }
 
-    public override Either<ConfigFetchError, long> eitherLong(string key)
+    public override Either<Configuration.ConfigFetchError, long> eitherLong(string key)
     { return get(key, longParser); }
 
-    public override Either<ConfigFetchError, ulong> eitherULong(string key)
+    public override Either<Configuration.ConfigFetchError, ulong> eitherULong(string key)
     { return get(key, ulongParser); }
 
-    public override Either<ConfigFetchError, float> eitherFloat(string key)
+    public override Either<Configuration.ConfigFetchError, float> eitherFloat(string key)
     { return get(key, floatParser); }
 
-    public override Either<ConfigFetchError, double> eitherDouble(string key)
+    public override Either<Configuration.ConfigFetchError, double> eitherDouble(string key)
     { return get(key, doubleParser); }
 
-    public override Either<ConfigFetchError, bool> eitherBool(string key)
+    public override Either<Configuration.ConfigFetchError, bool> eitherBool(string key)
     { return get(key, boolParser); }
 
-    public override Either<ConfigFetchError, DateTime> eitherDateTime(string key)
+    public override Either<Configuration.ConfigFetchError, DateTime> eitherDateTime(string key)
     { return get(key, dateTimeParser); }
 
-    public override Either<ConfigFetchError, IConfig> eitherSubConfig(string key) {
+    public override Either<Configuration.ConfigFetchError, IConfig> eitherSubConfig(string key) {
       return get(key, jsClassParser).mapRight(n =>
         (IConfig)new Config(root, n, scope == "" ? key : scope + "." + key)
       );
     }
 
-    public override Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key) {
+    public override Either<Configuration.ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key) {
       return eitherList(key, jsClassParser).mapRight(nList => {
         var lst = F.emptyList<IConfig>(nList.Count);
         // ReSharper disable once LoopCanBeConvertedToQuery
@@ -274,24 +260,24 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       });
     }
 
-    public override Either<ConfigFetchError, IList<A>> eitherList<A>(string key, Parser<A> parser) {
+    public override Either<Configuration.ConfigFetchError, IList<A>> eitherList<A>(string key, Parser<A> parser) {
       return get(key, n => F.some(n as List<object>)).flatMapRight(arr => {
         var list = new List<A>(arr.Count);
         for (var idx = 0; idx < arr.Count; idx++) {
           var node = arr[idx];
           var parsed = parser(node);
           if (parsed.isDefined) list.Add(parsed.get);
-          else return F.left<ConfigFetchError, IList<A>>(ConfigFetchError.wrongType(
+          else return F.left<Configuration.ConfigFetchError, IList<A>>(Configuration.ConfigFetchError.wrongType(
             $"Cannot convert '{key}'[{idx}] to {typeof(A)}: {node}"
           ));
         }
-        return F.right<ConfigFetchError, IList<A>>(list);
+        return F.right<Configuration.ConfigFetchError, IList<A>>(list);
       });
     }
 
     #endregion
 
-    Either<ConfigFetchError, A> get<A>(string key, Parser<A> parser, Dictionary<string, object> current = null) {
+    Either<Configuration.ConfigFetchError, A> get<A>(string key, Parser<A> parser, Dictionary<string, object> current = null) {
       var parts = split(key);
 
       current = current ?? scopedRoot;
@@ -308,11 +294,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return key.Split('.');
     }
 
-    Either<ConfigFetchError, A> fetch<A>(
+    Either<Configuration.ConfigFetchError, A> fetch<A>(
       Dictionary<string, object> current, string key, string part, Parser<A> parser
     ) {
       if (!current.ContainsKey(part))
-        return F.left<ConfigFetchError, A>(ConfigFetchError.keyNotFound(
+        return F.left<Configuration.ConfigFetchError, A>(Configuration.ConfigFetchError.keyNotFound(
           $"Cannot find part '{part}' from key '{key}' in {current.asString()} " +
           $"[scope='{scope}']"
         ));
@@ -320,15 +306,15 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
       return followReference(node).flatMapRight(n =>
         parser(n).fold(
-          () => F.left<ConfigFetchError, A>(ConfigFetchError.wrongType(
+          () => F.left<Configuration.ConfigFetchError, A>(Configuration.ConfigFetchError.wrongType(
             $"Cannot convert part '{part}' from key '{key}' to {typeof (A)}. Type={n.GetType()}" +
             $" Contents: {n}"
-          )), F.right<ConfigFetchError, A>
+          )), F.right<Configuration.ConfigFetchError, A>
         )
       );
     }
 
-    Either<ConfigFetchError, object> followReference(object current) {
+    Either<Configuration.ConfigFetchError, object> followReference(object current) {
       var str = current as string;
       // references are specified with '#REF=...#'
       if (
@@ -340,10 +326,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         var key = str.Substring(5, str.Length - 6);
         // References are always followed from the root tree.
         return get(key, F.some, root).mapLeft(err =>
-          ConfigFetchError.brokenRef($"While following reference {str}: {err}")
+          Configuration.ConfigFetchError.brokenRef($"While following reference {str}: {err}")
         );
       }
-      else return F.right<ConfigFetchError, object>(current);
+      else return F.right<Configuration.ConfigFetchError, object>(current);
     }
 
     public override string ToString() {
