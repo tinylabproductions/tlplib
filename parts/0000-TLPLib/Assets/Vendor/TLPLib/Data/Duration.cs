@@ -6,6 +6,6 @@
 
     public int millis => (int) (seconds * 1000);
 
-    public override string ToString() => $"{nameof(Duration)}({seconds}s)";
+    public override string ToString() => $"{nameof(Duration)}({millis}ms)";
   }
 }
