@@ -5,6 +5,7 @@ using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   interface IHeapFuture<A> {
+    bool isCompleted { get; }
     Option<A> value { get; }
     void onComplete(Act<A> action);
   }
@@ -16,6 +17,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     IList<Act<A>> listeners = pool.Borrow();
 
+    public bool isCompleted => value.isDefined;
     public Option<A> value { get; private set; } = F.none<A>();
 
     public void complete(A v) {
