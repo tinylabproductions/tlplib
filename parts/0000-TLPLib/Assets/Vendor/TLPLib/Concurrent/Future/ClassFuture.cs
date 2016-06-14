@@ -38,7 +38,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public void onComplete(Act<A> action) {
-      value.voidFold(() => listeners.Add(action), action);
+      if (value.isDefined) action(value.get);
+      else listeners.Add(action);
     }
 
     void completed(A v) {
