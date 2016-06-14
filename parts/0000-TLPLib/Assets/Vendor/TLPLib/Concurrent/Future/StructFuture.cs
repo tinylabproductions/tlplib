@@ -98,14 +98,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Waits until both futures yield a result. */
-    public Future<Tpl<A, B>> zip<B>(Future<B> fb) {
-      if (implementation.isB || fb.implementation.isB) return Future<Tpl<A, B>>.unfulfilled;
+    public Future<Tpl<A, B>> zip<B>(Future<B> fb) => zip(fb, F.t);
+
+    public Future<C> zip<B, C>(Future<B> fb, Fn<A, B, C> mapper) {
+      if (implementation.isB || fb.implementation.isB) return Future<C>.unfulfilled;
       if (implementation.isA && fb.implementation.isA)
-        return Future.successful(F.t(implementation.__unsafeGetA, fb.implementation.__unsafeGetA));
+        return Future.successful(mapper(implementation.__unsafeGetA, fb.implementation.__unsafeGetA));
 
       var fa = this;
-      return Future<Tpl<A, B>>.async(p => {
-        Act tryComplete = () => fa.value.zip(fb.value).each(ab => p.tryComplete(ab));
+      return Future<C>.async(p => {
+        Act tryComplete = () => fa.value.zip(fb.value, mapper).each(ab => p.tryComplete(ab));
         fa.onComplete(a => tryComplete());
         fb.onComplete(b => tryComplete());
       });
