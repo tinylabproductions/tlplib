@@ -73,6 +73,30 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       );
     }
 
+    /** Filter future on value - if predicate matches turns completed future into unfulfilled. **/
+    public Future<A> filter(Fn<A, bool> predicate) {
+      var self = this;
+      return implementation.fold(
+        a => predicate(a) ? self : unfulfilled,
+        _ => self,
+        f => async(p => f.onComplete(a => { if (predicate(a)) p.complete(a); }))
+      );
+    }
+
+    /** 
+     * Filter & map future on value. If collector returns Some, completes the future, 
+     * otherwise - never completes.
+     **/
+    public Future<B> collect<B>(Fn<A, Option<B>> collector) {
+      return implementation.fold(
+        a => collector(a).fold(Future<B>.unfulfilled, Future<B>.successful),
+        _ => Future<B>.unfulfilled,
+        f => Future<B>.async(p => f.onComplete(a => {
+          foreach (var b in collector(a)) p.complete(b);
+        }))
+      );
+    }
+
     /* Waits until both futures yield a result. */
     public Future<Tpl<A, B>> zip<B>(Future<B> fb) {
       if (implementation.isB || fb.implementation.isB) return Future<Tpl<A, B>>.unfulfilled;
