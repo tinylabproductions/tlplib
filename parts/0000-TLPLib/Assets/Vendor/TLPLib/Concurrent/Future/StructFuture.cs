@@ -2,36 +2,36 @@
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  struct UnfullfilledFuture {}
-  public enum FutureType { Successful, Unfullfilled, ASync }
+  struct UnfulfilledFuture {}
+  public enum FutureType { Successful, Unfulfilled, ASync }
 
   /**
    * Struct based future which does not generate garbage if it's actually
    * synchronous.
    **/
   public struct Future<A> {
-    /* Future with a known value|unfullfilled future|async future. */
-    readonly OneOf<A, UnfullfilledFuture, FutureImpl<A>> implementation;
+    /* Future with a known value|unfulfilled future|async future. */
+    readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public Option<A> value => implementation.fold(F.some, _ => F.none<A>(), f => f.value);
 
     public FutureType type => implementation.fold(
       _ => FutureType.Successful, 
-      _ => FutureType.Unfullfilled, 
+      _ => FutureType.Unfulfilled, 
       _ => FutureType.ASync
     );
 
-    Future(OneOf<A, UnfullfilledFuture, FutureImpl<A>> implementation) {
+    Future(OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation) {
       this.implementation = implementation;
     }
 
     /* Lift an ordinary value into a future. */
     public static Future<A> successful(A value) {
-      return new Future<A>(new OneOf<A, UnfullfilledFuture, FutureImpl<A>>(value));
+      return new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(value));
     }
 
     /* Future that will never be completed. */
     public static readonly Future<A> unfulfilled = 
-      new Future<A>(new OneOf<A, UnfullfilledFuture, FutureImpl<A>>(new UnfullfilledFuture()));
+      new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(new UnfulfilledFuture()));
 
     /* Asynchronous heap based future which can be completed later. */
     public static Future<A> async(Act<Promise<A>> body)
@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> async(out Promise<A> promise) {
       var impl = new FutureImpl<A>();
       promise = impl;
-      return new Future<A>(new OneOf<A, UnfullfilledFuture, FutureImpl<A>>(impl));
+      return new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(impl));
     }
 
     public void onComplete(Act<A> action) {

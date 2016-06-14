@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static void shouldBeUnfullfilled<A>(this Future<A> f, string message=null) {
-      f.type.shouldEqual(FutureType.Unfullfilled, message);
+      f.type.shouldEqual(FutureType.Unfulfilled, message);
       f.value.shouldBeNone($"{message ?? ""}: it shouldn't have a value");
     }
   }

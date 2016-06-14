@@ -4,7 +4,12 @@ using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  class FutureImpl<A> : Promise<A> {
+  interface IHeapFuture<A> {
+    Option<A> value { get; }
+    void onComplete(Act<A> action);
+  }
+
+  class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
     static readonly Pool<IList<Act<A>>> pool = new Pool<IList<Act<A>>>(
       () => new List<Act<A>>(), list => list.Clear()
     );
@@ -34,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       value.voidFold(() => listeners.Add(action), action);
     }
 
-    public void completed(A v) {
+    void completed(A v) {
       foreach (var action in listeners) action(v);
       listeners.Clear();
       pool.Release(listeners);
