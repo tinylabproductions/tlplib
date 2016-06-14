@@ -246,11 +246,12 @@ public
     return fold(ifEmpty, ifNonEmpty);
   }
 
-  public Option<Tpl<A, B>> zip<B>(Option<B> opt2) {
-    return isDefined && opt2.isDefined
-      ? F.some(F.t(get, opt2.get))
-      : F.none<Tpl<A, B>>();
-  }
+  public Option<Tpl<A, B>> zip<B>(Option<B> opt2) => zip(opt2, F.t);
+
+  public Option<C> zip<B, C>(Option<B> opt2, Fn<A, B, C> mapper) => 
+    isDefined && opt2.isDefined
+    ? F.some(mapper(get, opt2.get))
+    : F.none<C>();
 
   public static bool operator true(Option<A> opt) { return opt.isDefined; }
 
