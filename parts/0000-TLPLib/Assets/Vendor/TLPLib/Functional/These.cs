@@ -138,6 +138,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
       if (bOpt.isDefined) return F.that<A, B>(bOpt.get).some();
       throw new IllegalStateException();
     }
+
+    // TODO: test
+    public static Tpl<A, Option<A>> asTuple<A>(this These<A, A> t) {
+      if (t.isBoth) return F.t(t.thisValue.get, t.thatValue);
+      if (t.isThis) return F.t(t.thisValue.get, F.none<A>());
+      if (t.isThat) return F.t(t.thatValue.get, F.none<A>());
+      throw new IllegalStateException($"Unknown case of {t}");
+    }
   }
 
   public static class TheseBuilderExts {
