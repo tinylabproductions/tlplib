@@ -223,6 +223,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void forceSave() {
       backend.save();
     }
+
+    public override string ToString() => $"{nameof(PrefVal<A>)}({_value})";
   }
 
   /* PlayerPrefs backed reactive value. */
