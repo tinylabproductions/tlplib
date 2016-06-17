@@ -65,6 +65,9 @@ public
   public A getOrThrow(Fn<Exception> getEx)
     { return isSome ? value : F.throws<A>(getEx()); }
 
+  public A getOrThrow(string message)
+    { return isSome ? value : F.throws<A>(new IllegalStateException(message)); }
+
   public void each(Act<A> action) { if (isSome) action(value); }
 
   public void onNone(Act action) { if (! isSome) action(); }
