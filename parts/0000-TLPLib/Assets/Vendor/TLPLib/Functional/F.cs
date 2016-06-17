@@ -5,7 +5,12 @@ using System.Collections.Immutable;
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
     public static Option<A> opt<A>(A value) where A : class {
-      return value == null ? new Option<A>() : new Option<A>(value);
+      // This might seem to be overkill, but on the case of Transforms that
+      // have been destroyed, target == null will return false, whereas
+      // target.Equals(null) will return true.  Otherwise we don't really
+      // get the benefits of the nanny.
+      return (value == null || value.Equals(null)) 
+        ? new Option<A>() : new Option<A>(value);
     }
 
     public static Option<A> some<A>(A value) { return new Option<A>(value); }
