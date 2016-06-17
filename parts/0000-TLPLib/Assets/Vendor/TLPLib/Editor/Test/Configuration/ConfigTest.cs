@@ -8,6 +8,16 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
+  public class ConfigTestOptString {
+    [Test]
+    public void WhenGettingDictAsString() {
+      var cfg = new Config(new Dictionary<string, object> {
+        {"foo", new Dictionary<string, object>()}
+      });
+      cfg.optString("foo").shouldBeNone();
+    }
+  }
+
 // Well, this whole test is broken, no time to fix it. Fun times! - arturaz
 //  static class Data {
 //    public static Dictionary<string, object> dictFor(string key, object o)

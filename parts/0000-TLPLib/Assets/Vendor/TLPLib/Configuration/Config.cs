@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static readonly Parser<Dictionary<string, object>> jsClassParser =
       n => F.opt(n as Dictionary<string, object>);
     public static readonly Parser<object> objectParser = n => F.some(n);
-    public static readonly Parser<string> stringParser = n => F.some(n as string);
+    public static readonly Parser<string> stringParser = n => F.opt(n as string);
     public static Option<A> castA<A>(object a) { return a is A ? F.some((A) a) : F.none<A>(); }
 
     public static readonly Parser<int> intParser = n => {
