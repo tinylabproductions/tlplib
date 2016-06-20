@@ -39,6 +39,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       var o = Selection.activeObject;
       if (o) InspectTarget(o);
     }
+
+    [MenuItem("Tools/Shortcuts/Break Prefab Instance &b")]
+    public static void BreakPrefabInstance() {
+      EditorApplication.ExecuteMenuItem("GameObject/Break Prefab Instance");
+    }
   }
 }
 #endif
