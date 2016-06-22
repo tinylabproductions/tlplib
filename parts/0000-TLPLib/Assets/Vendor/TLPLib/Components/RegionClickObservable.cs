@@ -8,7 +8,16 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
   /* Divides screen into X * Y grid and emits new region index when a pointer 
-   * moves between different regions. */
+   * moves between different regions. 
+   * 
+   * For example, if width=2, height=2, regions would be:
+   * 
+   * /-------\
+   * | 2 | 3 |
+   * |---+---|
+   * | 0 | 1 |
+   * \-------/
+   */
   public class RegionClickObservable {
     readonly Subject<int> _regionIndex = new Subject<int>();
     public IObservable<int> regionIndex => _regionIndex;
