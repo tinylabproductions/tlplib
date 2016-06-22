@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -45,15 +45,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public static readonly int[] DEFAULT_SEQUENCE = { 0, 1, 3, 2, 0, 2, 3, 1, 0 };
 
-    public static RegionClickObservable registerDebugSequence(
-      DebugConsoleBinding binding=null, int[] sequence=null
+    public static IObservable<Unit> registerDebugSequence(
+      DebugConsoleBinding binding=null, int width=2, int height=2, int[] sequence=null
     ) {
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       sequence = sequence ?? DEFAULT_SEQUENCE;
 
-      var obs = new RegionClickObservable(2, 2);
-      obs.sequenceWithinTimeframe(sequence, 3).subscribe(_ => instance.show(binding));
-
+      var obs = new RegionClickObservable(width, height).sequenceWithinTimeframe(sequence, 3);
+      obs.subscribe(_ => instance.show(binding));
       return obs;
     }
 
