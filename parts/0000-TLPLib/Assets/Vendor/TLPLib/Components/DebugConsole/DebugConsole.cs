@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Assets.Code.Utils;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -32,14 +31,15 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static DConsole instance { get; } = new DConsole();
 
     DConsole() {
-
       var r = registrarFor(nameof(DConsole));
       r.register("Self-test", () => "self-test");
       r.register("Future Self-test", () => Future.delay(1, () => "after 1 s"));
     }
 
+    public delegate void OnShow(DConsole console);
+
     readonly Dictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
-    public static bool enabled => Log.isDebug;
+    public event OnShow onShow;
 
     Option<Instance> current = F.none<Instance>();
 
@@ -51,13 +51,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       sequence = sequence ?? DEFAULT_SEQUENCE;
 
-      var go = new GameObject {name = "Debug Console initiator"};
-
-      Object.DontDestroyOnLoad(go);
-
-      var obs = go.AddComponent<RegionClickObservable>();
-        obs.init(2, 2).sequenceWithinTimeframe(sequence, 3)
-        .subscribe(_ => { instance.show(binding); });
+      var obs = new RegionClickObservable(2, 2);
+      obs.sequenceWithinTimeframe(sequence, 3).subscribe(_ => instance.show(binding));
 
       return obs;
     }
@@ -77,6 +72,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public void show(DebugConsoleBinding binding) {
       destroy();
+      onShow?.Invoke(this);
+      onShow = null;
 
       var view = binding.clone();
       Object.DontDestroyOnLoad(view);
@@ -92,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       current = new Instance(view).some();
     }
 
-    void showGroup(DebugConsoleBinding view, string groupName, IEnumerable<Command> commands) {
+    static void showGroup(DebugConsoleBinding view, string groupName, IEnumerable<Command> commands) {
       view.commandGroupLabel.text = groupName;
       foreach (var t in view.commandsHolder.transform.children()) Object.Destroy(t.gameObject);
       foreach (var command in commands) {
@@ -113,7 +110,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     void onLogMessageReceived(string message, string stackTrace, LogType type) {
-      current.each(instance => {
+      foreach (var instance in current) {
         var entry = instance.view.logEntryPrefab.clone();
         var shortText = $"{DateTime.Now}  {type}  {message}";
 
@@ -122,14 +119,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           instance.view.logEntriesHolder.transform, worldPositionStays: false
         );
         entry.transform.SetAsFirstSibling();
-      });
+      }
     }
 
     public void destroy() {
-      current.each(i => {
+      foreach (var instance in current) { 
         Application.logMessageReceived -= onLogMessageReceived;
-        Object.Destroy(i.view.gameObject);
-      });
+        Object.Destroy(instance.view.gameObject);
+      }
       current = current.none;
     }
   }
@@ -163,25 +160,23 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       register(name, objOpt, obj => Future.successful(run(obj)));
     }
     public void register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, Future<A>> run) {
-      var prefixedName = $"[{commandGroup}] {name}";
+      var prefixedName = $"[DC|{commandGroup}]> {name}";
       console.register(new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
         if (opt.isDefined) {
           var returnFuture = run(opt.get);
-          Act<A> onComplete = t => Log.rdebug($"{prefixedName} done: {t}");
+          Act<A> onComplete = t => Debug.Log($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.
           returnFuture.value.voidFold(
             () => {
-              Log.rdebug($"{prefixedName} starting.");
+              Debug.Log($"{prefixedName} starting.");
               returnFuture.onComplete(onComplete);
             },
             onComplete
           );
         }
-        else Log.rdebug($"{prefixedName} not running: {typeof(Obj)} is None.");
+        else Debug.Log($"{prefixedName} not running: {typeof(Obj)} is None.");
       }));
     }
-
-    public bool enabled => DConsole.enabled;
   }
 }

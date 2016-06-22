@@ -1,43 +1,72 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using com.tinylabproductions.TLPLib.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.InputUtils;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Components
-{
+namespace com.tinylabproductions.TLPLib.Components {
   /* Divides screen into X * Y grid and emits new region index when a pointer 
    * moves between different regions. */
-  public class RegionClickObservable : MonoBehaviour {
-    private readonly Subject<int> _regionIndex = new Subject<int>();
+  public class RegionClickObservable {
+    readonly Subject<int> _regionIndex = new Subject<int>();
     public IObservable<int> regionIndex => _regionIndex;
 
-    private int lastIndex = -1;
+    readonly int gridWidth, gridHeight;
 
-    int gridWidth = 2;
-    int gridHeight = 2;
+    int lastIndex = -1;
 
-    public RegionClickObservable init(int gridWidth, int gridHeight) {
+    public RegionClickObservable(int gridWidth=2, int gridHeight=2) {
       this.gridWidth = gridWidth;
       this.gridHeight = gridHeight;
-      return this;
+      ASync.EveryFrame(() => {
+        onUpdate();
+        return true;
+      });
+    }
+
+    struct SeqEntry {
+      public readonly float time;
+      public readonly int region;
+
+      public SeqEntry(float time, int region) {
+        this.time = time;
+        this.region = region;
+      }
     }
 
     /* Emits event when a particular region index sequence is executed within X seconds */
     public IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float timeS) {
-      return regionIndex.withinTimeframe(sequence.Count, timeS).collect(list =>
-        list.Select(t => t._1).zipWithIndex().Any(t => sequence[t._2] != t._1)
-          ? F.none<Unit>() : F.some(F.unit)
-      );
+      // Specific implementation to reduce garbage.
+      var s = new Subject<Unit>();
+      var regions = new Queue<SeqEntry>(sequence.Count);
+      Fn<bool> isEqual = () => {
+        var idx = 0;
+        foreach (var entry in regions) {
+          if (sequence[idx] != entry.region) return false;
+          idx += 1;
+        }
+        return true;
+      };
+      regionIndex.subscribe(region => {
+        // Clear up one item if the queue is full.
+        if (regions.Count == sequence.Count) regions.Dequeue();
+        regions.Enqueue(new SeqEntry(Time.realtimeSinceStartup, region));
+        // Emit event if the conditions check out
+        if (
+          regions.Count == sequence.Count
+          && Time.realtimeSinceStartup - regions.Peek().time <= timeS
+          && isEqual()
+        ) s.push(F.unit);
+      });
+      return s;
     }
 
-    // ReSharper disable once UnusedMember.Local
-    void Update() {
+    void onUpdate() {
       if (Pointer.held) {
         var mp = Pointer.currentPosition;
-        int gridId = 0;
+        var gridId = 0;
         gridId += Mathf.FloorToInt(mp.x / (Screen.width / gridWidth));
         gridId += gridWidth * Mathf.FloorToInt(mp.y / (Screen.height / gridHeight));
         if (gridId != lastIndex) {

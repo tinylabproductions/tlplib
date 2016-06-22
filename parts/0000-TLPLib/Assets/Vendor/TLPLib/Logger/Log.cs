@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -22,6 +24,15 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
 
     public static ILog defaultLogger => UnityLog.instance;
+
+    static Log() {
+      DConsole.instance.onShow += dc => {
+        var r = dc.registrarFor("Default Logger");
+        r.register("level?", () => { Debug.Log($"current level = {defaultLogger.level}"); });
+        foreach (var l in EnumUtils.GetValues<Level>())
+          r.register($"level={l}", () => defaultLogger.level = l);
+      };
+    }
 
     public static void verbose(object o) { UnityLog.instance.verbose(o); }
     public static bool isVerbose => UnityLog.instance.isVerbose;
