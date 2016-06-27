@@ -84,5 +84,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Act act = () => signalP.tryComplete(F.unit);
       return F.t(f, act);
     }
+
+    /** Converts option into successful/unfulfilled future. */
+    public static Future<A> toFuture<A>(this Option<A> opt) {
+      foreach (var a in opt) return Future.successful(a);
+      return Future<A>.unfulfilled;
+    }
   }
 }
