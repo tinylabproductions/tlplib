@@ -1,6 +1,7 @@
 ﻿#if UNITY_ANDROID
 using System;
 using Assets.Vendor.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Android.Bindings;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
@@ -21,26 +22,28 @@ namespace com.tinylabproductions.TLPLib.Android {
     }
 
     static readonly AndroidJavaClass bridge;
-    public static readonly AndroidJavaObject current, context, packageManager;
+    public static readonly Activity current;
+    public static readonly Context appContext;
+    public static readonly PackageManager packageManager;
     /* Application package name. */
     public static readonly string packageName;
-    public static AndroidJavaObject activity => current;
+    public static Activity activity => current;
 
     static AndroidActivity() {
       if (Application.isEditor) return;
       using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
         bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
-        current = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        context = current.cjo("getApplicationContext");
-        packageManager = context.cjo("getPackageManager");
-        packageName = activity.c<string>("getPackageName");
+        current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));
+        appContext = current.applicationContext;
+        packageManager = appContext.packageManager;
+        packageName = activity.packageName;
       }
     }
 
     /* Get version code for the application package name. */
     public static int versionCode { get {
       try {
-        return packageManager.
+        return packageManager.java.
           cjo("getPackageInfo", packageName, 0).
           Get<int>("versionCode");
       }
@@ -52,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Android {
 
     public static string versionName { get {
       try {
-        return packageManager.
+        return packageManager.java.
           cjo("getPackageInfo", packageName, 0).
           Get<string>("versionName");
       }
@@ -78,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       bridge.CallStatic("sharePNG", path, title, sharerText);
     }
 
-    public static void runOnUI(Act act) { current.Call("runOnUiThread", new JavaRunnable(() => act())); }
+    public static void runOnUI(Action act) => current.runOnUIThread(act);
 
     public static A runOnUIBlocking<A>(Fn<A> f) {
       return new SyncOtherThreadOp<A>(AndroidUIThreadExecutor.a(f)).execute();

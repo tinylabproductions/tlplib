@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Android {
               view.GetStatic<int>(FLAG_IMMERSIVE_STICKY) |
               view.GetStatic<int>(FLAG_FULLSCREEN);
             if (stableLayout) flags |= view.GetStatic<int>(FLAG_STABLE_LAYOUT);
-            var decor = activity.
+            var decor = activity.java.
               Call<AndroidJavaObject>("getWindow").
               Call<AndroidJavaObject>("getDecorView");
             decor.Call("setSystemUiVisibility", flags);

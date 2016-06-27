@@ -1,12 +1,20 @@
 package com.tinylabproductions.tlplib;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import com.unity3d.player.UnityPlayer;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 @SuppressWarnings("UnusedDeclaration")
 public class Bridge {
@@ -29,5 +37,25 @@ public class Bridge {
 
     return sizeFlag == Configuration.SCREENLAYOUT_SIZE_XLARGE
         || sizeFlag == Configuration.SCREENLAYOUT_SIZE_LARGE;
+  }
+
+  public static String countryCodeFromLastKnownLocation() throws IOException {
+    Activity current = UnityPlayer.currentActivity;
+    LocationManager locationManager =
+            (LocationManager) current.getSystemService(Context.LOCATION_SERVICE);
+    Location location =
+            locationManager
+            .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+    if (location != null && Geocoder.isPresent()) {
+      Geocoder gcd = new Geocoder(current, Locale.getDefault());
+      List<Address> addresses;
+      addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+      if (addresses != null && !addresses.isEmpty()) {
+        Address address = addresses.get(0);
+        return address.getCountryCode();
+      }
+    }
+    return null;
   }
 }
