@@ -52,6 +52,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(impl));
     }
 
+    public override string ToString() {
+      var header = $"Future<{typeof (A)}>";
+      if (implementation.isA) return $"{header}.Successful({implementation.__unsafeGetA})";
+      if (implementation.isB) return $"{header}.Unfulfilled";
+      if (implementation.isC) return $"{header}.ASync({implementation.__unsafeGetC.value})";
+      throw new IllegalStateException();
+    }
+
     public void onComplete(Act<A> action) {
       if (implementation.isA) action(implementation.__unsafeGetA);
       else if (implementation.isC) implementation.__unsafeGetC.onComplete(action);
