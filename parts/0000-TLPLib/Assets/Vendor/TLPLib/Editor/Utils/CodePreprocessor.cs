@@ -15,21 +15,21 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     static Option<PathStr> selectedPath => 
       AssetDatabase.GetAssetPath(Selection.activeObject).nonEmptyOpt().map(PathStr.a);
 
-    [UsedImplicitly, MenuItem("Assets/Code Processor/Disable Warnings/Enable")]
-    static void addPragmas() => enablePragmas(true);
+    [UsedImplicitly, MenuItem("Assets/Code Processor/Compiler Warnings/Enable")]
+    static void addPragmas() => enablePragmas(false);
 
-    [UsedImplicitly, MenuItem("Assets/Code Processor/Disable Warnings/Disable")]
-    static void removePragmas() => enablePragmas(false);
+    [UsedImplicitly, MenuItem("Assets/Code Processor/Compiler Warnings/Disable")]
+    static void removePragmas() => enablePragmas(true);
     
-    static void enablePragmas(bool add) {
+    static void enablePragmas(bool addPragma) {
       selectedPath.voidFold(
         () => EditorUtility.DisplayDialog("Error", "Not a valid path.", "OK"),
         rootPath => {
-          if (askForConfirmation(add, rootPath)) {
+          if (askForConfirmation(addPragma, rootPath)) {
             getFilePaths(rootPath, "*.cs").voidFold(
               err => EditorUtility.DisplayDialog("Error", err, "OK"),
               paths => {
-                processFiles(paths, add);
+                processFiles(paths, addPragma);
                 EditorUtility.DisplayDialog("Success", "File processing done.", "OK");
               }
             );
@@ -38,8 +38,8 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       );
     }
 
-    static void processFiles(IEnumerable<PathStr> paths, bool add) {
-      foreach (var path in paths) processFile(path, add);
+    static void processFiles(IEnumerable<PathStr> paths, bool addPragma) {
+      foreach (var path in paths) processFile(path, addPragma);
     }
 
     public static void processFile(string path, bool add) {
@@ -70,10 +70,10 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       return (paths.Length > 0).either("No '*.cs' files in directory.", () => paths);
     }
 
-    static bool askForConfirmation(bool add, string path) {
-      var str = add ? "add" : "remove";
+    static bool askForConfirmation(bool addPragma, string path) {
+      var str = addPragma ? "disable" : "enable";
       var accepted = EditorUtility.DisplayDialog(
-        "Warning", $"Do you want to {str} disable in following path?\n{path}", "Yes", "No"
+        "Warning", $"Do you want to {str} warnings in following path?\n{path}", "Yes", "No"
       );
       return accepted;
     }
