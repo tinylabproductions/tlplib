@@ -1,125 +1,74 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using UnityEngine;
 using System.IO;
-using Assets.Vendor.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
-
-
   public class CodePreprocessor : MonoBehaviour {
+    public const string PRAG_STR = "#pragma warning disable\n";
+    static Option<string> selectedPath => AssetDatabase.GetAssetPath(Selection.activeObject).nonEmptyOpt();
 
-    public const string PRAG_STR = "#pragma warning disable\r\n";
+    [UsedImplicitly, MenuItem("Assets/Code processor/Disable Warnings/Enable")]
+    static void addPragmas() => enablePragmas(true);
 
+    [UsedImplicitly, MenuItem("Assets/Code processor/Disable Warnings/Disable")]
+    static void removePragmas() => enablePragmas(false);
 
-    [MenuItem("Assets/Code processor/Add warning disable")]
-    static void EnablePragmas() {
-      EnablePragmas(true);
-    }
-
-    [MenuItem("Assets/Code processor/Remove warning disable")]
-    static void RemovePragmas() {
-      EnablePragmas(false);
-    }
-
-
-    static void EnablePragmas(bool add) {
-      var rootPath = GetSelectedPath();
-      if (!ShowDialog(add, rootPath.get))
+    static void enablePragmas(bool add) {
+      var rootPath = selectedPath;
+      if (!showDialog(add, rootPath.get))
         return;
       if (rootPath.isEmpty) {
-        Debug.LogError("Not a valid path.");
+        EditorUtility.DisplayDialog("Error", "Not a valid path.", "OK");
         return;
       }
-      var paths = GetFilePaths(rootPath.get);
-      if (paths.isEmpty) {
-        Debug.LogError("No files '*.cs' files selected");
+      var paths = getFilePaths(rootPath.get);
+      if (paths.isEmpty)
+      {
+        EditorUtility.DisplayDialog("Error", "No '*.cs' files selected.", "OK");
         return;
       }
       foreach (var path in paths.get) {
-        ProcessFile(path, add);
+        processFile(path, add);
       }
-      Debug.Log("File processing done");
+      EditorUtility.DisplayDialog("Success", "File processing done.", "OK");
     }
     
-    static void ProcessFile(string path, bool add) {
+    public static void processFile(string path, bool add) {
       var text = File.ReadAllText(path);
-      var editedText = add ? CheckAndWritePragmaInFront(text) : RemovePragmaFromFront(text);
+      var editedText = add ? checkAndWritePragmaInFront(text) : removePragmaFromFront(text);
       File.WriteAllText(path, editedText);
     }
 
-
-    public static string RemovePragmaFromFront(string text) {
-      return HasPragmaInFront(text) ? text.Remove(0, PRAG_STR.Length) : text;
+    public static string removePragmaFromFront(string text) {
+      return hasPragmaInFront(text) ? text.Remove(0, PRAG_STR.Length) : text;
     }
 
-    public static string CheckAndWritePragmaInFront(string text) {
-      return !HasPragmaInFront(text) ? PRAG_STR + text : text;
+    public static string checkAndWritePragmaInFront(string text) {
+      return !hasPragmaInFront(text) ? $"{PRAG_STR}{text}" : text;
     }
 
-    public static bool HasPragmaInFront(string text)
-    {
-      var front = text.Substring(0, PRAG_STR.Length);
-      return (front.Contains(PRAG_STR));
-    }
+    public static bool hasPragmaInFront(string text) => text.StartsWith(PRAG_STR);
 
-
-    static bool IsDirectory(string path)
-    {
-      var attr = File.GetAttributes(path);
-      return (attr == FileAttributes.Directory);
-    }
-
-    static Option<ImmutableArray<string>> GetFilePaths(string rootPath)
-    {
-      if (IsDirectory(rootPath))
-      {
-        var paths = GetFileList("*.cs", rootPath).ToImmutableArray();
+    public static Option<ImmutableArray<string>> getFilePaths(string rootPath) {
+      if (Directory.Exists(rootPath)) {
+        var paths = Directory.GetFiles(rootPath, "*.cs", SearchOption.AllDirectories).ToImmutableArray();
         return paths.Length > 0 ? new Option<ImmutableArray<string>>(paths) : new Option<ImmutableArray<string>>();
       }
-      else {
-        if (Path.GetExtension(rootPath) == ".cs")
-        {
-          var pth = ImmutableArray.Create(rootPath);
-          return new Option<ImmutableArray<string>>(pth);
-        }
-        else {
-          return new Option<ImmutableArray<string>>();
-        }
-      }
+      if (Path.GetExtension(rootPath) != ".cs") return new Option<ImmutableArray<string>>();
+      var pth = ImmutableArray.Create(rootPath);
+      return new Option<ImmutableArray<string>>(pth);
     }
 
-
-    static IEnumerable<string> GetFileList(string fileSearchPattern, string rootPath) {
-      var pending = new Queue<string>();
-      pending.Enqueue(rootPath);
-      while (pending.Count > 0) {
-        rootPath = pending.Dequeue();
-        var tmp = Directory.GetFiles(rootPath, fileSearchPattern);
-        foreach (var t in tmp) {
-          yield return t;
-        }
-        tmp = Directory.GetDirectories(rootPath);
-        foreach (var t in tmp) {
-          pending.Enqueue(t);
-        }
-      }
-    }
-
-    static Option<string> GetSelectedPath() {
-      var path = AssetDatabase.GetAssetPath(Selection.activeObject);
-      return path == "" ? new Option<string>() : new Option<string>(path);
-    }
-
-    static bool ShowDialog(bool add, string path) {
-      var str = (add) ? "add" : "remove";
+    static bool showDialog(bool add, string path) {
+      var str = add ? "add" : "remove";
       var accepted = EditorUtility.DisplayDialog(
-        "Warning", "Do you want to " + str + " #pragma warning disable in following path?\n" + path, "Yes", "No");
+        "Warning", $"Do you want to {str} disable in following path?\n{path}", "Yes", "No"
+      );
       return accepted;
     }
   }
-
-
 }
