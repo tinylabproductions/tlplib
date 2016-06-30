@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     [Test]
     public void WhenManySubdirectories() {
       var dir = "Assets/Vendor/TLPLib/Editor/Test/Editor/Utils/CodePreprocessorTemp/";
-      var actual = CodePreprocessor.getFilePaths(dir);
+      var actual = CodePreprocessor.getFilePaths(dir, "*.cs");
       if (actual.isEmpty) Assert.Fail();
       else actual.get.Length.shouldEqual(4);
     }
@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void WhenEmptyDir()
     {
       var dir = "Assets/Vendor/TLPLib/Editor/Test/Editor/Utils/CodePreprocessorTemp/Test1/TestEmpty";
-      var actual = CodePreprocessor.getFilePaths(dir);
+      var actual = CodePreprocessor.getFilePaths(dir, "*.cs");
       actual.shouldBeNone();
     }
 
@@ -72,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void WhenDirWithNoCsFiles()
     {
       var dir = "Assets/Vendor/TLPLib/Editor/Test/Editor/Utils/CodePreprocessorTemp/Test1/TestDirWithNoCs";
-      var actual = CodePreprocessor.getFilePaths(dir);
+      var actual = CodePreprocessor.getFilePaths(dir, "*.cs");
       actual.shouldBeNone();
     }
 
@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void WhenCsFile()
     {
       var dir = "Assets/Vendor/TLPLib/Editor/Test/Editor/Utils/CodePreprocessorTemp/Test1/NewBehaviourScript32434.cs";
-      var actual = CodePreprocessor.getFilePaths(dir);
+      var actual = CodePreprocessor.getFilePaths(dir, "*.cs");
       if (actual.isEmpty) Assert.Fail();
       else actual.get.Length.shouldEqual(1);
     }
@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void WhenNoneCsFile()
     {
       var dir = "Assets/Vendor/TLPLib/Editor/Test/Editor/Utils/CodePreprocessorTemp/Test1/TestDirWithNoCs/TestJs2.js";
-      var actual = CodePreprocessor.getFilePaths(dir);
+      var actual = CodePreprocessor.getFilePaths(dir, "*.cs");
       actual.shouldBeNone();
     }
   }

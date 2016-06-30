@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using UnityEngine;
 using System.IO;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -25,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         EditorUtility.DisplayDialog("Error", "Not a valid path.", "OK");
         return;
       }
-      var paths = getFilePaths(rootPath.get);
+      var paths = getFilePaths(rootPath.get, "*.cs");
       if (paths.isEmpty)
       {
         EditorUtility.DisplayDialog("Error", "No '*.cs' files selected.", "OK");
@@ -53,12 +54,12 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     public static bool hasPragmaInFront(string text) => text.StartsWith(PRAG_STR);
 
-    public static Option<ImmutableArray<string>> getFilePaths(string rootPath) {
+    public static Option<ImmutableArray<string>> getFilePaths(string rootPath, string fileExt) {
       if (Directory.Exists(rootPath)) {
-        var paths = Directory.GetFiles(rootPath, "*.cs", SearchOption.AllDirectories).ToImmutableArray();
+        var paths = Directory.GetFiles(rootPath, fileExt, SearchOption.AllDirectories).ToImmutableArray();
         return paths.Length > 0 ? new Option<ImmutableArray<string>>(paths) : new Option<ImmutableArray<string>>();
       }
-      if (Path.GetExtension(rootPath) != ".cs") return new Option<ImmutableArray<string>>();
+      if (!string.Equals($"*{Path.GetExtension(rootPath)}",fileExt)) return new Option<ImmutableArray<string>>();
       var pth = ImmutableArray.Create(rootPath);
       return new Option<ImmutableArray<string>>(pth);
     }
