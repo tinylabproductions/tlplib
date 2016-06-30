@@ -23,14 +23,17 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     
     static void enablePragmas(bool addPragma) {
       selectedPath.voidFold(
-        () => EditorUtility.DisplayDialog("Error", "Not a valid path.", "OK"),
+        () => EditorUtility.DisplayDialog("Error",
+                  "Not a valid path. \nYou shouldn't do this in the project window's file tree, use the right panel.", "OK"),
         rootPath => {
           if (askForConfirmation(addPragma, rootPath)) {
             getFilePaths(rootPath, "*.cs").voidFold(
               err => EditorUtility.DisplayDialog("Error", err, "OK"),
               paths => {
                 processFiles(paths, addPragma);
-                EditorUtility.DisplayDialog("Success", "File processing done.", "OK");
+                EditorUtility.DisplayDialog(
+                  "Success", $"File processing done. {paths.Length} file(s) processed.", "OK"
+                );
               }
             );
           }
