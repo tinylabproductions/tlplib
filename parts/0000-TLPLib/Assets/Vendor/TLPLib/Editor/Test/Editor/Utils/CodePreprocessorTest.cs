@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     [Test]
     public void WhenDoesntHavePragma() {
-     CodePreprocessor.hasPragmaInFront(CODE).shouldBeFalse();
+      CodePreprocessor.hasPragmaInFront(CODE).shouldBeFalse();
     }
   }
   
@@ -81,25 +81,25 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     [Test]
-    public void WhenEmptyDir(){
+    public void WhenEmptyDir() {
       var actual = CodePreprocessor.getFilePaths(p_emptyDir, "*.cs");
       actual.leftValue.isDefined.shouldBeTrue();
     }
 
     [Test]
-    public void WhenDirWithNoCsFiles(){
+    public void WhenDirWithNoCsFiles() {
       var actual = CodePreprocessor.getFilePaths(p_noCsFilesDir, "*.cs");
       actual.leftValue.isDefined.shouldBeTrue();
     }
 
     [Test]
-    public void WhenCsFile(){
-      var actual = CodePreprocessor.getFilePaths(p_cs1, "*.cs").rightValue.get.ToImmutableHashSet(); 
+    public void WhenCsFile() {
+      var actual = CodePreprocessor.getFilePaths(p_cs1, "*.cs").rightValue.get.ToImmutableHashSet();
       actual.shouldEqual(ImmutableHashSet.Create(p_cs1));
     }
 
     [Test]
-    public void WhenNoneCsFile(){
+    public void WhenNoneCsFile() {
       var actual = CodePreprocessor.getFilePaths(p_noneCsFile, "*.cs");
       actual.leftValue.isDefined.shouldBeTrue();
     }
