@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Assets.Vendor.TLPLib.Extensions {
+namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UnityObjectExts {
 #if UNITY_EDITOR
     public static PathStr path(this Object obj) {
