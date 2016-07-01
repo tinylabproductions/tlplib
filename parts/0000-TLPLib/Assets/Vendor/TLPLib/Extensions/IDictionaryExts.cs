@@ -27,6 +27,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return dict.TryGetValue(key, out outVal) ? outVal : orElse();
     }
 
+    public static V getOrElse<K, V>(
+      this IDictionary<K, V> dict, K key, V orElse
+    ) {
+      V outVal;
+      return dict.TryGetValue(key, out outVal) ? outVal : orElse;
+    }
+
     /* as #[], but has a better error message */
     public static V a<K, V>(this IDictionary<K, V> dict, K key) {
       foreach (var val in dict.get(key)) return val;
