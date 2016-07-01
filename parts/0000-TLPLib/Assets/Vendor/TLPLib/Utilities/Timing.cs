@@ -24,16 +24,16 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       this.innerScopes = innerScopes;
     }
 
-    public Duration duration => new Duration(endTime - startTime);
+    public Duration duration => Duration.fromSeconds(endTime - startTime);
 
     public string durationStr { get {
       var durationS = $"{duration.millis}ms";
       if (iterations != 0) {
-        var avg = new Duration(duration.seconds / iterations);
+        var avg = Duration.fromSeconds(duration.seconds / iterations);
         durationS += $", iters={iterations}, avg iter={avg.millis}ms";
       }
       if (innerScopes != 0) {
-        var avg = new Duration(duration.seconds / innerScopes);
+        var avg = Duration.fromSeconds(duration.seconds / innerScopes);
         durationS += $", iscopes={innerScopes}, avg iscope={avg.millis}ms";
       }
       return durationS;
