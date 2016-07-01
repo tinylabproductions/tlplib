@@ -118,6 +118,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
         $"Event name is reserved: '{name}'"
       );
 
+      // The event can have up to 25 parameters.
+      if (parameters.Count > 25) errors = errors.Add(
+        $"Event '{name}' has more than 25 parameters: {parameters.Keys.mkString(", ")} ({parameters.Count})"
+      );
+
       // The map of event parameters. Passing null indicates that the event has no parameters. 
       // Parameter names can be up to 24 characters long and must start with an alphabetic 
       // character and contain only alphanumeric characters and underscores. Only String, 
