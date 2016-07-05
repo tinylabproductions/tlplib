@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Collection;
+﻿#if !UNITY_IOS
+using com.tinylabproductions.TLPLib.Collection;
 using System;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -280,3 +281,4 @@ public class IterExtsTest {
   #endregion
 }
 }
+#endif

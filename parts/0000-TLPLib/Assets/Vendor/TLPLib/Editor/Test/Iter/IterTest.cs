@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !UNITY_IOS
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -940,3 +941,4 @@ public class IterTest {
 #endregion
 }
 }
+#endif
