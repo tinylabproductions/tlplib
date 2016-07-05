@@ -93,9 +93,6 @@ IComparable<$fullType>, IEquatable<$fullType> {
   $propsS
 
   public $typename($paramArgsS)
-#if UNITY_IOS
-    : this()
-#endif
     { $constructorSettersS; }
 
   // Unapply.

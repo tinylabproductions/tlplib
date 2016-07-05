@@ -12,9 +12,6 @@ IComparable<Tpl<P1>>, IEquatable<Tpl<P1>> {
   public readonly P1 _1;
 
   public Tpl(P1 p1)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; }
 
   // Unapply.
@@ -89,9 +86,6 @@ IComparable<Tpl<P1, P2>>, IEquatable<Tpl<P1, P2>> {
   public readonly P1 _1; public readonly P2 _2;
 
   public Tpl(P1 p1, P2 p2)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; }
 
   // Unapply.
@@ -169,9 +163,6 @@ IComparable<Tpl<P1, P2, P3>>, IEquatable<Tpl<P1, P2, P3>> {
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3;
 
   public Tpl(P1 p1, P2 p2, P3 p3)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; }
 
   // Unapply.
@@ -252,9 +243,6 @@ IComparable<Tpl<P1, P2, P3, P4>>, IEquatable<Tpl<P1, P2, P3, P4>> {
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; }
 
   // Unapply.
@@ -338,9 +326,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5>>, IEquatable<Tpl<P1, P2, P3, P4, P5>> {
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; }
 
   // Unapply.
@@ -427,9 +412,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6>
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; }
 
   // Unapply.
@@ -519,9 +501,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7>>, IEquatable<Tpl<P1, P2, P3, P4, P5,
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; }
 
   // Unapply.
@@ -614,9 +593,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8>>, IEquatable<Tpl<P1, P2, P3, P4,
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; }
 
   // Unapply.
@@ -712,9 +688,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>>, IEquatable<Tpl<P1, P2, P3,
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; }
 
   // Unapply.
@@ -813,9 +786,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>>, IEquatable<Tpl<P1, P2
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; }
 
   // Unapply.
@@ -917,9 +887,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>>, IEquatable<Tpl<P
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; }
 
   // Unapply.
@@ -1024,9 +991,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>>, IEquatable<
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; }
 
   // Unapply.
@@ -1134,9 +1098,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>>, IEquat
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; }
 
   // Unapply.
@@ -1247,9 +1208,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>>, I
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; }
 
   // Unapply.
@@ -1363,9 +1321,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; }
 
   // Unapply.
@@ -1482,9 +1437,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; }
 
   // Unapply.
@@ -1604,9 +1556,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; }
 
   // Unapply.
@@ -1729,9 +1678,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; }
 
   // Unapply.
@@ -1857,9 +1803,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; }
 
   // Unapply.
@@ -1988,9 +1931,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; }
 
   // Unapply.
@@ -2122,9 +2062,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20; public readonly P21 _21;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; }
 
   // Unapply.
@@ -2259,9 +2196,6 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public readonly P1 _1; public readonly P2 _2; public readonly P3 _3; public readonly P4 _4; public readonly P5 _5; public readonly P6 _6; public readonly P7 _7; public readonly P8 _8; public readonly P9 _9; public readonly P10 _10; public readonly P11 _11; public readonly P12 _12; public readonly P13 _13; public readonly P14 _14; public readonly P15 _15; public readonly P16 _16; public readonly P17 _17; public readonly P18 _18; public readonly P19 _19; public readonly P20 _20; public readonly P21 _21; public readonly P22 _22;
 
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21, P22 p22)
-#if UNITY_IOS
-    : this()
-#endif
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; _22 = p22; }
 
   // Unapply.
@@ -2270,9 +2204,9 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   // Unapply with function.
   public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, R> f) { return f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22); }
 
+  
 
-
-
+  
 
   public override string ToString() {
     return $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17},{_18},{_19},{_20},{_21},{_22})";
