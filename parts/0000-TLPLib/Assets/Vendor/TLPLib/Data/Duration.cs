@@ -1,10 +1,12 @@
 ﻿namespace com.tinylabproductions.TLPLib.Data {
   public struct Duration {
-    public readonly float seconds;
+    public readonly int millis;
 
-    public Duration(float seconds) { this.seconds = seconds; }
+    public static Duration fromSeconds(float seconds) => Duration.fromSeconds((int) (seconds * 1000));
 
-    public int millis => (int) (seconds * 1000);
+    public Duration(int millis) { this.millis = millis; }
+
+    public float seconds => millis / 1000f;
 
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
   }

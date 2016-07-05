@@ -132,14 +132,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
        TimeoutException<A> on timeout. */
     public static Future<Either<Duration, A>> timeout<A>(
       this Future<A> future, float timeoutSeconds
-    ) => future.timeout(timeoutSeconds, () => new Duration(timeoutSeconds));
+    ) => future.timeout(timeoutSeconds, () => Duration.fromSeconds(timeoutSeconds));
 
     /** Measures how much time has passed from call to timed to future completion. **/
     public static Future<Tpl<A, Duration>> timed<A>(this Future<A> future) {
       var startTime = Time.realtimeSinceStartup;
       return future.map(a => {
         var time = Time.realtimeSinceStartup - startTime;
-        return F.t(a, new Duration(time));
+        return F.t(a, Duration.fromSeconds(time));
       });
     }
 

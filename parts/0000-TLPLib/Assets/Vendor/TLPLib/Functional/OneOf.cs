@@ -2,15 +2,15 @@
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  static class OneOf {
-    public enum Choice { A, B, C }
+  public static class OneOf {
+    public enum Choice : byte { A, B, C }
   }
 
   public struct OneOf<A, B, C> {
     readonly A _aValue;
     readonly B _bValue;
     readonly C _cValue;
-    readonly OneOf.Choice whichOne;
+    public readonly OneOf.Choice whichOne;
 
     public OneOf(A a) {
       _aValue = a;
@@ -44,7 +44,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public bool isC => whichOne == OneOf.Choice.C;
     public Option<C> cValue => isC.opt(_cValue);
     internal C __unsafeGetC => _cValue;
-    
+
+    public override string ToString() =>
+        isA ? $"OneOf.{typeof(A)}({_aValue})"
+      : isB ? $"OneOf.{typeof(B)}({_bValue})"
+            : $"OneOf.{typeof(C)}({_cValue})";
+
     public void voidFold(Act<A> onA, Act<B> onB, Act<C> onC) {
       switch (whichOne) {
         case OneOf.Choice.A:
