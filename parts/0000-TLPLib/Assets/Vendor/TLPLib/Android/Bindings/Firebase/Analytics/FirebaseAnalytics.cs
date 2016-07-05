@@ -1,8 +1,9 @@
 ﻿#if UNITY_ANDROID
 using System;
-using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using Sasa.Collections;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
@@ -18,14 +19,14 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
 
     public void logEvent(FirebaseEvent data) {
       // Passing null indicates that the event has no parameters.
-      var parameterBundle = data.parameters.IsEmpty 
+      var parameterBundle = data.parameters.isEmpty()
         ? null : fillParameterBundle(data.parameters).java;
 
       java.Call("logEvent", data.name, parameterBundle);
     }
     
     Bundle fillParameterBundle(
-      ImmutableDictionary<string, OneOf<string, long, double>> parameters
+      Trie<string, OneOf<string, long, double>> parameters
     ) {
       var parameterBundle = new Bundle();
       foreach (var kv in parameters) {

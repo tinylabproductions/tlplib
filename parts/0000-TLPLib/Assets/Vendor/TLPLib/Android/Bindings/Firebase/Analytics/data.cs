@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using Sasa.Collections;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
   public struct FirebaseUserId : IEquatable<FirebaseUserId> {
@@ -59,10 +60,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
     );
 
     public readonly string name;
-    public readonly ImmutableDictionary<string, OneOf<string, long, double>> parameters;
+    public readonly Trie<string, OneOf<string, long, double>> parameters;
 
     public FirebaseEvent(
-      string name, ImmutableDictionary<string, OneOf<string, long, double>> parameters
+      string name, Trie<string, OneOf<string, long, double>> parameters
     ) {
       this.name = name;
       this.parameters = parameters;
@@ -91,20 +92,20 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       return errors;
     }
 
-    public static ImmutableDictionary<string, OneOf<string, long, double>>.Builder createParamsBuilder() =>
-      ImmutableDictionary.CreateBuilder<string, OneOf<string, long, double>>();
+    public static readonly Trie<string, OneOf<string, long, double>> emptyParams =
+      Trie<string, OneOf<string, long, double>>.Empty;
 
-    public static KeyValuePair<string, OneOf<string, long, double>> param(string name, string value) =>
-      new KeyValuePair<string, OneOf<string, long, double>>(name, new OneOf<string, long, double>(value));
+    public static OneOf<string, long, double> param(string value) =>
+      new OneOf<string, long, double>(value);
 
-    public static KeyValuePair<string, OneOf<string, long, double>> param(string name, long value) =>
-      new KeyValuePair<string, OneOf<string, long, double>>(name, new OneOf<string, long, double>(value));
+    public static OneOf<string, long, double> param(long value) =>
+      new OneOf<string, long, double>(value);
 
-    public static KeyValuePair<string, OneOf<string, long, double>> param(string name, double value) =>
-      new KeyValuePair<string, OneOf<string, long, double>>(name, new OneOf<string, long, double>(value));
+    public static OneOf<string, long, double> param(double value) =>
+      new OneOf<string, long, double>(value);
 
     public static Either<ImmutableList<string>, FirebaseEvent> a(
-      string name, ImmutableDictionary<string, OneOf<string, long, double>> parameters
+      string name, Trie<string, OneOf<string, long, double>> parameters
     ) {
       var errors = ImmutableList<string>.Empty;
 
@@ -119,9 +120,12 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       );
 
       // The event can have up to 25 parameters.
-      if (parameters.Count > 25) errors = errors.Add(
-        $"Event '{name}' has more than 25 parameters: {parameters.Keys.mkString(", ")} ({parameters.Count})"
-      );
+      if (parameters.Count() > 25) {
+        var paramsStr = parameters.Select(kv => kv.Key).mkString(", ");
+        errors = errors.Add(
+          $"Event '{name}' has more than 25 parameters: {paramsStr} ({parameters.Count()})"
+        );
+      }
 
       // The map of event parameters. Passing null indicates that the event has no parameters. 
       // Parameter names can be up to 24 characters long and must start with an alphabetic 

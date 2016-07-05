@@ -1,0 +1,573 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Sasa.Collections</name>
+    </assembly>
+    <members>
+        <member name="T:Sasa.Collections.Mutable.UnionFind">
+            <summary>
+            A mutable union-find data structure.
+            </summary>
+            <remarks>
+            This data structure is used to determine connected components.
+            
+            
+            According to [1], this Rem algorithm is the fastest even though it has suboptimal big-O complexity.
+            
+            [1] http://folk.uib.no/mpa002/SEA2010.pdf
+            </remarks>
+        </member>
+        <member name="M:Sasa.Collections.Mutable.UnionFind.#ctor(System.Int32)">
+            <summary>
+            Construct a 
+            </summary>
+            <param name="count">The number of nodes in the graph.</param>
+        </member>
+        <member name="M:Sasa.Collections.Mutable.UnionFind.Union(System.Int32,System.Int32)">
+            <summary>
+            Declare a connection between nodes <paramref name="x"/> and <paramref name="y"/>.
+            </summary>
+            <param name="x">The first node to connect.</param>
+            <param name="y">The second node to connect.</param>
+        </member>
+        <member name="M:Sasa.Collections.Mutable.UnionFind.IsConnected(System.Int32,System.Int32)">
+            <summary>
+            Checks whether two nodes are connected.
+            </summary>
+            <param name="x">The first node.</param>
+            <param name="y">The second node.</param>
+            <returns>True if <paramref name="x"/> and <paramref name="y"/> are transitively connected.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Mutable.UnionFind.Find(System.Int32)">
+            <summary>
+            Find the root component of the graph.
+            </summary>
+            <param name="x">The node to start the search.</param>
+            <returns>The root of the subgraph.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Mutable.UnionFind.Save">
+            <summary>
+            Save the current state.
+            </summary>
+            <returns>A marker via which we can revert any future changes and return to the current state.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Mutable.UnionFind.Restore(Sasa.Collections.Mutable.UnionFind.Mark)">
+            <summary>
+            Restore the 
+            </summary>
+            <param name="marker"></param>
+        </member>
+        <member name="P:Sasa.Collections.Mutable.UnionFind.Count">
+            <summary>
+            The number of nodes in the graph.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.Mutable.UnionFind.Roots">
+            <summary>
+            The current roots of the graph from which all nodes can be visited.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.Mutable.UnionFind.Closure">
+            <summary>
+            The set of unique pairs of transitively connected nodes.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.Mutable.UnionFind.Mark">
+            <summary>
+            A marker used to backtrack.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.FingerTree`1">
+            <summary>
+            An immutable 2-3-4 finger tree.
+            </summary>
+            <typeparam name="T">The type of items in the tree.</typeparam>
+            <remarks>
+            References:
+            http://www.soi.city.ac.uk/~ross/papers/FingerTree.pdf
+            </remarks>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Push(`0)">
+            <summary>
+            Push a new item into the tree.
+            </summary>
+            <param name="item">The item to push.</param>
+            <returns>A new tree with <paramref name="item"/> at the front.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Add(`0)">
+            <summary>
+            Add an item to the end of the tree.
+            </summary>
+            <param name="item">The item to add.</param>
+            <returns>A new tree with <paramref name="item"/> at the end.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Pop(`0@)">
+            <summary>
+            Remove item from the beginning.
+            </summary>
+            <param name="item">The popped item.</param>
+            <returns>The new tree without the first item.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Pop">
+            <summary>
+            Remove the first item.
+            </summary>
+            <returns>The new tree paired with the popped item.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Remove(`0@)">
+            <summary>
+            Remove the last item.
+            </summary>
+            <param name="item">The removed item.</param>
+            <returns>The tree without the removed item.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Remove">
+            <summary>
+            Remove the last item.
+            </summary>
+            <returns>A new tree without the last item, paired with the item removed.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.First">
+            <summary>
+            Get the first item in tree.
+            </summary>
+            <returns>The first item in tree.</returns>
+            <exception cref="T:System.InvalidOperationException">FingerTree is empty.</exception>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Last">
+            <summary>
+            Get the last item in tree.
+            </summary>
+            <returns>The last item in tree.</returns>
+            <exception cref="T:System.InvalidOperationException">FingerTree is empty.</exception>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Concat(Sasa.Collections.FingerTree{`0})">
+            <summary>
+            Concatenate another tree.
+            </summary>
+            <param name="other">The tree to concatenate after this one.</param>
+            <returns>A merged tree.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Equals(Sasa.Collections.FingerTree{`0})">
+            <summary>
+            Compare for equality.
+            </summary>
+            <param name="other">The object to compare to.</param>
+            <returns>True if equals, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.GetEnumerator">
+            <summary>
+            Get an enumerator for the tree's elements.
+            </summary>
+            <returns>An enumerator over the tree items.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.Equals(System.Object)">
+            <summary>
+            Compare for equality.
+            </summary>
+            <param name="obj">The object to compare to.</param>
+            <returns>True if equals, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.GetHashCode">
+            <summary>
+            Compute the tree's hashcode.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.op_Equality(Sasa.Collections.FingerTree{`0},Sasa.Collections.FingerTree{`0})">
+            <summary>
+            Check equality.
+            </summary>
+            <param name="left">Left tree.</param>
+            <param name="right">Right tree.</param>
+            <returns>True if equal, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.FingerTree`1.op_Inequality(Sasa.Collections.FingerTree{`0},Sasa.Collections.FingerTree{`0})">
+            <summary>
+            Check inequality.
+            </summary>
+            <param name="left">Left tree.</param>
+            <param name="right">Right tree.</param>
+            <returns>True if not equal, false otherwise.</returns>
+        </member>
+        <member name="P:Sasa.Collections.FingerTree`1.Empty">
+            <summary>
+            An empty tree.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.FingerTree`1.IsEmpty">
+            <summary>
+            True if tree is empty, false otherwise.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.WaitQueue`1">
+            <summary>
+            A queue that implements blocking pulls.
+            </summary>
+            <typeparam name="T">The type of the queue elements.</typeparam>
+            <remarks>
+            This basically implements an actor mailbox, where a thread will block trying to pull
+            the next message until one becomes available.
+            </remarks>
+        </member>
+        <member name="M:Sasa.Collections.WaitQueue`1.Finalize">
+            <summary>
+            Dispose of the wait queue.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.WaitQueue`1.Enqueue(`0)">
+            <summary>
+            Enqueue an item.
+            </summary>
+            <param name="item">The item to enqueue.</param>
+        </member>
+        <member name="M:Sasa.Collections.WaitQueue`1.Dequeue">
+            <summary>
+            The list of items currently enqueued.
+            </summary>
+            <returns>A list of items current enqueued.</returns>
+        </member>
+        <member name="M:Sasa.Collections.WaitQueue`1.Dequeue(System.Int32)">
+            <summary>
+            The list of items currently enqueued.
+            </summary>
+            <param name="timeout">Timeout in milliseconds.</param>
+            <returns>A list of items current enqueued.</returns>
+        </member>
+        <member name="M:Sasa.Collections.WaitQueue`1.GetEnumerator">
+            <summary>
+            Enumerate over the values.
+            </summary>
+            <returns>An enumerator over the enqueued values.</returns>
+        </member>
+        <member name="M:Sasa.Collections.WaitQueue`1.Dispose">
+            <summary>
+            Dispose the queue's resources.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.Vector`1">
+            <summary>
+            An immutable vector over 32-bit indices.
+            </summary>
+            <typeparam name="T">The type of values contained in the vector.</typeparam>
+            <remarks>
+            This vector is basically an unrolled variant of a 32-way tree.
+            </remarks>
+        </member>
+        <member name="M:Sasa.Collections.Vector`1.Set(System.Int32,`0)">
+            <summary>
+            Update a value in the vector.
+            </summary>
+            <param name="i">The index to update.</param>
+            <param name="value">The value to store.</param>
+            <returns>A new vector with the given value.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Vector`1.Add(`0)">
+            <summary>
+            Expand the vector.
+            </summary>
+            <param name="value">The new value.</param>
+            <returns>A vector expanded by 1 value.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Vector`1.GetEnumerator">
+            <summary>
+            Get the vector's enumerator.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:Sasa.Collections.Vector`1.Empty">
+            <summary>
+            An empty vector.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.Vector`1.Count">
+            <summary>
+            The number of elements in the vector.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.Vector`1.Item(System.Int32)">
+            <summary>
+            The vector indexer.
+            </summary>
+            <param name="i"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Sasa.Collections.IHashMap`3">
+            <summary>
+            Core interface
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.TryGetValue(`0,System.UInt32,`1@)">
+            <summary>
+            Attempt to get a value.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.Update(`0,System.UInt32,System.Int32,`1)">
+            <summary>
+            Update a fresh node with the given key-value pair.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.RemoveIsEmpty(`0,System.UInt32,System.Int32)">
+            <summary>
+            Remove a key.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.Init(`0,`1,System.UInt32,`0,`1,System.UInt32,System.Int32)">
+            <summary>
+            Initialize a fresh node with two keys.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.Merge(`2@,System.Int32)">
+            <summary>
+            Merge two nodes.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.Enumerate">
+            <summary>
+            Enumerate
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.IHashMap`3.Count">
+            <summary>
+            Compute the number of items in the tree.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.Trie`2">
+            <summary>
+            A trie implementing an immutable key-value dictionary interface.
+            </summary>
+            <typeparam name="TKey">The type of keys.</typeparam>
+            <typeparam name="TValue">The type of values.</typeparam>
+            <remarks>
+            The core implementation of this hash array mapped trie came from Jules Jacobs. A running dialogue between us
+            then filled in the rest.
+            
+            This trie is now the fastest immutable dictionary I'm aware of. Faster than ImmutableDictionary, even using the
+            builder method, faster than the previous HAMT, faster than the F# collections, and so on. Lookup is actually
+            almost as fast as a mutable dictionary.
+            </remarks>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.Count">
+            <summary>
+            Calculate the number of entries.
+            </summary>
+            <returns>The number of entries in the trie.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.TryGetValue(`0,`1@)">
+            <summary>
+            Attempt to find a value.
+            </summary>
+            <param name="key">The key to lookup.</param>
+            <param name="value">The reference under which the value is stored.</param>
+            <returns>True if the key is in the trie, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.ContainsKey(`0)">
+            <summary>
+            Check whether the key is in the trie.
+            </summary>
+            <param name="key">The key to lookup.</param>
+            <returns>True if the key is in the trie, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.Update(`0,`1)">
+            <summary>
+            Update a trie.
+            </summary>
+            <param name="key">The key to modify.</param>
+            <param name="value">The value to add or update under <paramref name="key"/>.</param>
+            <returns>A new trie with the updated binding.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.Add(`0,`1)">
+            <summary>
+            Add a key-value pair to the trie.
+            </summary>
+            <param name="key">The key to modify.</param>
+            <param name="value">The value to add or update under <paramref name="key"/>.</param>
+            <returns>A new trie with the updated binding.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the key already exists in the trie.</exception>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.Remove(`0)">
+            <summary>
+            Removes a key from the trie.
+            </summary>
+            <param name="key">The key to remove.</param>
+            <returns>A trie with the key removed.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.Merge(Sasa.Collections.Trie{`0,`1})">
+            <summary>
+            Merge two tries.
+            </summary>
+            <param name="other">The trie to merge into this one.</param>
+            <returns>A new trie that merges the contents of this trie and <paramref name="other"/>.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.GetEnumerator">
+            <summary>
+            Enumerate over the trie's contents.
+            </summary>
+            <returns>An enumerator for the trie contents.</returns>
+        </member>
+        <member name="P:Sasa.Collections.Trie`2.Item(`0)">
+            <summary>
+            Get the value corresponding to <paramref name="key"/>.
+            </summary>
+            <param name="key">The value to lookup.</param>
+            <returns>The value corresponding to <paramref name="key"/>.</returns>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if the given key does not exist in the trie.</exception>
+        </member>
+        <member name="P:Sasa.Collections.Trie`2.Empty">
+            <summary>
+            An empty trie.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.Trie`2.Collision">
+            <summary>
+            A collision node where any entries that suffer a hash collision are collected.
+            </summary>
+        </member>
+        <member name="T:Sasa.Collections.Trie`2.Node`1">
+            <summary>
+            ASn internal trie node.
+            </summary>
+            <remarks>
+            The <typeparamref name="TChild"/> parameter designates the type of the sub-trie.
+            </remarks>
+        </member>
+        <member name="M:Sasa.Collections.Trie`2.Node`1.Exists(System.UInt32,System.UInt32)">
+            <summary>
+            True if the <paramref name="bit"/> is set in <paramref name="bitmap"/>.
+            </summary>
+            <param name="bit"></param>
+            <param name="bitmap"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Sasa.Collections.Fifo`1">
+            <summary>
+            A persistent queue.
+            </summary>
+            <typeparam name="T">The type of the queue elements.</typeparam>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Initialize the queue with the given list of values.
+            </summary>
+            <param name="values">The list of values.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if argument is null.</exception>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.#ctor(`0)">
+            <summary>
+            Construct a single-element queue.
+            </summary>
+            <param name="value">The initial queue value.</param>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Set(Sasa.Collections.Fifo{`0}@)">
+            <summary>
+            Atomically update the slot.
+            </summary>
+            <param name="slot">The slot to update.</param>
+            <returns>True if the slot was updated atomically, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Equals(Sasa.Collections.Fifo{`0})">
+            <summary>
+            Tests structural equality of two queues.
+            </summary>
+            <param name="other">The other queue to compare to.</param>
+            <returns>True if the queues are equal, false otherwise.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Equals(System.Object)">
+            <summary>
+            Compares two objects for equality.
+            </summary>
+            <param name="obj">The other object to compare to.</param>
+            <returns>Returns true if the objects are equal.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.GetHashCode">
+            <summary>
+            Returns the hash code for the current sequence.
+            </summary>
+            <returns>The integer hash code.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Enqueue(`0)">
+            <summary>
+            Enqueue a value and return a new queue.
+            </summary>
+            <param name="value">The value to enqueue.</param>
+            <returns>A new queue with <paramref name="value"/> as its last element.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Append(Sasa.Collections.Fifo{`0})">
+            <summary>
+            Appends the elements of two queues.
+            </summary>
+            <param name="other">The queue whose elements we should append.</param>
+            <returns>A new queue consisting of this queue's elements followed by <paramref name="other"/>'s elements.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Dequeue(`0@)">
+            <summary>
+            Dequeue the first value in the queue.
+            </summary>
+            <param name="value">The first value in the queue.</param>
+            <returns>Returns a new queue minus the first value.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.Dequeue">
+            <summary>
+            Remove an item from the collection
+            </summary>
+            <returns>A pair of a new collection without the item, and the item that was removed.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.GetEnumerator">
+            <summary>
+            Returns an enumerator over the given list.
+            </summary>
+            <returns>An enumeration over the list.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.op_Equality(Sasa.Collections.Fifo{`0},Sasa.Collections.Fifo{`0})">
+            <summary>
+            Test two queues for equality.
+            </summary>
+            <param name="left">The left queue.</param>
+            <param name="right">The right queue.</param>
+            <returns>Returns true if they are equal.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.op_Inequality(Sasa.Collections.Fifo{`0},Sasa.Collections.Fifo{`0})">
+            <summary>
+            Test two sequences for inequality.
+            </summary>
+            <param name="left">The left sequence.</param>
+            <param name="right">The right sequence.</param>
+            <returns>Returns true if they are not equal.</returns>
+        </member>
+        <member name="M:Sasa.Collections.Fifo`1.ToString">
+            <summary>
+            Converts a queue to a string.
+            </summary>
+            <returns>A string representation of the queue.</returns>
+        </member>
+        <member name="P:Sasa.Collections.Fifo`1.Empty">
+            <summary>
+            An empty queue.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.Fifo`1.IsEmpty">
+            <summary>
+            Returns true if the queue is empty.
+            </summary>
+        </member>
+        <member name="P:Sasa.Collections.Fifo`1.Value">
+            <summary>
+            Returns the first value in the queue.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Thrown if the queue is empty.</exception>
+        </member>
+        <member name="T:Sasa.Collections.Fifo">
+            <summary>
+            Extension methods on <see cref="T:Sasa.Collections.Fifo`1"/>.
+            </summary>
+        </member>
+        <member name="M:Sasa.Collections.Fifo.ToQueue``1(Sasa.Collections.Lifo{``0})">
+            <summary>
+            Convert a sequence to a queue.
+            </summary>
+            <typeparam name="T">The type of elements.</typeparam>
+            <param name="seq">The sequence to convert to a queue.</param>
+            <returns>A queue whose first element is the top of the stack.</returns>
+        </member>
+    </members>
+</doc>
