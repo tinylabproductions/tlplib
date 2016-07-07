@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using Sasa.Collections;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
   public struct FirebaseUserId : IEquatable<FirebaseUserId> {
@@ -60,10 +59,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
     );
 
     public readonly string name;
-    public readonly Trie<string, OneOf<string, long, double>> parameters;
+    public readonly IDictionary<string, OneOf<string, long, double>> parameters;
 
     public FirebaseEvent(
-      string name, Trie<string, OneOf<string, long, double>> parameters
+      string name, IDictionary<string, OneOf<string, long, double>> parameters
     ) {
       this.name = name;
       this.parameters = parameters;
@@ -92,8 +91,8 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       return errors;
     }
 
-    public static readonly Trie<string, OneOf<string, long, double>> emptyParams =
-      Trie<string, OneOf<string, long, double>>.Empty;
+    public static IDictionary<string, OneOf<string, long, double>> emptyParams =>
+      new Dictionary<string, OneOf<string, long, double>>();
 
     public static OneOf<string, long, double> param(string value) =>
       new OneOf<string, long, double>(value);
@@ -105,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       new OneOf<string, long, double>(value);
 
     public static Either<ImmutableList<string>, FirebaseEvent> a(
-      string name, Trie<string, OneOf<string, long, double>> parameters
+      string name, IDictionary<string, OneOf<string, long, double>> parameters
     ) {
       var errors = ImmutableList<string>.Empty;
 
