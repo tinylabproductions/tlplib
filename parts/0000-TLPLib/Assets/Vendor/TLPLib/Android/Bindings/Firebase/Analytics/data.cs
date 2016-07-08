@@ -91,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       return errors;
     }
 
-    public static IDictionary<string, OneOf<string, long, double>> emptyParams =>
+    public static IDictionary<string, OneOf<string, long, double>> createEmptyParams() =>
       new Dictionary<string, OneOf<string, long, double>>();
 
     public static OneOf<string, long, double> param(string value) =>
