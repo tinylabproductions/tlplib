@@ -1,13 +1,18 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public abstract class CodePreprocessorTestBase {
     public const string CODE =
-      @"using com.tinylabproductions.TLPLib.Test;
+      @"#if PART_UNITYADS
+#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Test; 
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
@@ -17,39 +22,77 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 }";
 
     public const string PRAG_STR = "#pragma warning disable\n";
-    public const string CODE_WITH_PRAGMA = PRAG_STR + CODE;
+    
+    public const string CODE_WITH_PRAGMA =
+       @"#if PART_UNITYADS
+#if UNITY_ANDROID
+#pragma warning disable
+using com.tinylabproductions.TLPLib.Test; 
+using NUnit.Framework;
+
+namespace com.tinylabproductions.TLPLib.Editor.Utils {
+  public class CodePreprocessorTest {
+    // Code here
+  }
+}";
+
+    public const string CODE_WITH_PRAGMA_WRONG_PLACE =
+      @"#if PART_UNITYADS
+#pragma warning disable
+#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Test; 
+using NUnit.Framework;
+
+namespace com.tinylabproductions.TLPLib.Editor.Utils {
+  public class CodePreprocessorTest {
+    // Code here
+  }
+}";
+
   }
 
-  public class CodePreprocessorTestWritingPragmaInFront : CodePreprocessorTestBase {
+  public class CodePreprocessorTestWritingPragma : CodePreprocessorTestBase {
+
     [Test]
     public void WhenHasPragma() {
-      CodePreprocessor.checkAndWritePragmaInFront(CODE_WITH_PRAGMA).shouldEqual(CODE_WITH_PRAGMA);
+      var lines = Regex.Split(CODE_WITH_PRAGMA, "\r\n|\r|\n").ToImmutableArray();
+      var actual = string.Join("\n", CodePreprocessor.checkAndWritePragma(lines).ToArray());
+      actual.shouldEqual(CODE_WITH_PRAGMA);
     }
 
     [Test]
     public void WhenDoesntHavePragma() {
-      CodePreprocessor.checkAndWritePragmaInFront(CODE).shouldEqual(CODE_WITH_PRAGMA);
-    }
-  }
-
-  public class CodePreprocessorTestRemovingPragmaInFront : CodePreprocessorTestBase {
-    [Test] public void WhenHasPragma() => 
-      CodePreprocessor.removePragmaFromFront(CODE_WITH_PRAGMA).shouldEqual(CODE);
-
-    [Test] public void WhenDoesntHavePragma() => 
-      CodePreprocessor.removePragmaFromFront(CODE).shouldEqual(CODE);
-  }
-
-  public class CodePreprocessorTestHasPragmaInFront : CodePreprocessorTestBase {
-    [Test]
-    public void WhenHasPragma() {
-      CodePreprocessor.hasPragmaInFront(CODE_WITH_PRAGMA).shouldBeTrue();
+      var lines = Regex.Split(CODE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = string.Join("\n", CodePreprocessor.checkAndWritePragma(lines).ToArray());
+      actual.shouldEqual(CODE_WITH_PRAGMA);
     }
 
     [Test]
-    public void WhenDoesntHavePragma() {
-      CodePreprocessor.hasPragmaInFront(CODE).shouldBeFalse();
+    public void WhenHasPragmaInWronPlace()
+    {
+      var lines = Regex.Split(CODE_WITH_PRAGMA_WRONG_PLACE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = string.Join("\n", CodePreprocessor.checkAndWritePragma(lines).ToArray());
+      actual.shouldEqual(CODE_WITH_PRAGMA);
     }
+
+    //public class CodePreprocessorTestRemovingPragmaInFront : CodePreprocessorTestBase {
+    //  [Test] public void WhenHasPragma() => 
+    //    CodePreprocessor.removePragmaFromFront(CODE_WITH_PRAGMA).shouldEqual(CODE);
+
+    //  [Test] public void WhenDoesntHavePragma() => 
+    //    CodePreprocessor.removePragmaFromFront(CODE).shouldEqual(CODE);
+    //}
+
+    //public class CodePreprocessorTestHasPragmaInFront : CodePreprocessorTestBase {
+    //  [Test]
+    //  public void WhenHasPragma() {
+    //    CodePreprocessor.hasPragmaInFront(CODE_WITH_PRAGMA).shouldBeTrue();
+    //  }
+
+    //  [Test]
+    //  public void WhenDoesntHavePragma() {
+    //    CodePreprocessor.hasPragmaInFront(CODE).shouldBeFalse();
+    //  }
   }
   
   public class CodePreprocessorTestGetFilePaths : CodePreprocessorTestBase {

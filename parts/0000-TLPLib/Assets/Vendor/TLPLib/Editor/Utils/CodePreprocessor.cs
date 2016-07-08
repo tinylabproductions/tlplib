@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using System.IO;
 using System.Linq;
@@ -11,7 +12,9 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public class CodePreprocessor : MonoBehaviour {
-    public const string PRAG_STR = "#pragma warning disable\n";
+    public const string PRAG_STR = "#pragma warning disable";
+    public const string DIRECTIVES_STR = "#";
+
     static Option<PathStr> selectedPath => 
       AssetDatabase.GetAssetPath(Selection.activeObject).nonEmptyOpt().map(PathStr.a);
 
@@ -46,20 +49,65 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     public static void processFile(string path, bool add) {
-      var text = File.ReadAllText(path);
-      var editedText = add ? checkAndWritePragmaInFront(text) : removePragmaFromFront(text);
-      File.WriteAllText(path, editedText);
+      var lines = File.ReadAllLines(path).ToImmutableArray();
+      var editedText = (add ? checkAndWritePragma(lines) : checkAndRemovePragma(lines)).ToArray();
+      File.WriteAllLines(path, editedText);
     }
 
-    public static string removePragmaFromFront(string text) {
-      return hasPragmaInFront(text) ? text.Remove(0, PRAG_STR.Length) : text;
+    public static ImmutableArray<string> checkAndRemovePragma(ImmutableArray<string> lines) {
+      var lastIndex = getLastDirectiveIndex(lines);
+      foreach (var last in lastIndex) {
+        var pragLine = pragmaLineNumber(lines, last);
+        foreach (var prag in pragLine) {
+          return removePragma(lines, prag);
+        }
+        return lines;
+      }
+      return lines;
     }
 
-    public static string checkAndWritePragmaInFront(string text) {
-      return !hasPragmaInFront(text) ? $"{PRAG_STR}{text}" : text;
+    public static ImmutableArray<string> checkAndWritePragma(ImmutableArray<string> lines) {
+      var lastIndex = getLastDirectiveIndex(lines);
+      foreach (var last in lastIndex) { 
+        var pragLine = pragmaLineNumber(lines, last);
+        foreach (var prag in pragLine) {
+          return prag == last ? lines : reformatPragmas(lines, prag, last);
+        }
+        return addPragma(lines, last + 1);
+      }
+      return addPragma(lines, 0);
     }
 
-    public static bool hasPragmaInFront(string text) => text.StartsWith(PRAG_STR);
+
+    static ImmutableArray<string> removePragma(ImmutableArray<string> lines, int pragmaIndex) {
+      return lines.RemoveAt(pragmaIndex);
+    } 
+    
+    static ImmutableArray<string> addPragma(ImmutableArray<string> lines, int lineIndex) {
+      return lines.Insert(lineIndex, PRAG_STR);
+    }
+
+    static ImmutableArray<string> reformatPragmas(ImmutableArray<string> lines, int pragIndex, int lastIndex) {
+      var linesNew = addPragma(lines, lastIndex + 1);
+      return linesNew.RemoveAt(pragIndex);
+    }
+
+    public static Option<int> getLastDirectiveIndex(ImmutableArray<string> lines) {
+      var i = 0;
+      while (lines[i].StartsWith(DIRECTIVES_STR)) {
+        i++;
+      }
+      return (i != 0) ? F.some(i-1) : F.none<int>();
+    }
+
+    public static Option<int> pragmaLineNumber(ImmutableArray<string> lines, int lastIndex) {
+      for (var i = 0; i < lastIndex + 1; i++) {
+        if (lines[i].StartsWith(PRAG_STR)) {
+          return F.some(i);
+        }
+      }
+      return F.none<int>();
+    }
 
     public static Either<string, ImmutableArray<PathStr>> getFilePaths(PathStr rootPath, string fileExt) {
       if (!Directory.Exists(rootPath))
