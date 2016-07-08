@@ -1,5 +1,10 @@
-﻿using System;
+﻿#if UNITY_IOS
+#define OPTION_AS_CLASS
+#endif
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 
@@ -15,6 +20,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
  * methods, than instance ones.
  **/
 public static class Option {
+  /** 
+   * Options are classes on iOS and if we use default(Option<A>) as a 
+   * default argument in method parameter list, you'd get a null. To make
+   * sure we have a value, use ```Option.ensureValue(ref someOpt);```.
+   */
+  [Conditional("OPTION_AS_CLASS")]
+  public static void ensureValue<A>(ref Option<A> opt) {
+#if OPTION_AS_CLASS
+    if (opt == null) opt = Option<A>.None;
+#endif
+  }
+
   public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt)
   where Child : Base {
     return opt.isDefined ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
@@ -41,19 +58,19 @@ public static class Option {
 }
 
 public
-#if UNITY_IOS
+#if OPTION_AS_CLASS
   class
 #else
   struct
 #endif
   Option<A>
 {
-  public static Option<A> None { get { return new Option<A>(); } }
+  public static Option<A> None { get; } = new Option<A>();
 
   private readonly A value;
   public readonly bool isSome;
 
-#if UNITY_IOS
+#if OPTION_AS_CLASS
   public Option() {}
 #endif
 
@@ -109,11 +126,11 @@ public
   } }
 
   /* A quick way to get None instance for this options type. */
-  public Option<A> none => F.none<A>();
+  public Option<A> none => None;
 
-  #region Equality
+#region Equality
 
-#if UNITY_IOS
+#if OPTION_AS_CLASS
   protected bool Equals(Option<A> other) {
     return EqualityComparer<A>.Default.Equals(value, other.value) && isSome == other.isSome;
   }
@@ -176,7 +193,7 @@ public
   }
 #endif
 
-  #endregion
+#endregion
 
   public OptionEnumerator<A> GetEnumerator() { return new OptionEnumerator<A>(this); }
 

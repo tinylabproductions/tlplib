@@ -13,8 +13,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
         ? new Option<A>() : new Option<A>(value);
     }
 
-    public static Option<A> some<A>(A value) { return new Option<A>(value); }
-    public static Option<A> none<A>() { return new Option<A>(); }
+    public static Option<A> some<A>(A value) => new Option<A>(value);
+    public static Option<A> none<A>() => Option<A>.None;
 
     public static Either<A, B> left<A, B>(A value) { return new Either<A, B>(value); }
     public static Either<A, B> right<A, B>(B value) { return new Either<A, B>(value); }
