@@ -39,5 +39,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var val in dict.get(key)) return val;
       throw new KeyNotFoundException($"Cannot find {key} in {dict.asString()}");
     }
+
+    public static bool isEmpty<K, V>(this IDictionary<K, V> dict) => dict.Count == 0;
+    public static bool nonEmpty<K, V>(this IDictionary<K, V> dict) => dict.Count != 0;
   }
 }
