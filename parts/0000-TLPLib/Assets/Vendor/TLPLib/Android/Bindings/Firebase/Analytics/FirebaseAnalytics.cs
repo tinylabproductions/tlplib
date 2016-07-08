@@ -1,9 +1,9 @@
 ﻿#if UNITY_ANDROID
 using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using Sasa.Collections;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
     }
     
     Bundle fillParameterBundle(
-      Trie<string, OneOf<string, long, double>> parameters
+      IDictionary<string, OneOf<string, long, double>> parameters
     ) {
       var parameterBundle = new Bundle();
       foreach (var kv in parameters) {
