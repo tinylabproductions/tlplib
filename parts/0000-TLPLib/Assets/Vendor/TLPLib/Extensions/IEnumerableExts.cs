@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return dict;
     }
 
-    public static IEnumerable<A> add<A>(this IEnumerable<A> e, A a) { return e.Concat(a.Yield()); }
+    public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) { return e.Concat(a.Yield()); }
 
     public static IEnumerable<A> Yield<A>(this A any) {
       yield return any;
