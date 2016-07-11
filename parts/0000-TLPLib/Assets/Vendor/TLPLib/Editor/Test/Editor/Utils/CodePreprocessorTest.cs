@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public abstract class CodePreprocessorTestBase {
+
     public const string CODE =
       @"#if PART_UNITYADS
 #if UNITY_ANDROID
@@ -54,47 +55,100 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public class CodePreprocessorTestWritingPragma : CodePreprocessorTestBase {
 
     [Test]
-    public void WhenHasPragma() {
+    public void whenHasPragma() {
       var lines = Regex.Split(CODE_WITH_PRAGMA, "\r\n|\r|\n").ToImmutableArray();
       var actual = string.Join("\n", CodePreprocessor.checkAndWritePragma(lines).ToArray());
       actual.shouldEqual(CODE_WITH_PRAGMA);
     }
 
     [Test]
-    public void WhenDoesntHavePragma() {
+    public void whenDoesntHavePragma() {
       var lines = Regex.Split(CODE, "\r\n|\r|\n").ToImmutableArray();
       var actual = string.Join("\n", CodePreprocessor.checkAndWritePragma(lines).ToArray());
       actual.shouldEqual(CODE_WITH_PRAGMA);
     }
 
     [Test]
-    public void WhenHasPragmaInWronPlace()
-    {
+    public void whenHasPragmaInTheWrongPlace() {
       var lines = Regex.Split(CODE_WITH_PRAGMA_WRONG_PLACE, "\r\n|\r|\n").ToImmutableArray();
       var actual = string.Join("\n", CodePreprocessor.checkAndWritePragma(lines).ToArray());
       actual.shouldEqual(CODE_WITH_PRAGMA);
     }
-
-    //public class CodePreprocessorTestRemovingPragmaInFront : CodePreprocessorTestBase {
-    //  [Test] public void WhenHasPragma() => 
-    //    CodePreprocessor.removePragmaFromFront(CODE_WITH_PRAGMA).shouldEqual(CODE);
-
-    //  [Test] public void WhenDoesntHavePragma() => 
-    //    CodePreprocessor.removePragmaFromFront(CODE).shouldEqual(CODE);
-    //}
-
-    //public class CodePreprocessorTestHasPragmaInFront : CodePreprocessorTestBase {
-    //  [Test]
-    //  public void WhenHasPragma() {
-    //    CodePreprocessor.hasPragmaInFront(CODE_WITH_PRAGMA).shouldBeTrue();
-    //  }
-
-    //  [Test]
-    //  public void WhenDoesntHavePragma() {
-    //    CodePreprocessor.hasPragmaInFront(CODE).shouldBeFalse();
-    //  }
   }
-  
+
+  public class CodePreprocessorTestRemovingPragma : CodePreprocessorTestBase {
+
+    [Test]
+    public void whenHasPragma() {
+      var lines = Regex.Split(CODE_WITH_PRAGMA, "\r\n|\r|\n").ToImmutableArray();
+      var actual = string.Join("\n", CodePreprocessor.checkAndRemovePragma(lines).ToArray());
+      actual.shouldEqual(CODE);
+    }
+
+    [Test]
+    public void whenDoesntHavePragma() {
+      var lines = Regex.Split(CODE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = string.Join("\n", CodePreprocessor.checkAndRemovePragma(lines).ToArray());
+      actual.shouldEqual(CODE);
+    }
+
+    [Test]
+    public void whenHasPragmaInTheWrongPlace() {
+      var lines = Regex.Split(CODE_WITH_PRAGMA_WRONG_PLACE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = string.Join("\n", CodePreprocessor.checkAndRemovePragma(lines).ToArray());
+      actual.shouldEqual(CODE);
+    }
+  }
+
+  public class CodePreprocessorTestGetLastDirectiveIndex : CodePreprocessorTestBase {
+
+    [Test]
+    public void whenHasPragma() {
+      var lines = Regex.Split(CODE_WITH_PRAGMA, "\r\n|\r|\n").ToImmutableArray();
+      var actual = CodePreprocessor.getLastDirectiveIndex(lines);
+      actual.get.shouldEqual(2);
+    }
+
+    [Test]
+    public void whenDoesntHavePragma() {
+      var lines = Regex.Split(CODE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = CodePreprocessor.getLastDirectiveIndex(lines);
+      actual.get.shouldEqual(1);
+    }
+
+    [Test]
+    public void whenHasPragmaInTheWrongPlace() {
+      var lines = Regex.Split(CODE_WITH_PRAGMA_WRONG_PLACE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = CodePreprocessor.getLastDirectiveIndex(lines);
+      actual.get.shouldEqual(2);
+    }
+  }
+
+  public class CodePreprocessorTestPragmaLineNumber : CodePreprocessorTestBase {
+
+    [Test]
+    public void whenHasPragma() {
+      var lines = Regex.Split(CODE_WITH_PRAGMA, "\r\n|\r|\n").ToImmutableArray();
+      var actual = CodePreprocessor.pragmaLineNumber(lines, 5);
+      actual.get.shouldEqual(2);
+    }
+
+    [Test]
+    public void whenDoesntHavePragma() {
+      var lines = Regex.Split(CODE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = CodePreprocessor.pragmaLineNumber(lines, 5);
+      actual.shouldBeNone();
+    }
+
+    [Test]
+    public void whenHasPragmaInTheWrongPlace() {
+      var lines = Regex.Split(CODE_WITH_PRAGMA_WRONG_PLACE, "\r\n|\r|\n").ToImmutableArray();
+      var actual = CodePreprocessor.pragmaLineNumber(lines, 5);
+      actual.get.shouldEqual(1);
+    }
+  }
+
+
   public class CodePreprocessorTestGetFilePaths : CodePreprocessorTestBase {
     readonly PathStr p_rootPath, p_emptyDir, p_noCsFilesDir, p_noneCsFile;
     readonly PathStr p_cs1, p_cs2, p_cs3, p_cs4;
@@ -118,31 +172,31 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     [Test]
-    public void WhenManySubdirectories() {
+    public void whenManySubdirectories() {
       var actual = CodePreprocessor.getFilePaths(p_rootPath, "*.cs").rightValue.get.ToImmutableHashSet();
       actual.shouldEqual(ImmutableHashSet.Create(p_cs1, p_cs2, p_cs3, p_cs4));
     }
 
     [Test]
-    public void WhenEmptyDir() {
+    public void whenEmptyDir() {
       var actual = CodePreprocessor.getFilePaths(p_emptyDir, "*.cs");
       actual.leftValue.isDefined.shouldBeTrue();
     }
 
     [Test]
-    public void WhenDirWithNoCsFiles() {
+    public void whenDirWithNoCsFiles() {
       var actual = CodePreprocessor.getFilePaths(p_noCsFilesDir, "*.cs");
       actual.leftValue.isDefined.shouldBeTrue();
     }
 
     [Test]
-    public void WhenCsFile() {
+    public void whenCsFile() {
       var actual = CodePreprocessor.getFilePaths(p_cs1, "*.cs").rightValue.get.ToImmutableHashSet();
       actual.shouldEqual(ImmutableHashSet.Create(p_cs1));
     }
 
     [Test]
-    public void WhenNoneCsFile() {
+    public void whenNoneCsFile() {
       var actual = CodePreprocessor.getFilePaths(p_noneCsFile, "*.cs");
       actual.leftValue.isDefined.shouldBeTrue();
     }
