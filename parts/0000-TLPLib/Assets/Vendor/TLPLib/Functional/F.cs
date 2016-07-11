@@ -9,8 +9,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
       // have been destroyed, target == null will return false, whereas
       // target.Equals(null) will return true.  Otherwise we don't really
       // get the benefits of the nanny.
-      return (value == null || value.Equals(null)) 
-        ? new Option<A>() : new Option<A>(value);
+      return value == null || value.Equals(null)
+        ? Option<A>.None : new Option<A>(value);
     }
 
     public static Option<A> some<A>(A value) => new Option<A>(value);
