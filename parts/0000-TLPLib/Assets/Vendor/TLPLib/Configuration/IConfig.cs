@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
@@ -30,6 +31,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     float getFloat(string key);
     double getDouble(string key);
     bool getBool(string key);
+    FRange getFRange(string key);
     DateTime getDateTime(string key);
     IConfig getSubConfig(string key);
     IList<IConfig> getSubConfigList(string key);
@@ -50,6 +52,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Option<float> optFloat(string key);
     Option<double> optDouble(string key);
     Option<bool> optBool(string key);
+    Option<FRange> optFRange(string key);
     Option<DateTime> optDateTime(string key);
     Option<IConfig> optSubConfig(string key);
     Option<IList<IConfig>> optSubConfigList(string key);
@@ -70,6 +73,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Either<ConfigFetchError, float> eitherFloat(string key);
     Either<ConfigFetchError, double> eitherDouble(string key);
     Either<ConfigFetchError, bool> eitherBool(string key);
+    Either<ConfigFetchError, FRange> eitherFRange(string key);
     Either<ConfigFetchError, DateTime> eitherDateTime(string key);
     Either<ConfigFetchError, IConfig> eitherSubConfig(string key);
     Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key);
@@ -90,6 +94,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     Try<float> tryFloat(string key);
     Try<double> tryDouble(string key);
     Try<bool> tryBool(string key);
+    Try<FRange> tryFRange(string key);
     Try<DateTime> tryDateTime(string key);
     Try<IConfig> trySubConfig(string key);
     Try<IList<IConfig>> trySubConfigList(string key);

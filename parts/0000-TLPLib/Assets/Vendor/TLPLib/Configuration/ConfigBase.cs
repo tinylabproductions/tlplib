@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
@@ -35,6 +36,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public bool getBool(string key)
     { return tryBool(key).getOrThrow; }
+
+    public FRange getFRange(string key)
+    { return tryFRange(key).getOrThrow; }
 
     public DateTime getDateTime(string key)
     { return tryDateTime(key).getOrThrow; }
@@ -79,6 +83,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public Option<bool> optBool(string key)
     { return eitherBool(key).toOpt(); }
 
+    public Option<FRange> optFRange(string key)
+    { return eitherFRange(key).toOpt(); }
+
     public Option<DateTime> optDateTime(string key)
     { return eitherDateTime(key).toOpt(); }
 
@@ -104,6 +111,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public Try<float> tryFloat(string key) { return eitherFloat(key).fold(tryEx<float>, F.scs); }
     public Try<double> tryDouble(string key) { return eitherDouble(key).fold(tryEx<double>, F.scs); }
     public Try<bool> tryBool(string key) { return eitherBool(key).fold(tryEx<bool>, F.scs); }
+    public Try<FRange> tryFRange(string key) { return eitherFRange(key).fold(tryEx<FRange>, F.scs); }
     public Try<DateTime> tryDateTime(string key) { return eitherDateTime(key).fold(tryEx<DateTime>, F.scs); }
     public Try<IConfig> trySubConfig(string key) { return eitherSubConfig(key).fold(tryEx<IConfig>, F.scs); }
     public Try<IList<IConfig>> trySubConfigList(string key) { return eitherSubConfigList(key).fold(tryEx<IList<IConfig>>, F.scs); }
@@ -128,6 +136,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public abstract Either<ConfigFetchError, float> eitherFloat(string key);
     public abstract Either<ConfigFetchError, double> eitherDouble(string key);
     public abstract Either<ConfigFetchError, bool> eitherBool(string key);
+    public abstract Either<ConfigFetchError, FRange> eitherFRange(string key);
     public abstract Either<ConfigFetchError, DateTime> eitherDateTime(string key);
     public abstract Either<ConfigFetchError, IConfig> eitherSubConfig(string key);
     public abstract Either<ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key);

@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public class ConfigWWWError : ConfigFetchError {
       public readonly WWWError error;
 
-      public ConfigWWWError(Urls urls, WWWError error) 
+      public ConfigWWWError(Urls urls, WWWError error)
       : base(urls, $"WWW error: {error.error}")
       { this.error = error; }
     }
@@ -66,8 +66,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       // C# calls URLs URIs. See http://stackoverflow.com/a/1984225/935259 for distinction.
       /** Actual URL this config needs to be fetched. **/
       public readonly Uri fetchUrl;
-      /** 
-       * URL used in reporting. For example you might want to not 
+      /**
+       * URL used in reporting. For example you might want to not
        * include timestamp when sending the URL to your error logger.
        **/
       public readonly Uri reportUrl;
@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         this.reportUrl = reportUrl;
       }
 
-      public override string ToString() => 
+      public override string ToString() =>
         $"{nameof(Config)}.{nameof(Urls)}[fetch={fetchUrl}, report={reportUrl}]";
 
       #region Equality
@@ -112,7 +112,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       Urls urls, float timeoutS, string expectedContentType="application/json"
     ) {
       return new WWW(urls.fetchUrl.ToString()).wwwFuture()
-        .timeout(timeoutS).map(wwwE => 
+        .timeout(timeoutS).map(wwwE =>
           wwwE.map(
             timeout => (ConfigFetchError) new ConfigTimeoutError(urls, timeout),
             e => e.mapLeft(err => (ConfigFetchError) new ConfigWWWError(urls, err))
@@ -204,6 +204,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       catch (OverflowException) {}
       return Option<float>.None;
     };
+    static readonly Fn<object, Option<float>> fnFloatParser = _ => floatParser(_);
     public static readonly Parser<double> doubleParser = n => {
       try {
         if (n is double) return F.some((double) n);
@@ -217,6 +218,15 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return Option<double>.None;
     };
     public static readonly Parser<bool> boolParser = n => castA<bool>(n);
+
+    public static readonly Parser<FRange> fRangeParser = n => {
+      foreach (var dict in F.opt(n as Dictionary<string, object>)) {
+        foreach (var lower in dict.get("lower").flatMap(fnFloatParser))
+          foreach (var upper in dict.get("upper").flatMap(fnFloatParser))
+            return F.some(new FRange(lower, upper));
+      }
+      return Option<FRange>.None;
+    };
 
     public static readonly Parser<DateTime> dateTimeParser = n =>
       n is DateTime
@@ -261,6 +271,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public override Either<Configuration.ConfigFetchError, bool> eitherBool(string key)
     { return get(key, boolParser); }
+
+    public override Either<Configuration.ConfigFetchError, FRange> eitherFRange(string key)
+    { return get(key, fRangeParser); }
 
     public override Either<Configuration.ConfigFetchError, DateTime> eitherDateTime(string key)
     { return get(key, dateTimeParser); }
