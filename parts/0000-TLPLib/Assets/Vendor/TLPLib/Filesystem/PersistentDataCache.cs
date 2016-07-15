@@ -7,9 +7,12 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Filesystem {
   class PersistentDataCache {
     static readonly Encoding defaultEncoding = Encoding.UTF8;
-    static readonly PathStr root = new PathStr(Application.persistentDataPath);
+    static readonly Option<PathStr> root = Application.persistentDataPath.nonEmptyOpt(trim: true).map(PathStr.a);
 
-    public static PathStr fullPath(string name) { return root / name; }
+    public static Option<PathStr> fullPath(string name) {
+      foreach (var r in root) return F.some(r / name);
+      return F.none<PathStr>();
+    }
 
     public static Option<Try<byte[]>> read(PathStr path) {
       return File.Exists(path)

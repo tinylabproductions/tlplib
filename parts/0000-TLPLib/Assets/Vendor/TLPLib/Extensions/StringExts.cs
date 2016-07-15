@@ -79,9 +79,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static bool isEmpty(this string s) { return s.Length == 0; }
     public static bool nonEmpty(this string s) { return s.Length != 0; }
-
-    public static Option<string> nonEmptyOpt(this string s)
-      { return (!string.IsNullOrEmpty(s)).opt(s); }
+    
+    public static Option<string> nonEmptyOpt(this string s, bool trim = false) {
+      if (s == null) return F.none<string>();
+      if (trim) s = s.Trim();
+      return s.isEmpty() ? F.none<string>() : F.some(s);
+    }
 
     public static string ensureStartsWith(this string s, string prefix)
       { return s.StartsWith(prefix) ? s : $"{prefix}{s}"; }
