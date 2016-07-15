@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Android {
    * methods in case someone wants to call them.
    **/
 #if UNITY_ANDROID
-  public class JavaRunnable : AndroidJavaProxy {
+  public class JavaRunnable : JavaProxy {
     public readonly Action runnable;
 
     public JavaRunnable(Action runnable) : base("java/lang/Runnable") {
@@ -15,11 +15,6 @@ namespace com.tinylabproductions.TLPLib.Android {
     }
 
     public static JavaRunnable a(Action runnable) { return new JavaRunnable(runnable); }
-
-    /* May be called from Java side. */
-    public string toString() { return ToString(); }
-    public int hashCode() { return GetHashCode(); }
-    public bool equals(object o) { return this == o; }
 
     /* Called from Java side. */
     public void run() { runnable(); }
