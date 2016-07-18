@@ -9,10 +9,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     static readonly Encoding defaultEncoding = Encoding.UTF8;
     static readonly Option<PathStr> root = Application.persistentDataPath.nonEmptyOpt(trim: true).map(PathStr.a);
 
-    public static Option<PathStr> fullPath(string name) {
-      foreach (var r in root) return F.some(r / name);
-      return F.none<PathStr>();
-    }
+    public static Option<PathStr> fullPath(string name) => root.map(_ => _ / name);
 
     public static Option<Try<byte[]>> read(PathStr path) {
       return File.Exists(path)
