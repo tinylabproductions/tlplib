@@ -7,17 +7,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [Test]
     public void WhenStringNull() {
       ((string) null).nonEmptyOpt().shouldBeNone();
+      ((string) null).nonEmptyOpt(true).shouldBeNone();
     }
 
     [Test]
     public void WhenStringEmpty() {
       "".nonEmptyOpt().shouldBeNone();
+      "".nonEmptyOpt(true).shouldBeNone();
     }
 
     [Test]
     public void WhenStringNonEmpty() {
       " ".nonEmptyOpt().shouldBeSome(" ");
-      "foo".nonEmptyOpt().shouldBeSome("foo");
+      " ".nonEmptyOpt(true).shouldBeNone();
+      "foo ".nonEmptyOpt().shouldBeSome("foo ");
+      "foo ".nonEmptyOpt(true).shouldBeSome("foo");
     }
   }
 
