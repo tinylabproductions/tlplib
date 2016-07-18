@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -29,6 +30,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static DConsole instance { get; } = new DConsole();
+    public static readonly ImmutableArray<bool> bools = ImmutableArray.Create(true, false);
 
     DConsole() {
       var r = registrarFor(nameof(DConsole));
@@ -122,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public void destroy() {
-      foreach (var instance in current) { 
+      foreach (var instance in current) {
         Application.logMessageReceived -= onLogMessageReceived;
         Object.Destroy(instance.view.gameObject);
       }
