@@ -231,7 +231,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static readonly Parser<DateTime> dateTimeParser = n =>
       n is DateTime
       ? F.some((DateTime) n)
-      : F.opt(n as string).flatMap(_ => _.parseDateTime().rightValue);
+      : F.opt(n as string).flatMap(_ => _.parseDateTime().value);
 
     public override string scope { get; }
 
