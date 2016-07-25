@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct VersionNumber {
+  public struct VersionNumber : IEquatable<VersionNumber> {
     public const char DEFAULT_SEPARATOR = '.';
     public readonly uint major, minor, bugfix;
     public readonly char separator;
@@ -15,6 +15,32 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.bugfix = bugfix;
       this.separator = separator;
     }
+
+    #region Equality
+
+    public bool Equals(VersionNumber other) {
+      return major == other.major && minor == other.minor && bugfix == other.bugfix && separator == other.separator;
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is VersionNumber && Equals((VersionNumber) obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked {
+        var hashCode = (int) major;
+        hashCode = (hashCode * 397) ^ (int) minor;
+        hashCode = (hashCode * 397) ^ (int) bugfix;
+        hashCode = (hashCode * 397) ^ separator.GetHashCode();
+        return hashCode;
+      }
+    }
+
+    public static bool operator ==(VersionNumber left, VersionNumber right) { return left.Equals(right); }
+    public static bool operator !=(VersionNumber left, VersionNumber right) { return !left.Equals(right); }
+
+    #endregion
 
     public VersionNumber withSeparator(char separator) {
       return new VersionNumber(major, minor, bugfix, separator);
