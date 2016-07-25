@@ -69,23 +69,29 @@ namespace com.tinylabproductions.TLPLib.Test {
       either.shouldEqual(F.right<A, B>(expected), message);
     }
 
-    public static void shouldBeError<A>(this Try<A> _try, Type exceptionType, string message = null) {
+    public static void shouldBeError<A>(this Try<A> _try, Type exceptionType=null, string message = null) {
       Act<string> fail = msg => failWithPrefix(message, msg);
-      _try.exception.voidFold(
-        () => fail($"Expected {_try} to be an error of {exceptionType}"),
+      _try.voidFold(
+        _ => fail(
+          $"Expected {_try} to be an error of {F.opt(exceptionType).fold("Exception", e => e.ToString())}"
+        ),
         e => {
-          if (!exceptionType.IsInstanceOfType(e))
+          if (exceptionType != null && !exceptionType.IsInstanceOfType(e))
             fail($"Expected {_try} to be of type {exceptionType}");
         }
       );
     }
 
     public static void shouldBeSuccess<A>(this Try<A> _try, A expected, string message = null) {
-      _try.shouldEqual(F.scs(expected), message);
+      // To allow deeper comparisons of collections.
+      _try.voidFold(
+        a => a.shouldEqual(expected, message),
+        e => failWithPrefix(message, $"expected to be {F.scs(expected)}, was {e}")
+      );
     }
 
     static void failWithPrefix(string prefix, string message) {
-      Assert.Fail(prefix != null ? $"{prefix}\n" : "" + message);
+      Assert.Fail((prefix != null ? $"{prefix}\n" : "") + message);
     }
   }
 

@@ -35,6 +35,28 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public void fromBase64() { encoded.fromBase64().shouldEqual(raw); }
   }
 
+  public class StringTestTrimTo {
+    [Test]
+    public void WhenWithinLimitFromLeft() {
+      "foo".trimTo(3, fromRight: false).shouldEqual("foo");
+    }
+
+    [Test]
+    public void WhenWithinLimitFromRight() {
+      "foo".trimTo(3, fromRight: true).shouldEqual("foo");
+    }
+
+    [Test]
+    public void WhenNotInLimitFromLeft() {
+      "foobar".trimTo(3, fromRight: false).shouldEqual("foo");
+    }
+
+    [Test]
+    public void WhenNotInLimitFromRight() {
+      "foobar".trimTo(3, fromRight: true).shouldEqual("bar");
+    }
+  }
+
   public class StringTestRepeat {
     [Test]
     public void whenTimesNegative() {

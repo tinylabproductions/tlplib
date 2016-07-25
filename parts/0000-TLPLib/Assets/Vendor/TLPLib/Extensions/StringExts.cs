@@ -46,13 +46,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
-    public static Either<Exception, DateTime> parseDateTime(this String str) {
-      try {
-        return F.right<Exception, DateTime>(DateTime.Parse(str));
-      }
-      catch (Exception e) {
-        return F.left<Exception, DateTime>(e);
-      }
+    public static Try<DateTime> parseDateTime(this string str) {
+      try { return F.scs(DateTime.Parse(str)); }
+      catch (Exception e) { return F.err<DateTime>(e); }
+    }
+
+    public static Try<Uri> parseUri(this string str) {
+      try { return F.scs(new Uri(str)); }
+      catch (Exception e) { return F.err<Uri>(e); }
     }
 
     public static string toBase64(this string source, Encoding encoding = null) {
@@ -65,7 +66,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return encoding.GetString(Convert.FromBase64String(source));
     }
 
-    public static string trimTo(this string s, int length) { return s.Length > length ? s.Substring(0, length) : s; }
+    public static string trimTo(this string s, int length, bool fromRight=false) => 
+      s.Length > length ? s.Substring(
+        fromRight ? s.Length - length : 0, 
+        length
+      ) : s;
+
+    public static string trimToRight(this string s, int length) =>
+      s.trimTo(length, fromRight: true);
 
     /* Repeats string multiple times. */
     public static string repeat(this string s, int times) {

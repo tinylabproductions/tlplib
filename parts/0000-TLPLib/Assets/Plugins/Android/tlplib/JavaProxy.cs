@@ -1,4 +1,4 @@
-﻿#if UNITY_ANDROID
+﻿#if UNITY_ANDROID || UNITY_EDITOR
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android {
