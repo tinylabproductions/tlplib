@@ -161,7 +161,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static readonly ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>> wwwsQueue =
       new ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>>(
-        "wwwsQueue",
         (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
       );
 

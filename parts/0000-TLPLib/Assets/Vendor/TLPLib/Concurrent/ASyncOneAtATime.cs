@@ -6,11 +6,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public class ASyncOneAtATimeQueue<Params, Return> {
     Future<Return> theFuture = Future.successful(default(Return));
 
-    public readonly string name;
     readonly Act<Params, Promise<Return>> doQuery;
 
-    public ASyncOneAtATimeQueue(string name, Act<Params, Promise<Return>> doQuery) {
-      this.name = name;
+    public ASyncOneAtATimeQueue(Act<Params, Promise<Return>> doQuery) {
       this.doQuery = doQuery;
     }
 
