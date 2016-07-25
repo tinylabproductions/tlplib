@@ -46,13 +46,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
-    public static Either<Exception, DateTime> parseDateTime(this String str) {
-      try {
-        return F.right<Exception, DateTime>(DateTime.Parse(str));
-      }
-      catch (Exception e) {
-        return F.left<Exception, DateTime>(e);
-      }
+    public static Try<DateTime> parseDateTime(this string str) {
+      try { return F.scs(DateTime.Parse(str)); }
+      catch (Exception e) { return F.err<DateTime>(e); }
+    }
+
+    public static Try<Uri> parseUri(this string str) {
+      try { return F.scs(new Uri(str)); }
+      catch (Exception e) { return F.err<Uri>(e); }
     }
 
     public static string toBase64(this string source, Encoding encoding = null) {
