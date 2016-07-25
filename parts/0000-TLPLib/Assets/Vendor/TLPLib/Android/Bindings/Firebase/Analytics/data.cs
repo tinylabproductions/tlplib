@@ -42,6 +42,14 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
   }
 
   public struct FirebaseEvent {
+    public const int 
+      MAX_EVENT_LENGTH = 32,
+      MAX_PARAM_COUNT = 25,
+      MAX_PARAM_KEY_LENGTH = 24,
+      MAX_PARAM_VALUE_LENGTH = 36;
+
+    public enum Trim { Left, Right, None }
+
     static readonly ImmutableHashSet<string> reservedEventNames = ImmutableHashSet.Create(
       "app_clear_data",
       "app_uninstall",
@@ -94,8 +102,12 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
     public static IDictionary<string, OneOf<string, long, double>> createEmptyParams() =>
       new Dictionary<string, OneOf<string, long, double>>();
 
-    public static OneOf<string, long, double> param(string value) =>
-      new OneOf<string, long, double>(value);
+    public static OneOf<string, long, double> param(string value, Trim trim=Trim.None) =>
+      new OneOf<string, long, double>(
+        trim == Trim.None 
+        ? value 
+        : value.trimTo(MAX_PARAM_VALUE_LENGTH, fromRight: trim == Trim.Right)
+      );
 
     public static OneOf<string, long, double> param(long value) =>
       new OneOf<string, long, double>(value);
@@ -113,16 +125,16 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       // FirebaseAnalytics.Event for the list of reserved event names. The "firebase_" prefix 
       // is reserved and should not be used. Note that event names are case-sensitive and that
       // logging two events whose names differ only in case will result in two distinct events.
-      errors = errors.AddRange(validateName("Event", 32, name));
+      errors = errors.AddRange(validateName("Event", MAX_EVENT_LENGTH, name));
       if (reservedEventNames.Contains(name)) errors = errors.Add(
         $"Event name is reserved: '{name}'"
       );
 
       // The event can have up to 25 parameters.
-      if (parameters.Count() > 25) {
+      if (parameters.Count > MAX_PARAM_COUNT) {
         var paramsStr = parameters.Select(kv => kv.Key).mkString(", ");
         errors = errors.Add(
-          $"Event '{name}' has more than 25 parameters: {paramsStr} ({parameters.Count()})"
+          $"Event '{name}' has more than {MAX_PARAM_COUNT} parameters: {paramsStr} ({parameters.Count})"
         );
       }
 
@@ -133,10 +145,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       // 36 characters long. The "firebase_" prefix is reserved and should not be used 
       // for parameter names.
       foreach (var kv in parameters) {
-        errors = errors.AddRange(validateName("Parameter", 24, kv.Key));
+        errors = errors.AddRange(validateName("Parameter", MAX_PARAM_KEY_LENGTH, kv.Key));
         foreach (var str in kv.Value.aValue) {
-          if (str.Length > 36) errors = errors.Add(
-            $"Parameter '{kv.Key}' value is too long ({str.Length} > 36): {str}"
+          if (str.Length > MAX_PARAM_VALUE_LENGTH) errors = errors.Add(
+            $"Parameter '{kv.Key}' value is too long ({str.Length} > {MAX_PARAM_VALUE_LENGTH}): {str}"
           );
         }
       }
