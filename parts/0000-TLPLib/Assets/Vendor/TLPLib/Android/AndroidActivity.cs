@@ -2,6 +2,7 @@
 using System;
 using Assets.Vendor.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Android.Bindings;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
@@ -90,6 +91,22 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static void runOnUIBlocking(Act act) {
       new SyncOtherThreadOp<Unit>(AndroidUIThreadExecutor.a(() => { act(); return new Unit(); })).execute();
     }
+
+    /**
+     * To use this, add the following to your AndroidManifest.xml
+     * 
+     * <receiver
+     *   android:name="com.tinylabproductions.tlplib.referrer.InstallReferrerReceiver"
+     *   android:exported="true"
+     * >
+     *   <intent-filter>
+     *     <action android:name="com.android.vending.INSTALL_REFERRER" />
+     *   </intent-filter>
+     * </receiver>
+     */
+    public static Option<string> installReferrer =>
+      InstallReferrerReceiver.preferences(current)
+      .getString(InstallReferrerReceiver.PREF_REFERRER);
   }
 
   public static class AndroidUIThreadExecutor {
