@@ -65,7 +65,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return encoding.GetString(Convert.FromBase64String(source));
     }
 
-    public static string trimTo(this string s, int length) { return s.Length > length ? s.Substring(0, length) : s; }
+    public static string trimTo(this string s, int length, bool fromRight=false) => 
+      s.Length > length ? s.Substring(
+        fromRight ? s.Length - length : 0, 
+        length
+      ) : s;
+
+    public static string trimToRight(this string s, int length) =>
+      s.trimTo(length, fromRight: true);
 
     /* Repeats string multiple times. */
     public static string repeat(this string s, int times) {
