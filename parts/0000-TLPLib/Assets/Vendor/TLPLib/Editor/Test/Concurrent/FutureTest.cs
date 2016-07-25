@@ -361,12 +361,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Test]
-    void CompleteToComplete() {
+    public void CompleteToComplete() {
       Future.successful(3).filter(i => true).shouldBeCompleted(3);
     }
 
     [Test]
-    void NotCompleteToNotComplete() {
+    public void NotCompleteToNotComplete() {
       Future.unfulfilled<int>().filter(i => false).shouldNotBeCompleted();
       Future.unfulfilled<int>().filter(i => true).shouldNotBeCompleted();
     }
@@ -379,12 +379,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Test]
-    void CompleteToComplete() {
+    public void CompleteToComplete() {
       Future.successful(3).collect(i => F.some(i * 2)).shouldBeCompleted(6);
     }
 
     [Test]
-    void NotCompleteToNotComplete() {
+    public void NotCompleteToNotComplete() {
       Future.unfulfilled<int>().collect(i => F.none<int>()).shouldNotBeCompleted();
       Future.unfulfilled<int>().collect(F.some).shouldNotBeCompleted();
     }
