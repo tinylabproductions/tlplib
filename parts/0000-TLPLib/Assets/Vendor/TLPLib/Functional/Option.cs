@@ -25,7 +25,6 @@ public static class Option {
    * default argument in method parameter list, you'd get a null. To make
    * sure we have a value, use ```Option.ensureValue(ref someOpt);```.
    */
-  [Conditional("OPTION_AS_CLASS")]
   public static void ensureValue<A>(ref Option<A> opt) {
 #if OPTION_AS_CLASS
     if (opt == null) opt = Option<A>.None;
