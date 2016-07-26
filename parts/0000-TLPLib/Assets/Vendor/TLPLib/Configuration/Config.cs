@@ -372,4 +372,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return $"Config(scope: \"{scope}\", data: {scopedRoot})";
     }
   }
+
+  public static class ConfigExts {
+    public static Config.Parser<B> flatMap<A, B>(this Config.Parser<A> aParser, Fn<A, Option<B>> f) =>
+      o => aParser(o).flatMap(f);
+  }
 }
