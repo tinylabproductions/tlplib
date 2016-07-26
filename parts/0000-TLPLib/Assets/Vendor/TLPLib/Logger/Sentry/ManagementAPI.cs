@@ -50,21 +50,27 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
 
     public static Either<Error, WWW> request(
       string url, Request request, ApiKey key, 
-      Dictionary<string, string> headers__WillBeMutated
+      Dictionary<string, string> headers__WillBeMutated,
+      int tryCount = 20
     ) {
       if (!request.noBody)
         headers__WillBeMutated["Content-Type"] = "application/json";
       headers__WillBeMutated["Authorization"] = key.asAuthHeader;
-      var www = request.www(url, headers__WillBeMutated);
-
       try {
-        while (!www.isDone) {
-          if (EditorUtility.DisplayCancelableProgressBar(
-            "Fetching WWW", $"{request.method} {url}", www.progress
-          )) {
-            www.Dispose();
-            Log.info($"Request to {url} cancelled.");
-            return Either<Error, WWW>.Left(CancelledByUser.instance);
+        WWW www = null;
+        for (var retry = 0; retry < tryCount; retry++) {
+          www = request.www(url, headers__WillBeMutated);
+          while (!www.isDone) {
+            if (EditorUtility.DisplayCancelableProgressBar(
+              $"Fetching WWW (try {retry + 1})", $"{request.method} {url}", www.progress
+            )) {
+              www.Dispose();
+              Log.info($"Request to {url} cancelled.");
+              return Either<Error, WWW>.Left(CancelledByUser.instance);
+            }
+          }
+          if (string.IsNullOrEmpty(www.error) || !www.error.ToLower().Contains("timed out")) {
+            break;
           }
         }
         return www.toEither().mapLeft(err => (Error) new NetError(err));
