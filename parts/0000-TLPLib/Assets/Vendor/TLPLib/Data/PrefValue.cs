@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Reactive;
+using Smooth.Collections;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -189,6 +190,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public A value {
       get { return _value; }
       set {
+        if (EqComparer<A>.Default.Equals(_value, value)) return;
         writer(key, value);
         _value = value;
         if (saveOnEveryWrite) backend.save();
@@ -203,7 +205,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.writer = writer;
       this.backend = backend;
       this.saveOnEveryWrite = saveOnEveryWrite;
-      value = reader(key, defaultValue);
+      _value = reader(key, defaultValue);
     }
 
     public A read => value;
