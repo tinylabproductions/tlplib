@@ -11,11 +11,11 @@ namespace com.tinylabproductions.TLPLib.Tween {
     }
   }
 
-  public 
-#if UNITY_IOS
+  public
+#if ENABLE_IL2CPP
     class
 #else
-    struct 
+    struct
 #endif
     TweenFacade<A> {
     private readonly Fn<A> getter;

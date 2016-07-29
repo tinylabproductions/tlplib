@@ -18,8 +18,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static void setPosition(
-      this Transform t, 
-#if UNITY_IOS
+      this Transform t,
+#if ENABLE_IL2CPP
       Option<float> x=null, 
       Option<float> y=null, 
       Option<float> z=null
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void setScale(
       this Transform t,
-#if UNITY_IOS
+#if ENABLE_IL2CPP
       Option<float> x = null,
       Option<float> y = null,
       Option<float> z = null

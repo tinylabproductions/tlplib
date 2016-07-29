@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector2 with2(
       this Vector2 v,
-#if UNITY_IOS
+#if ENABLE_IL2CPP
       Option<float> x = null,
       Option<float> y = null
 #else
@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Option<float> y = new Option<float>()
 #endif
     ) {
-#if UNITY_IOS
+#if ENABLE_IL2CPP
       if (null == x) x = new Option<float>();
       if (null == y) y = new Option<float>();
 #endif
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector3 with3(
       this Vector3 v,
-#if UNITY_IOS
+#if ENABLE_IL2CPP
       Option<float> x = null,
       Option<float> y = null,
       Option<float> z = null
@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Option<float> z = new Option<float>()
 #endif
     ) {
-#if UNITY_IOS
+#if UNITY_IENABLE_IL2CPPOS
       if (null == x) x = new Option<float>();
       if (null == y) y = new Option<float>();
       if (null == z) z = new Option<float>();

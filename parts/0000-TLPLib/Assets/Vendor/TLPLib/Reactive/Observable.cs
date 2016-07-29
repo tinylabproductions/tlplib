@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IObservable<DateTime> interval(
       float intervalS, Option<float> delayS=
-#if UNITY_IOS
+#if ENABLE_IL2CPP
       null
 #else
       new Option<float>()

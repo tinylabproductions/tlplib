@@ -2,7 +2,7 @@
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
 	class
 #else
 	struct
@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     private readonly A _value;
     private readonly Exception _exception;
 
-#if UNITY_IOS
+#if ENABLE_IL2CPP
 	public Try() {}
 #endif
 

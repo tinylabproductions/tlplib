@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
   [ComVisible(false)]
   [DebuggerDisplay("Count = {Count}")]
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
     class
 #else
     struct

@@ -17,11 +17,11 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
     public MatchError(string message) : base(message) { }
   }
 
-  public 
-#if UNITY_IOS
+  public
+#if ENABLE_IL2CPP
   class
 #else
-  struct 
+  struct
 #endif
   Matcher<Base, Return> 
   : IVoidMatcher<Base>, IMatcher<Base, Return>
@@ -60,10 +60,10 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
   }
 
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
-  struct 
+  struct
 #endif
   SuccessfulMatcher<Base, Return> 
   : IVoidMatcher<Base>, IMatcher<Base, Return>
@@ -86,10 +86,10 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
   }
 
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
-  struct 
+  struct
 #endif
   MatcherBuilder<T> where T : class {
     private readonly T subject;

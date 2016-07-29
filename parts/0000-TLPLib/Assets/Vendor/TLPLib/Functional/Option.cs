@@ -1,8 +1,4 @@
-﻿#if UNITY_IOS
-#define OPTION_AS_CLASS
-#endif
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,8 +21,9 @@ public static class Option {
    * default argument in method parameter list, you'd get a null. To make
    * sure we have a value, use ```Option.ensureValue(ref someOpt);```.
    */
+  [Conditional("ENABLE_IL2CPP")]
   public static void ensureValue<A>(ref Option<A> opt) {
-#if OPTION_AS_CLASS
+#if ENABLE_IL2CPP
     if (opt == null) opt = Option<A>.None;
 #endif
   }
@@ -57,7 +54,7 @@ public static class Option {
 }
 
 public
-#if OPTION_AS_CLASS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -69,7 +66,7 @@ public
   private readonly A value;
   public readonly bool isSome;
 
-#if OPTION_AS_CLASS
+#if ENABLE_IL2CPP
   public Option() {}
 #endif
 
@@ -129,7 +126,7 @@ public
 
 #region Equality
 
-#if OPTION_AS_CLASS
+#if ENABLE_IL2CPP
   protected bool Equals(Option<A> other) {
     return EqualityComparer<A>.Default.Equals(value, other.value) && isSome == other.isSome;
   }

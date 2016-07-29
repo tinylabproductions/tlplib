@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -120,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
     class
 #else
     struct
@@ -136,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
     class
 #else
     struct

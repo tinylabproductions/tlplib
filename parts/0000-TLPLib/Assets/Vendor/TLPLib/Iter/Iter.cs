@@ -1,4 +1,4 @@
-﻿#if ! UNITY_IOS
+﻿#if ! ENABLE_IL2CPP
 using System;
 using System.Collections.Generic;
 using System.Text;

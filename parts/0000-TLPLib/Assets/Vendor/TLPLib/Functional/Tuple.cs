@@ -2,7 +2,7 @@
 namespace System {
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -76,7 +76,7 @@ IComparable<Tpl<P1>>, IEquatable<Tpl<P1>> {
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -153,7 +153,7 @@ c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -233,7 +233,7 @@ c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -316,7 +316,7 @@ c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -402,7 +402,7 @@ c = Smooth.Collections.Comparer<P5>.Default.Compare(_5, other._5);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -491,7 +491,7 @@ c = Smooth.Collections.Comparer<P6>.Default.Compare(_6, other._6);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -583,7 +583,7 @@ c = Smooth.Collections.Comparer<P7>.Default.Compare(_7, other._7);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -678,7 +678,7 @@ c = Smooth.Collections.Comparer<P8>.Default.Compare(_8, other._8);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -776,7 +776,7 @@ c = Smooth.Collections.Comparer<P9>.Default.Compare(_9, other._9);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -877,7 +877,7 @@ c = Smooth.Collections.Comparer<P10>.Default.Compare(_10, other._10);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -981,7 +981,7 @@ c = Smooth.Collections.Comparer<P11>.Default.Compare(_11, other._11);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1088,7 +1088,7 @@ c = Smooth.Collections.Comparer<P12>.Default.Compare(_12, other._12);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1198,7 +1198,7 @@ c = Smooth.Collections.Comparer<P13>.Default.Compare(_13, other._13);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1311,7 +1311,7 @@ c = Smooth.Collections.Comparer<P14>.Default.Compare(_14, other._14);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1427,7 +1427,7 @@ c = Smooth.Collections.Comparer<P15>.Default.Compare(_15, other._15);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1546,7 +1546,7 @@ c = Smooth.Collections.Comparer<P16>.Default.Compare(_16, other._16);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1668,7 +1668,7 @@ c = Smooth.Collections.Comparer<P17>.Default.Compare(_17, other._17);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1793,7 +1793,7 @@ c = Smooth.Collections.Comparer<P18>.Default.Compare(_18, other._18);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -1921,7 +1921,7 @@ c = Smooth.Collections.Comparer<P19>.Default.Compare(_19, other._19);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -2052,7 +2052,7 @@ c = Smooth.Collections.Comparer<P20>.Default.Compare(_20, other._20);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct
@@ -2186,7 +2186,7 @@ c = Smooth.Collections.Comparer<P21>.Default.Compare(_21, other._21);
 }
 
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct

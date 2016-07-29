@@ -83,7 +83,7 @@ class TupleData(
   def tupleCsStr =
     s"""
 [Serializable] public
-#if UNITY_IOS
+#if ENABLE_IL2CPP
   class
 #else
   struct

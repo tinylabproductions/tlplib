@@ -1,4 +1,4 @@
-﻿#if !UNITY_IOS
+﻿#if !ENABLE_IL2CPP
 using com.tinylabproductions.TLPLib.Collection;
 using System;
 using com.tinylabproductions.TLPLib.Extensions;
