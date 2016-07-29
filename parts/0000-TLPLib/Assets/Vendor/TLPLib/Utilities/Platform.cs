@@ -48,11 +48,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         case RuntimePlatform.WSAPlayerARM:
           return METRO;
 #endif
+#if !UNITY_5_4_OR_NEWER
         case RuntimePlatform.BlackBerryPlayer:
           return BLACKBERRY;
         case RuntimePlatform.WindowsWebPlayer:
         case RuntimePlatform.OSXWebPlayer:
           return WEB;
+#endif
         case RuntimePlatform.WindowsPlayer:
         case RuntimePlatform.OSXPlayer:
         case RuntimePlatform.OSXDashboardPlayer:
@@ -92,6 +94,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
             return SUBNAME_LINUX;
         }
       }
+#if !UNITY_5_4_OR_NEWER
       if (name == WEB) {
         switch (Application.platform) {
           case RuntimePlatform.WindowsWebPlayer:
@@ -100,7 +103,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
             return SUBNAME_OSX;
         }
       }
-
+#endif
       return SUBNAME_NONE;
     } }
   }

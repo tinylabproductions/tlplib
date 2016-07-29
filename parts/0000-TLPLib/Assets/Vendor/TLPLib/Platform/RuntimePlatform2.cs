@@ -8,8 +8,8 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.WindowsEditor, RuntimePlatform.WindowsPlayer,
         RuntimePlatform.OSXEditor, RuntimePlatform.OSXPlayer,
         RuntimePlatform.LinuxPlayer,
-        RuntimePlatform.Android, RuntimePlatform.IPhonePlayer, RuntimePlatform.OSXWebPlayer,
-        RuntimePlatform.OSXDashboardPlayer, RuntimePlatform.WindowsWebPlayer, RuntimePlatform.PS3,
+        RuntimePlatform.Android, RuntimePlatform.IPhonePlayer, 
+        RuntimePlatform.OSXDashboardPlayer, RuntimePlatform.PS3,
         RuntimePlatform.XBOX360,
         RuntimePlatform.Android,
         RuntimePlatform.LinuxPlayer,
@@ -18,7 +18,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.WSAPlayerX64,
         RuntimePlatform.WSAPlayerARM,
         RuntimePlatform.WP8Player,
-        RuntimePlatform.BlackBerryPlayer,
         RuntimePlatform.TizenPlayer,
         RuntimePlatform.PSP2,
         RuntimePlatform.PS4,
@@ -27,6 +26,11 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.SamsungTVPlayer,
         RuntimePlatform.WiiU,
         RuntimePlatform.tvOS,
+#if !UNITY_5_4_OR_NEWER
+        RuntimePlatform.OSXWebPlayer,
+        RuntimePlatform.BlackBerryPlayer,
+        RuntimePlatform.WindowsWebPlayer,
+#endif
       }
     );
   }

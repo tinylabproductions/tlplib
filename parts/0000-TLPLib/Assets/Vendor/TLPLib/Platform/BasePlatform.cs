@@ -39,11 +39,15 @@ namespace Smooth.Platform {
 				return BasePlatform.Android;
 			case RuntimePlatform.WindowsEditor:
 			case RuntimePlatform.WindowsPlayer:
-			case RuntimePlatform.WindowsWebPlayer:
+#if !UNITY_5_4_OR_NEWER
+      case RuntimePlatform.WindowsWebPlayer:
+#endif
 				return BasePlatform.Windows;
 			case RuntimePlatform.OSXEditor:
 			case RuntimePlatform.OSXPlayer:
+#if !UNITY_5_4_OR_NEWER
 			case RuntimePlatform.OSXWebPlayer:
+#endif
 			case RuntimePlatform.OSXDashboardPlayer:
 				return BasePlatform.Osx;
 			case RuntimePlatform.LinuxPlayer:
@@ -72,12 +76,14 @@ namespace Smooth.Platform {
       case RuntimePlatform.WSAPlayerARM:
         return BasePlatform.Metro;
 #endif
-			case RuntimePlatform.BlackBerryPlayer:
+#if !UNITY_5_4_OR_NEWER
+      case RuntimePlatform.BlackBerryPlayer:
 				return BasePlatform.BlackBerry;
+#endif
 			case RuntimePlatform.TizenPlayer:
 				return BasePlatform.Tizen;
 #endif
-			default:
+        default:
 				return BasePlatform.None;
 			}
 		}

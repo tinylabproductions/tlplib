@@ -9,22 +9,17 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.StandaloneOSXUniversal: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneOSXIntel: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows: return BuildTargetGroup.Standalone;
-        case BuildTarget.WebPlayer: return BuildTargetGroup.WebPlayer;
-        case BuildTarget.WebPlayerStreamed: return BuildTargetGroup.WebPlayer;
         case BuildTarget.iOS: return BuildTargetGroup.iOS;
         case BuildTarget.PS3: return BuildTargetGroup.PS3;
         case BuildTarget.XBOX360: return BuildTargetGroup.XBOX360;
         case BuildTarget.Android: return BuildTargetGroup.Android;
-        case BuildTarget.StandaloneGLESEmu: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneLinux: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows64: return BuildTargetGroup.Standalone;
         case BuildTarget.WebGL: return BuildTargetGroup.WebGL;
         case BuildTarget.WSAPlayer: return BuildTargetGroup.WSA;
         case BuildTarget.StandaloneLinux64: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneLinuxUniversal: return BuildTargetGroup.Standalone;
-        case BuildTarget.WP8Player: return BuildTargetGroup.WP8;
         case BuildTarget.StandaloneOSXIntel64: return BuildTargetGroup.Standalone;
-        case BuildTarget.BlackBerry: return BuildTargetGroup.BlackBerry;
         case BuildTarget.Tizen: return BuildTargetGroup.Tizen;
         case BuildTarget.PSP2: return BuildTargetGroup.PSP2;
         case BuildTarget.PS4: return BuildTargetGroup.PS4;
@@ -34,6 +29,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.Nintendo3DS: return BuildTargetGroup.Nintendo3DS;
         case BuildTarget.WiiU: return BuildTargetGroup.WiiU;
         case BuildTarget.tvOS: return BuildTargetGroup.tvOS;
+#if !UNITY_5_4_OR_NEWER
+        case BuildTarget.StandaloneGLESEmu: return BuildTargetGroup.Standalone;
+        case BuildTarget.WebPlayer: return BuildTargetGroup.WebPlayer;
+        case BuildTarget.WebPlayerStreamed: return BuildTargetGroup.WebPlayer;
+        case BuildTarget.WP8Player: return BuildTargetGroup.WP8;
+        case BuildTarget.BlackBerry: return BuildTargetGroup.BlackBerry;
+#endif
         default:
           throw new ArgumentOutOfRangeException(
             nameof(t), t, $"Are you using obsolete {nameof(BuildTarget)}?"
