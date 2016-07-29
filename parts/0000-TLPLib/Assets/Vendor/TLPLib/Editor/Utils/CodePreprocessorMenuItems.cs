@@ -33,6 +33,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
                 EditorUtility.DisplayDialog(
                   "Success", $"File processing done. {paths.Count} file(s) processed.", "OK"
                 );
+                AssetDatabase.Refresh();
               }
             );
           }
