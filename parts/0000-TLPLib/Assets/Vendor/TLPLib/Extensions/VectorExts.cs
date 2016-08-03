@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Option<float> z = new Option<float>()
 #endif
     ) {
-#if UNITY_IENABLE_IL2CPPOS
+#if ENABLE_IL2CPP
       if (null == x) x = new Option<float>();
       if (null == y) y = new Option<float>();
       if (null == z) z = new Option<float>();
