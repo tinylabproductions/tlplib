@@ -191,10 +191,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       get { return _value; }
       set {
         if (EqComparer<A>.Default.Equals(_value, value)) return;
-        writer(key, value);
-        _value = value;
-        if (saveOnEveryWrite) backend.save();
+        _value = persist(value);
       }
+    }
+
+    A persist(A value) {
+      writer(key, value);
+      if (saveOnEveryWrite) backend.save();
+      return value;
     }
 
     public PrefVal(
@@ -205,7 +209,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.writer = writer;
       this.backend = backend;
       this.saveOnEveryWrite = saveOnEveryWrite;
-      _value = reader(key, defaultValue);
+      _value = persist(reader(key, defaultValue));
     }
 
     public A read => value;
