@@ -2,7 +2,21 @@
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  struct UnfulfilledFuture {}
+  struct UnfulfilledFuture : IEquatable<UnfulfilledFuture> {
+    #region Equality
+    public bool Equals(UnfulfilledFuture other) => true;
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is UnfulfilledFuture && Equals((UnfulfilledFuture) obj);
+    }
+
+    public override int GetHashCode() => nameof(UnfulfilledFuture).GetHashCode();
+
+    public static bool operator ==(UnfulfilledFuture left, UnfulfilledFuture right) { return left.Equals(right); }
+    public static bool operator !=(UnfulfilledFuture left, UnfulfilledFuture right) { return !left.Equals(right); }
+    #endregion
+  }
   public enum FutureType { Successful, Unfulfilled, ASync }
 
   /**
