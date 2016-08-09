@@ -1,9 +1,37 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Functional {
+  public class OptionTestEquality {
+    [Test]
+    public void WhenEqualNone() {
+      F.none<int>().shouldEqual(Option<int>.None);
+      F.none<string>().shouldEqual(Option<string>.None);
+    }
+
+    [Test]
+    public void WhenEqualSome() {
+      F.some(3).shouldEqual(F.some(3));
+      F.some(5).shouldEqual(F.some(5));
+      F.some("foo").shouldEqual(F.some("foo"));
+    }
+
+    [Test]
+    public void WhenNotEqual() {
+      ImmutableList.Create(
+        F.none<int>(),
+        F.some(0),
+        F.some(1)
+      ).shouldTestInequalityAgainst(ImmutableList.Create(
+        F.some(10), 
+        F.some(11)
+      ));
+    }
+  }
+
   public class OptionTestAsEnumDowncast {
     class A {}
 

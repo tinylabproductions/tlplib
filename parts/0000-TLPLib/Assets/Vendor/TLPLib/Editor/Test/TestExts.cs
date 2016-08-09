@@ -26,6 +26,15 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreNotEqual(expected, a, message);
 
+    public static void shouldTestInequalityAgainst<A>(this IEnumerable<A> set1, IEnumerable<A> set2) {
+      foreach (var i1 in set1)
+        // ReSharper disable once PossibleMultipleEnumeration
+        foreach (var i2 in set2) {
+          i1.Equals(i2).shouldBeFalse($"{i1} should != {i2}, but they were treated as equal");
+          i2.Equals(i1).shouldBeFalse($"{i2} should != {i1}, but they were treated as equal");
+        }
+    }
+
     public static void shouldEqual<A>(this HashSet<A> a, HashSet<A> expected, string message=null) {
       Assert.That(a, new SetEquals<A>(expected), message);
     }

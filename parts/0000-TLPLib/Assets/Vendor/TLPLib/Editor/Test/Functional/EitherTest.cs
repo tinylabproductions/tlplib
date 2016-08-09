@@ -3,6 +3,35 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Functional {
+  public class EitherTestEquality {
+    [Test]
+    public void WhenLeftEquals() {
+      Either<int, string>.Left(0).shouldEqual(Either<int, string>.Left(0));
+      Either<int, string>.Left(10).shouldEqual(Either<int, string>.Left(10));
+    }
+
+    [Test]
+    public void WhenRightEquals() {
+      Either<int, string>.Right("0").shouldEqual(Either<int, string>.Right("0"));
+      Either<int, string>.Right("10").shouldEqual(Either<int, string>.Right("10"));
+    }
+
+    [Test]
+    public void WhenNotEqual() {
+      ImmutableList.Create(
+        Either<int, string>.Left(0),
+        Either<int, string>.Left(1),
+        Either<int, string>.Right("0"),
+        Either<int, string>.Right("1")
+      ).shouldTestInequalityAgainst(ImmutableList.Create(
+        Either<int, string>.Left(10),
+        Either<int, string>.Left(11),
+        Either<int, string>.Right("10"),
+        Either<int, string>.Right("11")
+      ));
+    }
+  }
+
   public class EitherTest {
     [Test]
     public void WhenHasOneError() {
