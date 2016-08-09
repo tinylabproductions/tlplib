@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
    * Struct based future which does not generate garbage if it's actually
    * synchronous.
    **/
-  public struct Future<A> {
+  public struct Future<A> : IEquatable<Future<A>> {
     /* Future with a known value|unfulfilled future|async future. */
     readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);
@@ -38,6 +38,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     Future(OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation) {
       this.implementation = implementation;
     }
+
+    #region Equality
+
+    public bool Equals(Future<A> other) => implementation == other.implementation;
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is Future<A> && Equals((Future<A>) obj);
+    }
+
+    public override int GetHashCode() => implementation.GetHashCode();
+
+    public static bool operator ==(Future<A> left, Future<A> right) { return left.Equals(right); }
+    public static bool operator !=(Future<A> left, Future<A> right) { return !left.Equals(right); }
+
+    #endregion
 
     /* Lift an ordinary value into a future. */
     public static Future<A> successful(A value) {
