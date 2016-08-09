@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
+using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class OneOf {
     public enum Choice : byte { A, B, C }
   }
 
-  public struct OneOf<A, B, C> {
+  public struct OneOf<A, B, C> : IEquatable<OneOf<A, B, C>> {
     readonly A _aValue;
     readonly B _bValue;
     readonly C _cValue;
@@ -32,6 +34,37 @@ namespace com.tinylabproductions.TLPLib.Functional {
       _cValue = c;
       whichOne = OneOf.Choice.C;
     }
+
+    #region Equality
+
+    public bool Equals(OneOf<A, B, C> other) {
+      if (whichOne != other.whichOne) return false;
+
+      return
+        (isA && EqComparer<A>.Default.Equals(_aValue, other._aValue))
+        || (isB && EqComparer<B>.Default.Equals(_bValue, other._bValue))
+        || EqualityComparer<C>.Default.Equals(_cValue, other._cValue);
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is OneOf<A, B, C> && Equals((OneOf<A, B, C>) obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked {
+        var hashCode = EqComparer<A>.Default.GetHashCode(_aValue);
+        hashCode = (hashCode * 397) ^ EqComparer<B>.Default.GetHashCode(_bValue);
+        hashCode = (hashCode * 397) ^ EqComparer<C>.Default.GetHashCode(_cValue);
+        hashCode = (hashCode * 397) ^ (int) whichOne;
+        return hashCode;
+      }
+    }
+
+    public static bool operator ==(OneOf<A, B, C> left, OneOf<A, B, C> right) => left.Equals(right);
+    public static bool operator !=(OneOf<A, B, C> left, OneOf<A, B, C> right) => !left.Equals(right);
+
+    #endregion
 
     public bool isA => whichOne == OneOf.Choice.A;
     public Option<A> aValue => isA.opt(_aValue);
