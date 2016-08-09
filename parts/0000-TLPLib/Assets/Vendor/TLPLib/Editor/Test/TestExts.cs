@@ -20,9 +20,11 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.False(b, message);
     }
 
-    public static void shouldEqual<A>(this A a, A expected, string message=null) {
+    public static void shouldEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreEqual(expected, a, message);
-    }
+
+    public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
+      Assert.AreNotEqual(expected, a, message);
 
     public static void shouldEqual<A>(this HashSet<A> a, HashSet<A> expected, string message=null) {
       Assert.That(a, new SetEquals<A>(expected), message);
