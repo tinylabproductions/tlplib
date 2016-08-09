@@ -77,9 +77,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     internal C __unsafeGetC => _cValue;
 
     public override string ToString() =>
-        isA ? $"OneOf.{typeof(A)}({_aValue})"
-      : isB ? $"OneOf.{typeof(B)}({_bValue})"
-            : $"OneOf.{typeof(C)}({_cValue})";
+        isA ? $"OneOf[{typeof(A)}]({_aValue})"
+      : isB ? $"OneOf[{typeof(B)}]({_bValue})"
+            : $"OneOf[{typeof(C)}]({_cValue})";
 
     public void voidFold(Act<A> onA, Act<B> onB, Act<C> onC) {
       switch (whichOne) {
