@@ -39,11 +39,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public bool Equals(OneOf<A, B, C> other) {
       if (whichOne != other.whichOne) return false;
-
-      return
-        (isA && EqComparer<A>.Default.Equals(_aValue, other._aValue))
-        || (isB && EqComparer<B>.Default.Equals(_bValue, other._bValue))
-        || EqualityComparer<C>.Default.Equals(_cValue, other._cValue);
+      if (isA) return EqComparer<A>.Default.Equals(_aValue, other._aValue);
+      if (isB) return EqComparer<B>.Default.Equals(_bValue, other._bValue);
+      return EqualityComparer<C>.Default.Equals(_cValue, other._cValue);
     }
 
     public override bool Equals(object obj) {
