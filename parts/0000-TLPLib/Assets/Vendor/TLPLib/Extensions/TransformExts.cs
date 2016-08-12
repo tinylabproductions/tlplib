@@ -68,5 +68,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       for (var idx = 0; idx < t.childCount; idx++)
         t.GetChild(idx).doRecursively(act);
     }
+
+    public static void resetLocalScalePosition(this Transform t) {
+      t.localScale = Vector3.one;
+      t.localPosition = Vector3.zero;
+    }
   }
 }
