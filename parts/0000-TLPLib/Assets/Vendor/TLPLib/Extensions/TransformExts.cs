@@ -69,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         t.GetChild(idx).doRecursively(act);
     }
 
-    public static void resetLocally(this Transform t) {
+    public static void resetLocalScalePosition(this Transform t) {
       t.localScale = Vector3.one;
       t.localPosition = Vector3.zero;
     }
