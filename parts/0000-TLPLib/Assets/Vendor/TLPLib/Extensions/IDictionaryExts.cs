@@ -42,5 +42,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static bool isEmpty<K, V>(this IDictionary<K, V> dict) => dict.Count == 0;
     public static bool nonEmpty<K, V>(this IDictionary<K, V> dict) => dict.Count != 0;
+
+    public static IDictionary<K, V> addAnd<K, V>(this IDictionary<K, V> dict, K key, V value) 
+      => dict.addAnd(new KeyValuePair<K, V>(key, value));
+
+    public static IDictionary<K, V> addAnd<K, V>(this IDictionary<K, V> dict, KeyValuePair<K, V> pair) {
+      dict.Add(pair);
+      return dict;
+    }
+
+    public static IDictionary<K, V> addOptAnd<K, V>(
+      this IDictionary<K, V> dict, K key, Option<V> valueOpt
+    ) {
+      foreach (var value in valueOpt) dict.Add(key, value);
+      return dict;
+    }
   }
 }
