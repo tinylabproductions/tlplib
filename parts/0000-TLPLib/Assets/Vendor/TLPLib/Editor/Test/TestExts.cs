@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -104,6 +106,9 @@ namespace com.tinylabproductions.TLPLib.Test {
     static void failWithPrefix(string prefix, string message) {
       Assert.Fail((prefix != null ? $"{prefix}\n" : "") + message);
     }
+
+    public static IConfig asConfig(this string json) =>
+      new Config(Json.Deserialize(json).cast().to<Dictionary<string, object>>());
   }
 
   public class SetEquals<A> : Constraint {
