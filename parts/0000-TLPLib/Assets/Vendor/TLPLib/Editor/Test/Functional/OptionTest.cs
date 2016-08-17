@@ -5,6 +5,14 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Functional {
+  public class OptionTestFoldWithInitial {
+    [Test]
+    public void WhenNone() => F.none<string>().fold(5, (_, i) => i + 10).shouldEqual(5);
+
+    [Test]
+    public void WhenSome() => F.some(10).fold(5, (a, b) => a + b).shouldEqual(15);
+  }
+
   public class OptionTestEquality {
     [Test]
     public void WhenEqualNone() {

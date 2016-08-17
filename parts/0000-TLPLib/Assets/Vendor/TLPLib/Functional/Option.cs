@@ -252,6 +252,9 @@ public
     return isSome ? ifNonEmpty : ifEmpty;
   }
 
+  public B fold<B>(B initial, Fn<A, B, B> ifNonEmpty) => 
+    isSome ? ifNonEmpty(get, initial) : initial;
+
   // Alias for #fold with elements switched up.
   public B cata<B>(Fn<A, B> ifNonEmpty, Fn<B> ifEmpty) {
     return fold(ifEmpty, ifNonEmpty);
