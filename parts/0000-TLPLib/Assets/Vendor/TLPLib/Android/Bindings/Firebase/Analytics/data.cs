@@ -2,10 +2,25 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
+  public interface IFirebaseAnalytics {
+    void logEvent(FirebaseEvent data);
+    void setMinimumSessionDuration(Duration duration);
+    void setSessionTimeoutDuration(Duration duration);
+    void setUserId(FirebaseUserId id);
+  }
+
+  public class FirebaseAnalyticsNoOp : IFirebaseAnalytics {
+    public void logEvent(FirebaseEvent data) {}
+    public void setMinimumSessionDuration(Duration duration) {}
+    public void setSessionTimeoutDuration(Duration duration) {}
+    public void setUserId(FirebaseUserId id) {}
+  }
+
   public struct FirebaseUserId : IEquatable<FirebaseUserId> {
     public readonly string id;
 
@@ -99,9 +114,12 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       return errors;
     }
 
-    public static IDictionary<string, OneOf<string, long, double>> createEmptyParams() =>
+    public static IDictionary<string, OneOf<string, long, double>> emptyParamsDoNotMutate =
       new Dictionary<string, OneOf<string, long, double>>();
 
+    public static IDictionary<string, OneOf<string, long, double>> createEmptyParams() =>
+      new Dictionary<string, OneOf<string, long, double>>();
+    
     public static OneOf<string, long, double> param(string value, Trim trim=Trim.None) =>
       new OneOf<string, long, double>(
         trim == Trim.None 
@@ -157,5 +175,17 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
         ? Either<ImmutableList<string>, FirebaseEvent>.Right(new FirebaseEvent(name, parameters))
         : Either<ImmutableList<string>, FirebaseEvent>.Left(errors);
     }
+  }
+
+  public static class FirebaseEventExts {
+    public static OneOf<string, long, double> firebaseParam(
+      this string value, FirebaseEvent.Trim trim = FirebaseEvent.Trim.None
+    ) => FirebaseEvent.param(value, trim);
+
+    public static OneOf<string, long, double> firebaseParam(this long value) =>
+      FirebaseEvent.param(value);
+
+    public static OneOf<string, long, double> firebaseParam(this double value) =>
+      FirebaseEvent.param(value);
   }
 }

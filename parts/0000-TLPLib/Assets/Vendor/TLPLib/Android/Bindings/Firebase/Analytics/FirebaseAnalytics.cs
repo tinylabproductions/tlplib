@@ -7,12 +7,16 @@ using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
-  public class FirebaseAnalytics : Binding {
-    public static FirebaseAnalytics instance;
+  public class FirebaseAnalytics : Binding, IFirebaseAnalytics {
+    public static IFirebaseAnalytics instance;
 
     static FirebaseAnalytics() {
-      using (var klass = new AndroidJavaClass("com.google.firebase.analytics.FirebaseAnalytics"))
-        instance = new FirebaseAnalytics(klass.csjo("getInstance", AndroidActivity.current.java));
+      if (Application.platform == RuntimePlatform.Android)
+        using (var klass = new AndroidJavaClass("com.google.firebase.analytics.FirebaseAnalytics"))
+          instance = new FirebaseAnalytics(klass.csjo("getInstance", AndroidActivity.current.java));
+      else {
+        instance = new FirebaseAnalyticsNoOp();
+      }
     }
 
     FirebaseAnalytics(AndroidJavaObject java) : base(java) { }
@@ -24,9 +28,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
 
       java.Call("logEvent", data.name, parameterBundle);
     }
-    
+
     Bundle fillParameterBundle(
-      IDictionary<string, OneOf<string, long, double>> parameters
+      IEnumerable<KeyValuePair<string, OneOf<string, long, double>>> parameters
     ) {
       var parameterBundle = new Bundle();
       foreach (var kv in parameters) {
@@ -50,15 +54,17 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
       return parameterBundle;
     }
 
-    public void setMinimumSessionDuration(Duration duration) =>
-      // ReSharper disable once RedundantCast
+    public void setMinimumSessionDuration(Duration duration) {
       java.Call("setMinimumSessionDuration", (long) duration.millis);
+    }
 
-    public void setSessionTimeoutDuration(Duration duration) =>
-      // ReSharper disable once RedundantCast
+    public void setSessionTimeoutDuration(Duration duration) {
       java.Call("setSessionTimeoutDuration", (long) duration.millis);
+    }
 
-    public void setUserId(FirebaseUserId id) => java.Call("setUserId", id.id);
+    public void setUserId(FirebaseUserId id) {
+      java.Call("setUserId", id.id);
+    }
   }
 }
 #endif
