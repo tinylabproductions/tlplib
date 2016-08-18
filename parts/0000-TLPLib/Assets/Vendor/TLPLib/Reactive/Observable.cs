@@ -73,6 +73,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<Tpl<A, A>> changes();
     // Like changes() but only emits new values.
     IObservable<A> changedValues();
+    // Skip X events.
+    IObservable<A> skip(uint count);
   }
 
   public interface IObserver<in A> {
@@ -506,6 +508,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         else if (! EqComparer<A>.Default.Equals(lastValue.get, val))
           obs.push(val);
       }, builder);
+    }
+
+    public IObservable<A> skip(uint count) => skipImpl(count, builder<A>());
+
+    protected O skipImpl<O>(uint count, ObserverBuilder<A, O> builder) {
+      return builder(obs => {
+        var skipped = 0u;
+        return subscribe(a => {
+          if (skipped < count) skipped++;
+          else obs.push(a);
+        });
+      });
     }
 
     private void onUnsubscribed() {

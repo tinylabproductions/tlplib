@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -123,6 +125,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       Assert.AreEqual(F.list(F.t(1, 1, 1), F.t(1, 2, 1)), list);
       subj3.push(0);
       Assert.AreEqual(F.list(F.t(1, 1, 1), F.t(1, 2, 1), F.t(1, 2, 0)), list);
+    }
+
+    [Test]
+    public void SkipSome() {
+      var subj = new Subject<int>();
+      var events = new List<int>();
+      subj.skip(3).subscribe(events.Add);
+      for (var idx = 1; idx <= 5; idx++) subj.push(idx);
+      events.shouldEqual(F.list(4, 5));
+    }
+
+    [Test]
+    public void SkipNone() {
+      var subj = new Subject<int>();
+      var events = new List<int>();
+      subj.skip(0).subscribe(events.Add);
+      for (var idx = 1; idx <= 5; idx++) subj.push(idx);
+      events.shouldEqual(F.list(1, 2, 3, 4, 5));
     }
   }
 }
