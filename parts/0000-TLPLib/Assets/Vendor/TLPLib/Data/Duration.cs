@@ -1,13 +1,45 @@
-﻿namespace com.tinylabproductions.TLPLib.Data {
-  public struct Duration {
+﻿using System;
+using UnityEngine;
+
+namespace com.tinylabproductions.TLPLib.Data {
+  public struct Duration : IEquatable<Duration> {
     public readonly int millis;
 
     public static Duration fromSeconds(int seconds) => new Duration(seconds * 1000);
-    public static Duration fromSeconds(float seconds) => new Duration((int) (seconds * 1000));
+    public static Duration fromSeconds(float seconds) => new Duration(Mathf.RoundToInt(seconds * 1000));
 
     public Duration(int millis) { this.millis = millis; }
 
+    #region Equality
+
+    public bool Equals(Duration other) => millis == other.millis;
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is Duration && Equals((Duration) obj);
+    }
+
+    public override int GetHashCode() => millis;
+
+    public static bool operator ==(Duration left, Duration right) { return left.Equals(right); }
+    public static bool operator !=(Duration left, Duration right) { return !left.Equals(right); }
+
+    #endregion
+
     public float seconds => millis / 1000f;
+
+    public static Duration operator +(Duration d1, Duration d2) =>
+      new Duration(d1.millis + d2.millis);
+    public static Duration operator -(Duration d1, Duration d2) =>
+      new Duration(d1.millis - d2.millis);
+    public static bool operator <(Duration d1, Duration d2) =>
+      d1.millis < d2.millis;
+    public static bool operator >(Duration d1, Duration d2) =>
+      d1.millis > d2.millis;
+    public static bool operator <=(Duration d1, Duration d2) =>
+      d1.millis <= d2.millis;
+    public static bool operator >=(Duration d1, Duration d2) =>
+      d1.millis >= d2.millis;
 
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
   }

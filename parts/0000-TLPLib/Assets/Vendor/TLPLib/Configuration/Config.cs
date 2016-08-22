@@ -109,12 +109,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
      * Throws WrongContentType if unexpected content type is found.
      **/
     public static Future<Either<ConfigFetchError, string>> fetch(
-      Urls urls, float timeoutS, string expectedContentType="application/json"
+      Urls urls, Duration timeout, string expectedContentType="application/json"
     ) {
       return new WWW(urls.fetchUrl.ToString()).wwwFuture()
-        .timeout(timeoutS).map(wwwE =>
+        .timeout(timeout).map(wwwE =>
           wwwE.map(
-            timeout => (ConfigFetchError) new ConfigTimeoutError(urls, timeout),
+            _ => (ConfigFetchError) new ConfigTimeoutError(urls, timeout),
             e => e.mapLeft(err => (ConfigFetchError) new ConfigWWWError(urls, err))
           )
           .flatten()

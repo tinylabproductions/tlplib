@@ -128,11 +128,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new[] { future.map(v => v.right().l<B>()), timeoutF }.firstOf();
     }
 
-    /* Waits at most `timeoutSeconds` for the future to complete. Completes with
-       TimeoutException<A> on timeout. */
+    public static Future<Either<B, A>> timeout<A, B>(
+      this Future<A> future, Duration timeout, Fn<B> onTimeout
+    ) => future.timeout(timeout.seconds, onTimeout);
+
+    /* Waits at most `timeoutSeconds` for the future to complete. */
+    public static Future<Either<Duration, A>> timeout<A>(
+      this Future<A> future, Duration timeout
+    ) => future.timeout(timeout, () => timeout);
+
     public static Future<Either<Duration, A>> timeout<A>(
       this Future<A> future, float timeoutSeconds
-    ) => future.timeout(timeoutSeconds, () => Duration.fromSeconds(timeoutSeconds));
+    ) => future.timeout(Duration.fromSeconds(timeoutSeconds));
 
     /** Measures how much time has passed from call to timed to future completion. **/
     public static Future<Tpl<A, Duration>> timed<A>(this Future<A> future) {

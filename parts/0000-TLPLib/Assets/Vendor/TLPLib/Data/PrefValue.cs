@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     string getString(string name, string defaultValue);
     void setString(string name, string value);
     int getInt(string name, int defaultValue);
-    uint getUint(string name, uint defaultValue);
+    uint getUInt(string name, uint defaultValue);
     void setInt(string name, int value);
     void setUint(string name, uint value);
     float getFloat(string name, float defaultValue);
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public string getString(string name, string defaultValue) { return PlayerPrefs.GetString(name, defaultValue); }
     public void setString(string name, string value) { PlayerPrefs.SetString(name, value); }
     public int getInt(string name, int defaultValue) { return PlayerPrefs.GetInt(name, defaultValue); }
-    public uint getUint(string name, uint defaultValue) { return unchecked((uint)PlayerPrefs.GetInt(name, unchecked((int)defaultValue))); }
+    public uint getUInt(string name, uint defaultValue) { return unchecked((uint)PlayerPrefs.GetInt(name, unchecked((int)defaultValue))); }
     public void setInt(string name, int value) { PlayerPrefs.SetInt(name, value); }
     public void setUint(string name, uint value) { PlayerPrefs.SetInt(name, unchecked((int)value)); }
     public float getFloat(string name, float defaultValue) { return PlayerPrefs.GetFloat(name, defaultValue); }
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public string getString(string name, string defaultValue) { return EditorPrefs.GetString(name, defaultValue); }
     public void setString(string name, string value) { EditorPrefs.SetString(name, value); }
     public int getInt(string name, int defaultValue) { return EditorPrefs.GetInt(name, defaultValue); }
-    public uint getUint(string name, uint defaultValue) { return unchecked((uint)EditorPrefs.GetInt(name, unchecked((int)defaultValue))); }
+    public uint getUInt(string name, uint defaultValue) { return unchecked((uint)EditorPrefs.GetInt(name, unchecked((int)defaultValue))); }
     public void setInt(string name, int value) { EditorPrefs.SetInt(name, value); }
     public void setUint(string name, uint value) { EditorPrefs.SetInt(name, unchecked((int)value)); }
     public float getFloat(string name, float defaultValue) { return EditorPrefs.GetFloat(name, defaultValue); }
@@ -62,70 +62,67 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
 
-    public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite=true) {
-      return new PrefVal<string>(
-        key, defaultVal, backend.getString, backend.setString, backend, saveOnEveryWrite
+    public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite=true) => 
+      new PrefVal<string>(
+        () => backend.getString(key, defaultVal), 
+        value => backend.setString(key, value), backend, saveOnEveryWrite
       );
-    }
 
-    public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite = true) {
-      return new PrefVal<int>(
-        key, defaultVal, backend.getInt, backend.setInt, backend, saveOnEveryWrite
+    public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite=true) => 
+      new PrefVal<int>(
+        () => backend.getInt(key, defaultVal), 
+        value => backend.setInt(key, value), backend, saveOnEveryWrite
       );
-    }
 
-    public PrefVal<uint> unsingedInteger(string key, uint defaultVal, bool saveOnEveryWrite = true) {
-      return new PrefVal<uint>(
-        key, defaultVal, backend.getUint, backend.setUint, backend, saveOnEveryWrite
+    public PrefVal<uint> uinteger(string key, uint defaultVal, bool saveOnEveryWrite=true) => 
+      new PrefVal<uint>(
+        () => backend.getUInt(key, defaultVal), 
+        value => backend.setUint(key, value), 
+        backend, saveOnEveryWrite
       );
-    }
 
-    public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite = true) {
-      return new PrefVal<float>(
-        key, defaultVal, backend.getFloat, backend.setFloat, backend, saveOnEveryWrite
+    public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite=true) => 
+      new PrefVal<float>(
+        () => backend.getFloat(key, defaultVal), 
+        value => backend.setFloat(key, value), 
+        backend, saveOnEveryWrite
       );
-    }
 
     #region bool
 
-    public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = true) {
-      return new PrefVal<bool>(
-        key, defaultVal, GetBool, SetBool, backend, saveOnEveryWrite
+    public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = true) => 
+      new PrefVal<bool>(
+        () => backend.getInt(key, bool2int(defaultVal)) != 0, 
+        value => backend.setInt(key, bool2int(value)),
+        backend, saveOnEveryWrite
       );
-    }
 
-    public bool GetBool(string key, bool defaultVal)
-    { return int2bool(backend.getInt(key, bool2int(defaultVal))); }
+    static int bool2int(bool b) => b ? 1 : 0;
 
-    public void SetBool(string key, bool value)
-    { backend.setInt(key, bool2int(value)); }
+    #endregion
 
-    static bool int2bool(int i) { return i != 0; }
-    static int bool2int(bool b) { return b ? 1 : 0; }
+    #region Duration
+
+    public PrefVal<Duration> duration(string key, Duration defaultVal, bool saveOnEveryWrite=true) => 
+      new PrefVal<Duration>(
+        () => new Duration(backend.getInt(key, defaultVal.millis)),
+        value => backend.setInt(key, value.millis),
+        backend, saveOnEveryWrite
+      );
 
     #endregion
 
     #region DateTime
 
-    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = true) {
-      return new PrefVal<DateTime>(
-        key, defaultVal, GetDate, SetDate, backend, saveOnEveryWrite
+    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = true) => 
+      new PrefVal<DateTime>(
+        () => deserializeDate(backend.getString(key, serializeDate(defaultVal))),
+        value => backend.setString(key, serializeDate(value)),
+        backend, saveOnEveryWrite
       );
-    }
 
-    public DateTime GetDate(string key, DateTime defaultVal)
-    { return deserializeDate(backend.getString(key, serializeDate(defaultVal))); }
-
-    public void SetDate(string key, DateTime value)
-    { backend.setString(key, serializeDate(value)); }
-
-    static string serializeDate(DateTime date) {
-      return date.ToBinary().ToString();
-    }
-
-    static DateTime deserializeDate(string s) {
-      return DateTime.FromBinary(long.Parse(s));
-    }
+    static string serializeDate(DateTime date) => date.ToBinary().ToString();
+    static DateTime deserializeDate(string s) => DateTime.FromBinary(long.Parse(s));
 
     #endregion
 
@@ -135,14 +132,11 @@ namespace com.tinylabproductions.TLPLib.Data {
      * default value if string is empty. */
     public PrefVal<A> custom<A>(
       string key, A defaultVal, Fn<A, string> map, Fn<string, A> comap, bool saveOnEveryWrite=true
-    ) {
-      return new PrefVal<A>(
-        key, defaultVal,
-        (_key, _defaultVal) => GetCustom(_key, _defaultVal, comap),
-        (_key, value) => SetCustom(key, value, map),
-        backend, saveOnEveryWrite
-      );
-    }
+    ) => new PrefVal<A>(
+      () => GetCustom(key, defaultVal, comap),
+      value => SetCustom(key, value, map),
+      backend, saveOnEveryWrite
+    );
 
     A GetCustom<A>(string key, A defaultVal, Fn<string, A> parse) {
       var str = backend.getString(key, CUSTOM_DEFAULT);
@@ -182,8 +176,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   // Should be class (not struct) because .write mutates object.
   public class PrefVal<A> {
     readonly IPrefValueBackend backend;
-    readonly string key;
-    readonly Act<string, A> writer;
+    readonly Act<A> writer;
     readonly bool saveOnEveryWrite;
 
     A _value;
@@ -196,20 +189,19 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     A persist(A value) {
-      writer(key, value);
+      writer(value);
       if (saveOnEveryWrite) backend.save();
       return value;
     }
 
     public PrefVal(
-      string key, A defaultValue, Fn<string, A, A> reader, Act<string, A> writer,
+      Fn<A> reader, Act<A> writer,
       IPrefValueBackend backend, bool saveOnEveryWrite
     ) {
-      this.key = key;
       this.writer = writer;
       this.backend = backend;
       this.saveOnEveryWrite = saveOnEveryWrite;
-      _value = persist(reader(key, defaultValue));
+      _value = persist(reader());
     }
 
     public A read => value;
