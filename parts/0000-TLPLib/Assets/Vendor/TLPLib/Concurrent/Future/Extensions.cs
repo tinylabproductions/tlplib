@@ -52,6 +52,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       ));
     }
 
+    public static Future<A> flatten<A>(this Future<Future<A>> future) =>
+      future.flatMap(_ => _);
+
     /** Complete the future with the right side, never complete if left side occurs. **/
     public static Future<B> dropError<A, B>(this Future<Either<A, B>> future) {
       return Future.a<B>(p => future.onSuccess(p.complete));
