@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var index = IndexOf(item);
       if (index < 0) return false;
       RemoveAt(index);
-      _rxSize.push(Count);
+      _rxSize.value = Count;
       return true;
     }
 
@@ -113,7 +113,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     private void notifyElementObservable(int index) {
-      elementRxRefs.get(index).each(t => t.push(this.get(index)));
+      elementRxRefs.get(index).each(t => t.value = this.get(index));
     }
   }
 }
