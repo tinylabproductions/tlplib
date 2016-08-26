@@ -2,14 +2,18 @@
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEditor;
+using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MissingReferencesFinder : MonoBehaviour {
   [MenuItem("Tools/Show Missing Object References in scene", false, 50)]
+  [PostProcessScene]
   public static void findMissingReferencesInCurrentScene() {
+    if (EditorApplication.isPlayingOrWillChangePlaymode) return;
     var objects = getSceneObjects();
+    Debug.LogWarning(objects.Length);
     findMissingReferences(SceneManager.GetActiveScene().name, objects);
     Debug.Log("findMissingReferencesInCurrentScene finished");
   }
