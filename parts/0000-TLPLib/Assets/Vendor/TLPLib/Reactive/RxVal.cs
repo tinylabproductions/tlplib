@@ -142,15 +142,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IObservable<Unit> toEventSource<A>(this IRxVal<A> o) => 
       o.toEventSource(_ => F.unit);
 
-    // TODO: test
-    public static IRxVal<A> extractFuture<A>(
-      this Future<IRxVal<A>> future, A whileNotCompleted
-    ) {
-      var rx = RxRef.a(whileNotCompleted);
-      future.onComplete(rx2 => rx2.subscribe(v => rx.value = v));
-      return rx;
-    }
-
     public static IRxVal<Option<B>> optFlatMap<A, B>(
       this IRxVal<Option<A>> source, Fn<A, IRxVal<B>> extractor
     ) {

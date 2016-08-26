@@ -105,9 +105,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       ));
     }
 
-    public static Future<Unit> fromCoroutine(IEnumerator enumerator) {
-      return Future<Unit>.async(p => ASync.StartCoroutine(coroutineEnum(p, enumerator)));
-    }
+    public static Future<Unit> fromCoroutine(IEnumerator enumerator) => 
+      fromCoroutine(ASync.StartCoroutine(enumerator));
+
+    public static Future<Unit> fromCoroutine(Coroutine coroutine) => 
+      Future<Unit>.async(p => {
+        if (coroutine.finished) p.complete(F.unit);
+        else {
+          Act onComplete = null;
+          onComplete = () => {
+            p.complete(F.unit);
+            coroutine.onFinish -= onComplete;
+          };
+          coroutine.onFinish += onComplete;
+        }
+      });
 
     public static Future<A> fromBusyLoop<A>(
       Fn<Option<A>> checker, YieldInstruction delay=null
@@ -157,11 +169,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         valOpt = checker();
       }
       p.complete(valOpt.get);
-    }
-
-    static IEnumerator coroutineEnum(Promise<Unit> p, IEnumerator enumerator) {
-      yield return ASync.StartCoroutine(enumerator);
-      p.complete(Unit.instance);
     }
   }
 }

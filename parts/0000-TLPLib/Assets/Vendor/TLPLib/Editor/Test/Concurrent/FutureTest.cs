@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
@@ -427,6 +428,31 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       t._1.shouldNotBeCompleted();
       t._2();
       t._1.shouldBeCompleted(F.unit);
+    }
+  }
+
+  public class FutureTestToRxVal {
+    [Test]
+    public void WithUnknownType() {
+      Promise<int> promise;
+      var f = Future<int>.async(out promise);
+      var rx = f.toRxVal();
+      rx.value.shouldBeNone();
+      promise.complete(10);
+      rx.value.shouldBeSome(10);
+    }
+
+    [Test]
+    public void WithRxValInside() {
+      Promise<IRxVal<int>> p;
+      var f = Future<IRxVal<int>>.async(out p);
+      var rx = f.toRxVal(0);
+      rx.value.shouldEqual(0);
+      var rx2 = RxRef.a(100);
+      p.complete(rx2);
+      rx.value.shouldEqual(100);
+      rx2.value = 200;
+      rx.value.shouldEqual(200);
     }
   }
 }

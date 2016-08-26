@@ -12,7 +12,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     protected abstract A currentValue { get; }
 
     protected RxBase() : base() {}
-    protected RxBase(Fn<IObserver<A>, ISubscription> subscribeFn) : base(subscribeFn) {}
+    protected RxBase(Fn<IObserver<A>, ISubscription> subscribeFn) : base(
+      subscribeFn, 
+      // We need to be always subscribed, because we always need to have current value
+      // in this rx value.
+      beAlwaysSubscribed: true
+    ) {}
 
     protected override void submit(A value) {
       if (!comparer.Equals(_value, value)) {

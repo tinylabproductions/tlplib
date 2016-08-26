@@ -72,6 +72,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IObservable<B> flatMap<B>(Fn<A, IEnumerable<B>> mapper);
     /** 
      * Maps events coming from this observable and emits events from returned futures.
+     * 
+     * Does not emit value if future completes after observable is finished.
      **/
     IObservable<B> flatMap<B>(Fn<A, Future<B>> mapper);
     /** 
@@ -111,8 +113,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /**
      * Joins events of more than two observables effectively.
      **/
-    IObservable<A> joinAll<B>(IEnumerable<IObservable<B>> others) where B : A;
     IObservable<A> joinAll<B>(ICollection<IObservable<B>> others) where B : A;
+    IObservable<A> joinAll<B>(IEnumerable<IObservable<B>> others, int otherCount) where B : A;
     /* Joins events, but discards the values. */
     IObservable<Unit> joinDiscard<X>(IObservable<X> other);
     /** 
@@ -192,6 +194,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public static class Observable {
+    public static ISubscription subscribeForOneEvent<A>(
+      this IObservable<A> observable, Act<A> onEvent
+    ) => observable.subscribe((a, sub) => {
+      sub.unsubscribe();
+      onEvent(a);
+    });
+
     public static IObservableQueue<A, C> createQueue<A, C>(
       Act<A> addLast, Act removeFirst,
       Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last
@@ -248,9 +257,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) =>
       new Observable<A>(obs => 
         Observable<A>.multipleFinishes(obs, count, checkFinished => 
-          observables.Select(bObs =>
-            bObs.subscribe(obs.push, checkFinished)
-          ).joinSubscriptions()
+          observables.Select(aObs =>
+            aObs.subscribe(obs.push, checkFinished)
+          ).ToArray().joinSubscriptions()
         )
       );
 
@@ -368,14 +377,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     class SourceProperties {
       readonly IObserver<A> observer;
       readonly Fn<IObserver<A>, ISubscription> subscribeFn;
+      public readonly bool beAlwaysSubscribed;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        IObserver<A> observer, Fn<IObserver<A>, ISubscription> subscribeFn
+        IObserver<A> observer, Fn<IObserver<A>, ISubscription> subscribeFn, 
+        bool beAlwaysSubscribed
       ) {
         this.observer = observer;
         this.subscribeFn = subscribeFn;
+        this.beAlwaysSubscribed = beAlwaysSubscribed;
       }
 
       public bool trySubscribe() => 
@@ -405,15 +417,19 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       public readonly Subscription subscription;
       public readonly IObserver<A> observer;
 
-      public Sub(Subscription subscription, IObserver<A> observer) {
+      public bool active;
+
+      public Sub(Subscription subscription, IObserver<A> observer, bool active) {
         this.subscription = subscription;
         this.observer = observer;
+        this.active = active;
       }
 
       public override string ToString() => 
         $"{nameof(Sub)}[" +
         $"{nameof(subscription)}: {subscription}, " +
-        $"{nameof(observer)}: {observer}" +
+        $"{nameof(observer)}: {observer}, " +
+        $"{nameof(active)}: {active}" +
         $"]";
     }
 
@@ -426,6 +442,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     bool willFinish;
     // Is this observable finished and will not take any more submits.
     public bool finished { get; private set; }
+    // How many subscription activations do we have pending?
+    int pendingSubscriptionActivations;
     // How many subscription removals we have pending?
     int pendingRemovals;
 
@@ -437,10 +455,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sourceProps = F.none<SourceProperties>();
     }
 
-    public Observable(Fn<IObserver<A>, ISubscription> subscribeFn) {
-      sourceProps = F.some(new SourceProperties(
-        new Observer<A>(submit, finishObservable), subscribeFn
-      ));
+    public Observable(
+      Fn<IObserver<A>, ISubscription> subscribeFn,
+      bool beAlwaysSubscribed = false
+    ) {
+      var sourceProps = new SourceProperties(
+        new Observer<A>(submit, finishObservable), subscribeFn,
+        beAlwaysSubscribed
+      );
+      if (sourceProps.beAlwaysSubscribed) subscribeToSource(sourceProps);
+      this.sourceProps = F.some(sourceProps);
     }
 
     protected virtual void submit(A value) {
@@ -464,12 +488,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (sub.subscription.isSubscribed) sub.observer.push(value);
+          if (sub.active && sub.subscription.isSubscribed) sub.observer.push(value);
         }
       }
       finally {
         iterating = false;
         afterIteration();
+        // Process pending submits.
+        if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
       }
     }
 
@@ -491,7 +517,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subscriptions.Clear();
     }
 
-    public int subscribers => subscriptions.Count - pendingRemovals;
+    public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
     public ISubscription subscribe(Act<A> onChange) => subscribe(onChange, () => {});
 
@@ -502,14 +528,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (doLogging && Log.isVerbose)
         Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
       var subscription = new Subscription(onUnsubscribed);
-      // We can safely add to the subscriptions lists end.
-      subscriptions.Add(new Sub(subscription, observer));
+      var active = !iterating;
+      subscriptions.Add(new Sub(subscription, observer, active));
+      if (!active) pendingSubscriptionActivations++;
+      
       // Subscribe to source if we have a first subscriber.
-      sourceProps.each(_ => {
-        var res = _.trySubscribe();
-        if (doLogging && Log.isVerbose && res)
-          Log.verbose($"[{nameof(Observable<A>)}] Subscribe to source");
-      });
+      foreach (var source in sourceProps) subscribeToSource(source);
       return subscription;
     }
 
@@ -564,13 +588,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     (Fn<A, IObservable<B>> mapper, ObserverBuilder<B, O> builder) => 
       builder(obs => {
         ISubscription innerSub = null;
-        Act innerUnsub = () => { if (innerSub != null) { innerSub.unsubscribe(); } };
+        Act innerUnsub = () => innerSub?.unsubscribe();
         var thisSub = subscribe(
           val => {
             innerUnsub();
             innerSub = mapper(val).subscribe(obs);
           },
-          innerUnsub
+          () => {
+            innerUnsub();
+            obs.finish();
+          }
         );
         return thisSub.join(new Subscription(innerUnsub));
       });
@@ -580,7 +607,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     protected O flatMapImpl<B, O>
     (Fn<A, Future<B>> mapper, ObserverBuilder<B, O> builder) => 
-      builder(obs => subscribe(a => mapper(a).onComplete(obs.push)));
+      builder(obs => {
+        var sourceFinished = false;
+        return subscribe(
+          a => mapper(a).onComplete(b => {
+            if (!sourceFinished) obs.push(b);
+          }),
+          () => {
+            sourceFinished = true;
+            obs.finish();
+          }
+        );
+      });
 
     #endregion
 
@@ -686,10 +724,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     #region #joinAll
-
-    public IObservable<A> joinAll<B>(IEnumerable<IObservable<B>> others) where B : A =>
-      // ReSharper disable once PossibleMultipleEnumeration
-      joinAll(others, others.Count());
 
     public IObservable<A> joinAll<B>(ICollection<IObservable<B>> others) where B : A =>
       joinAll(others, others.Count);
@@ -1040,6 +1074,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return f(checkFinish);
     }
 
+    #region private methods
+
+    void subscribeToSource(SourceProperties source) {
+      if (source.trySubscribe()) log("subscribed to source");
+    }
+
     void onUnsubscribed() {
       pendingRemovals++;
       if (iterating) return;
@@ -1047,9 +1087,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       // Unsubscribe from source if we don't have any subscribers that are
       // subscribed to us.
-      if (subscribers == 0) {
-        log("unsubscribe from source");
-        sourceProps.each(_ => _.tryUnsubscribe());
+      foreach (var source in sourceProps) {
+        if (subscribers == 0 && !source.beAlwaysSubscribed) {
+          if (source.tryUnsubscribe()) log("unsubscribed from source");
+        }
       }
     }
 
@@ -1058,6 +1099,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     void afterIteration() {
+      if (pendingSubscriptionActivations != 0) {
+        for (var idx = 0; idx < subscriptions.Count; idx++) {
+          var sub = subscriptions[idx];
+          if (!sub.active) {
+            sub.active = true;
+            // sub is a mutable struct, so we need to assign it back.
+            subscriptions[idx] = sub;
+          }
+        }
+        pendingSubscriptionActivations = 0;
+      }
       if (pendingRemovals != 0) {
         subscriptions.RemoveWhere(sub => !sub.subscription.isSubscribed);
         pendingRemovals = 0;
@@ -1067,6 +1119,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         finishObservable();
       }
     }
+
+    #endregion
   }
 
   public interface IObservableQueue<A, out C> {

@@ -10,12 +10,12 @@ namespace com.tinylabproductions.TLPLib.Binding {
       this IObservable<A> observable, Fn<A, Coroutine> f
     ) {
       var lastCoroutine = F.none<Coroutine>();
-      Act stop = () => { foreach (var c in lastCoroutine) c.stop(); };
+      Act stopOpt = () => { foreach (var c in lastCoroutine) { c.stop(); } };
       var sub = observable.subscribe(a => {
-        stop();
+        stopOpt();
         lastCoroutine = f(a).some();
       });
-      return sub.andThen(stop);
+      return sub.andThen(stopOpt);
     }
   }
 }
