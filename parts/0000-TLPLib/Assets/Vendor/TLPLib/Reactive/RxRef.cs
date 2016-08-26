@@ -1,10 +1,11 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
    * RxRef is a reactive reference, which stores a value and also acts as a IObserver.
    **/
-  public interface IRxRef<A> : IRxVal<A> {
+  public interface IRxRef<A> : Ref<A>, IRxVal<A> {
     new A value { get; set; }
     /** Returns a new ref that is bound to this ref and vice versa. **/
     IRxRef<B> comap<B>(Fn<A, B> mapper, Fn<B, A> comapper);
