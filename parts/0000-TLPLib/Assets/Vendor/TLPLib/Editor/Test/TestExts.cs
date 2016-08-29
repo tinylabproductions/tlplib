@@ -50,6 +50,16 @@ namespace com.tinylabproductions.TLPLib.Test {
       a.shouldEqual(expected.some(), message);
     }
 
+    public static void shouldBeSomeEnum<A>(this Option<A> aOpt, A expected, string message = null)
+      where A : IEnumerable
+    {
+      foreach (var a in aOpt) {
+        a.shouldEqual(expected, message);
+        return;
+      }
+      aOpt.shouldBeSome(expected, message);
+    }
+
     public static void shouldBeNone<A>(this Option<A> a, string message=null) {
       a.shouldEqual(F.none<A>(), message);
     }

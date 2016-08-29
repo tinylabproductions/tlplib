@@ -7,11 +7,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     bool unsubscribe();
     ISubscription andThen(Act action);
     ISubscription join(params ISubscription[] other);
+    ISubscription joinEnum(IEnumerable<ISubscription> others);
   }
 
   public class Subscription : ISubscription {
-    private readonly Act onUnsubscribe;
-    private bool _isSubscribed = true;
+    readonly Act onUnsubscribe;
+
+    public bool isSubscribed { get; private set; } = true;
 
     public static ISubscription a(Act onUnsubscribe) {
       return new Subscription(onUnsubscribe);
@@ -21,11 +23,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this.onUnsubscribe = onUnsubscribe;
     }
 
-    public bool isSubscribed { get { return _isSubscribed; } }
-
     public bool unsubscribe() {
       if (!isSubscribed) return false;
-      _isSubscribed = false;
+      isSubscribed = false;
       onUnsubscribe();
       return true;
     }
@@ -37,19 +37,26 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    public ISubscription join(params ISubscription[] other) {
+    public ISubscription join(params ISubscription[] other) => joinEnum(other);
+
+    public ISubscription joinEnum(IEnumerable<ISubscription> others) {
       return new Subscription(() => {
         unsubscribe();
-        // ReSharper disable once ForCanBeConvertedToForeach
-        for (var idx = 0; idx < other.Length; idx++)
-          other[idx].unsubscribe();
+        foreach (var other in others) other.unsubscribe();
       });
     }
   }
 
+  public static class ISubscriptionExts {
+    public static ISubscription joinSubscriptions(
+      this IEnumerable<ISubscription> subscriptions
+    ) => new Subscription(() => {
+      foreach (var sub in subscriptions) sub.unsubscribe();
+    });
+  }
+
   public class SubscriptionTracker : IDisposable {
-    private readonly List<ISubscription> subscriptions =
-      new List<ISubscription>();
+    readonly List<ISubscription> subscriptions = new List<ISubscription>();
 
     public ISubscription track(ISubscription subscription) {
       subscriptions.Add(subscription);
