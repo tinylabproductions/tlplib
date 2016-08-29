@@ -84,31 +84,34 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
               var m_Calls = m_PersistentCallsValue.GetType().GetField("m_Calls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
               var m_CallsValue = m_PersistentCalls.GetValue(a);
 
-              int n = (int)m_CallsValue.GetType().GetProperty("Count").GetValue(m_CallsValue, null);
-              for (int i = 0; i < n; i++) {
-                object[] index = { i };
-                object myObject = m_CallsValue.GetType().GetProperty("Item", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(m_CallsValue, index);
-                Debug.LogWarning(sp.propertyPath);
+              //int n = (int)m_CallsValue.GetType().GetProperty("Count").GetValue(m_CallsValue, null);
+              //for (int i = 0; i < n; i++) {
+              //  object[] index = { i };
+              //  object myObject = m_CallsValue.GetType().GetProperty("Item", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(m_CallsValue, index);
+              //  Debug.LogWarning(sp.propertyPath);
 
-                // Get the object properties  
-                PropertyInfo[] objectProperties = myObject.GetType().GetProperties();
+              //  // Get the object properties  
+              //  PropertyInfo[] objectProperties = myObject.GetType().GetProperties();
 
-                // Process each property  
-                foreach (PropertyInfo currentProperty in objectProperties) {
-                  string propertyValue = currentProperty.GetValue(myObject, null).ToString();
-                  Console.WriteLine(propertyValue);
-                }
-              }
-
-              //foreach (var persistentCall in (IEnumerable<object>)m_Calls) {
-              //  var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
-              //  if (isValid) {
-              //    var methodInfo = a.GetType().GetMethod("FindMethod", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(a, new[] { persistentCall });
-              //    if (methodInfo == null) {
-              //      Debug.LogWarning(sp.propertyPath);
-              //    }
+              //  // Process each property  
+              //  foreach (PropertyInfo currentProperty in objectProperties) {
+              //    string propertyValue = currentProperty.GetValue(myObject, null).ToString();
+              //    Console.WriteLine(propertyValue);
               //  }
               //}
+
+              PropertyInfo listProperty = m_Calls.GetType().GetProperty("List", BindingFlags.Public);
+              IEnumerable listObject = (IEnumerable)listProperty.GetValue(m_Calls, null);
+
+              foreach (var persistentCall in (IEnumerable<object>)m_Calls) {
+                var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
+                if (isValid) {
+                  var methodInfo = a.GetType().GetMethod("FindMethod", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(a, new[] { persistentCall });
+                  if (methodInfo == null) {
+                    Debug.LogWarning(sp.propertyPath);
+                  }
+                }
+              }
               var prop = m_PersistentCallsValue.GetType().GetProperty("Count");
               var count = (int)prop.GetValue(m_PersistentCallsValue, new object[] {});
               Debug.LogWarning(count);
