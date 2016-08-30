@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public class IEnumerableTestAsString {
+    [Test]
+    public void TestNull() => 
+      ((IEnumerable) null).asString().shouldEqual("null");
+
     [Test]
     public void TestList() {
       F.list(1, 2, 3).asString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");

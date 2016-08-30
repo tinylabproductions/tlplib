@@ -12,6 +12,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IEnumerable enumerable,
       bool newlines=true, bool fullClasses=false
     ) {
+      if (enumerable == null) return "null";
       var sb = new StringBuilder();
       asStringRec(enumerable, sb, newlines, fullClasses, 1);
       return sb.ToString();
