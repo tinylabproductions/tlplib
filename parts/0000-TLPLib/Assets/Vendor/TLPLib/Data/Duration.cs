@@ -32,6 +32,9 @@ namespace com.tinylabproductions.TLPLib.Data {
       new Duration(d1.millis + d2.millis);
     public static Duration operator -(Duration d1, Duration d2) =>
       new Duration(d1.millis - d2.millis);
+    public static Duration operator *(Duration d1, int multiplier) =>
+      new Duration(d1.millis * multiplier);
+
     public static bool operator <(Duration d1, Duration d2) =>
       d1.millis < d2.millis;
     public static bool operator >(Duration d1, Duration d2) =>
