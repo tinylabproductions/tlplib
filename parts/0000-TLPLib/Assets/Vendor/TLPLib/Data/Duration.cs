@@ -28,6 +28,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public float seconds => millis / 1000f;
 
+    public int secondsInt => Mathf.RoundToInt(millis / 1000f);
+
     public static Duration operator +(Duration d1, Duration d2) =>
       new Duration(d1.millis + d2.millis);
     public static Duration operator -(Duration d1, Duration d2) =>
