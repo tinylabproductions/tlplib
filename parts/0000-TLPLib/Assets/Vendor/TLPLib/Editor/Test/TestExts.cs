@@ -28,6 +28,22 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreNotEqual(expected, a, message);
 
+    public static void shouldInclude(this string s, string substring, string message = null) {
+      if (!s.Contains(substring))
+        Assert.Fail(
+          $"\"{s}\" should include \"{substring}\", but it did not." + 
+          F.opt(message).map(_ => $" {_}").getOrElse("")
+        );
+    }
+
+    public static void shouldNotInclude(this string s, string substring, string message = null) {
+      if (s.Contains(substring))
+        Assert.Fail(
+          $"\"{s}\" should not include \"{substring}\", but it did." + 
+          F.opt(message).map(_ => $" {_}").getOrElse("")
+        );
+    }
+
     public static void shouldTestInequalityAgainst<A>(this IEnumerable<A> set1, IEnumerable<A> set2) {
       foreach (var i1 in set1)
         // ReSharper disable once PossibleMultipleEnumeration
