@@ -87,6 +87,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   public interface ILog {
     Log.Level level { get; set; }
+    bool willLog(Log.Level level);
     void verbose(object o);
     bool isVerbose { get; }
     /* Runtime version of debug. */
@@ -109,24 +110,25 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   public abstract class LogBase : ILog {
     public Log.Level level { get; set; } = Log.defaultLogLevel;
+    public bool willLog(Log.Level level) => this.level >= level;
 
-    public bool isVerbose => level >= Log.Level.VERBOSE;
+    public bool isVerbose => willLog(Log.Level.VERBOSE);
     public void verbose(object o) { if (isVerbose) logVerbose($"[VERBOSE]> {o}"); }
     protected abstract void logVerbose(string s);
 
-    public bool isDebug => level >= Log.Level.DEBUG;
+    public bool isDebug => willLog(Log.Level.DEBUG);
     public void debug(object o) { if (isDebug) logDebug($"[DEBUG]> {o}"); }
     protected abstract void logDebug(string s);
 
-    public bool isInfo => level >= Log.Level.INFO;
+    public bool isInfo => willLog(Log.Level.INFO);
     public void info(object o) { if (isInfo) logInfo($"[INFO]> {o}"); }
     protected abstract void logInfo(string s);
 
-    public bool isWarn => level >= Log.Level.WARN;
+    public bool isWarn => willLog(Log.Level.WARN);
     public void warn(object o) { if (isWarn) logWarn($"[WARN]> {o}"); }
     protected abstract void logWarn(string s);
 
-    public bool isError => level >= Log.Level.ERROR;
+    public bool isError => willLog(Log.Level.ERROR);
     public void error(Exception ex) { error(Log.exToStr(ex)); }
     public void error(object o, Exception ex) { error(Log.exToStr(ex, o)); }
     public void error(object o) { logError($"[ERROR]> {o}"); }
