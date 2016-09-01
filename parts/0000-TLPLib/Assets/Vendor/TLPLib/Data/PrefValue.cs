@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using com.tinylabproductions.TLPLib.caching;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using Smooth.Collections;
 using UnityEngine;
@@ -20,21 +23,23 @@ namespace com.tinylabproductions.TLPLib.Data {
     float getFloat(string name, float defaultValue);
     void setFloat(string name, float value);
     void save();
+    void delete(string name);
   }
 
   class PlayerPrefsBackend : IPrefValueBackend {
     public static readonly PlayerPrefsBackend instance = new PlayerPrefsBackend();
     PlayerPrefsBackend() {}
 
-    public string getString(string name, string defaultValue) { return PlayerPrefs.GetString(name, defaultValue); }
-    public void setString(string name, string value) { PlayerPrefs.SetString(name, value); }
-    public int getInt(string name, int defaultValue) { return PlayerPrefs.GetInt(name, defaultValue); }
-    public uint getUInt(string name, uint defaultValue) { return unchecked((uint)PlayerPrefs.GetInt(name, unchecked((int)defaultValue))); }
-    public void setInt(string name, int value) { PlayerPrefs.SetInt(name, value); }
-    public void setUint(string name, uint value) { PlayerPrefs.SetInt(name, unchecked((int)value)); }
-    public float getFloat(string name, float defaultValue) { return PlayerPrefs.GetFloat(name, defaultValue); }
-    public void setFloat(string name, float value) { PlayerPrefs.SetFloat(name, value); }
-    public void save() { PlayerPrefs.Save(); }
+    public string getString(string name, string defaultValue) => PlayerPrefs.GetString(name, defaultValue);
+    public void setString(string name, string value) => PlayerPrefs.SetString(name, value);
+    public int getInt(string name, int defaultValue) => PlayerPrefs.GetInt(name, defaultValue);
+    public uint getUInt(string name, uint defaultValue) => unchecked((uint)PlayerPrefs.GetInt(name, unchecked((int)defaultValue)));
+    public void setInt(string name, int value) => PlayerPrefs.SetInt(name, value);
+    public void setUint(string name, uint value) => PlayerPrefs.SetInt(name, unchecked((int)value));
+    public float getFloat(string name, float defaultValue) => PlayerPrefs.GetFloat(name, defaultValue);
+    public void setFloat(string name, float value) => PlayerPrefs.SetFloat(name, value);
+    public void save() => PlayerPrefs.Save();
+    public void delete(string name) => PlayerPrefs.DeleteKey(name);
   }
 
 #if UNITY_EDITOR
@@ -42,15 +47,16 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly EditorPrefsBackend instance = new EditorPrefsBackend();
     EditorPrefsBackend() {}
 
-    public string getString(string name, string defaultValue) { return EditorPrefs.GetString(name, defaultValue); }
-    public void setString(string name, string value) { EditorPrefs.SetString(name, value); }
-    public int getInt(string name, int defaultValue) { return EditorPrefs.GetInt(name, defaultValue); }
-    public uint getUInt(string name, uint defaultValue) { return unchecked((uint)EditorPrefs.GetInt(name, unchecked((int)defaultValue))); }
-    public void setInt(string name, int value) { EditorPrefs.SetInt(name, value); }
-    public void setUint(string name, uint value) { EditorPrefs.SetInt(name, unchecked((int)value)); }
-    public float getFloat(string name, float defaultValue) { return EditorPrefs.GetFloat(name, defaultValue); }
-    public void setFloat(string name, float value) { EditorPrefs.SetFloat(name, value); }
+    public string getString(string name, string defaultValue) => EditorPrefs.GetString(name, defaultValue);
+    public void setString(string name, string value) => EditorPrefs.SetString(name, value);
+    public int getInt(string name, int defaultValue) => EditorPrefs.GetInt(name, defaultValue);
+    public uint getUInt(string name, uint defaultValue) => unchecked((uint)EditorPrefs.GetInt(name, unchecked((int)defaultValue)));
+    public void setInt(string name, int value) => EditorPrefs.SetInt(name, value);
+    public void setUint(string name, uint value) => EditorPrefs.SetInt(name, unchecked((int)value));
+    public float getFloat(string name, float defaultValue) => EditorPrefs.GetFloat(name, defaultValue);
+    public void setFloat(string name, float value) => EditorPrefs.SetFloat(name, value);
     public void save() {}
+    public void delete(string name) => EditorPrefs.DeleteKey(name);
   }
 #endif
 
@@ -63,26 +69,30 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
 
     public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite=true) => 
-      new PrefVal<string>(
+      new PrefValImpl<string>(
+        key,
         () => backend.getString(key, defaultVal), 
         value => backend.setString(key, value), backend, saveOnEveryWrite
       );
 
     public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite=true) => 
-      new PrefVal<int>(
+      new PrefValImpl<int>(
+        key,
         () => backend.getInt(key, defaultVal), 
         value => backend.setInt(key, value), backend, saveOnEveryWrite
       );
 
     public PrefVal<uint> uinteger(string key, uint defaultVal, bool saveOnEveryWrite=true) => 
-      new PrefVal<uint>(
+      new PrefValImpl<uint>(
+        key,
         () => backend.getUInt(key, defaultVal), 
         value => backend.setUint(key, value), 
         backend, saveOnEveryWrite
       );
 
     public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite=true) => 
-      new PrefVal<float>(
+      new PrefValImpl<float>(
+        key,
         () => backend.getFloat(key, defaultVal), 
         value => backend.setFloat(key, value), 
         backend, saveOnEveryWrite
@@ -91,7 +101,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region bool
 
     public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = true) => 
-      new PrefVal<bool>(
+      new PrefValImpl<bool>(
+        key,
         () => backend.getInt(key, bool2int(defaultVal)) != 0, 
         value => backend.setInt(key, bool2int(value)),
         backend, saveOnEveryWrite
@@ -104,7 +115,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region Duration
 
     public PrefVal<Duration> duration(string key, Duration defaultVal, bool saveOnEveryWrite=true) => 
-      new PrefVal<Duration>(
+      new PrefValImpl<Duration>(
+        key,
         () => new Duration(backend.getInt(key, defaultVal.millis)),
         value => backend.setInt(key, value.millis),
         backend, saveOnEveryWrite
@@ -115,7 +127,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region DateTime
 
     public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = true) => 
-      new PrefVal<DateTime>(
+      new PrefValImpl<DateTime>(
+        key,
         () => deserializeDate(backend.getString(key, serializeDate(defaultVal))),
         value => backend.setString(key, serializeDate(value)),
         backend, saveOnEveryWrite
@@ -132,7 +145,8 @@ namespace com.tinylabproductions.TLPLib.Data {
      * default value if string is empty. */
     public PrefVal<A> custom<A>(
       string key, A defaultVal, Fn<A, string> map, Fn<string, A> comap, bool saveOnEveryWrite=true
-    ) => new PrefVal<A>(
+    ) => new PrefValImpl<A>(
+      key,
       () => GetCustom(key, defaultVal, comap),
       value => SetCustom(key, value, map),
       backend, saveOnEveryWrite
@@ -173,11 +187,35 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
   }
 
+  public interface PrefVal<A> : ICachedBlob<A> {
+    A value { get; set; }
+    void forceSave();
+  }
+
+  public static class PrefValExts {
+    // You should not write to Val when using RxRef
+    public static RxRef<A> toRxRef<A>(this PrefVal<A> val) {
+      var rx = new RxRef<A>(val.value);
+      rx.subscribe(v => val.value = v);
+      return rx;
+    }
+
+    public static PrefVal<B> bimap<A, B>(
+      this PrefVal<A> val, BiMapper<A, B> bimap
+    ) => new PrefValMapper<A, B>(val, bimap);
+
+    public static ICachedBlob<A> optToCachedBlob<A>(
+      this PrefVal<Option<A>> val
+    ) => new PrefValOptCachedBlob<A>(val);
+  }
+
   // Should be class (not struct) because .write mutates object.
-  public class PrefVal<A> {
+  public class PrefValImpl<A> : PrefVal<A> {
+    public readonly bool saveOnEveryWrite;
+    public readonly string key;
+
     readonly IPrefValueBackend backend;
     readonly Act<A> writer;
-    readonly bool saveOnEveryWrite;
 
     A _value;
     public A value {
@@ -194,35 +232,70 @@ namespace com.tinylabproductions.TLPLib.Data {
       return value;
     }
 
-    public PrefVal(
-      Fn<A> reader, Act<A> writer,
+    public PrefValImpl(
+      string key, Fn<A> reader, Act<A> writer,
       IPrefValueBackend backend, bool saveOnEveryWrite
     ) {
+      this.key = key;
       this.writer = writer;
       this.backend = backend;
       this.saveOnEveryWrite = saveOnEveryWrite;
       _value = persist(reader());
     }
 
-    public A read => value;
-
-    public A write(A value) {
-      this.value = value;
-      return value;
-    }
-
-    // You should not write to Val when using RxRef
-    public RxRef<A> toRxRef() {
-      var rx = new RxRef<A>(read);
-      rx.subscribe(v => write(v));
-      return rx;
-    }
-
-    public void forceSave() {
-      backend.save();
-    }
+    public void forceSave() => backend.save();
 
     public override string ToString() => $"{nameof(PrefVal<A>)}({_value})";
+
+    #region ICachedBlob
+
+    public bool cached => true;
+    Option<Try<A>> ICachedBlob<A>.read() => F.some(F.scs(value));
+
+    public Try<Unit> store(A data) {
+      value = data;
+      return F.scs(F.unit);
+    }
+
+    public Try<Unit> clear() {
+      backend.delete(key);
+      return F.scs(F.unit);
+    } 
+
+    #endregion
+  }
+
+  class PrefValOptCachedBlob<A> : ICachedBlob<A> {
+    readonly PrefVal<Option<A>> backing;
+
+    public PrefValOptCachedBlob(PrefVal<Option<A>> backing) { this.backing = backing; }
+
+    public bool cached => backing.value.isDefined;
+    public Option<Try<A>> read() => backing.value.map(F.scs);
+    public Try<Unit> store(A data) => backing.store(data.some());
+    public Try<Unit> clear() => backing.store(Option<A>.None);
+  }
+
+  class PrefValMapper<A, B> : PrefVal<B> {
+    readonly PrefVal<A> backing;
+    readonly BiMapper<A, B> bimap;
+
+    public PrefValMapper(PrefVal<A> backing, BiMapper<A, B> bimap) {
+      this.backing = backing;
+      this.bimap = bimap;
+    }
+
+    public bool cached => backing.cached;
+    Option<Try<B>> ICachedBlob<B>.read() => backing.read().map(t => t.map(bimap.map));
+    public Try<Unit> store(B data) => backing.store(bimap.comap(data));
+    public Try<Unit> clear() => backing.clear();
+
+    public B value {
+      get { return bimap.map(backing.value); }
+      set { backing.value = bimap.comap(value); }
+    }
+
+    public void forceSave() => backing.forceSave();
   }
 
   /* PlayerPrefs backed reactive value. */
