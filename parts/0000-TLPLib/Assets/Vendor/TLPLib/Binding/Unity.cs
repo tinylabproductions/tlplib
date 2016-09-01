@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 
-namespace com.tinylabproductions.TLPLib.Binding {
+namespace com.tinylabproductions.TLPLib.binding {
   public static class Unity {
     public static ISubscription bind<A>(
       this IObservable<A> observable, Fn<A, Coroutine> f
