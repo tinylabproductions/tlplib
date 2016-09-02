@@ -17,21 +17,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> unfulfilled<A>()
       { return Future<A>.unfulfilled; }
 
-    public static Future<A> delay<A>(float seconds, Fn<A> createValue) {
-      return a<A>(p => ASync.WithDelay(seconds, () => p.complete(createValue())));
-    }
+    public static Future<A> delay<A>(Duration duration, Fn<A> createValue, ITimeContext tc=null) => 
+      a<A>(p => tc.orDefault().after(duration, () => p.complete(createValue())));
 
-    public static Future<A> delay<A>(float seconds, A value) {
-      return a<A>(p => ASync.WithDelay(seconds, () => p.complete(value)));
-    }
+    public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc=null) => 
+      a<A>(p => tc.orDefault().after(duration, () => p.complete(value)));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue) {
-      return a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(createValue())));
-    }
+    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue, ITimeContext tc=null) => 
+      a<A>(p => tc.orDefault().afterXFrames(framesToSkip, () => p.complete(createValue())));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, A value) {
-      return a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(value)));
-    }
+    public static Future<A> delayFrames<A>(int framesToSkip, A value, ITimeContext tc=null) => 
+      a<A>(p => tc.orDefault().afterXFrames(framesToSkip, () => p.complete(value)));
 
     /**
      * Converts enumerable of futures into future of enumerable that is completed
@@ -112,7 +108,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Future<Unit>.async(p => {
         if (coroutine.finished) p.complete(F.unit);
         else {
-          Act onComplete = null;
+          Action onComplete = null;
           onComplete = () => {
             p.complete(F.unit);
             coroutine.onFinish -= onComplete;
@@ -125,33 +121,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Fn<Option<A>> checker, YieldInstruction delay=null
     ) { return Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker))); }
 
-    /* Waits at most `timeoutSeconds` for the future to complete. Completes with
+    /* Waits at most `timeout` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
     public static Future<Either<B, A>> timeout<A, B>(
-      this Future<A> future, float timeoutSeconds, Fn<B> onTimeout
+      this Future<A> future, Duration timeout, Fn<B> onTimeout, ITimeContext tc=null
     ) {
-      // TODO: test me - how? Unity test runner doesn't support delays.
-      var timeoutF = delay(timeoutSeconds, () => future.value.fold(
+      var timeoutF = delay(timeout, () => future.value.fold(
         // onTimeout() might have side effects, so we only need to execute it if
         // there is no value in the original future once the timeout hits.
         () => onTimeout().left().r<A>(),
         v => v.right().l<B>()
-      ));
+      ), tc);
       return new[] { future.map(v => v.right().l<B>()), timeoutF }.firstOf();
     }
 
-    public static Future<Either<B, A>> timeout<A, B>(
-      this Future<A> future, Duration timeout, Fn<B> onTimeout
-    ) => future.timeout(timeout.seconds, onTimeout);
-
-    /* Waits at most `timeoutSeconds` for the future to complete. */
+    /* Waits at most `timeout` for the future to complete. */
     public static Future<Either<Duration, A>> timeout<A>(
-      this Future<A> future, Duration timeout
-    ) => future.timeout(timeout, () => timeout);
-
-    public static Future<Either<Duration, A>> timeout<A>(
-      this Future<A> future, float timeoutSeconds
-    ) => future.timeout(Duration.fromSeconds(timeoutSeconds));
+      this Future<A> future, Duration timeout, ITimeContext tc=null
+    ) => future.timeout(timeout, () => timeout, tc);
 
     /** Measures how much time has passed from call to timed to future completion. **/
     public static Future<Tpl<A, Duration>> timed<A>(this Future<A> future) {

@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
-    public static void locally(this object any, Act local) { local(); }
+    public static void locally(this object any, Action local) { local(); }
 
     public static T locally<T>(this object any, Fn<T> local) {
       return local();

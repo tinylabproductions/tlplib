@@ -50,18 +50,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       coroutine.stop();
     }
 
-    public static Coroutine WithDelay(float seconds, Act action) {
+    public static Coroutine WithDelay(float seconds, Action action) {
       return WithDelay(seconds, behaviour, action);
     }
 
     public static Coroutine WithDelay(
-      float seconds, MonoBehaviour behaviour, Act action
+      float seconds, MonoBehaviour behaviour, Action action
     ) {
       var enumerator = WithDelayEnumerator(seconds, action);
       return new Coroutine(behaviour, enumerator);
     }
 
-    public static void OnMainThread(Act action) { Threads.OnMainThread.run(action);}
+    public static void OnMainThread(Action action) { Threads.OnMainThread.run(action);}
 
     public static Coroutine NextFrame(Action action) {
       return NextFrame(behaviour, action);
@@ -95,11 +95,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public static void NextPostRender(Camera camera, Act action) {
+    public static void NextPostRender(Camera camera, Action action) {
       NextPostRender(camera, 1, action);
     }
 
-    public static void NextPostRender(Camera camera, int afterFrames, Act action) {
+    public static void NextPostRender(Camera camera, int afterFrames, Action action) {
       var pr = camera.gameObject.AddComponent<NextPostRenderBehaviour>();
       pr.init(action, afterFrames);
     }
@@ -137,7 +137,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Returns action that cancels our delayed call. */
-    public static Act WithDelayFixedUpdate(GameObject go, float delay, Act act) {
+    public static Action WithDelayFixedUpdate(GameObject go, float delay, Action act) {
       // TODO: probably this needs to be rewritten to use only one global component for fixed update
       if (delay < 1e-6) {
         // if delay is 0 call immediately
@@ -175,7 +175,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Wait until enumerator is completed and then do action */
-    public static IEnumerator afterThis(this IEnumerator enumerator, Act action) {
+    public static IEnumerator afterThis(this IEnumerator enumerator, Action action) {
       while (enumerator.MoveNext()) yield return enumerator.Current;
       action();
     }
@@ -185,7 +185,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WithDelayEnumerator(
-      float seconds, Act action
+      float seconds, Action action
     ) {
       yield return new WaitForSeconds(seconds);
       action();

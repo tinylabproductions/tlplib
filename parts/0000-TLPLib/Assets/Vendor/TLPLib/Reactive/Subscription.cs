@@ -5,21 +5,21 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubscription {
     bool isSubscribed { get; }
     bool unsubscribe();
-    ISubscription andThen(Act action);
+    ISubscription andThen(Action action);
     ISubscription join(params ISubscription[] other);
     ISubscription joinEnum(IEnumerable<ISubscription> others);
   }
 
   public class Subscription : ISubscription {
-    readonly Act onUnsubscribe;
+    readonly Action onUnsubscribe;
 
     public bool isSubscribed { get; private set; } = true;
 
-    public static ISubscription a(Act onUnsubscribe) {
+    public static ISubscription a(Action onUnsubscribe) {
       return new Subscription(onUnsubscribe);
     }
 
-    public Subscription(Act onUnsubscribe) {
+    public Subscription(Action onUnsubscribe) {
       this.onUnsubscribe = onUnsubscribe;
     }
 
@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return true;
     }
 
-    public ISubscription andThen(Act action) {
+    public ISubscription andThen(Action action) {
       return new Subscription(() => {
         unsubscribe();
         action();

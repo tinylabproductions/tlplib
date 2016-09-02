@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return ASync.EveryFrame(behaviour, f);
     }
 
-    public static Coroutine everyFrame(this GameObject go, Act a) {
+    public static Coroutine everyFrame(this GameObject go, Action a) {
       return go.everyFrame(() => { a(); return true; });
     }
 

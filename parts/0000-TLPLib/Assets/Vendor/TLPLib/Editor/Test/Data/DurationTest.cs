@@ -36,6 +36,15 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [Test]
+    public void Division() {
+      (new Duration(120) / 3).shouldEqual(new Duration(40));
+      (new Duration(-120) / 3).shouldEqual(new Duration(-40));
+      (new Duration(100) / 3).shouldEqual(new Duration(33));
+      (new Duration(101) / 3).shouldEqual(new Duration(33));
+      (new Duration(102) / 3).shouldEqual(new Duration(34));
+    }
+
+    [Test]
     public void Less() {
       (new Duration(100) < new Duration(200)).shouldBeTrue();
       (new Duration(200) < new Duration(100)).shouldBeFalse();

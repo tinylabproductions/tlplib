@@ -88,7 +88,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       return new SyncOtherThreadOp<A>(AndroidUIThreadExecutor.a(f)).execute();
     }
 
-    public static void runOnUIBlocking(Act act) {
+    public static void runOnUIBlocking(Action act) {
       new SyncOtherThreadOp<Unit>(AndroidUIThreadExecutor.a(() => { act(); return new Unit(); })).execute();
     }
 

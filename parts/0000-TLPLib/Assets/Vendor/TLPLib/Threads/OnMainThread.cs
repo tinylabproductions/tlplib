@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
   /* Helper class to queue things from other threads to be ran on the main
    * thread. */
   public class OnMainThread {
-    private static readonly Queue<Act> actions = new Queue<Act>();
+    private static readonly Queue<Action> actions = new Queue<Action>();
 
     /* Initialization. */
     static OnMainThread() {
@@ -19,12 +19,12 @@ namespace com.tinylabproductions.TLPLib.Threads {
     public static void init() { }
 
     /* Run the given action in the main thread. */
-    public static void run(Act action)
+    public static void run(Action action)
     { lock (actions) { actions.Enqueue(action); } }
 
     private static bool onUpdate() {
       while (true) {
-        Act current;
+        Action current;
         lock (actions) {
           if (actions.Count == 0) {
             break;

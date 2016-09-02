@@ -6,11 +6,11 @@ namespace com.tinylabproductions.TLPLib.Retry {
   public class Retry<A> {
     readonly int retryCount;
     readonly float retryDelay;
-    readonly Act tryAction;
+    readonly Action tryAction;
     readonly Act<A> failAction;
     int retries;
 
-    public Retry(int retryCount, float retryDelay, Act tryAction, Act<A> failAction) {
+    public Retry(int retryCount, float retryDelay, Action tryAction, Act<A> failAction) {
       this.retryCount = retryCount;
       this.retryDelay = retryDelay;
       this.tryAction = tryAction;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -12,9 +13,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DConsole {
     public struct Command {
       public readonly string cmdGroup, name;
-      public readonly Act run;
+      public readonly Action run;
 
-      public Command(string cmdGroup, string name, Act run) {
+      public Command(string cmdGroup, string name, Action run) {
         this.cmdGroup = cmdGroup;
         this.name = name;
         this.run = run;
@@ -35,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     DConsole() {
       var r = registrarFor(nameof(DConsole));
       r.register("Self-test", () => "self-test");
-      r.register("Future Self-test", () => Future.delay(1, () => "after 1 s"));
+      r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s"));
     }
 
     public delegate void OnShow(DConsole console);
@@ -145,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     static readonly HasObjFn<Unit> unitSomeFn = () => F.some(F.unit);
 
-    public void register(string name, Act run) {
+    public void register(string name, Action run) {
       register(name, () => { run(); return F.unit; });
     }
     public void register<A>(string name, Fn<A> run) {

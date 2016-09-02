@@ -2,6 +2,7 @@
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
+  // I discovered TimeSpan after this was written...
   public struct Duration : IEquatable<Duration> {
     public readonly int millis;
 
@@ -32,8 +33,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       new Duration(d1.millis + d2.millis);
     public static Duration operator -(Duration d1, Duration d2) =>
       new Duration(d1.millis - d2.millis);
-    public static Duration operator *(Duration d1, int multiplier) =>
-      new Duration(d1.millis * multiplier);
+    public static Duration operator *(Duration d, int multiplier) =>
+      new Duration(d.millis * multiplier);
+    public static Duration operator /(Duration d, float divider) =>
+      new Duration((int) (d.millis / divider));
 
     public static bool operator <(Duration d1, Duration d2) =>
       d1.millis < d2.millis;
@@ -65,5 +68,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Duration hour(this float v) => v.hours();
     public static Duration hours(this int v) => Duration.fromSeconds(v * 3600);
     public static Duration hours(this float v) => Duration.fromSeconds(v * 3600);
+
+    public static Duration toDuration(this TimeSpan ts) =>
+      new Duration((int) ts.TotalMilliseconds);
   }
 }

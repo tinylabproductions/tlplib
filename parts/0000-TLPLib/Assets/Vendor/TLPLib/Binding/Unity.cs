@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       this IObservable<A> observable, Fn<A, Coroutine> f
     ) {
       var lastCoroutine = F.none<Coroutine>();
-      Act stopOpt = () => { foreach (var c in lastCoroutine) { c.stop(); } };
+      Action stopOpt = () => { foreach (var c in lastCoroutine) { c.stop(); } };
       var sub = observable.subscribe(a => {
         stopOpt();
         lastCoroutine = f(a).some();

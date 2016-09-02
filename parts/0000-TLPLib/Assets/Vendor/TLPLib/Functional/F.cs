@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       try { return scs(f()); }
       catch (Exception e) { return err<A>(e); }
     }
-    public static Try<Unit> doTry(Act action) {
+    public static Try<Unit> doTry(Action action) {
       return doTry(() => { action(); return unit; });
     }
     public static Try<A> scs<A>(A value) { return new Try<A>(value); }
@@ -105,11 +105,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new LazyImpl<A>(func);
     }
 
-    public static Act andThen(this Act first, Act second) {
+    public static Action andThen(this Action first, Action second) {
       return () => { first(); second(); };
     }
 
-    public static Action andThenSys(this Action first, Act second) {
+    public static Action andThenSys(this Action first, Action second) {
       return () => { first(); second(); };
     }
 

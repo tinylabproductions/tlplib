@@ -105,5 +105,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static string ensureDoesNotEndWith(this string s, string suffix)
       { return s.EndsWith(suffix) ? s.Substring(0, s.Length - suffix.Length) : s; }
+
+    public static string joinOpt(
+      this string s, string joined, string separator = ": "
+    ) => string.IsNullOrEmpty(joined) ? s : $"{s}{separator}{joined}";
   }
 }

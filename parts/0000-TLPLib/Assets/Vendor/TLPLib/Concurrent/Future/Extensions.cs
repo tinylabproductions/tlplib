@@ -89,10 +89,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /**
      * Delays completing of given future until the returned action is called.
      **/
-    public static Tpl<Future<A>, Act> delayUntilSignal<A>(this Future<A> future) {
+    public static Tpl<Future<A>, Action> delayUntilSignal<A>(this Future<A> future) {
       Promise<Unit> signalP;
       var f = future.zip(Future<Unit>.async(out signalP), (a, _) => a);
-      Act act = () => signalP.tryComplete(F.unit);
+      Action act = () => signalP.tryComplete(F.unit);
       return F.t(f, act);
     }
 

@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * 
      * So instead we use event + property.
      */
-    public event Act onFinish;
+    public event Action onFinish;
     /* false if coroutine is running, true if it completed or was stopped. */
     public bool finished { get; private set; }
 

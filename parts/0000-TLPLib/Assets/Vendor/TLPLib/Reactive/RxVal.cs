@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region Ops
 
     static void subscribeToRescans<A>(
-      IEnumerable<IRxVal<A>> vals, Act rescan
+      IEnumerable<IRxVal<A>> vals, Action rescan
     ) {
       var doRescans = false;
       foreach (var rxVal in vals)
@@ -97,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var val = RxRef.a(traverse(readValues()));
 
       // TODO: this is probably suboptimal.
-      Act rescan = () => val.value = traverse(readValues());
+      Action rescan = () => val.value = traverse(readValues());
 
       subscribeToRescans(vals, rescan);
       return val;
@@ -109,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var val = RxRef.a(F.none<A>());
 
       // TODO: this is probably suboptimal.
-      Act rescan = () => {
+      Action rescan = () => {
         foreach (var rxVal in vals.Where(rxVal => predicate(rxVal.value))) {
           val.value = F.some(rxVal.value);
           return;

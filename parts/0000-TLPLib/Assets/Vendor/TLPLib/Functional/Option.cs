@@ -83,7 +83,7 @@ public
 
   public void each(Act<A> action) { if (isSome) action(value); }
 
-  public void onNone(Act action) { if (! isSome) action(); }
+  public void onNone(Action action) { if (! isSome) action(); }
 
   public Option<A> tap(Act<A> action) {
     if (isSome) action(value);

@@ -54,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     bool finished { get; }
     ISubscription subscribe(Act<A> onChange);
     ISubscription subscribe(Act<A, ISubscription> onChange);
-    ISubscription subscribe(Act<A> onChange, Act onFinish);
+    ISubscription subscribe(Act<A> onChange, Action onFinish);
     ISubscription subscribe(IObserver<A> observer);
     /** Emits first value to the future and unsubscribes. **/
     Future<A> toFuture();
@@ -177,9 +177,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   public class Observer<A> : IObserver<A> {
     readonly Act<A> onValuePush;
-    readonly Act onFinish;
+    readonly Action onFinish;
 
-    public Observer(Act<A> onValuePush, Act onFinish) {
+    public Observer(Act<A> onValuePush, Action onFinish) {
       this.onValuePush = onValuePush;
       this.onFinish = onFinish;
     }
@@ -202,7 +202,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
 
     public static IObservableQueue<A, C> createQueue<A, C>(
-      Act<A> addLast, Act removeFirst,
+      Act<A> addLast, Action removeFirst,
       Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last
     ) => new ObservableLambdaQueue<A, C>(
       addLast, removeFirst, count, collection, first, last
@@ -225,7 +225,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IObservable<A> empty<A>() => Observable<A>.empty;
 
     public static IObservable<A> fromEvent<A>(
-      Act<Act<A>> registerCallback, Act unregisterCallback
+      Act<Act<A>> registerCallback, Action unregisterCallback
     ) {
       return new Observable<A>(obs => {
         registerCallback(obs.push);
@@ -521,7 +521,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public ISubscription subscribe(Act<A> onChange) => subscribe(onChange, () => {});
 
-    public ISubscription subscribe(Act<A> onChange, Act onFinish) => 
+    public ISubscription subscribe(Act<A> onChange, Action onFinish) => 
       subscribe(new Observer<A>(onChange, onFinish));
 
     public virtual ISubscription subscribe(IObserver<A> observer) {
@@ -588,7 +588,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     (Fn<A, IObservable<B>> mapper, ObserverBuilder<B, O> builder) => 
       builder(obs => {
         ISubscription innerSub = null;
-        Act innerUnsub = () => innerSub?.unsubscribe();
+        Action innerUnsub = () => innerSub?.unsubscribe();
         var thisSub = subscribe(
           val => {
             innerUnsub();
@@ -1065,9 +1065,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return this;
     }
 
-    public static Ret multipleFinishes<B, Ret>(IObserver<B> obs, int count, Fn<Act, Ret> f) {
+    public static Ret multipleFinishes<B, Ret>(IObserver<B> obs, int count, Fn<Action, Ret> f) {
       var finished = 0;
-      Act checkFinish = () => {
+      Action checkFinish = () => {
         finished++;
         if (finished == count) obs.finish();
       };
@@ -1154,12 +1154,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     : IObservableQueue<A, C>
   {
     readonly Act<A> _addLast;
-    readonly Act _removeFirst;
+    readonly Action _removeFirst;
     readonly Fn<int> _count;
     readonly Fn<C> _collection;
     readonly Fn<A> _first, _last;
 
-    public ObservableLambdaQueue(Act<A> addLast, Act removeFirst, Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last) {
+    public ObservableLambdaQueue(Act<A> addLast, Action removeFirst, Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last) {
       _addLast = addLast;
       _removeFirst = removeFirst;
       _count = count;

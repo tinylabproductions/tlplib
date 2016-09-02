@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   }
 
   public static class ITimingExts {
-    public static void scoped(this ITiming timing, string name, Act f) {
+    public static void scoped(this ITiming timing, string name, Action f) {
       timing.openScope(name);
       f();
       timing.closeScope();

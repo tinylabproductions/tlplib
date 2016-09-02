@@ -133,4 +133,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       "bar".ensureDoesNotEndWith("foo").shouldEqual("bar");
     }
   }
+
+  public class StringTestJoinOpt {
+    [Test]
+    public void WhenJoinedIsNull() => 
+      "foo".joinOpt(null).shouldEqual("foo");
+
+    [Test]
+    public void WhenJoinedIsNotNull() => 
+      "foo".joinOpt("bar", " - ").shouldEqual("foo - bar");
+  }
 }
