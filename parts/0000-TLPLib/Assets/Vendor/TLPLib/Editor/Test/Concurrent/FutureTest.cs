@@ -72,12 +72,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenSuccessful() {
-      Future<int>.successful(1).map(mapper).shouldBeSuccessful(2);
+      Future<int>.successful(1).map(mapper).shouldBeOfSuccessfulType(2);
     }
 
     [Test]
     public void WhenUnfulfilled() {
-      Future<int>.unfulfilled.map(mapper).shouldBeUnfulfilled();
+      Future<int>.unfulfilled.map(mapper).shouldBeOfUnfulfilledType();
     }
 
     [Test]
@@ -102,11 +102,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void SuccessfulToSuccessful() {
-      successful.flatMap(successfulMapper).shouldBeSuccessful(2);
+      successful.flatMap(successfulMapper).shouldBeOfSuccessfulType(2);
     }
     [Test]
     public void SuccessfulToUnfulfilled() {
-      successful.flatMap(unfulfilledMapper).shouldBeUnfulfilled();
+      successful.flatMap(unfulfilledMapper).shouldBeOfUnfulfilledType();
     }
     [Test]
     public void SuccessfulToASync() {
@@ -137,7 +137,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       unfulfilled.flatMap(i => {
         called = true;
         return mapper(i);
-      }).shouldBeUnfulfilled();
+      }).shouldBeOfUnfulfilledType();
       called.shouldBeFalse("it should not call the mapper");
     }
 
@@ -204,12 +204,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       foreach (var t in new[] {
         F.t("X-O", Future.unfulfilled<int>(), Future.successful(1)),
         F.t("O-X", Future.successful(1), Future.unfulfilled<int>())
-      }) t.ua((name, fa, fb) => fa.zip(fb).shouldBeUnfulfilled(name));
+      }) t.ua((name, fa, fb) => fa.zip(fb).shouldBeOfUnfulfilledType(name));
     }
 
     [Test]
     public void WhenBothSidesSuccessful() {
-      Future.successful(1).zip(Future.successful(2)).shouldBeSuccessful(F.t(1, 2));
+      Future.successful(1).zip(Future.successful(2)).shouldBeOfSuccessfulType(F.t(1, 2));
     }
 
     [Test]

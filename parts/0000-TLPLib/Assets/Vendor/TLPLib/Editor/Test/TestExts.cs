@@ -159,12 +159,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       );
     }
 
-    public static void shouldBeSuccessful<A>(this Future<A> f, A a, string message=null) {
+    public static void shouldBeOfSuccessfulType<A>(this Future<A> f, A a, string message=null) {
       f.type.shouldEqual(FutureType.Successful);
       f.shouldBeCompleted(a, message);
     }
 
-    public static void shouldBeUnfulfilled<A>(this Future<A> f, string message=null) {
+    public static void shouldBeOfUnfulfilledType<A>(this Future<A> f, string message=null) {
       f.type.shouldEqual(FutureType.Unfulfilled, message);
       f.value.shouldBeNone($"{message ?? ""}: it shouldn't have a value");
     }
