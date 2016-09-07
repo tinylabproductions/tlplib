@@ -40,16 +40,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, coroutine);
     }
 
-    [Obsolete("Use Coroutine#stop")]
-    public static void StopCoroutine(IEnumerator enumerator) {
-      behaviour.StopCoroutine(enumerator);
-    }
-
-    [Obsolete("Use Coroutine#stop")]
-    public static void StopCoroutine(Coroutine coroutine) {
-      coroutine.stop();
-    }
-
     public static Coroutine WithDelay(float seconds, Action action) {
       return WithDelay(seconds, behaviour, action);
     }
