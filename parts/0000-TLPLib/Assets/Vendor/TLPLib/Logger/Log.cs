@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * need processing, you should use `if (Log.isDebug) Log.rdebug("foo=" + foo);` style.
    **/
   public static class Log {
-    public enum Level { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
+    public enum Level : byte { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
 
     public static readonly Level defaultLogLevel = 
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;

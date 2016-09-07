@@ -53,19 +53,46 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static string mkString<A>(
-      this IEnumerable<A> e, string separator, string start = null, string end = null
+      this IEnumerable<A> e, Act<StringBuilder> appendSeparator, 
+      string start = null, string end = null
     ) {
       var sb = new StringBuilder();
       if (start != null) sb.Append(start);
       var first = true;
       foreach (var a in e) {
         if (first) first = false;
-        else sb.Append(separator);
+        else appendSeparator(sb);
         sb.Append(a);
       }
       if (end != null) sb.Append(end);
       return sb.ToString();
     }
+
+    static void throwNullStringBuilderException() {
+      // var sb = new StringBuilder();
+      // sb.Append("foo");
+      // sb.Append('\0');
+      // sb.Append("bar");
+      // sb.ToString() == "foobar" // -> false
+      // sb.ToString() == "foo" // -> true
+      throw new Exception(
+        "Can't have null char in a separator due to a Mono runtime StringBuilder bug!"
+      );
+    }
+
+    public static string mkString<A>(
+      this IEnumerable<A> e, char separator, string start = null, string end = null
+    ) {
+      if (separator == '\0') throwNullStringBuilderException();
+      return e.mkString(sb => sb.Append(separator), start, end);
+    }
+
+    public static string mkString<A>(
+      this IEnumerable<A> e, string separator, string start = null, string end = null
+    ) {
+      if (separator.Contains("\0")) throwNullStringBuilderException();
+      return e.mkString(sb => sb.Append(separator), start, end);
+    } 
 
     // AOT safe version of ToDictionary.
     public static Dictionary<K, V> toDict<A, K, V>(

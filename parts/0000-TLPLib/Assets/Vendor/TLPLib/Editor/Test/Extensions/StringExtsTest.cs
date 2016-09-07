@@ -143,4 +143,34 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public void WhenJoinedIsNotNull() => 
       "foo".joinOpt("bar", " - ").shouldEqual("foo - bar");
   }
+
+  public class StringTestSplice {
+    [Test]
+    public void Normal() {
+      "foobar".splice(0, 3, "baz").shouldEqual("bazbar");
+      "foobar".splice(1, 2, "aa").shouldEqual("faabar");
+      "foobar".splice(3, 3, "").shouldEqual("foo");
+      "foobar".splice(0, 6, "pizza").shouldEqual("pizza");
+    }
+
+    [Test]
+    public void NegativeIndex() {
+      "foobar".splice(-3, 3, "baz").shouldEqual("foobaz");
+      "foobar".splice(-1, 1, "z").shouldEqual("foobaz");
+    }
+
+    [Test]
+    public void StartIdxOutOfRange() {
+      Assert.Throws<ArgumentException>(() => "foobar".splice(-7, 0, ""));
+      Assert.Throws<ArgumentException>(() => "foobar".splice(6, 0, ""));
+      Assert.Throws<ArgumentException>(() => "foobar".splice(6, 0, ""));
+    }
+
+    [Test]
+    public void CountOutOfRange() {
+      Assert.Throws<ArgumentException>(() => "foobar".splice(-1, 2, ""));
+      Assert.Throws<ArgumentException>(() => "foobar".splice(0, 7, ""));
+      Assert.Throws<ArgumentException>(() => "foobar".splice(5, 2, ""));
+    }
+  }
 }

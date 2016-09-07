@@ -28,6 +28,10 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.IsEmpty(enumerable, message);
     }
 
+    public static void shouldNotBeEmpty(this IEnumerable enumerable, string message = null) {
+      Assert.IsNotEmpty(enumerable, message);
+    }
+
     public static void shouldBeTrue(this bool b, string message = null) {
       Assert.True(b, message);
     }
