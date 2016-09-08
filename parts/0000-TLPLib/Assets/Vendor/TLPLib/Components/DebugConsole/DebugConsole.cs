@@ -85,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         button.button.onClick.AddListener(() => showGroup(view, commandGroup.Key, commandGroup.Value));
       }
 
-      Application.logMessageReceived += onLogMessageReceived;
+      Application.logMessageReceivedThreaded += onLogMessageReceived;
       view.closeButton.onClick.AddListener(destroy);
 
       current = new Instance(view).some();
@@ -113,20 +113,22 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     void onLogMessageReceived(string message, string stackTrace, LogType type) {
       foreach (var instance in current) {
-        var entry = instance.view.logEntryPrefab.clone();
-        var shortText = $"{DateTime.Now}  {type}  {message}";
+        ASync.OnMainThread(() => {
+          var entry = instance.view.logEntryPrefab.clone();
+          var shortText = $"{DateTime.Now}  {type}  {message}";
 
-        entry.text = shortText;
-        entry.GetComponent<RectTransform>().SetParent(
-          instance.view.logEntriesHolder.transform, worldPositionStays: false
-        );
-        entry.transform.SetAsFirstSibling();
+          entry.text = shortText;
+          entry.GetComponent<RectTransform>().SetParent(
+            instance.view.logEntriesHolder.transform, worldPositionStays: false
+          );
+          entry.transform.SetAsFirstSibling();
+        });
       }
     }
 
     public void destroy() {
       foreach (var instance in current) {
-        Application.logMessageReceived -= onLogMessageReceived;
+        Application.logMessageReceivedThreaded -= onLogMessageReceived;
         Object.Destroy(instance.view.gameObject);
       }
       current = current.none;
