@@ -182,5 +182,11 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         else Debug.Log($"{prefixedName} not running: {typeof(Obj)} is None.");
       }));
     }
+
+    public void registerToggle(string name, Fn<bool> getter, Act<bool> setter) {
+      register($"{name}?", getter);
+      register($"{name}=true", () => setter(true));
+      register($"{name}=false", () => setter(false));
+    }
   }
 }
