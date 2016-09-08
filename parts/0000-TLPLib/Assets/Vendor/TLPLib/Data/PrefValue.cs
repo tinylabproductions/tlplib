@@ -121,7 +121,39 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #endregion
 
-    #region Sets
+    #region Collections
+
+    public PrefVal<ImmutableArray<A>> array<A>(
+      string key,
+      Fn<A, byte[]> serialize, Fn<byte[], Option<A>> deserialize,
+      ImmutableArray<A> defaultVal, bool saveOnEveryWrite = true,
+      PrefVal.OnDeserializeFailure onDeserializeFailure =
+        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure =
+        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
+      ILog log = null
+    ) => collection(
+      key, serialize, deserialize,
+      ImmutableArray.CreateBuilder<A>, (b, a) => b.Add(a), b => b.MoveToImmutable(),
+      defaultVal,
+      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
+    );
+
+    public PrefVal<ImmutableList<A>> list<A>(
+      string key,
+      Fn<A, byte[]> serialize, Fn<byte[], Option<A>> deserialize,
+      ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = true,
+      PrefVal.OnDeserializeFailure onDeserializeFailure =
+        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure =
+        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
+      ILog log = null
+    ) => collection(
+      key, serialize, deserialize,
+      ImmutableList.CreateBuilder<A>, (b, a) => b.Add(a), b => b.ToImmutable(),
+      defaultVal ?? ImmutableList<A>.Empty,
+      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
+    );
 
     public PrefVal<ImmutableHashSet<A>> hashSet<A>(
       string key,
@@ -130,12 +162,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure =
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore
+        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
+      ILog log = null
     ) => collection(
       key, serialize, deserialize,
       ImmutableHashSet.CreateBuilder<A>, (b, a) => b.Add(a), b => b.ToImmutable(),
       defaultVal ?? ImmutableHashSet<A>.Empty,
-      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure
+      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
     );
 
     #endregion
