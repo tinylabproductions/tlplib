@@ -46,13 +46,19 @@ namespace com.tinylabproductions.TLPLib.Data {
     protected static readonly PrefValStorage storage = new PrefValStorage(backend);
 
     [SetUp]
-    public void SetUp() {
+    public virtual void SetUp() {
       log.clear();
       backend.storage.Clear();
     }
 
     protected static void setBadBase64(string key) =>
       backend.storage[key] = new OneOf<string, int, float>("qwerty");
+
+    protected static void ruinBase64(string key) {
+      backend.storage[key] = new OneOf<string, int, float>(
+        backend.storage[key].aValue.get.splice(-1, 1, "!!!!!")
+      );
+    }
   }
 
   class PrefValTestCustomString : PrefValTestBase {
@@ -200,12 +206,6 @@ namespace com.tinylabproductions.TLPLib.Data {
       ));
     }
 
-    static void ruinBase64() {
-      backend.storage[key] = new OneOf<string, int, float>(
-        backend.storage[key].aValue.get.splice(-1, 1, "!!!!!")
-      );
-    }
-
     [Test]
     public void DeserializePartFailedReturnDefault() {
       var defaultVal = ImmutableList.Create(1, 2, 3, 4);
@@ -217,7 +217,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       var pv = create();
       pv.value = ImmutableList.Create(1, 2, 3, 4, 5);
       log.warnMsgs.shouldBeEmpty();
-      ruinBase64();
+      ruinBase64(key);
       var pv2 = create();
       log.warnMsgs.shouldNotBeEmpty();
       pv2.value.shouldEqual(defaultVal);
@@ -230,31 +230,34 @@ namespace com.tinylabproductions.TLPLib.Data {
         onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException
       );
       create();
-      ruinBase64();
+      ruinBase64(key);
       Assert.Throws<SerializationException>(() => create());
     }
   }
 
-  class PrefValTestCollection {
+  class PrefValTestCollection : PrefValTestBase {
     const string key = nameof(PrefValTestCollection);
 
     static byte[] serialize(int i) => BitConverter.GetBytes(i);
     static Option<int> deserialize(byte[] data) => data.toInt().value;
+    static Option<int> badDeserialize(byte[] data) => deserialize(data).filter(i => i % 2 != 0);
     static ImmutableList<int>.Builder createBuilder() => ImmutableList.CreateBuilder<int>();
     static void add(ImmutableList<int>.Builder builder, int value) => builder.Add(value);
     static ImmutableList<int> toList(ImmutableList<int>.Builder builder) => builder.ToImmutable();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
-    PrefValStorage storage;
-
-    PrefVal<ImmutableList<int>> create(ImmutableList<int> defaultVal) =>
+    PrefVal<ImmutableList<int>> create(
+      ImmutableList<int> defaultVal,
+      Fn<byte[], Option<int>> deserializeFn = null,
+      PrefVal.OnDeserializeCollectionItemFailure onItemFailure = 
+        PrefVal.OnDeserializeCollectionItemFailure.Ignore
+    ) =>
       storage.collection(
-        key, serialize, deserialize, createBuilder, add, toList,
-        defaultVal
+        key, serialize, deserializeFn ?? deserialize, 
+        createBuilder, add, toList, defaultVal,
+        onDeserializeCollectionItemFailure: onItemFailure,
+        log: log
       );
-
-    [SetUp]
-    public void SetUp() { storage = new PrefValStorage(new IPrefValueTestBackend()); }
 
     [Test]
     public void WithDefaultValue() {
@@ -277,6 +280,31 @@ namespace com.tinylabproductions.TLPLib.Data {
       p.value.shouldEqual(v);
       var p1 = create(ImmutableList<int>.Empty);
       p1.value.shouldEqual(v);
+    }
+
+    [Test]
+    public void ItemDeserializationFailureIgnore() {
+      create(ImmutableList.Create(1, 2, 3));
+      log.warnMsgs.shouldBeEmpty();
+      var p1 = create(
+        ImmutableList<int>.Empty,
+        badDeserialize,
+        PrefVal.OnDeserializeCollectionItemFailure.Ignore
+      );
+      p1.value.shouldEqual(ImmutableList.Create(1, 3));
+      log.warnMsgs.shouldNotBeEmpty();
+    }
+
+    [Test]
+    public void ItemDeserializationFailureThrowException() {
+      create(ImmutableList.Create(1, 2, 3));
+      Assert.Throws<SerializationException>(() =>
+        create(
+          ImmutableList<int>.Empty,
+          badDeserialize,
+          PrefVal.OnDeserializeCollectionItemFailure.ThrowException
+        )
+      );
     }
   }
 }

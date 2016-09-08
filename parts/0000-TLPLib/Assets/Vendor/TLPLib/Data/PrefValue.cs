@@ -307,7 +307,6 @@ namespace com.tinylabproductions.TLPLib.Data {
       $"Can't deserialize {typeof(A)} from '{BitConverter.ToString(partData)}' " +
       $"for PrefVal<{typeof(C)}> '{key}'{ending}.";
 
-    // TODO: test more (onDeserializeCollectionItemFailure)
     public PrefVal<C> collection<A, C, CB>(
       string key,
       Fn<A, byte[]> serialize, Fn<byte[], Option<A>> deserialize,
