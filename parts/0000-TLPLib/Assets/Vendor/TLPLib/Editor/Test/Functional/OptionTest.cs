@@ -252,4 +252,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
       (option || newOption).shouldEqual(newOption);
     }
   }
+
+  public class OptionTestSwap {
+    [Test] public void WhenSome() => F.some(1).swap('a').shouldBeNone();
+    [Test] public void WhenNone() => F.none<int>().swap('a').shouldBeSome('a');
+    [Test] public void WhenNoneFn() => F.none<int>().swap(() => 'a').shouldBeSome('a');
+
+    [Test]
+    public void WhenSomeFn() {
+      var called = false;
+      F.some(1).swap(() => {
+        called = true;
+        return 'a';
+      }).shouldBeNone();
+      called.shouldBeFalse();
+    }
+  }
 }
