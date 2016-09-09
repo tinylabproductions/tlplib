@@ -290,7 +290,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         a => serialize(a).Select(Convert.ToBase64String).mkString(separator),
         base64Str => {
           try {
-            var parts = base64Str.Split(separator).map(Convert.FromBase64String);
+            // Split on empty string gives an array with 1 empty string
+            var parts = base64Str == "" ? new byte[][]{} : base64Str.Split(separator).map(Convert.FromBase64String);
             return deserialize(parts);
           }
           catch (FormatException) {
