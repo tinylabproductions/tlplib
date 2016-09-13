@@ -6,6 +6,14 @@ using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IListExts {
+    public static A a<A>(this IList<A> list, int index) {
+      if (index < 0 || index >= list.Count) throw new ArgumentOutOfRangeException(
+        nameof(index), 
+        $"Index invalid for IList<{typeof(A)}> (count={list.Count}): {index}"
+      );
+      return list[index];
+    }
+
     public static Option<T> get<T>(this IList<T> list, int index) {
       return (index >= 0 && index < list.Count)
         ? F.some(list[index]) : F.none<T>();
