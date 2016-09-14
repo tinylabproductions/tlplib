@@ -41,14 +41,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     #region Equality
 
-    public bool Equals(Future<A> other) => implementation == other.implementation;
+    public bool Equals(Future<A> other) => value == other.value;
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
       return obj is Future<A> && Equals((Future<A>) obj);
     }
 
-    public override int GetHashCode() => implementation.GetHashCode();
+    public override int GetHashCode() => value.GetHashCode();
 
     public static bool operator ==(Future<A> left, Future<A> right) { return left.Equals(right); }
     public static bool operator !=(Future<A> left, Future<A> right) { return !left.Equals(right); }
@@ -145,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       var fa = this;
       return Future<C>.async(p => {
-        Act tryComplete = () => fa.value.zip(fb.value, mapper).each(ab => p.tryComplete(ab));
+        Action tryComplete = () => fa.value.zip(fb.value, mapper).each(ab => p.tryComplete(ab));
         fa.onComplete(a => tryComplete());
         fb.onComplete(b => tryComplete());
       });

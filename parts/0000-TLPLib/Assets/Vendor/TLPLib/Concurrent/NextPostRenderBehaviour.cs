@@ -4,9 +4,9 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   class NextPostRenderBehaviour : MonoBehaviour {
     private int framesLeft;
-    private Act action;
+    private Action action;
 
-    public void init(Act action, int framesLeft) {
+    public void init(Action action, int framesLeft) {
       this.action = action;
       this.framesLeft = framesLeft;
     }

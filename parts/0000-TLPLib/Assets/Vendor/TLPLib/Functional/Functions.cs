@@ -4,7 +4,6 @@
  * Generated with scala:
  * 
 
-println(s"  public delegate void Act();")
 println(s"  public delegate R Fn<out R>();")
 (1 to 22).foreach { i =>
   val r = 1 to i
@@ -18,7 +17,6 @@ println(s"  public delegate R Fn<out R>();")
  **/
 
 namespace System {
-  public delegate void Act();
   public delegate R Fn<out R>();
   public delegate void Act<in P1>(P1 p1);
   public delegate R Fn<in P1, out R>(P1 p1);

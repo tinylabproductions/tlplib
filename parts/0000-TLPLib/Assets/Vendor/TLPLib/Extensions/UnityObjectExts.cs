@@ -11,5 +11,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return new PathStr(AssetDatabase.GetAssetPath(obj));
     }
 #endif
+
+    public static A dontDestroyOnLoad<A>(this A a) where A : Object {
+      Object.DontDestroyOnLoad(a);
+      return a;
+    }
   }
 }

@@ -9,7 +9,7 @@ namespace Smooth.Events {
 		/// <summary>
 		/// The wrapped event.
 		/// </summary>
-		public event Act Handle;
+		public event Action Handle;
 
 		/// <summary>
 		/// Raises the wrapped event.

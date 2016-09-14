@@ -6,6 +6,7 @@ public static class GradientHelper {
 
   public static void modifyVertices(List<UIVertex> vertexList, Func<Color32, float, Color32> f) {
     int count = vertexList.Count;
+    if (count == 0) return;
     float bottomY = vertexList[0].position.y;
     float topY = vertexList[0].position.y;
 

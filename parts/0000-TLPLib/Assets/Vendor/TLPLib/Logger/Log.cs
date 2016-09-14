@@ -2,8 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -18,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * need processing, you should use `if (Log.isDebug) Log.rdebug("foo=" + foo);` style.
    **/
   public static class Log {
-    public enum Level { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
+    public enum Level : byte { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
 
     public static readonly Level defaultLogLevel = 
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
@@ -28,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     static Log() {
       DConsole.instance.onShow += dc => {
         var r = dc.registrarFor("Default Logger");
-        r.register("level?", () => { Debug.Log($"current level = {defaultLogger.level}"); });
+        r.register("level?", () => defaultLogger.level);
         foreach (var l in EnumUtils.GetValues<Level>())
           r.register($"level={l}", () => defaultLogger.level = l);
       };
@@ -87,6 +89,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   public interface ILog {
     Log.Level level { get; set; }
+    bool willLog(Log.Level level);
     void verbose(object o);
     bool isVerbose { get; }
     /* Runtime version of debug. */
@@ -109,28 +112,36 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   public abstract class LogBase : ILog {
     public Log.Level level { get; set; } = Log.defaultLogLevel;
+    public bool willLog(Log.Level level) => this.level >= level;
 
-    public bool isVerbose => level >= Log.Level.VERBOSE;
-    public void verbose(object o) { if (isVerbose) logVerbose($"[VERBOSE]> {o}"); }
+    public bool isVerbose => willLog(Log.Level.VERBOSE);
+    public void verbose(object o) => logVerbose(line("VERBOSE", o));
     protected abstract void logVerbose(string s);
 
-    public bool isDebug => level >= Log.Level.DEBUG;
-    public void debug(object o) { if (isDebug) logDebug($"[DEBUG]> {o}"); }
+    public bool isDebug => willLog(Log.Level.DEBUG);
+    public void debug(object o) => logDebug(line("DEBUG", o));
     protected abstract void logDebug(string s);
 
-    public bool isInfo => level >= Log.Level.INFO;
-    public void info(object o) { if (isInfo) logInfo($"[INFO]> {o}"); }
+    public bool isInfo => willLog(Log.Level.INFO);
+    public void info(object o) => logInfo(line("INFO", o));
     protected abstract void logInfo(string s);
 
-    public bool isWarn => level >= Log.Level.WARN;
-    public void warn(object o) { if (isWarn) logWarn($"[WARN]> {o}"); }
+    public bool isWarn => willLog(Log.Level.WARN);
+    public void warn(object o) => logWarn(line("WARN", o));
     protected abstract void logWarn(string s);
 
-    public bool isError => level >= Log.Level.ERROR;
-    public void error(Exception ex) { error(Log.exToStr(ex)); }
-    public void error(object o, Exception ex) { error(Log.exToStr(ex, o)); }
-    public void error(object o) { logError($"[ERROR]> {o}"); }
+    public bool isError => willLog(Log.Level.ERROR);
+    public void error(Exception ex) => error(Log.exToStr(ex));
+    public void error(object o, Exception ex) => error(Log.exToStr(ex, o));
+    public void error(object o) => logError(line("ERROR", o));
     protected abstract void logError(string s);
+
+    static string line(string level, object o) => $"[{thread}|{level}]> {o}";
+
+    static string thread { get {
+      var t = Thread.CurrentThread;
+      return t == OnMainThread.mainThread ? "Tm" : $"T{t.ManagedThreadId}";
+    } }
   }
 
   public class UnityLog : LogBase {

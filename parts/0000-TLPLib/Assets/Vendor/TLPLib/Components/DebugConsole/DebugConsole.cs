@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -12,9 +13,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DConsole {
     public struct Command {
       public readonly string cmdGroup, name;
-      public readonly Act run;
+      public readonly Action run;
 
-      public Command(string cmdGroup, string name, Act run) {
+      public Command(string cmdGroup, string name, Action run) {
         this.cmdGroup = cmdGroup;
         this.name = name;
         this.run = run;
@@ -35,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     DConsole() {
       var r = registrarFor(nameof(DConsole));
       r.register("Self-test", () => "self-test");
-      r.register("Future Self-test", () => Future.delay(1, () => "after 1 s"));
+      r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s"));
     }
 
     public delegate void OnShow(DConsole console);
@@ -84,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         button.button.onClick.AddListener(() => showGroup(view, commandGroup.Key, commandGroup.Value));
       }
 
-      Application.logMessageReceived += onLogMessageReceived;
+      Application.logMessageReceivedThreaded += onLogMessageReceived;
       view.closeButton.onClick.AddListener(destroy);
 
       current = new Instance(view).some();
@@ -112,20 +113,22 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     void onLogMessageReceived(string message, string stackTrace, LogType type) {
       foreach (var instance in current) {
-        var entry = instance.view.logEntryPrefab.clone();
-        var shortText = $"{DateTime.Now}  {type}  {message}";
+        ASync.OnMainThread(() => {
+          var entry = instance.view.logEntryPrefab.clone();
+          var shortText = $"{DateTime.Now}  {type}  {message}";
 
-        entry.text = shortText;
-        entry.GetComponent<RectTransform>().SetParent(
-          instance.view.logEntriesHolder.transform, worldPositionStays: false
-        );
-        entry.transform.SetAsFirstSibling();
+          entry.text = shortText;
+          entry.GetComponent<RectTransform>().SetParent(
+            instance.view.logEntriesHolder.transform, worldPositionStays: false
+          );
+          entry.transform.SetAsFirstSibling();
+        });
       }
     }
 
     public void destroy() {
       foreach (var instance in current) {
-        Application.logMessageReceived -= onLogMessageReceived;
+        Application.logMessageReceivedThreaded -= onLogMessageReceived;
         Object.Destroy(instance.view.gameObject);
       }
       current = current.none;
@@ -145,7 +148,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     static readonly HasObjFn<Unit> unitSomeFn = () => F.some(F.unit);
 
-    public void register(string name, Act run) {
+    public void register(string name, Action run) {
       register(name, () => { run(); return F.unit; });
     }
     public void register<A>(string name, Fn<A> run) {
@@ -178,6 +181,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
         else Debug.Log($"{prefixedName} not running: {typeof(Obj)} is None.");
       }));
+    }
+
+    public void registerToggle(string name, Fn<bool> getter, Act<bool> setter) {
+      register($"{name}?", getter);
+      register($"{name}=true", () => setter(true));
+      register($"{name}=false", () => setter(false));
     }
   }
 }

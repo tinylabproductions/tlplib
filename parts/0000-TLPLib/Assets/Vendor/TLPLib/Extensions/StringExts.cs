@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -105,5 +106,60 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static string ensureDoesNotEndWith(this string s, string suffix)
       { return s.EndsWith(suffix) ? s.Substring(0, s.Length - suffix.Length) : s; }
+
+    public static string joinOpt(
+      this string s, string joined, string separator = ": "
+    ) => string.IsNullOrEmpty(joined) ? s : $"{s}{separator}{joined}";
+
+    /**
+     * Replaces a part of string with other string.
+     * 
+     * For example:
+     * 
+     * s = "foobar";
+     * spliceIdx = 2;
+     * spliceCount = 2;
+     * spliceContent = "baz";
+     * result = "fobazar";
+     * 
+     * Negative indexes index from the end (-1 = last char)
+     **/
+    public static string splice(
+      this string s, int spliceIdx, int spliceCount, string spliceContent
+    ) {
+      if (spliceIdx >= s.Length) throw new ArgumentException(
+        $"splice index ({spliceIdx}) >= string length ({s.Length})", nameof(spliceIdx)
+      );
+      if (-spliceIdx > s.Length) throw new ArgumentException(
+        $"splice index ({spliceIdx}) > string length ({s.Length})", nameof(spliceIdx)
+      );
+      if (spliceIdx < 0) spliceIdx = s.Length + spliceIdx;
+
+      var spliceEndIdx = spliceIdx + spliceCount;
+      if (spliceEndIdx > s.Length) throw new ArgumentException(
+        $"splice index ({spliceIdx}) + splice count ({spliceCount}) > string length ({s.Length})",
+        nameof(spliceCount)
+      );
+
+      var sb = new StringBuilder(s.Length - spliceCount + spliceContent.Length);
+      if (spliceIdx != 0) sb.Append(s.Substring(0, spliceIdx));
+      sb.Append(spliceContent);
+      if (spliceEndIdx + 1 != s.Length) sb.Append(s.Substring(spliceEndIdx));
+      return sb.ToString();
+    }
+
+    // http://stackoverflow.com/a/18739120/935259
+    public static string rot13(this string input) => 
+      !string.IsNullOrEmpty(input) 
+      ? new string(
+        input.ToCharArray().Select(s => 
+          (char) (
+              s >= 97 && s <= 122 ? (s + 13 > 122 ? s - 13 : s + 13) 
+            : s >= 65 && s <= 90  ? (s + 13 > 90 ? s - 13 : s + 13) 
+            : s
+          )
+        ).ToArray()
+      ) 
+      : input;
   }
 }

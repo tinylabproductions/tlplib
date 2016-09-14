@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Collection;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -32,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       try { return scs(f()); }
       catch (Exception e) { return err<A>(e); }
     }
-    public static Try<Unit> doTry(Act action) {
+    public static Try<Unit> doTry(Action action) {
       return doTry(() => { action(); return unit; });
     }
     public static Try<A> scs<A>(A value) { return new Try<A>(value); }
@@ -49,6 +50,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static LinkedList<A> linkedList<A>(params A[] args) {
       return new LinkedList<A>(args);
     }
+
+    public static ReadOnlyLinkedList<A> roLinkedList<A>(params A[] args) =>
+      new ReadOnlyLinkedList<A>(new LinkedList<A>(args));
 
     public static HashSet<A> hashSet<A>(params A[] args) {
       var hs = new HashSet<A>();
@@ -78,6 +82,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return list;
     }
 
+    public static ImmutableList<A> iListFill<A>(int size, Fn<int, A> creator) {
+      var lst = ImmutableList.CreateBuilder<A>();
+      for (var idx = 0; idx < size; idx++) lst.Add(creator(idx));
+      return lst.ToImmutable();
+    }
+
     public static IList<A> ilist<A>(params A[] args) { return list(args); }
 
     public static Dictionary<K, V> dict<K, V>(params Tpl<K, V>[] args) {
@@ -95,11 +105,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new LazyImpl<A>(func);
     }
 
-    public static Act andThen(this Act first, Act second) {
+    public static Action andThen(this Action first, Action second) {
       return () => { first(); second(); };
     }
 
-    public static Action andThenSys(this Action first, Act second) {
+    public static Action andThenSys(this Action first, Action second) {
       return () => { first(); second(); };
     }
 

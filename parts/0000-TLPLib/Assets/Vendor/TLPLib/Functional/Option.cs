@@ -83,7 +83,7 @@ public
 
   public void each(Act<A> action) { if (isSome) action(value); }
 
-  public void onNone(Act action) { if (! isSome) action(); }
+  public void onNone(Action action) { if (! isSome) action(); }
 
   public Option<A> tap(Act<A> action) {
     if (isSome) action(value);
@@ -271,6 +271,12 @@ public
     isDefined && opt2.isDefined
     ? F.some(mapper(get, opt2.get))
     : F.none<C>();
+
+  /**
+   * If Some() returns None. If None returns b.
+   **/
+  public Option<B> swap<B>(B b) => isDefined ? F.none<B>() : F.some(b);
+  public Option<B> swap<B>(Fn<B> b) => isDefined ? F.none<B>() : F.some(b());
 
   public static bool operator true(Option<A> opt) { return opt.isDefined; }
 

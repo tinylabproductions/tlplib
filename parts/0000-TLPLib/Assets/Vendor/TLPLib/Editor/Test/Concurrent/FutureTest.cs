@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
@@ -13,23 +15,23 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static IEnumerable<Future<A>> addUnfulfilled<A>(this IEnumerable<Future<A>> futures)
       { return futures.Concat(Future.unfulfilled<A>().Yield()); }
+  }
 
-    public static void shouldBeSuccessful<A>(this Future<A> f, A a) {
-      f.type.shouldEqual(FutureType.Successful);
-      f.shouldBeCompleted(a);
-    }
+  public class FutureTestEquality : TestBase {
+    [Test]
+    public void Equals() {
+      Promise<int> asyncP;
+      var asyncF = Future<int>.async(out asyncP);
+      var unfullfilled = Future.unfulfilled<int>();
+      var completed = Future.successful(3);
 
-    public static void shouldBeUnfulfilled<A>(this Future<A> f, string message=null) {
-      f.type.shouldEqual(FutureType.Unfulfilled, message);
-      f.value.shouldBeNone($"{message ?? ""}: it shouldn't have a value");
-    }
+      shouldNotEqual(unfullfilled, completed);
 
-    public static void shouldBeCompleted<A>(this Future<A> f, A a) {
-      f.value.shouldBeSome(a, "it should have a value");
-    }
-
-    public static void shouldNotBeCompleted<A>(this Future<A> f) {
-      f.value.shouldBeNone("it should not have a value");
+      shouldEqual(unfullfilled, asyncF);
+      shouldNotEqual(asyncF, completed);
+      asyncP.complete(3);
+      shouldNotEqual(unfullfilled, asyncF);
+      shouldEqual(asyncF, completed);
     }
   }
 
@@ -70,12 +72,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenSuccessful() {
-      Future<int>.successful(1).map(mapper).shouldBeSuccessful(2);
+      Future<int>.successful(1).map(mapper).shouldBeOfSuccessfulType(2);
     }
 
     [Test]
     public void WhenUnfulfilled() {
-      Future<int>.unfulfilled.map(mapper).shouldBeUnfulfilled();
+      Future<int>.unfulfilled.map(mapper).shouldBeOfUnfulfilledType();
     }
 
     [Test]
@@ -100,11 +102,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void SuccessfulToSuccessful() {
-      successful.flatMap(successfulMapper).shouldBeSuccessful(2);
+      successful.flatMap(successfulMapper).shouldBeOfSuccessfulType(2);
     }
     [Test]
     public void SuccessfulToUnfulfilled() {
-      successful.flatMap(unfulfilledMapper).shouldBeUnfulfilled();
+      successful.flatMap(unfulfilledMapper).shouldBeOfUnfulfilledType();
     }
     [Test]
     public void SuccessfulToASync() {
@@ -135,7 +137,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       unfulfilled.flatMap(i => {
         called = true;
         return mapper(i);
-      }).shouldBeUnfulfilled();
+      }).shouldBeOfUnfulfilledType();
       called.shouldBeFalse("it should not call the mapper");
     }
 
@@ -202,12 +204,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       foreach (var t in new[] {
         F.t("X-O", Future.unfulfilled<int>(), Future.successful(1)),
         F.t("O-X", Future.successful(1), Future.unfulfilled<int>())
-      }) t.ua((name, fa, fb) => fa.zip(fb).shouldBeUnfulfilled(name));
+      }) t.ua((name, fa, fb) => fa.zip(fb).shouldBeOfUnfulfilledType(name));
     }
 
     [Test]
     public void WhenBothSidesSuccessful() {
-      Future.successful(1).zip(Future.successful(2)).shouldBeSuccessful(F.t(1, 2));
+      Future.successful(1).zip(Future.successful(2)).shouldBeOfSuccessfulType(F.t(1, 2));
     }
 
     [Test]
@@ -390,6 +392,34 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
   }
 
+  public class FutureTestDelay {
+    [Test]
+    public void Test() {
+      var d = Duration.fromSeconds(1);
+      var tc = new TestTimeContext();
+      var f = Future.delay(d, 3, tc);
+      f.value.shouldBeNone();
+      tc.timePassed = d / 2;
+      f.value.shouldBeNone();
+      tc.timePassed = d;
+      f.value.shouldBeSome(3);
+    }
+  }
+
+  public class FutureTestDelayFrames {
+    [Test]
+    public void Test() {
+      var frameDuration = new Duration(20);
+      var tc = new TestTimeContext(frameDuration);
+      var f = Future.delayFrames(3, 3, tc);
+      f.value.shouldBeNone();
+      tc.timePassed = frameDuration * 2;
+      f.value.shouldBeNone();
+      tc.timePassed = frameDuration * 3;
+      f.value.shouldBeSome(3);
+    }
+  }
+
   public class FutureTestDelayUntilSignal {
     [Test]
     public void NotCompletedThenSignal() {
@@ -427,6 +457,65 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       t._1.shouldNotBeCompleted();
       t._2();
       t._1.shouldBeCompleted(F.unit);
+    }
+  }
+
+  public class FutureTestToRxVal {
+    [Test]
+    public void WithUnknownType() {
+      Promise<int> promise;
+      var f = Future<int>.async(out promise);
+      var rx = f.toRxVal();
+      rx.value.shouldBeNone();
+      promise.complete(10);
+      rx.value.shouldBeSome(10);
+    }
+
+    [Test]
+    public void WithRxValInside() {
+      Promise<IRxVal<int>> p;
+      var f = Future<IRxVal<int>>.async(out p);
+      var rx = f.toRxVal(0);
+      rx.value.shouldEqual(0);
+      var rx2 = RxRef.a(100);
+      p.complete(rx2);
+      rx.value.shouldEqual(100);
+      rx2.value = 200;
+      rx.value.shouldEqual(200);
+    }
+  }
+
+  public class FutureTestTimeout {
+    Promise<int> promise;
+    Future<int> sourceFuture;
+    TestTimeContext tc;
+
+    static readonly Duration d = new Duration(100);
+
+    [SetUp]
+    public void setup() {
+      sourceFuture = Future<int>.async(out promise);
+      tc = new TestTimeContext();
+    }
+
+    [Test]
+    public void WhenSourceCompletes() {
+      var f = sourceFuture.timeout(d, tc);
+      f.value.shouldBeNone();
+      tc.timePassed = d - new Duration(1);
+      f.value.shouldBeNone();
+      promise.complete(5);
+      f.value.shouldBeSome(Either<Duration, int>.Right(5));
+    }
+
+    [Test]
+    public void WhenSourceTimesOut() {
+      var f = sourceFuture.timeout(d, tc);
+      f.value.shouldBeNone();
+      tc.timePassed = d - new Duration(1);
+      f.value.shouldBeNone();
+      tc.timePassed = d;
+      f.value.shouldBeSome(Either<Duration, int>.Left(d));
     }
   }
 }

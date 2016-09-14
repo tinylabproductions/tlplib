@@ -5,9 +5,9 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   class ASyncFixedUpdateHelperBehaviour : MonoBehaviour, IMB_FixedUpdate {
     float timeLeft;
-    Act act;
+    Action act;
 
-    public void init(float timeLeft, Act act) {
+    public void init(float timeLeft, Action act) {
       this.timeLeft = timeLeft;
       this.act = act;
     }

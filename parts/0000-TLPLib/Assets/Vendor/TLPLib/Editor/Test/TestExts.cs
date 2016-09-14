@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
@@ -9,9 +10,26 @@ using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
+  public class TestBase {
+    public static void shouldEqual<A>(A a1, A a2) {
+      a1.shouldEqual(a2);
+      a2.shouldEqual(a1);
+      a1.GetHashCode().shouldEqual(a2.GetHashCode());
+    }
+
+    public static void shouldNotEqual<A>(A a1, A a2) {
+      a1.shouldNotEqual(a2);
+      a2.shouldNotEqual(a1);
+    }
+  }
+
   public static class TestExts {
     public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) {
       Assert.IsEmpty(enumerable, message);
+    }
+
+    public static void shouldNotBeEmpty(this IEnumerable enumerable, string message = null) {
+      Assert.IsNotEmpty(enumerable, message);
     }
 
     public static void shouldBeTrue(this bool b, string message = null) {
@@ -27,6 +45,38 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreNotEqual(expected, a, message);
+
+    public static void shouldInclude(this string s, string substring, string message = null) {
+      if (!s.Contains(substring))
+        Assert.Fail(
+          $"\"{s}\" should include \"{substring}\", but it did not." + 
+          F.opt(message).map(_ => $" {_}").getOrElse("")
+        );
+    }
+
+    public static void shouldNotInclude(this string s, string substring, string message = null) {
+      if (s.Contains(substring))
+        Assert.Fail(
+          $"\"{s}\" should not include \"{substring}\", but it did." + 
+          F.opt(message).map(_ => $" {_}").getOrElse("")
+        );
+    }
+
+    public static void shouldContain<A, C>(
+      this C collection, A a, string message = null
+    ) where C : ICollection, ICollection<A> =>
+      Assert.Contains(a, collection, message);
+
+    public static void shouldNotContain<A>(
+      this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
+    ) => 
+      enumerable.collectFirst(a => predicate(a).opt(a)).voidFold(
+        Assert.Pass,
+        a => Assert.Fail(
+          message ?? 
+          $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
+        )
+      );
 
     public static void shouldTestInequalityAgainst<A>(this IEnumerable<A> set1, IEnumerable<A> set2) {
       foreach (var i1 in set1)
@@ -48,6 +98,16 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldBeSome<A>(this Option<A> a, A expected, string message=null) {
       a.shouldEqual(expected.some(), message);
+    }
+
+    public static void shouldBeSomeEnum<A>(this Option<A> aOpt, A expected, string message = null)
+      where A : IEnumerable
+    {
+      foreach (var a in aOpt) {
+        a.shouldEqual(expected, message);
+        return;
+      }
+      aOpt.shouldBeSome(expected, message);
     }
 
     public static void shouldBeNone<A>(this Option<A> a, string message=null) {
@@ -100,6 +160,29 @@ namespace com.tinylabproductions.TLPLib.Test {
       _try.voidFold(
         a => a.shouldEqual(expected, message),
         e => failWithPrefix(message, $"expected to be {F.scs(expected)}, was {e}")
+      );
+    }
+
+    public static void shouldBeOfSuccessfulType<A>(this Future<A> f, A a, string message=null) {
+      f.type.shouldEqual(FutureType.Successful);
+      f.shouldBeCompleted(a, message);
+    }
+
+    public static void shouldBeOfUnfulfilledType<A>(this Future<A> f, string message=null) {
+      f.type.shouldEqual(FutureType.Unfulfilled, message);
+      f.value.shouldBeNone($"{message ?? ""}: it shouldn't have a value");
+    }
+
+    public static void shouldBeCompleted<A>(this Future<A> f, A a, string message=null) {
+      f.value.voidFold(
+        () => Assert.Fail($"{f} should be completed, but it wasn't".joinOpt(message)),
+        v => v.shouldEqual(a, message)
+      );
+    }
+
+    public static void shouldNotBeCompleted<A>(this Future<A> f, string message=null) {
+      foreach (var v in f.value) Assert.Fail(
+        $"{f} should not be completed, but it was completed with '{v}'".joinOpt(message)
       );
     }
 

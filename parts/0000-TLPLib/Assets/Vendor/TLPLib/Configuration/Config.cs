@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       }
 
       public override string ToString() =>
-        $"{nameof(Config)}.{nameof(Urls)}[fetch={fetchUrl}, report={reportUrl}]";
+        $"{nameof(Config)}.{nameof(Urls)}[{reportUrl}]";
 
       #region Equality
 

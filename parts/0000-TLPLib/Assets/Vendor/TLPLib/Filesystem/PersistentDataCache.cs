@@ -1,34 +1,22 @@
-﻿using System.IO;
-using System.Text;
+﻿using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
-  class PersistentDataCache {
-    static readonly Encoding defaultEncoding = Encoding.UTF8;
-    static readonly Option<PathStr> root = Application.persistentDataPath.nonEmptyOpt(trim: true).map(PathStr.a);
+  public class PersistentDataCache : ICache<byte[]> {
+    public static Option<ICache<byte[]>> instance = 
+      Application.persistentDataPath.nonEmptyOpt(trim: true).map<ICache<byte[]>>(path => 
+        new PersistentDataCache(new PathStr(path))
+      );
 
-    public static Option<PathStr> fullPath(string name) => root.map(_ => _ / name);
+    public static Option<ICache<string>> stringInstance =
+      instance.map(c => c.bimap(BiMapper.utf8ByteArrString));
 
-    public static Option<Try<byte[]>> read(PathStr path) {
-      return File.Exists(path)
-        ? F.doTry(() => File.ReadAllBytes(path)).some()
-        : F.none<Try<byte[]>>();
-    }
+    readonly PathStr root;
 
-    public static Option<Try<string>> readString(PathStr path, Encoding encoding=null) {
-      encoding = encoding ?? defaultEncoding;
-      return read(path).map(t => t.map(bytes => encoding.GetString(bytes)));
-    }
+    PersistentDataCache(PathStr root) { this.root = root; }
 
-    public static Try<Unit> store(PathStr path, byte[] data) {
-      return F.doTry(() => File.WriteAllBytes(path, data));
-    }
-
-    public static Try<Unit> storeString(PathStr path, string data, Encoding encoding = null) {
-      encoding = encoding ?? defaultEncoding;
-      return store(path, encoding.GetBytes(data));
-    }
+    public ICachedBlob<byte[]> blobFor(string name) => new FileCachedBlob(root / name);
   }
 }

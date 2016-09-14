@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Logger;
 
@@ -7,10 +8,12 @@ namespace com.tinylabproductions.TLPLib.Threads {
   /* Helper class to queue things from other threads to be ran on the main
    * thread. */
   public class OnMainThread {
-    private static readonly Queue<Act> actions = new Queue<Act>();
+    static readonly Queue<Action> actions = new Queue<Action>();
+    public static readonly Thread mainThread;
 
     /* Initialization. */
     static OnMainThread() {
+      mainThread = Thread.CurrentThread;
       ASync.EveryFrame(onUpdate);
     }
 
@@ -19,12 +22,14 @@ namespace com.tinylabproductions.TLPLib.Threads {
     public static void init() { }
 
     /* Run the given action in the main thread. */
-    public static void run(Act action)
-    { lock (actions) { actions.Enqueue(action); } }
+    public static void run(Action action) {
+      if (Thread.CurrentThread == mainThread) action();
+      else lock (actions) { actions.Enqueue(action); }
+    }
 
     private static bool onUpdate() {
       while (true) {
-        Act current;
+        Action current;
         lock (actions) {
           if (actions.Count == 0) {
             break;

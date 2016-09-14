@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
-    public static void locally(this object any, Act local) { local(); }
+    public static void locally(this object any, Action local) { local(); }
 
     public static T locally<T>(this object any, Fn<T> local) {
       return local();
@@ -27,15 +27,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public struct CastBuilder<From> where From : class {
     public readonly From from;
 
-    public CastBuilder(From @from) { this.@from = @from; }
+    public CastBuilder(From from) { this.from = from; }
 
     public Either<string, To> toE<To>() where To : class, From {
-      var to = @from as To;
+      var to = from as To;
       return to == null
-        ? Either<string, To>.Left($"Can't cast {typeof(From)} to {typeof(To)}")
+        ? Either<string, To>.Left(errorMsg<To>())
         : Either<string, To>.Right(to);
     }
 
-    public To to<To>() where To : class, From { return toE<To>().rightOrThrow; }
+    static string errorMsg<To>() => $"Can't cast {typeof(From)} to {typeof(To)}";
+
+    public To to<To>() where To : class, From {
+      var to = from as To;
+      if (to == null) throw new InvalidCastException(errorMsg<To>());
+      return to;
+    }
   }
 }

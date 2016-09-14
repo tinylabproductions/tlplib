@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         return RGBToHSVHelper(0.0f, rgb.r, rgb.g, rgb.b);
     }
 
-    private static Color RGBToHSVHelper(float offset, float dominantcolor, float colorone, float colortwo) {
+    static Color RGBToHSVHelper(float offset, float dominantcolor, float colorone, float colortwo) {
       var res = new Color();
       res.b = dominantcolor;
       if ((double)res.b != 0.0) {
