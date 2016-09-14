@@ -38,7 +38,7 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
       Debug.Log("findMissingReferencesInCurrentScene finished");
     }
 
-    [MenuItem("Tools/Show Missing Object References in assets2", false, 57)]
+    //[MenuItem("Tools/Show Missing Object References in assets2", false, 57)]
     public static void missingReferencesInAssets() {
       var allAssets = AssetDatabase.GetAllAssetPaths();
       var objs =
@@ -75,47 +75,39 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
             }
             if (sp.type == "UnityEvent") {
               var a = getUnityEvent(c, sp.propertyPath);
-              var method = a.GetType().BaseType.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
-              Debug.LogWarning(method);
-              method.Invoke(a, new object[] {});
-              var m_PersistentCalls = a.GetType().BaseType.GetField("m_PersistentCalls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
+              var baseType = a.GetType().BaseType;
+              var method = baseType.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
+              method.Invoke(a, new object[] { });
+
+              var m_PersistentCalls = baseType.GetField("m_PersistentCalls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
               var m_PersistentCallsValue = m_PersistentCalls.GetValue(a);
 
               var m_Calls = m_PersistentCallsValue.GetType().GetField("m_Calls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
               var m_CallsValue = m_PersistentCalls.GetValue(a);
 
-              //int n = (int)m_CallsValue.GetType().GetProperty("Count").GetValue(m_CallsValue, null);
-              //for (int i = 0; i < n; i++) {
-              //  object[] index = { i };
-              //  object myObject = m_CallsValue.GetType().GetProperty("Item", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(m_CallsValue, index);
-              //  Debug.LogWarning(sp.propertyPath);
+              //var methodInfo = baseType.GetMethod("FindMethod", BindingFlags.Instance | BindingFlags.NonPublic);
+              var methods = baseType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+              var methodInfo = methods.First(mi => mi.Name.Equals("FindMethod") && mi.GetParameters().Any());
 
-              //  // Get the object properties  
-              //  PropertyInfo[] objectProperties = myObject.GetType().GetProperties();
-
-              //  // Process each property  
-              //  foreach (PropertyInfo currentProperty in objectProperties) {
-              //    string propertyValue = currentProperty.GetValue(myObject, null).ToString();
-              //    Console.WriteLine(propertyValue);
-              //  }
-              //}
-
-              PropertyInfo listProperty = m_Calls.GetType().GetProperty("List", BindingFlags.Public);
-              IEnumerable listObject = (IEnumerable)listProperty.GetValue(m_Calls, null);
-
-              foreach (var persistentCall in (IEnumerable<object>)m_Calls) {
+              IEnumerable listObject = (IEnumerable)m_Calls.GetValue(m_CallsValue);
+              foreach (var persistentCall in listObject) {
                 var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
                 if (isValid) {
-                  var methodInfo = a.GetType().GetMethod("FindMethod", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(a, new[] { persistentCall });
-                  if (methodInfo == null) {
+                  //Debug.LogWarning(a);
+                  //Debug.LogWarning(methodInfo);
+                  //Debug.LogWarning(persistentCall);
+
+                  var mi = methodInfo.Invoke(a, new[] { persistentCall });
+                  Debug.LogWarning(mi);
+                  if (mi == null) {
                     Debug.LogWarning(sp.propertyPath);
                   }
                 }
               }
               var prop = m_PersistentCallsValue.GetType().GetProperty("Count");
-              var count = (int)prop.GetValue(m_PersistentCallsValue, new object[] {});
-              Debug.LogWarning(count);
-              Debug.LogWarning(a.GetPersistentEventCount());
+              var count = (int)prop.GetValue(m_PersistentCallsValue, new object[] { });
+              //Debug.LogWarning(count);
+              //Debug.LogWarning(a.GetPersistentEventCount());
             }
           }
 
