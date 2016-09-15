@@ -6,7 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.analytics {
   public interface IFirebaseAnalytics {
     void logEvent(FirebaseEvent data);
     void setMinimumSessionDuration(Duration duration);

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
@@ -9,18 +9,20 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public struct ErrorData {
       public readonly LogType errorType;
       public readonly string message;
-      public readonly ReadOnlyCollection<BacktraceElem> backtrace;
+      public readonly ImmutableList<BacktraceElem> backtrace;
 
-      public ErrorData(LogType errorType, string message, ReadOnlyCollection<BacktraceElem> backtrace) {
+      public ErrorData(LogType errorType, string message, ImmutableList<BacktraceElem> backtrace) {
         this.errorType = errorType;
         this.message = message;
         this.backtrace = backtrace;
       }
 
-      public override string ToString() { return string.Format(
-        "ErrorData[\n  errorType: {0}\n  message: {1}\n  backtrace: {2}\n]",
-        errorType, message, backtrace.asString()
-      ); }
+      public override string ToString() => 
+        $"ErrorData[\n" +
+        $"  errorType: {errorType}\n" +
+        $"  message: {message}\n" +
+        $"  backtrace: {backtrace.asString()}\n" +
+        $"]";
     }
 
     public struct AppInfo {
@@ -40,7 +42,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
         if (
           type == LogType.Assert || type == LogType.Error || type == LogType.Exception
           || (logWarnings && type == LogType.Warning)
-        ) onError(new ErrorData(type, message, BacktraceElem.parseUnityBacktrace(backtrace).AsReadOnly()));
+        ) {
+          var parsedBacktrace =
+            // backtrace may be empty in release mode.
+            string.IsNullOrEmpty(backtrace)
+            ? BacktraceElem.generateFromHere()
+            : BacktraceElem.parseUnityBacktrace(backtrace);
+          onError(new ErrorData(type, message, parsedBacktrace));
+        }
       };
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -46,28 +47,31 @@ namespace com.tinylabproductions.TLPLib.Logger {
         }
       }
 
-      static readonly IEqualityComparer<FileInfo> FileLineNoComparerInstance = new FileLineNoEqualityComparer();
-      public static IEqualityComparer<FileInfo> fileLineNoComparer { get { return FileLineNoComparerInstance; } }
+      public static IEqualityComparer<FileInfo> fileLineNoComparer { get; } = new FileLineNoEqualityComparer();
 
       #endregion
 
-      public override string ToString() { return file + ":" + lineNo; }
+      public override string ToString() => $"{file}:{lineNo}";
     }
 
-    public readonly string method;
+    public readonly string declaringClass, method;
     public readonly Option<FileInfo> fileInfo;
 
-    public BacktraceElem(string method, Option<FileInfo> fileInfo) {
+    public BacktraceElem(string declaringClass, string method, Option<FileInfo> fileInfo) {
+      this.declaringClass = declaringClass;
       this.method = method;
       this.fileInfo = fileInfo;
     }
 
     /* Is this trace frame is in our application code? */
-    public bool inApp { get { return !method.StartsWith("UnityEngine.") && !method.StartsWith("com.tinylabproductions.TLPLib.Logger."); } }
+    public bool inApp => 
+      !method.StartsWith("UnityEngine.") && 
+      !method.StartsWith("com.tinylabproductions.TLPLib.Logger.");
 
-    public override string ToString() {
-      return method + fileInfo.fold(string.Empty, fi => " (at " + fi.ToString() + ")");
-    }
+    public override string ToString() => 
+      method + fileInfo.fold("", fi => $" (at {fi})");
+
+    #region Parsing
 
     /*
     Example backtrace:
@@ -76,42 +80,70 @@ com.tinylabproductions.TLPLib.Logger.Log:error(Object) (at Assets/Vendor/TLPLib/
 Assets.Code.Main:<Awake>m__32() (at Assets/Code/Main.cs:60)
 com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveNext() (at Assets/Vendor/TLPLib/Concurrent/ASync.cs:175)
     */
-    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?)( \(at (.*?):(\d+)\))?$");
+    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+):(.+?)( \(at (.*?):(\d+)\))?$");
 
-    public static List<BacktraceElem> parseUnityBacktrace(string backtrace) {
-      // backtrace may be empty in release mode.
-      if (string.IsNullOrEmpty(backtrace)) {
-        // TODO: we can optimize this to make less garbage
-        var trace = new StackTrace(0, true);
-        var frames = trace.GetFrames();
-        if (frames == null) return new List<BacktraceElem>();
-        return frames.Select(frame => {
-          var method = methodStringFromFrame(frame);
-          if (frame.GetFileLineNumber() == 0)
-            return new BacktraceElem(method, F.none<FileInfo>());
-          else
-            return new BacktraceElem(method, F.some(new FileInfo(frame.GetFileName(), frame.GetFileLineNumber())));
-        }).Where(bt => bt.inApp).ToList();
-      }
+    public static ImmutableList<BacktraceElem> parseUnityBacktrace(string backtrace) {
       return Regex.Split(backtrace, "\n")
         .Select(s => s.Trim())
         .Where(s => !string.IsNullOrEmpty(s))
         // ReSharper disable once ConvertClosureToMethodGroup
         .Select(s => parseUnityBacktraceLine(s))
-        .ToList();
+        .ToImmutableList();
+    }
+
+    /**
+     * Creates a backtrace from the caller site.
+     **/
+    public static ImmutableList<BacktraceElem> generateFromHere() {
+      // TODO: we can optimize this to make less garbage
+      var trace = new StackTrace(0, true);
+      var frames = trace.GetFrames();
+      if (frames == null) return ImmutableList<BacktraceElem>.Empty;
+      return frames.Select(frame => {
+        var declaringClass = frame.declaringClassString();
+        var method = frame.methodString();
+        return new BacktraceElem(
+          declaringClass, method,
+          frame.GetFileLineNumber() == 0
+          ? F.none<FileInfo>()
+          : F.some(new FileInfo(frame.GetFileName(), frame.GetFileLineNumber()))
+        );
+      }).Where(bt => bt.inApp).ToImmutableList();
+    }
+
+    public static BacktraceElem parseUnityBacktraceLine(string line) {
+      var match = UNITY_BACKTRACE_LINE.Match(line);
+
+      var declaringClass = match.Groups[1].Value;
+      var method = match.Groups[2].Value;
+      var hasLineNo = match.Groups[3].Success;
+      return new BacktraceElem(
+        declaringClass, method, 
+        hasLineNo 
+        ? F.some(new FileInfo(match.Groups[4].Value, int.Parse(match.Groups[5].Value)))
+        : F.none<FileInfo>()
+      );
+    }
+
+    #endregion
+  }
+
+  static class StackFrameExts {
+    public static string declaringClassString(this StackFrame sf) {
+      var mb = sf.GetMethod();
+      if (mb == null) return "-";
+      var t = mb.DeclaringType;
+      // if there is a type (non global method) print it
+      if (t == null) return "-";
+
+      return t.FullName.Replace('+', '.');
     }
 
     // Copied from StackTrace.ToString decompiled source
-    static string methodStringFromFrame(StackFrame sf) {
+    public static string methodString(this StackFrame sf) {
       var sb = new StringBuilder();
       MethodBase mb = sf.GetMethod();
       if (mb != null) {
-        Type t = mb.DeclaringType;
-        // if there is a type (non global method) print it
-        if (t != null) {
-          sb.Append(t.FullName.Replace('+', '.'));
-          sb.Append(".");
-        }
         sb.Append(mb.Name);
 
         // deal with the generic portion of the method 
@@ -150,21 +182,6 @@ com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveN
         sb.Append(")");
       }
       return sb.ToString();
-    }
-
-    public static BacktraceElem parseUnityBacktraceLine(string line) {
-      var match = UNITY_BACKTRACE_LINE.Match(line);
-
-      var method = match.Groups[1].Value;
-      var hasLineNo = match.Groups[2].Success;
-      if (hasLineNo) {
-        var file = match.Groups[3].Value;
-        var lineNo = int.Parse(match.Groups[4].Value);
-        return new BacktraceElem(method, F.some(new FileInfo(file, lineNo)));
-      }
-      else {
-        return new BacktraceElem(method, F.none<FileInfo>());
-      }
     }
   }
 }

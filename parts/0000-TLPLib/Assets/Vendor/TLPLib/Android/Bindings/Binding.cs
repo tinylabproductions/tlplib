@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings {
   public abstract class Binding {
-    public AndroidJavaObject java;
+    public readonly AndroidJavaObject java;
 
     protected Binding(AndroidJavaObject java) { this.java = java; }
   }
