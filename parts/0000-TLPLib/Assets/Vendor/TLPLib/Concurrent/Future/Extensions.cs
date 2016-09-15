@@ -74,6 +74,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return rx;
     }
 
+    public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
+      futureOpt.fold(Future<A>.unfulfilled, f => f);
+
+    public static Future<Option<A>> extractOpt<A>(this Option<Future<A>> futureOpt) =>
+      futureOpt.fold(() => Future.successful(F.none<A>()), f => f.map(F.some));
+
     public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action)
       { future.onComplete(e => e.rightValue.each(action)); }
 
