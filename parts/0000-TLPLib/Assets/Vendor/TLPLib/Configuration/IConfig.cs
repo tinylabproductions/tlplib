@@ -23,6 +23,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region getters
 
     object getObject(string key);
+    A get<A>(string key, Config.Parser<A> parser);
     string getString(string key);
     int getInt(string key);
     uint getUInt(string key);
@@ -44,6 +45,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region opt getters
 
     Option<object> optObject(string key);
+    Option<A> optGet<A>(string key, Config.Parser<A> parser);
     Option<string> optString(string key);
     Option<int> optInt(string key);
     Option<uint> optUInt(string key);
@@ -65,6 +67,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region either getters
 
     Either<ConfigFetchError, object> eitherObject(string key);
+    Either<ConfigFetchError, A> eitherGet<A>(string key, Config.Parser<A> parser);
     Either<ConfigFetchError, string> eitherString(string key);
     Either<ConfigFetchError, int> eitherInt(string key);
     Either<ConfigFetchError, uint> eitherUInt(string key);
@@ -86,6 +89,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region try getters
 
     Try<object> tryObject(string key);
+    Try<A> tryGet<A>(string key, Config.Parser<A> parser);
     Try<string> tryString(string key);
     Try<int> tryInt(string key);
     Try<uint> tryUInt(string key);
