@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * when all futures complete.
      **/
     public static Future<A[]> sequence<A>(
-      this IEnumerable<Future<A>> enumerable, string name=null
+      this IEnumerable<Future<A>> enumerable
     ) {
       var completed = 0u;
       var sourceFutures = enumerable.ToList();
