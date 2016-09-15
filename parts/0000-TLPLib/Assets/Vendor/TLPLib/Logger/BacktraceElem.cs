@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Logger {
-  public struct BacktraceElem {
+  public struct BacktraceElem : IEquatable<BacktraceElem> {
     public struct FileInfo : IEquatable<FileInfo> {
       public readonly string file;
       public readonly int lineNo;
@@ -63,13 +63,38 @@ namespace com.tinylabproductions.TLPLib.Logger {
       this.fileInfo = fileInfo;
     }
 
+    #region Equality
+
+    public bool Equals(BacktraceElem other) {
+      return string.Equals(declaringClass, other.declaringClass) && string.Equals(method, other.method) && fileInfo.Equals(other.fileInfo);
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is BacktraceElem && Equals((BacktraceElem) obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked {
+        var hashCode = (declaringClass != null ? declaringClass.GetHashCode() : 0);
+        hashCode = (hashCode * 397) ^ (method != null ? method.GetHashCode() : 0);
+        hashCode = (hashCode * 397) ^ fileInfo.GetHashCode();
+        return hashCode;
+      }
+    }
+
+    public static bool operator ==(BacktraceElem left, BacktraceElem right) { return left.Equals(right); }
+    public static bool operator !=(BacktraceElem left, BacktraceElem right) { return !left.Equals(right); }
+
+    #endregion
+
     /* Is this trace frame is in our application code? */
     public bool inApp => 
       !method.StartsWith("UnityEngine.") && 
       !method.StartsWith("com.tinylabproductions.TLPLib.Logger.");
 
     public override string ToString() => 
-      method + fileInfo.fold("", fi => $" (at {fi})");
+      $"{declaringClass}:{method}" + fileInfo.fold("", fi => $" (at {fi})");
 
     #region Parsing
 
@@ -80,7 +105,7 @@ com.tinylabproductions.TLPLib.Logger.Log:error(Object) (at Assets/Vendor/TLPLib/
 Assets.Code.Main:<Awake>m__32() (at Assets/Code/Main.cs:60)
 com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveNext() (at Assets/Vendor/TLPLib/Concurrent/ASync.cs:175)
     */
-    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+):(.+?)( \(at (.*?):(\d+)\))?$");
+    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?):(.+?)( \(at (.*?):(\d+)\))?$");
 
     public static ImmutableList<BacktraceElem> parseUnityBacktrace(string backtrace) {
       return Regex.Split(backtrace, "\n")
