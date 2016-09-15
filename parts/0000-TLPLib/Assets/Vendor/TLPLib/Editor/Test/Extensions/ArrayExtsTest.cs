@@ -1,8 +1,8 @@
-﻿using com.tinylabproductions.TLPLib.Test;
+﻿using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
-  [TestFixture]
   public class ArrayExtsTest {
     [Test]
     public void AddOneTest() {
@@ -24,6 +24,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         new[] { 2, 3, 4, 1, 2, 3, 10, 11, 12, 13, 9, 8 },
         b.concat(a, c, d)
       );
+    }
+
+    [Test]
+    public void ToImmutableTest() {
+      var a = new[] {1, 2, 3};
+      a.toImmutable(i => i * 2).shouldEqual(ImmutableArray.Create(2, 4, 6));
     }
   }
 }
