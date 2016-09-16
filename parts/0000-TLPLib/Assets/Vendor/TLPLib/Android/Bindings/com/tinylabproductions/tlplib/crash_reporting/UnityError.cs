@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
       // Can't call setStackTrace directly, because 
       // http://forum.unity3d.com/threads/passing-arrays-through-the-jni.91757/#post-1899528
       var arrayList = new ArrayList(stackTrace.Count);
-      foreach (var elem in stackTrace) arrayList.add(elem.java);
+      foreach (var elem in stackTrace) arrayList.add(elem);
       java.Call("setStackTraceElems", arrayList.java);
     }
 
