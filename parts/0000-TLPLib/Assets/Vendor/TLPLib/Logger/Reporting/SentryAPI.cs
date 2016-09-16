@@ -5,6 +5,7 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -55,14 +56,29 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public struct SentryMessage {
       public readonly ApiKeys keys;
+      public readonly Guid eventId;
       public readonly DateTime timestamp;
       public readonly string json;
 
-      public SentryMessage(ApiKeys keys, DateTime timestamp, string json) {
+      readonly Dictionary<string, object> jsonDict;
+
+      public SentryMessage(
+        ApiKeys keys, Guid eventId, DateTime timestamp,
+        Dictionary<string, object> jsonDict
+      ) {
         this.keys = keys;
+        this.eventId = eventId;
         this.timestamp = timestamp;
-        this.json = json;
+        this.jsonDict = jsonDict;
+
+        var json = new Dictionary<string, object>(jsonDict) {
+          {"event_id", eventId.ToString("N")},
+          {"timestamp", timestamp.ToString("yyyy-MM-ddTHH:mm:ss")}
+        };
+        this.json = Json.Serialize(json);
       }
+
+      public string jsonWithoutTimestamps => Json.Serialize(jsonDict);
 
       public override string ToString() { return $"SentryMessage[\n{keys}\ntimestamp={timestamp}\njson={json}\n]"; }
 
@@ -114,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         sentJsonsOpt.voidFold(
           send,
           sentJsons => {
-            if (sentJsons.Add(msg.json)) send();
+            if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
             else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
           }
         );
@@ -137,6 +153,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo,
       ErrorReporter.ErrorData data, ExtraData addExtraData
     ) {
+      var eventId = Guid.NewGuid();
       var timestamp = DateTime.UtcNow;
 
       // The list of frames should be ordered by the oldest call first.
@@ -212,10 +229,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       addExtraData.addExtras((name, value) => extras[name] = value);
 
       var json = new Dictionary<string, object> {
-        {"event_id", Guid.NewGuid().ToString("N")},
         // max length - 1000 chars
         {"message", data.message.trimTo(1000)},
-        {"timestamp", timestamp.ToString("yyyy-MM-ddTHH:mm:ss")},
         {"level", logTypeToSentryLevel(data.errorType)},
         {"logger", loggerName},
         {"platform", Application.platform.ToString()},
@@ -225,9 +240,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}}}
       };
       if (!data.backtrace.isEmpty()) json.Add("culprit", data.backtrace[0].method);
-
-      var serialized = Formats.MiniJSON.Json.Serialize(json);
-      return new SentryMessage(keys, timestamp, serialized);
+      
+      return new SentryMessage(keys, eventId, timestamp, json);
     }
 
     // max tag value length = 200

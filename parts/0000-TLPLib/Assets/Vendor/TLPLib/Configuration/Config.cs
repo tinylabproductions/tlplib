@@ -248,6 +248,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public override Either<Configuration.ConfigFetchError, object> eitherObject(string key)
     { return get(key, objectParser); }
 
+    public override Either<Configuration.ConfigFetchError, A> eitherGet<A>(
+      string key, Parser<A> parser
+    ) => get(key, parser);
+
     public override Either<Configuration.ConfigFetchError, string> eitherString(string key)
     { return get(key, stringParser); }
 

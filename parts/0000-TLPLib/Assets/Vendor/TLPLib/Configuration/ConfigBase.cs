@@ -13,6 +13,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public object getObject(string key)
     { return tryObject(key).getOrThrow; }
 
+    public A get<A>(string key, Config.Parser<A> parser) => 
+      tryGet(key, parser).getOrThrow;
+
     public string getString(string key)
     { return tryString(key).getOrThrow; }
 
@@ -59,6 +62,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public Option<object> optObject(string key)
     { return eitherObject(key).toOpt(); }
 
+    public Option<A> optGet<A>(string key, Config.Parser<A> parser) => 
+      eitherGet(key, parser).toOpt();
+
     public Option<string> optString(string key)
     { return eitherString(key).toOpt(); }
 
@@ -103,6 +109,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region try getters
 
     public Try<object> tryObject(string key) { return eitherObject(key).fold(tryEx<object>, F.scs); }
+    public Try<A> tryGet<A>(string key, Config.Parser<A> parser) => eitherGet(key, parser).fold(tryEx<A>, F.scs);
     public Try<string> tryString(string key) { return eitherString(key).fold(tryEx<string>, F.scs); }
     public Try<int> tryInt(string key) { return eitherInt(key).fold(tryEx<int>, F.scs); }
     public Try<uint> tryUInt(string key) { return eitherUInt(key).fold(tryEx<uint>, F.scs); }
@@ -128,6 +135,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region either getters
 
     public abstract Either<ConfigFetchError, object> eitherObject(string key);
+    public abstract Either<ConfigFetchError, A> eitherGet<A>(string key, Config.Parser<A> parser);
     public abstract Either<ConfigFetchError, string> eitherString(string key);
     public abstract Either<ConfigFetchError, int> eitherInt(string key);
     public abstract Either<ConfigFetchError, uint> eitherUInt(string key);

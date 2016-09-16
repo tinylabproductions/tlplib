@@ -250,7 +250,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableList<int> defaultVal,
       Fn<byte[], Option<int>> deserializeFn = null,
       PrefVal.OnDeserializeCollectionItemFailure onItemFailure = 
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore
+        PrefVal.OnDeserializeCollectionItemFailure.ThrowException
     ) =>
       storage.collection(
         key, serialize, deserializeFn ?? deserialize, 
@@ -268,6 +268,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Test]
     public void WithEmptyCollection() {
       create(defaultNonEmpty).value = ImmutableList<int>.Empty;
+      create(defaultNonEmpty).value.shouldEqual(ImmutableList<int>.Empty);
+    }
+
+    [Test]
+    public void WithDefaultEmpty() {
+      create(ImmutableList<int>.Empty).value.shouldEqual(ImmutableList<int>.Empty);
       create(defaultNonEmpty).value.shouldEqual(ImmutableList<int>.Empty);
     }
 
