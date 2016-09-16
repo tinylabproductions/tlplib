@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -18,10 +19,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
 
       public override string ToString() => 
-        $"ErrorData[\n" +
-        $"  errorType: {errorType}\n" +
-        $"  message: {message}\n" +
-        $"  backtrace: {backtrace.asString()}\n" +
+        $"{nameof(ErrorData)}[" +
+        $"{nameof(errorType)}: '{errorType}', " +
+        $"{nameof(message)}: '{message}', " +
+        $"{nameof(backtrace)}: {backtrace.asString()}" +
         $"]";
     }
 
@@ -42,14 +43,29 @@ namespace com.tinylabproductions.TLPLib.Logger {
         if (
           type == LogType.Assert || type == LogType.Error || type == LogType.Exception
           || (logWarnings && type == LogType.Warning)
-        ) {
-          var parsedBacktrace =
-            // backtrace may be empty in release mode.
-            string.IsNullOrEmpty(backtrace)
-            ? BacktraceElem.generateFromHere()
-            : BacktraceElem.parseUnityBacktrace(backtrace);
-          onError(new ErrorData(type, message, parsedBacktrace));
-        }
+        ) ASync.OnMainThread(
+          () => {
+            try { 
+              var parsedBacktrace =
+                // backtrace may be empty in release mode.
+                string.IsNullOrEmpty(backtrace)
+                ? BacktraceElem.generateFromHere()
+                : BacktraceElem.parseUnityBacktrace(backtrace);
+              var data = new ErrorData(type, message, parsedBacktrace);
+              onError(data);
+            }
+            catch (Exception e) {
+              // Log at info level so that we wouldn't trigger this handler again.
+              Log.info(
+                $"[{nameof(ErrorReporter)}] Exception in " +
+                $"{nameof(Application)}.{nameof(Application.logMessageReceivedThreaded)}" +
+                $" handler!\n\n{e}"
+              );
+            }
+          },
+          // https://fogbugz.unity3d.com/default.asp?832198_48nbh0a3a8cjpr12
+          runNowIfOnMainThread: false
+        );
       };
     }
 

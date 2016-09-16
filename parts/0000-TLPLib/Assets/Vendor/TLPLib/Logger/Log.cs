@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -104,36 +105,73 @@ namespace com.tinylabproductions.TLPLib.Logger {
     void error(object o, Exception ex);
   }
 
+  /**
+   * Useful for logging from inside Application.logMessageReceivedThreaded, because 
+   * log calls are silently ignored from inside the handlers. Just make sure not to 
+   * get into an endless loop.
+   **/
+  public class DeferToMainThreadLog : ILogMethods {
+    readonly ILog log;
+
+    public DeferToMainThreadLog(ILog log) { this.log = log; }
+
+    public override Log.Level level {
+      get { return log.level; }
+      set { log.level = value; }
+    }
+
+    public override bool willLog(Log.Level level) => log.willLog(level);
+    public override void verbose(object o) => defer(() => log.verbose(o));
+    public override void debug(object o) => defer(() => log.debug(o));
+    public override void info(object o) => defer(() => log.info(o));
+    public override void warn(object o) => defer(() => log.warn(o));
+    public override void error(object o) => defer(() => log.error(o));
+
+    void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
+  }
+
   public static class ILogExts {
     /* Backwards compatibility */
     [Obsolete("Use debug() instead.")]
     public static void rdebug(this ILog log, object o) { log.debug(o); }
   }
 
-  public abstract class LogBase : ILog {
-    public Log.Level level { get; set; } = Log.defaultLogLevel;
-    public bool willLog(Log.Level level) => this.level >= level;
+  public abstract class ILogMethods : ILog {
+    public abstract Log.Level level { get; set; }
+    public abstract bool willLog(Log.Level level);
+    public abstract void verbose(object o);
+    public abstract void debug(object o);
+    public abstract void info(object o);
+    public abstract void warn(object o);
+    public abstract void error(object o);
 
     public bool isVerbose => willLog(Log.Level.VERBOSE);
-    public void verbose(object o) => logVerbose(line("VERBOSE", o));
-    protected abstract void logVerbose(string s);
-
     public bool isDebug => willLog(Log.Level.DEBUG);
-    public void debug(object o) => logDebug(line("DEBUG", o));
-    protected abstract void logDebug(string s);
-
     public bool isInfo => willLog(Log.Level.INFO);
-    public void info(object o) => logInfo(line("INFO", o));
-    protected abstract void logInfo(string s);
-
     public bool isWarn => willLog(Log.Level.WARN);
-    public void warn(object o) => logWarn(line("WARN", o));
-    protected abstract void logWarn(string s);
-
     public bool isError => willLog(Log.Level.ERROR);
+
     public void error(Exception ex) => error(Log.exToStr(ex));
     public void error(object o, Exception ex) => error(Log.exToStr(ex, o));
-    public void error(object o) => logError(line("ERROR", o));
+  }
+
+  public abstract class LogBase : ILogMethods {
+    public override Log.Level level { get; set; } = Log.defaultLogLevel;
+    public override bool willLog(Log.Level level) => this.level >= level;
+
+    public override void verbose(object o) => logVerbose(line("VERBOSE", o));
+    protected abstract void logVerbose(string s);
+
+    public override void debug(object o) => logDebug(line("DEBUG", o));
+    protected abstract void logDebug(string s);
+
+    public override void info(object o) => logInfo(line("INFO", o));
+    protected abstract void logInfo(string s);
+
+    public override void warn(object o) => logWarn(line("WARN", o));
+    protected abstract void logWarn(string s);
+
+    public override void error(object o) => logError(line("ERROR", o));
     protected abstract void logError(string s);
 
     static string line(string level, object o) => $"[{thread}|{level}]> {o}";

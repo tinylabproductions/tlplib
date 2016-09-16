@@ -54,11 +54,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
       public override string ToString() => $"{file}:{lineNo}";
     }
 
-    public readonly string declaringClass, method;
+    public readonly string method;
     public readonly Option<FileInfo> fileInfo;
 
-    public BacktraceElem(string declaringClass, string method, Option<FileInfo> fileInfo) {
-      this.declaringClass = declaringClass;
+    public BacktraceElem(string method, Option<FileInfo> fileInfo) {
       this.method = method;
       this.fileInfo = fileInfo;
     }
@@ -66,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     #region Equality
 
     public bool Equals(BacktraceElem other) {
-      return string.Equals(declaringClass, other.declaringClass) && string.Equals(method, other.method) && fileInfo.Equals(other.fileInfo);
+      return string.Equals(method, other.method) && fileInfo.Equals(other.fileInfo);
     }
 
     public override bool Equals(object obj) {
@@ -75,12 +74,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public override int GetHashCode() {
-      unchecked {
-        var hashCode = (declaringClass != null ? declaringClass.GetHashCode() : 0);
-        hashCode = (hashCode * 397) ^ (method != null ? method.GetHashCode() : 0);
-        hashCode = (hashCode * 397) ^ fileInfo.GetHashCode();
-        return hashCode;
-      }
+      unchecked { return ((method != null ? method.GetHashCode() : 0) * 397) ^ fileInfo.GetHashCode(); }
     }
 
     public static bool operator ==(BacktraceElem left, BacktraceElem right) { return left.Equals(right); }
@@ -89,12 +83,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
     #endregion
 
     /* Is this trace frame is in our application code? */
-    public bool inApp => 
-      !method.StartsWith("UnityEngine.") && 
-      !method.StartsWith("com.tinylabproductions.TLPLib.Logger.");
+    public bool inApp => !method.StartsWith($"{nameof(UnityEngine)}.");
 
-    public override string ToString() => 
-      $"{declaringClass}:{method}" + fileInfo.fold("", fi => $" (at {fi})");
+    public override string ToString() =>
+      $"{method}{fileInfo.fold("", fi => $" (at {fi})")}";
 
     #region Parsing
 
@@ -105,7 +97,7 @@ com.tinylabproductions.TLPLib.Logger.Log:error(Object) (at Assets/Vendor/TLPLib/
 Assets.Code.Main:<Awake>m__32() (at Assets/Code/Main.cs:60)
 com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveNext() (at Assets/Vendor/TLPLib/Concurrent/ASync.cs:175)
     */
-    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?):(.+?)( \(at (.*?):(\d+)\))?$");
+    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?)( \(at (.*?):(\d+)\))?$");
 
     public static ImmutableList<BacktraceElem> parseUnityBacktrace(string backtrace) {
       return Regex.Split(backtrace, "\n")
@@ -128,7 +120,7 @@ com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveN
         var declaringClass = frame.declaringClassString();
         var method = frame.methodString();
         return new BacktraceElem(
-          declaringClass, method,
+          $"{declaringClass}:{method}",
           frame.GetFileLineNumber() == 0
           ? F.none<FileInfo>()
           : F.some(new FileInfo(frame.GetFileName(), frame.GetFileLineNumber()))
@@ -139,13 +131,12 @@ com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveN
     public static BacktraceElem parseUnityBacktraceLine(string line) {
       var match = UNITY_BACKTRACE_LINE.Match(line);
 
-      var declaringClass = match.Groups[1].Value;
-      var method = match.Groups[2].Value;
-      var hasLineNo = match.Groups[3].Success;
+      var method = match.Groups[1].Value;
+      var hasLineNo = match.Groups[2].Success;
       return new BacktraceElem(
-        declaringClass, method, 
+        method, 
         hasLineNo 
-        ? F.some(new FileInfo(match.Groups[4].Value, int.Parse(match.Groups[5].Value)))
+        ? F.some(new FileInfo(match.Groups[3].Value, int.Parse(match.Groups[4].Value)))
         : F.none<FileInfo>()
       );
     }

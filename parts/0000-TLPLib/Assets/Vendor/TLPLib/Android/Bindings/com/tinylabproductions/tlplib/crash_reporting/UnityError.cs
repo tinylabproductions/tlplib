@@ -9,14 +9,31 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib.crash_reporting {
   public class UnityError : Throwable {
-    public readonly ErrorReporter.ErrorData data;
+    public static UnityError fromErrorData(ErrorReporter.ErrorData data) {
+      // We need different classes because otherwise Firebase groups all different log 
+      // types together by stacktrace.
+      switch (data.errorType) {
+        case LogType.Assert: return new UnityError("UnityAssert", data);
+        case LogType.Error: return new UnityError("UnityError", data);
+        case LogType.Exception: return new UnityError("UnityException", data);
+        case LogType.Log: return new UnityError("UnityLog", data);
+        case LogType.Warning: return new UnityError("UnityWarning", data);
+      }
+      return new UnityError("UnityUnknown", data);
+    }
 
-    public UnityError(ErrorReporter.ErrorData data) : base(new AndroidJavaObject(
-      "com.tinylabproductions.tlplib.crash_reporting.UnityError",
-      data.errorType.ToString(), data.message
+    public readonly ErrorReporter.ErrorData data;
+    public readonly string className;
+
+    UnityError(string className, ErrorReporter.ErrorData data) : base(new AndroidJavaObject(
+      $"com.tinylabproductions.tlplib.crash_reporting.{className}",
+      data.message
     )) {
+      this.className = className;
       this.data = data;
-      setStackTrace(data.backtrace.Select(elem => elem.asAndroid()).ToImmutableList());
+
+      var stacktrace = data.backtrace.Select(elem => elem.asAndroid()).ToImmutableList();
+      setStackTrace(stacktrace);
     }
 
     public void setStackTrace(ICollection<StackTraceElement> stackTrace) {
@@ -27,8 +44,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
       java.Call("setStackTraceElems", arrayList.java);
     }
 
-    public override string ToString() => 
-      $"{nameof(UnityError)}[{data}]";
+    public override string ToString() => $"{nameof(UnityError)}[{data}]";
   }
 }
 #endif

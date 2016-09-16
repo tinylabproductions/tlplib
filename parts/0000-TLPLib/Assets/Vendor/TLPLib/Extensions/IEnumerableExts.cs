@@ -112,6 +112,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       yield return any;
     }
 
+    [Obsolete("Use foreach instead.")]
     public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
       foreach (var el in enumerable) f(el);
     }
