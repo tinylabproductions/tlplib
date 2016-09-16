@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
@@ -126,7 +125,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
       return data => {
         var msg = message(loggerName, keys, appInfo, data, addExtraData);
-        Action send = () => ASync.OnMainThread(() => msg.send(reportingUrl));
+        Action send = () => msg.send(reportingUrl);
         sentJsonsOpt.voidFold(
           send,
           sentJsons => {
@@ -141,12 +140,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       string loggerName, DSN dsn, ErrorReporter.AppInfo appInfo,
       ExtraData addExtraData
     ) {
-      return data => ASync.OnMainThread(() => {
+      return data => {
         if (Log.isInfo) Log.info(
           $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
           message(loggerName, dsn.keys, appInfo, data, addExtraData)
         );
-      });
+      };
     }
 
     public static SentryMessage message(

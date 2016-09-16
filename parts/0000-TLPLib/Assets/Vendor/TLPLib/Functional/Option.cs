@@ -81,6 +81,7 @@ public
   public A getOrThrow(string message)
     { return isSome ? value : F.throws<A>(new IllegalStateException(message)); }
 
+  [Obsolete("Use foreach (var item in option) item.doSomething();")]
   public void each(Act<A> action) { if (isSome) action(value); }
 
   public void onNone(Action action) { if (! isSome) action(); }
