@@ -1,22 +1,30 @@
 ﻿using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine.Events;
+using JetBrains.Annotations;
+using UnityEditor.SceneManagement;
+using com.tinylabproductions.TLPLib.Filesystem;
+using System.Collections.Immutable;
 
 namespace Assets.Vendor.TLPLib.Utilities.Editor {
   public class ReferencesInPrefabs : MonoBehaviour {
-    const string NAMESPACE_NAME = "com.tinylabproductions";
+    const string MISSING_REF = "Missing Ref in: [{3}]{0}. Component: {1}, Property: {2}";
+    const string NULL_REF = "Null Ref in: [{3}]{0}. Component: {1}, Property: {2}";
+    const string MISSING_COMP = "Missing Component in GO or children: {0}";
+    const string UNITYEVENT_INV_METHOD = "UnityEvent {0} callback number {1} has invalid method";
+    const string UNITYEVENT_NOT_VALID = "UnityEvent {0} callback number {1} is not valid";
+
     static bool anyErrors;
+    static readonly Dictionary<Type, IEnumerable<FieldInfo>> typeResultsCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
+    static readonly Dictionary<Type, IEnumerable<MemberInfo>> membersCache = new Dictionary<Type, IEnumerable<MemberInfo>>();
 
     [PostProcessBuild]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject) {
@@ -38,13 +46,31 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
       Debug.Log("findMissingReferencesInCurrentScene finished");
     }
 
-    //[MenuItem("Tools/Show Missing Object References in assets2", false, 57)]
+    [MenuItem("Tools/Show Missing Object References in all scenes2", false, 56)]
+    public static void missingReferencesInAllScenes() {
+      var scenes = AssetDatabase.GetAllAssetPaths().Where(p => p.EndsWith(".unity")).ToArray();
+      for (var i = 0; i < scenes.Length; i++) {
+        var scene = scenes[i];
+        if (EditorUtility.DisplayCancelableProgressBar("missingReferencesInAllScenes", scene, (float) i++ / scenes.Length)) {
+          break;
+        }
+        EditorSceneManager.OpenScene(scene);
+        findMissingReferences(scene, getSceneObjects(), false);
+      }
+      EditorUtility.ClearProgressBar();
+      Debug.Log("missingReferencesInAllScenes finished");
+    }
+
+    //[MenuItem("Tools/Show Missing Object References in assets", false, 57)]
     public static void missingReferencesInAssets() {
-      var allAssets = AssetDatabase.GetAllAssetPaths();
-      var objs =
-        allAssets.Select(assetPath => AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)) as GameObject)
-          .Where(a => a != null).ToArray();
-      findMissingReferences("Project", objs);
+      //var loadedScenes = scenes.Select(s => AssetDatabase.LoadMainAssetAtPath(scene)).ToArray();
+      var depsOfScene = EditorUtility.CollectDependencies(new UnityEngine.Object[] {});
+      var depsPaths = depsOfScene.Select(d => PathStr.a(AssetDatabase.GetAssetPath(d)));
+      var allPackedSpritePaths = AssetDatabase.GetAllAssetPaths().Select(PathStr.a);
+      var depsSet = new HashSet<string>();
+      foreach (var path in depsPaths) depsSet.Add(path);
+      var unusedSpritePaths = 
+        allPackedSpritePaths.Where(path => !depsSet.Contains(path)).OrderBy(p => p.path).ToImmutableList();
       Debug.Log("missingReferencesInAssets finished");
     }
 
@@ -59,7 +85,7 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
 
         foreach (var c in components) {
           if (!c) {
-            errors.Add(createError(ERR3, c.gameObject));
+            errors.Add(createError(MISSING_COMP, c.gameObject));
             continue;
           }
 
@@ -70,59 +96,57 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
             if (sp.propertyType == SerializedPropertyType.ObjectReference) {
               if (sp.objectReferenceValue == null
                   && sp.objectReferenceInstanceIDValue != 0) {
-                errors.Add(createError(ERR, context, c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name)));
+                errors.Add(createError(MISSING_REF, context, c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name)));
               }
             }
+
+            #region Unity Events
             if (sp.type == "UnityEvent") {
-              var a = getUnityEvent(c, sp.propertyPath);
-              var baseType = a.GetType().BaseType;
-              var method = baseType.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
-              method.Invoke(a, new object[] { });
+              var uniEvent = getUnityEvent(c, sp.propertyPath);
+              var baseType = uniEvent?.GetType().BaseType;
+              var method = baseType?.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
+              method?.Invoke(uniEvent, new object[] { });
 
-              var m_PersistentCalls = baseType.GetField("m_PersistentCalls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
-              var m_PersistentCallsValue = m_PersistentCalls.GetValue(a);
+              var m_PersistentCalls = baseType?.GetField("m_PersistentCalls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
+              var m_PersistentCallsValue = m_PersistentCalls?.GetValue(uniEvent);
 
-              var m_Calls = m_PersistentCallsValue.GetType().GetField("m_Calls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
-              var m_CallsValue = m_PersistentCalls.GetValue(a);
+              var m_Calls = m_PersistentCallsValue?.GetType().GetField("m_Calls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
+              var m_CallsValue = m_PersistentCalls?.GetValue(uniEvent);
 
-              //var methodInfo = baseType.GetMethod("FindMethod", BindingFlags.Instance | BindingFlags.NonPublic);
-              var methods = baseType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
-              var methodInfo = methods.First(mi => mi.Name.Equals("FindMethod") && mi.GetParameters().Any());
+              var methods = baseType?.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+              var methodInfo = methods?.First(mi => mi.Name.Equals("FindMethod") && mi.GetParameters().Any());
 
-              IEnumerable listObject = (IEnumerable)m_Calls.GetValue(m_CallsValue);
-              foreach (var persistentCall in listObject) {
-                var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
-                if (isValid) {
-                  //Debug.LogWarning(a);
-                  //Debug.LogWarning(methodInfo);
-                  //Debug.LogWarning(persistentCall);
+              var listObject = (IEnumerable)m_Calls?.GetValue(m_CallsValue);
+              var index = 0;
+              if (listObject != null)
+                foreach (var persistentCall in listObject) {
+                  index++;
+                  string format = null;
 
-                  var mi = methodInfo.Invoke(a, new[] { persistentCall });
-                  Debug.LogWarning(mi);
-                  if (mi == null) {
-                    Debug.LogWarning(sp.propertyPath);
-                  }
+                  var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
+                  if (isValid) {
+                    var mi = methodInfo?.Invoke(uniEvent, new[] { persistentCall });
+                    if (mi == null) format = UNITYEVENT_INV_METHOD;
+                  } else format = UNITYEVENT_NOT_VALID;
+
+                  if (format != null)
+                    errors.Add(createError(format, ObjectNames.NicifyVariableName(sp.name), index, c.gameObject));
                 }
-              }
-              var prop = m_PersistentCallsValue.GetType().GetProperty("Count");
-              var count = (int)prop.GetValue(m_PersistentCallsValue, new object[] { });
-              //Debug.LogWarning(count);
-              //Debug.LogWarning(a.GetPersistentEventCount());
             }
+            #endregion
           }
 
           var notNullFields = ReferencesInPrefabs.notNullFields(c.GetType());
 
           foreach (var field in notNullFields) {
-            if ((field.GetValue(c) as UnityEngine.Object) == null) {
-              errors.Add(createError(ERR2, context, c.gameObject, c.GetType().Name, field.Name));
+            if (!(field.GetValue(c) is UnityEngine.Object)) {
+              errors.Add(createError(NULL_REF, context, c.gameObject, c.GetType().Name, field.Name));
             }
           }
         }
       }
-      if (useProgress) {
-        EditorUtility.ClearProgressBar();
-      }
+
+      if (useProgress) EditorUtility.ClearProgressBar();
       return errors;
     }
 
@@ -137,11 +161,22 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
     }
 
     static IEnumerable<FieldInfo> notNullFields(Type type) {
-      var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic);
-      if (type.Namespace?.StartsWith(NAMESPACE_NAME) ?? false) {
-        return fields.Where(fi => fi.GetCustomAttributes(typeof(CanBeNullAttribute), false).Length == 0);
+      if (typeResultsCache.ContainsKey(type)) {
+        IEnumerable<FieldInfo> result;
+        typeResultsCache.TryGetValue(type, out result); 
+        return result;
       }
-      return fields.Where(fi => fi.GetCustomAttributes(typeof(NotNullAttribute), false).Length != 0);
+
+      List<FieldInfo> results;
+      var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+      if (type.hasAttribute<NotNullAttribute>()) {
+        results = fields.Where(fi => !fi.hasAttribute<CanBeNullAttribute>()).ToList();
+      } else {
+        results = fields.Where(fi => fi.hasAttribute<NotNullAttribute>()).ToList();
+      }
+      
+      typeResultsCache.Add(type, results);
+      return results;
     }
 
     static GameObject[] getSceneObjects() {
@@ -149,14 +184,13 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
         .Where(go => go.hideFlags == HideFlags.None).ToArray();
     }
 
-    const string ERR = "Missing Ref in: [{3}]{0}. Component: {1}, Property: {2}";
-    const string ERR2 = "Null Ref in: [{3}]{0}. Component: {1}, Property: {2}";
-    const string ERR3 = "Missing Component in GO or children: {0}";
-
     static void showError(Tpl<string, GameObject> error) { Debug.LogError(error._1, error._2); }
 
     static Tpl<string, GameObject> createError(string errorFormat, string context, GameObject go, string c, string property) {
       return F.t(string.Format(errorFormat, fullPath(go), c, property, context), go);
+    }
+    static Tpl<string, GameObject> createError(string errorFormat, string property, int number, GameObject go) {
+      return F.t(string.Format(errorFormat, property, number), go);
     }
     static Tpl<string, GameObject> createError(string errorFormat, GameObject go) {
       return F.t(string.Format(errorFormat, go), go);
