@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
@@ -117,6 +118,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
+    public static readonly ImmutableList<string> FILTERED_ERRORS =
+      ImmutableList.Create(
+        "[EGL]",
+        "-------- GLSL"
+      );
+
     public static ErrorReporter.OnError createSendOnError(
       string loggerName, Uri reportingUrl, ApiKeys keys, ErrorReporter.AppInfo appInfo,
       ExtraData addExtraData, bool onlySendUniqueErrors
@@ -124,15 +131,17 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
 
       return data => {
-        var msg = message(loggerName, keys, appInfo, data, addExtraData);
-        Action send = () => msg.send(reportingUrl);
-        sentJsonsOpt.voidFold(
-          send,
-          sentJsons => {
-            if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
-            else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
-          }
-        );
+        if (!FILTERED_ERRORS.Any(s => data.message.StartsWith(s))) {
+          var msg = message(loggerName, keys, appInfo, data, addExtraData);
+          Action send = () => msg.send(reportingUrl);
+          sentJsonsOpt.voidFold(
+            send,
+            sentJsons => {
+              if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
+              else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
+            }
+          );
+        }
       };
     }
 
@@ -141,10 +150,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       ExtraData addExtraData
     ) {
       return data => {
-        if (Log.isInfo) Log.info(
-          $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
-          message(loggerName, dsn.keys, appInfo, data, addExtraData)
-        );
+        if (!FILTERED_ERRORS.Any(s => data.message.StartsWith(s))) {
+          if (Log.isInfo) Log.info(
+            $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
+            message(loggerName, dsn.keys, appInfo, data, addExtraData)
+          );
+        }
       };
     }
 
