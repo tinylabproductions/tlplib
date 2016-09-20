@@ -2,7 +2,6 @@
 using System;
 using Assets.Vendor.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Android.Bindings;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
@@ -17,9 +16,7 @@ namespace com.tinylabproductions.TLPLib.Android {
         this.yDpi = yDpi;
       }
 
-      public override string ToString() {
-        return string.Format("DPI[xDpi: {0}, yDpi: {1}]", xDpi, yDpi);
-      }
+      public override string ToString() => $"DPI[xDpi: {xDpi}, yDpi: {yDpi}]";
     }
 
     static readonly AndroidJavaClass bridge;
