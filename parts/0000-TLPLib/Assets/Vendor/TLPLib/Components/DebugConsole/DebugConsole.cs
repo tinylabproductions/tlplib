@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using com.tinylabproductions.TLPGame.Components.Controller;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -46,15 +48,45 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     Option<Instance> current = F.none<Instance>();
 
-    public static readonly int[] DEFAULT_SEQUENCE = { 0, 1, 3, 2, 0, 2, 3, 1, 0 };
+    public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
+    public static readonly ImmutableList<InputController.DPad> DEFAULT_DPAD_SEQUENCE =
+      ImmutableList.Create(
+        InputController.DPad.Left, InputController.DPad.Left, 
+        InputController.DPad.Right, InputController.DPad.Right,
+        InputController.DPad.Left, InputController.DPad.Up, 
+        InputController.DPad.Right, InputController.DPad.Down,
+        InputController.DPad.Right, InputController.DPad.Right
+      );
+
+    public static readonly DebugSequenceMouseData DEFAULT_MOUSE_DATA = new DebugSequenceMouseData();
+    public class DebugSequenceMouseData {
+      public readonly int width, height;
+      public readonly ImmutableList<int> sequence;
+
+      public DebugSequenceMouseData(int width=2, int height=2, ImmutableList<int> sequence=null) {
+        this.width = width;
+        this.height = height;
+        this.sequence = sequence ?? DEFAULT_MOUSE_SEQUENCE;
+      }
+    }
 
     public static IObservable<Unit> registerDebugSequence(
-      DebugConsoleBinding binding=null, int width=2, int height=2, int[] sequence=null
+      DebugSequenceMouseData mouseData=null, ImmutableList<InputController.DPad> controllerSequence=null,
+      DebugConsoleBinding binding=null
     ) {
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
-      sequence = sequence ?? DEFAULT_SEQUENCE;
+      mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
+      controllerSequence = controllerSequence ?? DEFAULT_DPAD_SEQUENCE;
 
-      var obs = new RegionClickObservable(width, height).sequenceWithinTimeframe(sequence, 3);
+      var mouseObs = 
+        new RegionClickObservable(mouseData.width, mouseData.height)
+        .sequenceWithinTimeframe(mouseData.sequence, 3);
+      var controllerObs = 
+        InputController.track(InputController.dpadList, holding: false)
+        .withinTimeframe(controllerSequence.Count, 5.seconds())
+        .filter(l => l.Select(t => t._1).SequenceEqual(controllerSequence));
+
+      var obs = mouseObs.joinDiscard(controllerObs);
       obs.subscribe(_ => instance.show(binding));
       return obs;
     }
