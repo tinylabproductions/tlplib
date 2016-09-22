@@ -44,18 +44,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public delegate void OnShow(DConsole console);
 
     readonly Dictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
+    static readonly Array keyCodes = Enum.GetValues(typeof(KeyCode));
     public event OnShow onShow;
 
     Option<Instance> current = F.none<Instance>();
 
     public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
-    public static readonly ImmutableList<InputController.DPad> DEFAULT_DPAD_SEQUENCE =
+    public static readonly ImmutableList<KeyCode> DEFAULT_KEYCODE_SEQUENCE =
       ImmutableList.Create(
-        InputController.DPad.Left, InputController.DPad.Left, 
-        InputController.DPad.Right, InputController.DPad.Right,
-        InputController.DPad.Left, InputController.DPad.Up, 
-        InputController.DPad.Right, InputController.DPad.Down,
-        InputController.DPad.Right, InputController.DPad.Right
+        KeyCode.LeftArrow, KeyCode.LeftArrow,
+        KeyCode.RightArrow, KeyCode.RightArrow,
+        KeyCode.LeftArrow, KeyCode.UpArrow,
+        KeyCode.RightArrow, KeyCode.DownArrow,
+        KeyCode.RightArrow, KeyCode.RightArrow
       );
 
     public static readonly DebugSequenceMouseData DEFAULT_MOUSE_DATA = new DebugSequenceMouseData();
@@ -71,22 +72,29 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static IObservable<Unit> registerDebugSequence(
-      DebugSequenceMouseData mouseData=null, ImmutableList<InputController.DPad> controllerSequence=null,
+      DebugSequenceMouseData mouseData=null, ImmutableList<KeyCode> keyCodeSequence=null,
       DebugConsoleBinding binding=null
     ) {
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
-      controllerSequence = controllerSequence ?? DEFAULT_DPAD_SEQUENCE;
+      keyCodeSequence = keyCodeSequence ?? DEFAULT_KEYCODE_SEQUENCE;
 
       var mouseObs = 
         new RegionClickObservable(mouseData.width, mouseData.height)
         .sequenceWithinTimeframe(mouseData.sequence, 3);
-      var controllerObs = 
-        InputController.track(InputController.dpadList, holding: false)
-        .withinTimeframe(controllerSequence.Count, 5.seconds())
-        .filter(l => l.Select(t => t._1).SequenceEqual(controllerSequence));
 
-      var obs = mouseObs.joinDiscard(controllerObs);
+      var keyObs = Observable.everyFrame.collect(_ => {
+        if (Input.anyKeyDown) {
+          foreach (var keyCode in keyCodes) {
+            var key = (KeyCode)keyCode;
+            if (Input.GetKey(key)) return key.some();
+          }
+        }
+        return F.none<KeyCode>();
+      }).withinTimeframe(keyCodeSequence.Count, 5.seconds())
+        .filter(l => l.Select(t => t._1).SequenceEqual(keyCodeSequence));
+
+      var obs = mouseObs.joinDiscard(keyObs);
       obs.subscribe(_ => instance.show(binding));
       return obs;
     }
