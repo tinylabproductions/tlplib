@@ -104,6 +104,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
       if (isRight) return _rightValue;
       throw new WrongEitherSideException($"Expected to have Right({typeof(B)}), but had {this}.");
     } }
+
+    public Either<B, A> swap => 
+      isLeft ? new Either<B, A>(_leftValue) : new Either<B, A>(_rightValue);
   }
 
   public class WrongEitherSideException : Exception {

@@ -58,4 +58,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }.sequence().shouldBeRightEnum(ImmutableList.Create(3, 4));
     }
   }
+
+  public class EitherTestSwap {
+    [Test] public void WhenLeft() => Either<int, string>.Left(3).swap.shouldBeRight(3);
+    [Test] public void WhenRight() => Either<string, int>.Right(3).swap.shouldBeLeft(3);
+  }
 }
