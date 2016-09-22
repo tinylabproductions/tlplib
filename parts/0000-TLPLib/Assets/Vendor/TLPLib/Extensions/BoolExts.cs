@@ -24,8 +24,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) { return !condition ? F.left<A, B>(onFalse()) : F.right<A, B>(onRight); }
 
     public static Either<A, B> either<A, B>(
-      this bool condition, A onFalse, B onRight
-    ) { return !condition ? F.left<A, B>(onFalse) : F.right<A, B>(onRight); }
+      this bool condition, A onFalse, B onTrue
+    ) { return !condition ? F.left<A, B>(onFalse) : F.right<A, B>(onTrue); }
 
     public static int toInt(this bool b) => b ? 1 : 0;
   }
