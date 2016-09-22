@@ -107,6 +107,24 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Either<B, A> swap => 
       isLeft ? new Either<B, A>(_leftValue) : new Either<B, A>(_rightValue);
+
+    public EitherEnumerator<A, B> GetEnumerator() => new EitherEnumerator<A, B>(this);
+  }
+
+  public struct EitherEnumerator<A, B> {
+    public readonly Either<A, B> either;
+    bool read;
+
+    public EitherEnumerator(Either<A, B> either) : this() { this.either = either; }
+
+    public bool MoveNext() => either.isRight && !read;
+
+    public void Reset() { read = false; }
+
+    public B Current { get {
+      read = true;
+      return either.rightOrThrow;
+    } }
   }
 
   public class WrongEitherSideException : Exception {
