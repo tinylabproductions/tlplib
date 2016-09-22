@@ -183,6 +183,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }));
     }
 
+    public void registerToggle(string name, Ref<bool> r) =>
+      registerToggle(name, () => r.value, v => r.value = v);
+
     public void registerToggle(string name, Fn<bool> getter, Act<bool> setter) {
       register($"{name}?", getter);
       register($"{name}=true", () => setter(true));
