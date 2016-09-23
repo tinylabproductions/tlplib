@@ -6,7 +6,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings.Firebase.Analytics {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.analytics {
   public class FirebaseAnalytics : Binding, IFirebaseAnalytics {
     public static IFirebaseAnalytics instance;
 

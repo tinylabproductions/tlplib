@@ -112,8 +112,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    private void notifyElementObservable(int index) {
-      elementRxRefs.get(index).each(t => t.value = this.get(index));
+    void notifyElementObservable(int index) {
+      foreach (var t in elementRxRefs.get(index)) t.value = this.get(index);
     }
   }
 }

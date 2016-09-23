@@ -252,7 +252,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = obs.pipeToList();
       var list = t._1;
       var sub = t._2;
-      Enumerable.Range(0, 5).each(subj.push);
+      foreach (var i in Enumerable.Range(0, 5)) subj.push(i);
       list.shouldEqual(F.list(0, 2, 4));
       sub.testUnsubscription(subj);
       obs.testFinishing(subj);

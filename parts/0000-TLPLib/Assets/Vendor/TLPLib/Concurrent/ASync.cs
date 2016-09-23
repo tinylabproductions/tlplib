@@ -51,7 +51,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, enumerator);
     }
 
-    public static void OnMainThread(Action action) { Threads.OnMainThread.run(action);}
+    public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
+      Threads.OnMainThread.run(action, runNowIfOnMainThread);
 
     public static Coroutine NextFrame(Action action) {
       return NextFrame(behaviour, action);

@@ -78,9 +78,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public RxDict() {
       _keyAdded.subscribe(_keySet);
       _keyChanged.subscribe(kv => {
-        kv.Value.adding.each(newValue => _keyAdded.push(F.kv(kv.Key, newValue)));
-        kv.Value.removal.each(oldValue => _keyRemoved.push(F.kv(kv.Key, oldValue)));
-        kv.Value.updating.each(t => _keySet.push(F.kv(kv.Key, t._2)));
+        foreach (var newValue in kv.Value.adding) _keyAdded.push(F.kv(kv.Key, newValue));
+        foreach (var oldValue in kv.Value.removal) _keyRemoved.push(F.kv(kv.Key, oldValue));
+        foreach (var t in kv.Value.updating) _keySet.push(F.kv(kv.Key, t._2));
       });
     }
 

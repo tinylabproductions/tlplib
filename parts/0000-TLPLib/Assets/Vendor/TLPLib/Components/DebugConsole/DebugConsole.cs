@@ -183,10 +183,26 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }));
     }
 
+    public void registerToggle(string name, Ref<bool> r) =>
+      registerToggle(name, () => r.value, v => r.value = v);
+
     public void registerToggle(string name, Fn<bool> getter, Act<bool> setter) {
       register($"{name}?", getter);
       register($"{name}=true", () => setter(true));
       register($"{name}=false", () => setter(false));
+    }
+
+    public void registerCountdown(string name, uint count, Action act) {
+      var countdown = count;
+      register(name, () => {
+        countdown--;
+        if (countdown == 0) {
+          act();
+          countdown = count;
+          return $"{name} EXECUTED.";
+        }
+        return $"Press me {countdown} more times to execute.";
+      });
     }
   }
 }

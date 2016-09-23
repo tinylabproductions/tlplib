@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
@@ -9,18 +10,20 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public struct ErrorData {
       public readonly LogType errorType;
       public readonly string message;
-      public readonly ReadOnlyCollection<BacktraceElem> backtrace;
+      public readonly ImmutableList<BacktraceElem> backtrace;
 
-      public ErrorData(LogType errorType, string message, ReadOnlyCollection<BacktraceElem> backtrace) {
+      public ErrorData(LogType errorType, string message, ImmutableList<BacktraceElem> backtrace) {
         this.errorType = errorType;
         this.message = message;
         this.backtrace = backtrace;
       }
 
-      public override string ToString() { return string.Format(
-        "ErrorData[\n  errorType: {0}\n  message: {1}\n  backtrace: {2}\n]",
-        errorType, message, backtrace.asString()
-      ); }
+      public override string ToString() => 
+        $"{nameof(ErrorData)}[" +
+        $"{nameof(errorType)}: '{errorType}', " +
+        $"{nameof(message)}: '{message}', " +
+        $"{nameof(backtrace)}: {backtrace.asString()}" +
+        $"]";
     }
 
     public struct AppInfo {
@@ -40,7 +43,29 @@ namespace com.tinylabproductions.TLPLib.Logger {
         if (
           type == LogType.Assert || type == LogType.Error || type == LogType.Exception
           || (logWarnings && type == LogType.Warning)
-        ) onError(new ErrorData(type, message, BacktraceElem.parseUnityBacktrace(backtrace).AsReadOnly()));
+        ) ASync.OnMainThread(
+          () => {
+            try { 
+              var parsedBacktrace =
+                // backtrace may be empty in release mode.
+                string.IsNullOrEmpty(backtrace)
+                ? BacktraceElem.generateFromHere()
+                : BacktraceElem.parseUnityBacktrace(backtrace);
+              var data = new ErrorData(type, message, parsedBacktrace);
+              onError(data);
+            }
+            catch (Exception e) {
+              // Log at info level so that we wouldn't trigger this handler again.
+              Log.info(
+                $"[{nameof(ErrorReporter)}] Exception in " +
+                $"{nameof(Application)}.{nameof(Application.logMessageReceivedThreaded)}" +
+                $" handler!\n\n{e}"
+              );
+            }
+          },
+          // https://fogbugz.unity3d.com/default.asp?832198_48nbh0a3a8cjpr12
+          runNowIfOnMainThread: false
+        );
       };
     }
 
