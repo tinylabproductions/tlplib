@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -52,11 +53,11 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
     public static readonly ImmutableList<Direction> DEFAULT_DIRECTION_SEQUENCE =
       ImmutableList.Create(
-        Direction.Left, Direction.Left, 
-        Direction.Right, Direction.Right,
+        Direction.Left, Direction.Right, 
+        Direction.Left, Direction.Right,
         Direction.Left, Direction.Up, 
         Direction.Right, Direction.Down,
-        Direction.Right, Direction.Right
+        Direction.Right, Direction.Up
       );
 
     public static readonly DebugSequenceMouseData DEFAULT_MOUSE_DATA = new DebugSequenceMouseData();
@@ -86,7 +87,18 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         this.horizonalAxisName = horizonalAxisName;
         this.verticalAxisName = verticalAxisName;
         this.timeframe = timeframe == default(Duration) ? 5.seconds() : timeframe;
-        this.sequence = sequence ?? DEFAULT_DIRECTION_SEQUENCE;
+        sequence = sequence ?? DEFAULT_DIRECTION_SEQUENCE;
+        this.sequence = sequence;
+
+        for (var idx = 0; idx < sequence.Count - 1; idx++) {
+          var current = sequence[idx];
+          var next = sequence[idx + 1];
+          if (current == next) throw new ArgumentException(
+            $"{nameof(DebugSequenceDirectionData)} sequence can't contain subsequent elements! " +
+            $"Found {current} at {idx} & {idx + 1}.", 
+            nameof(sequence)
+          );
+        }
       }
     }
 
@@ -111,7 +123,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           Math.Abs(horizontal) > Math.Abs(vertical) 
           ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
           : F.some(vertical > 0 ? Direction.Up : Direction.Down);
-      });
+      }).changedValues();
 
       var directionObs = 
         directions
