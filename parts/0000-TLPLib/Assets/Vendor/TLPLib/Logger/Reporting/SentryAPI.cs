@@ -118,30 +118,29 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    public static readonly ImmutableList<string> FILTERED_ERRORS =
-      ImmutableList.Create(
-        "[EGL]",
-        "-------- GLSL"
-      );
-
     public static ErrorReporter.OnError createSendOnError(
       string loggerName, Uri reportingUrl, ApiKeys keys, ErrorReporter.AppInfo appInfo,
-      ExtraData addExtraData, bool onlySendUniqueErrors
+      ExtraData addExtraData, bool onlySendUniqueErrors, Fn<ErrorReporter.ErrorData, bool> rejectionPredicate=null
     ) {
+      rejectionPredicate = rejectionPredicate ?? (_ => true);
       var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
 
       return data => {
-        if (!FILTERED_ERRORS.Any(s => data.message.StartsWith(s))) {
-          var msg = message(loggerName, keys, appInfo, data, addExtraData);
-          Action send = () => msg.send(reportingUrl);
-          sentJsonsOpt.voidFold(
-            send,
-            sentJsons => {
-              if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
-              else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
-            }
+        if (rejectionPredicate(data)) {
+          if (Log.isDebug) Log.rdebug(
+            $"Not sending Sentry msg because it was filtered out by {nameof(rejectionPredicate)}: {data}"
           );
+          return;
         }
+        var msg = message(loggerName, keys, appInfo, data, addExtraData);
+        Action send = () => msg.send(reportingUrl);
+        sentJsonsOpt.voidFold(
+          send,
+          sentJsons => {
+            if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
+            else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
+          }
+        );
       };
     }
 
@@ -150,12 +149,10 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       ExtraData addExtraData
     ) {
       return data => {
-        if (!FILTERED_ERRORS.Any(s => data.message.StartsWith(s))) {
-          if (Log.isInfo) Log.info(
-            $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
-            message(loggerName, dsn.keys, appInfo, data, addExtraData)
-          );
-        }
+        if (Log.isInfo) Log.info(
+          $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
+          message(loggerName, dsn.keys, appInfo, data, addExtraData)
+        );
       };
     }
 
