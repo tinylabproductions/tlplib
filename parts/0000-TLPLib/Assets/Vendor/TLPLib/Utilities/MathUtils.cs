@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  static class MathUtils {
+  public static class MathUtils {
     public static Option<Vector2> LineIntersectionPoint(
       Vector2 ps1, Vector2 pe1, Vector2 ps2, Vector2 pe2
     ) {

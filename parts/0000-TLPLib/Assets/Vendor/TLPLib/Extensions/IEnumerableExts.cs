@@ -108,6 +108,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) { return e.Concat(a.Yield()); }
 
+    public static IEnumerable<B> Concat2<A, B>(
+      this IEnumerable<A> e1, IEnumerable<B> e2
+    ) where A : B {
+      foreach (var a in e1) yield return a;
+      foreach (var b in e2) yield return b;
+    }
+
     public static IEnumerable<A> Yield<A>(this A any) {
       yield return any;
     }

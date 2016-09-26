@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Assets.Vendor.TLPLib.Extensions {
+namespace com.tinylabproductions.TLPLib.Extensions {
   public static class RandomExts {
 
     public static float nextFloat(this Random random, float upperBound) { return nextFloat(random, 0, upperBound); }
