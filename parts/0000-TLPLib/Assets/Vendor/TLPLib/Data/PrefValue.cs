@@ -386,8 +386,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     #endregion
   }
 
-  public interface PrefVal<A> : ICachedBlob<A> {
-    A value { get; set; }
+  public interface PrefVal<A> : Ref<A>, ICachedBlob<A> {
     void forceSave();
   }
 

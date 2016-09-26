@@ -100,8 +100,25 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       list.Add(command);
     }
 
-    public DConsoleRegistrar registrarFor(string prefix) {
-      return new DConsoleRegistrar(this, prefix);
+    public DConsoleRegistrar registrarFor(string prefix) => 
+      new DConsoleRegistrar(this, prefix);
+
+    public void registerHashSet<A>(
+      string name, Ref<ImmutableHashSet<A>> pv, IEnumerable<A> options
+    ) {
+      var r = registrarFor(name);
+      r.register("List", () => pv.value.asString());
+      r.register("Clear", () => {
+        pv.value = ImmutableHashSet<A>.Empty;
+        return pv.value.asString();
+      });
+      foreach (var f in options) {
+        r.register($"{f}?", () => pv.value.Contains(f));
+        r.register($"Toggle {f}", () => {
+          pv.value = pv.value.toggle(f);
+          return $"in set={pv.value.Contains(f)}";
+        });
+      }
     }
 
     public void show(DebugConsoleBinding binding) {
@@ -215,10 +232,15 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }));
     }
 
-    public void registerToggle(string name, Fn<bool> getter, Act<bool> setter) {
+    public void registerToggle(string name, Ref<bool> r, string comment=null) =>
+      registerToggle(name, () => r.value, v => r.value = v, comment);
+
+    public void registerToggle(string name, Fn<bool> getter, Act<bool> setter, string comment=null) {
       register($"{name}?", getter);
-      register($"{name}=true", () => setter(true));
-      register($"{name}=false", () => setter(false));
+      register($"Toggle {name}", () => {
+        setter(!getter());
+        return comment == null ? getter().ToString() : $"{comment}: value={getter()}";
+      });
     }
 
     public void registerCountdown(string name, uint count, Action act) {
