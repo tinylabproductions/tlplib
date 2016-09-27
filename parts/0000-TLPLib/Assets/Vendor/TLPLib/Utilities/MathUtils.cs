@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  class MathUtils {
+  public static class MathUtils {
     public static Option<Vector2> LineIntersectionPoint(
       Vector2 ps1, Vector2 pe1, Vector2 ps2, Vector2 pe2
     ) {
@@ -139,6 +139,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
         return false;
       }
+    }
+
+    /// <summary>
+    /// Re-maps a number from one range to another
+    /// </summary>
+    public static float remap(this float value, float from1, float to1, float from2, float to2) {
+      return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
   }
 }

@@ -74,14 +74,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return rx;
     }
 
-    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action)
-      { future.onComplete(e => e.rightValue.each(action)); }
+    public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
+      futureOpt.fold(Future<A>.unfulfilled, f => f);
+
+    public static Future<Option<A>> extractOpt<A>(this Option<Future<A>> futureOpt) =>
+      futureOpt.fold(() => Future.successful(F.none<A>()), f => f.map(F.some));
+
+    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action) => 
+      future.onComplete(e => {
+        foreach (var b in e.rightValue) action(b);
+      });
 
     public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future)
     { return future.map(e => e.rightValue); }
 
-    public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action)
-      { future.onComplete(e => e.leftValue.each(action)); }
+    public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action) => 
+      future.onComplete(e => {
+        foreach (var a in e.leftValue) action(a);
+      });
 
     public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future)
     { return future.map(e => e.leftValue); }

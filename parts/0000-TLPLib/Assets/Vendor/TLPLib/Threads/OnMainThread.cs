@@ -22,8 +22,8 @@ namespace com.tinylabproductions.TLPLib.Threads {
     public static void init() { }
 
     /* Run the given action in the main thread. */
-    public static void run(Action action) {
-      if (Thread.CurrentThread == mainThread) action();
+    public static void run(Action action, bool runNowIfOnMainThread=true) {
+      if (Thread.CurrentThread == mainThread && runNowIfOnMainThread) action();
       else lock (actions) { actions.Enqueue(action); }
     }
 

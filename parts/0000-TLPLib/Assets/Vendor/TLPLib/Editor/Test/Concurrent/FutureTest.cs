@@ -518,4 +518,25 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       f.value.shouldBeSome(Either<Duration, int>.Left(d));
     }
   }
+
+  public class OptionFutureTestExtract {
+    [Test]
+    public void WhenNone() => F.none<Future<int>>().extract().shouldBeOfUnfulfilledType();
+
+    [Test]
+    public void WhenSome() {
+      var f = Future.successful(3);
+      F.some(f).extract().shouldEqual(f);
+    }
+  }
+
+  public class OptionFutureTestExtractOpt {
+    [Test]
+    public void WhenNone() => 
+      F.none<Future<int>>().extractOpt().shouldBeOfSuccessfulType(F.none<int>());
+
+    [Test]
+    public void WhenSome() => 
+      F.some(Future.successful(3)).extractOpt().shouldEqual(Future.successful(F.some(3)));
+  }
 }
