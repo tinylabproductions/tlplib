@@ -8,15 +8,15 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    private static ASyncHelperBehaviour coroutineHelper(GameObject go) {
+    static ASyncHelperBehaviour coroutineHelper(GameObject go) {
       return
         go.GetComponent<ASyncHelperBehaviour>() ??
         go.AddComponent<ASyncHelperBehaviour>();
     }
 
-    private static ASyncHelperBehaviour _behaviour;
+    static ASyncHelperBehaviour _behaviour;
 
-    private static ASyncHelperBehaviour behaviour { get {
+    static ASyncHelperBehaviour behaviour { get {
       if (((object)_behaviour) == null) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
@@ -48,6 +48,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       float seconds, MonoBehaviour behaviour, Action action
     ) {
       var enumerator = WithDelayEnumerator(seconds, action);
+      return new Coroutine(behaviour, enumerator);
+    }
+
+    public static Coroutine WithDelayUnscaled(float seconds, Action action) {
+      return WithDelayUnscaled(seconds, behaviour, action);
+    }
+
+    public static Coroutine WithDelayUnscaled(
+      float seconds, MonoBehaviour behaviour, Action action
+    ) {
+      var enumerator = WithDelayUnscaledEnumerator(seconds, action);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -179,6 +190,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       float seconds, Action action
     ) {
       yield return new WaitForSeconds(seconds);
+      action();
+    }
+
+    public static IEnumerator WithDelayUnscaledEnumerator(
+      float seconds, Action action
+    ) {
+      var waitTime = Time.unscaledTime + seconds;
+      while (waitTime > Time.unscaledTime) yield return null;
       action();
     }
 
