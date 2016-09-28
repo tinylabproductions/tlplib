@@ -72,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
         var json = new Dictionary<string, object>(jsonDict) {
           {"event_id", eventId.ToString("N")},
-          {"timestamp", timestamp.ToString("yyyy-MM-ddTHH:mm:ss")}
+          {"timestamp", timestamp.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss")}
         };
         this.json = Json.Serialize(json);
       }
