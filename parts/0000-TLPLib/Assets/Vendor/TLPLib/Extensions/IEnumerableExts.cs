@@ -80,6 +80,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
+    public static string mkStringEnum<A>(
+      this IEnumerable<A> e, string separator = ", ", string start = "[", string end = "]"
+    ) => e.mkString(separator, start, end);
+
     public static string mkString<A>(
       this IEnumerable<A> e, char separator, string start = null, string end = null
     ) {
