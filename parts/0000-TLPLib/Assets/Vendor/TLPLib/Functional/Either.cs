@@ -1,10 +1,56 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class EitherExts {
-    public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e)
-      { return e.flatMapRight(_ => _); }
+    public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e) => 
+      e.flatMapRight(_ => _);
+
+    static Fn<CollFrom, IEnumerable<ElemTo>> mapC<CollFrom, ElemFrom, ElemTo>(
+      Fn<ElemFrom, ElemTo> mapper
+    ) where CollFrom : IEnumerable<ElemFrom> =>
+      c => c.Select(elem => mapper(elem));
+
+    public static Either<IEnumerable<ElemTo>, Right> mapLeftC<CollFrom, Right, ElemFrom, ElemTo>(
+      this Either<CollFrom, Right> e,
+      Fn<ElemFrom, ElemTo> mapper
+    ) where CollFrom : IEnumerable<ElemFrom> =>
+      e.mapLeft(mapC<CollFrom, ElemFrom, ElemTo>(mapper));
+
+    public static Either<Left, IEnumerable<ElemTo>> mapRightC<CollFrom, Left, ElemFrom, ElemTo>(
+      this Either<Left, CollFrom> e,
+      Fn<ElemFrom, ElemTo> mapper
+    ) where CollFrom : IEnumerable<ElemFrom> =>
+      e.mapRight(mapC<CollFrom, ElemFrom, ElemTo>(mapper));
+
+    public static Either<CollTo, Right> mapLeftC<CollFrom, CollTo, Right, ElemFrom, ElemTo>(
+      this Either<CollFrom, Right> e,
+      Fn<ElemFrom, ElemTo> mapper,
+      Fn<IEnumerable<ElemTo>, CollTo> toCollection
+    )
+      where CollFrom : IEnumerable<ElemFrom>
+      where CollTo : IEnumerable<ElemTo>
+    => e.mapLeftC(mapper).mapLeft(toCollection);
+
+    public static Either<Left, CollTo> mapRightC<CollFrom, CollTo, Left, ElemFrom, ElemTo>(
+      this Either<Left, CollFrom> e,
+      Fn<ElemFrom, ElemTo> mapper,
+      Fn<IEnumerable<ElemTo>, CollTo> toCollection
+    )
+      where CollFrom : IEnumerable<ElemFrom>
+      where CollTo : IEnumerable<ElemTo>
+    => e.mapRightC(mapper).mapRight(toCollection);
+
+    public static Either<ImmutableList<To>, Right> mapLeftC<From, To, Right>(
+      this Either<ImmutableList<From>, Right> e, Fn<From, To> mapper
+    ) => mapLeftC(e, mapper, _ => _.ToImmutableList());
+
+    public static Either<Left, ImmutableList<To>> mapRightC<From, To, Left>(
+      this Either<Left, ImmutableList<From>> e, Fn<From, To> mapper
+    ) => mapRightC(e, mapper, _ => _.ToImmutableList());
   }
 
   public
