@@ -65,25 +65,24 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     private readonly A _leftValue;
     private readonly B _rightValue;
-    private readonly bool _isLeft;
 
     public Either(A value) {
       _leftValue = value;
       _rightValue = default(B);
-      _isLeft = true;
+      isLeft = true;
     }
     public Either(B value) {
       _leftValue = default(A);
       _rightValue = value;
-      _isLeft = false;
+      isLeft = false;
     }
 
     #region Equality
 
     public bool Equals(Either<A, B> other) {
-      return _isLeft == other._isLeft && (
-        (_isLeft && Smooth.Collections.EqComparer<A>.Default.Equals(_leftValue, other._leftValue)) ||
-        (!_isLeft && Smooth.Collections.EqComparer<B>.Default.Equals(_rightValue, other._rightValue))
+      return isLeft == other.isLeft && (
+        (isLeft && Smooth.Collections.EqComparer<A>.Default.Equals(_leftValue, other._leftValue)) ||
+        (!isLeft && Smooth.Collections.EqComparer<B>.Default.Equals(_rightValue, other._rightValue))
       );
     }
 
@@ -96,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       unchecked {
         var hashCode = Smooth.Collections.EqComparer<A>.Default.GetHashCode(_leftValue);
         hashCode = (hashCode * 397) ^ Smooth.Collections.EqComparer<B>.Default.GetHashCode(_rightValue);
-        hashCode = (hashCode * 397) ^ _isLeft.GetHashCode();
+        hashCode = (hashCode * 397) ^ isLeft.GetHashCode();
         return hashCode;
       }
     }
@@ -106,14 +105,15 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #endregion
 
-    public bool isLeft { get { return _isLeft; } }
-    public bool isRight { get { return ! _isLeft; } }
-    public Option<A> leftValue { get { return isLeft.opt(_leftValue); } }
-    public Option<B> rightValue { get { return (! isLeft).opt(_rightValue); } }
+    public bool isLeft { get; }
+    public bool isRight => ! isLeft;
+    public Option<A> leftValue => isLeft.opt(_leftValue);
+    public A __unsafeGetLeft => _leftValue;
+    public Option<B> rightValue => (! isLeft).opt(_rightValue);
+    public B __unsafeGetRight => _rightValue;
 
-    public override string ToString() {
-      return isLeft ? "Left(" + _leftValue + ")" : "Right(" + _rightValue + ")";
-    }
+    public override string ToString() => 
+      isLeft ? $"Left({_leftValue})" : $"Right({_rightValue})";
 
     public Either<C, B> flatMapLeft<C>(Fn<A, Either<C, B>> mapper)
       { return fold(mapper, F.right<C, B>); }
