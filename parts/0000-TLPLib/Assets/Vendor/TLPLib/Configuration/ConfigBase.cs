@@ -108,27 +108,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region try getters
 
-    public Try<object> tryObject(string key) { return eitherObject(key).fold(tryEx<object>, F.scs); }
-    public Try<A> tryGet<A>(string key, Config.Parser<A> parser) => eitherGet(key, parser).fold(tryEx<A>, F.scs);
-    public Try<string> tryString(string key) { return eitherString(key).fold(tryEx<string>, F.scs); }
-    public Try<int> tryInt(string key) { return eitherInt(key).fold(tryEx<int>, F.scs); }
-    public Try<uint> tryUInt(string key) { return eitherUInt(key).fold(tryEx<uint>, F.scs); }
-    public Try<long> tryLong(string key) { return eitherLong(key).fold(tryEx<long>, F.scs); }
-    public Try<ulong> tryULong(string key) { return eitherULong(key).fold(tryEx<ulong>, F.scs); }
-    public Try<float> tryFloat(string key) { return eitherFloat(key).fold(tryEx<float>, F.scs); }
-    public Try<double> tryDouble(string key) { return eitherDouble(key).fold(tryEx<double>, F.scs); }
-    public Try<bool> tryBool(string key) { return eitherBool(key).fold(tryEx<bool>, F.scs); }
-    public Try<FRange> tryFRange(string key) { return eitherFRange(key).fold(tryEx<FRange>, F.scs); }
-    public Try<DateTime> tryDateTime(string key) { return eitherDateTime(key).fold(tryEx<DateTime>, F.scs); }
-    public Try<IConfig> trySubConfig(string key) { return eitherSubConfig(key).fold(tryEx<IConfig>, F.scs); }
-    public Try<IList<IConfig>> trySubConfigList(string key) { return eitherSubConfigList(key).fold(tryEx<IList<IConfig>>, F.scs); }
+    public Try<object> tryObject(string key) => e2t(eitherObject(key));
+    public Try<A> tryGet<A>(string key, Config.Parser<A> parser) => e2t(eitherGet(key, parser));
+    public Try<string> tryString(string key) => e2t(eitherString(key));
+    public Try<int> tryInt(string key) => e2t(eitherInt(key));
+    public Try<uint> tryUInt(string key) => e2t(eitherUInt(key));
+    public Try<long> tryLong(string key) => e2t(eitherLong(key));
+    public Try<ulong> tryULong(string key) => e2t(eitherULong(key));
+    public Try<float> tryFloat(string key) => e2t(eitherFloat(key));
+    public Try<double> tryDouble(string key) => e2t(eitherDouble(key));
+    public Try<bool> tryBool(string key) => e2t(eitherBool(key));
+    public Try<FRange> tryFRange(string key) => e2t(eitherFRange(key));
+    public Try<DateTime> tryDateTime(string key) => e2t(eitherDateTime(key));
+    public Try<IConfig> trySubConfig(string key) => e2t(eitherSubConfig(key));
+    public Try<IList<IConfig>> trySubConfigList(string key) => e2t(eitherSubConfigList(key));
+    public Try<IList<A>> tryList<A>(string key, Config.Parser<A> parser) => e2t(eitherList(key, parser));
 
-    public Try<IList<A>> tryList<A>(string key, Config.Parser<A> parser)
-    { return eitherList(key, parser).fold(tryEx<IList<A>>, F.scs); }
-
-    static Try<A> tryEx<A>(ConfigFetchError error) {
-      return F.err<A>(new ConfigFetchException(error));
-    }
+    static Try<A> e2t<A>(Either<ConfigFetchError, A> e) => 
+      e.isLeft 
+      ? F.err<A>(new ConfigFetchException(e.__unsafeGetLeft)) 
+      : F.scs(e.__unsafeGetRight);
 
     #endregion
 
