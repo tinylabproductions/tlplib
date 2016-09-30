@@ -77,6 +77,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(Future<A>.unfulfilled, f => f);
 
+    public static Future<A> extract<A>(this Future<Option<A>> optFuture) =>
+      optFuture.flatMap(opt => opt.fold(Future<A>.unfulfilled, Future.successful));
+
     public static Future<Option<A>> extractOpt<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(() => Future.successful(F.none<A>()), f => f.map(F.some));
 
