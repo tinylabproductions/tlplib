@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Pools;
 using UnityEngine;
 
@@ -57,9 +58,35 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       timing.closeScope();
       return ret;
     }
+
+    public static ITiming ifLogLevel(this ITiming backing, Log.Level level, ILog log=null) =>
+      new TimingConditional(backing, (log ?? Log.defaultLogger).willLog(level));
   }
 
-  public class Timing : ITiming{
+  public class TimingNoOp : ITiming {
+    public static ITiming instance = new TimingNoOp();
+    TimingNoOp() {}
+
+    public void openScope(string name) {}
+    public void scopeIteration() {}
+    public void closeScope() {}
+  }
+
+  public class TimingConditional : ITiming {
+    readonly ITiming backing;
+    readonly bool shouldRun;
+
+    public TimingConditional(ITiming backing, bool shouldRun) {
+      this.backing = backing;
+      this.shouldRun = shouldRun;
+    }
+
+    public void openScope(string name) { if (shouldRun) backing.openScope(name); }
+    public void scopeIteration() { if (shouldRun) backing.scopeIteration(); }
+    public void closeScope() { if (shouldRun) backing.closeScope(); }
+  }
+
+  public class Timing : ITiming {
     class Data {
       public string scope;
       public float startTime;
