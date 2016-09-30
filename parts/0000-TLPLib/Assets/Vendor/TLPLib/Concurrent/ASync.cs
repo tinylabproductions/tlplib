@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -40,25 +41,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, coroutine);
     }
 
-    public static Coroutine WithDelay(float seconds, Action action) {
-      return WithDelay(seconds, behaviour, action);
-    }
-
     public static Coroutine WithDelay(
-      float seconds, MonoBehaviour behaviour, Action action
+      float seconds, Action action, MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
     ) {
-      var enumerator = WithDelayEnumerator(seconds, action);
-      return new Coroutine(behaviour, enumerator);
-    }
-
-    public static Coroutine WithDelayUnscaled(float seconds, Action action) {
-      return WithDelayUnscaled(seconds, behaviour, action);
-    }
-
-    public static Coroutine WithDelayUnscaled(
-      float seconds, MonoBehaviour behaviour, Action action
-    ) {
-      var enumerator = WithDelayUnscaledEnumerator(seconds, action);
+      behaviour = behaviour ?? ASync.behaviour;
+      var enumerator = WithDelayEnumerator(seconds, action, timeScale);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -187,17 +174,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WithDelayEnumerator(
-      float seconds, Action action
+      float seconds, Action action, TimeScale timeScale=TimeScale.Unity
     ) {
-      yield return new WaitForSeconds(seconds);
-      action();
-    }
-
-    public static IEnumerator WithDelayUnscaledEnumerator(
-      float seconds, Action action
-    ) {
-      var waitTime = Time.unscaledTime + seconds;
-      while (waitTime > Time.unscaledTime) yield return null;
+      if (timeScale == TimeScale.Unity) yield return new WaitForSeconds(seconds);
+      else {
+        var waitTime = timeScale.now() + seconds;
+        while (waitTime > timeScale.now()) yield return null;
+      }
       action();
     }
 
@@ -247,4 +230,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
   }
+
+  public class WaitForSecondsUnscaled : CustomYieldInstruction {
+    readonly float waitTime;
+
+    public override bool keepWaiting {
+      get { return Time.unscaledTime < waitTime; }
+    }
+
+    public WaitForSecondsUnscaled(float time) { waitTime = Time.unscaledTime + time; }
+  }
+
 }
