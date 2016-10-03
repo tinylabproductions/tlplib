@@ -129,34 +129,31 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
     static Option<Vector3> projectToLine(
       Ray ray, Vector3 originPosition, Vector3 shiftedPosition,
       ObjectCloner.LockedAxis lockedAxis, LockedAxis2 secondaryLockedAxis
-    ) {
-      foreach (var inPlane in projectToPlane(ray, originPosition, shiftedPosition)) {
-        var lineP1 = originPosition;
-        var lineP2 = 
-          lockedAxis == ObjectCloner.LockedAxis.X ? new Vector3(
-            originPosition.x,
-            (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).y,
-            (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).z
-          ) 
-          : lockedAxis == ObjectCloner.LockedAxis.Y ? new Vector3(
-            (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).x,
-            originPosition.y,
-            (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).z
-          ) 
-          : new Vector3(
-            (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).x,
-            (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).y,
-            originPosition.z
-          );
+    ) => projectToPlane(ray, originPosition, shiftedPosition).map(inPlane => {
+      var lineP1 = originPosition;
+      var lineP2 = 
+        lockedAxis == ObjectCloner.LockedAxis.X ? new Vector3(
+          originPosition.x,
+          (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).y,
+          (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).z
+        ) 
+        : lockedAxis == ObjectCloner.LockedAxis.Y ? new Vector3(
+          (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).x,
+          originPosition.y,
+          (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).z
+        ) 
+        : new Vector3(
+          (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).x,
+          (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).y,
+          originPosition.z
+        );
 
-        var direction = (lineP2 - lineP1) * 10000;
-        Handles.DrawLine(originPosition - direction, originPosition + direction);
+      var direction = (lineP2 - lineP1) * 10000;
+      Handles.DrawLine(originPosition - direction, originPosition + direction);
 
-        var projected = Vector3.Project(inPlane - originPosition, direction) + originPosition;
-        return projected.some();
-      }
-      return Option<Vector3>.None;
-    }
+      var projected = Vector3.Project(inPlane - originPosition, direction) + originPosition;
+      return projected;
+    });
 
     static Ray posInWorld(Vector3 mousePosition) => HandleUtility.GUIPointToWorldRay(mousePosition);
   }
