@@ -24,7 +24,6 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
 
     static bool anyErrors;
     static readonly Dictionary<Type, IEnumerable<FieldInfo>> typeResultsCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
-    static readonly Dictionary<Type, IEnumerable<MemberInfo>> membersCache = new Dictionary<Type, IEnumerable<MemberInfo>>();
 
     [PostProcessBuild]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject) {
@@ -46,32 +45,9 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
       Debug.Log("findMissingReferencesInCurrentScene finished");
     }
 
-    [MenuItem("Tools/Show Missing Object References in all scenes2", false, 56)]
-    public static void missingReferencesInAllScenes() {
-      var scenes = AssetDatabase.GetAllAssetPaths().Where(p => p.EndsWith(".unity")).ToArray();
-      for (var i = 0; i < scenes.Length; i++) {
-        var scene = scenes[i];
-        if (EditorUtility.DisplayCancelableProgressBar("missingReferencesInAllScenes", scene, (float) i++ / scenes.Length)) {
-          break;
-        }
-        EditorSceneManager.OpenScene(scene);
-        findMissingReferences(scene, getSceneObjects(), false);
-      }
-      EditorUtility.ClearProgressBar();
-      Debug.Log("missingReferencesInAllScenes finished");
-    }
-
-    //[MenuItem("Tools/Show Missing Object References in assets", false, 57)]
     public static void missingReferencesInAssets() {
       //var loadedScenes = scenes.Select(s => AssetDatabase.LoadMainAssetAtPath(scene)).ToArray();
-      var depsOfScene = EditorUtility.CollectDependencies(new UnityEngine.Object[] {});
-      var depsPaths = depsOfScene.Select(d => PathStr.a(AssetDatabase.GetAssetPath(d)));
-      var allPackedSpritePaths = AssetDatabase.GetAllAssetPaths().Select(PathStr.a);
-      var depsSet = new HashSet<string>();
-      foreach (var path in depsPaths) depsSet.Add(path);
-      var unusedSpritePaths = 
-        allPackedSpritePaths.Where(path => !depsSet.Contains(path)).OrderBy(p => p.path).ToImmutableList();
-      Debug.Log("missingReferencesInAssets finished");
+      var depsOfScene = EditorUtility.CollectDependencies(new UnityEngine.Object[] {}).Where( x => x is GameObject || x is ScriptableObject);
     }
 
     static List<Tpl<string, GameObject>> findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
