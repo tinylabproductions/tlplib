@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         : Either<string, To>.Right(to);
     }
 
-    static string errorMsg<To>() => $"Can't cast {typeof(From)} to {typeof(To)}";
+    string errorMsg<To>() => $"Can't cast {from.GetType()} to {typeof(To)}";
 
     public To to<To>() where To : class, From {
       var to = from as To;
