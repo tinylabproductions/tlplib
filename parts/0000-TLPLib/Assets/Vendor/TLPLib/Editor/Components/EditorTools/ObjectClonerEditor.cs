@@ -13,7 +13,8 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       var _target = (ObjectCloner) target;
       var currentEvent = Event.current;
 
-      if (currentEvent.type == EventType.Layout) { HandleUtility.AddDefaultControl(0); }
+      // Consume mouse clicks so we wouldn't deselect the object.
+      if (currentEvent.type == EventType.Layout) HandleUtility.AddDefaultControl(0);
 
       if (currentEvent.control) {
         if (objectToMoveAround.isEmpty && _target.prefab) {
@@ -42,8 +43,8 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
         foreach (var obj in objectToMoveAround) {
           Undo.RegisterCreatedObjectUndo(obj, $"Object ({obj.name}) created");
           obj.transform.parent = _target.parent;
+          objectToMoveAround = Option<GameObject>.None;
         }
-        objectToMoveAround = Option<GameObject>.None;
       }
 
       if (currentEvent.type == EventType.MouseMove) {
@@ -55,6 +56,8 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       } 
     }
 
+    // Determines where on screen we are currently pointing, given that we have one
+    // axis locked.
     static Option<Vector3> visiblePosition(Event currentEvent, ObjectCloner _target) {
       var ray = posInWorld(currentEvent.mousePosition);
     
@@ -77,6 +80,6 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
         : Option<Vector3>.None;
     }
 
-    static Ray posInWorld(Vector3 mousePosition) { return HandleUtility.GUIPointToWorldRay(mousePosition); }
+    static Ray posInWorld(Vector3 mousePosition) => HandleUtility.GUIPointToWorldRay(mousePosition);
   }
 }
