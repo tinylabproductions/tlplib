@@ -27,7 +27,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static string asString<A>(this A a) {
       var enumerable = a as IEnumerable;
       // ReSharper disable once InvokeAsExtensionMethod
-      return enumerable != null ? IEnumerableExts.asString(enumerable) : a.ToString();
+      return enumerable != null 
+        ? IEnumerableExts.asString(enumerable) 
+        : a == null ? "null" : a.ToString();
     }
   }
 

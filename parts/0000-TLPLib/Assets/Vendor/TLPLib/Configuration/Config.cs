@@ -260,11 +260,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static readonly Parser<FRange> fRangeParser =
       configParser.flatMap((path, cfg) => { 
         var lowerE = cfg.eitherGet("lower", floatParser);
-        if (lowerE.isLeft)
-          return Either<ConfigLookupError, FRange>.Left(lowerE.__unsafeGetLeft);
+        if (lowerE.isLeft) return lowerE.__unsafeCastRight<FRange>();
         var upperE = cfg.eitherGet("upper", floatParser);
-        if (upperE.isLeft) 
-          return Either<ConfigLookupError, FRange>.Left(upperE.__unsafeGetLeft);
+        if (upperE.isLeft) return upperE.__unsafeCastRight<FRange>();
         return Either<ConfigLookupError, FRange>.Right(
           new FRange(lowerE.__unsafeGetRight, upperE.__unsafeGetRight)
         );
@@ -370,13 +368,51 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public ICollection<string> keys => root.Keys;
 
+    #region Getters
+
+    public A as_<A>(Parser<A> parser) =>
+      e2a(eitherAs(parser));
+
+    public A get<A>(string key, Parser<A> parser) => 
+      e2a(internalGet(key, parser));
+
+    static A e2a<A>(Either<ConfigLookupError, A> e) {
+      if (e.isLeft) throw new ConfigFetchException(e.__unsafeGetLeft);
+      return e.__unsafeGetRight;
+    }
+
+    public Option<A> optAs<A>(Parser<A> parser) => 
+      eitherAs(parser).rightValue;
+
+    public Option<A> optGet<A>(string key, Parser<A> parser) =>
+      internalGet(key, parser).rightValue;
+
+    public Try<A> tryAs<A>(Parser<A> parser) => 
+      e2t(eitherAs(parser));
+
+    public Try<A> tryGet<A>(string key, Parser<A> parser) => 
+      e2t(internalGet(key, parser));
+
+    static Try<A> e2t<A>(Either<ConfigLookupError, A> e) =>
+      e.isLeft
+        ? new Try<A>(new ConfigFetchException(e.__unsafeGetLeft))
+        : new Try<A>(e.__unsafeGetRight);
+
+    public Either<ConfigLookupError, A> eitherAs<A>(Parser<A> parser) => 
+      parser(scope, root);
+
     public Either<ConfigLookupError, A> eitherGet<A>(
       string key, Parser<A> parser
-    ) => get(scope / key, parser);
+    ) => internalGet(key, parser);
+    
+    #endregion
 
-    Either<ConfigLookupError, A> get<A>(
-      ConfigPath path, Parser<A> parser, Dictionary<string, object> current = null
+
+
+    Either<ConfigLookupError, A> internalGet<A>(
+      string key, Parser<A> parser, Dictionary<string, object> current = null
     ) {
+      var path = scope / key;
       var parts = path.path;
 
       current = current ?? root;
@@ -384,7 +420,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       for (var idx = 0; idx < toIdx; idx++) {
         var idxPart = parts[idx];
         var either = fetch(current, path, idxPart, jsClassParser);
-        if (either.isLeft) return Either<ConfigLookupError, A>.Left(either.__unsafeGetLeft);
+        if (either.isLeft) return either.__unsafeCastRight<A>();
         current = either.rightValue.get;
       }
 
@@ -426,10 +462,65 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) =>
       (path, o) => aParser(path, o).flatMapRight(a => f(path, a));
 
+    public static Config.Parser<B> flatMapTry<A, B>(
+      this Config.Parser<A> aParser, Fn<ConfigPath, A, B> f
+    ) => 
+      (path, o) => aParser(path, o).flatMapRight(a => {
+        try { return new Either<ConfigLookupError, B>(f(path, a)); }
+        catch (ConfigFetchException e) { return new Either<ConfigLookupError, B>(e.error); }
+      });
+
+    public static Config.Parser<A> filter<A>(
+      this Config.Parser<A> parser, Fn<A, bool> predicate
+    ) =>
+      (path, o) => parser(path, o).flatMapRight(a => 
+        predicate(a) 
+        ? new Either<ConfigLookupError, A>(a) 
+        : Config.parseErrorEFor<A>(path, a, "didn't pass predicate")
+      );
+
+    public static Config.Parser<B> collect<A, B>(
+      this Config.Parser<A> parser, Fn<A, Option<B>> collector
+    ) =>
+      (path, o) => parser(path, o).flatMapRight(a => {
+        var bOpt = collector(a);
+        return bOpt.isDefined
+          ? new Either<ConfigLookupError, B>(bOpt.get)
+          : Config.parseErrorEFor<B>(path, a, "didn't pass collector");
+      });
+
     public static Config.Parser<A> or<A>(this Config.Parser<A> a1, Config.Parser<A> a2) =>
       (path, node) => {
         var a1E = a1(path, node);
         return a1E.isRight ? a1E : a2(path, node);
+      };
+
+    public static Config.Parser<Tpl<A1, A2>> and<A1, A2>(
+      this Config.Parser<A1> a1p, Config.Parser<A2> a2p
+    ) =>
+      (path, node) => {
+        var a1E = a1p(path, node);
+        if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2>>();
+        var a2E = a2p(path, node);
+        if (a2E.isLeft) return a2E.__unsafeCastRight<Tpl<A1, A2>>();
+        return new Either<ConfigLookupError, Tpl<A1, A2>>(F.t(
+          a1E.__unsafeGetRight, a2E.__unsafeGetRight
+        ));
+      };
+
+    public static Config.Parser<Tpl<A1, A2, A3>> and<A1, A2, A3>(
+      this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p
+    ) =>
+      (path, node) => {
+        var a1E = a1p(path, node);
+        if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2, A3>>();
+        var a2E = a2p(path, node);
+        if (a2E.isLeft) return a2E.__unsafeCastRight<Tpl<A1, A2, A3>>();
+        var a3E = a3p(path, node);
+        if (a3E.isLeft) return a3E.__unsafeCastRight<Tpl<A1, A2, A3>>();
+        return new Either<ConfigLookupError, Tpl<A1, A2, A3>>(F.t(
+          a1E.__unsafeGetRight, a2E.__unsafeGetRight, a3E.__unsafeGetRight
+        ));
       };
   }
 }

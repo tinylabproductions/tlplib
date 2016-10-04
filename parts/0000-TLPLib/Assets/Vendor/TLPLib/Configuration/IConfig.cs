@@ -21,11 +21,20 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     /** Immediate keys of this config object. */
     ICollection<string> keys { get; }
 
+    /** Tries to parse current config object with given parser. */
+    A as_<A>(Parser<A> parser);
+    Option<A> optAs<A>(Parser<A> parser);
+    Either<ConfigLookupError, A> eitherAs<A>(Parser<A> parser);
+    Try<A> tryAs<A>(Parser<A> parser);
+
+    /** value if ok, ConfigFetchException if error. */
+    A get<A>(string key, Parser<A> parser);
+    Option<A> optGet<A>(string key, Parser<A> parser);
     Either<ConfigLookupError, A> eitherGet<A>(string key, Parser<A> parser);
+    Try<A> tryGet<A>(string key, Parser<A> parser);
   }
 
   public static class IConfigExts {
-    /* value if found, ConfigFetchException if not found. */
 
     #region getters
 
@@ -56,9 +65,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     /* Some(value) if found, None if not found or wrong type. */
 
     #region opt getters
-
-    public static Option<A> optGet<A>(this IConfig cfg, string key, Parser<A> parser) =>
-      cfg.eitherGet(key, parser).rightValue;
 
     public static Option<List<A>> optList<A>(this IConfig cfg, string key, Parser<A> parser) =>
       cfg.eitherList(key, parser).rightValue;
@@ -113,18 +119,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region try getters
 
-    public static Try<A> tryGet<A>(this IConfig cfg, string key, Parser<A> parser) => 
-      e2t(cfg.eitherGet(key, parser));
     public static Try<List<A>> tryList<A>(this IConfig cfg, string key, Parser<A> parser) =>
-      e2t(cfg.eitherList(key, parser));
+      cfg.tryGet(key, listParser(parser));
+
     public static Try<Dictionary<K, V>> tryDict<K, V>(
       this IConfig cfg, string key, Parser<K> keyParser, Parser<V> valueParser
-    ) => e2t(cfg.eitherDict(key, keyParser, valueParser));
-
-    static Try<A> e2t<A>(Either<ConfigLookupError, A> e) =>
-      e.isLeft
-      ? F.err<A>(new ConfigFetchException(e.__unsafeGetLeft))
-      : F.scs(e.__unsafeGetRight);
+    ) => cfg.tryGet(key, dictParser(keyParser, valueParser));
 
     public static Try<object> tryObject(this IConfig cfg, string key) => cfg.tryGet(key, objectParser);
     public static Try<string> tryString(this IConfig cfg, string key) => cfg.tryGet(key, stringParser);
