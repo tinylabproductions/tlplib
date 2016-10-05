@@ -10,11 +10,8 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine.Events;
 using JetBrains.Annotations;
-using UnityEditor.SceneManagement;
-using com.tinylabproductions.TLPLib.Filesystem;
-using System.Collections.Immutable;
 
-namespace Assets.Vendor.TLPLib.Utilities.Editor {
+namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ReferencesInPrefabs : MonoBehaviour {
     const string MISSING_REF = "Missing Ref in: [{3}]{0}. Component: {1}, Property: {2}";
     const string NULL_REF = "Null Ref in: [{3}]{0}. Component: {1}, Property: {2}";
@@ -50,7 +47,7 @@ namespace Assets.Vendor.TLPLib.Utilities.Editor {
       var depsOfScene = EditorUtility.CollectDependencies(new UnityEngine.Object[] {}).Where( x => x is GameObject || x is ScriptableObject);
     }
 
-    static List<Tpl<string, GameObject>> findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
+    public static List<Tpl<string, GameObject>> findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
       var errors = new List<Tpl<string, GameObject>>();
       var scanned = 0;
       foreach (var go in objects) {
