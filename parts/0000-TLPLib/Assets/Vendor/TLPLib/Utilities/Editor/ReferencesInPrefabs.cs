@@ -13,11 +13,16 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ReferencesInPrefabs : MonoBehaviour {
-    const string MISSING_REF = "Missing Ref in: [{3}]{0}. Component: {1}, Property: {2}";
-    const string NULL_REF = "Null Ref in: [{3}]{0}. Component: {1}, Property: {2}";
-    const string MISSING_COMP = "Missing Component in GO or children: {0}";
-    const string UNITYEVENT_INV_METHOD = "UnityEvent {0} callback number {1} has invalid method";
-    const string UNITYEVENT_NOT_VALID = "UnityEvent {0} callback number {1} is not valid";
+    static string missingComponent(GameObject go) => 
+      $"Missing Component in GO or children: {go}";
+    static string missingReference(GameObject go, string component, string property, string context) =>
+      $"Missing Ref in: [{context}]{fullPath(go)}. Component: {component}, Property: {property}";
+    static string nullReference(GameObject go, string component, string property, string context) =>
+      $"Null Ref in: [{context}]{fullPath(go)}. Component: {component}, Property: {property}";
+    static string unityEventInvalidMethod(string property, int number) => 
+      $"UnityEvent {property} callback number {number} has invalid method";
+    static string unityEventNotValid(string property, int number) => 
+      $"UnityEvent {property} callback number {number} is not valid";
 
     static bool anyErrors;
     static readonly Dictionary<Type, IEnumerable<FieldInfo>> typeResultsCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
@@ -26,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject) {
       if (anyErrors) {
         anyErrors = false;
-        throw new Exception("Build failed");
+        throw new Exception($"Build failed ({target})");
       }
     }
 
@@ -39,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var errors = findMissingReferences(SceneManager.GetActiveScene().name, objects);
       foreach (var error in errors) showError(error);
       anyErrors = errors.Any();
-      Debug.Log("findMissingReferencesInCurrentScene finished");
+      Debug.Log($"{nameof(findMissingReferencesInCurrentScene)} finished");
     }
 
     public static void missingReferencesInAssets() {
@@ -52,13 +57,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var scanned = 0;
       foreach (var go in objects) {
         if (useProgress) {
-          EditorUtility.DisplayProgressBar("findMissingReferences", "findMissingReferences", (float)scanned++ / objects.Length);
+          EditorUtility.DisplayProgressBar($"{nameof(findMissingReferences)}", $"{nameof(findMissingReferences)}", (float)scanned++ / objects.Length);
         }
         var components = go.GetComponentsInChildren<Component>();
 
         foreach (var c in components) {
           if (!c) {
-            errors.Add(createError(MISSING_COMP, c.gameObject));
+            errors.Add(createError(missingComponent(c.gameObject), c.gameObject));
             continue;
           }
 
@@ -69,12 +74,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (sp.propertyType == SerializedPropertyType.ObjectReference) {
               if (sp.objectReferenceValue == null
                   && sp.objectReferenceInstanceIDValue != 0) {
-                errors.Add(createError(MISSING_REF, context, c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name)));
+                errors.Add(createError(missingReference(c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name), context), go));
               }
             }
 
             #region Unity Events
-            if (sp.type == "UnityEvent") {
+            if (sp.type == nameof(UnityEvent)) {
               var uniEvent = getUnityEvent(c, sp.propertyPath);
               var baseType = uniEvent?.GetType().BaseType;
               var method = baseType?.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -94,16 +99,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (listObject != null)
                 foreach (var persistentCall in listObject) {
                   index++;
-                  string format = null;
+                  Func<string, int, string> format = null;
 
                   var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
                   if (isValid) {
                     var mi = methodInfo?.Invoke(uniEvent, new[] { persistentCall });
-                    if (mi == null) format = UNITYEVENT_INV_METHOD;
-                  } else format = UNITYEVENT_NOT_VALID;
+                    if (mi == null) format = unityEventInvalidMethod;
+                  }
+                  else format = unityEventNotValid;
 
                   if (format != null)
-                    errors.Add(createError(format, ObjectNames.NicifyVariableName(sp.name), index, c.gameObject));
+                    errors.Add(createError(format(ObjectNames.NicifyVariableName(sp.name), index), c.gameObject));
                 }
             }
             #endregion
@@ -113,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
           foreach (var field in notNullFields) {
             if (!(field.GetValue(c) is UnityEngine.Object)) {
-              errors.Add(createError(NULL_REF, context, c.gameObject, c.GetType().Name, field.Name));
+              errors.Add(createError(nullReference(c.gameObject, c.GetType().Name, field.Name, context), go));
             }
           }
         }
@@ -159,12 +165,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showError(Tpl<string, GameObject> error) { Debug.LogError(error._1, error._2); }
 
-    static Tpl<string, GameObject> createError(string errorFormat, string context, GameObject go, string c, string property) {
-      return F.t(string.Format(errorFormat, fullPath(go), c, property, context), go);
-    }
-    static Tpl<string, GameObject> createError(string errorFormat, string property, int number, GameObject go) {
-      return F.t(string.Format(errorFormat, property, number), go);
-    }
     static Tpl<string, GameObject> createError(string errorFormat, GameObject go) {
       return F.t(string.Format(errorFormat, go), go);
     }
