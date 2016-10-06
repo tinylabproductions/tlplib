@@ -13,6 +13,18 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ReferencesInPrefabs : MonoBehaviour {
+    public enum ErrorType {MISSING_COMP, MISSING_REF, NULL_REF, UE_INVALID_METHOD, UE_NOT_VALID}
+
+    public struct ReferenceError {
+      public readonly ErrorType errorType;
+      public readonly Tpl<string, GameObject> message;
+
+      public ReferenceError(ErrorType errorType, Tpl<string, GameObject> message) {
+        this.errorType = errorType;
+        this.message = message;
+      }
+    }
+
     static string missingComponent(GameObject go) => 
       $"Missing Component in GO or children: {go}";
     static string missingReference(GameObject go, string component, string property, string context) =>
@@ -42,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ? Resources.FindObjectsOfTypeAll<GameObject>().Where(o => !AssetDatabase.Contains(o)).ToArray()
         : getSceneObjects();
       var errors = findMissingReferences(SceneManager.GetActiveScene().name, objects);
-      foreach (var error in errors) showError(error);
+      foreach (var error in errors) showError(error.message);
       anyErrors = errors.Any();
       Debug.Log($"{nameof(findMissingReferencesInCurrentScene)} finished");
     }
@@ -52,18 +64,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var depsOfScene = EditorUtility.CollectDependencies(new UnityEngine.Object[] {}).Where( x => x is GameObject || x is ScriptableObject);
     }
 
-    public static List<Tpl<string, GameObject>> findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
-      var errors = new List<Tpl<string, GameObject>>();
+    public static List<ReferenceError> findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
+      var errors = new List<ReferenceError>();
       var scanned = 0;
       foreach (var go in objects) {
         if (useProgress) {
-          EditorUtility.DisplayProgressBar($"{nameof(findMissingReferences)}", $"{nameof(findMissingReferences)}", (float)scanned++ / objects.Length);
+          var methodName = $"{nameof(findMissingReferences)}";
+          EditorUtility.DisplayProgressBar(methodName, methodName, (float)scanned++ / objects.Length);
         }
         var components = go.GetComponentsInChildren<Component>();
 
         foreach (var c in components) {
           if (!c) {
-            errors.Add(createError(missingComponent(c.gameObject), c.gameObject));
+            errors.Add(createError(ErrorType.MISSING_COMP, missingComponent(c.gameObject), c.gameObject));
             continue;
           }
 
@@ -74,7 +87,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (sp.propertyType == SerializedPropertyType.ObjectReference) {
               if (sp.objectReferenceValue == null
                   && sp.objectReferenceInstanceIDValue != 0) {
-                errors.Add(createError(missingReference(c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name), context), go));
+                errors.Add(createError(ErrorType.MISSING_REF, missingReference(c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name), context), go));
               }
             }
 
@@ -99,17 +112,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (listObject != null)
                 foreach (var persistentCall in listObject) {
                   index++;
-                  Func<string, int, string> format = null;
+                  Tpl<ErrorType, Func<string, int, string>> err = new Tpl<ErrorType, Func<string, int, string>>();
 
                   var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
                   if (isValid) {
                     var mi = methodInfo?.Invoke(uniEvent, new[] { persistentCall });
-                    if (mi == null) format = unityEventInvalidMethod;
+                    if (mi == null) err = new Tpl<ErrorType, Func<string, int, string>>(ErrorType.UE_INVALID_METHOD, unityEventInvalidMethod);
                   }
-                  else format = unityEventNotValid;
+                  else err = new Tpl<ErrorType, Func<string, int, string>>(ErrorType.UE_NOT_VALID, unityEventNotValid);
 
-                  if (format != null)
-                    errors.Add(createError(format(ObjectNames.NicifyVariableName(sp.name), index), c.gameObject));
+                  errors.Add(createError(err._1, err._2(ObjectNames.NicifyVariableName(sp.name), index), c.gameObject));
                 }
             }
             #endregion
@@ -119,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
           foreach (var field in notNullFields) {
             if (!(field.GetValue(c) is UnityEngine.Object)) {
-              errors.Add(createError(nullReference(c.gameObject, c.GetType().Name, field.Name, context), go));
+              errors.Add(createError(ErrorType.NULL_REF, nullReference(c.gameObject, c.GetType().Name, field.Name, context), go));
             }
           }
         }
@@ -130,12 +142,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     static UnityEvent getUnityEvent(object obj, string fieldName) {
-      if (obj != null) {
-        FieldInfo fi = obj.GetType().GetField(fieldName);
-        if (fi != null) {
-          return fi.GetValue(obj) as UnityEvent;
-        }
-      }
+      if (obj == null) return null;
+
+      var fi = obj.GetType().GetField(fieldName);
+      if (fi != null) return fi.GetValue(obj) as UnityEvent;
+
       return null;
     }
 
@@ -165,8 +176,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showError(Tpl<string, GameObject> error) { Debug.LogError(error._1, error._2); }
 
-    static Tpl<string, GameObject> createError(string errorFormat, GameObject go) {
-      return F.t(string.Format(errorFormat, go), go);
+    static ReferenceError createError(ErrorType type, string message, GameObject go) {
+      return new ReferenceError(type, F.t(message, go));
     }
 
     static string fullPath(GameObject go) {

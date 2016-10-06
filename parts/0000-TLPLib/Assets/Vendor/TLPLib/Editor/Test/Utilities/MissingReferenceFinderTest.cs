@@ -45,5 +45,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       var errors = ReferencesInPrefabs.findMissingReferences("", new [] { go }, false);
       errors.shouldBeEmpty();
     }
+
+    [Test]
+    public void NullReference() {
+      var go = new GameObject();
+      var testClass = go.AddComponent<TestClass>();
+      var errors = ReferencesInPrefabs.findMissingReferences("", new [] { go }, false);
+      errors.shouldMatch(t => t.Exists(x => x.errorType == ReferencesInPrefabs.ErrorType.NULL_REF));
+    }
   }
 }
