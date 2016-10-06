@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,7 +17,9 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
         LogType.Exception, LogType.Assert, LogType.Error, LogType.Warning
       );
 
-    // ReSharper disable FieldCanBeMadeReadOnly.Local
+    public const int DEFAULT_QUEUE_SIZE = 10;
+
+// ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
     [SerializeField] Text _errorsText;
     [SerializeField] Button _hideButton;
@@ -54,24 +57,37 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
       }
 
       public Init(
-        int queueSize = 10,
-        IImmutableSet<LogType> handledTypes = null, ErrorsInYourFace binding = null
+        TagInstance<ErrorsInYourFace> binding,
+        int queueSize = DEFAULT_QUEUE_SIZE, IImmutableSet<LogType> handledTypes = null
       ) {
         this.handledTypes = handledTypes ?? DEFAULT_HANDLED_TYPES;
         this.queueSize = queueSize;
         entries = new LinkedList<string>();
-        this.binding = initBinding(binding ?? Resources.Load<ErrorsInYourFace>("ErrorsInYourFaceCanvas"));
+        this.binding = binding.instance;
         logCallback = logMessageHandlerThreaded;
 
+        initBinding(binding.instance);
         setText();
         hide();
       }
 
-      ErrorsInYourFace initBinding(ErrorsInYourFace prefab) {
-        var instance = prefab.clone();
+      public Init(
+        TagPrefab<ErrorsInYourFace> prefab,
+        int queueSize = DEFAULT_QUEUE_SIZE,
+        IImmutableSet<LogType> handledTypes = null
+      ) : this(prefab.instantiate(), queueSize, handledTypes) {}
+
+      public Init(
+        int queueSize = DEFAULT_QUEUE_SIZE,
+        IImmutableSet<LogType> handledTypes = null
+      ) : this(
+        TagPrefab.a(Resources.Load<ErrorsInYourFace>("ErrorsInYourFaceCanvas")),
+        queueSize, handledTypes
+      ) {}
+
+      void initBinding(ErrorsInYourFace instance) {
         instance._hideButton.onClick.AddListener(hide);
         DontDestroyOnLoad(instance);
-        return instance;
       }
 
       void setVisible(bool visible) {
