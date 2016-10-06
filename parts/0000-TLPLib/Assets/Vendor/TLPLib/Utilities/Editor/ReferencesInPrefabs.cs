@@ -7,7 +7,6 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine.Events;
 using JetBrains.Annotations;
 
@@ -25,16 +24,26 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
-    static string missingComponent(GameObject go) => 
-      $"Missing Component in GO or children: {go}";
-    static string missingReference(GameObject go, string component, string property, string context) =>
-      $"Missing Ref in: [{context}]{fullPath(go)}. Component: {component}, Property: {property}";
-    static string nullReference(GameObject go, string component, string property, string context) =>
-      $"Null Ref in: [{context}]{fullPath(go)}. Component: {component}, Property: {property}";
-    static string unityEventInvalidMethod(string property, int number) => 
-      $"UnityEvent {property} callback number {number} has invalid method";
-    static string unityEventNotValid(string property, int number) => 
-      $"UnityEvent {property} callback number {number} is not valid";
+    static ReferenceError missingComponent(GameObject go) => new ReferenceError(
+      ErrorType.MISSING_COMP,
+      new Tpl<string, GameObject>($"Missing Component in GO or children: {go}", go)
+    );
+    static ReferenceError missingReference(GameObject go, string component, string property, string context) => new ReferenceError(
+      ErrorType.MISSING_REF,
+      new Tpl<string, GameObject>($"Missing Ref in: [{context}]{fullPath(go)}. Component: {component}, Property: {property}", go)
+    );
+    static ReferenceError nullReference(GameObject go, string component, string property, string context) => new ReferenceError(
+      ErrorType.NULL_REF,
+      new Tpl<string, GameObject>($"Null Ref in: [{context}]{fullPath(go)}. Component: {component}, Property: {property}", go)
+    );
+    static ReferenceError unityEventInvalidMethod(GameObject go, string property, int number) => new ReferenceError(
+      ErrorType.UE_INVALID_METHOD,
+      new Tpl<string, GameObject>($"UnityEvent {property} callback number {number} has invalid method", go)
+    );
+    static ReferenceError unityEventNotValid(GameObject go, string property, int number) => new ReferenceError(
+      ErrorType.UE_NOT_VALID,
+      new Tpl<string, GameObject>($"UnityEvent {property} callback number {number} is not valid", go)
+    );
 
     static bool anyErrors;
     static readonly Dictionary<Type, IEnumerable<FieldInfo>> typeResultsCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
@@ -76,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
         foreach (var c in components) {
           if (!c) {
-            errors.Add(createError(ErrorType.MISSING_COMP, missingComponent(c.gameObject), c.gameObject));
+            errors.Add(missingComponent(c.gameObject));
             continue;
           }
 
@@ -87,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (sp.propertyType == SerializedPropertyType.ObjectReference) {
               if (sp.objectReferenceValue == null
                   && sp.objectReferenceInstanceIDValue != 0) {
-                errors.Add(createError(ErrorType.MISSING_REF, missingReference(c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name), context), go));
+                errors.Add(missingReference(c.gameObject, c.GetType().Name, ObjectNames.NicifyVariableName(sp.name), context));
               }
             }
 
@@ -112,28 +121,27 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (listObject != null)
                 foreach (var persistentCall in listObject) {
                   index++;
-                  Tpl<ErrorType, Func<string, int, string>> err = new Tpl<ErrorType, Func<string, int, string>>();
+                  Fn<GameObject, string, int, ReferenceError> err = null;
 
                   var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
                   if (isValid) {
                     var mi = methodInfo?.Invoke(uniEvent, new[] { persistentCall });
-                    if (mi == null) err = new Tpl<ErrorType, Func<string, int, string>>(ErrorType.UE_INVALID_METHOD, unityEventInvalidMethod);
+                    if (mi == null) err = unityEventInvalidMethod;
                   }
-                  else err = new Tpl<ErrorType, Func<string, int, string>>(ErrorType.UE_NOT_VALID, unityEventNotValid);
+                  else err = unityEventNotValid;
 
-                  errors.Add(createError(err._1, err._2(ObjectNames.NicifyVariableName(sp.name), index), c.gameObject));
+                  if (err != null)
+                    errors.Add(err(c.gameObject, ObjectNames.NicifyVariableName(sp.name), index));
                 }
             }
             #endregion
           }
 
-          var notNullFields = ReferencesInPrefabs.notNullFields(c.GetType());
+          var notNullFields = ReferencesInPrefabs.notNullFields(c);
 
-          foreach (var field in notNullFields) {
-            if (!(field.GetValue(c) is UnityEngine.Object)) {
-              errors.Add(createError(ErrorType.NULL_REF, nullReference(c.gameObject, c.GetType().Name, field.Name, context), go));
-            }
-          }
+          errors.AddRange(notNullFields.Select(field =>
+            nullReference(c.gameObject, c.GetType().Name, field.Name, context)
+          ));
         }
       }
 
@@ -150,22 +158,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return null;
     }
 
-    static IEnumerable<FieldInfo> notNullFields(Type type) {
-      if (typeResultsCache.ContainsKey(type)) {
-        IEnumerable<FieldInfo> result;
-        typeResultsCache.TryGetValue(type, out result); 
-        return result;
-      }
-
-      List<FieldInfo> results;
+    static IEnumerable<FieldInfo> notNullFields(object o) {
+      var type = o.GetType();
       var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-      if (type.hasAttribute<NotNullAttribute>()) {
-        results = fields.Where(fi => !fi.hasAttribute<CanBeNullAttribute>()).ToList();
-      } else {
-        results = fields.Where(fi => fi.hasAttribute<NotNullAttribute>()).ToList();
+      var results = new List<FieldInfo>();
+      foreach (var fi in fields) {
+        var fieldType = fi.FieldType;
+        if (fieldType.hasAttribute<SerializableAttribute>()) {
+          var fieldValue = fi.GetValue(o);
+          results.AddRange(notNullFields(fieldValue));
+        }
+        else if (fi.hasAttribute<NotNullAttribute>()) {
+          if (!(fi.GetValue(o) is UnityEngine.Object))
+            results.Add(fi);
+        }
       }
       
-      typeResultsCache.Add(type, results);
       return results;
     }
 
@@ -175,10 +183,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     static void showError(Tpl<string, GameObject> error) { Debug.LogError(error._1, error._2); }
-
-    static ReferenceError createError(ErrorType type, string message, GameObject go) {
-      return new ReferenceError(type, F.t(message, go));
-    }
 
     static string fullPath(GameObject go) {
       return go.transform.parent == null

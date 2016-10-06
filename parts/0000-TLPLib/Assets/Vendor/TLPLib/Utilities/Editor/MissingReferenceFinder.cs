@@ -2,11 +2,9 @@
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEditor;
-using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using NotNullAttribute = com.tinylabproductions.TLPLib.NotNullAttribute;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class MissingReferencesFinder : MonoBehaviour {
