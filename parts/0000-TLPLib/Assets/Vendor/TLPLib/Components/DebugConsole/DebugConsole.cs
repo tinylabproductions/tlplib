@@ -299,5 +299,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         return $"Press me {countdown} more times to execute.";
       });
     }
+
+    public void registerEnum<A>(
+      string name, Ref<A> reference, IEnumerable<A> enumerable, string comment = null
+    ) {
+      register($"{name}?", () => {
+        var v = reference.value;
+        return comment == null ? v.ToString() : $"{comment}: value={v}";
+      });
+      foreach (var a in enumerable)
+        register($"{name}={a}", () => {
+          reference.value = a;
+          return comment == null ? a.ToString() : $"{comment}: value={a}";
+        });
+    }
   }
 }

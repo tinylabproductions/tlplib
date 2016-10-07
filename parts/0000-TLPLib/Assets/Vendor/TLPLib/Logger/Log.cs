@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -31,9 +32,11 @@ namespace com.tinylabproductions.TLPLib.Logger {
     static Log() {
       DConsole.instance.onShow += dc => {
         var r = dc.registrarFor("Default Logger");
-        r.register("level?", () => defaultLogger.level);
-        foreach (var l in EnumUtils.GetValues<Level>())
-          r.register($"level={l}", () => defaultLogger.level = l);
+        r.registerEnum(
+          "level", 
+          Ref.a(() => defaultLogger.level, v => defaultLogger.level = v),
+          EnumUtils.GetValues<Level>()
+        );
       };
     }
 

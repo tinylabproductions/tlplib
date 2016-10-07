@@ -1,4 +1,5 @@
 ﻿#if UNITY_ANDROID
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.java.util {
@@ -8,10 +9,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.util {
       : this(new AndroidJavaObject("java.util.ArrayList", capacity)) {}
     public ArrayList() : this(0) {}
 
-    public void add(int location, Binding o) => add(location, o.java);
-    public void add(int location, AndroidJavaObject o) => java.Call("add", location, o);
+    public ArrayList(IEnumerable<AndroidJavaObject> enumerable, int capacity = 0) : this(capacity) {
+      foreach (var elem in enumerable) add(elem);
+    }
 
-    public bool add(Binding o) => add(o.java);
+    public void add(int location, AndroidJavaObject o) => java.Call("add", location, o);
     public bool add(AndroidJavaObject o) => java.Call<bool>("add", o);
   }
 }

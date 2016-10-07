@@ -99,6 +99,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return dict;
     }
 
+    public static IDictionary<K, V> iDict<K, V>(params Tpl<K, V>[] args) => dict(args);
+
     public static Unit unit => Unit.instance;
 
     public static Lazy<A> lazy<A>(Fn<A> func) {

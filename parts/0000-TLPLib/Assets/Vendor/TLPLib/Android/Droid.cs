@@ -1,4 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using System;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.reflection;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android {
@@ -67,6 +69,37 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static A c<A>(
       this AndroidJavaObject javaObject, string methodName, params object[] args
     ) { return javaObject.Call<A>(methodName, args); }
+
+    /** Access to ```internal AndroidJavaObject(IntPtr jobject)``` */
+    static readonly Fn<object[], AndroidJavaObject> ajoCreator = 
+      PrivateConstructor.creator<AndroidJavaObject>();
+
+    /** 
+     * Unity AndroidJavaObject throws an exception if a call from Java returns null
+     * so we have our own implementation.
+     */
+    public static AndroidJavaObject cjoReturningNull(
+      this AndroidJavaObject javaObject, string methodName, params object[] args
+    ) {
+      if (args == null) args = new object[1];
+      var methodId = AndroidJNIHelper.GetMethodID<AndroidJavaObject>(
+        javaObject.GetRawClass(), methodName, args, false
+      );
+      var jniArgArray = AndroidJNIHelper.CreateJNIArgArray(args);
+      try {
+        var returned = AndroidJNI.CallObjectMethod(
+          javaObject.GetRawObject(), methodId, jniArgArray
+        );
+        if (returned == IntPtr.Zero) return null;
+        else {
+          try { return ajoCreator(new object[] {returned}); }
+          finally { AndroidJNI.DeleteLocalRef(returned); }
+        }
+      }
+      finally {
+        AndroidJNIHelper.DeleteJNIArgArray(args, jniArgArray);
+      }
+    }
 
     #endregion
   }

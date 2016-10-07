@@ -9,6 +9,8 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings {
 
     public override string ToString() => java.Call<string>("toString");
     public override int GetHashCode() => java.Call<int>("hashCode");
+
+    public static implicit operator AndroidJavaObject(Binding b) => b.java;
   }
 }
 #endif
