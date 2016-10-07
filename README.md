@@ -25,6 +25,8 @@ This library requires at least Unity 5.x with [Roslyn or new Mono compilers](htt
 
 Because we need the new compiler this only works where Mono VM or il2cpp is used. It does not support Mono AOT.
 
+It also needs the excellent [Advanced Inspector](https://www.assetstore.unity3d.com/en/#!/content/18025) asset from Unity Asset Store. If you don't have it, you could edit out parts of the code with ifdefs and submit a pull request ;)
+
 Disclaimer
 ----------
 
