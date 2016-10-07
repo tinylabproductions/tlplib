@@ -12,6 +12,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [SerializeField, HideInInspector] string _sceneName;
 
+    [Inspect, ReadOnly]
     public string sceneName { get {
       prepareForRuntime();
       return _sceneName;
