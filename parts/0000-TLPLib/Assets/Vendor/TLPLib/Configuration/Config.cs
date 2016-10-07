@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -8,8 +9,45 @@ using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
+  /** Representation of configuration path. */
+  public struct ConfigPath {
+    public const char SEPARATOR = '.';
+    public static ConfigPath root = new ConfigPath(ImmutableList<string>.Empty);
+
+    public readonly ImmutableList<string> path;
+    public readonly Option<string> basedFrom;
+
+    public ConfigPath(ImmutableList<string> path, Option<string> basedFrom) {
+      this.path = path;
+      this.basedFrom = basedFrom;
+    }
+
+    ConfigPath(ImmutableList<string> path) : this(path, Option<string>.None) {}
+
+    public ConfigPath baseOn(ConfigPath basePath) => 
+      new ConfigPath(path, basePath.pathStrWithBase.some());
+
+    public bool isRoot => path.isEmpty();
+
+    public string pathStr => path.mkString(SEPARATOR);
+
+    public string pathStrWithBase { get {
+      var basedS = basedFrom.isDefined ? $"({basedFrom.get})." : "";
+      return $"{basedS}{pathStr}";
+    } }
+
+    public override string ToString() => $"{nameof(ConfigPath)}[{pathStrWithBase}]";
+
+    public static ConfigPath operator /(ConfigPath s1, string s2) =>
+      new ConfigPath(s1.path.AddRange(s2.Split(SEPARATOR)), s1.basedFrom);
+
+    public ConfigPath indexed(int idx) => this / $"[{idx}]";
+
+    public ConfigPath keyed(string key) => this / $"[key={key}]";
+  }
+
   /* See IConfig. */
-  public class Config : ConfigBase {
+  public class Config : IConfig {
     #region Fetch errors
 
     public abstract class ConfigFetchError {
@@ -144,241 +182,345 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     // Implementation
 
-    public delegate Option<A> Parser<A>(object node);
+    #region Parsers
+
+    /** 
+     * Either Left(additional error message or "" if none) or Right(value).
+     */
+    public delegate Either<ConfigLookupError, A> Parser<A>(ConfigPath path, object node);
+
+    public static ConfigLookupError parseErrorFor<A>(
+      ConfigPath path, object node, string extraInfo = null
+    ) {
+      var extraS = extraInfo == null ? "" : $", {extraInfo}";
+      return ConfigLookupError.wrongType(F.lazy(() =>
+        $"Can't parse {path} as {typeof(A)}{extraS}, node contents: {node.asString()}"
+      ));
+    }
+
+    public static Either<ConfigLookupError, A> parseErrorEFor<A>(
+      ConfigPath path, object node, string extraInfo = null
+    ) => Either<ConfigLookupError, A>.Left(parseErrorFor<A>(path, node, extraInfo));
+
+    public static Parser<A> createCastParser<A>() => (path, node) => 
+      node is A
+      ? Either<ConfigLookupError, A>.Right((A) node) 
+      : parseErrorEFor<A>(path, node);
+
+    public static readonly Parser<object> objectParser = (_, n) =>
+      Either<ConfigLookupError, object>.Right(n);
+
+    public static readonly Parser<List<object>> objectListParser = createCastParser<List<object>>();
+
+    public static Parser<List<A>> listParser<A>(Parser<A> parser) =>
+      objectListParser.flatMap((path, objList) => {
+        var list = new List<A>(objList.Count);
+        for (var idx = 0; idx < objList.Count; idx++) {
+          var idxPath = path.indexed(idx);
+          var parsedE = parser(idxPath, objList[idx]);
+          if (parsedE.isLeft)
+            return Either<ConfigLookupError, List<A>>.Left(parsedE.__unsafeGetLeft);
+          list.Add(parsedE.__unsafeGetRight);
+        }
+        return Either<ConfigLookupError, List<A>>.Right(list);
+      });
 
     public static readonly Parser<Dictionary<string, object>> jsClassParser =
-      n => F.opt(n as Dictionary<string, object>);
-    public static readonly Parser<object> objectParser = n => F.some(n);
-    public static readonly Parser<string> stringParser = n => F.opt(n as string);
-    public static Option<A> castA<A>(object a) { return a is A ? F.some((A) a) : F.none<A>(); }
+      createCastParser<Dictionary<string, object>>();
 
-    public static readonly Parser<int> intParser = n => {
+    public static readonly Parser<IConfig> configParser =
+      jsClassParser.map((path, dict) => (IConfig) new Config(dict, ConfigPath.root.baseOn(path)));
+
+    public static Parser<Dictionary<K, V>> dictParser<K, V>(
+      Parser<K> keyParser, Parser<V> valueParser
+    ) =>
+      configParser.flatMap((path, cfg) => {
+        var keys = cfg.keys;
+        var dict = new Dictionary<K, V>(keys.Count);
+        foreach (var dictKey in keys) {
+          var keyPath = path.keyed(dictKey);
+          var parsedKeyE = keyParser(keyPath, dictKey);
+          if (parsedKeyE.isLeft)
+            return new Either<ConfigLookupError, Dictionary<K, V>>(parsedKeyE.__unsafeGetLeft);
+          var parsedKey = parsedKeyE.__unsafeGetRight;
+          if (dict.ContainsKey(parsedKey))
+            return parseErrorEFor<Dictionary<K, V>>(
+              keyPath, dictKey, $"key already exists as '{dict[parsedKey]}'"
+            );
+
+          var parsedValE = valueParser(path / dictKey, cfg.getObject(dictKey));
+          if (parsedValE.isLeft)
+            return new Either<ConfigLookupError, Dictionary<K, V>>(parsedValE.__unsafeGetLeft);
+
+          dict.Add(parsedKey, parsedValE.__unsafeGetRight);
+        }
+        return Either<ConfigLookupError, Dictionary<K, V>>.Right(dict);
+      });
+
+    public static readonly Parser<FRange> fRangeParser =
+      configParser.flatMap((path, cfg) => { 
+        var lowerE = cfg.eitherGet("lower", floatParser);
+        if (lowerE.isLeft) return lowerE.__unsafeCastRight<FRange>();
+        var upperE = cfg.eitherGet("upper", floatParser);
+        if (upperE.isLeft) return upperE.__unsafeCastRight<FRange>();
+        return Either<ConfigLookupError, FRange>.Right(
+          new FRange(lowerE.__unsafeGetRight, upperE.__unsafeGetRight)
+        );
+      });
+
+    public static readonly Parser<string> stringParser = createCastParser<string>();
+
+    public static readonly Parser<int> intParser = (path, n) => {
       try {
-        if (n is ulong) return F.some((int)(ulong)n);
-        if (n is long) return F.some((int)(long)n);
-        if (n is uint) return F.some((int)(uint)n);
-        if (n is int) return F.some((int)n);
+        if (n is ulong) return Either<ConfigLookupError, int>.Right((int)(ulong)n);
+        if (n is long) return Either<ConfigLookupError, int>.Right((int)(long)n);
+        if (n is uint) return Either<ConfigLookupError, int>.Right((int)(uint)n);
+        if (n is int) return Either<ConfigLookupError, int>.Right((int)n);
       }
       catch (OverflowException) {}
-      return Option<int>.None;
+      return parseErrorEFor<int>(path, n);
     };
-    public static readonly Parser<uint> uintParser = n => {
+
+    public static readonly Parser<uint> uintParser = (path, n) => {
       try {
-        if (n is ulong) return F.some((uint)(ulong)n);
-        if (n is long) return F.some((uint)(long)n);
-        if (n is uint) return F.some((uint)n);
-        if (n is int) return F.some((uint)(int)n);
+        if (n is ulong) return Either<ConfigLookupError, uint>.Right((uint)(ulong)n);
+        if (n is long) return Either<ConfigLookupError, uint>.Right((uint)(long)n);
+        if (n is uint) return Either<ConfigLookupError, uint>.Right((uint)n);
+        if (n is int) return Either<ConfigLookupError, uint>.Right((uint)(int)n);
       }
       catch (OverflowException) {}
-      return Option<uint>.None;
+      return parseErrorEFor<uint>(path, n);
     };
-    public static readonly Parser<long> longParser = n => {
+
+    public static readonly Parser<long> longParser = (path, n) => {
       try {
-        if (n is ulong) return F.some((long)(ulong)n);
-        if (n is long) return F.some((long)n);
-        if (n is uint) return F.some((long)(uint)n);
-        if (n is int) return F.some((long)(int)n);
+        if (n is ulong) return Either<ConfigLookupError, long>.Right((long)(ulong)n);
+        if (n is long) return Either<ConfigLookupError, long>.Right((long)n);
+        if (n is uint) return Either<ConfigLookupError, long>.Right((uint)n);
+        if (n is int) return Either<ConfigLookupError, long>.Right((int)n);
       }
       catch (OverflowException) {}
-      return Option<long>.None;
+      return parseErrorEFor<long>(path, n);
     };
-    public static readonly Parser<ulong> ulongParser = n => {
+
+    public static readonly Parser<ulong> ulongParser = (path, n) => {
       try {
-        if (n is ulong) return F.some((ulong) n);
-        if (n is long) return F.some((ulong) (long) n);
-        if (n is uint) return F.some((ulong) (uint) n);
-        if (n is int) return F.some((ulong) (int) n);
+        if (n is ulong) return Either<ConfigLookupError, ulong>.Right((ulong) n);
+        if (n is long) return Either<ConfigLookupError, ulong>.Right((ulong) (long) n);
+        if (n is uint) return Either<ConfigLookupError, ulong>.Right((uint) n);
+        if (n is int) return Either<ConfigLookupError, ulong>.Right((ulong) (int) n);
       }
       catch (OverflowException) { }
-      return Option<ulong>.None;
+      return parseErrorEFor<ulong>(path, n);
     };
-    public static readonly Parser<float> floatParser = n => {
+
+    public static readonly Parser<float> floatParser = (path, n) => {
       try {
-        if (n is double) return F.some((float) (double) n);
-        if (n is float) return F.some((float) n);
-        if (n is long) return F.some((float) (long) n);
-        if (n is ulong) return F.some((float) (ulong) n);
-        if (n is int) return F.some((float) (int) n);
-        if (n is uint) return F.some((float) (uint) n);
+        if (n is double) return Either<ConfigLookupError, float>.Right((float) (double) n);
+        if (n is float) return Either<ConfigLookupError, float>.Right((float) n);
+        if (n is long) return Either<ConfigLookupError, float>.Right((long) n);
+        if (n is ulong) return Either<ConfigLookupError, float>.Right((ulong) n);
+        if (n is int) return Either<ConfigLookupError, float>.Right((int) n);
+        if (n is uint) return Either<ConfigLookupError, float>.Right((uint) n);
       }
       catch (OverflowException) {}
-      return Option<float>.None;
+      return parseErrorEFor<float>(path, n);
     };
-    static readonly Fn<object, Option<float>> fnFloatParser = _ => floatParser(_);
-    public static readonly Parser<double> doubleParser = n => {
+
+    public static readonly Parser<double> doubleParser = (path, n) => {
       try {
-        if (n is double) return F.some((double) n);
-        if (n is float) return F.some((double) (float) n);
-        if (n is long) return F.some((double) (long) n);
-        if (n is ulong) return F.some((double) (ulong) n);
-        if (n is int) return F.some((double) (int) n);
-        if (n is uint) return F.some((double) (uint) n);
+        if (n is double) return Either<ConfigLookupError, double>.Right((double) n);
+        if (n is float) return Either<ConfigLookupError, double>.Right((float) n);
+        if (n is long) return Either<ConfigLookupError, double>.Right((long) n);
+        if (n is ulong) return Either<ConfigLookupError, double>.Right((ulong) n);
+        if (n is int) return Either<ConfigLookupError, double>.Right((int) n);
+        if (n is uint) return Either<ConfigLookupError, double>.Right((uint) n);
       }
       catch (OverflowException) { }
-      return Option<double>.None;
-    };
-    public static readonly Parser<bool> boolParser = n => castA<bool>(n);
-
-    public static readonly Parser<FRange> fRangeParser = n => {
-      foreach (var dict in F.opt(n as Dictionary<string, object>)) {
-        foreach (var lower in dict.get("lower").flatMap(fnFloatParser))
-          foreach (var upper in dict.get("upper").flatMap(fnFloatParser))
-            return F.some(new FRange(lower, upper));
-      }
-      return Option<FRange>.None;
+      return parseErrorEFor<double>(path, n);
     };
 
-    public static readonly Parser<DateTime> dateTimeParser = n =>
-      n is DateTime
-      ? F.some((DateTime) n)
-      : F.opt(n as string).flatMap(_ => _.parseDateTime().value);
+    public static readonly Parser<bool> boolParser = createCastParser<bool>();
 
-    public override string scope { get; }
-
-    readonly Dictionary<string, object> root, scopedRoot;
-
-    public Config(Dictionary<string, object> root, Dictionary<string, object> scopedRoot=null, string scope="") {
-      this.scope = scope;
-      this.root = root;
-      this.scopedRoot = scopedRoot ?? root;
-    }
-
-    #region either getters
-
-    public override Either<Configuration.ConfigFetchError, object> eitherObject(string key)
-    { return get(key, objectParser); }
-
-    public override Either<Configuration.ConfigFetchError, A> eitherGet<A>(
-      string key, Parser<A> parser
-    ) => get(key, parser);
-
-    public override Either<Configuration.ConfigFetchError, string> eitherString(string key)
-    { return get(key, stringParser); }
-
-    public override Either<Configuration.ConfigFetchError, int> eitherInt(string key)
-    { return get(key, intParser); }
-
-    public override Either<Configuration.ConfigFetchError, uint> eitherUInt(string key)
-    { return get(key, uintParser); }
-
-    public override Either<Configuration.ConfigFetchError, long> eitherLong(string key)
-    { return get(key, longParser); }
-
-    public override Either<Configuration.ConfigFetchError, ulong> eitherULong(string key)
-    { return get(key, ulongParser); }
-
-    public override Either<Configuration.ConfigFetchError, float> eitherFloat(string key)
-    { return get(key, floatParser); }
-
-    public override Either<Configuration.ConfigFetchError, double> eitherDouble(string key)
-    { return get(key, doubleParser); }
-
-    public override Either<Configuration.ConfigFetchError, bool> eitherBool(string key)
-    { return get(key, boolParser); }
-
-    public override Either<Configuration.ConfigFetchError, FRange> eitherFRange(string key)
-    { return get(key, fRangeParser); }
-
-    public override Either<Configuration.ConfigFetchError, DateTime> eitherDateTime(string key)
-    { return get(key, dateTimeParser); }
-
-    public override Either<Configuration.ConfigFetchError, IConfig> eitherSubConfig(string key) {
-      return get(key, jsClassParser).mapRight(n =>
-        (IConfig)new Config(root, n, scope == "" ? key : scope + "." + key)
-      );
-    }
-
-    public override Either<Configuration.ConfigFetchError, IList<IConfig>> eitherSubConfigList(string key) {
-      return eitherList(key, jsClassParser).mapRight(nList => {
-        var lst = F.emptyList<IConfig>(nList.Count);
-        // ReSharper disable once LoopCanBeConvertedToQuery
-        for (var idx = 0; idx < nList.Count; idx++) {
-          var n = nList[idx];
-          lst.Add(new Config(root, n, $"{(scope == "" ? key : scope + "." + key)}[{idx}]"));
-        }
-        return (IList<IConfig>)lst;
-      });
-    }
-
-    public override Either<Configuration.ConfigFetchError, IList<A>> eitherList<A>(string key, Parser<A> parser) {
-      return get(key, n => F.some(n as List<object>)).flatMapRight(arr => {
-        var list = new List<A>(arr.Count);
-        for (var idx = 0; idx < arr.Count; idx++) {
-          var node = arr[idx];
-          var parsed = parser(node);
-          if (parsed.isDefined) list.Add(parsed.get);
-          else return F.left<Configuration.ConfigFetchError, IList<A>>(Configuration.ConfigFetchError.wrongType(
-            $"Cannot convert '{key}'[{idx}] to {typeof(A)}: {node}"
-          ));
-        }
-        return F.right<Configuration.ConfigFetchError, IList<A>>(list);
-      });
-    }
+    public static readonly Parser<DateTime> dateTimeParser = 
+      createCastParser<DateTime>()
+      .or(stringParser.flatMap((path, s) => {
+        var t = s.parseDateTime();
+        return t.isSuccess 
+          ? Either<ConfigLookupError, DateTime>.Right(t.__unsafeGet) 
+          : parseErrorEFor<DateTime>(path, s, t.__unsafeException.Message);
+      }));
 
     #endregion
 
-    Either<Configuration.ConfigFetchError, A> get<A>(string key, Parser<A> parser, Dictionary<string, object> current = null) {
-      var parts = split(key);
+    public ConfigPath scope { get; }
 
-      current = current ?? scopedRoot;
-      foreach (var part in parts.dropRight(1)) {
-        var either = fetch(current, key, part, jsClassParser);
-        if (either.isLeft) return either.mapRight(_ => default(A));
+    readonly Dictionary<string, object> root;
+
+    public Config(
+      Dictionary<string, object> root, ConfigPath scope
+    ) {
+      this.scope = scope;
+      this.root = root;
+    }
+
+    public Config(Dictionary<string, object> root) : this(root, ConfigPath.root) {}
+
+    public ICollection<string> keys => root.Keys;
+
+    #region Getters
+
+    public A as_<A>(Parser<A> parser) =>
+      e2a(eitherAs(parser));
+
+    public A get<A>(string key, Parser<A> parser) => 
+      e2a(internalGet(key, parser));
+
+    static A e2a<A>(Either<ConfigLookupError, A> e) {
+      if (e.isLeft) throw new ConfigFetchException(e.__unsafeGetLeft);
+      return e.__unsafeGetRight;
+    }
+
+    public Option<A> optAs<A>(Parser<A> parser) => 
+      eitherAs(parser).rightValue;
+
+    public Option<A> optGet<A>(string key, Parser<A> parser) =>
+      internalGet(key, parser).rightValue;
+
+    public Try<A> tryAs<A>(Parser<A> parser) => 
+      e2t(eitherAs(parser));
+
+    public Try<A> tryGet<A>(string key, Parser<A> parser) => 
+      e2t(internalGet(key, parser));
+
+    static Try<A> e2t<A>(Either<ConfigLookupError, A> e) =>
+      e.isLeft
+        ? new Try<A>(new ConfigFetchException(e.__unsafeGetLeft))
+        : new Try<A>(e.__unsafeGetRight);
+
+    public Either<ConfigLookupError, A> eitherAs<A>(Parser<A> parser) => 
+      parser(scope, root);
+
+    public Either<ConfigLookupError, A> eitherGet<A>(
+      string key, Parser<A> parser
+    ) => internalGet(key, parser);
+    
+    #endregion
+
+
+
+    Either<ConfigLookupError, A> internalGet<A>(
+      string key, Parser<A> parser, Dictionary<string, object> current = null
+    ) {
+      var path = scope / key;
+      var parts = path.path;
+
+      current = current ?? root;
+      var toIdx = parts.Count - 1;
+      for (var idx = 0; idx < toIdx; idx++) {
+        var idxPart = parts[idx];
+        var either = fetch(current, path, idxPart, jsClassParser);
+        if (either.isLeft) return either.__unsafeCastRight<A>();
         current = either.rightValue.get;
       }
 
-      return fetch(current, key, parts[parts.Length - 1], parser);
+      return fetch(current, path, parts[toIdx], parser);
     }
 
-    static string[] split(string key) {
-      return key.Split('.');
-    }
-
-    Either<Configuration.ConfigFetchError, A> fetch<A>(
-      Dictionary<string, object> current, string key, string part, Parser<A> parser
+    Either<ConfigLookupError, A> fetch<A>(
+      IDictionary<string, object> current, ConfigPath path, string part, Parser<A> parser
     ) {
       if (!current.ContainsKey(part))
-        return F.left<Configuration.ConfigFetchError, A>(Configuration.ConfigFetchError.keyNotFound(
-          $"Cannot find part '{part}' from key '{key}' in {current.asString()} " +
-          $"[scope='{scope}']"
-        ));
+        return F.left<ConfigLookupError, A>(ConfigLookupError.keyNotFound(F.lazy(() =>
+          $"Cannot find part '{part}' from path '{path}' in {current.asString()} " +
+          $"[{nameof(scope)}='{scope}']"
+        )));
+
       var node = current[part];
-
-      return followReference(node).flatMapRight(n =>
-        parser(n).fold(
-          () => F.left<Configuration.ConfigFetchError, A>(Configuration.ConfigFetchError.wrongType(
-            $"Cannot convert part '{part}' from key '{key}' to {typeof (A)}. Type={n.GetType()}" +
-            $" Contents: {n}"
-          )), F.right<Configuration.ConfigFetchError, A>
-        )
-      );
+      return parser(path, node);
     }
 
-    Either<Configuration.ConfigFetchError, object> followReference(object current) {
-      var str = current as string;
-      // references are specified with '#REF=...#'
-      if (
-        str != null &&
-        str.Length >= 6
-        && str.Substring(0, 5) == "#REF="
-        && str.Substring(str.Length - 1, 1) == "#"
-      ) {
-        var key = str.Substring(5, str.Length - 6);
-        // References are always followed from the root tree.
-        return get(key, F.some, root).mapLeft(err =>
-          Configuration.ConfigFetchError.brokenRef($"While following reference {str}: {err}")
-        );
-      }
-      else return F.right<Configuration.ConfigFetchError, object>(current);
-    }
-
-    public override string ToString() {
-      return $"Config(scope: \"{scope}\", data: {scopedRoot})";
-    }
+    public override string ToString() => 
+      $"{nameof(Config)}({nameof(scope)}: \"{scope}\", {nameof(root)}: {root})";
   }
 
   public static class ConfigExts {
-    public static Config.Parser<B> flatMap<A, B>(this Config.Parser<A> aParser, Fn<A, Option<B>> f) =>
-      o => aParser(o).flatMap(f);
+    public static Config.Parser<B> map<A, B>(this Config.Parser<A> aParser, Fn<ConfigPath, A, B> f) =>
+      (path, o) => aParser(path, o).mapRight(a => f(path, a));
+
+    public static Config.Parser<B> flatMap<A, B>(
+      this Config.Parser<A> aParser, Fn<ConfigPath, A, Option<B>> f
+    ) => aParser.flatMap((path, a) => {
+      var bOpt = f(path, a);
+      return bOpt.isDefined
+        ? Either<ConfigLookupError, B>.Right(bOpt.get) 
+        : Config.parseErrorEFor<B>(path, a);
+    });
+
+    public static Config.Parser<B> flatMap<A, B>(
+      this Config.Parser<A> aParser, Fn<ConfigPath, A, Either<ConfigLookupError, B>> f
+    ) =>
+      (path, o) => aParser(path, o).flatMapRight(a => f(path, a));
+
+    public static Config.Parser<B> flatMapTry<A, B>(
+      this Config.Parser<A> aParser, Fn<ConfigPath, A, B> f
+    ) => 
+      (path, o) => aParser(path, o).flatMapRight(a => {
+        try { return new Either<ConfigLookupError, B>(f(path, a)); }
+        catch (ConfigFetchException e) { return new Either<ConfigLookupError, B>(e.error); }
+      });
+
+    public static Config.Parser<A> filter<A>(
+      this Config.Parser<A> parser, Fn<A, bool> predicate
+    ) =>
+      (path, o) => parser(path, o).flatMapRight(a => 
+        predicate(a) 
+        ? new Either<ConfigLookupError, A>(a) 
+        : Config.parseErrorEFor<A>(path, a, "didn't pass predicate")
+      );
+
+    public static Config.Parser<B> collect<A, B>(
+      this Config.Parser<A> parser, Fn<A, Option<B>> collector
+    ) =>
+      (path, o) => parser(path, o).flatMapRight(a => {
+        var bOpt = collector(a);
+        return bOpt.isDefined
+          ? new Either<ConfigLookupError, B>(bOpt.get)
+          : Config.parseErrorEFor<B>(path, a, "didn't pass collector");
+      });
+
+    public static Config.Parser<A> or<A>(this Config.Parser<A> a1, Config.Parser<A> a2) =>
+      (path, node) => {
+        var a1E = a1(path, node);
+        return a1E.isRight ? a1E : a2(path, node);
+      };
+
+    public static Config.Parser<Tpl<A1, A2>> and<A1, A2>(
+      this Config.Parser<A1> a1p, Config.Parser<A2> a2p
+    ) =>
+      (path, node) => {
+        var a1E = a1p(path, node);
+        if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2>>();
+        var a2E = a2p(path, node);
+        if (a2E.isLeft) return a2E.__unsafeCastRight<Tpl<A1, A2>>();
+        return new Either<ConfigLookupError, Tpl<A1, A2>>(F.t(
+          a1E.__unsafeGetRight, a2E.__unsafeGetRight
+        ));
+      };
+
+    public static Config.Parser<Tpl<A1, A2, A3>> and<A1, A2, A3>(
+      this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p
+    ) =>
+      (path, node) => {
+        var a1E = a1p(path, node);
+        if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2, A3>>();
+        var a2E = a2p(path, node);
+        if (a2E.isLeft) return a2E.__unsafeCastRight<Tpl<A1, A2, A3>>();
+        var a3E = a3p(path, node);
+        if (a3E.isLeft) return a3E.__unsafeCastRight<Tpl<A1, A2, A3>>();
+        return new Either<ConfigLookupError, Tpl<A1, A2, A3>>(F.t(
+          a1E.__unsafeGetRight, a2E.__unsafeGetRight, a3E.__unsafeGetRight
+        ));
+      };
   }
 }
