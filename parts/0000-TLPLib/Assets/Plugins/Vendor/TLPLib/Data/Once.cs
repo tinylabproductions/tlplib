@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  static class Once {
-    internal struct Builder<In> {
+  public static class Once {
+    public struct Builder<In> {
       public Once<In, Out> to<Out>(Fn<In, Out> fn) { return a(fn); }
     }
 
@@ -17,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   /* Something that needs to only happen once per unique argument. Pretty much a cache. */
-  class Once<In, Out> {
+  public class Once<In, Out> {
     readonly Dictionary<In, Out> cache = new Dictionary<In, Out>();
     readonly Fn<In, Out> fn;
 
