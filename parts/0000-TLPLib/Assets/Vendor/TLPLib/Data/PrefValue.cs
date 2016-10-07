@@ -279,7 +279,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<A> base64<A>(
       string key, A defaultVal,
       Fn<A, IEnumerable<byte[]>> serialize,
-      Fn<IEnumerable<byte[]>, Option<A>> deserialize,
+      Fn<byte[][], Option<A>> deserialize,
       bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log=null

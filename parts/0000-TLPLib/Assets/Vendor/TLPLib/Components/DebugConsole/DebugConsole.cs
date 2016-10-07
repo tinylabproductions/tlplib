@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DConsole {
+    public enum Direction { Left, Up, Right, Down }
+
     public struct Command {
       public readonly string cmdGroup, name;
       public readonly Action run;
@@ -46,15 +50,87 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     Option<Instance> current = F.none<Instance>();
 
-    public static readonly int[] DEFAULT_SEQUENCE = { 0, 1, 3, 2, 0, 2, 3, 1, 0 };
+    public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
+    public static readonly ImmutableList<Direction> DEFAULT_DIRECTION_SEQUENCE =
+      ImmutableList.Create(
+        Direction.Left, Direction.Right, 
+        Direction.Left, Direction.Right,
+        Direction.Left, Direction.Up, 
+        Direction.Right, Direction.Down,
+        Direction.Right, Direction.Up
+      );
+
+    public static readonly DebugSequenceMouseData DEFAULT_MOUSE_DATA = new DebugSequenceMouseData();
+    public class DebugSequenceMouseData {
+      public readonly int width, height;
+      public readonly ImmutableList<int> sequence;
+
+      public DebugSequenceMouseData(int width=2, int height=2, ImmutableList<int> sequence=null) {
+        this.width = width;
+        this.height = height;
+        this.sequence = sequence ?? DEFAULT_MOUSE_SEQUENCE;
+      }
+    }
+
+    public static readonly DebugSequenceDirectionData DEFAULT_DIRECTION_DATA = new DebugSequenceDirectionData();
+    public class DebugSequenceDirectionData {
+      public readonly string horizonalAxisName, verticalAxisName;
+      public readonly Duration timeframe;
+      public readonly ImmutableList<Direction> sequence;
+
+      public DebugSequenceDirectionData(
+        string horizonalAxisName="Horizontal", 
+        string verticalAxisName="Vertical", 
+        Duration timeframe=default(Duration),
+        ImmutableList<Direction> sequence=null
+      ) {
+        this.horizonalAxisName = horizonalAxisName;
+        this.verticalAxisName = verticalAxisName;
+        this.timeframe = timeframe == default(Duration) ? 5.seconds() : timeframe;
+        sequence = sequence ?? DEFAULT_DIRECTION_SEQUENCE;
+        this.sequence = sequence;
+
+        for (var idx = 0; idx < sequence.Count - 1; idx++) {
+          var current = sequence[idx];
+          var next = sequence[idx + 1];
+          if (current == next) throw new ArgumentException(
+            $"{nameof(DebugSequenceDirectionData)} sequence can't contain subsequent elements! " +
+            $"Found {current} at {idx} & {idx + 1}.", 
+            nameof(sequence)
+          );
+        }
+      }
+    }
 
     public static IObservable<Unit> registerDebugSequence(
-      DebugConsoleBinding binding=null, int width=2, int height=2, int[] sequence=null
+      DebugSequenceMouseData mouseData=null, DebugSequenceDirectionData directionData=null,
+      DebugConsoleBinding binding=null
     ) {
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
-      sequence = sequence ?? DEFAULT_SEQUENCE;
+      mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
+      directionData = directionData ?? DEFAULT_DIRECTION_DATA;
 
-      var obs = new RegionClickObservable(width, height).sequenceWithinTimeframe(sequence, 3);
+      var mouseObs = 
+        new RegionClickObservable(mouseData.width, mouseData.height)
+        .sequenceWithinTimeframe(mouseData.sequence, 3);
+
+      var directions = Observable.everyFrame.collect(_ => {
+        var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
+        var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
+        // Both are equal, can't decide.
+        if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
+        return 
+          Math.Abs(horizontal) > Math.Abs(vertical) 
+          ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
+          : F.some(vertical > 0 ? Direction.Up : Direction.Down);
+      }).changedValues();
+
+      var directionObs = 
+        directions
+        .withinTimeframe(directionData.sequence.Count, directionData.timeframe)
+        .filter(l => l.Select(t => t._1).SequenceEqual(directionData.sequence));
+
+      var obs = mouseObs.joinDiscard(directionObs);
       obs.subscribe(_ => instance.show(binding));
       return obs;
     }

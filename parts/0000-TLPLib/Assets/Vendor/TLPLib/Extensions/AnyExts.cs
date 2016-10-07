@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -22,6 +23,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<A> some<A>(this A a) { return F.some(a); }
 
     public static CastBuilder<A> cast<A>(this A a) where A : class { return new CastBuilder<A>(a); }
+
+    public static string asString<A>(this A a) {
+      var enumerable = a as IEnumerable;
+      // ReSharper disable once InvokeAsExtensionMethod
+      return enumerable != null 
+        ? IEnumerableExts.asString(enumerable) 
+        : a == null ? "null" : a.ToString();
+    }
   }
 
   public struct CastBuilder<From> where From : class {
@@ -36,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         : Either<string, To>.Right(to);
     }
 
-    static string errorMsg<To>() => $"Can't cast {typeof(From)} to {typeof(To)}";
+    string errorMsg<To>() => $"Can't cast {from.GetType()} to {typeof(To)}";
 
     public To to<To>() where To : class, From {
       var to = from as To;

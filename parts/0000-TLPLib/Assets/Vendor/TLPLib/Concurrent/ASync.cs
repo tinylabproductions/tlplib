@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -8,15 +9,15 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    private static ASyncHelperBehaviour coroutineHelper(GameObject go) {
+    static ASyncHelperBehaviour coroutineHelper(GameObject go) {
       return
         go.GetComponent<ASyncHelperBehaviour>() ??
         go.AddComponent<ASyncHelperBehaviour>();
     }
 
-    private static ASyncHelperBehaviour _behaviour;
+    static ASyncHelperBehaviour _behaviour;
 
-    private static ASyncHelperBehaviour behaviour { get {
+    static ASyncHelperBehaviour behaviour { get {
       if (((object)_behaviour) == null) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
@@ -40,14 +41,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new Coroutine(behaviour, coroutine);
     }
 
-    public static Coroutine WithDelay(float seconds, Action action) {
-      return WithDelay(seconds, behaviour, action);
-    }
-
     public static Coroutine WithDelay(
-      float seconds, MonoBehaviour behaviour, Action action
+      float seconds, Action action, MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
     ) {
-      var enumerator = WithDelayEnumerator(seconds, action);
+      behaviour = behaviour ?? ASync.behaviour;
+      var enumerator = WithDelayEnumerator(seconds, action, timeScale);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -176,9 +174,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WithDelayEnumerator(
-      float seconds, Action action
+      float seconds, Action action, TimeScale timeScale=TimeScale.Unity
     ) {
-      yield return new WaitForSeconds(seconds);
+      if (timeScale == TimeScale.Unity) yield return new WaitForSeconds(seconds);
+      else {
+        var waitTime = timeScale.now() + seconds;
+        while (waitTime > timeScale.now()) yield return null;
+      }
       action();
     }
 
@@ -228,4 +230,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
   }
+
+  public class WaitForSecondsUnscaled : CustomYieldInstruction {
+    readonly float waitTime;
+
+    public override bool keepWaiting {
+      get { return Time.unscaledTime < waitTime; }
+    }
+
+    public WaitForSecondsUnscaled(float time) { waitTime = Time.unscaledTime + time; }
+  }
+
 }

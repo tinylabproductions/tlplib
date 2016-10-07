@@ -46,6 +46,13 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreNotEqual(expected, a, message);
 
+    public static void shouldBeApproximately(this int a, int target, int delta, string message = null) {
+      var actualDelta = Math.Abs(a - target);
+      if (actualDelta > delta) Assert.Fail(
+        message ?? $"Expected {a} to be within {delta} of {target}, but the delta was {actualDelta}"
+      );
+    }
+
     public static void shouldInclude(this string s, string substring, string message = null) {
       if (!s.Contains(substring))
         Assert.Fail(
@@ -114,9 +121,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       a.shouldEqual(F.none<A>(), message);
     }
 
-    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) {
-      either.shouldEqual(F.left<A, B>(expected), message);
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, string message = null) {
+      if (! either.isLeft) Assert.Fail(message ?? $"Expected {either} to be left!");
     }
+
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) => 
+      either.shouldEqual(F.left<A, B>(expected), message);
 
     public static void shouldBeLeftEnum<A, B>(
       this Either<A, B> either, A expected, string message = null
@@ -128,9 +138,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       either.shouldEqual(F.left<A, B>(expected), message);
     }
 
-    public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) {
-      either.shouldEqual(F.right<A, B>(expected), message);
+    public static void shouldBeRight<A, B>(this Either<A, B> either, string message = null) {
+      if (! either.isRight) Assert.Fail(message ?? $"Expected {either} to be right!");
     }
+
+    public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) => 
+      either.shouldEqual(F.right<A, B>(expected), message);
 
     public static void shouldBeRightEnum<A, B>(
       this Either<A, B> either, B expected, string message = null
@@ -192,6 +205,11 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static IConfig asConfig(this string json) =>
       new Config(Json.Deserialize(json).cast().to<Dictionary<string, object>>());
+
+    public static Either<ConfigLookupError, A> testParser<A>(
+      this string json, Config.Parser<A> parser
+    ) =>
+      $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
   }
 
   public class SetEquals<A> : Constraint {

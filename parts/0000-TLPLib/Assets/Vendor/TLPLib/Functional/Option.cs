@@ -98,9 +98,8 @@ public
 
   public void voidCata(Act<A> ifNonEmpty, Action ifEmpty) { voidFold(ifEmpty, ifNonEmpty); }
 
-  public Option<A> filter(Fn<A, bool> predicate) {
-    return (isSome ? (predicate(value) ? this : F.none<A>()) : this);
-  }
+  public Option<A> filter(Fn<A, bool> predicate) => 
+    isSome ? (predicate(value) ? this : F.none<A>()) : this;
 
   public bool exists(Fn<A, bool> predicate) {
     return isSome && predicate(value);

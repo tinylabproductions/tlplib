@@ -51,8 +51,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Try<B> flatMap<B>(Fn<A, Try<B>> onValue)
     { return isSuccess ? onValue(_value) : F.err<B>(_exception); }
 
-    public A getOrThrow
-      { get { return isSuccess ? _value : F.throws<A>(_exception); } }
+    public A getOrThrow => isSuccess ? _value : F.throws<A>(_exception);
+
+    public A __unsafeGet => _value;
+    public Exception __unsafeException => _exception;
 
     public override string ToString() {
       return isSuccess ? "Success(" + _value + ")" : "Error(" + _exception + ")";
