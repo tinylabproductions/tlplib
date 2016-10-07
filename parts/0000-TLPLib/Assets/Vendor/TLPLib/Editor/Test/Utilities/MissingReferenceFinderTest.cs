@@ -22,6 +22,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
 
     class NotNullSerializedField : MonoBehaviour {
       [NotNull, SerializeField] GameObject field;
+      public void setField (GameObject go) { field = go; }
     }
 
     [Serializable]
@@ -30,11 +31,12 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
     }
 
     class NullReferencePublicField : MonoBehaviour {
-      public InnerNotNull field = new InnerNotNull();
+      public InnerNotNull field;
     }
 
     class NullReferenceSerializedField : MonoBehaviour {
-      [SerializeField] InnerNotNull field = new InnerNotNull();
+      [SerializeField] InnerNotNull field;
+      public void setField (InnerNotNull inn) { field = inn; }
     }
 
     [Test] public void WhenMissingReference() => test<TestClass>(
@@ -44,27 +46,57 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       },
       ReferencesInPrefabs.ErrorType.MISSING_REF.some()
     );
-    [Test] public void WhenReferenceNotMissing() => test<TestClass>();
-    [Test] public void WhenMissingReferenceInner() => Assert.Fail();
-    [Test] public void WhenReferenceNotMissingInner() => Assert.Fail();
+    [Test] public void WhenReferenceNotMissing() => test<TestClass>(
+      a => {
+        a.field = new GameObject();
+      }
+    );
+    [Test] public void WhenMissingReferenceInner() => test<NullReferencePublicField>(
+      a => {
+        a.field.field = new GameObject();
+        Object.DestroyImmediate(a.field.field);
+      },
+      ReferencesInPrefabs.ErrorType.MISSING_REF.some()
+    );
+    [Test] public void WhenReferenceNotMissingInner() => test<NullReferencePublicField>(
+      a => {
+        a.field.field = new GameObject();
+      }
+    );
 
     [Test] public void WhenNotNullPublicField() => test<NotNullPublicField>(
       errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
     );
-    [Test] public void WhenNotNullPublicFieldSet() => Assert.Fail();
+    [Test] public void WhenNotNullPublicFieldSet() => test<NotNullPublicField>(
+      a => {
+        a.field = new GameObject();
+      }
+    );
     [Test] public void WhenNotNullSerializedField() => test<NotNullSerializedField>(
       errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
     );
-    [Test] public void WhenNotNullSerializedFieldSet() => Assert.Fail();
+    [Test] public void WhenNotNullSerializedFieldSet() => test<NotNullSerializedField>(
+      a => {
+        a.setField(new GameObject());
+      }
+    );
 
     [Test] public void WhenNullInsideMonoBehaviorPublicField() => test<NullReferencePublicField>(
       errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
     );
-    [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => Assert.Fail();
+    [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => test<NullReferencePublicField>(
+      a => {
+        a.field = new InnerNotNull {field = new GameObject()};
+      }
+    );
     [Test] public void WhenNullInsideMonoBehaviorSerializedField() => test<NullReferenceSerializedField>(
       errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
     );
-    [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => Assert.Fail();
+    [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => test<NullReferenceSerializedField>(
+      a => {
+        a.setField(new InnerNotNull {field = new GameObject()});
+      }
+    );
 
     static void test<A>(
       Act<A> setupA = null,

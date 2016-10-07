@@ -9,6 +9,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using JetBrains.Annotations;
+using UnityEditor.SceneManagement;
+using com.tinylabproductions.TLPLib.Filesystem;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ReferencesInPrefabs : MonoBehaviour {
@@ -46,20 +48,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     );
 
     static bool anyErrors;
-    static readonly Dictionary<Type, IEnumerable<FieldInfo>> typeResultsCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
 
     [PostProcessBuild]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject) {
-      if (anyErrors) {
-        anyErrors = false;
-        throw new Exception($"Build failed ({target})");
-      }
+      if (!anyErrors) return;
+
+      anyErrors = false;
+      throw new Exception($"Build failed ({target})");
     }
 
     [PostProcessScene(0)]
     [MenuItem("Tools/Show Missing Object References in scene2", false, 55)]
     public static void findMissingReferencesInCurrentScene() {
-      GameObject[] objects = EditorApplication.isPlayingOrWillChangePlaymode
+      var objects = EditorApplication.isPlayingOrWillChangePlaymode
         ? Resources.FindObjectsOfTypeAll<GameObject>().Where(o => !AssetDatabase.Contains(o)).ToArray()
         : getSceneObjects();
       var errors = findMissingReferences(SceneManager.GetActiveScene().name, objects);
@@ -68,9 +69,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Debug.Log($"{nameof(findMissingReferencesInCurrentScene)} finished");
     }
 
-    public static void missingReferencesInAssets() {
-      //var loadedScenes = scenes.Select(s => AssetDatabase.LoadMainAssetAtPath(scene)).ToArray();
-      var depsOfScene = EditorUtility.CollectDependencies(new UnityEngine.Object[] {}).Where( x => x is GameObject || x is ScriptableObject);
+    public static void missingReferencesInAssets(IEnumerable<PathStr> scenes) {
+      var loadedScenes = scenes.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
+      var depsOfScenes = EditorUtility.CollectDependencies(loadedScenes).Where( x => x is GameObject || x is ScriptableObject);
     }
 
     public static List<ReferenceError> findMissingReferences(string context, GameObject[] objects, bool useProgress = true) {
@@ -101,44 +102,45 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             }
 
             #region Unity Events
-            if (sp.type == nameof(UnityEvent)) {
-              var uniEvent = getUnityEvent(c, sp.propertyPath);
-              var baseType = uniEvent?.GetType().BaseType;
-              var method = baseType?.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
-              method?.Invoke(uniEvent, new object[] { });
+            if (sp.type != nameof(UnityEvent)) continue;
 
-              var m_PersistentCalls = baseType?.GetField("m_PersistentCalls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
-              var m_PersistentCallsValue = m_PersistentCalls?.GetValue(uniEvent);
+            var uniEvent = getUnityEvent(c, sp.propertyPath);
+            var baseType = uniEvent?.GetType().BaseType;
+            var method = baseType?.GetMethod("RebuildPersistentCallsIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
+            method?.Invoke(uniEvent, new object[] { });
 
-              var m_Calls = m_PersistentCallsValue?.GetType().GetField("m_Calls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
-              var m_CallsValue = m_PersistentCalls?.GetValue(uniEvent);
+            var m_PersistentCalls = baseType?.GetField("m_PersistentCalls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
+            var m_PersistentCallsValue = m_PersistentCalls?.GetValue(uniEvent);
 
-              var methods = baseType?.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
-              var methodInfo = methods?.First(mi => mi.Name.Equals("FindMethod") && mi.GetParameters().Any());
+            var m_Calls = m_PersistentCallsValue?.GetType().GetField("m_Calls", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
+            var m_CallsValue = m_PersistentCalls?.GetValue(uniEvent);
 
-              var listObject = (IEnumerable)m_Calls?.GetValue(m_CallsValue);
-              var index = 0;
-              if (listObject != null)
-                foreach (var persistentCall in listObject) {
-                  index++;
-                  Fn<GameObject, string, int, ReferenceError> err = null;
+            var methods = baseType?.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+            var methodInfo = methods?.First(mi => mi.Name.Equals("FindMethod") && mi.GetParameters().Any());
 
-                  var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
-                  if (isValid) {
-                    var mi = methodInfo?.Invoke(uniEvent, new[] { persistentCall });
-                    if (mi == null) err = unityEventInvalidMethod;
-                  }
-                  else err = unityEventNotValid;
+            var listObject = (IEnumerable)m_Calls?.GetValue(m_CallsValue);
+            if (listObject == null) continue;
 
-                  if (err != null)
-                    errors.Add(err(c.gameObject, ObjectNames.NicifyVariableName(sp.name), index));
-                }
+            var index = 0;
+            foreach (var persistentCall in listObject) {
+              index++;
+              Fn<GameObject, string, int, ReferenceError> err = null;
+
+              var isValid = (bool)persistentCall.GetType().GetMethod("IsValid").Invoke(persistentCall, new object[] { });
+              if (isValid) {
+                var mi = methodInfo?.Invoke(uniEvent, new[] { persistentCall });
+                if (mi == null) err = unityEventInvalidMethod;
+              }
+              else err = unityEventNotValid;
+
+              if (err != null)
+                errors.Add(err(c.gameObject, ObjectNames.NicifyVariableName(sp.name), index));
             }
+
             #endregion
           }
 
           var notNullFields = ReferencesInPrefabs.notNullFields(c);
-
           errors.AddRange(notNullFields.Select(field =>
             nullReference(c.gameObject, c.GetType().Name, field.Name, context)
           ));
