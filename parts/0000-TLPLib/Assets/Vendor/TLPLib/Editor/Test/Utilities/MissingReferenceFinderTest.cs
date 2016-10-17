@@ -1,4 +1,5 @@
 ﻿using System;
+using Assets.Code.Cars;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -37,6 +38,10 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
     class NullReferenceSerializedField : MonoBehaviour {
       [SerializeField] InnerNotNull field;
       public void setField (InnerNotNull inn) { field = inn; }
+    }
+
+    public class ScriptableObjectField : ScriptableObject {
+      public GameObject field;
     }
 
     [Test] public void WhenMissingReference() => test<TestClass>(
@@ -97,6 +102,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
         a.setField(new InnerNotNull {field = new GameObject()});
       }
     );
+
+    [Test] public void WhenScriptableObjectFieldMissingReference() {
+      var so = ScriptableObject.CreateInstance(typeof(ScriptableObject));
+      var errors = ReferencesInPrefabs.findMissingReferences("", new []{ so });
+      Debug.LogWarning(errors.Count);
+      errors.shouldMatch(t => t.Exists(x => x.errorType == ReferencesInPrefabs.ErrorType.MISSING_REF));
+    }
 
     static void test<A>(
       Act<A> setupA = null,
