@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
         a.field = new GameObject();
         Object.DestroyImmediate(a.field);
       },
-      ReferencesInPrefabs.ErrorType.MISSING_REF.some()
+      MissingReferenceFinder.ErrorType.MISSING_REF.some()
     );
     [Test] public void WhenReferenceNotMissing() => test<TestClass>(
       a => {
@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
         a.field.field = new GameObject();
         Object.DestroyImmediate(a.field.field);
       },
-      ReferencesInPrefabs.ErrorType.MISSING_REF.some()
+      MissingReferenceFinder.ErrorType.MISSING_REF.some()
     );
     [Test] public void WhenReferenceNotMissingInner() => test<NullReferencePublicField>(
       a => {
@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
     );
 
     [Test] public void WhenNotNullPublicField() => test<NotNullPublicField>(
-      errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
+      errorType: MissingReferenceFinder.ErrorType.NULL_REF.some()
     );
     [Test] public void WhenNotNullPublicFieldSet() => test<NotNullPublicField>(
       a => {
@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       }
     );
     [Test] public void WhenNotNullSerializedField() => test<NotNullSerializedField>(
-      errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
+      errorType: MissingReferenceFinder.ErrorType.NULL_REF.some()
     );
     [Test] public void WhenNotNullSerializedFieldSet() => test<NotNullSerializedField>(
       a => {
@@ -87,7 +87,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
     );
 
     [Test] public void WhenNullInsideMonoBehaviorPublicField() => test<NullReferencePublicField>(
-      errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
+      errorType: MissingReferenceFinder.ErrorType.NULL_REF.some()
     );
     [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => test<NullReferencePublicField>(
       a => {
@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       }
     );
     [Test] public void WhenNullInsideMonoBehaviorSerializedField() => test<NullReferenceSerializedField>(
-      errorType: ReferencesInPrefabs.ErrorType.NULL_REF.some()
+      errorType: MissingReferenceFinder.ErrorType.NULL_REF.some()
     );
     [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => test<NullReferenceSerializedField>(
       a => {
@@ -105,19 +105,19 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
 
     [Test] public void WhenScriptableObjectFieldMissingReference() {
       var so = ScriptableObject.CreateInstance(typeof(ScriptableObject));
-      var errors = ReferencesInPrefabs.findMissingReferences("", new []{ so });
+      var errors = MissingReferenceFinder.findMissingReferences("", new []{ so });
       Debug.LogWarning(errors.Count);
-      errors.shouldMatch(t => t.Exists(x => x.errorType == ReferencesInPrefabs.ErrorType.MISSING_REF));
+      errors.shouldMatch(t => t.Exists(x => x.errorType == MissingReferenceFinder.ErrorType.MISSING_REF));
     }
 
     static void test<A>(
       Act<A> setupA = null,
-      Option<ReferencesInPrefabs.ErrorType> errorType = new Option<ReferencesInPrefabs.ErrorType>()
+      Option<MissingReferenceFinder.ErrorType> errorType = new Option<MissingReferenceFinder.ErrorType>()
     ) where A : Component {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
-      var errors = ReferencesInPrefabs.findMissingReferences("", new [] { go }, false);
+      var errors = MissingReferenceFinder.findMissingReferences("", new [] { go }, false);
       errorType.voidFold(
         () => errors.shouldBeEmpty(),
         type => errors.shouldMatch(t => t.Exists(x => x.errorType == type))
