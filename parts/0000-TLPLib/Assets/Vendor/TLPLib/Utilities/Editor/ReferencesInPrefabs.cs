@@ -27,25 +27,25 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
-    static ReferenceError missingComponent(Object go) => new ReferenceError(
+    static ReferenceError missingComponent(Object o) => new ReferenceError(
       ErrorType.MISSING_COMP,
-      new Tpl<string, Object>($"Missing Component in GO or children: {go}", go)
+      new Tpl<string, Object>($"Missing Component in GO or children: {o}", o)
     );
-    static ReferenceError missingReference(Object go, string component, string property, string context) => new ReferenceError(
+    static ReferenceError missingReference(Object o, string component, string property, string context) => new ReferenceError(
       ErrorType.MISSING_REF,
-      new Tpl<string, Object>($"Missing Ref in: [{context}]. Component: {component}, Property: {property}", go)
+      new Tpl<string, Object>($"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
     );
-    static ReferenceError nullReference(Object go, string component, string property, string context) => new ReferenceError(
+    static ReferenceError nullReference(Object o, string component, string property, string context) => new ReferenceError(
       ErrorType.NULL_REF,
-      new Tpl<string, Object>($"Null Ref in: [{context}]. Component: {component}, Property: {property}", go)
+      new Tpl<string, Object>($"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
     );
-    static ReferenceError unityEventInvalidMethod(Object go, string property, int number, string context) => new ReferenceError(
+    static ReferenceError unityEventInvalidMethod(Object o, string property, int number, string context) => new ReferenceError(
       ErrorType.UE_INVALID_METHOD,
-      new Tpl<string, Object>($"UnityEvent {property} callback number {number} has invalid method in [{context}].", go)
+      new Tpl<string, Object>($"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.", o)
     );
-    static ReferenceError unityEventNotValid(Object go, string property, int number, string context) => new ReferenceError(
+    static ReferenceError unityEventNotValid(Object o, string property, int number, string context) => new ReferenceError(
       ErrorType.UE_NOT_VALID,
-      new Tpl<string, Object>($"UnityEvent {property} callback number {number} is not valid in [{context}].", go)
+      new Tpl<string, Object>($"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.", o)
     );
 
     static bool anyErrors;
@@ -59,12 +59,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [PostProcessScene(0)]
-    [MenuItem("Tools/Show Missing Object References in scene2", false, 55)]
+    [MenuItem("Tools/Show Missing Object References in scene", false, 55)]
     public static void findMissingReferencesInCurrentScene() {
       var objects = EditorApplication.isPlayingOrWillChangePlaymode
         ? Resources.FindObjectsOfTypeAll<Object>().Where(o => !AssetDatabase.Contains(o)).ToArray()
         : getSceneObjects();
-      showErrors(findMissingReferences(SceneManager.GetActiveScene().name, objects));
+      showErrors(findMissingReferences(SceneManager.GetActiveScene().name, objects, true));
       Debug.Log($"{nameof(findMissingReferencesInCurrentScene)} finished");
     }
 
@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors.Select(x => x.message._1).ToImmutableList();
     }
 
-    public static List<ReferenceError> findMissingReferences(string context, Object[] objects, bool useProgress = true) {
+    public static List<ReferenceError> findMissingReferences(string context, Object[] objects, bool useProgress = false) {
       var errors = new List<ReferenceError>();
       var scanned = 0;
       foreach (var o in objects) {
@@ -92,10 +92,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         if (go) {
           var components = go.GetComponentsInChildren<Component>();
           foreach (var c in components) {
+            errors.AddRange(checkComponent(context, c));
             if (c) continue;
 
             errors.Add(missingComponent(c.gameObject));
-            errors.AddRange(checkComponent(context, c));
           }
         } else {
           errors.AddRange(checkComponent(context, o));
@@ -212,10 +212,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showError(Tpl<string, Object> error) { Debug.LogError(error._1, error._2); }
 
-    static string fullPath(GameObject go) {
-      return go.transform.parent == null
-        ? go.name
-        : fullPath(go.transform.parent.gameObject) + "/" + go.name;
+    static string fullPath(Object o) {
+      var go = o as GameObject;
+      if (go)  
+        return go.transform.parent == null
+          ? go.name
+          : fullPath(go.transform.parent.gameObject) + "/" + go.name;
+
+      return o.name;
     }
   }
 }
