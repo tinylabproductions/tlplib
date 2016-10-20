@@ -184,7 +184,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         if (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>() || (fi.IsPrivate && fi.hasAttribute<SerializeField>())) {
 
           if (fi.hasAttribute<NotNullAttribute>()) {
-            if (fi.GetValue(o)?.Equals(null) ?? false)
+            if (!(fi.GetValue(o) is Object))
               results.Add(fi);
           }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using Assets.Code.Cars;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -23,6 +22,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
 
     class NotNullSerializedField : MonoBehaviour {
       [NotNull, SerializeField] GameObject field;
+      public void setField (GameObject go) { field = go; }
+    }
+
+    class NonSerializedField : MonoBehaviour {
+      [NotNull, NonSerialized] GameObject field;
       public void setField (GameObject go) { field = go; }
     }
 
@@ -103,10 +107,16 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       }
     );
 
+    [Test] public void WhenNonSerializedFieldIsNotSet() => test<NonSerializedField>();
+    [Test] public void WhenNonSerializedFieldIsSet() => test<NonSerializedField>(
+      a => {
+        a.setField(new GameObject());
+      }
+    );
+
     [Test] public void WhenScriptableObjectFieldMissingReference() {
       var so = ScriptableObject.CreateInstance(typeof(ScriptableObject));
       var errors = MissingReferenceFinder.findMissingReferences("", new []{ so });
-      Debug.LogWarning(errors.Count);
       errors.shouldMatch(t => t.Exists(x => x.errorType == MissingReferenceFinder.ErrorType.MISSING_REF));
     }
 
