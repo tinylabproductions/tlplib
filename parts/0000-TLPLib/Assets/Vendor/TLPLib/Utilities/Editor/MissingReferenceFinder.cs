@@ -181,7 +181,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
       var results = new List<FieldInfo>();
       foreach (var fi in fields) {
-        if (fi.IsPublic || (fi.IsPrivate && fi.hasAttribute<SerializeField>())) {
+        if (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>() || (fi.IsPrivate && fi.hasAttribute<SerializeField>())) {
 
           if (fi.hasAttribute<NotNullAttribute>()) {
             if (fi.GetValue(o)?.Equals(null) ?? false)
