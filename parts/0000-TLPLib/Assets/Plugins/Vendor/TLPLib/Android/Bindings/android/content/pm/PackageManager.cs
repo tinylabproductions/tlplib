@@ -1,7 +1,7 @@
 ﻿#if UNITY_ANDROID
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
   public class PackageManager : Binding {
     public PackageManager(AndroidJavaObject java) : base(java) {}
 

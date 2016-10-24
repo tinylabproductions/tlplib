@@ -1,7 +1,8 @@
 ﻿#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib.referrer {
   public class InstallReferrerReceiver {
     static readonly AndroidJavaClass klass;
     public static readonly string PREF_REFERRER;

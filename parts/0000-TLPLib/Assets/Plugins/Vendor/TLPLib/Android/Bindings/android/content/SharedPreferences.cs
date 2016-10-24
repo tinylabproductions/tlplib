@@ -2,7 +2,7 @@
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
   public class SharedPreferences : Binding {
     public SharedPreferences(AndroidJavaObject java) : base(java) {}
 

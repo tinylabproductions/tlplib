@@ -1,7 +1,7 @@
 ﻿#if UNITY_ANDROID
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.android.os {
   public class Bundle : BaseBundle {
     public Bundle() : base(new AndroidJavaObject("android.os.Bundle")) {}
     public Bundle(AndroidJavaObject java) : base(java) {}
