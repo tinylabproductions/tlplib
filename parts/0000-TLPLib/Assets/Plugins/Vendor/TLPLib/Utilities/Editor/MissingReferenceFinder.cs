@@ -183,16 +183,34 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       foreach (var fi in fields) {
         if (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>() || (fi.IsPrivate && fi.hasAttribute<SerializeField>())) {
 
-          if (fi.hasAttribute<NotNullAttribute>()) {
-            if (!(fi.GetValue(o) is Object))
-              results.Add(fi);
+          var fieldIsArray = false;
+          var list = fi.GetValue(o) as IList;
+          if (list != null) {
+            fieldIsArray = true;
+            var listItemType = list.GetType().GetElementType();
+            var isObject = typeof(Object).IsAssignableFrom(listItemType);
+
+            if (isObject) {
+              if (list.Contains(null) && fi.hasAttribute<NotNullAttribute>())
+                results.Add(fi);
+            }
+            else {
+              foreach (var listItem in list) 
+                results.AddRange(notNullFields(listItem));
+            }
           }
 
-          var fieldType = fi.FieldType;
-          if (fieldType.hasAttribute<SerializableAttribute>() && !fieldType.IsPrimitive) {
-            var fieldValue = fi.GetValue(o);
-            if (fieldValue != null)
-              results.AddRange(notNullFields(fieldValue));
+          if (fi.hasAttribute<NotNullAttribute>()) {
+            if (fi.GetValue(o) == null) results.Add(fi);
+          }
+
+          if (!fieldIsArray) {
+            var fieldType = fi.FieldType;
+            if (fieldType.hasAttribute<SerializableAttribute>() && !fieldType.IsPrimitive) {
+              var fieldValue = fi.GetValue(o);
+              if (fieldValue != null)
+                results.AddRange(notNullFields(fieldValue));
+            }
           }
         }
       }
