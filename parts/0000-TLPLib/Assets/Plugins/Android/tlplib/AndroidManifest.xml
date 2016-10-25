@@ -5,4 +5,16 @@
           android:versionName="1.0"
 >
   <uses-sdk android:minSdkVersion="9" />
+
+  <application>
+    <!-- To get install referrer. -->
+    <receiver
+      android:name="com.tinylabproductions.tlplib.referrer.InstallReferrerReceiver"
+      android:exported="true"
+      >
+      <intent-filter>
+        <action android:name="com.android.vending.INSTALL_REFERRER" />
+      </intent-filter>
+    </receiver>
+  </application>
 </manifest>
