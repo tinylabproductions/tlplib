@@ -1,6 +1,7 @@
 ﻿#if UNITY_ANDROID
 using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Android.Bindings.android.os;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;

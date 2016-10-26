@@ -1,9 +1,10 @@
 ﻿#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Android.Bindings.android.telephony;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib {
   public class TLPBridge {
     static readonly AndroidJavaClass klass = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
 

@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Android.Bindings {
+namespace com.tinylabproductions.TLPLib.Android.Bindings.android.telephony {
   public enum PhoneType {
     NONE = 0, GSM = 1, CDMA = 2, SIP = 3
   }
@@ -34,5 +34,6 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings {
       || (phoneType == PhoneType.CDMA ? F.none<string>() : networkCountryIso);
   }
 }
+
 #endif
       
