@@ -27,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
+    #region Reference errors
     static ReferenceError missingComponent(Object o) => new ReferenceError(
       ErrorType.MISSING_COMP,
       new Tpl<string, Object>($"Missing Component in GO or children: {o}", o)
@@ -47,23 +48,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       ErrorType.UE_NOT_VALID,
       new Tpl<string, Object>($"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.", o)
     );
-
-    static bool anyErrors;
-
-    [PostProcessBuild]
-    public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject) {
-      if (!anyErrors) return;
-
-      anyErrors = false;
-      throw new Exception($"Build failed ({target})");
-    }
+    #endregion
 
     [PostProcessScene(0)]
     [MenuItem("Tools/Show Missing Object References in scene", false, 55)]
     public static void findMissingReferencesInCurrentScene() {
-      var objects = EditorApplication.isPlayingOrWillChangePlaymode
-        ? Resources.FindObjectsOfTypeAll<Object>().Where(o => !AssetDatabase.Contains(o)).ToArray()
-        : getSceneObjects();
+      if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+
+      var objects = getSceneObjects();
       showErrors(findMissingReferences(SceneManager.GetActiveScene().name, objects, true));
       Debug.Log($"{nameof(findMissingReferencesInCurrentScene)} finished");
     }
@@ -218,15 +210,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return results;
     }
 
-    static GameObject[] getSceneObjects() {
+    static Object[] getSceneObjects() {
       return SceneManager.GetActiveScene().GetRootGameObjects()
-        .Where(go => go.hideFlags == HideFlags.None).ToArray();
+        .Where(go => go.hideFlags == HideFlags.None).Cast<Object>().ToArray();
     }
 
-    static void showErrors(List<ReferenceError> errors) {
-      foreach (var error in errors) showError(error.message);
-      anyErrors = errors.Any();
-    }
+    static void showErrors(List<ReferenceError> errors) { foreach (var error in errors) showError(error.message); }
 
     static void showError(Tpl<string, Object> error) { Debug.LogError(error._1, error._2); }
 
