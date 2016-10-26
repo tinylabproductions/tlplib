@@ -30,8 +30,10 @@ namespace com.tinylabproductions.Plugins.Vendor.TLPLib.Utilities {
     }
 
     void setAllSpritesColor(Color color) {
-      var sprites = gameObject.GetComponentsInChildren<SpriteRenderer>();
-      foreach (var sprite in sprites) sprite.color = color;
+      var opt = gameObject.GetComponentsInChildren<SpriteRenderer>().opt();
+      foreach (var sprites in opt) {
+        foreach (var sprite in sprites) sprite.color = color;
+      }
     }
   }
 }
