@@ -1,6 +1,7 @@
 ﻿#if UNITY_ANDROID
 using System;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
+using com.tinylabproductions.TLPLib.Android.java.lang;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.app {
@@ -8,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.app {
     public Activity(AndroidJavaObject java) : base(java) {}
 
     public void runOnUIThread(Action action) => 
-      java.Call("runOnUiThread", new JavaRunnable(action));
+      java.Call("runOnUiThread", new Runnable(action));
   }
 }
 #endif

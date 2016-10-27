@@ -1,5 +1,6 @@
 ﻿#if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Android.Bindings.android.telephony;
+using com.tinylabproductions.TLPLib.Android.Bindings.java.lang;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
     static readonly AndroidJavaClass klass = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
 
     public static Future<Either<string, Option<string>>> countryCodeFromLastKnownLocation { get {
-      return Future<Either<string, Option<string>>>.async(p => new JavaThread(() => {
+      return Future<Either<string, Option<string>>>.async(p => new JThread(() => {
         Either<string, Option<string>> ret;
         try {
           ret = Either<string, Option<string>>.Right(
