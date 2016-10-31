@@ -197,43 +197,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public static class EitherBuilderExts {
-    public static LeftEitherBuilder<A> left<A>(this A value) {
-      return new LeftEitherBuilder<A>(value);
-    }
-    public static RightEitherBuilder<B> right<B>(this B value) {
-      return new RightEitherBuilder<B>(value);
-    }
+    public static LeftEitherBuilder<A> left<A>(this A value) => new LeftEitherBuilder<A>(value);
+    public static RightEitherBuilder<B> right<B>(this B value) => new RightEitherBuilder<B>(value);
   }
 
-  public
-#if ENABLE_IL2CPP
-    class
-#else
-    struct
-#endif
-    LeftEitherBuilder<A> {
+  public struct LeftEitherBuilder<A> {
     public readonly A leftValue;
-
-    public LeftEitherBuilder(A leftValue) {
-      this.leftValue = leftValue;
-    }
-
-    public Either<A, B> r<B>() { return new Either<A, B>(leftValue); }
+    public LeftEitherBuilder(A leftValue) { this.leftValue = leftValue; }
+    public Either<A, B> r<B>() => new Either<A, B>(leftValue);
   }
 
-  public
-#if ENABLE_IL2CPP
-    class
-#else
-    struct
-#endif
-    RightEitherBuilder<B> {
+  public struct RightEitherBuilder<B> {
     public readonly B rightValue;
-
-    public RightEitherBuilder(B rightValue) {
-      this.rightValue = rightValue;
-    }
-
-    public Either<A, B> l<A>() { return new Either<A, B>(rightValue); }
+    public RightEitherBuilder(B rightValue) { this.rightValue = rightValue; }
+    public Either<A, B> l<A>() => new Either<A, B>(rightValue);
   }
 }
