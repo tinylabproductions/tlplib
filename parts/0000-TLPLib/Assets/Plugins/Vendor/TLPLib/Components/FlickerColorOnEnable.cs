@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace com.tinylabproductions.Plugins.Vendor.TLPLib.Utilities {
+namespace com.tinylabproductions.TLPLib.Components {
   public class FlickerColorOnEnable : MonoBehaviour, IMB_Awake, IMB_OnEnable {
     public Color flickeringColor;
     [FormerlySerializedAs("ammountOfFlickers")]
