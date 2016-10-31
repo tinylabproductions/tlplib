@@ -14,26 +14,21 @@ namespace com.tinylabproductions.Plugins.Vendor.TLPLib.Utilities {
     public void OnEnable() { StartCoroutine(flicker()); }
 
     IEnumerator flicker() {
-      var opt = gameObject.GetComponentInChildren<SpriteRenderer>().opt();
-      foreach (var op in opt) {
-        var originalColor = op.color;
+      var sprites = gameObject.GetComponentsInChildren<SpriteRenderer>();
+      if (sprites.nonEmpty()) {
+        var originalColors = sprites.map(_ => _.color);
+        var wait = new WaitForSeconds(flickeringRate);
 
         for (var i = 0; i < ammountOfFlickers; i++) {
-          setAllSpritesColor(flickeringColor);
-          yield return new WaitForSeconds(flickeringRate);
+          foreach (var sprite in sprites) sprite.color = flickeringColor;
+          yield return wait;
 
-          setAllSpritesColor(originalColor);
-          yield return new WaitForSeconds(flickeringRate);
+          for (var spriteIdx = 0; spriteIdx < sprites.Length; spriteIdx++)
+            sprites[spriteIdx].color = originalColors[spriteIdx];
+          yield return wait;
         }
       }
       enabled = false;
-    }
-
-    void setAllSpritesColor(Color color) {
-      var opt = gameObject.GetComponentsInChildren<SpriteRenderer>().opt();
-      foreach (var sprites in opt) {
-        foreach (var sprite in sprites) sprite.color = color;
-      }
     }
   }
 }
