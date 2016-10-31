@@ -2,11 +2,13 @@
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.Plugins.Vendor.TLPLib.Utilities {
   public class FlickerColorOnEnable : MonoBehaviour, IMB_Awake, IMB_OnEnable {
     public Color flickeringColor;
-    public int ammountOfFlickers = 5;
+    [FormerlySerializedAs("ammountOfFlickers")]
+    public int amountOfFlickers = 5;
     public float flickeringRate = .15f;
 
     public void Awake() { enabled = false; }
@@ -19,7 +21,7 @@ namespace com.tinylabproductions.Plugins.Vendor.TLPLib.Utilities {
         var originalColors = sprites.map(_ => _.color);
         var wait = new WaitForSeconds(flickeringRate);
 
-        for (var i = 0; i < ammountOfFlickers; i++) {
+        for (var i = 0; i < amountOfFlickers; i++) {
           foreach (var sprite in sprites) sprite.color = flickeringColor;
           yield return wait;
 
