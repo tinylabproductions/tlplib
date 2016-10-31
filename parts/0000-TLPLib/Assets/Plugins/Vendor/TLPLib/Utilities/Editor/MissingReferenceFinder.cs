@@ -11,6 +11,7 @@ using System.Collections.Immutable;
 using UnityEngine.Events;
 using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
+using com.tinylabproductions.TLPLib.Functional;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
@@ -30,23 +31,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     #region Reference errors
     static ReferenceError missingComponent(Object o) => new ReferenceError(
       ErrorType.MISSING_COMP,
-      new Tpl<string, Object>($"Missing Component in GO or children: {o}", o)
+      F.t($"Missing Component in GO or children: {o}", o)
     );
     static ReferenceError missingReference(Object o, string component, string property, string context) => new ReferenceError(
       ErrorType.MISSING_REF,
-      new Tpl<string, Object>($"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
+      F.t($"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
     );
     static ReferenceError nullReference(Object o, string component, string property, string context) => new ReferenceError(
       ErrorType.NULL_REF,
-      new Tpl<string, Object>($"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
+      F.t($"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
     );
     static ReferenceError unityEventInvalidMethod(Object o, string property, int number, string context) => new ReferenceError(
       ErrorType.UE_INVALID_METHOD,
-      new Tpl<string, Object>($"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.", o)
+      F.t($"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.", o)
     );
     static ReferenceError unityEventNotValid(Object o, string property, int number, string context) => new ReferenceError(
       ErrorType.UE_NOT_VALID,
-      new Tpl<string, Object>($"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.", o)
+      F.t($"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.", o)
     );
     #endregion
 
