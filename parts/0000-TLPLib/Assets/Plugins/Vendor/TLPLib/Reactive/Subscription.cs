@@ -11,13 +11,19 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public class Subscription : ISubscription {
+    /** Already unsubscribed subscription. */
+    public static readonly ISubscription empty;
+
+    static Subscription() {
+      empty = new Subscription(() => {});
+      empty.unsubscribe();
+    }
+
+    public static ISubscription a(Action onUnsubscribe) => new Subscription(onUnsubscribe);
+
     readonly Action onUnsubscribe;
 
     public bool isSubscribed { get; private set; } = true;
-
-    public static ISubscription a(Action onUnsubscribe) {
-      return new Subscription(onUnsubscribe);
-    }
 
     public Subscription(Action onUnsubscribe) {
       this.onUnsubscribe = onUnsubscribe;
@@ -30,21 +36,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return true;
     }
 
-    public ISubscription andThen(Action action) {
-      return new Subscription(() => {
-        unsubscribe();
-        action();
-      });
-    }
+    public ISubscription andThen(Action action) => new Subscription(() => {
+      unsubscribe();
+      action();
+    });
 
     public ISubscription join(params ISubscription[] other) => joinEnum(other);
 
-    public ISubscription joinEnum(IEnumerable<ISubscription> others) {
-      return new Subscription(() => {
-        unsubscribe();
-        foreach (var other in others) other.unsubscribe();
-      });
-    }
+    public ISubscription joinEnum(IEnumerable<ISubscription> others) => new Subscription(() => {
+      unsubscribe();
+      foreach (var other in others) other.unsubscribe();
+    });
   }
 
   public static class ISubscriptionExts {
