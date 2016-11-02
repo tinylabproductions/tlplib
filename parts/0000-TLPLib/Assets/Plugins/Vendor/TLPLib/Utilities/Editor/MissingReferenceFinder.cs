@@ -20,34 +20,36 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public struct ReferenceError {
       public readonly ErrorType errorType;
-      public readonly Tpl<string, Object> message;
+      public readonly string message;
+      public readonly Object context;
 
-      public ReferenceError(ErrorType errorType, Tpl<string, Object> message) {
+      public ReferenceError(ErrorType errorType, string message, Object context) {
         this.errorType = errorType;
         this.message = message;
+        this.context = context;
       }
     }
 
     #region Reference errors
     static ReferenceError missingComponent(Object o) => new ReferenceError(
       ErrorType.MISSING_COMP,
-      F.t($"Missing Component in GO or children: {o}", o)
+      $"Missing Component in GO or children: {o}", o
     );
     static ReferenceError missingReference(Object o, string component, string property, string context) => new ReferenceError(
       ErrorType.MISSING_REF,
-      F.t($"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
+      $"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o
     );
     static ReferenceError nullReference(Object o, string component, string property, string context) => new ReferenceError(
       ErrorType.NULL_REF,
-      F.t($"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o)
+      $"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}", o
     );
     static ReferenceError unityEventInvalidMethod(Object o, string property, int number, string context) => new ReferenceError(
       ErrorType.UE_INVALID_METHOD,
-      F.t($"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.", o)
+      $"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.", o
     );
     static ReferenceError unityEventNotValid(Object o, string property, int number, string context) => new ReferenceError(
       ErrorType.UE_NOT_VALID,
-      F.t($"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.", o)
+      $"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.", o
     );
     #endregion
 
@@ -69,7 +71,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       });
 
       showErrors(errors);
-      return errors.Select(x => x.message._1).ToImmutableList();
+      return errors.Select(x => x.message).ToImmutableList();
     }
 
     public static List<ReferenceError> findMissingReferences(string context, Object[] objects, bool useProgress = false) {
@@ -216,9 +218,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         .Where(go => go.hideFlags == HideFlags.None).Cast<Object>().ToArray();
     }
 
-    static void showErrors(List<ReferenceError> errors) { foreach (var error in errors) showError(error.message); }
-
-    static void showError(Tpl<string, Object> error) { Debug.LogError(error._1, error._2); }
+    static void showErrors(IEnumerable<ReferenceError> errors) {
+      foreach (var error in errors) Debug.LogError(error.message, error.context);
+    }
 
     static string fullPath(Object o) {
       var go = o as GameObject;
