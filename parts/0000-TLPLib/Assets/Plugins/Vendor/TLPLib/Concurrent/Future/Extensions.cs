@@ -88,16 +88,32 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         foreach (var b in e.rightValue) action(b);
       });
 
-    public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future)
-    { return future.map(e => e.rightValue); }
+    public static void onSuccess<A>(this Future<Try<A>> future, Act<A> action) => 
+      future.onComplete(e => {
+        foreach (var a in e.value) action(a);
+      });
+
+    public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future) => 
+      future.map(e => e.rightValue);
+
+    public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) => 
+      future.map(e => e.value);
 
     public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action) => 
       future.onComplete(e => {
         foreach (var a in e.leftValue) action(a);
       });
 
-    public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future)
-    { return future.map(e => e.leftValue); }
+    public static void onFailure<A>(this Future<Try<A>> future, Act<Exception> action) => 
+      future.onComplete(e => {
+        foreach (var ex in e.exception) action(ex);
+      });
+
+    public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future) => 
+      future.map(e => e.leftValue);
+
+    public static Future<Option<Exception>> ofFailure<A>(this Future<Try<A>> future) => 
+      future.map(e => e.exception);
 
     /**
      * Delays completing of given future until the returned action is called.
@@ -114,5 +130,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       foreach (var a in opt) return Future.successful(a);
       return Future<A>.unfulfilled;
     }
+
+    public static Lazy<Option<A>> toLazy<A>(this Future<A> f) =>
+      F.lazy(() => f.value);
   }
 }
