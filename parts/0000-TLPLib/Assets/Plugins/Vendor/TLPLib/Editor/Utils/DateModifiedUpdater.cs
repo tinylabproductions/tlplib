@@ -1,9 +1,13 @@
 ﻿using System;
 using System.IO;
 using JetBrains.Annotations;
-using UnityEngine;
 using UnityEditor;
 
+/** 
+ * Git identifies file changes by file size and date modified
+ * If you swap the names of 2 files git doesn't see the changes in meta files
+ * This code updates 'Date modified' so git detects the changes
+*/
 public class DateModifiedUpdater : AssetPostprocessor {
   [UsedImplicitly]
   static void OnPostprocessAllAssets(
