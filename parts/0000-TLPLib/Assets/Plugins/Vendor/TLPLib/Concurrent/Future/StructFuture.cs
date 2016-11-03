@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -93,6 +94,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void onComplete(Act<A> action) {
       if (implementation.isA) action(implementation.__unsafeGetA);
       else if (implementation.isC) implementation.__unsafeGetC.onComplete(action);
+    }
+
+    /** 
+     * Always run `action`. If the future is not completed right now, run `action` again when it
+     * completes.
+     */
+    public void nowAndOnComplete(Act<Option<A>> action) {
+      var current = value;
+      action(current);
+      if (current.isEmpty) onComplete(a => action(a.some()));
     }
     
     public Future<B> map<B>(Fn<A, B> mapper) {

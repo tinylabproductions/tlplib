@@ -63,7 +63,37 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       f.onComplete(i => result = i);
       result.shouldEqual(0, "it should not run the function immediately");
       p.complete(value);
-      result.shouldEqual(value, "it run the function after application");
+      result.shouldEqual(value, "it run the function after completion");
+    }
+  }
+
+  public class FutureTestNowAndOnComplete {
+    [Test]
+    public void WhenSuccessful() {
+      var f = Future.successful(1);
+      var result = 0;
+      f.nowAndOnComplete(iOpt => result += iOpt.fold(-1, _ => _));
+      result.shouldEqual(1, "it should run the function once");
+    }
+
+    [Test]
+    public void WhenUnfulfilled() {
+      var f = Future.unfulfilled<int>();
+      var result = 0;
+      f.nowAndOnComplete(iOpt => result += iOpt.fold(-1, _ => _));
+      result.shouldEqual(-1, "it should run the function once");
+    }
+
+    [Test]
+    public void WhenASync() {
+      Promise<int> p;
+      var f = Future<int>.async(out p);
+
+      var result = 0;
+      f.nowAndOnComplete(iOpt => result += iOpt.fold(-1, _ => _));
+      result.shouldEqual(-1, "it should run the function immediately");
+      p.complete(2);
+      result.shouldEqual(1, "it run the function after completion again");
     }
   }
 
