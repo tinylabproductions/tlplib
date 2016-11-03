@@ -11,9 +11,8 @@ public class DateModifiedUpdater : AssetPostprocessor {
   ) {
     foreach (var relativePath in movedAssets) {
       // Substring is needed to remove "Assets" from the start of the path
-      var filePath = Application.dataPath + relativePath.Substring(6); 
-      File.SetLastWriteTime(filePath, DateTime.Now);
-      File.SetLastWriteTime($"{filePath}.meta", DateTime.Now);
+      File.SetLastWriteTime(relativePath, DateTime.Now);
+      File.SetLastWriteTime($"{relativePath}.meta", DateTime.Now);
     }
   }
 }
