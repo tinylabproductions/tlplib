@@ -2,9 +2,8 @@
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class LazyExts {
-    public static Lazy<B> map<A, B>(this Lazy<A> lazy, Fn<A, B> mapper) {
-      return F.lazy(() => mapper(lazy.get));
-    }
+    public static Lazy<B> map<A, B>(this Lazy<A> lazy, Fn<A, B> mapper) => 
+      F.lazy(() => mapper(lazy.get));
   }
 
   public interface Lazy<out A> {
@@ -12,6 +11,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
     A get { get; }
     // For those cases where we want it happen as a side effect.
     A getM();
+  }
+
+  public class NotReallyLazy<A> : Lazy<A> {
+    public bool initialized { get; } = true;
+    public A get { get; }
+    public A getM() => get;
+
+    public NotReallyLazy(A get) { this.get = get; }
   }
 
   public class LazyImpl<A> : Lazy<A> {
