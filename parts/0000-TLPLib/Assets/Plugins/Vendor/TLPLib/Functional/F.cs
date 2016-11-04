@@ -103,9 +103,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Unit unit => Unit.instance;
 
-    public static Lazy<A> lazy<A>(Fn<A> func) {
-      return new LazyImpl<A>(func);
-    }
+    public static Lazy<A> lazy<A>(Fn<A> func) => new LazyImpl<A>(func);
+    public static Lazy<A> lazy<A>(A a) => new NotReallyLazy<A>(a);
 
     public static Action andThen(this Action first, Action second) {
       return () => { first(); second(); };
