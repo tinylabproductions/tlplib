@@ -123,14 +123,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
       set { log.level = value; }
     }
 
-    public override bool willLog(Log.Level level) => log.willLog(level);
+    public override bool willLog(Log.Level l) => log.willLog(l);
     public override void verbose(object o) => defer(() => log.verbose(o));
     public override void debug(object o) => defer(() => log.debug(o));
     public override void info(object o) => defer(() => log.info(o));
     public override void warn(object o) => defer(() => log.warn(o));
     public override void error(object o) => defer(() => log.error(o));
 
-    void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
+    static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
   }
 
   public static class ILogExts {
