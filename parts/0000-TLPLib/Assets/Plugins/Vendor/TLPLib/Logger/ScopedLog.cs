@@ -1,5 +1,5 @@
 ﻿namespace com.tinylabproductions.TLPLib.Logger {
-  public class ScopedLog : LogBase {
+  public class ScopedLog : ILog {
     public readonly string scope;
     readonly ILog backing;
 
@@ -8,19 +8,15 @@
       this.backing = backing;
     }
 
-    public override void verbose(object o) => base.verbose(wrap(o));
-    public override void debug(object o) => base.debug(wrap(o));
-    public override void info(object o) => base.info(wrap(o));
-    public override void warn(object o) => base.warn(wrap(o));
-    public override void error(object o) => base.error(wrap(o));
+    public Log.Level level {
+      get { return backing.level; }
+      set { backing.level = value; }
+    }
+
+    public bool willLog(Log.Level l) => backing.willLog(l);
+    public void log(Log.Level l, object o) => backing.log(l, wrap(o));
 
     string wrap(object o) => $"{scope} {o}";
-
-    protected override void logVerbose(string s) => backing.verbose(s);
-    protected override void logDebug(string s) => backing.debug(s);
-    protected override void logInfo(string s) => backing.info(s);
-    protected override void logWarn(string s) => backing.warn(s);
-    protected override void logError(string s) => backing.error(s);
   }
 
   public static class ScopedLogExts {
