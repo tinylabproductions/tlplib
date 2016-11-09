@@ -8,10 +8,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using UnityEngine.Events;
 using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
-using com.tinylabproductions.TLPLib.Functional;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
@@ -53,22 +54,27 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     );
     #endregion
 
+    public static TimeSpan referenceCheckingTime = TimeSpan.Zero;
+
     [PostProcessScene(0)]
     [MenuItem("Tools/Show Missing Object References in scene", false, 55)]
     public static void findMissingReferencesInCurrentScene() {
       if (EditorApplication.isPlayingOrWillChangePlaymode) return;
 
+      var stopwatch = new Stopwatch();
+      stopwatch.Start();
       var objects = getSceneObjects();
-      showErrors(findMissingReferences(SceneManager.GetActiveScene().name, objects, true));
-      Debug.Log($"{nameof(findMissingReferencesInCurrentScene)} finished");
+      var activeScene = SceneManager.GetActiveScene();
+      showErrors(findMissingReferences(activeScene.name, objects, true));
+      Debug.LogWarning($"{activeScene.name} {nameof(findMissingReferencesInCurrentScene)} finished in {stopwatch.Elapsed}");
+      referenceCheckingTime = referenceCheckingTime.Add(stopwatch.Elapsed);
     }
 
     public static ImmutableList<string> missingReferencesInAssets(IEnumerable<PathStr> scenes) {
+      var loadedScenes = scenes.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
+      var dependencies = EditorUtility.CollectDependencies(loadedScenes).Where(x => x is GameObject || x is ScriptableObject);
       var errors = new List<ReferenceError>();
-      scenes.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToList().ForEach(scene => {
-        var depsOfScene = EditorUtility.CollectDependencies(new []{ scene }).Where(x => x is GameObject || x is ScriptableObject);
-        errors.AddRange(findMissingReferences(scene.name, depsOfScene.ToArray()));
-      });
+      errors.AddRange(findMissingReferences("", dependencies.ToArray()));
 
       showErrors(errors);
       return errors.Select(x => x.message).ToImmutableList();
