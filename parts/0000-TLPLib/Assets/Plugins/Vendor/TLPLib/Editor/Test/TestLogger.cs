@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Test {
@@ -22,10 +23,28 @@ namespace com.tinylabproductions.TLPLib.Test {
       errorMsgs.Clear();
     }
 
-    protected override void logVerbose(string s) { verboseMsgs.Add(s); }
-    protected override void logDebug(string s) { debugMsgs.Add(s); }
-    protected override void logInfo(string s) { infoMsgs.Add(s); }
-    protected override void logWarn(string s) { warnMsgs.Add(s); }
-    protected override void logError(string s) { errorMsgs.Add(s); }
+    protected override void logInner(Log.Level l, string s) {
+      switch (l) {
+        case Log.Level.NONE:
+          break;
+        case Log.Level.ERROR:
+          errorMsgs.Add(s);
+          break;
+        case Log.Level.WARN:
+          warnMsgs.Add(s);
+          break;
+        case Log.Level.INFO:
+          infoMsgs.Add(s);
+          break;
+        case Log.Level.DEBUG:
+          debugMsgs.Add(s);
+          break;
+        case Log.Level.VERBOSE:
+          verboseMsgs.Add(s);
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(l), l, null);
+      }
+    }
   }
 }
