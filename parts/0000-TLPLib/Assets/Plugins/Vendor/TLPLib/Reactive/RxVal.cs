@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -53,6 +52,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     } }
 
     public A value => currentValue;
+
+    public override string ToString() => $"RxVal({value})";
   }
 
   public static class RxVal {
