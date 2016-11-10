@@ -434,7 +434,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
-    SList8<A> pendingSubmits = new SList8<A>();
+    SList4<A> pendingSubmits = new SList4<A>();
 
     // Are we currently iterating through subscriptions?
     protected bool iterating { get; private set; }
