@@ -1,11 +1,10 @@
-﻿using System.Linq;
+﻿#if UNITY_ANDROID
+using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
-#if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Android.Bindings.java.lang;
 using com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib.crash_reporting;
-#endif
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.crash {
   public interface IFirebaseCrash {
@@ -20,7 +19,6 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.cra
     public ErrorReporter.OnError createOnError() => _ => { };
   }
 
-#if UNITY_ANDROID
   public class FirebaseCrash : IFirebaseCrash {
     static readonly AndroidJavaClass klass = 
       new AndroidJavaClass("com.google.firebase.crash.FirebaseCrash");
@@ -40,5 +38,5 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.cra
     public ErrorReporter.OnError createOnError() =>
       data => report(UnityError.fromErrorData(data));
   }
-#endif
 }
+#endif
