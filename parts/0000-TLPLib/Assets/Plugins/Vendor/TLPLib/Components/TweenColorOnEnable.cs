@@ -19,21 +19,23 @@ namespace com.tinylabproductions.TLPLib.Components {
       if (sprites.nonEmpty()) {
         var originalColors = sprites.map(_ => _.color);
         foreach (var p in new CoroutineInterval(tweenInDuration.seconds())) {
-          setColors(sprites, originalColors, p);
+          setColors(sprites, originalColors, p.value);
+          yield return null;
         }
-        setColors(sprites, originalColors, new Percentage(1));
+        setColors(sprites, originalColors, 1);
         yield return new WaitForSeconds(delayDuration);
         foreach (var p in new CoroutineInterval(tweenOutDuration.seconds())) {
-          setColors(sprites, originalColors, p);
+          setColors(sprites, originalColors, 1 - p.value);
+          yield return null;
         }
-        setColors(sprites, originalColors, new Percentage(0));
+        setColors(sprites, originalColors, 0);
       }
       enabled = false;
     }
 
-    void setColors(SpriteRenderer[] sprites, Color[] colors, Percentage ratio) {
+    void setColors(SpriteRenderer[] sprites, Color[] colors, float ratio) {
       for (var i = 0; i < sprites.Length; i++) {
-        sprites[i].color = Color.Lerp(colors[i], targetColor, ratio.value);
+        sprites[i].color = Color.Lerp(colors[i], targetColor, ratio);
       }
     }
   }
