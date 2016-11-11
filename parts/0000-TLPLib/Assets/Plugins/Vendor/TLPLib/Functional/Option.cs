@@ -191,7 +191,7 @@ public
 
 #endregion
 
-  public OptionEnumerator<A> GetEnumerator() { return new OptionEnumerator<A>(this); }
+  public OptionEnumerator<A> GetEnumerator() => new OptionEnumerator<A>(this);
 
   public Option<B> map<B>(Fn<A, B> func) {
     return isDefined ? F.some(func(get)) : F.none<B>();

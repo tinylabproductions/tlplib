@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -53,6 +52,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     } }
 
     public A value => currentValue;
+
+    public override string ToString() => $"RxVal({value})";
   }
 
   public static class RxVal {
@@ -104,7 +105,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     /* Returns any value that satisfies the predicate. Order is not guaranteed. */
-    public static IRxVal<Option<A>> anyThat<A>(this IEnumerable<IRxVal<A>> vals, Fn<A, bool> predicate) {
+    public static IRxVal<Option<A>> anyThat<A, C>(
+      this C vals, Fn<A, bool> predicate
+    ) where C : IEnumerable<IRxVal<A>> {
       var val = RxRef.a(F.none<A>());
       var dict = new Dictionary<IRxVal<A>, A>();
 
@@ -128,9 +131,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         });
       return val;
     }
-    
-    public static IRxVal<bool> anyOf(this IEnumerable<IRxVal<bool>> vals, bool searchFor=true) => 
-      vals.anyThat(b => searchFor ? b : !b).map(_ => _.isDefined);
+
+    public static IRxVal<Option<A>> anyThat<A>(
+      this IEnumerable<IRxVal<A>> vals, Fn<A, bool> predicate
+    ) => vals.anyThat<A, IEnumerable<IRxVal<A>>>(predicate);
+
+    public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
+      where C : IEnumerable<IRxVal<bool>> => 
+      vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isDefined);
 
     // TODO: test
     /**
