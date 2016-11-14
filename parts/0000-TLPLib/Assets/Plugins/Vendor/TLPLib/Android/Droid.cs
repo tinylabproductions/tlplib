@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static bool hasSystemFeature(string feature) => 
       AndroidActivity.packageManager.hasSystemFeature(feature);
 
-    private static readonly Lazy<bool> _hasTouchscreen = 
+    private static readonly LazyVal<bool> _hasTouchscreen = 
       F.lazy(() => hasSystemFeature("android.hardware.touchscreen"));
 
     /* Is touchscreen supported? */

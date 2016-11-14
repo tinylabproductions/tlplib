@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return Future<A>.unfulfilled;
     }
 
-    public static Lazy<Option<A>> toLazy<A>(this Future<A> f) =>
+    public static LazyVal<Option<A>> toLazy<A>(this Future<A> f) =>
       F.lazy(() => f.value);
   }
 }
