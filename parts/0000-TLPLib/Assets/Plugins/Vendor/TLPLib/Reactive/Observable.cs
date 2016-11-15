@@ -527,6 +527,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public virtual ISubscription subscribe(IObserver<A> observer) {
       if (doLogging && Log.isVerbose)
         Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
+      if (finished) return Subscription.empty;
+
       var subscription = new Subscription(onUnsubscribed);
       var active = !iterating;
       subscriptions.Add(new Sub(subscription, observer, active));
