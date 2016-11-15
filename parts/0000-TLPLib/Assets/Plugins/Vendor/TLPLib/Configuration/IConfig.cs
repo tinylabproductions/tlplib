@@ -147,18 +147,18 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public enum Kind { KEY_NOT_FOUND, WRONG_TYPE }
 
     public readonly Kind kind;
-    public readonly Lazy<string> messageLazy;
+    public readonly LazyVal<string> messageLazy;
     public string message => messageLazy.get;
 
-    public ConfigLookupError(Kind kind, Lazy<string> messageLazy) {
+    public ConfigLookupError(Kind kind, LazyVal<string> messageLazy) {
       this.kind = kind;
       this.messageLazy = messageLazy;
     }
 
-    public static ConfigLookupError keyNotFound(Lazy<string> message) => 
+    public static ConfigLookupError keyNotFound(LazyVal<string> message) => 
       new ConfigLookupError(Kind.KEY_NOT_FOUND, message);
 
-    public static ConfigLookupError wrongType(Lazy<string> message) => 
+    public static ConfigLookupError wrongType(LazyVal<string> message) => 
       new ConfigLookupError(Kind.WRONG_TYPE, message);
 
     public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {message}]";

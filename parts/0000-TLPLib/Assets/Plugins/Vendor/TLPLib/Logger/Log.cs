@@ -41,22 +41,22 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public static void verbose(object o) { UnityLog.instance.verbose(o); }
-    public static bool isVerbose => UnityLog.instance.isVerbose;
+    public static bool isVerbose => UnityLog.instance.isVerbose();
     
     /* Runtime version of debug. */
     public static void rdebug(object o) { UnityLog.instance.debug(o); }
-    public static bool isDebug => UnityLog.instance.isDebug;
+    public static bool isDebug => UnityLog.instance.isDebug();
 
     public static void info(object o) { UnityLog.instance.info(o); }
-    public static bool isInfo => UnityLog.instance.isInfo;
+    public static bool isInfo => UnityLog.instance.isInfo();
 
     public static void warn(object o) { UnityLog.instance.warn(o); }
-    public static bool isWarn => UnityLog.instance.isWarn;
+    public static bool isWarn => UnityLog.instance.isWarn();
 
     public static void error(Exception ex) { UnityLog.instance.error(ex); }
     public static void error(object o) { UnityLog.instance.error(o); }
     public static void error(object o, Exception ex) { UnityLog.instance.error(o, ex); }
-    public static bool isError => UnityLog.instance.isError;
+    public static bool isError => UnityLog.instance.isError();
 
     public static string exToStr(Exception ex, object o=null) {
       var sb = new StringBuilder();
@@ -93,19 +93,29 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
   public interface ILog {
     Log.Level level { get; set; }
-    bool willLog(Log.Level level);
-    void verbose(object o);
-    bool isVerbose { get; }
-    /* Runtime version of debug. */
-    void debug(object o);
-    bool isDebug { get; }
-    void info(object o);
-    bool isInfo { get; }
-    void warn(object o);
-    bool isWarn { get; }
-    void error(Exception ex);
-    void error(object o);
-    void error(object o, Exception ex);
+
+    bool willLog(Log.Level l);
+    void log(Log.Level l, object o);
+  }
+
+  public static class ILogExts {
+    public static bool isVerbose(this ILog log) => log.willLog(Log.Level.VERBOSE);
+    public static bool isDebug(this ILog log) => log.willLog(Log.Level.DEBUG);
+    public static bool isInfo(this ILog log) => log.willLog(Log.Level.INFO);
+    public static bool isWarn(this ILog log) => log.willLog(Log.Level.WARN);
+    public static bool isError(this ILog log) => log.willLog(Log.Level.ERROR);
+
+    public static void verbose(this ILog log, object o) => log.log(Log.Level.VERBOSE, o);
+    public static void debug(this ILog log, object o) => log.log(Log.Level.DEBUG, o);
+    public static void info(this ILog log, object o) => log.log(Log.Level.INFO, o);
+    public static void warn(this ILog log, object o) => log.log(Log.Level.WARN, o);
+    public static void error(this ILog log, object o) => log.log(Log.Level.ERROR, o);
+    public static void error(this ILog log, Exception ex) => log.error(Log.exToStr(ex));
+    public static void error(this ILog log, object o, Exception ex) => log.error(Log.exToStr(ex, o));
+
+    /* Backwards compatibility */
+    [Obsolete("Use debug() instead.")]
+    public static void rdebug(this ILog log, object o) => log.debug(o);
   }
 
   /**
@@ -113,69 +123,28 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * log calls are silently ignored from inside the handlers. Just make sure not to 
    * get into an endless loop.
    **/
-  public class DeferToMainThreadLog : ILogMethods {
-    readonly ILog log;
+  public class DeferToMainThreadLog : ILog {
+    readonly ILog backing;
 
-    public DeferToMainThreadLog(ILog log) { this.log = log; }
+    public DeferToMainThreadLog(ILog backing) { this.backing = backing; }
 
-    public override Log.Level level {
-      get { return log.level; }
-      set { log.level = value; }
+    public Log.Level level {
+      get { return backing.level; }
+      set { backing.level = value; }
     }
 
-    public override bool willLog(Log.Level level) => log.willLog(level);
-    public override void verbose(object o) => defer(() => log.verbose(o));
-    public override void debug(object o) => defer(() => log.debug(o));
-    public override void info(object o) => defer(() => log.info(o));
-    public override void warn(object o) => defer(() => log.warn(o));
-    public override void error(object o) => defer(() => log.error(o));
+    public bool willLog(Log.Level l) => backing.willLog(l);
+    public void log(Log.Level l, object o) => defer(() => backing.log(l, o));
 
-    void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
+    static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
   }
+  
+  public abstract class LogBase : ILog {
+    public Log.Level level { get; set; } = Log.defaultLogLevel;
+    public bool willLog(Log.Level l) => this.level >= l;
 
-  public static class ILogExts {
-    /* Backwards compatibility */
-    [Obsolete("Use debug() instead.")]
-    public static void rdebug(this ILog log, object o) { log.debug(o); }
-  }
-
-  public abstract class ILogMethods : ILog {
-    public abstract Log.Level level { get; set; }
-    public abstract bool willLog(Log.Level level);
-    public abstract void verbose(object o);
-    public abstract void debug(object o);
-    public abstract void info(object o);
-    public abstract void warn(object o);
-    public abstract void error(object o);
-
-    public bool isVerbose => willLog(Log.Level.VERBOSE);
-    public bool isDebug => willLog(Log.Level.DEBUG);
-    public bool isInfo => willLog(Log.Level.INFO);
-    public bool isWarn => willLog(Log.Level.WARN);
-    public bool isError => willLog(Log.Level.ERROR);
-
-    public void error(Exception ex) => error(Log.exToStr(ex));
-    public void error(object o, Exception ex) => error(Log.exToStr(ex, o));
-  }
-
-  public abstract class LogBase : ILogMethods {
-    public override Log.Level level { get; set; } = Log.defaultLogLevel;
-    public override bool willLog(Log.Level level) => this.level >= level;
-
-    public override void verbose(object o) => logVerbose(line("VERBOSE", o));
-    protected abstract void logVerbose(string s);
-
-    public override void debug(object o) => logDebug(line("DEBUG", o));
-    protected abstract void logDebug(string s);
-
-    public override void info(object o) => logInfo(line("INFO", o));
-    protected abstract void logInfo(string s);
-
-    public override void warn(object o) => logWarn(line("WARN", o));
-    protected abstract void logWarn(string s);
-
-    public override void error(object o) => logError(line("ERROR", o));
-    protected abstract void logError(string s);
+    public void log(Log.Level l, object o) => logInner(l, line(l.ToString(), o));
+    protected abstract void logInner(Log.Level l, string s);
 
     static string line(string level, object o) => $"[{thread}|{level}]> {o}";
 
@@ -189,22 +158,32 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
 
-    protected override void logVerbose(string s) { Debug.Log(s); }
-    protected override void logDebug(string s) { Debug.Log(s); }
-    protected override void logInfo(string s) { Debug.Log(s); }
-    protected override void logWarn(string s) { Debug.LogWarning(s); }
-    protected override void logError(string s) { Debug.LogError(s); }
+    protected override void logInner(Log.Level l, string s) {
+      switch (l) {
+        case Log.Level.VERBOSE:
+        case Log.Level.DEBUG:
+        case Log.Level.INFO:
+          Debug.Log(s);
+          break;
+        case Log.Level.WARN:
+          Debug.LogWarning(s);
+          break;
+        case Log.Level.ERROR:
+          Debug.LogError(s);
+          break;
+        case Log.Level.NONE:
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(l), l, null);
+      }
+    }
   }
 
   public class NoOpLog : LogBase {
     public static readonly NoOpLog instance = new NoOpLog();
     NoOpLog() {}
 
-    protected override void logVerbose(string s) {}
-    protected override void logDebug(string s) {}
-    protected override void logInfo(string s) {}
-    protected override void logWarn(string s) {}
-    protected override void logError(string s) {}
+    protected override void logInner(Log.Level l, string s) {}
   }
 
   class EditorLog {

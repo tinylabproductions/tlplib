@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -53,6 +52,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     } }
 
     public A value => currentValue;
+
+    public override string ToString() => $"RxVal({value})";
   }
 
   public static class RxVal {
@@ -103,27 +104,41 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return val;
     }
 
-    // TODO: test
-    /* Returns first value that satisfies the predicate. */
-    public static IRxVal<Option<A>> firstThat<A>(this IEnumerable<IRxVal<A>> vals, Fn<A, bool> predicate) {
+    /* Returns any value that satisfies the predicate. Order is not guaranteed. */
+    public static IRxVal<Option<A>> anyThat<A, C>(
+      this C vals, Fn<A, bool> predicate
+    ) where C : IEnumerable<IRxVal<A>> {
       var val = RxRef.a(F.none<A>());
+      var dict = new Dictionary<IRxVal<A>, A>();
 
-      // TODO: this is probably suboptimal.
-      Action rescan = () => {
-        foreach (var rxVal in vals.Where(rxVal => predicate(rxVal.value))) {
-          val.value = F.some(rxVal.value);
-          return;
-        }
-        val.value = F.none<A>();
-      };
+      foreach (var rx in vals)
+        rx.subscribe(a => {
+          var matched = predicate(a);
 
-      subscribeToRescans(vals, rescan);
+          if (matched) {
+            dict[rx] = a;
+            if (val.value.isEmpty) val.value = a.some();
+          }
+          else {
+            dict.Remove(rx);
+            if (val.value.isDefined) {
+              val.value = 
+                dict.isEmpty() 
+                  ? Option<A>.None 
+                  : dict[dict.Keys.First()].some();
+            }
+          }
+        });
       return val;
     }
-    
-    // TODO: test
-    public static IRxVal<bool> anyOf(this IEnumerable<IRxVal<bool>> vals, bool searchForTrue=true) => 
-      vals.firstThat(b => searchForTrue ? b : !b).map(_ => _.isDefined);
+
+    public static IRxVal<Option<A>> anyThat<A>(
+      this IEnumerable<IRxVal<A>> vals, Fn<A, bool> predicate
+    ) => vals.anyThat<A, IEnumerable<IRxVal<A>>>(predicate);
+
+    public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
+      where C : IEnumerable<IRxVal<bool>> => 
+      vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isDefined);
 
     // TODO: test
     /**

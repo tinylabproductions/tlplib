@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Data {
   public static class MarkovState {
     public static MarkovState<A> a<A>(
-      A data, Lazy<MarkovTransition<A>[]> transitions
+      A data, LazyVal<MarkovTransition<A>[]> transitions
     ) {
       return new MarkovState<A>(data, transitions);
     }
@@ -13,10 +13,10 @@ namespace com.tinylabproductions.TLPLib.Data {
   /** http://en.wikipedia.org/wiki/Markov_chain **/
   public class MarkovState<A> {
     public readonly A data;
-    private readonly Lazy<MarkovTransition<A>[]> transitions;
+    private readonly LazyVal<MarkovTransition<A>[]> transitions;
 
     public MarkovState(
-      A data, Lazy<MarkovTransition<A>[]> transitions
+      A data, LazyVal<MarkovTransition<A>[]> transitions
     ) {
       this.data = data;
       this.transitions = transitions;

@@ -2,7 +2,7 @@
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
 
-namespace com.tinylabproductions.TLPLib.Collection.Editor {
+namespace com.tinylabproductions.TLPLib.Collection {
   [TestFixture]
   class RandomListTest {
     #region #Insert

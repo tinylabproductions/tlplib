@@ -509,8 +509,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       };
 
     public static Config.Parser<Tpl<A1, A2, A3>> and<A1, A2, A3>(
-      this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p
-    ) =>
+        this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p
+      ) =>
       (path, node) => {
         var a1E = a1p(path, node);
         if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2, A3>>();
@@ -520,6 +520,23 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         if (a3E.isLeft) return a3E.__unsafeCastRight<Tpl<A1, A2, A3>>();
         return new Either<ConfigLookupError, Tpl<A1, A2, A3>>(F.t(
           a1E.__unsafeGetRight, a2E.__unsafeGetRight, a3E.__unsafeGetRight
+        ));
+      };
+
+       public static Config.Parser<Tpl<A1, A2, A3, A4>> and<A1, A2, A3, A4>(
+      this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p, Config.Parser<A4> a4p
+    ) =>
+      (path, node) => {
+        var a1E = a1p(path, node);
+        if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2, A3, A4>>();
+        var a2E = a2p(path, node);
+        if (a2E.isLeft) return a2E.__unsafeCastRight<Tpl<A1, A2, A3, A4>>();
+        var a3E = a3p(path, node);
+        if (a3E.isLeft) return a3E.__unsafeCastRight<Tpl<A1, A2, A3, A4>>();
+        var a4E = a4p(path, node);
+        if (a4E.isLeft) return a4E.__unsafeCastRight<Tpl<A1, A2, A3, A4>>();
+        return new Either<ConfigLookupError, Tpl<A1, A2, A3, A4>>(F.t(
+          a1E.__unsafeGetRight, a2E.__unsafeGetRight, a3E.__unsafeGetRight, a4E.__unsafeGetRight
         ));
       };
   }

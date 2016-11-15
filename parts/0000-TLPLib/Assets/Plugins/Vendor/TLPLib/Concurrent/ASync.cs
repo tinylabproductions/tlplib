@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -41,10 +42,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Coroutine WithDelay(
-      float seconds, Action action, MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
+      float seconds, Action action, 
+      MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
+    ) => WithDelay(Duration.fromSeconds(seconds), action, behaviour, timeScale);
+
+    public static Coroutine WithDelay(
+      Duration duration, Action action, 
+      MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
     ) {
       behaviour = behaviour ?? ASync.behaviour;
-      var enumerator = WithDelayEnumerator(seconds, action, timeScale);
+      var enumerator = WithDelayEnumerator(duration, action, timeScale);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -173,8 +180,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WithDelayEnumerator(
-      float seconds, Action action, TimeScale timeScale=TimeScale.Unity
+      Duration duration, Action action, TimeScale timeScale=TimeScale.Unity
     ) {
+      var seconds = duration.seconds;
       if (timeScale == TimeScale.Unity) yield return new WaitForSeconds(seconds);
       else {
         var waitTime = timeScale.now() + seconds;

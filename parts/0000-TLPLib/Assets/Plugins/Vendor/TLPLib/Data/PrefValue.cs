@@ -240,7 +240,7 @@ namespace com.tinylabproductions.TLPLib.Data {
             if (opt.isDefined) return opt.get;
 
             if (onDeserializeFailure == PrefVal.OnDeserializeFailure.ReturnDefault) {
-              if (log.isWarn) log.warn(deserializeFailureMsg<A>(key, serialized, ", returning default"));
+              if (log.isWarn()) log.warn(deserializeFailureMsg<A>(key, serialized, ", returning default"));
               return defaultVal;
             }
 
@@ -367,7 +367,7 @@ namespace com.tinylabproductions.TLPLib.Data {
                 onDeserializeCollectionItemFailure == 
                 PrefVal.OnDeserializeCollectionItemFailure.Ignore
               ) { 
-                if (log.isWarn)
+                if (log.isWarn())
                   log.warn(deserializeCollectionItemFailureMsg<A, C>(key, partData, ", ignoring"));
               }
               else throw new SerializationException(

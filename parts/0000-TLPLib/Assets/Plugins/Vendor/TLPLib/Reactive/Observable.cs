@@ -434,7 +434,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
-    SList8<A> pendingSubmits = new SList8<A>();
+    SList4<A> pendingSubmits = new SList4<A>();
 
     // Are we currently iterating through subscriptions?
     protected bool iterating { get; private set; }
@@ -527,6 +527,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public virtual ISubscription subscribe(IObserver<A> observer) {
       if (doLogging && Log.isVerbose)
         Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
+      if (finished) return Subscription.empty;
+
       var subscription = new Subscription(onUnsubscribed);
       var active = !iterating;
       subscriptions.Add(new Sub(subscription, observer, active));
