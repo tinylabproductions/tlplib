@@ -11,6 +11,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return newArr;
     }
 
+    // TODO: test
+    public static A[] concat<A>(this A[] a, A[] other) {
+      var newArr = new A[a.LongLength + other.LongLength];
+      a.CopyTo(newArr, 0);
+      other.CopyTo(newArr, a.LongLength);
+      return newArr;
+    }
+
     public static A[] concat<A>(this A[] a, params A[][] others) {
       // Functional programming crashes Mono runtime.
 
@@ -32,6 +40,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
 
       return self;
+    }
+
+    // TODO: test
+    public static A[] slice<A>(this A[] a, int startIndex = 0, int count = -1) {
+      if (count < 0) count = a.Length - startIndex;
+      var arr = new A[count];
+      var endIdxExclusive = startIndex + count;
+      for (int srcIdx = startIndex, newIdx = 0; srcIdx < endIdxExclusive; srcIdx++, newIdx++)
+        arr[newIdx] = a[srcIdx];
+      return arr;
     }
 
     /**
