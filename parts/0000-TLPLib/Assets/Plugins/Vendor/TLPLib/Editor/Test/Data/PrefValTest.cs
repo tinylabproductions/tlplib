@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 using Random = UnityEngine.Random;
@@ -121,15 +120,14 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void Normal() {
-      Fn<PrefVal<string>> create = () =>
-        storage.custom(key, "", PrefVal.stringSerialize, PrefVal.stringDeserialize);
+      Fn<PrefVal<string>> create = () => storage.custom(key, "", SerializedRW.str);
       var pv = create();
       pv.value.shouldEqual("");
       pv.value = "foobar";
       const string key2 = key + "2";
       storage.custom(
         key2, "",
-        s => Convert.ToBase64String(PrefVal.stringSerialize(s)),
+        s => Convert.ToBase64String(SerializedRW.str.serialize(s)),
         _ => Option<string>.None
       ).value = pv.value;
       backend.storage[key].shouldEqual(backend.storage[key2]);
@@ -142,7 +140,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       setBadBase64(key);
       log.warnMsgs.shouldBeEmpty();
       storage.custom(
-        key, "", PrefVal.stringSerialize, PrefVal.stringDeserialize,
+        key, "", SerializedRW.str,
         onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault,
         log: log
       ).value.shouldEqual("");
@@ -153,7 +151,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void OnDeserializeFailureThrowException() {
       setBadBase64(key);
       Assert.Throws<SerializationException>(() => storage.custom(
-        key, "", PrefVal.stringSerialize, PrefVal.stringDeserialize,
+        key, "", SerializedRW.str,
         onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException,
         log: log
       ));
@@ -239,21 +237,21 @@ namespace com.tinylabproductions.TLPLib.Data {
     const string key = nameof(PrefValTestCollection);
 
     static byte[] serialize(int i) => BitConverter.GetBytes(i);
-    static Option<int> deserialize(byte[] data) => data.toInt().value;
-    static Option<int> badDeserialize(byte[] data) => deserialize(data).filter(i => i % 2 != 0);
+    static Option<int> badDeserialize(byte[] data, int startIndex) =>
+      SerializedRW.integer.deserialize(data, startIndex).filter(i => i % 2 != 0);
     static ImmutableList<int>.Builder createBuilder() => ImmutableList.CreateBuilder<int>();
     static void add(ImmutableList<int>.Builder builder, int value) => builder.Add(value);
     static ImmutableList<int> toList(ImmutableList<int>.Builder builder) => builder.ToImmutable();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
-    PrefVal<ImmutableList<int>> create(
+    static PrefVal<ImmutableList<int>> create(
       ImmutableList<int> defaultVal,
-      Fn<byte[], Option<int>> deserializeFn = null,
+      Deserialize<int> deserializeFn = null,
       PrefVal.OnDeserializeCollectionItemFailure onItemFailure = 
         PrefVal.OnDeserializeCollectionItemFailure.ThrowException
     ) =>
       storage.collection(
-        key, serialize, deserializeFn ?? deserialize, 
+        key, SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize), 
         createBuilder, add, toList, defaultVal,
         onDeserializeCollectionItemFailure: onItemFailure,
         log: log
