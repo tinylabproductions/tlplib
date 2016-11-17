@@ -52,6 +52,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static implicit operator TimeSpan(Duration d) => d.toTimeSpan;
 
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
+
+    public static readonly Numeric<Duration> numeric = new Numeric();
+    class Numeric : Numeric<Duration> {
+      public Duration add(Duration a1, Duration a2) => a1 + a2;
+      public Duration subtract(Duration a1, Duration a2) => a1 - a2;
+      public Duration fromInt(int i) => new Duration(i);
+    }
   }
 
   public static class DurationExts {

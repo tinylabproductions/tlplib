@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Runtime.Serialization;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -127,7 +126,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       const string key2 = key + "2";
       storage.custom(
         key2, "",
-        s => Convert.ToBase64String(SerializedRW.str.serialize(s)),
+        s => Convert.ToBase64String(SerializedRW.str.serialize(s).toArray()),
         _ => Option<string>.None
       ).value = pv.value;
       backend.storage[key].shouldEqual(backend.storage[key2]);
@@ -157,102 +156,29 @@ namespace com.tinylabproductions.TLPLib.Data {
       ));
     }
   }
-
-  class PrefValTestBase64 : PrefValTestBase {
-    const string key = nameof(PrefValTestBase64);
-
-    static IEnumerable<byte[]> serialize(ImmutableList<int> l) =>
-      l.Select(BitConverter.GetBytes);
-
-    static Option<ImmutableList<int>> deserialize(IEnumerable<byte[]> e) =>
-      ImmutableList.CreateRange(
-        e.SelectMany(_ => _.toInt().value.asEnum())
-      ).some();
-
-    [Test]
-    public void Normal() {
-      Fn<PrefVal<ImmutableList<int>>> create = () =>
-        storage.base64(key, ImmutableList<int>.Empty, serialize, deserialize);
-      var data = ImmutableList.Create(1, 2, 3, 4);
-      var pv = create();
-      pv.value.shouldBeEmpty();
-      pv.value = data;
-      var pv2 = create();
-      pv2.value.shouldEqual(data);
-    }
-
-    [Test]
-    public void DeserializeFailureReturnDefault() {
-      setBadBase64(key);
-      var defaultVal = ImmutableList.Create(1, 2, 3, 4);
-      log.warnMsgs.shouldBeEmpty();
-      var pv = storage.base64(
-        key, defaultVal, serialize, deserialize,
-        onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault,
-        log: log
-      );
-      log.warnMsgs.shouldNotBeEmpty();
-      pv.value.shouldEqual(defaultVal);
-    }
-
-    [Test]
-    public void DeserializeFailureThrowException() {
-      setBadBase64(key);
-      Assert.Throws<SerializationException>(() => storage.base64(
-        key, ImmutableList<int>.Empty, serialize, deserialize,
-        onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException
-      ));
-    }
-
-    [Test]
-    public void DeserializePartFailedReturnDefault() {
-      var defaultVal = ImmutableList.Create(1, 2, 3, 4);
-      Fn<PrefVal<ImmutableList<int>>> create = () => storage.base64(
-        key, defaultVal, serialize, deserialize,
-        onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault,
-        log: log
-      );
-      var pv = create();
-      pv.value = ImmutableList.Create(1, 2, 3, 4, 5);
-      log.warnMsgs.shouldBeEmpty();
-      ruinBase64(key);
-      var pv2 = create();
-      log.warnMsgs.shouldNotBeEmpty();
-      pv2.value.shouldEqual(defaultVal);
-    }
-
-    [Test]
-    public void DeserializePartFailedThrowException() {
-      Fn<PrefVal<ImmutableList<int>>> create = () => storage.base64(
-        key, ImmutableList.Create(1, 2, 3, 4), serialize, deserialize,
-        onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException
-      );
-      create();
-      ruinBase64(key);
-      Assert.Throws<SerializationException>(() => create());
-    }
-  }
-
+  
   class PrefValTestCollection : PrefValTestBase {
     const string key = nameof(PrefValTestCollection);
 
-    static byte[] serialize(int i) => BitConverter.GetBytes(i);
+    static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
     static Option<int> badDeserialize(byte[] data, int startIndex) =>
       SerializedRW.integer.deserialize(data, startIndex).filter(i => i % 2 != 0);
-    static ImmutableList<int>.Builder createBuilder() => ImmutableList.CreateBuilder<int>();
-    static void add(ImmutableList<int>.Builder builder, int value) => builder.Add(value);
-    static ImmutableList<int> toList(ImmutableList<int>.Builder builder) => builder.ToImmutable();
+    static ImmutableList<int> convert(ImmutableArray<int> a) => a.ToImmutableList();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(
       ImmutableList<int> defaultVal,
       Deserialize<int> deserializeFn = null,
-      PrefVal.OnDeserializeCollectionItemFailure onItemFailure = 
-        PrefVal.OnDeserializeCollectionItemFailure.ThrowException
+      PrefVal.OnDeserializeFailure onDeserializeFailure =
+        PrefVal.OnDeserializeFailure.ReturnDefault,
+      SerializedRW.OnCollectionItemDeserializationFailure onItemFailure =
+        SerializedRW.OnCollectionItemDeserializationFailure.Abort
     ) =>
       storage.collection(
-        key, SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize), 
-        createBuilder, add, toList, defaultVal,
+        key, 
+        SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize),
+        convert, defaultVal,
+        onDeserializeFailure: onDeserializeFailure,
         onDeserializeCollectionItemFailure: onItemFailure,
         log: log
       );
@@ -289,14 +215,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Test]
     public void ItemDeserializationFailureIgnore() {
       create(ImmutableList.Create(1, 2, 3));
-      log.warnMsgs.shouldBeEmpty();
       var p1 = create(
         ImmutableList<int>.Empty,
         badDeserialize,
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore
+        PrefVal.OnDeserializeFailure.ThrowException,
+        SerializedRW.OnCollectionItemDeserializationFailure.Ignore
       );
       p1.value.shouldEqual(ImmutableList.Create(1, 3));
-      log.warnMsgs.shouldNotBeEmpty();
     }
 
     [Test]
@@ -306,7 +231,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         create(
           ImmutableList<int>.Empty,
           badDeserialize,
-          PrefVal.OnDeserializeCollectionItemFailure.ThrowException
+          PrefVal.OnDeserializeFailure.ThrowException,
+          SerializedRW.OnCollectionItemDeserializationFailure.Abort
         )
       );
     }

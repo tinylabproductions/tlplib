@@ -107,11 +107,11 @@ namespace com.tinylabproductions.TLPLib.Test {
       a.shouldEqual(expected.some(), message);
     }
 
-    public static void shouldBeSomeEnum<A>(this Option<A> aOpt, A expected, string message = null)
-      where A : IEnumerable
+    public static void shouldBeSomeEnum<E>(this Option<E> aOpt, E expected, string message = null)
+      where E : IEnumerable
     {
       foreach (var a in aOpt) {
-        a.shouldEqual(expected, message);
+        a.shouldEqual(expected);
         return;
       }
       aOpt.shouldBeSome(expected, message);

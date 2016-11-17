@@ -186,6 +186,18 @@ namespace com.tinylabproductions.TLPLib.Collection {
       arr = F.arrayFill(7, i => -(i + 1));
       c.CopyTo(arr, 1);
       arr.shouldEqual(new[] { -1, 1, 2, 3, 4, 5, -7 });
+
+      arr = F.arrayFill(7, _ => 0);
+      IListDefaultImpls.copyTo(c, arr, targetArrayIndex: 1, srcCopyFrom: 1);
+      arr.shouldEqual(new [] {0, 2, 3, 4, 5, 0, 0});
+
+      arr = F.arrayFill(7, _ => 0);
+      IListDefaultImpls.copyTo(c, arr, targetArrayIndex: 1, srcCopyFrom: 2, srcCopyCount: 3);
+      arr.shouldEqual(new [] {0, 3, 4, 5, 0, 0, 0});
+
+      Assert.Throws<ArgumentException>(() => IListDefaultImpls.copyTo(c, arr, 0, srcCopyFrom: -1));
+      Assert.Throws<ArgumentException>(() => IListDefaultImpls.copyTo(c, arr, 0, srcCopyFrom: 5));
+      Assert.Throws<ArgumentException>(() => IListDefaultImpls.copyTo(c, arr, 0, srcCopyCount: 6));
     }
 
     [Test]
