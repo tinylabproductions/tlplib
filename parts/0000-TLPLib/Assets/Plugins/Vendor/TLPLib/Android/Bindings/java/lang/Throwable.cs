@@ -16,6 +16,8 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
 
     public void printStackTrace(PrintWriter s) => java.Call("printStackTrace", s.java);
 
+    public string message => java.Call<string>("getMessage");
+
     public StackTraceElement[] getStackTrace() =>
       java.Call<AndroidJavaObject[]>("getStackTrace")
       .map(ajo => new StackTraceElement(ajo));
