@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using System.Text;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
@@ -39,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => custom(
-      a => Convert.ToBase64String(baRW.serialize(a)),
+      a => Convert.ToBase64String(baRW.serialize(a).toArray()),
       s => {
         try {
           var bytes = Convert.FromBase64String(s);
@@ -57,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       ISerializedRW<A> baRW,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) => custom(new SerializedRW.OptByteArrayRW<A>(baRW), onDeserializeFailure, log);
+    ) => custom(SerializedRW.opt(baRW), onDeserializeFailure, log);
 
     class stringRW : IPrefValueRW<string> {
       public string read(IPrefValueBackend backend, string key, string defaultVal) => 

@@ -305,6 +305,20 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     ) =>
       registerNumeric(name, a, num, num.fromInt(1), quickSetValues);
 
+    public void registerNumericOpt<A>(
+      string name, Ref<Option<A>> aOpt, A showOnNone, Numeric<A> num,
+      ImmutableList<A> quickSetValues = null
+    ) {
+      register($"Clear {name}", () => aOpt.value = Option<A>.None);
+      register($"{name} opt?", () => aOpt.value);
+      registerNumeric(
+        name, Ref.a(
+          () => aOpt.value.getOrElse(showOnNone),
+          v => aOpt.value = v.some()
+        ), num, quickSetValues
+      );
+    }
+
     public void registerCountdown(string name, uint count, Action act) {
       var countdown = count;
       register(name, () => {

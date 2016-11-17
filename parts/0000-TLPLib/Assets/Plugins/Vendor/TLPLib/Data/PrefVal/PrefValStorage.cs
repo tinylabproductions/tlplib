@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
@@ -46,14 +43,12 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableArray<A> defaultVal, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure =
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
+      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
+        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) => collection(
-      key, rw,
-      ImmutableArray.CreateBuilder<A>, (b, a) => b.Add(a), b => b.MoveToImmutable(),
-      defaultVal,
-      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
+      key, rw, a => a, defaultVal, saveOnEveryWrite, 
+      onDeserializeFailure, onDeserializeCollectionItemFailure, log
     );
 
     public PrefVal<ImmutableList<A>> list<A>(
@@ -61,13 +56,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure =
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
+      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
+        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) => collection(
-      key, rw,
-      ImmutableList.CreateBuilder<A>, (b, a) => b.Add(a), b => b.ToImmutable(),
-      defaultVal ?? ImmutableList<A>.Empty,
+      key, rw, a => a.ToImmutableList(), defaultVal ?? ImmutableList<A>.Empty,
       saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
     );
 
@@ -76,13 +69,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableHashSet<A> defaultVal = null, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure =
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
+      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
+        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) => collection(
-      key, rw,
-      ImmutableHashSet.CreateBuilder<A>, (b, a) => b.Add(a), b => b.ToImmutable(),
-      defaultVal ?? ImmutableHashSet<A>.Empty,
+      key, rw, a => a.ToImmutableHashSet(), defaultVal ?? ImmutableHashSet<A>.Empty,
       saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
     );
 
@@ -119,115 +110,37 @@ namespace com.tinylabproductions.TLPLib.Data {
     );
 
     #endregion
-
-    #region Base64
-
-    public PrefVal<A> base64<A>(
-      string key, A defaultVal,
-      Fn<A, IEnumerable<byte[]>> serialize,
-      Fn<byte[][], Option<A>> deserialize,
-      bool saveOnEveryWrite = true,
-      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
-      ILog log=null
-    ) {
-      const char separator = '|';
-      return custom(
-        key, defaultVal,
-        a => serialize(a).Select(Convert.ToBase64String).mkString(separator),
-        base64Str => {
-          try {
-            // Split on empty string gives an array with 1 empty string
-            var parts = base64Str == "" ? new byte[][]{} : base64Str.Split(separator).map(Convert.FromBase64String);
-            return deserialize(parts);
-          }
-          catch (FormatException) {
-            return Option<A>.None;
-          }
-        },
-        saveOnEveryWrite: saveOnEveryWrite,
-        onDeserializeFailure: onDeserializeFailure,
-        log: log
-      );
-    }
-
-    /* Custom mapping with Base64 strings as backing storage. */
-    [Obsolete]
-    public PrefVal<A> base64__OLD<A>(
-      string key, A defaultVal, 
-      Act<A, Act<string>> store, Fn<IEnumerable<string>, A> read,
-      bool saveOnEveryWrite = true
-    ) {
-      return custom__OLD(
-        key, defaultVal, 
-        a => {
-          var sb = new StringBuilder();
-          var idx = 0;
-          Act<string> storer = value => {
-            if (idx != 0) sb.Append('|');
-            sb.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(value)));
-            idx++;
-          };
-          store(a, storer);
-          return sb.ToString();
-        },
-        str => read(
-          str.Split('|').Select(s => Encoding.UTF8.GetString(Convert.FromBase64String(s)))
-        ),
-        saveOnEveryWrite: saveOnEveryWrite
-      );
-    }
-
-    #endregion
-
+    
     #region Custom Collection
 
-    static string deserializeCollectionItemFailureMsg<A, C>(
-      string key, byte[] partData, string ending = ""
-    ) =>
-      $"Can't deserialize {typeof(A)} from '{BitConverter.ToString(partData)}' " +
-      $"for PrefVal<{typeof(C)}> '{key}'{ending}.";
-
-    public PrefVal<C> collection<A, C, CB>(
+    public PrefVal<C> collection<A, C>(
       string key,
-      ISerializedRW<A> rw,
-      Fn<CB> createCollectionBuilder, Act<CB, A> addToCollection, 
-      Fn<CB, C> builderToCollection,
+      ISerializedRW<A> rw, Fn<ImmutableArray<A>, C> toCollection,
       C defaultVal, bool saveOnEveryWrite = true, 
       PrefVal.OnDeserializeFailure onDeserializeFailure = 
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      PrefVal.OnDeserializeCollectionItemFailure onDeserializeCollectionItemFailure = 
-        PrefVal.OnDeserializeCollectionItemFailure.Ignore,
-      ILog log=null
-    ) where C : IEnumerable<A> {
-      log = log ?? Log.defaultLogger;
-      return base64(
-        key, defaultVal,
-        c => c.Select(rw.serialize),
-        parts => {
-          var b = createCollectionBuilder();
-          foreach (var partData in parts) {
-            var deserialized = rw.deserialize(partData, 0);
-            if (deserialized.isDefined) addToCollection(b, deserialized.get);
-            else {
-              if (
-                onDeserializeCollectionItemFailure == 
-                PrefVal.OnDeserializeCollectionItemFailure.Ignore
-              ) { 
-                if (log.isWarn())
-                  log.warn(deserializeCollectionItemFailureMsg<A, C>(key, partData, ", ignoring"));
-              }
-              else throw new SerializationException(
-                deserializeCollectionItemFailureMsg<A, C>(key, partData)
-              );
-            }
-          }
-          return builderToCollection(b).some();
-        },
-        saveOnEveryWrite: saveOnEveryWrite,
-        onDeserializeFailure: onDeserializeFailure,
-        log: log
+      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
+        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
+      ILog log = null
+    ) where C : ICollection<A> {
+      var collectionRw = SerializedRW.a(
+        SerializedRW.collectionSerializer<A, C>(rw),
+        SerializedRW
+          .collectionDeserializer(rw, onDeserializeCollectionItemFailure)
+          .map(arr => toCollection(arr).some())
+      );
+      return collection<A, C>(
+        key, collectionRw, defaultVal, saveOnEveryWrite, onDeserializeFailure, log
       );
     }
+
+    public PrefVal<C> collection<A, C>(
+      string key, ISerializedRW<C> rw, C defaultVal, bool saveOnEveryWrite = true, 
+      PrefVal.OnDeserializeFailure onDeserializeFailure = 
+        PrefVal.OnDeserializeFailure.ReturnDefault,
+      ILog log = null
+    ) where C : ICollection<A> => 
+      custom(key, defaultVal, rw, saveOnEveryWrite, onDeserializeFailure, log);
 
     #endregion
   }

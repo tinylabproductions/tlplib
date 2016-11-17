@@ -15,7 +15,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     public delegate byte[] Base64ReadPart();
 
     public enum OnDeserializeFailure { ReturnDefault, ThrowException }
-    public enum OnDeserializeCollectionItemFailure { Ignore, ThrowException }
 
     public static readonly PrefValStorage player = new PrefValStorage(PlayerPrefsBackend.instance);
 #if UNITY_EDITOR
