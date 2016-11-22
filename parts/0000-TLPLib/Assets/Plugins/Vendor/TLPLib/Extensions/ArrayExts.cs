@@ -11,6 +11,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return newArr;
     }
 
+    public static A[] concat<A>(this A[] a, A[] other) {
+      var newArr = new A[a.LongLength + other.LongLength];
+      a.CopyTo(newArr, 0);
+      other.CopyTo(newArr, a.LongLength);
+      return newArr;
+    }
+
     public static A[] concat<A>(this A[] a, params A[][] others) {
       // Functional programming crashes Mono runtime.
 
@@ -32,6 +39,25 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
 
       return self;
+    }
+
+    public static A[] slice<A>(this A[] a, int startIndex, int count = -1) {
+      if (startIndex < 0) throw new ArgumentOutOfRangeException(
+        nameof(startIndex), $"{nameof(startIndex)}({startIndex}) < 0"
+      );
+      if (startIndex >= a.Length) throw new ArgumentOutOfRangeException(
+         nameof(startIndex), $"{nameof(startIndex)}({startIndex}) >= array length ({a.Length})"
+       );
+      if (count < 0) count = a.Length - startIndex;
+      var endIdxExclusive = startIndex + count;
+      if (endIdxExclusive > a.Length) throw new ArgumentOutOfRangeException(
+        nameof(count), 
+        $"{nameof(count)}({count}) is too big (arr size: {a.Length}, {nameof(endIdxExclusive)}={endIdxExclusive})"
+      );
+      var arr = new A[count];
+      for (int srcIdx = startIndex, newIdx = 0; srcIdx < endIdxExclusive; srcIdx++, newIdx++)
+        arr[newIdx] = a[srcIdx];
+      return arr;
     }
 
     /**

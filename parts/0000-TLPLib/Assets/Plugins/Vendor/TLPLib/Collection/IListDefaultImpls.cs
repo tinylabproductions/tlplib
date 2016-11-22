@@ -40,19 +40,26 @@ namespace com.tinylabproductions.TLPLib.Collection {
       }
     }
     
-    public static void copyTo<C, A>(C c, A[] array, int arrayIndex)
+    public static void copyTo<C, A>(
+      C c, A[] array, int targetArrayIndex, int srcCopyFrom = 0, int srcCopyCount = -1
+    )
       where C : IList<A>
     {
       if (array == null)
         throw new ArgumentNullException(nameof(array), "array is null");
-      if (arrayIndex < 0)
-        throw new ArgumentOutOfRangeException(nameof(arrayIndex), "array index is < 0");
-      var endIndex = arrayIndex + c.Count;
+      if (targetArrayIndex < 0)
+        throw new ArgumentOutOfRangeException(nameof(targetArrayIndex), "array index is < 0");
+      if (srcCopyCount < 0) srcCopyCount = c.Count - srcCopyCount;
+      var endIndex = targetArrayIndex + srcCopyCount;
       if (array.Length < endIndex) throw new ArgumentException(
         $"Target array is too small ({nameof(endIndex)}={endIndex}, array length={array.Length})"
       );
 
-      for (int srcIdx = 0, targetIdx = arrayIndex; targetIdx < endIndex; srcIdx++, targetIdx++) {
+      for (
+        int srcIdx = srcCopyFrom, targetIdx = targetArrayIndex;
+        targetIdx < endIndex; 
+        srcIdx++, targetIdx++
+      ) {
         array[targetIdx] = c[srcIdx];
       }
     }

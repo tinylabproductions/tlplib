@@ -10,6 +10,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Duration fromSeconds(float seconds) => new Duration(Mathf.RoundToInt(seconds * 1000));
 
     public Duration(int millis) { this.millis = millis; }
+    public Duration(TimeSpan timeSpan) : this((int) timeSpan.TotalMilliseconds) {}
 
     #region Equality
 
@@ -47,7 +48,17 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static bool operator >=(Duration d1, Duration d2) =>
       d1.millis >= d2.millis;
 
+    public TimeSpan toTimeSpan => new TimeSpan(millis * TimeSpan.TicksPerMillisecond);
+    public static implicit operator TimeSpan(Duration d) => d.toTimeSpan;
+
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
+
+    public static readonly Numeric<Duration> numeric = new Numeric();
+    class Numeric : Numeric<Duration> {
+      public Duration add(Duration a1, Duration a2) => a1 + a2;
+      public Duration subtract(Duration a1, Duration a2) => a1 - a2;
+      public Duration fromInt(int i) => new Duration(i);
+    }
   }
 
   public static class DurationExts {

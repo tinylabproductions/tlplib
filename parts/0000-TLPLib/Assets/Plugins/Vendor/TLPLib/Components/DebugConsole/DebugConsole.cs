@@ -6,7 +6,6 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -287,14 +286,38 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       });
     }
 
-    public void registerNumeric<A>(string name, Ref<A> a, Numeric<A> num, A step) {
+    public void registerNumeric<A>(
+      string name, Ref<A> a, Numeric<A> num, A step, 
+      ImmutableList<A> quickSetValues = null
+    ) {
       register($"{name}?", () => a.value);
       register($"{name} += {step}", () => a.value = num.add(a.value, step));
       register($"{name} -= {step}", () => a.value = num.subtract(a.value, step));
+      if (quickSetValues != null) {
+        foreach (var value in quickSetValues)
+          register($"{name} = {value}", () => a.value = value);
+      }
     }
 
-    public void registerNumeric<A>(string name, Ref<A> a, Numeric<A> num) =>
-      registerNumeric(name, a, num, num.fromInt(1));
+    public void registerNumeric<A>(
+      string name, Ref<A> a, Numeric<A> num, 
+      ImmutableList<A> quickSetValues = null
+    ) =>
+      registerNumeric(name, a, num, num.fromInt(1), quickSetValues);
+
+    public void registerNumericOpt<A>(
+      string name, Ref<Option<A>> aOpt, A showOnNone, Numeric<A> num,
+      ImmutableList<A> quickSetValues = null
+    ) {
+      register($"Clear {name}", () => aOpt.value = Option<A>.None);
+      register($"{name} opt?", () => aOpt.value);
+      registerNumeric(
+        name, Ref.a(
+          () => aOpt.value.getOrElse(showOnNone),
+          v => aOpt.value = v.some()
+        ), num, quickSetValues
+      );
+    }
 
     public void registerCountdown(string name, uint count, Action act) {
       var countdown = count;
