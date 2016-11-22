@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.Utilities.Editor;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.MissingReferenceFinder.Error.Type;
 // ReSharper disable ClassNeverInstantiated.Local, NotNullMemberIsNotInitialized
 #pragma warning disable 169
 
 namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
   public class MissingReferenceFinderTest {
+    #region Test Classes
     class TestClass : MonoBehaviour {
       public GameObject field;
     }
@@ -29,7 +33,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
     class NonSerializedField : MonoBehaviour {
       [NotNull, NonSerialized] GameObject field;
       public void setField (GameObject go) { field = go; }
-
     }
 
     class ArrayWithNulls : MonoBehaviour {
@@ -57,14 +60,25 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       [SerializeField] InnerNotNull field;
       public void setField (InnerNotNull inn) { field = inn; }
     }
+    #endregion
 
     #region Missing References
+
+    [Test] public void WhenMissingComponent() {
+      const string path = "TLPLib/Editor/Test/Utilities/MissingReferenceTestGameObject.prefab";
+      var optString = AssetDatabase.GetAllAssetPaths().find(s => s.EndsWith(path, StringComparison.Ordinal));
+      optString.isSome.shouldBeTrue();
+      var go = AssetDatabase.LoadMainAssetAtPath(optString.get);
+      var errors = MissingReferenceFinder.check("", new [] { go });
+      noErrorsOrExistsErrorOfType(errors, ErrorType.MissingComponent.some());
+    }
+
     [Test] public void WhenMissingReference() => test<TestClass>(
       a => {
         a.field = new GameObject();
         Object.DestroyImmediate(a.field);
       },
-      MissingReferenceFinder.ErrorType.MissingReference.some()
+      ErrorType.MissingReference.some()
     );
     [Test] public void WhenReferenceNotMissing() => test<TestClass>(
       a => {
@@ -76,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
         a.field.field = new GameObject();
         Object.DestroyImmediate(a.field.field);
       },
-      MissingReferenceFinder.ErrorType.MissingReference.some()
+      ErrorType.MissingReference.some()
     );
     [Test] public void WhenReferenceNotMissingInner() => test<NullReferencePublicField>(
       a => {
@@ -87,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
 
     #region Public/Serialized Field
     [Test] public void WhenNotNullPublicField() => test<NotNullPublicField>(
-      errorType: MissingReferenceFinder.ErrorType.NullReference.some()
+      errorType: ErrorType.NullReference.some()
     );
     [Test] public void WhenNotNullPublicFieldSet() => test<NotNullPublicField>(
       a => {
@@ -95,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       }
     );
     [Test] public void WhenNotNullSerializedField() => test<NotNullSerializedField>(
-      errorType: MissingReferenceFinder.ErrorType.NullReference.some()
+      errorType: ErrorType.NullReference.some()
     );
     [Test] public void WhenNotNullSerializedFieldSet() => test<NotNullSerializedField>(
       a => {
@@ -114,7 +128,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       a => {
         a.field = new [] { new GameObject(), null, new GameObject() };
       },
-      MissingReferenceFinder.ErrorType.NullReference.some()
+      ErrorType.NullReference.some()
     );
     [Test] public void WhenNullReferenceListEmpty() => test<NullReferenceList>(
       a => {
@@ -125,7 +139,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       a => {
         a.field = new List<InnerNotNull> { new InnerNotNull() };
       },
-      MissingReferenceFinder.ErrorType.NullReference.some()
+      ErrorType.NullReference.some()
     );
     [Test] public void WhenNullReferenceListSet() => test<NullReferenceList>(
       a => {
@@ -143,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
     );
 
     [Test] public void WhenNullInsideMonoBehaviorPublicField() => test<NullReferencePublicField>(
-      errorType: MissingReferenceFinder.ErrorType.NullReference.some()
+      errorType: ErrorType.NullReference.some()
     );
     [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => test<NullReferencePublicField>(
       a => {
@@ -151,7 +165,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       }
     );
     [Test] public void WhenNullInsideMonoBehaviorSerializedField() => test<NullReferenceSerializedField>(
-      errorType: MissingReferenceFinder.ErrorType.NullReference.some()
+      errorType: ErrorType.NullReference.some()
     );
     [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => test<NullReferenceSerializedField>(
       a => {
@@ -161,12 +175,16 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
 
     static void test<A>(
       Act<A> setupA = null,
-      Option<MissingReferenceFinder.ErrorType> errorType = new Option<MissingReferenceFinder.ErrorType>()
+      Option<ErrorType> errorType = new Option<ErrorType>()
     ) where A : Component {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
-      var errors = MissingReferenceFinder.findMissingReferences("", new Object[] { go });
+      var errors = MissingReferenceFinder.check("", new Object[] { go });
+      noErrorsOrExistsErrorOfType(errors, errorType);
+    }
+
+    static void noErrorsOrExistsErrorOfType(ImmutableList<MissingReferenceFinder.Error> errors, Option<ErrorType> errorType) {
       errorType.voidFold(
         () => errors.shouldBeEmpty(),
         type => errors.shouldMatch(t => t.Exists(x => x.type == type))

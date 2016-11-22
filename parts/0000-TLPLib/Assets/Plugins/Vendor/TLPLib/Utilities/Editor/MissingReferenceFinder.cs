@@ -144,11 +144,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         if (goOpt.isDefined) {
           var components = goOpt.get.GetComponentsInChildren<Component>();
           foreach (var c in components) {
-            // TODO: test what happens if these two lines are swapped and the component evaluates to false
             errors = 
               c 
               ? errors.AddRange(checkComponent(context, c))
-              : errors.Add(Error.missingComponent(c.gameObject));
+              : errors.Add(Error.missingComponent(c));
           }
         }
         else {
