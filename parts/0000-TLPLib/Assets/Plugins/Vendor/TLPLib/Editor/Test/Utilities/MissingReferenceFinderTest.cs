@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Plugins.Vendor.TLPLib.Utilities.Editor;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.Utilities.Editor;
 using JetBrains.Annotations;
@@ -37,6 +38,10 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
 
     class ArrayWithNulls : MonoBehaviour {
       public GameObject[] field;
+    }
+
+    class ListNotEmpty : MonoBehaviour {
+      [NotEmpty] public List<InnerNotNull> field;
     }
 
     class NotNullArray : MonoBehaviour {
@@ -130,9 +135,16 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       },
       ErrorType.NullReference.some()
     );
-    [Test] public void WhenNullReferenceListEmpty() => test<NullReferenceList>(
+    [Test] public void WhenReferenceListEmpty() => test<ListNotEmpty>(
       a => {
         a.field = new List<InnerNotNull>();
+      },
+      ErrorType.EmptyCollection.some()
+    );
+    [Test] public void WhenReferenceListNotEmpty() => test<ListNotEmpty>(
+      a => {
+        var inner = new InnerNotNull { field = new GameObject() };
+        a.field = new List<InnerNotNull> { inner };
       }
     );
     [Test] public void WhenNullReferenceList() => test<NullReferenceList>(

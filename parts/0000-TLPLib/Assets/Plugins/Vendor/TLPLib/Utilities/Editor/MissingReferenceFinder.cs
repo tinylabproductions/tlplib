@@ -13,6 +13,7 @@ using UnityEngine.Events;
 using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Plugins.Vendor.TLPLib.Utilities.Editor;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -20,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class MissingReferenceFinder {
     public struct Error {
       public enum Type {
-        MissingComponent, MissingReference, NullReference, UnityEventInvalidMethod, UnityEventInvalid
+        MissingComponent, MissingReference, NullReference, EmptyCollection, UnityEventInvalidMethod, UnityEventInvalid
       }
 
       public readonly Type type;
@@ -41,6 +42,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public static Error missingComponent(Object o) => new Error(
         Type.MissingComponent,
         $"Missing Component in GO or children: {o}",
+        o
+      );
+
+      public static Error emptyCollection(
+        Object o, string component, string property, string context
+      ) => new Error(
+        Type.EmptyCollection,
+        $"Collection is empty in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
         o
       );
 
@@ -68,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         o
       );
 
-      public static Error unityEventNotValid(
+      public static Error unityEventInvalid(
         Object o, string property, int number, string context
       ) => new Error(
         Type.UnityEventInvalid,
@@ -185,10 +194,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      var nullFields = lookupFieldsWithNotNullThatAreNull(component);
-      errors = errors.AddRange(nullFields.Select(field => 
-        Error.nullReference(component, component.GetType().Name, field.Name, context)
-      ));
+      var fieldErrors = validateFieldsWithAttributes(
+        component,
+        (field, err) => {
+          var componentName = component.GetType().Name;
+          return 
+            err == FieldAttributeError.NullField
+            ? Error.nullReference(component, componentName, field.Name, context)
+            : Error.emptyCollection(component, componentName, field.Name, context);
+        }
+      );
+      errors = errors.AddRange(fieldErrors);
 
       return errors;
     }
@@ -212,7 +228,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             return Error.unityEventInvalidMethod(component, propertyName, index, context).some();
         }
         else
-          return Error.unityEventNotValid(component, propertyName, index, context).some();
+          return Error.unityEventInvalid(component, propertyName, index, context).some();
       }
 
       return Option<Error>.None;
@@ -228,7 +244,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         : Option<UnityEvent>.None;
     }
 
-    static IEnumerable<FieldInfo> lookupFieldsWithNotNullThatAreNull(object o) {
+    enum FieldAttributeError { NullField, EmptyCollection }
+
+    static IEnumerable<Error> validateFieldsWithAttributes(
+      object o, Fn<FieldInfo, FieldAttributeError, Error> createError
+    ) {
       var type = o.GetType();
       var fields = type.GetFields(
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
@@ -241,14 +261,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           var fieldValue = fi.GetValue(o);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           if (fieldValue == null) {
-            if (hasNotNull) yield return fi;
+            if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField);
           }
           else {
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isDefined) {
+              var list = listOpt.get;
+              if (list.Count == 0 && fi.hasAttribute<NotEmptyAttribute>()) {
+                yield return createError(fi, FieldAttributeError.EmptyCollection);
+              }
               foreach (
-                var _fi in lookupFieldsWithNotNullThatAreNull(listOpt.get, fi, hasNotNull)
-              ) yield return _fi;
+                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, createError)
+              ) yield return _err;
             }
             else {
               var fieldType = fi.FieldType;
@@ -257,8 +281,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 !fieldType.IsPrimitive
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
-                foreach (var _fi in lookupFieldsWithNotNullThatAreNull(fieldValue))
-                  yield return _fi;
+                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError))
+                  yield return _err;
               }
             }
           }
@@ -268,19 +292,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static readonly Type unityObjectType = typeof(Object);
 
-    static IEnumerable<FieldInfo> lookupFieldsWithNotNullThatAreNull(
-      IList list, FieldInfo listFieldInfo, bool hasNotNull
+    static IEnumerable<Error> validateFieldsWithAttributes(
+      IList list, FieldInfo listFieldInfo, bool hasNotNull, Fn<FieldInfo, FieldAttributeError, Error> createError
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return listFieldInfo;
+        if (hasNotNull && list.Contains(null)) yield return createError(listFieldInfo, FieldAttributeError.NullField);
       }
       else {
         foreach (var listItem in list)
-          foreach (var _fi in lookupFieldsWithNotNullThatAreNull(listItem))
-            yield return _fi;
+          foreach (var _err in validateFieldsWithAttributes(listItem, createError))
+            yield return _err;
       }
     }
 
