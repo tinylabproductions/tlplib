@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEditor;
 
@@ -13,6 +15,11 @@ public class DateModifiedUpdater : AssetPostprocessor {
   static void OnPostprocessAllAssets(
     string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths
   ) {
+    if (Log.isDebug) Log.rdebug(
+      $"{nameof(DateModifiedUpdater)}.{nameof(OnPostprocessAllAssets)}[\n" +
+      $"  {nameof(movedAssets)}: {movedAssets.mkStringEnum()}\n" +
+      $"]"
+    );
     foreach (var relativePath in movedAssets) {
       File.SetLastWriteTime(relativePath, DateTime.Now);
       File.SetLastWriteTime($"{relativePath}.meta", DateTime.Now);
