@@ -268,6 +268,18 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         );
       });
 
+    public static Parser<Tpl<A, B>> tplParser<A, B>(Parser<A> aParser, Parser<B> bParser, string aName = "_1", string bName = "_2") {
+      return configParser.flatMap((path, cfg) => {
+        var a = cfg.eitherGet(aName, aParser);
+        if (a.isLeft) return a.__unsafeCastRight<Tpl<A, B>>();
+        var b = cfg.eitherGet(bName, bParser);
+        if (b.isLeft) return b.__unsafeCastRight<Tpl<A, B>>();
+        return Either<ConfigLookupError, Tpl<A, B>>.Right(
+          F.t(a.__unsafeGetRight, b.__unsafeGetRight)
+        );
+      });
+    }
+
     public static readonly Parser<string> stringParser = createCastParser<string>();
 
     public static readonly Parser<int> intParser = (path, n) => {
