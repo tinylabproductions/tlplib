@@ -258,27 +258,15 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       });
 
     public static readonly Parser<FRange> fRangeParser =
-      configParser.flatMap((path, cfg) => { 
-        var lowerE = cfg.eitherGet("lower", floatParser);
-        if (lowerE.isLeft) return lowerE.__unsafeCastRight<FRange>();
-        var upperE = cfg.eitherGet("upper", floatParser);
-        if (upperE.isLeft) return upperE.__unsafeCastRight<FRange>();
-        return Either<ConfigLookupError, FRange>.Right(
-          new FRange(lowerE.__unsafeGetRight, upperE.__unsafeGetRight)
-        );
-      });
+      tplParser("lower", floatParser, "upper", floatParser)
+      .flatMap((path, t) => new FRange(t._1, t._2).some());
 
-    public static Parser<Tpl<A, B>> tplParser<A, B>(Parser<A> aParser, Parser<B> bParser, string aName = "_1", string bName = "_2") {
-      return configParser.flatMap((path, cfg) => {
-        var a = cfg.eitherGet(aName, aParser);
-        if (a.isLeft) return a.__unsafeCastRight<Tpl<A, B>>();
-        var b = cfg.eitherGet(bName, bParser);
-        if (b.isLeft) return b.__unsafeCastRight<Tpl<A, B>>();
-        return Either<ConfigLookupError, Tpl<A, B>>.Right(
-          F.t(a.__unsafeGetRight, b.__unsafeGetRight)
-        );
-      });
+    public static Parser<A> configPathedParser<A>(string key, Parser<A> aParser) {
+      return configParser.flatMap((path, cfg) => cfg.eitherGet(key, aParser));
     }
+
+    public static Parser<Tpl<A1, A2>> tplParser<A1, A2>(string aKey, Parser<A1> aParser, string bKey, Parser<A2> bParser) =>
+      configPathedParser(aKey, aParser).and(configPathedParser(bKey, bParser));
 
     public static readonly Parser<string> stringParser = createCastParser<string>();
 
