@@ -57,7 +57,6 @@ If you wish to use them, you need to define the constants in Unity3D (Menu Bar >
 
 * GOTWEEN - if you are using [GoKit](https://github.com/prime31/GoKit).
 * DFGUI - if you are using [Daikon Forge GUI](http://www.daikonforge.com/dfgui/). Beware that this also uses GOTWEEN as well.
-* UNITY_TEST - to enable unit tests.
 
 Questions and feedback
 ----------------------
