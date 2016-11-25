@@ -18,6 +18,8 @@ It contains various things, including but not limited to:
 * Tween utilities: mainly to make tweens type-safe.
 * Various other misc utilities.
 
+Its documentation resides in our general [knowledge base](https://github.com/tinylabproductions/knowledgebase/wiki).
+
 Requirements
 ------------
 
