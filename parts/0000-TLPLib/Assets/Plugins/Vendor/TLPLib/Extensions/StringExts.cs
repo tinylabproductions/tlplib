@@ -161,5 +161,31 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         ).ToArray()
       ) 
       : input;
+
+    /**
+     * string methods StartsWith, EndsWith, IndexOf ... by default use
+     * StringComparison.CurrentCulture.
+     * 
+     * That is about 30 times slower than StringComparison.Ordinal.
+     */
+    public static bool StartsWithFast(
+      this string s, string value, bool ignoreCase = false
+    ) =>
+      s.StartsWith(value, ordinalStringComparison(ignoreCase));
+
+    /** See #StartsWithFast */
+    public static bool EndsWithFast(
+      this string s, string value, bool ignoreCase = false
+    ) =>
+      s.EndsWith(value, ordinalStringComparison(ignoreCase));
+
+    /** See #StartsWithFast */
+    public static int IndexOfFast(
+      this string s, string value, bool ignoreCase = false
+    ) => 
+      s.IndexOf(value, ordinalStringComparison(ignoreCase));
+
+    static StringComparison ordinalStringComparison(bool ignoreCase) =>
+      ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
   }
 }
