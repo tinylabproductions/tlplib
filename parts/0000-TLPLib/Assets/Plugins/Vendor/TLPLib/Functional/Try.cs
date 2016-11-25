@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public
@@ -39,6 +40,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Either<Exception, A> toEither =>
       isSuccess ? Either<Exception, A>.Right(_value) : Either<Exception, A>.Left(_exception);
+
+    public Either<ImmutableList<string>, A> toValidation =>
+      isSuccess 
+      ? Either<ImmutableList<string>, A>.Right(_value) 
+      : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.Message));
 
     public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) => 
       isSuccess ? onValue(_value) : onException(_exception);

@@ -256,17 +256,46 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         }
         return Either<ConfigLookupError, Dictionary<K, V>>.Right(dict);
       });
+    
+    public static Parser<A> configPathedParser<A>(string key, Parser<A> aParser) => 
+      configParser.flatMap((path, cfg) => cfg.eitherGet(key, aParser));
 
-    public static readonly Parser<FRange> fRangeParser =
-      configParser.flatMap((path, cfg) => { 
-        var lowerE = cfg.eitherGet("lower", floatParser);
-        if (lowerE.isLeft) return lowerE.__unsafeCastRight<FRange>();
-        var upperE = cfg.eitherGet("upper", floatParser);
-        if (upperE.isLeft) return upperE.__unsafeCastRight<FRange>();
-        return Either<ConfigLookupError, FRange>.Right(
-          new FRange(lowerE.__unsafeGetRight, upperE.__unsafeGetRight)
-        );
-      });
+    public static Parser<B> configPathedParser<A1, A2, B>(
+      string a1Key, Parser<A1> a1Parser,
+      string a2Key, Parser<A2> a2Parser,
+      Fn<A1, A2, B> mapper
+    ) =>
+      configPathedParser(a1Key, a1Parser)
+      .and(configPathedParser(a2Key, a2Parser))
+      .map((path, t) => mapper(t._1, t._2));
+
+    public static Parser<B> configPathedParser<A1, A2, A3, B>(
+      string a1Key, Parser<A1> a1Parser,
+      string a2Key, Parser<A2> a2Parser,
+      string a3Key, Parser<A3> a3Parser,
+      Fn<A1, A2, A3, B> mapper
+    ) =>
+      configPathedParser(a1Key, a1Parser)
+      .and(
+        configPathedParser(a2Key, a2Parser),
+        configPathedParser(a3Key, a3Parser)
+      )
+      .map((path, t) => mapper(t._1, t._2, t._3));
+
+    public static Parser<B> configPathedParser<A1, A2, A3, A4, B>(
+      string a1Key, Parser<A1> a1Parser,
+      string a2Key, Parser<A2> a2Parser,
+      string a3Key, Parser<A3> a3Parser,
+      string a4Key, Parser<A4> a4Parser,
+      Fn<A1, A2, A3, A4, B> mapper
+    ) =>
+      configPathedParser(a1Key, a1Parser)
+      .and(
+        configPathedParser(a2Key, a2Parser),
+        configPathedParser(a3Key, a3Parser),
+        configPathedParser(a4Key, a4Parser)
+      )
+      .map((path, t) => mapper(t._1, t._2, t._3, t._4));
 
     public static readonly Parser<string> stringParser = createCastParser<string>();
 
@@ -350,6 +379,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
           ? Either<ConfigLookupError, DateTime>.Right(t.__unsafeGet) 
           : parseErrorEFor<DateTime>(path, s, t.__unsafeException.Message);
       }));
+    
+    public static readonly Parser<FRange> fRangeParser =
+      configPathedParser("lower", floatParser)
+      .and(configPathedParser("upper", floatParser))
+      .map((path, t) => new FRange(t._1, t._2));
 
     #endregion
 
@@ -509,8 +543,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       };
 
     public static Config.Parser<Tpl<A1, A2, A3>> and<A1, A2, A3>(
-        this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p
-      ) =>
+      this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p
+    ) =>
       (path, node) => {
         var a1E = a1p(path, node);
         if (a1E.isLeft) return a1E.__unsafeCastRight<Tpl<A1, A2, A3>>();
@@ -523,7 +557,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         ));
       };
 
-       public static Config.Parser<Tpl<A1, A2, A3, A4>> and<A1, A2, A3, A4>(
+    public static Config.Parser<Tpl<A1, A2, A3, A4>> and<A1, A2, A3, A4>(
       this Config.Parser<A1> a1p, Config.Parser<A2> a2p, Config.Parser<A3> a3p, Config.Parser<A4> a4p
     ) =>
       (path, node) => {

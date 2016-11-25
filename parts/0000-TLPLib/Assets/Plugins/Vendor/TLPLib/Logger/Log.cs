@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly Level defaultLogLevel = 
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
 
-    public static ILog defaultLogger => UnityLog.instance;
+    public static ILog defaultLogger { get; set; } = UnityLog.instance;
 
     static Log() {
       DConsole.instance.onShow += dc => {
@@ -40,23 +40,23 @@ namespace com.tinylabproductions.TLPLib.Logger {
       };
     }
 
-    public static void verbose(object o) { UnityLog.instance.verbose(o); }
-    public static bool isVerbose => UnityLog.instance.isVerbose();
+    public static void verbose(object o) => defaultLogger.verbose(o);
+    public static bool isVerbose => defaultLogger.isVerbose();
     
     /* Runtime version of debug. */
-    public static void rdebug(object o) { UnityLog.instance.debug(o); }
-    public static bool isDebug => UnityLog.instance.isDebug();
+    public static void rdebug(object o) => defaultLogger.debug(o);
+    public static bool isDebug => defaultLogger.isDebug();
 
-    public static void info(object o) { UnityLog.instance.info(o); }
-    public static bool isInfo => UnityLog.instance.isInfo();
+    public static void info(object o) => defaultLogger.info(o);
+    public static bool isInfo => defaultLogger.isInfo();
 
-    public static void warn(object o) { UnityLog.instance.warn(o); }
-    public static bool isWarn => UnityLog.instance.isWarn();
+    public static void warn(object o) => defaultLogger.warn(o);
+    public static bool isWarn => defaultLogger.isWarn();
 
-    public static void error(Exception ex) { UnityLog.instance.error(ex); }
-    public static void error(object o) { UnityLog.instance.error(o); }
-    public static void error(object o, Exception ex) { UnityLog.instance.error(o, ex); }
-    public static bool isError => UnityLog.instance.isError();
+    public static void error(Exception ex) => defaultLogger.error(ex);
+    public static void error(object o) => defaultLogger.error(o);
+    public static void error(object o, Exception ex) => defaultLogger.error(o, ex);
+    public static bool isError => defaultLogger.isError();
 
     public static string exToStr(Exception ex, object o=null) {
       var sb = new StringBuilder();
@@ -141,7 +141,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
   
   public abstract class LogBase : ILog {
     public Log.Level level { get; set; } = Log.defaultLogLevel;
-    public bool willLog(Log.Level l) => this.level >= l;
+    public bool willLog(Log.Level l) => level >= l;
 
     public void log(Log.Level l, object o) => logInner(l, line(l.ToString(), o));
     protected abstract void logInner(Log.Level l, string s);
@@ -152,6 +152,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
       var t = Thread.CurrentThread;
       return t == OnMainThread.mainThread ? "Tm" : $"T{t.ManagedThreadId}";
     } }
+  }
+
+  /** Useful for batch mode to log to the log file without the stacktraces. */
+  public class ConsoleLog : LogBase {
+    public static readonly ConsoleLog instance = new ConsoleLog();
+    ConsoleLog() {}
+
+    protected override void logInner(Log.Level l, string s) {
+      Console.WriteLine(s);
+    }
   }
 
   public class UnityLog : LogBase {
