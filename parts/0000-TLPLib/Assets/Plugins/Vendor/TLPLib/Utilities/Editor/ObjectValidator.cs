@@ -13,12 +13,12 @@ using UnityEngine.Events;
 using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Plugins.Vendor.TLPLib.Utilities.Editor;
-using Debug = UnityEngine.Debug;
+using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.validations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public class MissingReferenceFinder {
+  public class ObjectValidator {
     public struct Error {
       public enum Type {
         MissingComponent, MissingReference, NullReference, EmptyCollection, UnityEventInvalidMethod, UnityEventInvalid
@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [MenuItem(
-      "Tools/Show Missing Object References in Current Scene", 
+      "Tools/Validate Objects in Current Scene", 
       isValidateFunction: false, priority: 55
     )]
     static void checkCurrentSceneMenuItem() {
@@ -111,7 +111,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         EditorUtility.ClearProgressBar
       );
       showErrors(t._1);
-      Debug.LogWarning(
+      if (Log.isInfo) Log.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
       );
     }
@@ -267,7 +267,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isDefined) {
               var list = listOpt.get;
-              if (list.Count == 0 && fi.hasAttribute<NotEmptyAttribute>()) {
+              if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
                 yield return createError(fi, FieldAttributeError.EmptyCollection);
               }
               foreach (
@@ -315,7 +315,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       .ToImmutableList();
 
     static void showErrors(IEnumerable<Error> errors) {
-      foreach (var error in errors) Debug.LogError(error.message, error.context);
+      foreach (var error in errors)
+        if (Log.isError) Log.error(error.message, error.context);
     }
 
     static string fullPath(Object o) {
