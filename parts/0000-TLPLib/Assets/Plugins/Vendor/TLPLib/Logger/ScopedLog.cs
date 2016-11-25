@@ -1,4 +1,6 @@
-﻿namespace com.tinylabproductions.TLPLib.Logger {
+﻿using UnityEngine;
+
+namespace com.tinylabproductions.TLPLib.Logger {
   public class ScopedLog : ILog {
     public readonly string scope;
     readonly ILog backing;
@@ -14,7 +16,8 @@
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, object o) => backing.log(l, wrap(o));
+    public void log(Log.Level l, object o, Object context = null) => 
+      backing.log(l, wrap(o), context);
 
     string wrap(object o) => $"{scope} {o}";
   }

@@ -6,11 +6,13 @@ using System.Threading;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   /**
@@ -40,22 +42,29 @@ namespace com.tinylabproductions.TLPLib.Logger {
       };
     }
 
-    public static void verbose(object o) => defaultLogger.verbose(o);
+    public static void verbose(object o, Object context = null) => 
+      defaultLogger.verbose(o, context);
     public static bool isVerbose => defaultLogger.isVerbose();
     
     /* Runtime version of debug. */
-    public static void rdebug(object o) => defaultLogger.debug(o);
+    public static void rdebug(object o, Object context = null) => 
+      defaultLogger.debug(o, context);
     public static bool isDebug => defaultLogger.isDebug();
 
-    public static void info(object o) => defaultLogger.info(o);
+    public static void info(object o, Object context = null) => 
+      defaultLogger.info(o, context);
     public static bool isInfo => defaultLogger.isInfo();
 
-    public static void warn(object o) => defaultLogger.warn(o);
+    public static void warn(object o, Object context = null) => 
+      defaultLogger.warn(o, context);
     public static bool isWarn => defaultLogger.isWarn();
 
-    public static void error(Exception ex) => defaultLogger.error(ex);
-    public static void error(object o) => defaultLogger.error(o);
-    public static void error(object o, Exception ex) => defaultLogger.error(o, ex);
+    public static void error(Exception ex, Object context = null) => 
+      defaultLogger.error(ex, context);
+    public static void error(object o, Object context = null) => 
+      defaultLogger.error(o, context);
+    public static void error(object o, Exception ex, Object context = null) => 
+      defaultLogger.error(o, ex, context);
     public static bool isError => defaultLogger.isError();
 
     public static string exToStr(Exception ex, object o=null) {
@@ -95,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     Log.Level level { get; set; }
 
     bool willLog(Log.Level l);
-    void log(Log.Level l, object o);
+    void log(Log.Level l, object o, Object context = null);
   }
 
   public static class ILogExts {
@@ -105,13 +114,20 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static bool isWarn(this ILog log) => log.willLog(Log.Level.WARN);
     public static bool isError(this ILog log) => log.willLog(Log.Level.ERROR);
 
-    public static void verbose(this ILog log, object o) => log.log(Log.Level.VERBOSE, o);
-    public static void debug(this ILog log, object o) => log.log(Log.Level.DEBUG, o);
-    public static void info(this ILog log, object o) => log.log(Log.Level.INFO, o);
-    public static void warn(this ILog log, object o) => log.log(Log.Level.WARN, o);
-    public static void error(this ILog log, object o) => log.log(Log.Level.ERROR, o);
-    public static void error(this ILog log, Exception ex) => log.error(Log.exToStr(ex));
-    public static void error(this ILog log, object o, Exception ex) => log.error(Log.exToStr(ex, o));
+    public static void verbose(this ILog log, object o, Object context = null) => 
+      log.log(Log.Level.VERBOSE, o, context);
+    public static void debug(this ILog log, object o, Object context = null) => 
+      log.log(Log.Level.DEBUG, o, context);
+    public static void info(this ILog log, object o, Object context = null) => 
+      log.log(Log.Level.INFO, o, context);
+    public static void warn(this ILog log, object o, Object context = null) => 
+      log.log(Log.Level.WARN, o, context);
+    public static void error(this ILog log, object o, Object context = null) => 
+      log.log(Log.Level.ERROR, o, context);
+    public static void error(this ILog log, Exception ex, Object context = null) => 
+      log.error(Log.exToStr(ex), context);
+    public static void error(this ILog log, object o, Exception ex, Object context = null) => 
+      log.error(Log.exToStr(ex, o), context);
 
     /* Backwards compatibility */
     [Obsolete("Use debug() instead.")]
@@ -134,7 +150,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, object o) => defer(() => backing.log(l, o));
+    public void log(Log.Level l, object o, Object context = null) => 
+      defer(() => backing.log(l, o, context));
 
     static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
   }
@@ -143,8 +160,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public Log.Level level { get; set; } = Log.defaultLogLevel;
     public bool willLog(Log.Level l) => level >= l;
 
-    public void log(Log.Level l, object o) => logInner(l, line(l.ToString(), o));
-    protected abstract void logInner(Log.Level l, string s);
+    public void log(Log.Level l, object o, Object context = null) => 
+      logInner(l, line(l.ToString(), o), context.opt());
+    protected abstract void logInner(Log.Level l, string s, Option<Object> context);
 
     static string line(string level, object o) => $"[{thread}|{level}]> {o}";
 
@@ -159,7 +177,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly ConsoleLog instance = new ConsoleLog();
     ConsoleLog() {}
 
-    protected override void logInner(Log.Level l, string s) {
+    protected override void logInner(Log.Level l, string s, Option<Object> context) {
+      if (context.isDefined) s = $"{s} (ctx={context.get})";
       Console.WriteLine(s);
     }
   }
@@ -168,18 +187,18 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
 
-    protected override void logInner(Log.Level l, string s) {
+    protected override void logInner(Log.Level l, string s, Option<Object> context) {
       switch (l) {
         case Log.Level.VERBOSE:
         case Log.Level.DEBUG:
         case Log.Level.INFO:
-          Debug.Log(s);
+          Debug.Log(s, context.getOrNull());
           break;
         case Log.Level.WARN:
-          Debug.LogWarning(s);
+          Debug.LogWarning(s, context.getOrNull());
           break;
         case Log.Level.ERROR:
-          Debug.LogError(s);
+          Debug.LogError(s, context.getOrNull());
           break;
         case Log.Level.NONE:
           break;
@@ -193,7 +212,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly NoOpLog instance = new NoOpLog();
     NoOpLog() {}
 
-    protected override void logInner(Log.Level l, string s) {}
+    protected override void logInner(Log.Level l, string s, Option<Object> context) {}
   }
 
   class EditorLog {
