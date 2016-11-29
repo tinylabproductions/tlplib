@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
 using com.tinylabproductions.TLPLib.Collection;
@@ -235,6 +236,30 @@ namespace com.tinylabproductions.TLPLib.Data {
           SerializedRW.OnCollectionItemDeserializationFailure.Abort
         )
       );
+    }
+  }
+
+  class PrefValHashSetTest : PrefValTestBase {
+    [Test]
+    public void StringMultipleTimes() {
+      Fn<PrefVal<ImmutableHashSet<string>>> create = () =>
+        storage.hashSet(nameof(PrefValHashSetTest), SerializedRW.str);
+
+      var p1 = create();
+      p1.value.shouldEqual(ImmutableHashSet<string>.Empty);
+      var l1 = ImmutableHashSet.Create("foo", "bar");
+      p1.value = l1;
+      p1.value.shouldEqual(l1);
+      var l2 = l1.Add("baz");
+      p1.value = l2;
+      p1.value.shouldEqual(l2);
+      var p2 = create();
+      p2.value.shouldEqual(l2);
+      var l3 = l2.Add("buz");
+      p2.value = l3;
+      p2.value.shouldEqual(l3);
+      var p3 = create();
+      p3.value.shouldEqual(l3);
     }
   }
 }

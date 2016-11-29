@@ -25,7 +25,23 @@ namespace com.tinylabproductions.TLPLib.Data {
       IDeserializer<A> deser, Rope<byte> serialized, Act<Option<A>> check
     ) {
       check(deser.deserialize(serialized.toArray(), 0).map(_ => _.value));
-      check(deser.deserialize((noise + serialized).toArray(), noise.length).map(_ => _.value));
+      check(deser.deserialize((noise + serialized + noise).toArray(), noise.length).map(_ => _.value));
+    }
+  }
+
+  public class SerializationTestStringRW : SerializationTestBase {
+    static readonly ISerializedRW<string> rw = SerializedRW.str;
+
+    [Test]
+    public void TestEmpty() {
+      var s = "";
+      checkWithNoise(rw, rw.serialize(s), s);
+    }
+
+    [Test]
+    public void TestString() {
+      var s = "quickbrownfox";
+      checkWithNoise(rw, rw.serialize(s), s);
     }
   }
 
