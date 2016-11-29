@@ -43,12 +43,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableArray<A> defaultVal, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
-        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) => collection(
       key, rw, a => a, defaultVal, saveOnEveryWrite, 
-      onDeserializeFailure, onDeserializeCollectionItemFailure, log
+      onDeserializeFailure, log
     );
 
     public PrefVal<ImmutableList<A>> list<A>(
@@ -56,12 +54,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
-        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) => collection(
       key, rw, a => a.ToImmutableList(), defaultVal ?? ImmutableList<A>.Empty,
-      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
+      saveOnEveryWrite, onDeserializeFailure, log
     );
 
     public PrefVal<ImmutableHashSet<A>> hashSet<A>(
@@ -69,12 +65,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableHashSet<A> defaultVal = null, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
-        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) => collection(
       key, rw, a => a.ToImmutableHashSet(), defaultVal ?? ImmutableHashSet<A>.Empty,
-      saveOnEveryWrite, onDeserializeFailure, onDeserializeCollectionItemFailure, log
+      saveOnEveryWrite, onDeserializeFailure, log
     );
 
     #endregion
@@ -119,14 +113,12 @@ namespace com.tinylabproductions.TLPLib.Data {
       C defaultVal, bool saveOnEveryWrite = true, 
       PrefVal.OnDeserializeFailure onDeserializeFailure = 
         PrefVal.OnDeserializeFailure.ReturnDefault,
-      SerializedRW.OnCollectionItemDeserializationFailure onDeserializeCollectionItemFailure =
-        SerializedRW.OnCollectionItemDeserializationFailure.Ignore,
       ILog log = null
     ) where C : ICollection<A> {
       var collectionRw = SerializedRW.a(
         SerializedRW.collectionSerializer<A, C>(rw),
         SerializedRW
-          .collectionDeserializer(rw, onDeserializeCollectionItemFailure)
+          .collectionDeserializer(rw)
           .map(arr => toCollection(arr).some())
       );
       return collection<A, C>(

@@ -104,16 +104,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailing() {
-      var deserializerIgnore = SerializedRW.collectionDeserializer(
-        failingDeserializer, SerializedRW.OnCollectionItemDeserializationFailure.Ignore
-      );
-      checkWithNoiseOpt(
-        deserializerIgnore, serialized, opt => opt.shouldBeSomeEnum(ImmutableArray.Create(2, 4))
-      );
-      var deserializerAbort = SerializedRW.collectionDeserializer(
-        failingDeserializer, SerializedRW.OnCollectionItemDeserializationFailure.Abort
-      );
-      checkWithNoiseOpt(deserializerAbort, serialized, Option<ImmutableArray<int>>.None);
+      var deserializer = SerializedRW.collectionDeserializer(failingDeserializer);
+      checkWithNoiseOpt(deserializer, serialized, Option<ImmutableArray<int>>.None);
     }
   }
 }

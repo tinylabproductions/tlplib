@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
 using com.tinylabproductions.TLPLib.Collection;
@@ -171,16 +170,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableList<int> defaultVal,
       Deserialize<DeserializeInfo<int>> deserializeFn = null,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
-      SerializedRW.OnCollectionItemDeserializationFailure onItemFailure =
-        SerializedRW.OnCollectionItemDeserializationFailure.Abort
+        PrefVal.OnDeserializeFailure.ReturnDefault
     ) =>
       storage.collection(
         key, 
         SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize),
         convert, defaultVal,
         onDeserializeFailure: onDeserializeFailure,
-        onDeserializeCollectionItemFailure: onItemFailure,
         log: log
       );
 
@@ -214,28 +210,26 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [Test]
-    public void ItemDeserializationFailureIgnore() {
-      create(ImmutableList.Create(1, 2, 3));
-      var p1 = create(
-        ImmutableList<int>.Empty,
-        badDeserialize,
-        PrefVal.OnDeserializeFailure.ThrowException,
-        SerializedRW.OnCollectionItemDeserializationFailure.Ignore
-      );
-      p1.value.shouldEqual(ImmutableList.Create(1, 3));
-    }
-
-    [Test]
     public void ItemDeserializationFailureThrowException() {
       create(ImmutableList.Create(1, 2, 3));
       Assert.Throws<SerializationException>(() =>
         create(
           ImmutableList<int>.Empty,
           badDeserialize,
-          PrefVal.OnDeserializeFailure.ThrowException,
-          SerializedRW.OnCollectionItemDeserializationFailure.Abort
+          PrefVal.OnDeserializeFailure.ThrowException
         )
       );
+    }
+
+    [Test]
+    public void ItemDeserializationFailureReturnDefault() {
+      create(ImmutableList.Create(1, 2, 3));
+      var default_ = ImmutableList.Create(1);
+      create(
+        default_,
+        badDeserialize,
+        PrefVal.OnDeserializeFailure.ReturnDefault
+      ).value.shouldEqual(default_);
     }
   }
 

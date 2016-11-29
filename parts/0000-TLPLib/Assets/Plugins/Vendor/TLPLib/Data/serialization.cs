@@ -101,9 +101,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       new ICollectionSerializer<A, C>(serializer);
 
     public static IDeserializer<ImmutableArray<A>> collectionDeserializer<A>(
-      IDeserializer<A> deserializer,
-      OnCollectionItemDeserializationFailure onFailure = OnCollectionItemDeserializationFailure.Abort
-    ) => new ImmutableArrayDeserializer<A>(deserializer, onFailure);
+      IDeserializer<A> deserializer
+    ) => new ImmutableArrayDeserializer<A>(deserializer);
 
     class JointRW<A> : ISerializedRW<A> {
       readonly ISerializer<A> serializer;
@@ -392,17 +391,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
     }
 
-    public enum OnCollectionItemDeserializationFailure { Ignore, Abort }
-
     class ImmutableArrayDeserializer<A> : IDeserializer<ImmutableArray<A>> {
       readonly IDeserializer<A> deserializer;
-      readonly OnCollectionItemDeserializationFailure onFailure;
 
       public ImmutableArrayDeserializer(
-        IDeserializer<A> deserializer, OnCollectionItemDeserializationFailure onFailure
+        IDeserializer<A> deserializer
       ) {
         this.deserializer = deserializer;
-        this.onFailure = onFailure;
       }
 
       public Option<DeserializeInfo<ImmutableArray<A>>> deserialize(byte[] serialized, int startIndex) {
@@ -416,15 +411,12 @@ namespace com.tinylabproductions.TLPLib.Data {
             var aOpt = deserializer.deserialize(serialized, readIdx);
 
             if (aOpt.isEmpty) {
-              if (onFailure == OnCollectionItemDeserializationFailure.Abort)
-                return Option<DeserializeInfo<ImmutableArray<A>>>.None;
+              return Option<DeserializeInfo<ImmutableArray<A>>>.None;
             }
-            else {
-              var aInfo = aOpt.get;
-              bytesRead += aInfo.bytesRead;
-              readIdx += aInfo.bytesRead;
-              builder.Add(aInfo.value);
-            }
+            var aInfo = aOpt.get;
+            bytesRead += aInfo.bytesRead;
+            readIdx += aInfo.bytesRead;
+            builder.Add(aInfo.value);
           }
           // MoveToImmutable throws an exception if capacity != count
           builder.Capacity = builder.Count;

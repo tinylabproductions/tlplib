@@ -41,23 +41,37 @@ namespace com.tinylabproductions.TLPLib.Collection {
     }
     
     public static void copyTo<C, A>(
-      C c, A[] array, int targetArrayIndex, int srcCopyFrom = 0, int srcCopyCount = -1
+      C c, A[] array, int targetStartIndex, int srcCopyFrom = 0, int srcCopyCount = -1
     )
       where C : IList<A>
     {
       if (array == null)
         throw new ArgumentNullException(nameof(array), "array is null");
-      if (targetArrayIndex < 0)
-        throw new ArgumentOutOfRangeException(nameof(targetArrayIndex), "array index is < 0");
-      if (srcCopyCount < 0) srcCopyCount = c.Count - srcCopyCount;
-      var endIndex = targetArrayIndex + srcCopyCount;
-      if (array.Length < endIndex) throw new ArgumentException(
-        $"Target array is too small ({nameof(endIndex)}={endIndex}, array length={array.Length})"
+      if (targetStartIndex < 0)
+        throw new ArgumentOutOfRangeException(
+          nameof(targetStartIndex), 
+          $"array index ({targetStartIndex}) is < 0"
+        );
+      if (srcCopyFrom < 0)
+        throw new ArgumentOutOfRangeException(
+          nameof(srcCopyFrom), 
+          $"array index ({srcCopyFrom}) is < 0"
+        );
+      if (srcCopyFrom >= c.Count)
+        throw new ArgumentOutOfRangeException(
+          nameof(srcCopyFrom), 
+          $"array index ({srcCopyFrom}) is > collection count ({c.Count})"
+        );
+      if (srcCopyCount < 0) srcCopyCount = c.Count - srcCopyFrom;
+      var targetEndIndex = targetStartIndex + srcCopyCount;
+      if (array.Length < targetEndIndex) throw new ArgumentException(
+        $"Target array is too small ({nameof(targetEndIndex)}={targetEndIndex}, " +
+        $"array length={array.Length})"
       );
 
       for (
-        int srcIdx = srcCopyFrom, targetIdx = targetArrayIndex;
-        targetIdx < endIndex; 
+        int srcIdx = srcCopyFrom, targetIdx = targetStartIndex;
+        targetIdx < targetEndIndex; 
         srcIdx++, targetIdx++
       ) {
         array[targetIdx] = c[srcIdx];
