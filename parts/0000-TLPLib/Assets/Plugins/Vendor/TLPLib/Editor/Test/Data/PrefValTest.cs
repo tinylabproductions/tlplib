@@ -161,14 +161,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     const string key = nameof(PrefValTestCollection);
 
     static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
-    static Option<int> badDeserialize(byte[] data, int startIndex) =>
-      SerializedRW.integer.deserialize(data, startIndex).filter(i => i % 2 != 0);
+    static Option<DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
+      SerializedRW.integer.deserialize(data, startIndex).filter(i => i.value % 2 != 0);
     static ImmutableList<int> convert(ImmutableArray<int> a) => a.ToImmutableList();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(
       ImmutableList<int> defaultVal,
-      Deserialize<int> deserializeFn = null,
+      Deserialize<DeserializeInfo<int>> deserializeFn = null,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       SerializedRW.OnCollectionItemDeserializationFailure onItemFailure =

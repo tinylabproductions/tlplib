@@ -101,12 +101,12 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefVal<A> custom<A>(
       string key, A defaultVal, 
-      ISerializedRW<A> baRW,
+      ISerializedRW<A> aRW,
       bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(
-      key, defaultVal, PrefValRW.custom(baRW, onDeserializeFailure, log), saveOnEveryWrite
+      key, defaultVal, PrefValRW.custom(aRW, onDeserializeFailure, log), saveOnEveryWrite
     );
 
     #endregion

@@ -4,6 +4,8 @@ using System.Linq;
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class Rope {
     public static Rope<A> a<A>(A[] first) => new Rope<A>(first);
+    public static Rope<A> a<A>(A[] first, A[] second) => 
+      new Rope<A>(first, ImmutableList.Create<A[]>(second));
     public static Rope<A> create<A>(params A[] args) => new Rope<A>(args);
   }
 
@@ -16,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public Rope(A[] first) : this(first, ImmutableList<A[]>.Empty) {}
 
-    Rope(A[] first, ImmutableList<A[]> rest) {
+    public Rope(A[] first, ImmutableList<A[]> rest) {
       this.first = first;
       this.rest = rest;
     }
