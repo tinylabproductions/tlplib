@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,7 +35,7 @@ namespace Assets.Code.UI {
         _outline.effectColor = outlineColor;
       }
       graphic.color = graphicColor;
-      foreach (var grad in F.opt(graphic.GetComponent<Gradient>())) {
+      foreach (var grad in F.opt(graphic.GetComponent<GradientSimple>())) {
         if (gradientOn) {
           grad.enabled = true;
           grad.topColor = graphicColor;
