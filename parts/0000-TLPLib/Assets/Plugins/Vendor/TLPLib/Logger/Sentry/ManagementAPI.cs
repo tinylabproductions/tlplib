@@ -85,6 +85,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
     #region Data
 
     public interface Error {}
+
     public class CancelledByUser : Error {
       public static readonly CancelledByUser instance = new CancelledByUser();
       CancelledByUser() {}
@@ -222,6 +223,12 @@ JSON representation:
     }
 
 #endregion
+  }
+
+  public static class ErrorExts {
+    public static string asString(this ManagementAPI.Error error) =>
+      $"Sentry operation failed: {error}" +
+      F.opt(error as ManagementAPI.NetError).map(err => $"\n{err.error.www.url}").getOrElse("");
   }
 }
 #endif
