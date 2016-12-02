@@ -486,6 +486,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Config.Parser<B> map<A, B>(this Config.Parser<A> aParser, Fn<ConfigPath, A, B> f) =>
       (path, o) => aParser(path, o).mapRight(a => f(path, a));
 
+    public static Config.Parser<B> map<A, B>(this Config.Parser<A> aParser, Fn<A, B> f) =>
+      aParser.map((path, a) => f(a));
+
     public static Config.Parser<B> flatMap<A, B>(
       this Config.Parser<A> aParser, Fn<ConfigPath, A, Option<B>> f
     ) => aParser.flatMap((path, a) => {
