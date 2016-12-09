@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -194,9 +195,34 @@ JSON representation:
       "public": "public_part"
 }
      **/
-    public struct ClientKey {
+    public struct ClientKey : IEquatable<ClientKey> {
       public readonly string id, name;
       public readonly DSN dsn;
+
+      #region Equality
+
+      public bool Equals(ClientKey other) {
+        return string.Equals(id, other.id) && string.Equals(name, other.name) && dsn.Equals(other.dsn);
+      }
+
+      public override bool Equals(object obj) {
+        if (ReferenceEquals(null, obj)) return false;
+        return obj is ClientKey && Equals((ClientKey) obj);
+      }
+
+      public override int GetHashCode() {
+        unchecked {
+          var hashCode = (id != null ? id.GetHashCode() : 0);
+          hashCode = (hashCode * 397) ^ (name != null ? name.GetHashCode() : 0);
+          hashCode = (hashCode * 397) ^ dsn.GetHashCode();
+          return hashCode;
+        }
+      }
+
+      public static bool operator ==(ClientKey left, ClientKey right) { return left.Equals(right); }
+      public static bool operator !=(ClientKey left, ClientKey right) { return !left.Equals(right); }
+
+      #endregion
 
       public ClientKey(string id, string name, DSN dsn) {
         this.id = id;
