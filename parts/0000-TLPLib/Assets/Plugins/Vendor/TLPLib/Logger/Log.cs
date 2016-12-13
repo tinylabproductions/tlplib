@@ -26,7 +26,11 @@ namespace com.tinylabproductions.TLPLib.Logger {
   public static class Log {
     public enum Level : byte { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
 
-    public static readonly Level defaultLogLevel = 
+    /** 
+     * This needs to be a method, because otherwise we introduce 
+     * a circular dependency upon static fields.
+     **/
+    public static Level defaultLogLevel =>
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
 
     public static ILog defaultLogger { get; set; } = UnityLog.instance;
