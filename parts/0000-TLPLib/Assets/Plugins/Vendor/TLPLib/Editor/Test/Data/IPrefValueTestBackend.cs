@@ -8,6 +8,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly Dictionary<string, OneOf<string, int, float>> storage = 
       new Dictionary<string, OneOf<string, int, float>>();
 
+    public bool hasKey(string name) =>
+      storage.ContainsKey(name);
+
     A get<A>(string name, A defaultValue, Fn<OneOf<string, int, float>, Option<A>> select) =>
       storage.get(name).fold(defaultValue, _ => select(_).get);
 

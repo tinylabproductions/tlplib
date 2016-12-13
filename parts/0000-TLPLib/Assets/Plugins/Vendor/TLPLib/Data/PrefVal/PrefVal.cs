@@ -1,8 +1,4 @@
-﻿using System;
-using System.Text;
-using com.tinylabproductions.TLPLib.caching;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.caching;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /* PlayerPrefs backed reactive value. */
