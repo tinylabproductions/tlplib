@@ -111,9 +111,13 @@ com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveN
     /**
      * Creates a backtrace from the caller site.
      **/
-    public static ImmutableList<BacktraceElem> generateFromHere() {
+    public static ImmutableList<BacktraceElem> generateFromHere(int skipFrames = 0) {
       // TODO: we can optimize this to make less garbage
-      var trace = new StackTrace(0, true);
+      // we could reuse StringBuilder in StackFrameExts.methodString
+      // but I am not sure if the impact would be noticeable
+
+      // +1 means skip current method (generateFromHere)
+      var trace = new StackTrace(skipFrames + 1, true);
       var frames = trace.GetFrames();
       if (frames == null) return ImmutableList<BacktraceElem>.Empty;
       return frames.Select(frame => {
