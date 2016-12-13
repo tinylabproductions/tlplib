@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEditor;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class EditorUtils {
@@ -37,6 +39,12 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       }
 
       return id;
+    }
+
+    public static void userInfo(string title, string body, Log.Level level = Log.Level.INFO) {
+      var log = Log.defaultLogger;
+      if (log.willLog(level)) log.log(level, $"{title}\n\n{body}");
+      EditorUtility.DisplayDialog(title, body, "OK");
     }
   }
 }
