@@ -26,6 +26,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     // Exception thrower which "returns" a value for use in expressions.
     public static A throws<A>(Exception ex) { throw ex; }
+    public static A matchErr<A>(string paramName, string value) =>
+      throws<A>(new ArgumentOutOfRangeException($"Unknown {paramName} value: {value}"));
+
     // Function that can be used to throw exceptions.
     public static void doThrow(Exception ex) { throw ex; }
 
