@@ -1,16 +1,41 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class WaitForFuture {
-    public static WaitForFuture<A> a<A>(Future<A> f) { return new WaitForFuture<A>(f); }
-    public static WaitForFuture<A> coroutineWait<A>(this Future<A> f) { return new WaitForFuture<A>(f); }
+    public static WaitForFuture<A> coroutineWait<A>(this Future<A> f) => 
+      new WaitForFuture<A>(f, Option<MaxWait>.None);
+
+    public static WaitForFuture<A> coroutineWait<A>(
+      this Future<A> f, Duration maxWait, TimeScale timeScale = TimeScale.Realtime
+    ) => new WaitForFuture<A>(f, F.some(new MaxWait(
+      timeScale.now() + maxWait.seconds, timeScale
+    )));
+
+    public struct MaxWait {
+      public readonly float abortOn;
+      public readonly TimeScale timeScale;
+
+      public MaxWait(float abortOn, TimeScale timeScale) {
+        this.abortOn = abortOn;
+        this.timeScale = timeScale;
+      }
+
+      public bool keepWaiting => timeScale.now() < abortOn;
+    }
   }
 
   public class WaitForFuture<A> : CustomYieldInstruction {
     public readonly Future<A> future;
+    public readonly Option<WaitForFuture.MaxWait> maxWait;
 
-    public WaitForFuture(Future<A> future) { this.future = future; }
+    public WaitForFuture(Future<A> future, Option<WaitForFuture.MaxWait> maxWait) {
+      this.future = future;
+      this.maxWait = maxWait;
+    }
 
-    public override bool keepWaiting => future.value.isEmpty;
+    public override bool keepWaiting => 
+      future.value.isEmpty && maxWait.fold(true, _ => _.keepWaiting);
   }
 }
