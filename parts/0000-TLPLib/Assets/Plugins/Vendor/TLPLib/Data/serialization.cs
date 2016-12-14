@@ -89,6 +89,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       ISerializedRW<A> aRW, ISerializedRW<B> bRW
     ) => new TplRW<A, B>(aRW, bRW);
 
+    public static ISerializedRW<Tpl<A, B>> and<A, B>(
+      this ISerializedRW<A> aRW, ISerializedRW<B> bRW
+    ) => tpl(aRW, bRW);
+
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) => 
       new OptRW<A>(rw);
 
