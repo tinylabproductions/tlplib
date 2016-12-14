@@ -127,7 +127,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
-      var enumerator = EveryWaitEnumerator(new WaitForSeconds(seconds), f);
+      var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtime(seconds), f);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -196,7 +196,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
-    public static IEnumerator EveryWaitEnumerator(WaitForSeconds wait, Fn<bool> f) {
+    public static IEnumerator EveryWaitEnumerator(IEnumerator wait, Fn<bool> f) {
       // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
       while (f()) yield return wait;
     }
