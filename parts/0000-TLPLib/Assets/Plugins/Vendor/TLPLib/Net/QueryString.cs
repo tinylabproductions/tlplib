@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Net {
-  public class QueryString {
+  public class QueryString : IStr {
     static readonly char[] equalsSeparator = {'='};
 
     readonly StringBuilder sb = new StringBuilder();
@@ -22,6 +23,7 @@ namespace com.tinylabproductions.TLPLib.Net {
     }
 
     public string queryString => sb.ToString();
+    public string asString() => queryString;
 
     public override string ToString() => $"{nameof(QueryString)}({queryString})";
 
