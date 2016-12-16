@@ -11,6 +11,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
 
+    public bool hasKey(string name) => backend.hasKey(name);
+
     public PrefVal<A> create<A>(
       string key, A defaultVal, IPrefValueRW<A> rw, bool saveOnEveryWrite = true
     ) => new PrefValImpl<A>(key, rw, defaultVal, backend, saveOnEveryWrite);

@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 using com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib.referrer;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
@@ -84,14 +85,18 @@ namespace com.tinylabproductions.TLPLib.Android {
     }
 
     public static void runOnUI(Action act) => current.runOnUIThread(act);
+    public static Future<A> runOnUI<A>(Fn<A> f) => Future<A>.async(promise => runOnUI(() => {
+      var ret = f();
+      ASync.OnMainThread(() => promise.complete(ret));
+    }));
 
-    public static A runOnUIBlocking<A>(Fn<A> f) {
-      return new SyncOtherThreadOp<A>(AndroidUIThreadExecutor.a(f)).execute();
-    }
+    public static A runOnUIBlocking<A>(Fn<A> f) => 
+      new SyncOtherThreadOp<A>(AndroidUIThreadExecutor.a(f)).execute();
 
-    public static void runOnUIBlocking(Action act) {
-      new SyncOtherThreadOp<Unit>(AndroidUIThreadExecutor.a(() => { act(); return new Unit(); })).execute();
-    }
+    public static void runOnUIBlocking(Action act) => 
+      new SyncOtherThreadOp<Unit>(AndroidUIThreadExecutor.a(
+        () => { act(); return new Unit(); }
+      )).execute();
 
     /**
      * To use this, add the following to your AndroidManifest.xml

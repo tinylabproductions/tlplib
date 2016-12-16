@@ -127,7 +127,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
-      var enumerator = EveryWaitEnumerator(new WaitForSeconds(seconds), f);
+      var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtime(seconds), f);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -196,7 +196,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
-    public static IEnumerator EveryWaitEnumerator(WaitForSeconds wait, Fn<bool> f) {
+    public static IEnumerator EveryWaitEnumerator(IEnumerator wait, Fn<bool> f) {
       // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
       while (f()) yield return wait;
     }
@@ -238,14 +238,64 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
   }
 
-  public class WaitForSecondsUnscaled : CustomYieldInstruction {
-    readonly float waitTime;
+  public class WaitForSecondsUnscaled : ReusableYieldInstruction {
+    readonly float time;
+    float waitTime;
 
-    public override bool keepWaiting {
-      get { return Time.unscaledTime < waitTime; }
+    public WaitForSecondsUnscaled(float time) { this.time = time; }
+
+    protected override void init() {
+      waitTime = Time.unscaledTime + time;
     }
 
-    public WaitForSecondsUnscaled(float time) { waitTime = Time.unscaledTime + time; }
+    public override bool keepWaiting => Time.unscaledTime < waitTime;
   }
 
+  // If we extend YieldInstruction we can not reuse its instances
+  // because it inits end condition only in constructor.
+  // We can reuse instances of ReusableYieldInstruction but we can't
+  // use the same instance in multiple places at once
+  public abstract class ReusableYieldInstruction : IEnumerator {
+    bool inited;
+
+    protected abstract void init();
+
+    public abstract bool keepWaiting { get; }
+
+    public bool MoveNext() {
+      if (!inited) {
+        init();
+        inited = true;
+      }
+      var result = keepWaiting;
+      if (!result) inited = false;
+      return result;
+    }
+
+    // Never gets called
+    public void Reset() {}
+
+    // https://docs.unity3d.com/ScriptReference/CustomYieldInstruction.html
+    public object Current => null;
+  }
 }
+
+#if !UNITY_5_4_OR_NEWER
+// Unity has this since 5.4
+namespace UnityEngine {
+  using com.tinylabproductions.TLPLib.Concurrent;
+
+  public class WaitForSecondsRealtime : ReusableYieldInstruction {
+    readonly float time;
+    float finishTime;
+
+    public WaitForSecondsRealtime(float time) { this.time = time; }
+
+    protected override void init() {
+      finishTime = Time.realtimeSinceStartup + time;
+    }
+
+    public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
+  }
+}
+#endif

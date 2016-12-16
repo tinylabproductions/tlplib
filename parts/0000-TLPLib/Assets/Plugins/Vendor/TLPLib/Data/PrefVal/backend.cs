@@ -5,6 +5,7 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public interface IPrefValueBackend {
+    bool hasKey(string name);
     string getString(string name, string defaultValue);
     void setString(string name, string value);
     int getInt(string name, int defaultValue);
@@ -41,6 +42,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly PlayerPrefsBackend instance = new PlayerPrefsBackend();
     PlayerPrefsBackend() {}
 
+    public bool hasKey(string name) => PlayerPrefs.HasKey(name);
     public string getString(string name, string defaultValue) => PlayerPrefs.GetString(name, defaultValue);
     public void setString(string name, string value) => PlayerPrefs.SetString(name, value);
     public int getInt(string name, int defaultValue) => PlayerPrefs.GetInt(name, defaultValue);
@@ -56,6 +58,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly EditorPrefsBackend instance = new EditorPrefsBackend();
     EditorPrefsBackend() {}
 
+    public bool hasKey(string name) => EditorPrefs.HasKey(name);
     public string getString(string name, string defaultValue) => EditorPrefs.GetString(name, defaultValue);
     public void setString(string name, string value) => EditorPrefs.SetString(name, value);
     public int getInt(string name, int defaultValue) => EditorPrefs.GetInt(name, defaultValue);
