@@ -5,11 +5,10 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Android.Ads {
 #if UNITY_ANDROID
   public class StandardInterstitial {
-    Subject<Unit> _onLoad = new Subject<Unit>();
+    readonly Subject<Unit> _onLoad = new Subject<Unit>();
+    public IObservable<Unit> onLoad => _onLoad;
 
     protected readonly AndroidJavaObject java;
-
-    public IObservable<Unit> onLoad => _onLoad;
 
     public StandardInterstitial(AndroidJavaObject java) { this.java = java; }
 
