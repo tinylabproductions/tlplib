@@ -14,6 +14,9 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     public static void invoke<A>(Act<A> act, A a)
       { if (act != null) ASync.OnMainThread(() => act.Invoke(a)); }
 
+    public static void invoke<A>(Action<A> act, A a)
+      { if (act != null) ASync.OnMainThread(() => act.Invoke(a)); }
+
     public static void invoke<A, B>(Act<A, B> act, A a, B b)
       { if (act != null) ASync.OnMainThread(() => act.Invoke(a, b)); }
   }
