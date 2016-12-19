@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public string extension => Path.GetExtension(path);
 
     public PathStr ensureBeginsWith(PathStr p) {
-      return path.StartsWith(p.path) ? this : p / path;
+      return path.StartsWithFast(p.path) ? this : p / path;
     }
 
     public override string ToString() { return path; }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Logger {
@@ -83,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     #endregion
 
     /* Is this trace frame is in our application code? */
-    public bool inApp => !method.StartsWith($"{nameof(UnityEngine)}.");
+    public bool inApp => !method.StartsWithFast($"{nameof(UnityEngine)}.");
 
     public override string ToString() =>
       $"{method}{fileInfo.fold("", fi => $" (at {fi})")}";

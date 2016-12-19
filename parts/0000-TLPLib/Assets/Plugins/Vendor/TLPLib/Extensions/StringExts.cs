@@ -96,16 +96,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static string ensureStartsWith(this string s, string prefix)
-      { return s.StartsWith(prefix) ? s : $"{prefix}{s}"; }
+      { return s.StartsWithFast(prefix) ? s : $"{prefix}{s}"; }
 
     public static string ensureEndsWith(this string s, string suffix)
-      { return s.EndsWith(suffix) ? s : $"{s}{suffix}"; }
+      { return s.EndsWithFast(suffix) ? s : $"{s}{suffix}"; }
 
     public static string ensureDoesNotStartWith(this string s, string prefix)
-      { return s.StartsWith(prefix) ? s.Substring(prefix.Length) : s; }
+      { return s.StartsWithFast(prefix) ? s.Substring(prefix.Length) : s; }
 
     public static string ensureDoesNotEndWith(this string s, string suffix)
-      { return s.EndsWith(suffix) ? s.Substring(0, s.Length - suffix.Length) : s; }
+      { return s.EndsWithFast(suffix) ? s.Substring(0, s.Length - suffix.Length) : s; }
 
     public static string joinOpt(
       this string s, string joined, string separator = ": "
