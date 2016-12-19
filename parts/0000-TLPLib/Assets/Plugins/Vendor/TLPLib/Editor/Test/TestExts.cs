@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotContain<A>(
       this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
     ) => 
-      enumerable.collectFirst(a => predicate(a).opt(a)).voidFold(
+      enumerable.first(predicate).voidFold(
         Assert.Pass,
         a => Assert.Fail(
           message ?? 
