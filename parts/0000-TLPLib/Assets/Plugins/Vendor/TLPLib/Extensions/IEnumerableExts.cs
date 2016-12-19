@@ -166,15 +166,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<B>();
     }
 
-    public static Option<A> first<A>(
-      this IEnumerable<A> enumerable, Fn<A,bool> collector
-    ) {
-      foreach (var a in enumerable) {
-        if (collector(a)) return a.some();
-      }
-      return F.none<A>();
-    }
-
     public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) {
       return new HashSet<A>(enumerable);
     }
