@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.Cryptography {
   public static class CryptUtil {
@@ -109,10 +110,7 @@ namespace com.tinylabproductions.Cryptography {
       // RFC 2313: http://tools.ietf.org/html/rfc2313
       // PKCS #1 on Wikipedia: http://en.wikipedia.org/wiki/PKCS_1
 
-
-      // Compute an SHA1 hash of the raw data
-      SHA1 sha1 = SHA1.Create();
-      byte[] hash = sha1.ComputeHash(data);
+      var hash = CryptoHash.calculate(data, CryptoHash.Kind.SHA1);
 
       // Specify the public key
       RSAParameters rsaParameters = GetRsaParameters_2048_Bit_PKCS1_v1_5(publicKey);
@@ -123,10 +121,9 @@ namespace com.tinylabproductions.Cryptography {
 
       RSAPKCS1SignatureDeformatter rsaDeformatter = new RSAPKCS1SignatureDeformatter(rsa);
       rsaDeformatter.SetHashAlgorithm("SHA1");
-      return rsaDeformatter.VerifySignature(hash, signature);
+      return rsaDeformatter.VerifySignature(hash.bytes.internalArray(), signature);
     }
 
 #endif
-
   }
 }

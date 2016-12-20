@@ -46,6 +46,15 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreNotEqual(expected, a, message);
 
+    public static void shouldRefEqual<A>(
+      this A a, A expected, string message = null
+    ) where A : class {
+      if (!ReferenceEquals(a, expected)) Assert.Fail(
+        message ?? 
+        $"Expected expected={expected} and actual={a} to be the same reference, but they were not."
+      );
+    }
+
     public static void shouldBeApproximately(this int a, int target, int delta, string message = null) {
       var actualDelta = Math.Abs(a - target);
       if (actualDelta > delta) Assert.Fail(
