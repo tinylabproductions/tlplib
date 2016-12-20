@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -244,7 +245,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         : Option<UnityEvent>.None;
     }
 
-    enum FieldAttributeError { NullField, EmptyCollection }
+    enum FieldAttributeError { NullField, EmptyCollection, TextFieldTypeNotSet }
 
     static IEnumerable<Error> validateFieldsWithAttributes(
       object o, Fn<FieldInfo, FieldAttributeError, Error> createError
@@ -254,6 +255,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
       );
       foreach (var fi in fields) {
+        if (fi.hasAttribute<TextFieldAttribute>()) {
+          var fieldValue = fi.GetValue(o);
+          if (!(fieldValue is string)) {
+            yield return createError(fi, FieldAttributeError.TextFieldTypeNotSet);
+          }
+        }
         if (
           (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>())
           || (fi.IsPrivate && fi.hasAttribute<SerializeField>())
