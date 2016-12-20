@@ -46,6 +46,15 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
       Assert.AreNotEqual(expected, a, message);
 
+    public static void shouldRefEqual<A>(
+      this A a, A expected, string message = null
+    ) where A : class {
+      if (!ReferenceEquals(a, expected)) Assert.Fail(
+        message ?? 
+        $"Expected expected={expected} and actual={a} to be the same reference, but they were not."
+      );
+    }
+
     public static void shouldBeApproximately(this int a, int target, int delta, string message = null) {
       var actualDelta = Math.Abs(a - target);
       if (actualDelta > delta) Assert.Fail(
@@ -76,14 +85,12 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldNotContain<A>(
       this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
-    ) => 
-      enumerable.collectFirst(a => predicate(a).opt(a)).voidFold(
-        Assert.Pass,
-        a => Assert.Fail(
-          message ?? 
-          $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
-        )
+    ) {
+      foreach (var a in enumerable.find(predicate)) Assert.Fail(
+        message ??
+        $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
       );
+    }
 
     public static void shouldTestInequalityAgainst<A>(this IEnumerable<A> set1, IEnumerable<A> set2) {
       foreach (var i1 in set1)
@@ -105,6 +112,10 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldBeSome<A>(this Option<A> a, A expected, string message=null) {
       a.shouldEqual(expected.some(), message);
+    }
+
+    public static void shouldBeAnySome<A>(this Option<A> a, string message = null) {
+      if (a.isEmpty) Assert.Fail(message ?? $"Expected {a} to be Some!");
     }
 
     public static void shouldBeSomeEnum<E>(this Option<E> aOpt, E expected, string message = null)

@@ -15,6 +15,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       PC = "pc",
       OTHER = "other",
 
+      SUBNAME_EDITOR = "editor",
       SUBNAME_AMAZON = "amazon",
       SUBNAME_OUYA = "ouya",
       SUBNAME_GAMESTICK = "gamestick",
@@ -27,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       SUBNAME_WILDTANGENT = "wildtangent",
       SUBNAME_NONE = "";
 
-    public static string fullName => subname.nonEmptyOpt().fold(name, s => $"{name}-{s}");
+    public static string fullName => name.joinOpt(subname, separator: "-");
 
     public static string name { get {
       switch (Application.platform) {
@@ -66,6 +67,8 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     } }
 
     public static string subname { get {
+      if (Application.isEditor) return SUBNAME_EDITOR;
+
 #if UNITY_ANDROID
       if (name == ANDROID) {
 #if UNITY_AMAZON

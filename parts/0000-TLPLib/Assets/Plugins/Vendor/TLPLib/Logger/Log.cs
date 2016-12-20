@@ -23,15 +23,33 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * processing you can call appropriate logging method by itself. If it does
    * need processing, you should use `if (Log.isDebug) Log.rdebug("foo=" + foo);` style.
    **/
+#if UNITY_EDITOR
+  [UnityEditor.InitializeOnLoad]
+#endif
   public static class Log {
     public enum Level : byte { NONE, ERROR, WARN, INFO, DEBUG, VERBOSE }
 
-    public static readonly Level defaultLogLevel = 
+    /** 
+     * This needs to be a method, because otherwise we introduce 
+     * a circular dependency upon static fields.
+     **/
+    public static Level defaultLogLevel =>
       Application.isEditor || Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
 
     public static ILog defaultLogger { get; set; } = UnityLog.instance;
 
     static Log() {
+#if UNITY_EDITOR
+      // Because of [InitializeOnLoad] this should be called even when running with
+      // -runEditorTests, which is what we need. We don't want stacktraces with every
+      // log statement in logfile.
+      if (UnityEditorInternal.InternalEditorUtility.inBatchMode) {
+        var log = defaultLogger = ConsoleLog.instance;
+        log.info($"Batch mode detected, setting logger to console logger.");
+        log.info($"This code is being run from {nameof(Log)} static constructor.");
+      }
+#endif
+
       DConsole.instance.onShow += dc => {
         var r = dc.registrarFor("Default Logger");
         r.registerEnum(

@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -59,6 +60,9 @@ namespace com.tinylabproductions.TLPLib.Data {
       public Duration subtract(Duration a1, Duration a2) => a1 - a2;
       public Duration fromInt(int i) => new Duration(i);
     }
+
+    public static readonly Comparable<Duration> comparable = 
+      Comparable.integer.comap((Duration d) => d.millis);
   }
 
   public static class DurationExts {

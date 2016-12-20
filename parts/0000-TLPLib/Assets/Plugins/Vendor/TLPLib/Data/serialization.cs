@@ -11,9 +11,29 @@ namespace com.tinylabproductions.TLPLib.Data {
     Rope<byte> serialize(A a);
   }
 
+  public struct DeserializeInfo<A> {
+    public readonly A value;
+    public readonly int bytesRead;
+
+    public DeserializeInfo(A value, int bytesRead) {
+      this.value = value;
+      this.bytesRead = bytesRead;
+    }
+  }
+
+  public static class DeserializeInfoExts {
+    public static Option<DeserializeInfo<B>> map<A, B>(
+      this Option<DeserializeInfo<A>> aOpt, Fn<A, B> mapper
+    ) {
+      if (aOpt.isEmpty) return Option<DeserializeInfo<B>>.None;
+      var aInfo = aOpt.get;
+      return F.some(new DeserializeInfo<B>(mapper(aInfo.value), aInfo.bytesRead));
+    }
+  }
+
   public interface IDeserializer<A> {
     // Returns None if deserialization failed.
-    Option<A> deserialize(byte[] serialized, int startIndex);
+    Option<DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex);
   }
 
   // TODO: document
@@ -62,12 +82,16 @@ namespace com.tinylabproductions.TLPLib.Data {
     });
     
     public static ISerializedRW<A> lambda<A>(
-      Serialize<A> serialize, Deserialize<A> deserialize
+      Serialize<A> serialize, Deserialize<DeserializeInfo<A>> deserialize
     ) => new Lambda<A>(serialize, deserialize);
 
     public static ISerializedRW<Tpl<A, B>> tpl<A, B>(
       ISerializedRW<A> aRW, ISerializedRW<B> bRW
     ) => new TplRW<A, B>(aRW, bRW);
+
+    public static ISerializedRW<Tpl<A, B>> and<A, B>(
+      this ISerializedRW<A> aRW, ISerializedRW<B> bRW
+    ) => tpl(aRW, bRW);
 
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) => 
       new OptRW<A>(rw);
@@ -81,9 +105,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       new ICollectionSerializer<A, C>(serializer);
 
     public static IDeserializer<ImmutableArray<A>> collectionDeserializer<A>(
-      IDeserializer<A> deserializer,
-      OnCollectionItemDeserializationFailure onFailure = OnCollectionItemDeserializationFailure.Abort
-    ) => new ImmutableArrayDeserializer<A>(deserializer, onFailure);
+      IDeserializer<A> deserializer
+    ) => new ImmutableArrayDeserializer<A>(deserializer);
 
     class JointRW<A> : ISerializedRW<A> {
       readonly ISerializer<A> serializer;
@@ -94,7 +117,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         this.deserializer = deserializer;
       }
 
-      public Option<A> deserialize(byte[] serialized, int startIndex) =>
+      public Option<DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex) =>
         deserializer.deserialize(serialized, startIndex);
 
       public Rope<byte> serialize(A a) =>
@@ -125,13 +148,21 @@ namespace com.tinylabproductions.TLPLib.Data {
         this.mapper = mapper;
       }
 
-      public Option<B> deserialize(byte[] serialized, int startIndex) =>
+      public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) =>
         deserialize(aDeserializer, mapper, serialized, startIndex);
 
-      public static Option<B> deserialize(
+      public static Option<DeserializeInfo<B>> deserialize(
         IDeserializer<A> aDeserializer, Fn<A, Option<B>> mapper,
         byte[] serialized, int startIndex
-      ) => aDeserializer.deserialize(serialized, startIndex).flatMap(mapper);
+      ) {
+        var aInfoOpt = aDeserializer.deserialize(serialized, startIndex);
+        if (aInfoOpt.isEmpty) return Option<DeserializeInfo<B>>.None;
+        var aInfo = aInfoOpt.get;
+        var bOpt = mapper(aInfo.value);
+        if (bOpt.isEmpty) return Option<DeserializeInfo<B>>.None;
+        var bInfo = new DeserializeInfo<B>(bOpt.get, aInfo.bytesRead);
+        return F.some(bInfo);
+      }
     }
 
     class MappedRW<A, B> : ISerializedRW<B> {
@@ -148,7 +179,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         this.deserializeConversion = deserializeConversion;
       }
 
-      public Option<B> deserialize(byte[] serialized, int startIndex) =>
+      public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) =>
         MappedDeserializer<A, B>.deserialize(aRW, deserializeConversion, serialized, startIndex);
 
       public Rope<byte> serialize(B b) =>
@@ -157,14 +188,14 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     class Lambda<A> : ISerializedRW<A> {
       readonly Serialize<A> _serialize;
-      readonly Deserialize<A> _deserialize;
+      readonly Deserialize<DeserializeInfo<A>> _deserialize;
 
-      public Lambda(Serialize<A> serialize, Deserialize<A> deserialize) {
+      public Lambda(Serialize<A> serialize, Deserialize<DeserializeInfo<A>> deserialize) {
         _serialize = serialize;
         _deserialize = deserialize;
       }
 
-      public Option<A> deserialize(byte[] serialized, int startIndex) =>
+      public Option<DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex) =>
         _deserialize(serialized, startIndex);
 
       public Rope<byte> serialize(A a) => _serialize(a);
@@ -179,17 +210,23 @@ namespace com.tinylabproductions.TLPLib.Data {
         bRW = bRw;
       }
 
-      public Option<Tpl<A, B>> deserialize(byte[] serialized, int startIndex) {
+      public Option<DeserializeInfo<Tpl<A, B>>> deserialize(byte[] serialized, int startIndex) {
         try {
           const int LENGTH_SIZE = 4;
           var length = BitConverter.ToInt32(serialized, startIndex);
           var aOpt = aRW.deserialize(serialized, startIndex + LENGTH_SIZE);
-          if (aOpt.isEmpty) return Option<Tpl<A, B>>.None;
+          if (aOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
           var bOpt = bRW.deserialize(serialized, startIndex + LENGTH_SIZE + length);
-          if (bOpt.isEmpty) return Option<Tpl<A, B>>.None;
-          return F.some(F.t(aOpt.get, bOpt.get));
+          if (bOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
+          var aInfo = aOpt.get;
+          var bInfo = bOpt.get;
+          var info = new DeserializeInfo<Tpl<A, B>>(
+            F.t(aInfo.value, bInfo.value),
+            aInfo.bytesRead + bInfo.bytesRead
+          );
+          return F.some(info);
         }
-        catch (Exception) { return Option<Tpl<A, B>>.None; }
+        catch (Exception) { return Option<DeserializeInfo<Tpl<A, B>>>.None; }
       }
 
       public Rope<byte> serialize(Tpl<A, B> a) {
@@ -202,12 +239,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     abstract class BaseRW<A> : ISerializedRW<A> {
-      public Option<A> deserialize(byte[] serialized, int startIndex) {
+      public Option<DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex) {
         try { return tryDeserialize(serialized, startIndex).some(); }
-        catch (Exception) { return Option<A>.None; }
+        catch (Exception) { return Option<DeserializeInfo<A>>.None; }
       }
 
-      protected abstract A tryDeserialize(byte[] serialized, int startIndex);
+      protected abstract DeserializeInfo<A> tryDeserialize(byte[] serialized, int startIndex);
 
       public abstract Rope<byte> serialize(A a);
     }
@@ -215,57 +252,77 @@ namespace com.tinylabproductions.TLPLib.Data {
     class stringRW : BaseRW<string> {
       static readonly Encoding encoding = Encoding.UTF8;
 
-      protected override string tryDeserialize(byte[] serialized, int startIndex) =>
-        encoding.GetString(serialized, startIndex, serialized.Length - startIndex);
+      // TODO: test
+      protected override DeserializeInfo<string> tryDeserialize(byte[] serialized, int startIndex) {
+        var length = BitConverter.ToInt32(serialized, startIndex);
+        var str = encoding.GetString(serialized, startIndex + intRW.LENGTH, length);
+        return new DeserializeInfo<string>(str, intRW.LENGTH + length);
+      }
 
-      public override Rope<byte> serialize(string a) => Rope.a(encoding.GetBytes(a));
+      public override Rope<byte> serialize(string a) {
+        var serialized = encoding.GetBytes(a);
+        var length = BitConverter.GetBytes(serialized.Length);
+        return Rope.a(length, serialized);
+      }
     }
 
     class byteRW : ISerializedRW<byte> {
-      public Option<byte> deserialize(byte[] serialized, int startIndex) =>
-        serialized.get(startIndex);
+      public Option<DeserializeInfo<byte>> deserialize(byte[] serialized, int startIndex) =>
+        serialized.get(startIndex).map(b => new DeserializeInfo<byte>(b, 1));
 
       public Rope<byte> serialize(byte a) => Rope.a(new [] {a});
     }
 
     class intRW : BaseRW<int> {
-      protected override int tryDeserialize(byte[] serialized, int startIndex) =>
-        BitConverter.ToInt32(serialized, startIndex);
+      public const int LENGTH = 4;
+
+      protected override DeserializeInfo<int> tryDeserialize(byte[] serialized, int startIndex) =>
+        new DeserializeInfo<int>(BitConverter.ToInt32(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(int a) => Rope.a(BitConverter.GetBytes(a));
     }
 
     class ushortRW : BaseRW<ushort> {
-      protected override ushort tryDeserialize(byte[] serialized, int startIndex) =>
-        BitConverter.ToUInt16(serialized, startIndex);
+      public const int LENGTH = 2;
+
+      protected override DeserializeInfo<ushort> tryDeserialize(byte[] serialized, int startIndex) =>
+        new DeserializeInfo<ushort>(BitConverter.ToUInt16(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(ushort a) => Rope.a(BitConverter.GetBytes(a));
     }
 
     class uintRW : BaseRW<uint> {
-      protected override uint tryDeserialize(byte[] serialized, int startIndex) =>
-        BitConverter.ToUInt32(serialized, startIndex);
+      public const int LENGTH = 4;
+
+      protected override DeserializeInfo<uint> tryDeserialize(byte[] serialized, int startIndex) =>
+        new DeserializeInfo<uint>(BitConverter.ToUInt32(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(uint a) => Rope.a(BitConverter.GetBytes(a));
     }
 
     class boolRW : BaseRW<bool> {
-      protected override bool tryDeserialize(byte[] serialized, int startIndex) =>
-        BitConverter.ToBoolean(serialized, startIndex);
+      public const int LENGTH = 1;
+
+      protected override DeserializeInfo<bool> tryDeserialize(byte[] serialized, int startIndex) =>
+        new DeserializeInfo<bool>(BitConverter.ToBoolean(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(bool a) => Rope.a(BitConverter.GetBytes(a));
     }
 
     class floatRW : BaseRW<float> {
-      protected override float tryDeserialize(byte[] serialized, int startIndex) => 
-        BitConverter.ToSingle(serialized, startIndex);
+      public const int LENGTH = 4;
+
+      protected override DeserializeInfo<float> tryDeserialize(byte[] serialized, int startIndex) => 
+        new DeserializeInfo<float>(BitConverter.ToSingle(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(float a) => Rope.a(BitConverter.GetBytes(a));
     }
 
     class longRW : BaseRW<long> {
-      protected override long tryDeserialize(byte[] serialized, int startIndex) =>
-        BitConverter.ToInt64(serialized, startIndex);
+      public const int LENGTH = 8;
+
+      protected override DeserializeInfo<long> tryDeserialize(byte[] serialized, int startIndex) =>
+        new DeserializeInfo<long>(BitConverter.ToInt64(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(long a) => Rope.a(BitConverter.GetBytes(a));
     }
@@ -273,13 +330,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     class DurationRW : ISerializedRW<Duration> {
       public Rope<byte> serialize(Duration a) => integer.serialize(a.millis);
 
-      public Option<Duration> deserialize(byte[] serialized, int startIndex) =>
+      public Option<DeserializeInfo<Duration>> deserialize(byte[] serialized, int startIndex) =>
         integer.deserialize(serialized, startIndex).map(millis => new Duration(millis));
     }
 
     class DateTimeRW : BaseRW<DateTime> {
-      protected override DateTime tryDeserialize(byte[] serialized, int startIndex) => 
-        DateTime.FromBinary(lng.deserialize(serialized, startIndex).get);
+      protected override DeserializeInfo<DateTime> tryDeserialize(byte[] serialized, int startIndex) =>
+        lng.deserialize(serialized, startIndex).map(DateTime.FromBinary).get;
 
       public override Rope<byte> serialize(DateTime a) => lng.serialize(a.ToBinary());
     }
@@ -299,17 +356,19 @@ namespace com.tinylabproductions.TLPLib.Data {
 
       public OptRW(ISerializedRW<A> rw) { this.rw = rw; }
 
-      public Option<Option<A>> deserialize(byte[] bytes, int startIndex) {
+      public Option<DeserializeInfo<Option<A>>> deserialize(byte[] bytes, int startIndex) {
         if (bytes.Length == 0 || startIndex > bytes.Length - 1)
-          return Option<Option<A>>.None;
+          return Option<DeserializeInfo<Option<A>>>.None;
         var discriminator = bytes[startIndex];
         switch (discriminator) {
           case OptByteArrayRW.DISCRIMINATOR_NONE:
-            return F.some(Option<A>.None);
+            return F.some(new DeserializeInfo<Option<A>>(Option<A>.None, 1));
           case OptByteArrayRW.DISCRIMINATOR_SOME:
-            return rw.deserialize(bytes, startIndex + 1).map(F.some);
+            return rw.deserialize(bytes, startIndex + 1).map(info => 
+              new DeserializeInfo<Option<A>>(F.some(info.value), info.bytesRead + 1)
+            );
           default:
-            return Option<Option<A>>.None;
+            return Option<DeserializeInfo<Option<A>>>.None;
         }
       }
 
@@ -327,52 +386,47 @@ namespace com.tinylabproductions.TLPLib.Data {
       public Rope<byte> serialize(C c) {
         var count = c.Count;
         var rope = Rope.a(BitConverter.GetBytes(count));
+        // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var a in c) {
           var aRope = serializer.serialize(a);
-          rope += Rope.a(BitConverter.GetBytes(aRope.length));
           rope += aRope;
         }
         return rope;
       }
     }
 
-    public enum OnCollectionItemDeserializationFailure { Ignore, Abort }
-
     class ImmutableArrayDeserializer<A> : IDeserializer<ImmutableArray<A>> {
       readonly IDeserializer<A> deserializer;
-      readonly OnCollectionItemDeserializationFailure onFailure;
 
       public ImmutableArrayDeserializer(
-        IDeserializer<A> deserializer, OnCollectionItemDeserializationFailure onFailure
+        IDeserializer<A> deserializer
       ) {
         this.deserializer = deserializer;
-        this.onFailure = onFailure;
       }
 
-      public Option<ImmutableArray<A>> deserialize(byte[] serialized, int startIndex) {
+      public Option<DeserializeInfo<ImmutableArray<A>>> deserialize(byte[] serialized, int startIndex) {
         try {
-          const int INT32_LENGTH = 4;
           var count = BitConverter.ToInt32(serialized, startIndex);
-          var b = ImmutableArray.CreateBuilder<A>(count);
-          var readIdx = startIndex + INT32_LENGTH;
+          var bytesRead = intRW.LENGTH;
+
+          var builder = ImmutableArray.CreateBuilder<A>(count);
+          var readIdx = startIndex + bytesRead;
           for (var idx = 0; idx < count; idx++) {
-            var length = BitConverter.ToInt32(serialized, readIdx);
-            readIdx += INT32_LENGTH;
             var aOpt = deserializer.deserialize(serialized, readIdx);
 
             if (aOpt.isEmpty) {
-              if (onFailure == OnCollectionItemDeserializationFailure.Abort)
-                return Option<ImmutableArray<A>>.None;
+              return Option<DeserializeInfo<ImmutableArray<A>>>.None;
             }
-            else b.Add(aOpt.get);
-
-            readIdx += length;
+            var aInfo = aOpt.get;
+            bytesRead += aInfo.bytesRead;
+            readIdx += aInfo.bytesRead;
+            builder.Add(aInfo.value);
           }
           // MoveToImmutable throws an exception if capacity != count
-          b.Capacity = b.Count;
-          return b.MoveToImmutable().some();
+          builder.Capacity = builder.Count;
+          return F.some(new DeserializeInfo<ImmutableArray<A>>(builder.MoveToImmutable(), bytesRead));
         }
-        catch (Exception) { return Option<ImmutableArray<A>>.None; }
+        catch (Exception) { return Option<DeserializeInfo<ImmutableArray<A>>>.None; }
       }
     }
   }

@@ -8,13 +8,15 @@ namespace com.tinylabproductions.TLPLib.Retry {
     readonly float retryDelay;
     readonly Action tryAction;
     readonly Act<A> failAction;
+    readonly TimeScale timeScale;
     int retries;
 
-    public Retry(int retryCount, float retryDelay, Action tryAction, Act<A> failAction) {
+    public Retry(int retryCount, float retryDelay, Action tryAction, Act<A> failAction, TimeScale timeScale = TimeScale.Realtime) {
       this.retryCount = retryCount;
       this.retryDelay = retryDelay;
       this.tryAction = tryAction;
       this.failAction = failAction;
+      this.timeScale = timeScale;
     }
 
     public void start() {
@@ -24,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
     public void failure(Fn<A> result) {
       if (retries < retryCount) {
         retries++;
-        ASync.WithDelay(retryDelay, tryAction);
+        ASync.WithDelay(retryDelay, tryAction, timeScale: timeScale);
       }
       else {
         failAction(result());

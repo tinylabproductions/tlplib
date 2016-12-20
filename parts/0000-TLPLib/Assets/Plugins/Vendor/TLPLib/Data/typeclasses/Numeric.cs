@@ -1,4 +1,4 @@
-﻿namespace com.tinylabproductions.TLPLib.Data {
+﻿namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   public interface Numeric<A> {
     A add(A a1, A a2);
     A subtract(A a1, A a2);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Assets.Code.UI;
 
 [AddComponentMenu("UI/Effects/Gradient")]
-public class Gradient : GradientBase {
+public class GradientSimple : GradientBase {
   // ReSharper disable once FieldCanBeMadeReadOnly.Local
   public Color32 topColor = Color.white;
   // ReSharper disable once FieldCanBeMadeReadOnly.Local

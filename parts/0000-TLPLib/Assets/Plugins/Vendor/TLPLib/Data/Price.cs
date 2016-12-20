@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public struct Price : IEquatable<Price> {

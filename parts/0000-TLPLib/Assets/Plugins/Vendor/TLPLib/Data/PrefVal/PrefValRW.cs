@@ -33,15 +33,15 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.defaultLogger);
 
     public static IPrefValueRW<A> custom<A>(
-      ISerializedRW<A> baRW,
+      ISerializedRW<A> aRW,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => custom(
-      a => Convert.ToBase64String(baRW.serialize(a).toArray()),
+      a => Convert.ToBase64String(aRW.serialize(a).toArray()),
       s => {
         try {
           var bytes = Convert.FromBase64String(s);
-          return baRW.deserialize(bytes, 0);
+          return aRW.deserialize(bytes, 0).map(_ => _.value);
         }
         catch (FormatException) {
           return Option<A>.None;

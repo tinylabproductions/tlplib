@@ -56,9 +56,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lines.addPragmaAt(lastDirectiveLineIdx + 1).RemoveAt(currentPragmaLineIdx);
 
     public static Option<int> getLastDirectiveIndex(this ImmutableList<string> lines) => 
-      lines.indexWhere(line => !line.StartsWith(DIRECTIVES_STR)).flatMap(idx => (idx > 0).opt(idx - 1));
+      lines.indexWhere(line => !line.StartsWithFast(DIRECTIVES_STR)).flatMap(idx => (idx > 0).opt(idx - 1));
 
     public static Option<int> pragmaLineNumber(this ImmutableList<string> lines) => 
-      lines.indexWhere(line => line.StartsWith(PRAG_STR));
+      lines.indexWhere(line => line.StartsWithFast(PRAG_STR));
   }
 }

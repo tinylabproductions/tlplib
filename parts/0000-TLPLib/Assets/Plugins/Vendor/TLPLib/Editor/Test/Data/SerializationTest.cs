@@ -24,8 +24,24 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void checkWithNoiseOpt<A>(
       IDeserializer<A> deser, Rope<byte> serialized, Act<Option<A>> check
     ) {
-      check(deser.deserialize(serialized.toArray(), 0));
-      check(deser.deserialize((noise + serialized).toArray(), noise.length));
+      check(deser.deserialize(serialized.toArray(), 0).map(_ => _.value));
+      check(deser.deserialize((noise + serialized + noise).toArray(), noise.length).map(_ => _.value));
+    }
+  }
+
+  public class SerializationTestStringRW : SerializationTestBase {
+    static readonly ISerializedRW<string> rw = SerializedRW.str;
+
+    [Test]
+    public void TestEmpty() {
+      var s = "";
+      checkWithNoise(rw, rw.serialize(s), s);
+    }
+
+    [Test]
+    public void TestString() {
+      var s = "quickbrownfox";
+      checkWithNoise(rw, rw.serialize(s), s);
     }
   }
 
@@ -88,16 +104,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailing() {
-      var deserializerIgnore = SerializedRW.collectionDeserializer(
-        failingDeserializer, SerializedRW.OnCollectionItemDeserializationFailure.Ignore
-      );
-      checkWithNoiseOpt(
-        deserializerIgnore, serialized, opt => opt.shouldBeSomeEnum(ImmutableArray.Create(2, 4))
-      );
-      var deserializerAbort = SerializedRW.collectionDeserializer(
-        failingDeserializer, SerializedRW.OnCollectionItemDeserializationFailure.Abort
-      );
-      checkWithNoiseOpt(deserializerAbort, serialized, Option<ImmutableArray<int>>.None);
+      var deserializer = SerializedRW.collectionDeserializer(failingDeserializer);
+      checkWithNoiseOpt(deserializer, serialized, Option<ImmutableArray<int>>.None);
     }
   }
 }

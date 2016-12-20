@@ -137,8 +137,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) => vals.anyThat<A, IEnumerable<IRxVal<A>>>(predicate);
 
     public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
-      where C : IEnumerable<IRxVal<bool>> => 
+      where C : IEnumerable<IRxVal<bool>> 
+    => 
       vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isDefined);
+
+    public static IRxVal<Option<A>> anyDefined<A>(
+      this IEnumerable<IRxVal<Option<A>>> vals
+    ) => 
+      vals
+      .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isDefined)
+      .map(_ => _.flatten());
 
     // TODO: test
     /**

@@ -73,5 +73,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       t.localScale = Vector3.one;
       t.localPosition = Vector3.zero;
     }
+
+    public static void resetLocalAll(this Transform t) {
+      t.localScale = Vector3.one;
+      t.localPosition = Vector3.zero;
+      t.localRotation = Quaternion.identity;
+    }
   }
 }

@@ -174,7 +174,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
       var arr = new int[5];
       Assert.Throws<ArgumentOutOfRangeException>(() => c.CopyTo(arr, -1));
-      Assert.Throws<ArgumentException>(() => c.CopyTo(arr, 1));
+      Assert.Throws<ArgumentException>(
+        () => c.CopyTo(arr, 1),
+        "it should fail if target array is too small"
+      );
 
       c.CopyTo(arr, 0);
       arr.shouldEqual(new [] {1, 2, 3, 4, 5});
@@ -188,16 +191,31 @@ namespace com.tinylabproductions.TLPLib.Collection {
       arr.shouldEqual(new[] { -1, 1, 2, 3, 4, 5, -7 });
 
       arr = F.arrayFill(7, _ => 0);
-      IListDefaultImpls.copyTo(c, arr, targetArrayIndex: 1, srcCopyFrom: 1);
+      IListDefaultImpls.copyTo(c, arr, targetStartIndex: 1, srcCopyFrom: 1);
       arr.shouldEqual(new [] {0, 2, 3, 4, 5, 0, 0});
 
       arr = F.arrayFill(7, _ => 0);
-      IListDefaultImpls.copyTo(c, arr, targetArrayIndex: 1, srcCopyFrom: 2, srcCopyCount: 3);
+      IListDefaultImpls.copyTo(c, arr, targetStartIndex: 1, srcCopyFrom: 2, srcCopyCount: 3);
       arr.shouldEqual(new [] {0, 3, 4, 5, 0, 0, 0});
 
-      Assert.Throws<ArgumentException>(() => IListDefaultImpls.copyTo(c, arr, 0, srcCopyFrom: -1));
-      Assert.Throws<ArgumentException>(() => IListDefaultImpls.copyTo(c, arr, 0, srcCopyFrom: 5));
-      Assert.Throws<ArgumentException>(() => IListDefaultImpls.copyTo(c, arr, 0, srcCopyCount: 6));
+      Assert.Throws<ArgumentOutOfRangeException>(
+        () => IListDefaultImpls.copyTo(c, arr, 0, srcCopyFrom: -1),
+        "it should fail if srcCopyFrom is negative"
+      );
+      Assert.Throws<ArgumentOutOfRangeException>(
+        () => IListDefaultImpls.copyTo(c, arr, 0, srcCopyFrom: 5),
+        "it should fail if srcCopyFrom is more than length"
+      );
+      Assert.Throws<ArgumentOutOfRangeException>(
+        () => IListDefaultImpls.copyTo(c, arr, 0, srcCopyCount: 6),
+        "it should fail if we try to copy more items than there are in collection"
+      );
+
+      arr = F.arrayFill(2, _ => 0);
+      Assert.Throws<ArgumentException>(
+        () => IListDefaultImpls.copyTo(c, arr, 0, srcCopyCount: 3),
+        "it should fail if we try to copy into smaller array"
+      );
     }
 
     [Test]

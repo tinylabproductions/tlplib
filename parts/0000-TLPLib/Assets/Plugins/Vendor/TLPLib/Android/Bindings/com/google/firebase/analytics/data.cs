@@ -107,7 +107,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       if (! name.All(c => c.isAlphaNumeric() || c == '_')) errors = errors.Add(
         $"{errorPrefix} name must only contain alphanumeric chars or underscores: '{name}'"
       );
-      if (name.StartsWith("firebase_")) errors = errors.Add(
+      if (name.StartsWithFast("firebase_")) errors = errors.Add(
         $"{errorPrefix} name can't start with 'firebase_': '{name}'"
       );
 

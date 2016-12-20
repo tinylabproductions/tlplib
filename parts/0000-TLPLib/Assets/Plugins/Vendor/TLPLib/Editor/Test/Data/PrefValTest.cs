@@ -161,25 +161,22 @@ namespace com.tinylabproductions.TLPLib.Data {
     const string key = nameof(PrefValTestCollection);
 
     static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
-    static Option<int> badDeserialize(byte[] data, int startIndex) =>
-      SerializedRW.integer.deserialize(data, startIndex).filter(i => i % 2 != 0);
+    static Option<DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
+      SerializedRW.integer.deserialize(data, startIndex).filter(i => i.value % 2 != 0);
     static ImmutableList<int> convert(ImmutableArray<int> a) => a.ToImmutableList();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(
       ImmutableList<int> defaultVal,
-      Deserialize<int> deserializeFn = null,
+      Deserialize<DeserializeInfo<int>> deserializeFn = null,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
-      SerializedRW.OnCollectionItemDeserializationFailure onItemFailure =
-        SerializedRW.OnCollectionItemDeserializationFailure.Abort
+        PrefVal.OnDeserializeFailure.ReturnDefault
     ) =>
       storage.collection(
         key, 
         SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize),
         convert, defaultVal,
         onDeserializeFailure: onDeserializeFailure,
-        onDeserializeCollectionItemFailure: onItemFailure,
         log: log
       );
 
@@ -213,28 +210,50 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [Test]
-    public void ItemDeserializationFailureIgnore() {
-      create(ImmutableList.Create(1, 2, 3));
-      var p1 = create(
-        ImmutableList<int>.Empty,
-        badDeserialize,
-        PrefVal.OnDeserializeFailure.ThrowException,
-        SerializedRW.OnCollectionItemDeserializationFailure.Ignore
-      );
-      p1.value.shouldEqual(ImmutableList.Create(1, 3));
-    }
-
-    [Test]
     public void ItemDeserializationFailureThrowException() {
       create(ImmutableList.Create(1, 2, 3));
       Assert.Throws<SerializationException>(() =>
         create(
           ImmutableList<int>.Empty,
           badDeserialize,
-          PrefVal.OnDeserializeFailure.ThrowException,
-          SerializedRW.OnCollectionItemDeserializationFailure.Abort
+          PrefVal.OnDeserializeFailure.ThrowException
         )
       );
+    }
+
+    [Test]
+    public void ItemDeserializationFailureReturnDefault() {
+      create(ImmutableList.Create(1, 2, 3));
+      var default_ = ImmutableList.Create(1);
+      create(
+        default_,
+        badDeserialize,
+        PrefVal.OnDeserializeFailure.ReturnDefault
+      ).value.shouldEqual(default_);
+    }
+  }
+
+  class PrefValHashSetTest : PrefValTestBase {
+    [Test]
+    public void StringMultipleTimes() {
+      Fn<PrefVal<ImmutableHashSet<string>>> create = () =>
+        storage.hashSet(nameof(PrefValHashSetTest), SerializedRW.str);
+
+      var p1 = create();
+      p1.value.shouldEqual(ImmutableHashSet<string>.Empty);
+      var l1 = ImmutableHashSet.Create("foo", "bar");
+      p1.value = l1;
+      p1.value.shouldEqual(l1);
+      var l2 = l1.Add("baz");
+      p1.value = l2;
+      p1.value.shouldEqual(l2);
+      var p2 = create();
+      p2.value.shouldEqual(l2);
+      var l3 = l2.Add("buz");
+      p2.value = l3;
+      p2.value.shouldEqual(l3);
+      var p3 = create();
+      p3.value.shouldEqual(l3);
     }
   }
 }
