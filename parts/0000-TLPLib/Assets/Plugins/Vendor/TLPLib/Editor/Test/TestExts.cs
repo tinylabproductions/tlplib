@@ -114,6 +114,10 @@ namespace com.tinylabproductions.TLPLib.Test {
       a.shouldEqual(expected.some(), message);
     }
 
+    public static void shouldBeAnySome<A>(this Option<A> a, string message = null) {
+      if (a.isEmpty) Assert.Fail(message ?? $"Expected {a} to be Some!");
+    }
+
     public static void shouldBeSomeEnum<E>(this Option<E> aOpt, E expected, string message = null)
       where E : IEnumerable
     {

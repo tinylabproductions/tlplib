@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
@@ -95,6 +96,39 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       dst.value.shouldBeTrue();
       rx1.value = false;
       dst.value.shouldBeTrue();
+    }
+  }
+
+  public class RxValTestAnyDefined {
+    [Test]
+    public void WhenEmpty() =>
+      Enumerable.Empty<IRxVal<Option<int>>>().anyDefined().value.shouldBeNone();
+
+    [Test]
+    public void WhenFromSingleItem() {
+      var rx = RxRef.a(3.some());
+      var dst = new[] {rx}.anyDefined();
+      dst.value.shouldBeSome(3);
+      rx.value = Option<int>.None;
+      dst.value.shouldBeNone();
+      rx.value = 4.some();
+      dst.value.shouldBeSome(4);
+    }
+    
+    [Test]
+    public void WhenMultipleItems() {
+      var rx1 = RxRef.a(3.some());
+      var rx2 = RxRef.a(Option<int>.None);
+      var dst = new[] {rx1, rx2}.anyDefined();
+      dst.value.shouldBeSome(3);
+      rx1.value = Option<int>.None;
+      dst.value.shouldBeNone();
+      rx2.value = 4.some();
+      dst.value.shouldBeSome(4);
+      rx1.value = 1.some();
+      dst.value.shouldBeAnySome();
+      rx2.value = Option<int>.None;
+      dst.value.shouldBeSome(1);
     }
   }
 }
