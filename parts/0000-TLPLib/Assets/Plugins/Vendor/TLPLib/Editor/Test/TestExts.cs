@@ -85,14 +85,12 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldNotContain<A>(
       this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
-    ) => 
-      enumerable.find(predicate).voidFold(
-        Assert.Pass,
-        a => Assert.Fail(
-          message ?? 
-          $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
-        )
+    ) {
+      foreach (var a in enumerable.find(predicate)) Assert.Fail(
+        message ??
+        $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
       );
+    }
 
     public static void shouldTestInequalityAgainst<A>(this IEnumerable<A> set1, IEnumerable<A> set2) {
       foreach (var i1 in set1)
