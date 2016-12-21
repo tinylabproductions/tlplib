@@ -416,8 +416,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     struct Sub {
       public readonly Subscription subscription;
       public readonly IObserver<A> observer;
-
-      public bool active;
+      public readonly bool active;
 
       public Sub(Subscription subscription, IObserver<A> observer, bool active) {
         this.subscription = subscription;
@@ -431,6 +430,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         $"{nameof(observer)}: {observer}, " +
         $"{nameof(active)}: {active}" +
         $"]";
+
+      public Sub withActive(bool active) =>
+        new Sub(subscription, observer, active);
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
@@ -1104,11 +1106,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (pendingSubscriptionActivations != 0) {
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (!sub.active) {
-            sub.active = true;
-            // sub is a mutable struct, so we need to assign it back.
-            subscriptions[idx] = sub;
-          }
+          if (!sub.active) subscriptions[idx] = sub.withActive(true);
         }
         pendingSubscriptionActivations = 0;
       }
