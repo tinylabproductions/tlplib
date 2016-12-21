@@ -28,6 +28,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static string s(bool v) => v ? "true" : "false";
     public static string s(string v) => v;
     public static string s(DateTime v) => v.ToString("yyyy-MM-dd hh:mm:ss.fff zzz");
+    public static string s(Uri v) => v.ToString();
     public static string s<A>(A v) where A : IStr => v.asString();
     public static string s<A>(A a, Str<A> str) => str.asString(a);
 
