@@ -22,7 +22,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public struct Error {
       public enum Type {
-        MissingComponent, MissingReference, NullReference, EmptyCollection, UnityEventInvalidMethod, UnityEventInvalid
+        MissingComponent,
+        MissingReference,
+        NullReference,
+        EmptyCollection,
+        UnityEventInvalidMethod,
+        UnityEventInvalid,
+        TextFieldBadTag
       }
 
       public readonly Type type;
@@ -83,6 +89,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       ) => new Error(
         Type.UnityEventInvalid,
         $"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.",
+        o
+      );
+
+      public static Error textFieldBadTag(
+        Object o, string component, string property, string context
+      ) => new Error(
+        Type.TextFieldBadTag,
+        $"Bad tag in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
         o
       );
 
@@ -202,7 +216,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           return 
             err == FieldAttributeError.NullField
             ? Error.nullReference(component, componentName, field.Name, context)
-            : Error.emptyCollection(component, componentName, field.Name, context);
+            : err == FieldAttributeError.EmptyCollection
+              ? Error.emptyCollection(component, componentName, field.Name, context)
+              : Error.textFieldBadTag(component, componentName, field.Name, context);
         }
       );
       errors = errors.AddRange(fieldErrors);
@@ -245,7 +261,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         : Option<UnityEvent>.None;
     }
 
-    enum FieldAttributeError { NullField, EmptyCollection, TextFieldTypeNotSet }
+    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
     static IEnumerable<Error> validateFieldsWithAttributes(
       object o, Fn<FieldInfo, FieldAttributeError, Error> createError
@@ -255,10 +271,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
       );
       foreach (var fi in fields) {
-        if (fi.hasAttribute<TextFieldAttribute>()) {
-          var fieldValue = fi.GetValue(o);
-          if (!(fieldValue is string)) {
-            yield return createError(fi, FieldAttributeError.TextFieldTypeNotSet);
+        if (fi.hasAttributeWithProperty<TextFieldAttribute>(typeof(TextFieldType), TextFieldType.Tag)) {
+          if (fi.FieldType == typeof(string)) {
+            var fieldValue = (string)fi.GetValue(o);
+            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
+              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+            }
           }
         }
         if (
