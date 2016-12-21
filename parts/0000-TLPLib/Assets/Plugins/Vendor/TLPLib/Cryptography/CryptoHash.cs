@@ -5,13 +5,15 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.Cryptography {
   public struct CryptoHash : IStr, IEquatable<CryptoHash> {
-    static readonly MD5 md5 = MD5.Create();
-    static readonly SHA1 sha1 = SHA1.Create();
+    // http://stackoverflow.com/a/33568064/935259
+    static readonly MD5 md5 = new MD5CryptoServiceProvider();
+    static readonly SHA1 sha1 = new SHA1CryptoServiceProvider();
 
-    public enum Kind { MD5, SHA1 }
+    public enum Kind : byte { MD5, SHA1 }
 
     public readonly ImmutableArray<byte> bytes;
     public readonly Kind kind;
@@ -43,13 +45,15 @@ namespace com.tinylabproductions.Cryptography {
 
     #endregion
 
-    public int stringLength { get {
+    public static int stringLength_(Kind kind) {
       switch (kind) {
         case Kind.MD5: return 32;
-        case Kind.SHA1: return 48;
+        case Kind.SHA1: return 40;
       }
       return F.matchErr<int>(nameof(Kind), kind.ToString());
-    } }
+    }
+
+    public int stringLength => stringLength_(kind);
 
     public string asString() {
       // Convert the encrypted bytes back to a string (base 16)
