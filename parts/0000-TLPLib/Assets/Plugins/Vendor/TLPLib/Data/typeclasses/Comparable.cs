@@ -9,10 +9,17 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   }
 
   public static class Comparable {
-    public static readonly Comparable<int> integer = new intComparable();
+    public static readonly Comparable<int> integer = lambda<int>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<uint> uint_ = lambda<uint>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<long> long_ = lambda<long>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
 
     public static Comparable<A> lambda<A>(Fn<A, A, CompareResult> compare) =>
       new Lambda<A>(compare);
+    public static Comparable<A> lambda<A>(Fn<A, A, int> compare) =>
+      new Lambda<A>((a1, a2) => compare(a1, a2).asCmpRes());
 
     class Lambda<A> : Comparable<A> {
       readonly Fn<A, A, CompareResult> _compare;
@@ -20,10 +27,6 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       public Lambda(Fn<A, A, CompareResult> compare) { _compare = compare; }
 
       public CompareResult compare(A a1, A a2) => _compare(a1, a2);
-    }
-
-    class intComparable : Comparable<int> {
-      public CompareResult compare(int a1, int a2) => a1.CompareTo(a2).asCmpRes();
     }
   }
 
