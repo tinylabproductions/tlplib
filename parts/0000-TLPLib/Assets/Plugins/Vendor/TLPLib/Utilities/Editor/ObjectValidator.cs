@@ -277,12 +277,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
       foreach (var fi in fields) {
         if (fi.FieldType == typeof(string)) {
-          foreach (var attribute in fi.getAttributes<TextFieldAttribute>()) {
-            if (attribute.Type == TextFieldType.Tag) {
-              var fieldValue = (string)fi.GetValue(o);
-              if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-                yield return createError(fi, FieldAttributeError.TextFieldBadTag);
-              }
+          if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
+            var fieldValue = (string)fi.GetValue(o);
+            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
+              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
             }
           }
         }
