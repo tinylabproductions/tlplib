@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -15,13 +16,20 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public struct Error {
       public enum Type {
-        MissingComponent, MissingReference, NullReference, EmptyCollection, UnityEventInvalidMethod, UnityEventInvalid
+        MissingComponent,
+        MissingReference,
+        NullReference,
+        EmptyCollection,
+        UnityEventInvalidMethod,
+        UnityEventInvalid,
+        TextFieldBadTag
       }
 
       public readonly Type type;
@@ -82,6 +90,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       ) => new Error(
         Type.UnityEventInvalid,
         $"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.",
+        o
+      );
+
+      public static Error textFieldBadTag(
+        Object o, string component, string property, string context
+      ) => new Error(
+        Type.TextFieldBadTag,
+        $"Bad tag in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
         o
       );
 
@@ -198,10 +214,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         component,
         (field, err) => {
           var componentName = component.GetType().Name;
-          return 
-            err == FieldAttributeError.NullField
-            ? Error.nullReference(component, componentName, field.Name, context)
-            : Error.emptyCollection(component, componentName, field.Name, context);
+          switch (err) {
+            case FieldAttributeError.NullField:
+              return Error.nullReference(component, componentName, field.Name, context);
+            case FieldAttributeError.EmptyCollection:
+              return Error.emptyCollection(component, componentName, field.Name, context);
+            case FieldAttributeError.TextFieldBadTag:
+              return Error.textFieldBadTag(component, componentName, field.Name, context);
+            default:
+              throw new Exception($"Not all values of {nameof(FieldAttributeError)} enum are processed by switch");
+          }
         }
       );
       errors = errors.AddRange(fieldErrors);
@@ -244,7 +266,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         : Option<UnityEvent>.None;
     }
 
-    enum FieldAttributeError { NullField, EmptyCollection }
+    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
     static IEnumerable<Error> validateFieldsWithAttributes(
       object o, Fn<FieldInfo, FieldAttributeError, Error> createError
@@ -254,6 +276,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
       );
       foreach (var fi in fields) {
+        if (fi.FieldType == typeof(string)) {
+          if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
+            var fieldValue = (string)fi.GetValue(o);
+            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
+              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+            }
+          }
+        }
         if (
           (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>())
           || (fi.IsPrivate && fi.hasAttribute<SerializeField>())

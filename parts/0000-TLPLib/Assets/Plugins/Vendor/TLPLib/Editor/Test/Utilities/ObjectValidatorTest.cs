@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -65,6 +67,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     class NullReferenceSerializedField : MonoBehaviour {
       [SerializeField] InnerNotNull field;
       public void setField (InnerNotNull inn) { field = inn; }
+    }
+
+    class TextFieldTypeNotTag : MonoBehaviour {
+      [TextField(TextFieldType.Area)]
+      public string field;
+    }
+
+    class TextFieldTypeTag : MonoBehaviour {
+      [TextField(TextFieldType.Tag)]
+      public string field;
     }
 
     #endregion
@@ -201,6 +213,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       test<NullReferenceSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
+
+    #region [TextField(TextFieldType.Tag)]
+
+    [Test] public void WhenTextFieldTypeNotTag() => test<TextFieldTypeNotTag>();
+
+    [Test] public void WhenBadTextFieldValue() =>
+      test<TextFieldTypeTag>(a => {
+          a.field = "";
+        },
+        ErrorType.TextFieldBadTag.some()
+      );
+
+    [Test] public void WhenGoodTextFieldValue() => test<TextFieldTypeTag>(a => {
+      a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
+    });
+
+    #endregion
 
     static void test<A>(
       Act<A> setupA = null,
