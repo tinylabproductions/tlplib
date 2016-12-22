@@ -16,19 +16,20 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public struct Error {
       public enum Type {
-        MissingComponent = 0,
-        MissingReference = 1,
-        NullReference = 2,
-        EmptyCollection = 3,
-        UnityEventInvalidMethod = 4,
-        UnityEventInvalid = 5,
-        TextFieldBadTag = 6
+        MissingComponent,
+        MissingReference,
+        NullReference,
+        EmptyCollection,
+        UnityEventInvalidMethod,
+        UnityEventInvalid,
+        TextFieldBadTag
       }
 
       public readonly Type type;
@@ -271,11 +272,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
       );
       foreach (var fi in fields) {
-        if (fi.hasAttributeWithProperty<TextFieldAttribute>(typeof(TextFieldType), TextFieldType.Tag)) {
-          if (fi.FieldType == typeof(string)) {
-            var fieldValue = (string)fi.GetValue(o);
-            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+        if (fi.FieldType == typeof(string)) {
+          foreach (var attribute in fi.getAttributes<TextFieldAttribute>()) {
+            if (attribute.Type == TextFieldType.Tag) {
+              var fieldValue = (string)fi.GetValue(o);
+              if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
+                yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+              }
             }
           }
         }
