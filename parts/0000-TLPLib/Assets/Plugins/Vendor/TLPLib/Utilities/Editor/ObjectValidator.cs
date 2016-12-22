@@ -22,13 +22,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public struct Error {
       public enum Type {
-        MissingComponent,
-        MissingReference,
-        NullReference,
-        EmptyCollection,
-        UnityEventInvalidMethod,
-        UnityEventInvalid,
-        TextFieldBadTag
+        MissingComponent = 0,
+        MissingReference = 1,
+        NullReference = 2,
+        EmptyCollection = 3,
+        UnityEventInvalidMethod = 4,
+        UnityEventInvalid = 5,
+        TextFieldBadTag = 6
       }
 
       public readonly Type type;
