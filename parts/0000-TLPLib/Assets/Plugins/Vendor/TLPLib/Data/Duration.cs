@@ -1,10 +1,11 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
+using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
   // I discovered TimeSpan after this was written...
-  public struct Duration : IEquatable<Duration> {
+  public struct Duration : IStr, IEquatable<Duration> {
     public readonly int millis;
 
     public static Duration fromSeconds(int seconds) => new Duration(seconds * 1000);
@@ -22,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       return obj is Duration && Equals((Duration) obj);
     }
 
-    public override int GetHashCode() => millis;
+    public override int GetHashCode() => millis.GetHashCode();
 
     public static bool operator ==(Duration left, Duration right) { return left.Equals(right); }
     public static bool operator !=(Duration left, Duration right) { return !left.Equals(right); }
@@ -53,6 +54,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static implicit operator TimeSpan(Duration d) => d.toTimeSpan;
 
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
+    public string asString() => $"{millis}ms";
 
     public static readonly Numeric<Duration> numeric = new Numeric();
     class Numeric : Numeric<Duration> {
@@ -62,7 +64,10 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public static readonly Comparable<Duration> comparable = 
-      Comparable.integer.comap((Duration d) => d.millis);
+      Comparable.long_.comap((Duration d) => d.millis);
+
+    public static readonly ISerializedRW<Duration> serializedRW =
+      SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
   }
 
   public static class DurationExts {
