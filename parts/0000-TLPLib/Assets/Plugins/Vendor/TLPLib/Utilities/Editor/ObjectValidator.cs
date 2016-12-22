@@ -214,12 +214,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         component,
         (field, err) => {
           var componentName = component.GetType().Name;
-          return 
-            err == FieldAttributeError.NullField
-            ? Error.nullReference(component, componentName, field.Name, context)
-            : err == FieldAttributeError.EmptyCollection
-              ? Error.emptyCollection(component, componentName, field.Name, context)
-              : Error.textFieldBadTag(component, componentName, field.Name, context);
+          switch (err) {
+            case FieldAttributeError.NullField:
+              return Error.nullReference(component, componentName, field.Name, context);
+            case FieldAttributeError.EmptyCollection:
+              return Error.emptyCollection(component, componentName, field.Name, context);
+            case FieldAttributeError.TextFieldBadTag:
+              return Error.textFieldBadTag(component, componentName, field.Name, context);
+            default:
+              throw new Exception($"Not all values of {nameof(FieldAttributeError)} enum are processed by switch");
+          }
         }
       );
       errors = errors.AddRange(fieldErrors);
