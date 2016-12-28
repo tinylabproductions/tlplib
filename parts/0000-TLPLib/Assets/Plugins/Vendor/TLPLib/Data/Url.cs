@@ -31,5 +31,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     #endregion
 
     public string asString() => url;
+
+    public static implicit operator string(Url url) => url.asString();
+
+    public static Url operator +(Url u1, Url u2) => new Url(u1.url + u2.url);
   }
 }
