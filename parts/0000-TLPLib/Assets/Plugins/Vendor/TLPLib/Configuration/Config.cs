@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Future<Either<ConfigFetchError, string>> fetch(
       Urls urls, Duration timeout, string expectedContentType="application/json"
     ) {
-      return new WWW(urls.fetchUrl.ToString()).wwwFuture()
+      return new WWW(urls.fetchUrl.ToString()).wwwFuture().asNonCancellable()
         .timeout(timeout).map(wwwE =>
           wwwE.map(
             _ => (ConfigFetchError) new ConfigTimeoutError(urls, timeout),
@@ -388,6 +388,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       configPathedParser("lower", floatParser)
       .and(configPathedParser("upper", floatParser))
       .map((path, t) => new FRange(t._1, t._2));
+
+    public static readonly Parser<Url> 
+      urlParser = stringParser.map(s => new Url(s)),
+      /** for relative paths, like 'foo bar/baz.jpg' */
+      relativeUrlPathParser = urlParser.map(url => new Url(Uri.EscapeUriString(url.url)));
 
     #endregion
 
