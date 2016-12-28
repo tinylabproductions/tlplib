@@ -12,7 +12,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       cancelled => Future<A>.unfulfilled,
       Future.successful
     ));
-
   }
 
   public struct Cancellable<A> {
