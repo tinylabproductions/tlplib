@@ -392,7 +392,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static readonly Parser<Url> 
       urlParser = stringParser.map(s => new Url(s)),
       /** for relative paths, like 'foo bar/baz.jpg' */
-      relativeUrlPathParser = urlParser.map(url => new Url(Uri.EscapeUriString(url.url)));
+      uriEscapedUrlParser = urlParser.map(url => new Url(Uri.EscapeUriString(url.url)));
 
     #endregion
 
