@@ -4,10 +4,14 @@ using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  interface IHeapFuture<A> {
+  public interface IHeapFuture<A> {
     bool isCompleted { get; }
     Option<A> value { get; }
     void onComplete(Act<A> action);
+  }
+
+  public static class IHeapFutureExts {
+    public static Future<A> asFuture<A>(this IHeapFuture<A> f) => Future.a(f);
   }
 
   class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
