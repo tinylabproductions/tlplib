@@ -57,17 +57,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     #endregion
 
     /* Lift an ordinary value into a future. */
-    public static Future<A> successful(A value) {
-      return new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(value));
-    }
+    public static Future<A> successful(A value) => 
+      new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(value));
 
     /* Future that will never be completed. */
     public static readonly Future<A> unfulfilled = 
       new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(new UnfulfilledFuture()));
 
     /* Asynchronous heap based future which can be completed later. */
-    public static Future<A> async(Act<Promise<A>> body)
-      { return async((p, _) => body(p)); }
+    public static Future<A> async(Act<Promise<A>> body) => async((p, _) => body(p));
 
     /* Asynchronous heap based future which can be completed later. */
     public static Future<A> async(Act<Promise<A>, Future<A>> body) {
