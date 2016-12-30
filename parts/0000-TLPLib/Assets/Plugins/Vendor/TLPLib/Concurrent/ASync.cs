@@ -149,34 +149,38 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    /* Do async WWW request. */
-    public static Future<Either<WWWError, WWW>> wwwFuture(this WWW www) {
-      return Future<Either<WWWError, WWW>>.async(p => StartCoroutine(WWWEnumerator(www, p)));
+    /* Do async cancellable WWW request. */
+    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> wwwFuture(this WWW www) {
+      Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
+      var f = Future<Either<Cancelled, Either<WWWError, WWW>>>.async(out promise);
+
+      var wwwCoroutine = StartCoroutine(WWWEnumerator(www, promise));
+
+      return Cancellable.a(f, () => {
+        if (www.isDone) return false;
+
+        wwwCoroutine.stop();
+        www.Dispose();
+        promise.complete(new Either<Cancelled, Either<WWWError, WWW>>(Cancelled.instance));
+        return true;
+      });
     }
 
-    static readonly ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>> wwwsQueue =
-      new ASyncOneAtATimeQueue<Fn<WWW>, Either<WWWError, WWW>>(
-        (createWWW, promise) => StartCoroutine(WWWEnumerator(createWWW(), promise))
-      );
+    public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
+      this Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> cancellable
+    ) => cancellable.map(f => f.map(e => e.mapRight(_ => _.asTexture())));
 
-    /* Do async WWW request, but only do one WWW request at a time - there was an IL2CPP bug where
-       having several WWWs executing at once crashed the runtime. */
-    public static Future<Either<WWWError, WWW>> oneAtATimeWWW(Fn<WWW> createWWW) {
-      return wwwsQueue.query(createWWW);
-    }
+    public static IEnumerator WWWEnumerator(WWW www) { yield return www; }
 
-    public static IEnumerator WWWEnumerator(WWW www) {
-      yield return www;
-    }
+    public static IEnumerator WWWEnumerator(WWW www, Promise<Either<Cancelled, Either<WWWError, WWW>>> promise) =>
+      WWWEnumerator(www).afterThis(() => promise.complete(
+        Either<Cancelled, Either<WWWError, WWW>>.Right(www.toEither())
+      ));
 
     /* Wait until enumerator is completed and then do action */
     public static IEnumerator afterThis(this IEnumerator enumerator, Action action) {
       while (enumerator.MoveNext()) yield return enumerator.Current;
       action();
-    }
-
-    public static IEnumerator WWWEnumerator(WWW www, Promise<Either<WWWError, WWW>> promise) {
-      return WWWEnumerator(www).afterThis(() => promise.complete(www.toEither()));
     }
 
     public static IEnumerator WithDelayEnumerator(
