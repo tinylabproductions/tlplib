@@ -212,13 +212,11 @@ namespace com.tinylabproductions.TLPLib.Data {
 
       public Option<DeserializeInfo<Tpl<A, B>>> deserialize(byte[] serialized, int startIndex) {
         try {
-          const int LENGTH_SIZE = 4;
-          var length = BitConverter.ToInt32(serialized, startIndex);
-          var aOpt = aRW.deserialize(serialized, startIndex + LENGTH_SIZE);
+          var aOpt = aRW.deserialize(serialized, startIndex);
           if (aOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
-          var bOpt = bRW.deserialize(serialized, startIndex + LENGTH_SIZE + length);
-          if (bOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
           var aInfo = aOpt.get;
+          var bOpt = bRW.deserialize(serialized, startIndex + aInfo.bytesRead);
+          if (bOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
           var bInfo = bOpt.get;
           var info = new DeserializeInfo<Tpl<A, B>>(
             F.t(aInfo.value, bInfo.value),
@@ -229,13 +227,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         catch (Exception) { return Option<DeserializeInfo<Tpl<A, B>>>.None; }
       }
 
-      public Rope<byte> serialize(Tpl<A, B> a) {
-        var serializedA = aRW.serialize(a._1);
-        var serializedB = bRW.serialize(a._2);
-        var length = Rope.a(BitConverter.GetBytes(serializedA.length));
-
-        return length + serializedA + serializedB;
-      }
+      public Rope<byte> serialize(Tpl<A, B> a) =>
+        aRW.serialize(a._1) + bRW.serialize(a._2);
     }
 
     abstract class BaseRW<A> : ISerializedRW<A> {

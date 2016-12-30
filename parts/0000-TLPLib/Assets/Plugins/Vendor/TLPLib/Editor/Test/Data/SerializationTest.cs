@@ -24,8 +24,39 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void checkWithNoiseOpt<A>(
       IDeserializer<A> deser, Rope<byte> serialized, Act<Option<A>> check
     ) {
-      check(deser.deserialize(serialized.toArray(), 0).map(_ => _.value));
-      check(deser.deserialize((noise + serialized + noise).toArray(), noise.length).map(_ => _.value));
+      check(
+        deser.deserialize(serialized.toArray(), 0)
+        .map(info => valueFromInfo(info, serialized.length))
+      );
+      check(
+        deser.deserialize((noise + serialized + noise).toArray(), noise.length)
+        .map(info => valueFromInfo(info, serialized.length))
+      );
+    }
+
+    static A valueFromInfo<A>(DeserializeInfo<A> info, int serializedLength) {
+      info.bytesRead.shouldEqual(serializedLength);
+      return info.value;
+    }
+  }
+
+  public class SerializationTestUShortRW : SerializationTestBase {
+    static readonly ISerializedRW<ushort> rw = SerializedRW.uShort;
+
+    [Test]
+    public void Test() {
+      const ushort value = 8;
+      checkWithNoise(rw, rw.serialize(value), value);
+    }
+  }
+
+  public class SerializationTestByteRW : SerializationTestBase {
+    static readonly ISerializedRW<byte> rw = SerializedRW.byte_;
+
+    [Test]
+    public void Test() {
+      const byte value = 8;
+      checkWithNoise(rw, rw.serialize(value), value);
     }
   }
 
