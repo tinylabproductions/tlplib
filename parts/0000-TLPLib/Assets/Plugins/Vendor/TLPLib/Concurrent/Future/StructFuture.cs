@@ -40,6 +40,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this.implementation = implementation;
     }
 
+    public Future(IHeapFuture<A> future) : this(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(future)) {}
+
     #region Equality
 
     public bool Equals(Future<A> other) => value == other.value;

@@ -4,15 +4,17 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
-    public static void locally(this object any, Action local) { local(); }
+    /** 
+     * Useful in marking object creation just for side effects.
+     *
+     * For example:
+     * `new GamePlaceBinding.Init(item, iconF, buttonSetting.name).forSideEffects();`
+     **/
+    public static void forSideEffects<A>(this A a) {}
 
-    public static T locally<T>(this object any, Fn<T> local) {
-      return local();
-    }
-
-    public static B mapVal<A, B>(this A any, Fn<A, B> mapper) {
-      return mapper(any);
-    }
+    public static void locally(this object any, Action local) => local();
+    public static T locally<T>(this object any, Fn<T> local) => local();
+    public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
 
     public static A tap<A>(this A any, Act<A> tapper) {
       tapper(any);

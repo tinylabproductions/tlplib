@@ -8,14 +8,11 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
-    public static Future<A> a<A>(Act<Promise<A>> action)
-      { return Future<A>.async(action); }
+    public static Future<A> a<A>(Act<Promise<A>> action) => Future<A>.async(action);
+    public static Future<A> a<A>(IHeapFuture<A> future) => new Future<A>(future);
 
-    public static Future<A> successful<A>(A value)
-      { return Future<A>.successful(value); }
-
-    public static Future<A> unfulfilled<A>()
-      { return Future<A>.unfulfilled; }
+    public static Future<A> successful<A>(A value) => Future<A>.successful(value);
+    public static Future<A> unfulfilled<A>() => Future<A>.unfulfilled;
 
     public static Future<A> delay<A>(Duration duration, Fn<A> createValue, ITimeContext tc=null) => 
       a<A>(p => tc.orDefault().after(duration, () => p.complete(createValue())));
