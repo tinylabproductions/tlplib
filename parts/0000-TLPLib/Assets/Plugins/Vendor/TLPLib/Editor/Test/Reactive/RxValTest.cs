@@ -131,4 +131,122 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       dst.value.shouldBeSome(1);
     }
   }
+
+  public class RxValTestNumberOfEvents {
+    [Test]
+    public void NoChangesVal() {
+      var rx = RxVal.a(5);
+      var events = 0;
+      rx.subscribe(_ => events++);
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void NoChangesRef() {
+      var rx = RxRef.a(5);
+      var events = 0;
+      rx.subscribe(_ => events++);
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void AllChanges() {
+      var rx = RxRef.a(5);
+      var events = 0;
+      rx.subscribe(_ => events++);
+      rx.value = 1;
+      rx.value = 2;
+      rx.value = 5;
+      rx.value = 1;
+      events.shouldEqual(5);
+    }
+
+    [Test]
+    public void SomeChanges() {
+      var rx = RxRef.a(5);
+      var events = 0;
+      rx.subscribe(_ => events++);
+      rx.value = 5;
+      rx.value = 5;
+      rx.value = 1;
+      rx.value = 4;
+      rx.value = 1;
+      rx.value = 1;
+      events.shouldEqual(4);
+    }
+
+    [Test]
+    public void NoChangesValMap() {
+      var rx = RxVal.a(5);
+      var rx2 = rx.map(_ => _ * 2);
+      var events = 0;
+      rx2.subscribe(_ => events++);
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void NoChangesRefMap() {
+      var rx = RxRef.a(5);
+      var rx2 = rx.map(_ => _ * 2);
+      var events = 0;
+      rx2.subscribe(_ => events++);
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void NoChangesMapCalls() {
+      var rx = RxVal.a(5);
+      var events = 0;
+      rx.map(_ => events++);
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void NoChangesFilterCalls() {
+      var rx = RxVal.a(5);
+      var events = 0;
+      rx.filter(_ => {
+        events++;
+        return true;
+      }, 1);
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void NoChangesFlatMapCalls() {
+      var rx = RxVal.a(5);
+      var events = 0;
+      rx.flatMap(_ => {
+        events++;
+        return RxRef.a(1);
+      });
+      events.shouldEqual(1);
+    }
+
+    [Test]
+    public void AllChangesMapCalls() {
+      var rx = RxRef.a(5);
+      var events = 0;
+      rx.map(_ => events++);
+      rx.value = 1;
+      rx.value = 2;
+      rx.value = 5;
+      rx.value = 1;
+      events.shouldEqual(5);
+    }
+
+    [Test]
+    public void SomeChangesMapCalls() {
+      var rx = RxRef.a(5);
+      var events = 0;
+      rx.map(_ => events++);
+      rx.value = 5;
+      rx.value = 5;
+      rx.value = 1;
+      rx.value = 4;
+      rx.value = 1;
+      rx.value = 1;
+      events.shouldEqual(4);
+    }
+  }
 }
