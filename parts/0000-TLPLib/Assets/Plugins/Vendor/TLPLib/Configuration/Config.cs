@@ -139,6 +139,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       public static bool operator !=(Urls left, Urls right) { return !left.Equals(right); }
 
       #endregion
+
+      public static readonly ISerializedRW<Urls> serializedRW =
+        SerializedRW.uri.and(SerializedRW.uri).map(
+          t => F.some(new Urls(t._1, t._2)),
+          urls => F.t(urls.fetchUrl, urls.reportUrl)
+        );
     }
 
     /**

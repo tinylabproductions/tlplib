@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     static ASyncHelperBehaviour _behaviour;
 
     static ASyncHelperBehaviour behaviour { get {
-      if (((object)_behaviour) == null) {
+      if (!_behaviour) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot

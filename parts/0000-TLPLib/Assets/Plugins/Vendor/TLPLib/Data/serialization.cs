@@ -19,6 +19,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.value = value;
       this.bytesRead = bytesRead;
     }
+
+    public Option<DeserializeInfo<B>> flatMapTry<B>(Fn<A, B> mapper) {
+      try { return new DeserializeInfo<B>(mapper(value), bytesRead).some(); }
+      catch (Exception) { return Option<DeserializeInfo<B>>.None; }
+    }
   }
 
   public static class DeserializeInfoExts {
@@ -53,6 +58,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<long> lng = new longRW();
     public static readonly ISerializedRW<Duration> duration = new DurationRW();
     public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
+    public static readonly ISerializedRW<Uri> uri = lambda(
+      uri => str.serialize(uri.ToString()),
+      (bytes, startIndex) => 
+        str.deserialize(bytes, startIndex)
+        .flatMap(di => di.flatMapTry(s => new Uri(s)))
+    );
 
     public static ISerializedRW<A> a<A>(
       ISerializer<A> serializer, IDeserializer<A> deserializer
