@@ -18,7 +18,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     static ASyncHelperBehaviour _behaviour;
 
     static ASyncHelperBehaviour behaviour { get {
-      if (!_behaviour) {
+      if (
+// Needed because behaviour gets destroyed when running editor tests, so they fail
+#if UNITY_EDITOR
+        !_behaviour
+#else
+        // ReSharper disable once RedundantCast.0
+        (object)_behaviour == null
+#endif
+      ) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
