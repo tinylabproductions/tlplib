@@ -18,7 +18,25 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     static ASyncHelperBehaviour _behaviour;
 
     static ASyncHelperBehaviour behaviour { get {
-      if (((object)_behaviour) == null) {
+      if (
+#if !UNITY_EDITOR        
+        // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator
+        // which calls into native code to check whether objects are alive (which is a lot slower than
+        // managed reference check).
+        //
+        // The only case where this should be uninitialized is until we create a reference on first access
+        // in managed code.
+        //
+        // ReSharper disable once RedundantCast.0        
+        (object)_behaviour == null
+#else
+        // However...
+        //
+        // Managed reference check fails when running in editor tests, because the behaviour gets destroyed
+        // for some reason, so we have to resort to unity checks in editor.
+        !_behaviour
+#endif
+      ) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
