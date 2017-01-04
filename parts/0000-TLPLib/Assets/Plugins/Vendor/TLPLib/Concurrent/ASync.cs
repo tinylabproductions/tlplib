@@ -20,7 +20,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     static ASyncHelperBehaviour behaviour { get {
       if (
 /** 
- * (object)_behaviour == null fails when running in editor tests, because the behaviour gets destroyed
+ * We use (object)_behaviour == null to decrease calls to native code
+ * However it fails when running in editor tests, because the behaviour gets destroyed
  * So we run !_behaviour in editor which works perfectly fine
 **/
 #if UNITY_EDITOR
