@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public interface ISubscription {
+  public interface ISubscription : IDisposable {
     bool isSubscribed { get; }
     bool unsubscribe();
     ISubscription andThen(Action action);
@@ -36,6 +37,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return true;
     }
 
+    public void Dispose() => unsubscribe();
+
     public ISubscription andThen(Action action) => new Subscription(() => {
       unsubscribe();
       action();
@@ -57,18 +60,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
   }
 
-  public class SubscriptionTracker : IDisposable {
-    readonly List<ISubscription> subscriptions = new List<ISubscription>();
+  [Obsolete("Use DisposableTracker")]
+  public class SubscriptionTracker : DisposeTracker<ISubscription> {
+    static readonly Act<ISubscription> dispose = s => s.unsubscribe();
 
-    public ISubscription track(ISubscription subscription) {
-      subscriptions.Add(subscription);
-      return subscription;
-    }
-
-    public void Dispose() {
-      foreach (var subscription in subscriptions)
-        subscription.unsubscribe();
-      subscriptions.Clear();
-    }
+    public SubscriptionTracker() : base(dispose) {}
   }
 }
