@@ -19,16 +19,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static ASyncHelperBehaviour behaviour { get {
       if (
-/** 
- * We use (object)_behaviour == null to decrease calls to native code
- * However it fails when running in editor tests, because the behaviour gets destroyed
- * So we run !_behaviour in editor which works perfectly fine
-**/
-#if UNITY_EDITOR
-        !_behaviour
-#else
-        // ReSharper disable once RedundantCast.0
+#if !UNITY_EDITOR        
+        // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator
+        // which calls into native code to check whether objects are alive (which is a lot slower than
+        // managed reference check).
+        //
+        // The only case where this should be uninitialized is until we create a reference on first access
+        // in managed code.
+        //
+        // ReSharper disable once RedundantCast.0        
         (object)_behaviour == null
+#else
+        // However...
+        //
+        // Managed reference check fails when running in editor tests, because the behaviour gets destroyed
+        // for some reason, so we have to resort to unity checks in editor.
+        !_behaviour
 #endif
       ) {
         const string name = "ASync Helper";
