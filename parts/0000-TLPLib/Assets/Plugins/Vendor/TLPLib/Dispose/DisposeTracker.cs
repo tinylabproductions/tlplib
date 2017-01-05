@@ -1,5 +1,5 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Collection;
+using System.Collections.Generic;
 
 namespace com.tinylabproductions.TLPLib.dispose {
   public interface IDisposeTracker<in A> : IDisposable {
@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.dispose {
   }
 
   public class DisposeTracker<A> : IDisposeTracker<A> {
-    readonly SList4<A> list = new SList4<A>();
+    readonly List<A> list = new List<A>();
     readonly Act<A> dispose;
 
     public DisposeTracker(Act<A> dispose) { this.dispose = dispose; }
@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
     public void Dispose() {
       foreach (var a in list) dispose(a);
-      list.clear();
+      list.Clear();
     }
   }
 
