@@ -371,7 +371,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   public class Observable<A> : IObservable<A> {
     public static readonly Observable<A> empty =
-      new Observable<A>(_ => new Subscription(() => { }));
+      new Observable<A>(_ => Subscription.empty);
 
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
