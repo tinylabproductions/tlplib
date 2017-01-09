@@ -7,6 +7,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly string url;
 
     public Url(string url) { this.url = url; }
+    public static Url a(string url) => new Url(url);
 
     public override string ToString() => $"{nameof(Url)}({url})";
 
@@ -35,5 +36,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static implicit operator string(Url url) => url.asString();
 
     public static Url operator +(Url u1, Url u2) => new Url(u1.url + u2.url);
+  }
+
+  public static class UrlExts {
+    public static Url toUrl(this Uri uri) => new Url(uri.ToString());
   }
 }
