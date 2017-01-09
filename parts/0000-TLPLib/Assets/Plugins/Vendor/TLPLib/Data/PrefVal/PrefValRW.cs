@@ -16,6 +16,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   public static class PrefValRW {
     public static readonly IPrefValueRW<string> str = new stringRW();
+    public static readonly IPrefValueRW<Uri> uri = custom(SerializedRW.uri);
     public static readonly IPrefValueRW<int> integer = new intRW();
     public static readonly IPrefValueRW<uint> uinteger = new uintRW();
     public static readonly IPrefValueRW<float> flt = new floatRW();
