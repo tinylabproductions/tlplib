@@ -9,11 +9,10 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public class ASyncNAtATimeQueue<Params, Return> {
-//    private Future<Return> theFuture = Future.successful(default(Return));
-    private readonly int _max;
-    private readonly Queue<Tpl<Params, Promise<Return>>> _queue = new Queue<Tpl<Params, Promise<Return>>>();
-    private readonly Act<Params, Promise<Return>> doQuery;
-    private int _curProcesses;
+    readonly int _max;
+    readonly Queue<Tpl<Params, Promise<Return>>> _queue = new Queue<Tpl<Params, Promise<Return>>>();
+    readonly Act<Params, Promise<Return>> doQuery;
+    int _curProcesses;
 
     public ASyncNAtATimeQueue(int max, Act<Params, Promise<Return>> doQuery) {
       this.doQuery = doQuery;
