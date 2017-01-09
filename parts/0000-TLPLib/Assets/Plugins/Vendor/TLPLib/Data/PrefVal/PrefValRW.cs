@@ -133,19 +133,22 @@ namespace com.tinylabproductions.TLPLib.Data {
 
       public A read(IPrefValueBackend backend, string key, A defaultVal) {
         var serialized = backend.getString(key, DEFAULT_VALUE);
+
+        if (string.IsNullOrEmpty(serialized)) return deserializationFailed(key, defaultVal, serialized);
         if (serialized == DEFAULT_VALUE) return defaultVal;
-        else {
-          var serializedWithoutDiscriminator = serialized.Substring(1);
-          var opt = deserialize(serializedWithoutDiscriminator);
-          if (opt.isDefined) return opt.get;
 
-          if (onDeserializeFailure == PrefVal.OnDeserializeFailure.ReturnDefault) {
-            if (log.isWarn()) log.warn(deserializeFailureMsg(key, serialized, ", returning default"));
-            return defaultVal;
-          }
+        var serializedWithoutDiscriminator = serialized.Substring(1);
+        var opt = deserialize(serializedWithoutDiscriminator);
+        return opt.isDefined ? opt.get : deserializationFailed(key, defaultVal, serialized);
+      }
 
-          throw new SerializationException(deserializeFailureMsg(key, serialized));
+      A deserializationFailed(string key, A defaultVal, string serialized) {
+        if (onDeserializeFailure == PrefVal.OnDeserializeFailure.ReturnDefault) {
+          if (log.isWarn()) log.warn(deserializeFailureMsg(key, serialized, ", returning default"));
+          return defaultVal;
         }
+
+        throw new SerializationException(deserializeFailureMsg(key, serialized));
       }
 
       public void write(IPrefValueBackend backend, string key, A value) =>
