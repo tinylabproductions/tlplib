@@ -70,8 +70,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     class TextFieldTypeNotTag : MonoBehaviour {
+#pragma warning disable 649
       [TextField(TextFieldType.Area)]
       public string field;
+#pragma warning restore 649
     }
 
     class TextFieldTypeTag : MonoBehaviour {
