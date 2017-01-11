@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var go = AssetDatabase.GetAllAssetPaths().find(s => 
         s.EndsWithFast("TLPLib/Editor/Test/Utilities/ObjectValidatorTestGameObject.prefab")
       ).map(AssetDatabase.LoadMainAssetAtPath).get;
-      var errors = ObjectValidator.check("", new [] { go });
+      var errors = ObjectValidator.check(new ObjectValidator.CheckContext(), new [] { go });
       noErrorsOrExistsErrorOfType(errors, ErrorType.MissingComponent.some());
     }
 
@@ -240,7 +240,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
-      var errors = ObjectValidator.check("", new Object[] { go });
+      var errors = ObjectValidator.check(new ObjectValidator.CheckContext(), new Object[] { go });
       noErrorsOrExistsErrorOfType(errors, errorType);
     }
 

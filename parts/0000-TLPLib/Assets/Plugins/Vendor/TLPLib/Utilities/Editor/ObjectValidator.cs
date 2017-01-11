@@ -16,13 +16,12 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public struct Error {
-      public enum Type {
+      public enum Type : byte {
         MissingComponent,
         MissingReference,
         NullReference,
@@ -34,77 +33,87 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       public readonly Type type;
       public readonly string message;
-      public readonly Object context;
+      public readonly Object obj;
+      public readonly string objFullPath;
+      public readonly Option<string> assetPath;
 
       public override string ToString() => 
-        $"{nameof(Error)}[{type}, {nameof(context)}: {context}; {message}]";
+        $"{nameof(Error)}[{type} in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'|{message}]";
 
       #region Constructors
 
-      public Error(Type type, string message, Object context) {
+      public Error(Type type, string message, Object obj) {
         this.type = type;
         this.message = message;
-        this.context = context;
+        this.obj = obj;
+        objFullPath = fullPath(obj);
+        assetPath = AssetDatabase.GetAssetPath(obj).opt();
       }
 
       public static Error missingComponent(Object o) => new Error(
         Type.MissingComponent,
-        $"Missing Component in GO or children: {o}",
+        "in GO or children",
         o
       );
 
       public static Error emptyCollection(
-        Object o, string component, string property, string context
+        Object o, string property, CheckContext context
       ) => new Error(
         Type.EmptyCollection,
-        $"Collection is empty in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {property}",
         o
       );
 
       public static Error missingReference(
-        Object o, string component, string property, string context
+        Object o, string property, CheckContext context
       ) => new Error(
         Type.MissingReference,
-        $"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {property}",
         o
       );
 
       public static Error nullReference(
-        Object o, string component, string property, string context
+        Object o, string property, CheckContext context
       ) => new Error(
         Type.NullReference,
-        $"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {property}",
         o
       );
 
       public static Error unityEventInvalidMethod(
-        Object o, string property, int number, string context
+        Object o, string property, int number, CheckContext context
       ) => new Error(
         Type.UnityEventInvalidMethod,
-        $"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.",
+        $"UnityEvent {property} callback number {number} has invalid method in {context}.",
         o
       );
 
       public static Error unityEventInvalid(
-        Object o, string property, int number, string context
+        Object o, string property, int number, CheckContext context
       ) => new Error(
         Type.UnityEventInvalid,
-        $"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.",
+        $"UnityEvent {property} callback number {number} is not valid in {context}.",
         o
       );
 
       public static Error textFieldBadTag(
-        Object o, string component, string property, string context
+        Object o, string property, CheckContext context
       ) => new Error(
         Type.TextFieldBadTag,
-        $"Bad tag in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {property}",
         o
       );
 
       #endregion
     }
 
-    [MenuItem(
+    public struct CheckContext {
+      public readonly Option<string> value;
+      public CheckContext(string value) { this.value = value.some(); }
+      public override string ToString() => value.getOrElse("unknown ctx");
+    }
+
+    [UsedImplicitly, MenuItem(
       "Tools/Validate Objects in Current Scene", 
       isValidateFunction: false, priority: 55
     )]
@@ -137,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     ) {
       var stopwatch = new Stopwatch().tap(_ => _.Start());
       var objects = getSceneObjects(scene);
-      var errors = check(scene.name, objects, onProgress, onFinish);
+      var errors = check(new CheckContext(scene.name), objects, onProgress, onFinish);
       return F.t(errors, stopwatch.Elapsed);
     }
 
@@ -151,12 +160,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         .Where(x => x is GameObject || x is ScriptableObject)
         .ToImmutableList();
       return check(
-        nameof(checkAssetsAndDependencies), dependencies, onProgress, onFinish
+        new CheckContext("Assets & Deps"), dependencies, onProgress, onFinish
       );
     }
 
     public static ImmutableList<Error> check(
-      string context, ICollection<Object> objects, 
+      CheckContext context, ICollection<Object> objects, 
       Act<float> onProgress = null, Action onFinish = null
     ) {
       var errors = ImmutableList<Error>.Empty;
@@ -185,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors;
     }
 
-    public static ImmutableList<Error> checkComponent(string context, Object component) {
+    public static ImmutableList<Error> checkComponent(CheckContext context, Object component) {
       var errors = ImmutableList<Error>.Empty;
 
       var serObj = new SerializedObject(component);
@@ -197,8 +206,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           && sp.objectReferenceValue == null
           && sp.objectReferenceInstanceIDValue != 0
         ) errors = errors.Add(Error.missingReference(
-          component, component.GetType().Name, 
-          ObjectNames.NicifyVariableName(sp.name), ""
+          component, ObjectNames.NicifyVariableName(sp.name), context
         ));
 
         if (sp.type == nameof(UnityEvent)) {
@@ -213,17 +221,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fieldErrors = validateFieldsWithAttributes(
         component,
         (field, err) => {
-          var componentName = component.GetType().Name;
           switch (err) {
             case FieldAttributeError.NullField:
-              return Error.nullReference(component, componentName, field.Name, context);
+              return Error.nullReference(component, field.Name, context);
             case FieldAttributeError.EmptyCollection:
-              return Error.emptyCollection(component, componentName, field.Name, context);
+              return Error.emptyCollection(component, field.Name, context);
             case FieldAttributeError.TextFieldBadTag:
-              return Error.textFieldBadTag(component, componentName, field.Name, context);
-            default:
-              throw new Exception($"Not all values of {nameof(FieldAttributeError)} enum are processed by switch");
+              return Error.textFieldBadTag(component, field.Name, context);
           }
+          return F.matchErr<Error>(nameof(FieldAttributeError), err.ToString());
         }
       );
       errors = errors.AddRange(fieldErrors);
@@ -232,7 +238,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     static Option<Error> checkUnityEvent(
-      UnityEventBase evt, Object component, string propertyName, string context
+      UnityEventBase evt, Object component, string propertyName, CheckContext context
     ) {
       UnityEventReflector.rebuildPersistentCallsIfNeeded(evt);
 
@@ -346,17 +352,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showErrors(IEnumerable<Error> errors) {
       foreach (var error in errors)
-        if (Log.isError) Log.error(error.message, error.context);
+        if (Log.isError) Log.error(error.message, error.obj);
     }
 
     static string fullPath(Object o) {
       var go = o as GameObject;
-      if (go)  
-        return go.transform.parent == null
-          ? go.name
-          : fullPath(go.transform.parent.gameObject) + "/" + go.name;
-
-      return o.name;
+      return 
+        go && go.transform.parent != null 
+        ? $"[{fullPath(go.transform.parent.gameObject)}]/{go}"
+        : o.ToString();
     }
   }
 }
