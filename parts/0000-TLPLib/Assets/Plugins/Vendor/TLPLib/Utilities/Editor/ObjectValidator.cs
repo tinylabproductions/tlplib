@@ -50,7 +50,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         assetPath = AssetDatabase.GetAssetPath(obj).opt();
       }
 
-      public static Error missingComponent(Object o) => new Error(
+      // Missing component is null, that is why we need GO
+      public static Error missingComponent(GameObject o) => new Error(
         Type.MissingComponent,
         "in GO or children",
         o
@@ -176,12 +177,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
         var goOpt = F.opt(o as GameObject);
         if (goOpt.isDefined) {
-          var components = goOpt.get.GetComponentsInChildren<Component>();
+          var go = goOpt.get;
+          var components = go.GetComponentsInChildren<Component>();
           foreach (var c in components) {
             errors = 
               c 
               ? errors.AddRange(checkComponent(context, c))
-              : errors.Add(Error.missingComponent(c));
+              : errors.Add(Error.missingComponent(go));
           }
         }
         else {
