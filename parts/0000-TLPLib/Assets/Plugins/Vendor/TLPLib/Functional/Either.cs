@@ -53,6 +53,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ) => mapRightC(e, mapper, _ => _.ToImmutableList());
   }
 
+  public static class Either {
+    public static Either<A, B> opt<A, B>(bool condition, A ifFalse, B ifTrue) =>
+      condition
+      ? Either<A, B>.Right(ifTrue)
+      : Either<A, B>.Left(ifFalse);
+  }
+
   public
 #if ENABLE_IL2CPP
   class
