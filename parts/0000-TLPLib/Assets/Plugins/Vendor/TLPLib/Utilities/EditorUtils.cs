@@ -11,5 +11,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       EditorUtility.SetDirty(o);
 #endif
     }
+
+    public static bool inBatchMode =>
+#if UNITY_EDITOR
+      UnityEditorInternal.InternalEditorUtility.inBatchMode
+#else
+      false
+#endif
+      ;
   }
 }

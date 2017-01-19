@@ -25,13 +25,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var unfullfilled = Future.unfulfilled<int>();
       var completed = Future.successful(3);
 
-      shouldNotEqual(unfullfilled, completed);
+      shouldNotEqualSymmetrical(unfullfilled, completed);
 
-      shouldEqual(unfullfilled, asyncF);
-      shouldNotEqual(asyncF, completed);
+      shouldBeIdentical(unfullfilled, asyncF);
+      shouldNotEqualSymmetrical(asyncF, completed);
       asyncP.complete(3);
-      shouldNotEqual(unfullfilled, asyncF);
-      shouldEqual(asyncF, completed);
+      shouldNotEqualSymmetrical(unfullfilled, asyncF);
+      shouldBeIdentical(asyncF, completed);
     }
   }
 

@@ -1,7 +1,6 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
-using Smooth.Collections;
+using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Comparisons;
 using Smooth.Compare.Comparers;
 using Smooth.Events;
@@ -46,7 +45,7 @@ namespace Smooth.Compare {
 					break;
 				}
 			} else {
-				Debug.LogError("Tried to register a non-enumeration type as an enumeration.");
+				if (Log.isError) Log.error("Tried to register a non-enumeration type as an enumeration.");
 			}
 		}
 
@@ -145,7 +144,7 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 
 			if (comparer == null) {
-				Debug.LogError("Tried to register a null comparer for: " + type.FullName);
+				if (Log.isError) Log.error("Tried to register a null comparer for: " + type.FullName);
 			} else {
 				lock (comparers) {
 					if (comparers.ContainsKey(type)) {
@@ -227,7 +226,7 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 			
 			if (EqComparer == null) {
-				Debug.LogError("Tried to register a null equality comparer for: " + type.FullName);
+				if (Log.isError) Log.error("Tried to register a null equality comparer for: " + type.FullName);
 			} else {
 				lock (EqComparers) {
 					if (EqComparers.ContainsKey(type)) {
@@ -289,14 +288,14 @@ namespace Smooth.Compare {
 						if (ctor != null) {
 							config = (Configuration) customType.GetConstructor(Type.EmptyTypes).Invoke(null);
 						} else {
-							Debug.LogError("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does have a default constructor.");
+							if (Log.isError) Log.error("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does have a default constructor.");
 						}
 					} else {
-						Debug.LogError("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does not inherit from " + typeof(Configuration).FullName + ".");
+						if (Log.isError) Log.error("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does not inherit from " + typeof(Configuration).FullName + ".");
 					}
 				}
 			} catch (Exception e) {
-				Debug.LogError(e);
+				if (Log.isError) Log.error(e);
 			} finally {
 				config = config ?? new Configuration();
 			}
@@ -304,7 +303,7 @@ namespace Smooth.Compare {
 			try {
 				config.RegisterComparers();
 			} catch (Exception e) {
-				Debug.LogError(e);
+				if (Log.isError) Log.error(e);
 			}
 		}
 

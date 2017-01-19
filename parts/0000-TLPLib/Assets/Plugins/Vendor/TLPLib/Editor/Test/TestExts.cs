@@ -11,13 +11,13 @@ using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestBase {
-    public static void shouldEqual<A>(A a1, A a2) {
+    public static void shouldBeIdentical<A>(A a1, A a2) {
       a1.shouldEqual(a2);
       a2.shouldEqual(a1);
       a1.GetHashCode().shouldEqual(a2.GetHashCode());
     }
 
-    public static void shouldNotEqual<A>(A a1, A a2) {
+    public static void shouldNotEqualSymmetrical<A>(A a1, A a2) {
       a1.shouldNotEqual(a2);
       a2.shouldNotEqual(a1);
     }

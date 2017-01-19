@@ -58,6 +58,21 @@ namespace com.tinylabproductions.TLPLib.Functional {
       condition
       ? Either<A, B>.Right(ifTrue)
       : Either<A, B>.Left(ifFalse);
+
+    public static Either<A, B> opt<A, B>(bool condition, Fn<A> ifFalse, B ifTrue) =>
+      condition
+      ? Either<A, B>.Right(ifTrue)
+      : Either<A, B>.Left(ifFalse());
+
+    public static Either<A, B> opt<A, B>(bool condition, A ifFalse, Fn<B> ifTrue) =>
+      condition
+      ? Either<A, B>.Right(ifTrue())
+      : Either<A, B>.Left(ifFalse);
+
+    public static Either<A, B> opt<A, B>(bool condition, Fn<A> ifFalse, Fn<B> ifTrue) =>
+      condition
+      ? Either<A, B>.Right(ifTrue())
+      : Either<A, B>.Left(ifFalse());
   }
 
   public
