@@ -1,6 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Android;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {

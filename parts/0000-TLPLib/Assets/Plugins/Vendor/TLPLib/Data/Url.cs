@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
+using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /** Stupid tag on string. Because System.Uri is heavy. */
@@ -36,6 +37,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static implicit operator string(Url url) => url.asString();
 
     public static Url operator +(Url u1, Url u2) => new Url(u1.url + u2.url);
+
+    public static Url operator /(Url u1, string u2) {
+      var lastIsSlash = u1.url.lastChar().exists(_ => _ == '/');
+      return new Url(u1.url + (lastIsSlash ? "" : "/") + u2);
+    }
   }
 
   public static class UrlExts {
