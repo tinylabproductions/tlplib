@@ -10,6 +10,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         ? F.some(outVal) : F.none<V>();
     }
 
+    public static Either<string, V> getE<K, V>(this IDictionary<K, V> dict, K key) =>
+      dict.get(key).toRight($"Can't find '{key}'!");
+
     public static V getOrUpdate<K, V>(
      this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
     ) {
