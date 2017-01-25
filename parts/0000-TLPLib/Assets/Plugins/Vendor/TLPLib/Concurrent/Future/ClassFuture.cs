@@ -24,6 +24,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool isCompleted => value.isDefined;
     public Option<A> value { get; private set; } = F.none<A>();
 
+    public override string ToString() => $"{nameof(FutureImpl<A>)}({value})";
+
     public void complete(A v) {
       if (! tryComplete(v)) throw new IllegalStateException(
         $"Trying to complete future with \"{v}\" but it is already completed with \"{value.get}\""
