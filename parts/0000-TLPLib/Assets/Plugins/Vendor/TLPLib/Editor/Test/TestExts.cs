@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
@@ -21,6 +22,8 @@ namespace com.tinylabproductions.TLPLib.Test {
       a1.shouldNotEqual(a2);
       a2.shouldNotEqual(a1);
     }
+
+    public static Action code(Action a) => a;
   }
 
   public static class TestExts {
@@ -221,6 +224,19 @@ namespace com.tinylabproductions.TLPLib.Test {
       this string json, Config.Parser<A> parser
     ) =>
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
+
+    public static ChangeMatcher<A> shouldChange<A>(
+      this Action act, Fn<A> measure, Numeric<A> num
+    ) => new ChangeMatcher<A>(act, measure, num);
+
+    public static void shouldNotChange<A>(
+      this Action act, Fn<A> measure, Numeric<A> num
+    ) => act.shouldChange(measure, num).by(0);
+
+    public static ChangeMatcher<int> shouldChange(this Action act, Fn<int> measure) => 
+      act.shouldChange(measure, Numeric.integer);
+    public static void shouldNotChange(this Action act, Fn<int> measure) => 
+      act.shouldChange(measure).by(0);
   }
 
   public class SetEquals<A> : Constraint {
@@ -235,6 +251,37 @@ namespace com.tinylabproductions.TLPLib.Test {
     public override void WriteDescriptionTo(MessageWriter writer) {
       writer.WriteExpectedValue(expected);
       writer.WriteActualValue(actual);
+    }
+  }
+
+  public class ChangeMatcher<A> {
+    readonly Action act;
+    readonly Fn<A> measure;
+    readonly Numeric<A> num;
+
+    public ChangeMatcher(Action act, Fn<A> measure, Numeric<A> num) {
+      this.act = act;
+      this.measure = measure;
+      this.num = num;
+    }
+
+    public void by(int i, string message = null) {
+      var change = num.fromInt(i);
+      var initial = measure();
+      act();
+      var after = measure();
+      var actualChange = num.subtract(after, initial);
+
+      if (message == null) {
+        message = 
+          i == 0 
+          ? $"value should have not been changed, but it was changed " +
+            $"from {initial} to {after} by {actualChange}"
+          : $"value should have been changed from {initial} to {num.add(initial, change)} " +
+            $"by {change}, but it was changed to {after} by {actualChange}";
+      }
+
+      num.subtract(after, initial).shouldEqual(change, message);
     }
   }
 }
