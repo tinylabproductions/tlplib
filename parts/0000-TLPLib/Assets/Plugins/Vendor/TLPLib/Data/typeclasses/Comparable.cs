@@ -34,6 +34,14 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static Comparable<B> comap<A, B>(this Comparable<A> cmp, Fn<B, A> mapper) =>
       Comparable.lambda<B>((b1, b2) => cmp.compare(mapper(b1), mapper(b2)));
 
+    public static bool lt<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) == CompareResult.LT;
+    public static bool lte<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) != CompareResult.GT;
+    public static bool eq<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) == CompareResult.EQ;
+    public static bool gt<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) == CompareResult.GT;
+    public static bool gte<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) != CompareResult.LT;
+    public static A min<A>(this Comparable<A> cmp, A a1, A a2) => cmp.lt(a1, a2) ? a1 : a2;
+    public static A max<A>(this Comparable<A> cmp, A a1, A a2) => cmp.gt(a1, a2) ? a1 : a2;
+
     public static Option<A> max<A, Coll>(
       this Coll c, Comparable<A> comparable
     ) where Coll : IEnumerable<A> => maxBy<A, A, Coll>(c, comparable, _ => _);

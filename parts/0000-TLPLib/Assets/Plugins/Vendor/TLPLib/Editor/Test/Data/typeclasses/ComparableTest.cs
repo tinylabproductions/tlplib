@@ -14,7 +14,53 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     static readonly Fn<Tpl<string, int>, int> extract = _ => _._2;
 
     [Test]
+    public void TestOpLt() {
+      cmp.lt(1, 2).shouldBeTrue();
+      cmp.lt(2, 1).shouldBeFalse();
+    }
+
+    [Test]
+    public void TestOpLte() {
+      cmp.lte(1, 2).shouldBeTrue();
+      cmp.lte(2, 2).shouldBeTrue();
+      cmp.lte(2, 1).shouldBeFalse();
+    }
+
+    [Test]
+    public void TestOpEq() {
+      cmp.eq(2, 2).shouldBeTrue();
+      cmp.eq(2, 1).shouldBeFalse();
+      cmp.eq(1, 2).shouldBeFalse();
+    }
+    
+
+    [Test]
+    public void TestOpGt() {
+      cmp.gt(1, 2).shouldBeFalse();
+      cmp.gt(2, 1).shouldBeTrue();
+    }
+
+    [Test]
+    public void TestOpGte() {
+      cmp.gte(1, 2).shouldBeFalse();
+      cmp.gte(2, 2).shouldBeTrue();
+      cmp.gte(2, 1).shouldBeTrue();
+    }
+
+    [Test]
     public void TestMin() {
+      cmp.min(1, 2).shouldEqual(1);
+      cmp.min(2, 1).shouldEqual(1);
+    }
+
+    [Test]
+    public void TestMax() {
+      cmp.max(1, 2).shouldEqual(2);
+      cmp.max(2, 1).shouldEqual(2);
+    }
+
+    [Test]
+    public void TestMinSeq() {
       seq.min(cmp).shouldBeSome(seq.Min());
       ImmutableList<int>.Empty.min(cmp).shouldBeNone();
     }
@@ -26,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     }
 
     [Test]
-    public void TestMax() {
+    public void TestMaxSeq() {
       seq.max(cmp).shouldBeSome(seq.Max());
       ImmutableList<int>.Empty.max(cmp).shouldBeNone();
     }
