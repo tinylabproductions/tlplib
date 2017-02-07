@@ -76,6 +76,8 @@ public
   public readonly bool isSome;
 
 #if ENABLE_IL2CPP
+  // Non-public because if this is a class, each None will be a new heap object.
+  // Use Option<A>.None instead.
   Option() {}
 #endif
 

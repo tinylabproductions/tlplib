@@ -21,8 +21,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
     ) {
 #if ENABLE_IL2CPP
-      if (null == x) x = new Option<float>();
-      if (null == y) y = new Option<float>();
+      if (null == x) x = Option<float>.None;
+      if (null == y) y = Option<float>.None;
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y));
     }
@@ -40,9 +40,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
     ) {
 #if ENABLE_IL2CPP
-      if (null == x) x = new Option<float>();
-      if (null == y) y = new Option<float>();
-      if (null == z) z = new Option<float>();
+      if (null == x) x = Option<float>.None;
+      if (null == y) y = Option<float>.None;
+      if (null == z) z = Option<float>.None;
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
     }

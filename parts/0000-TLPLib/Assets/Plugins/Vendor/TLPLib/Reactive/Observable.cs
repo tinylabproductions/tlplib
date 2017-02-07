@@ -1031,7 +1031,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         var luSub = ASync.onLateUpdate.subscribe(_ => {
           foreach (var val in last) { 
             // Clear last before pushing, because exception makes it loop forever.
-            last = new Option<A>();
+            last = Option<A>.None;
             obs.push(val);
           }
         });

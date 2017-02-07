@@ -235,8 +235,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void test<A>(
       Act<A> setupA = null,
-      Option<ErrorType> errorType = new Option<ErrorType>()
+      Option<ErrorType> errorType = default(Option<ErrorType>)
     ) where A : Component {
+      Option.ensureValue(ref errorType);
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
