@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DConsole {
-    public enum Direction { Left, Up, Right, Down }
+    public enum Direction : byte { Left, Up, Right, Down }
 
     public struct Command {
       public readonly string cmdGroup, name;
