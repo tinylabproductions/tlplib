@@ -146,6 +146,40 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       bEnum.Dispose();
     }
 
+    public static IEnumerable<C> zipLeft<A, B, C>(
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<A,C> g 
+    ) {
+      var aEnum = aEnumerable.GetEnumerator();
+      var bEnum = bEnumerable.GetEnumerator();
+
+      while (aEnum.MoveNext()) {
+        if (bEnum.MoveNext())
+          yield return f(aEnum.Current, bEnum.Current);
+        else
+          yield return g(aEnum.Current);
+      }
+
+      aEnum.Dispose();
+      bEnum.Dispose();
+    }
+
+    public static IEnumerable<C> zipRight<A, B, C>(
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B, C> g
+    ) {
+      var aEnum = aEnumerable.GetEnumerator();
+      var bEnum = bEnumerable.GetEnumerator();
+
+      while (bEnum.MoveNext()) {
+        if (aEnum.MoveNext())
+          yield return f(aEnum.Current, bEnum.Current);
+        else
+          yield return g(bEnum.Current);
+      }
+
+      aEnum.Dispose();
+      bEnum.Dispose();
+    }
+
     public static IEnumerable<Tpl<A, B>> zip<A, B>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable
     ) => aEnumerable.zip(bEnumerable, F.t);
