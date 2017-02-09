@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
@@ -102,5 +103,27 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       normal.trues.shouldEqual(F.list(1, 2, 3));
       normal.falses.shouldEqual(F.list(4, 5));
     }
+  }
+
+  public class IEnumerableTestZip {
+    [Test]
+    public void TestWhenEmpty() => 
+      ImmutableList<int>.Empty.zip(ImmutableList<string>.Empty)
+      .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
+
+    [Test]
+    public void TestWhenEqual() =>
+      ImmutableList.Create(1, 2, 3).zip(ImmutableList.Create("a", "b", "c"), (a, b) => b + a)
+      .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
+
+    [Test]
+    public void TestWhenLeftShorter() =>
+      ImmutableList.Create(1, 2, 3).zip(ImmutableList.Create("a", "b", "c", "d", "e"), (a, b) => b + a)
+      .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
+
+    [Test]
+    public void TestWhenRightShorter() =>
+      ImmutableList.Create(1, 2, 3, 4, 5).zip(ImmutableList.Create("a", "b", "c"), (a, b) => b + a)
+      .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
   }
 }
