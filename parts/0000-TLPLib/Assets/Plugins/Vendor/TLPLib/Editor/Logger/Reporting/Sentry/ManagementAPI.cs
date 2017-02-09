@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,6 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
   /** An awfully incomplete management API for sentry for using from Editor. **/
   public static class ManagementAPI {
-
     #region Methods
 
     public static Either<Error, List<ClientKey>> listClientKeys(
@@ -74,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
             break;
           }
         }
-        return www.toEither().mapLeft(err => (Error) new NetError(err));
+        return www.toEither().mapLeft(err => (Error) new NetError(url, err));
       }
       finally {
         EditorUtility.ClearProgressBar();
@@ -95,11 +93,15 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
     }
 
     public class NetError : Error {
+      public readonly string url;
       public readonly WWWError error;
 
-      public NetError(WWWError error) { this.error = error; }
+      public NetError(string url, WWWError error) {
+        this.url = url;
+        this.error = error;
+      }
 
-      public override string ToString() { return error.ToString(); }
+      public override string ToString() => $"{error} @ '{url}'";
     }
 
     public struct ApiKey {
@@ -257,4 +259,3 @@ JSON representation:
       F.opt(error as ManagementAPI.NetError).map(err => $"\n{err.error.www.url}").getOrElse("");
   }
 }
-#endif
