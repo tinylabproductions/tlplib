@@ -133,6 +133,23 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<A>();
     }
 
+    public static IEnumerable<C> zip<A, B, C>(
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f
+    ) {
+      var aEnum = aEnumerable.GetEnumerator();
+      var bEnum = bEnumerable.GetEnumerator();
+
+      while (aEnum.MoveNext() && bEnum.MoveNext()) 
+        yield return f(aEnum.Current, bEnum.Current);
+
+      aEnum.Dispose();
+      bEnum.Dispose();
+    }
+
+    public static IEnumerable<Tpl<A, B>> zip<A, B>(
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable
+    ) => aEnumerable.zip(bEnumerable, F.t);
+
     public static IEnumerable<Tpl<A, int>> zipWithIndex<A>(this IEnumerable<A> enumerable) {
       var idx = 0;
       foreach (var a in enumerable) {
