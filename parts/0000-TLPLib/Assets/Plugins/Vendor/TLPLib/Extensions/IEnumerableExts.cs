@@ -155,10 +155,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var idx = -1;
       while (aEnum.MoveNext()) {
         idx++;
-        if (bEnum.MoveNext())
-          yield return f(aEnum.Current, bEnum.Current);
-        else
-          yield return generateMissing(aEnum.Current, idx);
+        yield return bEnum.MoveNext() ? f(aEnum.Current, bEnum.Current) : generateMissing(aEnum.Current, idx);
       }
 
       aEnum.Dispose();
@@ -166,8 +163,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static IEnumerable<C> zipRight<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B,int, C> generateMissing
-    ) => bEnumerable.zipLeft(aEnumerable, (b,a) => f(a,b), generateMissing);
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B, int, C> generateMissing
+    ) => bEnumerable.zipLeft(aEnumerable, (b, a) => f(a, b), generateMissing);
 
     public static IEnumerable<Tpl<A, B>> zip<A, B>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable
