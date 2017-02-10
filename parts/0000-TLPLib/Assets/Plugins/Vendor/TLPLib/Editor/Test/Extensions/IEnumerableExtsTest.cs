@@ -136,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [Test]
     public void TestWhenLeftEmpty() =>
-      ImmutableList<int>.Empty.zipLeft(ImmutableList.Create("a","b","c"),F.t,(a, idx) => F.t(a, idx.ToString()))
+      ImmutableList<int>.Empty.zipLeft(ImmutableList.Create("a","b","c"), F.t,(a, idx) => F.t(a, idx.ToString()))
       .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
 
     [Test]
