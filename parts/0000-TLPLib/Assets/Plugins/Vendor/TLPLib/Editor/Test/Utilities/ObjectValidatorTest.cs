@@ -21,8 +21,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidatorTest {
     #region Test Classes
 
-    class TestClass : MonoBehaviour {
+    class PublicField : MonoBehaviour {
       public GameObject field;
+    }
+
+    class NotNullPublicFieldObject : MonoBehaviour {
+      [NotNull] public Object field;
     }
 
     class NotNullPublicField : MonoBehaviour {
@@ -33,6 +37,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       [NotNull, SerializeField] GameObject field;
       public void setField (GameObject go) { field = go; }
     }
+
+    class PublicFieldExtended : PublicField {
+      [NotNull, SerializeField] GameObject field2;
+    }
+
+    class NotNullPublicFieldExtended : NotNullPublicField { }
+
+    class NotNullSerializedFieldExtended : NotNullSerializedField { }
 
     class NonSerializedField : MonoBehaviour {
       [NotNull, NonSerialized] GameObject field;
@@ -93,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       noErrorsOrExistsErrorOfType(errors, ErrorType.MissingComponent.some());
     }
 
-    [Test] public void WhenMissingReference() => test<TestClass>(
+    [Test] public void WhenMissingReference() => test<PublicField>(
       a => {
         a.field = new GameObject();
         Object.DestroyImmediate(a.field);
@@ -102,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     );
 
     [Test] public void WhenReferenceNotMissing() => 
-      test<TestClass>(a => {
+      test<PublicField>(a => {
         a.field = new GameObject();
       });
 
@@ -136,6 +148,26 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [Test] public void WhenNotNullSerializedField() => test<NotNullSerializedField>(
       errorType: ErrorType.NullReference.some()
     );
+
+    [Test] public void WhenPublicFieldExtended() => test<PublicFieldExtended>(
+      errorType: ErrorType.NullReference.some()
+    );
+
+    [Test] public void WhenNotNullPublicFieldExtended() => test<NotNullPublicFieldExtended>(
+      errorType: ErrorType.NullReference.some()
+    );
+
+    [Test] public void WhenNotNullSerializedFieldExtended() => test<NotNullSerializedFieldExtended>(
+      errorType: ErrorType.NullReference.some()
+    );
+
+    [Test] public void WhenNotNullPublicFieldObjectSet() => 
+      test<NotNullPublicFieldObject>(
+        a => {
+          a.field = new Object();
+        },
+        ErrorType.NullReference.some()
+      );
 
     [Test] public void WhenNotNullSerializedFieldSet() => 
       test<NotNullSerializedField>(a => {

@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       // Missing component is null, that is why we need GO
       public static Error missingComponent(GameObject o) => new Error(
         Type.MissingComponent,
-        "in GO or children",
+        "in GO",
         o
       );
 
@@ -178,12 +178,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         var goOpt = F.opt(o as GameObject);
         if (goOpt.isDefined) {
           var go = goOpt.get;
-          var components = go.GetComponentsInChildren<Component>();
-          foreach (var c in components) {
-            errors = 
-              c 
-              ? errors.AddRange(checkComponent(context, c))
-              : errors.Add(Error.missingComponent(go));
+          foreach (var transform in go.transform.andAllChildrenRecursive()) {
+            var components = transform.GetComponents<Component>();
+            foreach (var c in components) {
+              errors = 
+                c 
+                ? errors.AddRange(checkComponent(context, c))
+                : errors.Add(Error.missingComponent(transform.gameObject));
+            }
           }
         }
         else {
@@ -280,9 +282,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       object o, Fn<FieldInfo, FieldAttributeError, Error> createError
     ) {
       var type = o.GetType();
-      var fields = type.GetFields(
-        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
-      );
+      var fields = GetAllFields(type);
       foreach (var fi in fields) {
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
@@ -298,7 +298,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ) {
           var fieldValue = fi.GetValue(o);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
-          if (fieldValue == null) {
+          // Sometimes we get empty unity object. Equals catches that
+          if (fieldValue == null || fieldValue.Equals(null)) {
             if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField);
           }
           else {
@@ -328,6 +329,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
+    // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
+    public static IEnumerable<FieldInfo> GetAllFields(Type t) {
+      if (t == null) return Enumerable.Empty<FieldInfo>();
+
+      var flags = BindingFlags.Public | BindingFlags.NonPublic | 
+                  BindingFlags.Instance | 
+                  BindingFlags.DeclaredOnly;
+      return t.GetFields(flags).Concat(GetAllFields(t.BaseType));
+    }
+
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFieldsWithAttributes(
@@ -354,7 +365,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showErrors(IEnumerable<Error> errors) {
       foreach (var error in errors)
-        if (Log.isError) Log.error(error.message, error.obj);
+        if (Log.isError) Log.error(error, error.obj);
     }
 
     static string fullPath(Object o) {
