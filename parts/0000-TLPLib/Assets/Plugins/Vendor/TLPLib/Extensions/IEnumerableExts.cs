@@ -147,16 +147,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static IEnumerable<C> zipLeft<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<A,C> g 
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<A, int, C> generateMissing
     ) {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
 
+      var idx = -1;
       while (aEnum.MoveNext()) {
+        idx++;
         if (bEnum.MoveNext())
           yield return f(aEnum.Current, bEnum.Current);
         else
-          yield return g(aEnum.Current);
+          yield return generateMissing(aEnum.Current, idx);
       }
 
       aEnum.Dispose();
@@ -164,23 +166,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static IEnumerable<C> zipRight<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B, C> g
-    )
-    {
-      var aEnum = aEnumerable.GetEnumerator();
-      var bEnum = bEnumerable.GetEnumerator();
-
-      while (bEnum.MoveNext())
-      {
-        if (aEnum.MoveNext())
-          yield return f(aEnum.Current, bEnum.Current);
-        else
-          yield return g(bEnum.Current);
-      }
-
-      aEnum.Dispose();
-      bEnum.Dispose();
-    }
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B,int, C> generateMissing
+    ) => bEnumerable.zipLeft(aEnumerable, (b,a) => f(a,b), generateMissing);
 
     public static IEnumerable<Tpl<A, B>> zip<A, B>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable

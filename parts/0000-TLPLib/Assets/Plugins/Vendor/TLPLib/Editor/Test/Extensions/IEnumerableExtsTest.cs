@@ -128,69 +128,67 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
   }
 
-  public class IEnumerableTestZipLeft
-  {
+  public class IEnumerableTestZipLeft {
     [Test]
     public void TestWhenEmpty() =>
-    ImmutableList<int>.Empty.zipLeft(ImmutableList<string>.Empty, F.t, (a) => F.t(a, "0"))
+    ImmutableList<int>.Empty.zipLeft(ImmutableList<string>.Empty, F.t, (a, idx) => F.t(a, idx.ToString()))
     .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
 
     [Test]
     public void TestWhenLeftEmpty() =>
-      ImmutableList<int>.Empty.zipLeft(ImmutableList.Create("a","b","c"),F.t,(a) => F.t(a,"0"))
+      ImmutableList<int>.Empty.zipLeft(ImmutableList.Create("a","b","c"),F.t,(a, idx) => F.t(a, idx.ToString()))
       .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
 
     [Test]
     public void TestWhenRightEmpty() =>
-    ImmutableList.Create(1,2,3).zipLeft(ImmutableList<string>.Empty, (a, b) => b + a, (a) => "X" + a)
-    .shouldEqual(ImmutableList.Create("X1","X2","X3"));
+    ImmutableList.Create(1,2,3).zipLeft(ImmutableList<string>.Empty, (a, b) => b + a, (a, idx) => idx.ToString() + a)
+    .shouldEqual(ImmutableList.Create("01","12","23"));
 
     [Test]
     public void TestWhenEqualLength() =>
-      ImmutableList.Create(1, 2, 3).zipLeft(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (a) => "X" + a)
+      ImmutableList.Create(1, 2, 3).zipLeft(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (a, idx) => idx.ToString() + a)
       .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
 
     [Test]
     public void TestWhenLeftShorter() =>
-      ImmutableList.Create(1, 2, 3).zipLeft(ImmutableList.Create("a", "b", "c", "d", "e"), (a, b) => b + a, (a) => "X" + a)
+      ImmutableList.Create(1, 2, 3).zipLeft(ImmutableList.Create("a", "b", "c", "d", "e"), (a, b) => b + a, (a, idx) => idx.ToString() + a)
       .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
 
     [Test]
     public void TestWhenRightShorter() =>
-      ImmutableList.Create(1, 2, 3, 4, 5).zipLeft(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (a) => "X" + a)
-      .shouldEqual(ImmutableList.Create("a1", "b2", "c3", "X4","X5"));
+      ImmutableList.Create(1, 2, 3, 4, 5).zipLeft(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (a, idx) => idx.ToString() + a)
+      .shouldEqual(ImmutableList.Create("a1", "b2", "c3", "34","45"));
   }
 
-  public class IEnumerableTestZipRight
-  {
+  public class IEnumerableTestZipRight {
     [Test]
     public void TestWhenEmpty() =>
-    ImmutableList<int>.Empty.zipRight(ImmutableList<string>.Empty, F.t, (b) => F.t(-1, b))
+    ImmutableList<int>.Empty.zipRight(ImmutableList<string>.Empty, F.t, (b,_) => F.t(-1, b))
     .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
 
     [Test]
     public void TestWhenLeftEmpty() =>
-      ImmutableList<int>.Empty.zipRight(ImmutableList.Create("a", "b", "c"), F.t, (b) => F.t(-1, b))
-      .shouldEqual(ImmutableList.Create(F.t(-1,"a"),F.t(-1,"b"),F.t(-1,"c")));
+      ImmutableList<int>.Empty.zipRight(ImmutableList.Create("a", "b", "c"), F.t, (b,idx) => F.t(idx, b))
+      .shouldEqual(ImmutableList.Create(F.t(0,"a"),F.t(1,"b"),F.t(2,"c")));
 
     [Test]
     public void TestWhenRightEmpty() =>
-    ImmutableList.Create(1, 2, 3).zipRight(ImmutableList<string>.Empty, F.t, (b) => F.t(-1, b))
+    ImmutableList.Create(1, 2, 3).zipRight(ImmutableList<string>.Empty, F.t, (b, idx) => F.t(idx, b))
     .shouldEqual(ImmutableList<Tpl<int,string>>.Empty);
 
     [Test]
     public void TestWhenEqualLength() =>
-      ImmutableList.Create(1, 2, 3).zipRight(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (b) => b + "-1")
+      ImmutableList.Create(1, 2, 3).zipRight(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (b, idx) => b + idx)
       .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
 
     [Test]
     public void TestWhenLeftShorter() =>
-      ImmutableList.Create(1, 2, 3).zipRight(ImmutableList.Create("a", "b", "c", "d", "e"), (a, b) => b + a, (b) => b + "-1")
-      .shouldEqual(ImmutableList.Create("a1", "b2", "c3","d-1","e-1"));
+      ImmutableList.Create(1, 2, 3).zipRight(ImmutableList.Create("a", "b", "c", "d", "e"), (a, b) => b + a, (b, idx) => b + idx)
+      .shouldEqual(ImmutableList.Create("a1", "b2", "c3","d3","e4"));
 
     [Test]
     public void TestWhenRightShorter() =>
-      ImmutableList.Create(1, 2, 3, 4, 5).zipRight(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (b) => b + "-1")
+      ImmutableList.Create(1, 2, 3, 4, 5).zipRight(ImmutableList.Create("a", "b", "c"), (a, b) => b + a, (b, idx) => b + idx)
       .shouldEqual(ImmutableList.Create("a1", "b2", "c3"));
   }
 }
