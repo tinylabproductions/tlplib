@@ -173,7 +173,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [Test]
     public void TestWhenLeftEmpty() =>
       ImmutableList<int>.Empty.zipRight(ImmutableList.Create("a", "b", "c"), F.t, (b, idx) => F.t(idx, b))
-      .shouldEqual(ImmutableList.Create(F.t(0, "a"),F.t(1, "b"),F.t(2, "c")));
+      .shouldEqual(ImmutableList.Create(F.t(0, "a"), F.t(1, "b"), F.t(2, "c")));
 
     [Test]
     public void TestWhenRightEmpty() =>
