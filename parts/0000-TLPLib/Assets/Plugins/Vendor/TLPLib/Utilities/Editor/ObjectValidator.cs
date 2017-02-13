@@ -302,8 +302,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static IEnumerable<Error> validateFieldsWithAttributes(
       object o, Fn<FieldInfo, FieldAttributeError, string, Error> createError
     ) {
-      var type = o.GetType();
-      var fields = GetAllFields(type);
+      var fields = getFilteredFields(o.GetType());
       foreach (var fi in fields) {
         path.Push(fi.Name);
         if (fi.FieldType == typeof(string)) {
@@ -353,22 +352,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
-    public static IEnumerable<FieldInfo> GetAllFields(Type t) {
+    static IEnumerable<FieldInfo> getAllFields(Type t) {
       if (t == null) return Enumerable.Empty<FieldInfo>();
 
       const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | 
                                  BindingFlags.Instance | 
                                  BindingFlags.DeclaredOnly;
-      return t.GetFields(flags).Concat(GetAllFields(t.BaseType));
+      return t.GetFields(flags).Concat(getAllFields(t.BaseType));
     }
 
-    public static IEnumerable<FieldInfo> GetFilteredFields(Type t) {
-      return GetAllFields(t).Where(f => {
-        return (t as ISkipObjectValidationFields).opt().map(i => i.filteredFields()).fold(
-          true,
-          filteredFields => !filteredFields.Contains(f.Name)
-        );
-      });
+    static IEnumerable<FieldInfo> getFilteredFields(object o) {
+      var fields = getAllFields(o.GetType());
+      foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
+        var blacklisted = sv.blacklistedFields();
+        return fields.Where(fi => !blacklisted.Contains(fi.Name));
+      }
+      return fields;
     }
 
     static readonly Type unityObjectType = typeof(Object);
