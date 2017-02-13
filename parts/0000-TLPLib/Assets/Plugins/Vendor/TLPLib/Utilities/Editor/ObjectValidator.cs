@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
+using Assets.Code;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -132,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var t = checkScene(
         scene,
         progress => EditorUtility.DisplayProgressBar(
-          "Checking Missing References", "Please wait...", progress
+          "Validating Objects", "Please wait...", progress
         ),
         EditorUtility.ClearProgressBar
       );
@@ -140,6 +142,21 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       if (Log.isInfo) Log.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
       );
+    }
+
+    [UsedImplicitly, MenuItem(
+      "Tools/Validate Selected Objects", 
+      isValidateFunction: false, priority: 56
+    )]
+    static void checkSelectedObjects() {
+      var errors = check(
+        new CheckContext("Selection"), Selection.objects,
+        progress => EditorUtility.DisplayProgressBar(
+          "Validating Objects", "Please wait...", progress
+        ),
+        EditorUtility.ClearProgressBar
+      );
+      showErrors(errors);
     }
 
     public static Tpl<ImmutableList<Error>, TimeSpan> checkScene(
@@ -224,9 +241,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fieldErrors = validateFieldsWithAttributes(
         component,
-        (field, err) => {
+        (field, err, path) => {
           switch (err) {
             case FieldAttributeError.NullField:
+              Log.error(path);
               return Error.nullReference(component, field.Name, context);
             case FieldAttributeError.EmptyCollection:
               return Error.emptyCollection(component, field.Name, context);
@@ -278,17 +296,20 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
+    static Stack<string> path = new Stack<string>();
+
     static IEnumerable<Error> validateFieldsWithAttributes(
-      object o, Fn<FieldInfo, FieldAttributeError, Error> createError
+      object o, Fn<FieldInfo, FieldAttributeError, string, Error> createError
     ) {
       var type = o.GetType();
       var fields = GetAllFields(type);
       foreach (var fi in fields) {
+        path.Push(fi.Name);
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+              yield return createError(fi, FieldAttributeError.TextFieldBadTag, path.asString(false));
             }
           }
         }
@@ -300,14 +321,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField);
+            if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField, path.asString(false));
           }
           else {
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isDefined) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(fi, FieldAttributeError.EmptyCollection);
+                yield return createError(fi, FieldAttributeError.EmptyCollection, path.asString(false));
               }
               foreach (
                 var _err in validateFieldsWithAttributes(list, fi, hasNotNull, createError)
@@ -326,6 +347,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             }
           }
         }
+        path.Pop();
       }
     }
 
@@ -342,13 +364,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      IList list, FieldInfo listFieldInfo, bool hasNotNull, Fn<FieldInfo, FieldAttributeError, Error> createError
+      IList list, FieldInfo listFieldInfo, bool hasNotNull, Fn<FieldInfo, FieldAttributeError, string, Error> createError
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(listFieldInfo, FieldAttributeError.NullField);
+        if (hasNotNull && list.Contains(null)) yield return createError(listFieldInfo, FieldAttributeError.NullField, path.asString(false));
       }
       else {
         foreach (var listItem in list)
