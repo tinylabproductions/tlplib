@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
 using Assets.Code;
+using Assets.Plugins.Vendor.TLPLib.Utilities;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
@@ -355,10 +356,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static IEnumerable<FieldInfo> GetAllFields(Type t) {
       if (t == null) return Enumerable.Empty<FieldInfo>();
 
-      var flags = BindingFlags.Public | BindingFlags.NonPublic | 
-                  BindingFlags.Instance | 
-                  BindingFlags.DeclaredOnly;
+      const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | 
+                                 BindingFlags.Instance | 
+                                 BindingFlags.DeclaredOnly;
       return t.GetFields(flags).Concat(GetAllFields(t.BaseType));
+    }
+
+    public static IEnumerable<FieldInfo> GetFilteredFields(Type t) {
+      return GetAllFields(t).Where(f => {
+        return (t as ISkipObjectValidationFields).opt().map(i => i.filteredFields()).fold(
+          true,
+          filteredFields => !filteredFields.Contains(f.Name)
+        );
+      });
     }
 
     static readonly Type unityObjectType = typeof(Object);
