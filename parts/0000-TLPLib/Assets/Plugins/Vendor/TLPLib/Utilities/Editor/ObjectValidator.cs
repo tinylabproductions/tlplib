@@ -302,7 +302,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static IEnumerable<Error> validateFieldsWithAttributes(
       object o, Fn<FieldInfo, FieldAttributeError, string, Error> createError
     ) {
-      var fields = getFilteredFields(o.GetType());
+      var fields = getFilteredFields(o);
       foreach (var fi in fields) {
         path.Push(fi.Name);
         if (fi.FieldType == typeof(string)) {
