@@ -61,10 +61,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error emptyCollection(
-        Object o, string property, string hierarchy, CheckContext context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.EmptyCollection,
-        $"{context}. Property: {property}. Field hierarchy: {hierarchy}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
@@ -77,10 +77,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error nullReference(
-        Object o, string property, string hierarchy, CheckContext context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.NullReference,
-        $"{context}. Property: {property}. Field hierarchy: {hierarchy}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
@@ -101,10 +101,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error textFieldBadTag(
-        Object o, string property, string hierarchy, CheckContext context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.TextFieldBadTag,
-        $"{context}. Property: {property}. Field hierarchy: {hierarchy}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
@@ -242,14 +242,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fieldErrors = validateFieldsWithAttributes(
         component,
-        (field, err, fieldHierarchy) => {
+        (err, fieldHierarchy) => {
           switch (err) {
             case FieldAttributeError.NullField:
-              return Error.nullReference(component, field.Name, fieldHierarchy, context);
+              return Error.nullReference(component, fieldHierarchy, context);
             case FieldAttributeError.EmptyCollection:
-              return Error.emptyCollection(component, field.Name, fieldHierarchy, context);
+              return Error.emptyCollection(component, fieldHierarchy, context);
             case FieldAttributeError.TextFieldBadTag:
-              return Error.textFieldBadTag(component, field.Name, fieldHierarchy, context);
+              return Error.textFieldBadTag(component, fieldHierarchy, context);
           }
           return F.matchErr<Error>(nameof(FieldAttributeError), err.ToString());
         }
@@ -296,11 +296,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
-    static readonly Stack<string> fieldHierarchy = new Stack<string>();
+    static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      object o, Fn<FieldInfo, FieldAttributeError, string, Error> createError
+      object o, Fn<FieldAttributeError, string, Error> createError,
+      Stack<string> fieldHierarchy = null
     ) {
+      fieldHierarchy = fieldHierarchy ?? new Stack<string>();
+
       var fields = getFilteredFields(o);
       foreach (var fi in fields) {
         fieldHierarchy.Push(fi.Name);
@@ -308,7 +311,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(fi, FieldAttributeError.TextFieldBadTag, fieldHierarchy.asString(false));
+              yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
             }
           }
         }
@@ -320,17 +323,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField, fieldHierarchy.asString(false));
+            if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isDefined) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(fi, FieldAttributeError.EmptyCollection, fieldHierarchy.asString(false));
+                yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
               }
               foreach (
-                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, createError)
+                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, fieldHierarchy, createError)
               ) yield return _err;
             }
             else {
@@ -340,7 +343,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 !fieldType.IsPrimitive
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
-                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError))
+                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError, fieldHierarchy))
                   yield return _err;
               }
             }
@@ -372,18 +375,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      IList list, FieldInfo listFieldInfo, bool hasNotNull, Fn<FieldInfo, FieldAttributeError, string, Error> createError
+      IList list, FieldInfo listFieldInfo, bool hasNotNull, Stack<string> fieldHierarchy, Fn<FieldAttributeError, string, Error> createError
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(listFieldInfo, FieldAttributeError.NullField, fieldHierarchy.asString(false));
+        if (hasNotNull && list.Contains(null)) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
       }
       else {
-        foreach (var listItem in list)
-          foreach (var _err in validateFieldsWithAttributes(listItem, createError))
+        var index = 0;
+        foreach (var listItem in list) {
+          fieldHierarchy.Push($"[{index}]");
+          foreach (var _err in validateFieldsWithAttributes(listItem, createError, fieldHierarchy))
             yield return _err;
+          fieldHierarchy.Pop();
+          index++;
+        }
       }
     }
 
