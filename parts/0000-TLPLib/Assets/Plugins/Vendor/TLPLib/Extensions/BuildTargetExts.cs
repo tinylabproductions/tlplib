@@ -38,7 +38,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
 #endif
         case BuildTarget.WebPlayer:
         case BuildTarget.WebPlayerStreamed:
+#if !UNITY_5_5_OR_NEWER
         case BuildTarget.Nintendo3DS:
+#endif
         case BuildTarget.WSAPlayer:
           throw new ArgumentOutOfRangeException(
             nameof(t), t, $"Can't convert to {nameof(RuntimePlatform)}"
@@ -73,7 +75,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.PSM: return BuildTargetGroup.PSM;
         case BuildTarget.XboxOne: return BuildTargetGroup.XboxOne;
         case BuildTarget.SamsungTV: return BuildTargetGroup.SamsungTV;
+#if !UNITY_5_5_OR_NEWER
         case BuildTarget.Nintendo3DS: return BuildTargetGroup.Nintendo3DS;
+#endif
         case BuildTarget.WiiU: return BuildTargetGroup.WiiU;
         case BuildTarget.tvOS: return BuildTargetGroup.tvOS;
 #if !UNITY_5_4_OR_NEWER
