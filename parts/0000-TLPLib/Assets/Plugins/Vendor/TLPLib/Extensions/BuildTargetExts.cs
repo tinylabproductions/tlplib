@@ -38,7 +38,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
 #endif
         case BuildTarget.WebPlayer:
         case BuildTarget.WebPlayerStreamed:
-#if !UNITY_5_5_OR_NEWER
+#if UNITY_5_5_OR_NEWER
+        case BuildTarget.N3DS:
+#else
         case BuildTarget.Nintendo3DS:
 #endif
         case BuildTarget.WSAPlayer:
@@ -75,7 +77,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.PSM: return BuildTargetGroup.PSM;
         case BuildTarget.XboxOne: return BuildTargetGroup.XboxOne;
         case BuildTarget.SamsungTV: return BuildTargetGroup.SamsungTV;
-#if !UNITY_5_5_OR_NEWER
+#if UNITY_5_5_OR_NEWER
+        case BuildTarget.N3DS: return BuildTargetGroup.N3DS;
+#else
         case BuildTarget.Nintendo3DS: return BuildTargetGroup.Nintendo3DS;
 #endif
         case BuildTarget.WiiU: return BuildTargetGroup.WiiU;
