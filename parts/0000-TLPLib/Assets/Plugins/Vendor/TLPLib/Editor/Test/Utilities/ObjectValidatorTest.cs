@@ -81,6 +81,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public void setField (InnerNotNull inn) { field = inn; }
     }
 
+    class NotNullProtectedSerializedField : MonoBehaviour {
+      [NotNull, SerializeField] protected GameObject field;
+      public void setField (GameObject go) { field = go; }
+    }
+
+    class NullReferenceProtectedSerializedField : MonoBehaviour {
+      [SerializeField] protected InnerNotNull field;
+      public void setField (InnerNotNull inn) { field = inn; }
+    }
+
     class TextFieldTypeNotTag : MonoBehaviour {
 #pragma warning disable 649
       [TextField(TextFieldType.Area)]
@@ -248,6 +258,26 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
 
+    [Test] public void WhenNotNullProtectedSerializedField() => 
+      test<NotNullProtectedSerializedField>(
+        errorType: ErrorType.NullReference.some()
+      );
+
+    [Test] public void WhenNotNullProtectedSerializedFieldSet() => 
+      test<NotNullProtectedSerializedField>(a => {
+        a.setField(new GameObject());
+      });
+
+    [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedField() => 
+      test<NullReferenceProtectedSerializedField>(
+        errorType: ErrorType.NullReference.some()
+      );
+
+    [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedFieldSet() => 
+      test<NullReferenceProtectedSerializedField>(a => {
+        a.setField(new InnerNotNull {field = new GameObject()});
+      });
+
     #region [TextField(TextFieldType.Tag)]
 
     [Test] public void WhenTextFieldTypeNotTag() => test<TextFieldTypeNotTag>();
@@ -265,7 +295,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
-    static void test<A>(
+    public static void test<A>(
       Act<A> setupA = null,
       Option<ErrorType> errorType = new Option<ErrorType>()
     ) where A : Component {

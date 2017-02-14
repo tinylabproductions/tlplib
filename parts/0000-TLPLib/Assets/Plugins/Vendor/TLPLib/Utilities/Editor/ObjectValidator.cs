@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
+using Assets.Code;
+using Assets.Plugins.Vendor.TLPLib.Utilities;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -58,10 +61,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error emptyCollection(
-        Object o, string property, CheckContext context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.EmptyCollection,
-        $"{context}. Property: {property}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
@@ -74,10 +77,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error nullReference(
-        Object o, string property, CheckContext context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.NullReference,
-        $"{context}. Property: {property}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
@@ -98,10 +101,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error textFieldBadTag(
-        Object o, string property, CheckContext context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.TextFieldBadTag,
-        $"{context}. Property: {property}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
@@ -132,7 +135,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var t = checkScene(
         scene,
         progress => EditorUtility.DisplayProgressBar(
-          "Checking Missing References", "Please wait...", progress
+          "Validating Objects", "Please wait...", progress
         ),
         EditorUtility.ClearProgressBar
       );
@@ -140,6 +143,21 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       if (Log.isInfo) Log.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
       );
+    }
+
+    [UsedImplicitly, MenuItem(
+      "Tools/Validate Selected Objects", 
+      isValidateFunction: false, priority: 56
+    )]
+    static void checkSelectedObjects() {
+      var errors = check(
+        new CheckContext("Selection"), Selection.objects,
+        progress => EditorUtility.DisplayProgressBar(
+          "Validating Objects", "Please wait...", progress
+        ),
+        EditorUtility.ClearProgressBar
+      );
+      showErrors(errors);
     }
 
     public static Tpl<ImmutableList<Error>, TimeSpan> checkScene(
@@ -224,14 +242,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fieldErrors = validateFieldsWithAttributes(
         component,
-        (field, err) => {
+        (err, fieldHierarchy) => {
           switch (err) {
             case FieldAttributeError.NullField:
-              return Error.nullReference(component, field.Name, context);
+              return Error.nullReference(component, fieldHierarchy, context);
             case FieldAttributeError.EmptyCollection:
-              return Error.emptyCollection(component, field.Name, context);
+              return Error.emptyCollection(component, fieldHierarchy, context);
             case FieldAttributeError.TextFieldBadTag:
-              return Error.textFieldBadTag(component, field.Name, context);
+              return Error.textFieldBadTag(component, fieldHierarchy, context);
           }
           return F.matchErr<Error>(nameof(FieldAttributeError), err.ToString());
         }
@@ -278,39 +296,44 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
+    static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
+
     static IEnumerable<Error> validateFieldsWithAttributes(
-      object o, Fn<FieldInfo, FieldAttributeError, Error> createError
+      object o, Fn<FieldAttributeError, string, Error> createError,
+      Stack<string> fieldHierarchy = null
     ) {
-      var type = o.GetType();
-      var fields = GetAllFields(type);
+      fieldHierarchy = fieldHierarchy ?? new Stack<string>();
+
+      var fields = getFilteredFields(o);
       foreach (var fi in fields) {
+        fieldHierarchy.Push(fi.Name);
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+              yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
             }
           }
         }
         if (
           (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>())
-          || (fi.IsPrivate && fi.hasAttribute<SerializeField>())
+          || ((fi.IsPrivate || fi.IsFamily) && fi.hasAttribute<SerializeField>())
         ) {
           var fieldValue = fi.GetValue(o);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField);
+            if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isDefined) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(fi, FieldAttributeError.EmptyCollection);
+                yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
               }
               foreach (
-                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, createError)
+                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, fieldHierarchy, createError)
               ) yield return _err;
             }
             else {
@@ -320,40 +343,55 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 !fieldType.IsPrimitive
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
-                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError))
+                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError, fieldHierarchy))
                   yield return _err;
               }
             }
           }
         }
+        fieldHierarchy.Pop();
       }
     }
 
     // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
-    public static IEnumerable<FieldInfo> GetAllFields(Type t) {
+    static IEnumerable<FieldInfo> getAllFields(Type t) {
       if (t == null) return Enumerable.Empty<FieldInfo>();
 
-      var flags = BindingFlags.Public | BindingFlags.NonPublic | 
-                  BindingFlags.Instance | 
-                  BindingFlags.DeclaredOnly;
-      return t.GetFields(flags).Concat(GetAllFields(t.BaseType));
+      const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | 
+                                 BindingFlags.Instance | 
+                                 BindingFlags.DeclaredOnly;
+      return t.GetFields(flags).Concat(getAllFields(t.BaseType));
+    }
+
+    static IEnumerable<FieldInfo> getFilteredFields(object o) {
+      var fields = getAllFields(o.GetType());
+      foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
+        var blacklisted = sv.blacklistedFields();
+        return fields.Where(fi => !blacklisted.Contains(fi.Name));
+      }
+      return fields;
     }
 
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      IList list, FieldInfo listFieldInfo, bool hasNotNull, Fn<FieldInfo, FieldAttributeError, Error> createError
+      IList list, FieldInfo listFieldInfo, bool hasNotNull, Stack<string> fieldHierarchy, Fn<FieldAttributeError, string, Error> createError
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(listFieldInfo, FieldAttributeError.NullField);
+        if (hasNotNull && list.Contains(null)) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
       }
       else {
-        foreach (var listItem in list)
-          foreach (var _err in validateFieldsWithAttributes(listItem, createError))
+        var index = 0;
+        foreach (var listItem in list) {
+          fieldHierarchy.Push($"[{index}]");
+          foreach (var _err in validateFieldsWithAttributes(listItem, createError, fieldHierarchy))
             yield return _err;
+          fieldHierarchy.Pop();
+          index++;
+        }
       }
     }
 
