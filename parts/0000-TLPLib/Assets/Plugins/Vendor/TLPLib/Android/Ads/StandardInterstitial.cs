@@ -4,7 +4,13 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
 #if UNITY_ANDROID
-  public class StandardInterstitial {
+  public interface IStandardInterstitial {
+    void load();
+    bool ready { get; }
+    void show();
+  }
+
+  public class StandardInterstitial : IStandardInterstitial {
     readonly Subject<Unit> _onLoad = new Subject<Unit>();
     public IObservable<Unit> onLoad => _onLoad;
 
@@ -17,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
       _onLoad.push(F.unit);
     }
     public bool ready => java.Call<bool>("isReady");
-    public void show() { java.Call("show"); }
+    public void show() => java.Call("show");
   }
 #endif
 }

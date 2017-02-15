@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     protected BaseAdListener(AndroidJavaClass javaInterface) : base(javaInterface) {}
 
     /* Callbacks are usually not fired from main Unity thread. */
-    public static void invoke(Action a) { if (a != null) ASync.OnMainThread(() => a()); }
+    public static void invoke(Action a) { if (a != null) ASync.OnMainThread(a); }
 
     public static void invoke<A>(Act<A> act, A a)
       { if (act != null) ASync.OnMainThread(() => act.Invoke(a)); }
