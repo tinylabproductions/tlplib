@@ -222,18 +222,40 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static readonly Parser<List<object>> objectListParser = createCastParser<List<object>>();
 
-    public static Parser<List<A>> listParser<A>(Parser<A> parser) =>
+    public static Parser<CB> collectionParser<CB, A>(
+      Parser<A> parser,
+      Fn<int, CB> createCollectionBuilder,
+      Fn<CB, A, CB> add
+    ) =>
       objectListParser.flatMap((path, objList) => {
-        var list = new List<A>(objList.Count);
+        var builder = createCollectionBuilder(objList.Count);
         for (var idx = 0; idx < objList.Count; idx++) {
           var idxPath = path.indexed(idx);
           var parsedE = parser(idxPath, objList[idx]);
           if (parsedE.isLeft)
-            return Either<ConfigLookupError, List<A>>.Left(parsedE.__unsafeGetLeft);
-          list.Add(parsedE.__unsafeGetRight);
+            return Either<ConfigLookupError, CB>.Left(parsedE.__unsafeGetLeft);
+          builder = add(builder, parsedE.__unsafeGetRight);
         }
-        return Either<ConfigLookupError, List<A>>.Right(list);
+        return Either<ConfigLookupError, CB>.Right(builder);
       });
+
+    public static Parser<List<A>> listParser<A>(Parser<A> parser) =>
+      collectionParser(parser, count => new List<A>(count), (l, a) => {
+        l.Add(a);
+        return l;
+      });
+
+    public static Parser<ImmutableArray<A>> immutableArrayParser<A>(Parser<A> parser) =>
+      collectionParser(parser, ImmutableArray.CreateBuilder<A>, (b, a) => {
+        b.Add(a);
+        return b;
+      }).map(_ => _.MoveToImmutable());
+
+    public static Parser<ImmutableList<A>> immutableListParser<A>(Parser<A> parser) =>
+      collectionParser(parser, count => ImmutableList.CreateBuilder<A>(), (b, a) => {
+        b.Add(a);
+        return b;
+      }).map(_ => _.ToImmutable());
 
     public static readonly Parser<Dictionary<string, object>> jsClassParser =
       createCastParser<Dictionary<string, object>>();
