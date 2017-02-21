@@ -3,13 +3,13 @@ using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
-#if UNITY_ANDROID
   public interface IStandardInterstitial {
     void load();
     bool ready { get; }
     void show();
   }
 
+#if UNITY_ANDROID
   public class StandardInterstitial : IStandardInterstitial {
     readonly Subject<Unit> _onLoad = new Subject<Unit>();
     public IObservable<Unit> onLoad => _onLoad;
