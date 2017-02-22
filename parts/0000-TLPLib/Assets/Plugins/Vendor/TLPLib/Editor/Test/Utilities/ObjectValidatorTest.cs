@@ -13,12 +13,18 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator.Error.Type;
+// ReSharper disable MemberCanBePrivate.Local
 
 // ReSharper disable ClassNeverInstantiated.Local, NotNullMemberIsNotInitialized, NotAccessedField.Local
 #pragma warning disable 169
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidatorTest {
+    class Component1 : MonoBehaviour { }
+    class Component2 : MonoBehaviour { }
+    class Component3 : MonoBehaviour { }
+    class Component3Child : Component3 { }
+
     #region Test Classes
 
     class PublicField : MonoBehaviour {
@@ -91,6 +97,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public void setField (InnerNotNull inn) { field = inn; }
     }
 
+    [RequireComponent(typeof(Component1), typeof(Component2), typeof(Component3))]
+    class RequireComponentBehaviour : MonoBehaviour {
+      public void setup(bool first = true, bool second = true, bool third = true) {
+        var go = gameObject;
+        if (first) go.AddComponent<Component1>();
+        if (second) go.AddComponent<Component2>();
+        // Inheriting from Component3
+        if (third) go.AddComponent<Component3Child>();
+      }
+    }
+
+    class InheritingRequireComponentBehaviour : RequireComponentBehaviour {}
+
     class TextFieldTypeNotTag : MonoBehaviour {
 #pragma warning disable 649
       [TextField(TextFieldType.Area)]
@@ -111,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var go = AssetDatabase.GetAllAssetPaths().find(s => 
         s.EndsWithFast("TLPLib/Editor/Test/Utilities/ObjectValidatorTestGameObject.prefab")
       ).map(AssetDatabase.LoadMainAssetAtPath).get;
-      var errors = ObjectValidator.check(new ObjectValidator.CheckContext(), new [] { go });
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
       noErrorsOrExistsErrorOfType(errors, ErrorType.MissingComponent.some());
     }
 
@@ -295,22 +314,74 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
+    #region RequireComponent
+
+    [Test] public void WhenRequireComponentComponentsAreThere() =>
+      test<RequireComponentBehaviour>(a => a.setup());
+
+    [Test] public void WhenRequireComponentFirstComponentIsNotThere() =>
+      test<RequireComponentBehaviour>(
+        a => a.setup(first: false), 
+        F.some(ErrorType.MissingRequiredComponent)
+      );
+
+    [Test] public void WhenRequireComponentSecondComponentIsNotThere() =>
+      test<RequireComponentBehaviour>(
+        a => a.setup(second: false), 
+        F.some(ErrorType.MissingRequiredComponent)
+      );
+
+    [Test] public void WhenRequireComponentThirdComponentIsNotThere() =>
+      test<RequireComponentBehaviour>(
+        a => a.setup(third: false), 
+        F.some(ErrorType.MissingRequiredComponent)
+      );
+
+    [Test] public void WhenInheritingRequireComponentComponentsAreThere() =>
+      test<InheritingRequireComponentBehaviour>(a => a.setup());
+
+    [Test] public void WhenInheritingRequireComponentFirstComponentIsNotThere() =>
+      test<InheritingRequireComponentBehaviour>(
+        a => a.setup(first: false), 
+        F.some(ErrorType.MissingRequiredComponent)
+      );
+
+    [Test] public void WhenInheritingRequireComponentSecondComponentIsNotThere() =>
+      test<InheritingRequireComponentBehaviour>(
+        a => a.setup(second: false), 
+        F.some(ErrorType.MissingRequiredComponent)
+      );
+
+    [Test] public void WhenInheritingRequireComponentThirdComponentIsNotThere() =>
+      test<InheritingRequireComponentBehaviour>(
+        a => a.setup(third: false), 
+        F.some(ErrorType.MissingRequiredComponent)
+      );
+
+    #endregion
+
     public static void test<A>(
       Act<A> setupA = null,
-      Option<ErrorType> errorType = new Option<ErrorType>()
+      Option<ErrorType> errorType = default(Option<ErrorType>)
     ) where A : Component {
+      Option.ensureValue(ref errorType);
+
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
-      var errors = ObjectValidator.check(new ObjectValidator.CheckContext(), new Object[] { go });
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
       noErrorsOrExistsErrorOfType(errors, errorType);
     }
 
-    static void noErrorsOrExistsErrorOfType(ImmutableList<ObjectValidator.Error> errors, Option<ErrorType> errorType) {
+    static void noErrorsOrExistsErrorOfType(
+      ImmutableList<ObjectValidator.Error> errors, Option<ErrorType> errorType
+    ) => 
       errorType.voidFold(
         () => errors.shouldBeEmpty(),
-        type => errors.shouldMatch(t => t.Exists(x => x.type == type))
+        type => errors.shouldMatch(
+          t => t.Exists(x => x.type == type),
+          $"{type} does not exist in errors {errors.asString()}"
+        )
       );
-    }
   }
 }

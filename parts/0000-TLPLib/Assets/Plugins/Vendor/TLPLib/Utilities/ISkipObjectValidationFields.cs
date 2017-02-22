@@ -1,4 +1,4 @@
-﻿namespace Assets.Plugins.Vendor.TLPLib.Utilities {
+﻿namespace com.tinylabproductions.TLPLib.Utilities {
   public interface ISkipObjectValidationFields {
     string[] blacklistedFields();
   }
