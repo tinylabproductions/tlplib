@@ -6,7 +6,6 @@ using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
-#if UNITY_ANDROID
   public interface IStandardBanner {
     void setVisibility(bool visible);
     void load();
@@ -17,6 +16,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     IRxVal<bool> hasAd { get; }
   }
 
+#if UNITY_ANDROID
   // Banners that extend com.tinylabproductions.tlplib.ads.BannerBase in Java.
   public class StandardBanner : IStandardBanner {
     protected readonly AndroidJavaObject java;
