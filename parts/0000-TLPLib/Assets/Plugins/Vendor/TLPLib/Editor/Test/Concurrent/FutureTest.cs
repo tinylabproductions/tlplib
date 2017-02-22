@@ -539,13 +539,29 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Test]
-    public void WhenSourceTimesOut() {
+    public void WhenSourceCompletesOnFailure() {
       var f = sourceFuture.timeout(d, tc);
+      var failureResult = new List<Duration>();
+      f.onFailure(failureResult.Add);
       f.value.shouldBeNone();
       tc.timePassed = d - new Duration(1);
       f.value.shouldBeNone();
+      promise.complete(5);
+      f.value.shouldBeSome(Either<Duration, int>.Right(5));
+      tc.timePassed += d;
+      failureResult.shouldEqualEnum();
+    }
+
+    [Test]
+    public void WhenSourceDelaysOnFailure() {
+      var f = sourceFuture.timeout(d, tc);
+      var failureResult = new List<Duration>();
+      f.onFailure(failureResult.Add);
+      f.value.shouldBeNone();
       tc.timePassed = d;
-      f.value.shouldBeSome(Either<Duration, int>.Left(d));
+      f.value.shouldBeSome(F.left<Duration, int>(d));
+      tc.timePassed += d;
+      failureResult.shouldEqualEnum(d);
     }
   }
 
