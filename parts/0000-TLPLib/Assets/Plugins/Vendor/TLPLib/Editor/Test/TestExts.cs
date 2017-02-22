@@ -108,6 +108,14 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.That(a, new SetEquals<A>(expected), message);
     }
 
+    public static void shouldEqualEnum<A>(this IEnumerable<A> a, IEnumerable<A> expected, string message = null) {
+      CollectionAssert.AreEquivalent(a, expected, message);
+    }
+
+    public static void shouldEqualEnum<A>(this IEnumerable<A> a, params A[] expected) {
+      shouldEqualEnum(a, expected, null);
+    }
+
     public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
       if (! predicate(a))
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
