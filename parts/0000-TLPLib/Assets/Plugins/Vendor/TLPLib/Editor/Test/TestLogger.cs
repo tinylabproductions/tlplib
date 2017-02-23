@@ -49,8 +49,11 @@ namespace com.tinylabproductions.TLPLib.Test {
       warnMsgs = new List<Entry>(),
       errorMsgs = new List<Entry>();
 
-    public TestLogger() {
-      level = Log.Level.VERBOSE; 
+    readonly bool errorsAsExceptions;
+
+    public TestLogger(bool errorsAsExceptions = false) {
+      this.errorsAsExceptions = errorsAsExceptions;
+      level = Log.Level.VERBOSE;
     }
 
     public void clear() {
@@ -67,6 +70,7 @@ namespace com.tinylabproductions.TLPLib.Test {
         case Log.Level.NONE:
           break;
         case Log.Level.ERROR:
+          if (errorsAsExceptions) throw new Exception(entry.ToString());
           errorMsgs.Add(entry);
           break;
         case Log.Level.WARN:
