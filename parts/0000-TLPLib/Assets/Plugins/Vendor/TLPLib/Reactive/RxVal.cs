@@ -31,11 +31,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public RxVal(A value) { _value = value; }
 
-    public RxVal(A value, Fn<IObserver<A>, ISubscription> subscribeFn) 
+    public RxVal(A value, SubscribeFn<A> subscribeFn) 
       : base(subscribeFn) { _value = value; }
 
     public RxVal(
-      Fn<A> getCurrentValue, Fn<IObserver<A>, ISubscription> subscribeFn
+      Fn<A> getCurrentValue, SubscribeFn<A> subscribeFn
     ) : base(subscribeFn) {
       _value = getCurrentValue();
       this.getCurrentValue = getCurrentValue.some();
@@ -68,11 +68,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<A> cached<A>(A value) => RxValCache<A>.get(value);
 
     /* RxVal that gets its value from other reactive source where the value is always available. */
-    public static IRxVal<A> a<A>(Fn<A> getCurrentValue, Fn<IObserver<A>, ISubscription> subscribeFn) => 
+    public static IRxVal<A> a<A>(Fn<A> getCurrentValue, SubscribeFn<A> subscribeFn) => 
       new RxVal<A>(getCurrentValue, subscribeFn);
 
     /* RxVal that gets its value from other reactive source */
-    public static IRxVal<A> a<A>(A initial, Fn<IObserver<A>, ISubscription> subscribeFn) => 
+    public static IRxVal<A> a<A>(A initial, SubscribeFn<A> subscribeFn) => 
       new RxVal<A>(initial, subscribeFn);
 
     #endregion

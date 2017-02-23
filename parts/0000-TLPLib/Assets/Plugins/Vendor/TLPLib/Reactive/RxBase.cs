@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     protected abstract A currentValue { get; }
 
     protected RxBase() : base() {}
-    protected RxBase(Fn<IObserver<A>, ISubscription> subscribeFn) : base(
+    protected RxBase(SubscribeFn<A> subscribeFn) : base(
       subscribeFn, 
       // We need to be always subscribed, because we always need to have current value
       // in this rx value.

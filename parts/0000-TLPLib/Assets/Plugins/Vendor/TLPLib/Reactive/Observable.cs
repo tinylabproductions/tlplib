@@ -361,9 +361,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
   }
 
+  public delegate ISubscription SubscribeFn<out Elem>(IObserver<Elem> observer);
+
   public delegate ObservableImplementation ObserverBuilder<
     in Elem, out ObservableImplementation
-  >(Fn<IObserver<Elem>, ISubscription> subscriptionFn);
+  >(SubscribeFn<Elem> subscriptionFn);
 
   public class ObservableFinishedException : Exception {
     public ObservableFinishedException(string message) : base(message) {}
@@ -376,13 +378,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
       readonly IObserver<A> observer;
-      readonly Fn<IObserver<A>, ISubscription> subscribeFn;
+      readonly SubscribeFn<A> subscribeFn;
       public readonly bool beAlwaysSubscribed;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        IObserver<A> observer, Fn<IObserver<A>, ISubscription> subscribeFn, 
+        IObserver<A> observer, SubscribeFn<A> subscribeFn, 
         bool beAlwaysSubscribed
       ) {
         this.observer = observer;
@@ -458,7 +460,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public Observable(
-      Fn<IObserver<A>, ISubscription> subscribeFn,
+      SubscribeFn<A> subscribeFn,
       bool beAlwaysSubscribed = false
     ) {
       var sourceProps = new SourceProperties(
