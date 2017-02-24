@@ -12,18 +12,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    **/
   public interface IRxVal<A> : IObservable<A> {
     A value { get; }
-    new IRxVal<B> map<B>(Fn<A, B> mapper);
-    IRxVal<B> flatMap<B>(Fn<A, IRxVal<B>> mapper);
-    IRxVal<A> filter(Fn<A, bool> predicate, Fn<A> onFilter);
-    IRxVal<A> filter(Fn<A, bool> predicate, A onFilter);
-    IRxVal<Tpl<A, B>> zip<B>(IRxVal<B> ref2);
-    IRxVal<Tpl<A, B, C>> zip<B, C>(IRxVal<B> ref2, IRxVal<C> ref3);
-    IRxVal<Tpl<A, B, C, D>> zip<B, C, D>(IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4);
-    IRxVal<Tpl<A, B, C, D, E>> zip<B, C, D, E>(IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4, IRxVal<E> ref5);
-    IRxVal<Tpl<A, A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
-      IRxVal<A1> o1, IRxVal<A2> o2, IRxVal<A3> o3, IRxVal<A4> o4,
-      IRxVal<A5> o5
-    );
   }
   
   public class RxVal<A> : RxBase<A>, IRxVal<A> {

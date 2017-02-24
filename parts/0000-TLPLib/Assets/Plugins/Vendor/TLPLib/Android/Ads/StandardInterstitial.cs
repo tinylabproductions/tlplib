@@ -1,6 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
   public interface IStandardInterstitial {
