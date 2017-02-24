@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
-using Smooth.Collections;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -48,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * 
    * Will print A1=0,A2=0 and then A1=1,A2=1, not A1=0,A1=1,A2=1,A2=0
    **/
-  public interface IObservable<A> {
+  public interface IObservable<out A> {
     int subscribers { get; }
     bool finished { get; }
     ISubscription subscribe(Act<A> onChange);
