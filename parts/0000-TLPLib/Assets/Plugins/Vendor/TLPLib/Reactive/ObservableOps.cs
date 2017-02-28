@@ -157,13 +157,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /**
      * Joins events of more than two observables effectively.
      **/
-    public static IObservable<A> joinAll<A, B>(
-      this IObservable<A> o, ICollection<IObservable<B>> others
-    ) where B : A => o.joinAll(others, others.Count);
+    public static IObservable<A> joinAll<A>(
+      this IObservable<A> o, ICollection<IObservable<A>> others
+    ) => o.joinAll(others, others.Count);
 
-    public static IObservable<A> joinAll<A, B>(
-      this IObservable<A> o, IEnumerable<IObservable<B>> others, int othersCount
-    ) where B : A => Observable.a(ObservableOpImpls.joinAll(o, others, othersCount));
+    public static IObservable<A> joinAll<A>(
+      this IObservable<A> o, IEnumerable<IObservable<A>> others, int othersCount
+    ) => Observable.a(ObservableOpImpls.joinAll(o, others, othersCount));
+
+    public static IObservable<A> joinAll<A>(
+      this ICollection<IObservable<A>> observables
+    ) => observables.joinAll(observables.Count);
+
+    /**
+     * Joins all events from all observables into one stream.
+     **/
+    public static IObservable<A> joinAll<A>(
+      this IEnumerable<IObservable<A>> observables, int count
+    ) => Observable.a(ObservableOpImpls.joinAll(observables, count));
 
     #endregion
 
@@ -218,26 +229,5 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // Convert this observable to reactive value with given initial value.
     public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) => 
       RxVal.a(initial, o.subscribe);
-
-    #region #joinAll
-
-    public static IObservable<A> joinAll<A>(
-      this ICollection<IObservable<A>> observables
-    ) => observables.joinAll(observables.Count);
-
-    /**
-     * Joins all events from all observables into one stream.
-     **/
-    public static IObservable<A> joinAll<A>(
-      this IEnumerable<IObservable<A>> observables, int count
-    ) =>
-      Observable.a<A>(obs => ObservableOpImpls.multipleFinishes(obs, count, checkFinished => 
-          observables.Select(aObs =>
-            aObs.subscribe(obs.push, checkFinished)
-          ).ToArray().joinSubscriptions()
-        )
-      );
-
-    #endregion
   }
 }
