@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
@@ -68,6 +69,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public static readonly ISerializedRW<Duration> serializedRW =
       SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
+
+    public static readonly Config.Parser<Duration> durationParser =
+      Config.intParser.map(ms => new Duration(ms));
   }
 
   public static class DurationExts {
