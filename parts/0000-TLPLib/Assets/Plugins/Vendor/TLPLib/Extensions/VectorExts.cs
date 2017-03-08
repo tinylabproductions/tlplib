@@ -46,5 +46,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
     }
+
+    public static Vector2 Rotate(this Vector2 v, float degrees) {
+      var radians = degrees * Mathf.Deg2Rad;
+      var sin = Mathf.Sin(radians);
+      var cos = Mathf.Cos(radians);
+         
+      var tx = v.x;
+      var ty = v.y;
+ 
+      return new Vector2(cos * tx - sin * ty, sin * tx + cos * ty);
+    }
   }
 }
