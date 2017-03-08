@@ -1,9 +1,11 @@
-﻿using System.Collections.Immutable;
+﻿using com.tinylabproductions.TLPLib.Reactive;
+#if UNITY_ANDROID
+using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
+#endif
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
   public interface IStandardBanner {

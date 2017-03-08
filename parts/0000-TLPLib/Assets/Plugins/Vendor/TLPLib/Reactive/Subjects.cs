@@ -3,7 +3,8 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public interface ISubject<A> : IObservable<A>, IObserver<A> {}
+  public interface ISubject : IObservable, IObserver {}
+  public interface ISubject<A> : ISubject, IObservable<A>, IObserver<A> {}
 
   /** 
    * A subject is something that is Observable and Observer at the same

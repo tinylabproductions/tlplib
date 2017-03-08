@@ -1,7 +1,7 @@
-﻿using com.tinylabproductions.TLPLib.Editor.Utils;
-using com.tinylabproductions.TLPLib.Extensions;
+﻿using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;

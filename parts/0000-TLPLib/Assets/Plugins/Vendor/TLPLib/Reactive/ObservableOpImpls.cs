@@ -305,16 +305,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #joinAll
 
-    public static SubscribeFn<A> joinAll<A, B>(
-      IObservable<A> o, IEnumerable<IObservable<B>> others, int othersCount
-    ) where B : A =>
-      obs => multipleFinishes(obs, 1 + othersCount, checkFinished => {
-        var selfSub = o.subscribe(obs.push, checkFinished);
-        var otherSubs = others.Select(bObs =>
-          bObs.subscribe(b => obs.push(b), checkFinished)
-        );
-        return selfSub.joinEnum(otherSubs);
-      });
+    public static SubscribeFn<A> joinAll<A>(
+      IObservable<A> o, IEnumerable<IObservable<A>> others, int othersCount
+    ) => joinAll(o.Yield().Concat(others), 1 + othersCount);
+
+    public static SubscribeFn<A> joinAll<A>(
+      IEnumerable<IObservable<A>> observables, int count
+    ) =>
+      obs => multipleFinishes(obs, count, checkFinished =>
+        observables.Select(aObs =>
+          aObs.subscribe(obs.push, checkFinished)
+        ).ToArray().joinSubscriptions()
+      );
 
     #endregion
 
