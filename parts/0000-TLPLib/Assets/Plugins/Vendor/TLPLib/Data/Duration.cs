@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<Duration> serializedRW =
       SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
 
-    public static readonly Config.Parser<Duration> durationParser =
+    public static readonly Config.Parser<Duration> configParser =
       Config.intParser.map(ms => new Duration(ms));
   }
 
