@@ -21,8 +21,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
     ) {
 #if ENABLE_IL2CPP
-      if (null == x) x = new Option<float>();
-      if (null == y) y = new Option<float>();
+      if (null == x) x = Option<float>.None;
+      if (null == y) y = Option<float>.None;
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y));
     }
@@ -40,11 +40,22 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 #endif
     ) {
 #if ENABLE_IL2CPP
-      if (null == x) x = new Option<float>();
-      if (null == y) y = new Option<float>();
-      if (null == z) z = new Option<float>();
+      if (null == x) x = Option<float>.None;
+      if (null == y) y = Option<float>.None;
+      if (null == z) z = Option<float>.None; 
 #endif
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
+    }
+
+    public static Vector2 Rotate(this Vector2 v, float degrees) {
+      var radians = degrees * Mathf.Deg2Rad;
+      var sin = Mathf.Sin(radians);
+      var cos = Mathf.Cos(radians);
+         
+      var tx = v.x;
+      var ty = v.y;
+ 
+      return new Vector2(cos * tx - sin * ty, sin * tx + cos * ty);
     }
   }
 }

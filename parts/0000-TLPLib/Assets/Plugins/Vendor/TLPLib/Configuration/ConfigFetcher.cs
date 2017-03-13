@@ -54,18 +54,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         );
     }
 
-    /**
-     * Fetches JSON config from URL. Checks if a specified expected header is found.
-     **/
-    public static Future<Either<ConfigFetchError, string>> fetch(
-      Urls urls, Duration timeout, string serverExpectedHeader, string serverExpectedHeaderValue,
-      ITimeContext timeContext = default(ITimeContext)
-    ) =>
-      fetch(urls)
-        .checkingServerHeader(serverExpectedHeader, serverExpectedHeaderValue)
-        .withTimeout(timeout, timeContext)
-        ._2.content();
-
     public static Tpl<Urls, Future<Either<ConfigFetchError, WWWWithHeaders>>> fetch(
       Urls urls
     ) => 
