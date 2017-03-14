@@ -16,6 +16,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly float width;
     public readonly Vector2 point;
     public readonly float directionAngle, directionDistance;
+    public readonly Vector2 directionVector;
     public readonly Rect_Vector2 rect;
 
     public Zone(float width, Vector2 point, float directionAngle, float directionDistance) {
@@ -23,13 +24,16 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.point = point;
       this.directionAngle = directionAngle;
       this.directionDistance = directionDistance;
+      directionVector = new Vector2(
+        directionDistance * Mathf.Cos(directionAngle * Mathf.Deg2Rad),
+        directionDistance * Mathf.Sin(directionAngle * Mathf.Deg2Rad)
+      );
 
-      var direction = polarToVector2();
-      var rotated = direction.rotate90().normalized * width / 2;
+      var rotated = directionVector.rotate90().normalized * width / 2;
       var ll = point + rotated;
       var lr = point - rotated;
-      var ul = ll + direction;
-      var ur = lr + direction;
+      var ul = ll + directionVector;
+      var ur = lr + directionVector;
       rect = new Rect_Vector2(ll, lr, ul, ur);
     }
 
@@ -39,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Data {
      * This function ignores movement perpendicular to direction vector.
      **/
     public float percentage(Vector2 position) {
-      var direction = polarToVector2();
+      var direction = point + directionVector;
       var dirProjection = (Vector2) Vector3.Project(position, direction);
       var widthVector = dirProjection - position;
 
@@ -53,12 +57,6 @@ namespace com.tinylabproductions.TLPLib.Data {
         return 1 - position.magnitude / direction.magnitude;
       }
       return 0;
-    }
-
-    public Vector2 polarToVector2() {
-      var x = directionDistance * Mathf.Cos(directionAngle * Mathf.Deg2Rad);
-      var y = directionDistance * Mathf.Sin(directionAngle * Mathf.Deg2Rad);
-      return new Vector2(x, y);
     }
   }
 }
