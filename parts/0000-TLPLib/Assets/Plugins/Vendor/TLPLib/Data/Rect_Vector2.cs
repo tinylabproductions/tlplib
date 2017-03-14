@@ -12,10 +12,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.upperRight = upperRight;
     }
 
+    public static Rect_Vector2 operator +(Rect_Vector2 r, Vector2 v) =>
+      new Rect_Vector2(r.lowerLeft + v, r.lowerRight + v, r.upperLeft + v, r.upperRight + v);
+
     #region Equality
 
     public bool Equals(Rect_Vector2 other) {
-      return lowerLeft.Equals(other.lowerLeft) && lowerRight.Equals(other.lowerRight) && upperLeft.Equals(other.upperLeft) && upperRight.Equals(other.upperRight);
+      return lowerLeft.Equals(other.lowerLeft) && lowerRight.Equals(other.lowerRight) &&
+             upperLeft.Equals(other.upperLeft) && upperRight.Equals(other.upperRight);
     }
 
     public override bool Equals(object obj) {
@@ -38,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #endregion
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(Rect_Vector2)}[" +
       $"{nameof(lowerLeft)}: {lowerLeft}, " +
       $"{nameof(lowerRight)}: {lowerRight}, " +
@@ -47,6 +51,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       $"]";
 
     public void DrawGizmos() {
+      Gizmos.color = Color.blue;
       Gizmos.DrawLine(lowerLeft, upperLeft);
       Gizmos.DrawLine(upperLeft, upperRight);
       Gizmos.DrawLine(upperRight, lowerRight);
