@@ -54,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [Test]
     public void TestNestedDictionary() {
       // TODO: fixme
-      Assert.Pass("Not Implemented Yet");
+      Assert.Ignore("Not Implemented Yet");
       var dict = F.dict(
         F.t(1, F.dict(F.t(2, "2"))),
         F.t(2, F.dict(F.t(3, "3")))
@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         var s = F.list(1, 2);
         var p1 = s.partition(_ => true);
         var p2 = s.partition(_ => false);
-        var __ = p1.Equals(p2);
+        p1.Equals(p2).forSideEffects();
       });
     }
 

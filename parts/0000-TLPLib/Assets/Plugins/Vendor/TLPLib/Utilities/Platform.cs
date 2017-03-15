@@ -7,10 +7,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public const string
       ANDROID = "android",
       IOS = "ios",
+#if !UNITY_5_3_OR_NEWER
       WP8 = "wp8",
-      METRO = "metro",
+#endif
+#if !UNITY_5_4_OR_NEWER
       BLACKBERRY = "blackberry",
       WEB = "web",
+#endif
+      METRO = "metro",
       PC = "pc",
       OTHER = "other",
 
@@ -31,17 +35,16 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static string name { get {
       switch (Application.platform) {
-        case RuntimePlatform.Android: 
-          return ANDROID;
-        case RuntimePlatform.IPhonePlayer: 
-          return IOS;
-        case RuntimePlatform.WP8Player: 
-          return WP8;
+        case RuntimePlatform.Android: return ANDROID;
+        case RuntimePlatform.IPhonePlayer: return IOS;
+#if !UNITY_5_3_OR_NEWER
+        case RuntimePlatform.WP8Player: return WP8;
+#endif
 #if UNITY_4_2 || UNITY_4_3 || UNITY_4_5 || UNITY_4_6
-			  case RuntimePlatform.MetroPlayerX86:
-			  case RuntimePlatform.MetroPlayerX64:
-			  case RuntimePlatform.MetroPlayerARM:
-				  return METRO;
+        case RuntimePlatform.MetroPlayerX86:
+        case RuntimePlatform.MetroPlayerX64:
+        case RuntimePlatform.MetroPlayerARM:
+          return METRO;
 #else
         case RuntimePlatform.WSAPlayerX86:
         case RuntimePlatform.WSAPlayerX64:
@@ -49,8 +52,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
           return METRO;
 #endif
 #if !UNITY_5_4_OR_NEWER
-        case RuntimePlatform.BlackBerryPlayer:
-          return BLACKBERRY;
+        case RuntimePlatform.BlackBerryPlayer: return BLACKBERRY;
         case RuntimePlatform.WindowsWebPlayer:
         case RuntimePlatform.OSXWebPlayer:
           return WEB;
