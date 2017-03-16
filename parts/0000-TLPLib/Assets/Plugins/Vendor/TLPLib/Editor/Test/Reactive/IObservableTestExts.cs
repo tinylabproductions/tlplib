@@ -8,8 +8,8 @@ using com.tinylabproductions.TLPLib.Test;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class IObservableTestExts {
-    public static void testUnsubAndFinish<A, B>(
-      ISubscription sub, IObservable<A> obs, params Subject<B>[] subjects
+    public static void testUnsubAndFinish<A>(
+      ISubscription sub, IObservable<A> obs, params ISubject[] subjects
     ) {
       sub.testUnsubscriptionC(subjects);
       obs.testFinishing(subjects);
@@ -19,8 +19,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this Subject<A> subj, Fn<Subject<A>, IObservable<B>> obsFn
     ) => obsFn(subj).testFinishing(subj);
 
-    public static void testFinishing<A, B>(
-      this IObservable<A> obs, params Subject<B>[] subjects
+    public static void testFinishing<A>(
+      this IObservable<A> obs, params IObserver[] subjects
     ) {
       var sub = obs.subscribe(_ => { });
       sub.isSubscribed.shouldBeTrue("Subscription should be active before finish.");
@@ -36,12 +36,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sub.isSubscribed.shouldBeFalse("Subscription should be cancelled after all sources finish.");
     }
 
-    public static void testUnsubscription<A>(
-      this ISubscription subscription, params IObservable<A>[] observables
+    public static void testUnsubscription(
+      this ISubscription subscription, params IObservable[] observables
     ) => testUnsubscriptionC(subscription, observables);
 
-    public static void testUnsubscriptionC<A>(
-      this ISubscription subscription, ICollection<IObservable<A>> observables
+    public static void testUnsubscriptionC(
+      this ISubscription subscription, ICollection<IObservable> observables
     ) {
       subscription.isSubscribed.shouldBeTrue("it should be subscribed to aggregate subscription");
       foreach (var obs in observables)

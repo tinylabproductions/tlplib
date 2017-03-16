@@ -19,8 +19,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.StandaloneLinux:
           return RuntimePlatform.LinuxPlayer;
         case BuildTarget.iOS: return RuntimePlatform.IPhonePlayer;
-        case BuildTarget.PS3: return RuntimePlatform.PS3;
-        case BuildTarget.XBOX360: return RuntimePlatform.XBOX360;
         case BuildTarget.Android: return RuntimePlatform.Android;
         case BuildTarget.WebGL: return RuntimePlatform.WebGLPlayer;
         case BuildTarget.Tizen: return RuntimePlatform.TizenPlayer;
@@ -35,12 +33,14 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.WP8Player: return RuntimePlatform.WP8Player;
         case BuildTarget.BlackBerry: return RuntimePlatform.BlackBerryPlayer;
         case BuildTarget.StandaloneGLESEmu:
-#endif
         case BuildTarget.WebPlayer:
         case BuildTarget.WebPlayerStreamed:
+#endif
 #if UNITY_5_5_OR_NEWER
         case BuildTarget.N3DS:
 #else
+        case BuildTarget.PS3: return RuntimePlatform.PS3;
+        case BuildTarget.XBOX360: return RuntimePlatform.XBOX360;
         case BuildTarget.Nintendo3DS:
 #endif
         case BuildTarget.WSAPlayer:
@@ -61,8 +61,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.StandaloneOSXIntel: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows: return BuildTargetGroup.Standalone;
         case BuildTarget.iOS: return BuildTargetGroup.iOS;
-        case BuildTarget.PS3: return BuildTargetGroup.PS3;
-        case BuildTarget.XBOX360: return BuildTargetGroup.XBOX360;
         case BuildTarget.Android: return BuildTargetGroup.Android;
         case BuildTarget.StandaloneLinux: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows64: return BuildTargetGroup.Standalone;
@@ -77,11 +75,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.PSM: return BuildTargetGroup.PSM;
         case BuildTarget.XboxOne: return BuildTargetGroup.XboxOne;
         case BuildTarget.SamsungTV: return BuildTargetGroup.SamsungTV;
-#if UNITY_5_5_OR_NEWER
-        case BuildTarget.N3DS: return BuildTargetGroup.N3DS;
-#else
-        case BuildTarget.Nintendo3DS: return BuildTargetGroup.Nintendo3DS;
-#endif
         case BuildTarget.WiiU: return BuildTargetGroup.WiiU;
         case BuildTarget.tvOS: return BuildTargetGroup.tvOS;
 #if !UNITY_5_4_OR_NEWER
@@ -90,6 +83,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.WebPlayerStreamed: return BuildTargetGroup.WebPlayer;
         case BuildTarget.WP8Player: return BuildTargetGroup.WP8;
         case BuildTarget.BlackBerry: return BuildTargetGroup.BlackBerry;
+#endif
+#if UNITY_5_5_OR_NEWER
+        case BuildTarget.N3DS: return BuildTargetGroup.N3DS;
+#else
+        case BuildTarget.PS3: return BuildTargetGroup.PS3;
+        case BuildTarget.XBOX360: return BuildTargetGroup.XBOX360;
+        case BuildTarget.Nintendo3DS: return BuildTargetGroup.Nintendo3DS;
 #endif
         default:
           throw new ArgumentOutOfRangeException(

@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 
 namespace Smooth.Platform {
 
@@ -16,11 +15,17 @@ namespace Smooth.Platform {
 		Metro = 600,
 		NaCl = 700,
 		Osx = 800,
-		Ps3 = 900,
-		Tizen = 1000,
+#if !UNITY_5_5_OR_NEWER
+    Ps3 = 900,
+#endif
+    Tizen = 1000,
 		Windows = 1200,
-		Wp8 = 1300,
-		Xbox360 = 1400,
+#if !UNITY_5_3_OR_NEWER
+    Wp8 = 1300,
+#endif
+#if !UNITY_5_5_OR_NEWER
+    Xbox360 = 1400,
+#endif
 	}
 
 	/// <summary>
@@ -52,10 +57,6 @@ namespace Smooth.Platform {
 				return BasePlatform.Osx;
 			case RuntimePlatform.LinuxPlayer:
 				return BasePlatform.Linux;
-			case RuntimePlatform.XBOX360:
-				return BasePlatform.Xbox360;
-			case RuntimePlatform.PS3:
-				return BasePlatform.Ps3;
 #if UNITY_3_5
 			case RuntimePlatform.FlashPlayer:
 				return BasePlatform.Flash;
@@ -63,8 +64,6 @@ namespace Smooth.Platform {
 				return BasePlatform.NaCl;
 #endif
 #if !UNITY_3_5 && !UNITY_4_0 && !UNITY_4_1
-			case RuntimePlatform.WP8Player:
-				return BasePlatform.Wp8;
 #if UNITY_4_2 || UNITY_4_3 || UNITY_4_5 || UNITY_4_6
 			case RuntimePlatform.MetroPlayerX86:
 			case RuntimePlatform.MetroPlayerX64:
@@ -76,52 +75,43 @@ namespace Smooth.Platform {
       case RuntimePlatform.WSAPlayerARM:
         return BasePlatform.Metro;
 #endif
-#if !UNITY_5_4_OR_NEWER
-      case RuntimePlatform.BlackBerryPlayer:
-				return BasePlatform.BlackBerry;
+#if !UNITY_5_3_OR_NEWER
+			case RuntimePlatform.WP8Player: return BasePlatform.Wp8;
 #endif
-			case RuntimePlatform.TizenPlayer:
-				return BasePlatform.Tizen;
+#if !UNITY_5_4_OR_NEWER
+      case RuntimePlatform.BlackBerryPlayer: return BasePlatform.BlackBerry;
+#endif
+      case RuntimePlatform.TizenPlayer: return BasePlatform.Tizen;
+#endif
+#if !UNITY_5_5_OR_NEWER
+			case RuntimePlatform.XBOX360: return BasePlatform.Xbox360;
+			case RuntimePlatform.PS3: return BasePlatform.Ps3;
 #endif
         default:
 				return BasePlatform.None;
 			}
 		}
 
-		/// <summary>
-		/// Returns true if the specified platform supports JIT compilation; otherwise, false.
-		/// </summary>
-		public static bool HasJit(this RuntimePlatform runtimePlatform) {
-			return (
-				runtimePlatform != RuntimePlatform.IPhonePlayer &&
-				runtimePlatform != RuntimePlatform.PS3 &&
-				runtimePlatform != RuntimePlatform.XBOX360
-      );
-		}
+	  /// <summary>
+	  /// Returns true if the specified platform supports JIT compilation; otherwise, false.
+	  /// </summary>
+	  public static bool HasJit(this RuntimePlatform runtimePlatform) =>
+	    runtimePlatform != RuntimePlatform.IPhonePlayer
+#if !UNITY_5_5_OR_NEWER
+      && runtimePlatform != RuntimePlatform.PS3 
+      && runtimePlatform != RuntimePlatform.XBOX360
+#endif
+	    ;
 
 		/// <summary>
 		/// Returns true if the specified platform supports JIT compilation; otherwise, false.
 		/// </summary>
-		public static bool HasJit(this BasePlatform basePlatform) {
-			return (
-				basePlatform != BasePlatform.Ios &&
-				basePlatform != BasePlatform.Ps3 &&
-				basePlatform != BasePlatform.Xbox360
-      );
-		}
-
-		/// <summary>
-		/// Returns true if the specified platform does not support JIT compilation; otherwise, false.
-		/// </summary>
-		public static bool NoJit(this RuntimePlatform runtimePlatform) {
-			return !HasJit(runtimePlatform);
-		}
-		
-		/// <summary>
-		/// Returns true if the specified platform does not support JIT compilation; otherwise, false.
-		/// </summary>
-		public static bool NoJit(this BasePlatform basePlatform) {
-			return !HasJit(basePlatform);
-		}
+		public static bool HasJit(this BasePlatform basePlatform) =>
+			basePlatform != BasePlatform.Ios
+#if !UNITY_5_5_OR_NEWER
+      && basePlatform != BasePlatform.Ps3 
+      && basePlatform != BasePlatform.Xbox360
+#endif
+        ;
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
@@ -370,8 +371,31 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public class IObservableTestJoinAll {
+    class A {}
+    class B : A {}
+
     [Test]
-    public void Test() {
+    public void TestOneToMany() {
+      var aSubj = new Subject<A>();
+      var otherSubjects = ImmutableList.Create(new Subject<B>(), new Subject<B>());
+      var otherObservables = otherSubjects.Select(s => s.map(_ => (A)_)).ToImmutableList();
+      var allObservables = aSubj.Yield<IObservable>().Concat(otherObservables.Cast<IObservable>()).ToArray();
+      var allSubjects = aSubj.Yield<IObserver>().Concat(otherSubjects.Cast<IObserver>()).ToArray();
+
+      var obs = aSubj.joinAll(otherObservables);
+      var t = obs.pipeToList();
+      var a = new A();
+      var b = new B();
+
+      aSubj.push(a);
+      foreach (var subj in otherSubjects) subj.push(b);
+      t._1.shouldEqual(F.list(a, b, b));
+      t._2.testUnsubscriptionC(allObservables);
+      obs.testFinishing(allSubjects);
+    }
+
+    [Test]
+    public void TestCollection() {
       var subjs = new[] {new Subject<int>(), new Subject<int>(), new Subject<int>()};
       var obs = subjs.joinAll();
       var t = obs.pipeToList();

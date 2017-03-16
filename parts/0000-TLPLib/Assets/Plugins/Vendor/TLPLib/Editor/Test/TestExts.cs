@@ -108,6 +108,17 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.That(a, new SetEquals<A>(expected), message);
     }
 
+    public static void shouldEqualEnum<A>(
+      this IEnumerable<A> a, IEnumerable<A> expected, string message = null
+    ) => shouldEqualEnum((IEnumerable) a, expected, message);
+
+    public static void shouldEqualEnum(
+      this IEnumerable a, IEnumerable expected, string message = null
+    ) => CollectionAssert.AreEquivalent(expected, a, message);
+
+    public static void shouldEqualEnum<A>(this IEnumerable<A> a, params A[] expected) => 
+      shouldEqualEnum(a, expected, null);
+
     public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
       if (! predicate(a))
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
@@ -125,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       where E : IEnumerable
     {
       foreach (var a in aOpt) {
-        a.shouldEqual(expected);
+        a.shouldEqualEnum(expected);
         return;
       }
       aOpt.shouldBeSome(expected, message);
@@ -146,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       this Either<A, B> either, A expected, string message = null
     ) where A : IEnumerable {
       foreach (var a in either.leftValue) {
-        a.shouldEqual(expected, message);
+        a.shouldEqualEnum(expected, message);
         return;
       }
       either.shouldEqual(F.left<A, B>(expected), message);
@@ -163,7 +174,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       this Either<A, B> either, B expected, string message = null
     ) where B : IEnumerable {
       foreach (var b in either.rightValue) {
-        b.shouldEqual(expected, message);
+        b.shouldEqualEnum(expected, message);
         return;
       }
       either.shouldEqual(F.right<A, B>(expected), message);
