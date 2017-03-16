@@ -47,7 +47,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
     }
 
-    public static Vector2 Rotate(this Vector2 v, float degrees) {
+    public static Vector2 rotate90(this Vector2 v) => new Vector2(-v.y, v.x);
+
+    public static Vector2 rotate(this Vector2 v, float degrees) {
       var radians = degrees * Mathf.Deg2Rad;
       var sin = Mathf.Sin(radians);
       var cos = Mathf.Cos(radians);
