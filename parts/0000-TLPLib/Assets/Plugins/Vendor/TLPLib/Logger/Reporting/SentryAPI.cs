@@ -178,8 +178,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"App:ProductName", tag(Application.productName)},
         {"App:CompanyName", tag(Application.companyName)},
         {"App:CloudProjectId", tag(Application.cloudProjectId)},
-        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
-        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},
         {"App:TargetFrameRate", tag(Application.targetFrameRate)},
         {"App:SystemLanguage", tag(Application.systemLanguage)},
         {"App:BackgroundLoadingPriority", tag(Application.backgroundLoadingPriority)},
@@ -200,7 +198,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:GraphicsShaderLevel", tag(SystemInfo.graphicsShaderLevel)},
         {"SI:GraphicsMultiThreaded", tag(SystemInfo.graphicsMultiThreaded)},
         {"SI:SupportsShadows", tag(SystemInfo.supportsShadows)},
-        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
         {"SI:SupportsRenderToCubemap", tag(SystemInfo.supportsRenderToCubemap)},
         {"SI:SupportsImageEffects", tag(SystemInfo.supportsImageEffects)},
         {"SI:Supports3DTextures", tag(SystemInfo.supports3DTextures)},
@@ -208,7 +205,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:SupportsInstancing", tag(SystemInfo.supportsInstancing)},
         {"SI:SupportsSparseTextures", tag(SystemInfo.supportsSparseTextures)},
         {"SI:SupportedRenderTargetCount", tag(SystemInfo.supportedRenderTargetCount)},
-        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
         {"SI:NPOTsupport", tag(SystemInfo.npotSupport)},
         {"SI:DeviceName", tag(SystemInfo.deviceName)},
         {"SI:DeviceModel", tag(SystemInfo.deviceModel)},
@@ -218,6 +214,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:SupportsVibration", tag(SystemInfo.supportsVibration)},
         {"SI:DeviceType", tag(SystemInfo.deviceType)},
         {"SI:MaxTextureSize", tag(SystemInfo.maxTextureSize)},
+#if !UNITY_5_5_OR_NEWER
+        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
+        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
+        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
+        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
+#endif
       };
       addExtraData.addTags((name, value) => tags[name] = tag(value));
 
