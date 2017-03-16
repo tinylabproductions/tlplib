@@ -3,14 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.reflection;
 using UnityEngine.Events;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static class UnityEventReflector {
+    const string
+      UnityEngineAssembly = 
+        "UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+      UnityEngineEventsPersistentCallGroup =
+        "UnityEngine.Events.PersistentCallGroup, " + UnityEngineAssembly,
+      UnityEngineEventsPersistentCall =
+        "UnityEngine.Events.PersistentCall, " + UnityEngineAssembly;
     static readonly object[] noArgs = {};
 
     public struct PersistentCallGroup {
-      public static readonly Type type = Type.GetType("UnityEngine.Events.PersistentCallGroup");
+      public static readonly Type type = Type2.getType(UnityEngineEventsPersistentCallGroup).rightOrThrow;
       static readonly FieldInfo f_Calls = type.GetField(
         "m_Calls",
         BindingFlags.Instance | BindingFlags.NonPublic
@@ -25,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     public struct PersistentCall {
-      static readonly Type type = Type.GetType("UnityEngine.Events.PersistentCall");
+      static readonly Type type = Type2.getType(UnityEngineEventsPersistentCall).rightOrThrow;
       static readonly MethodInfo m_isValid = type.GetMethod("IsValid");
 
       public readonly object obj;
@@ -74,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
       persistentCalls = ue => new PersistentCallGroup(f_PersistentCalls.GetValue(ue));
 
-      var persistentCallType = Type.GetType("UnityEngine.Events.PersistentCall");
+      var persistentCallType = Type2.getType(UnityEngineEventsPersistentCall).rightOrThrow;
       var m_methodInfo =
         typeof(UnityEventBase).GetMethod(
           "FindMethod",

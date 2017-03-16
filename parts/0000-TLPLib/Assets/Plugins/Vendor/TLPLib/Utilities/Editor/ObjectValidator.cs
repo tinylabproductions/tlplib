@@ -16,14 +16,14 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public struct Error {
-      public enum Type {
+      public enum Type : byte {
         MissingComponent,
+        MissingRequiredComponent,
         MissingReference,
         NullReference,
         EmptyCollection,
@@ -34,77 +34,110 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       public readonly Type type;
       public readonly string message;
-      public readonly Object context;
+      public readonly Object obj;
+      public readonly string objFullPath;
+      public readonly Option<string> assetPath;
 
       public override string ToString() => 
-        $"{nameof(Error)}[{type}, {nameof(context)}: {context}; {message}]";
+        $"{nameof(Error)}[{type} in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'|{message}]";
 
       #region Constructors
 
-      public Error(Type type, string message, Object context) {
+      public Error(Type type, string message, Object obj) {
         this.type = type;
         this.message = message;
-        this.context = context;
+        this.obj = obj;
+        objFullPath = fullPath(obj);
+        assetPath = AssetDatabase.GetAssetPath(obj).opt();
       }
 
-      public static Error missingComponent(Object o) => new Error(
+      // Missing component is null, that is why we need GO
+      public static Error missingComponent(GameObject o) => new Error(
         Type.MissingComponent,
-        $"Missing Component in GO or children: {o}",
+        "in GO",
         o
       );
 
       public static Error emptyCollection(
-        Object o, string component, string property, string context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.EmptyCollection,
-        $"Collection is empty in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
       public static Error missingReference(
-        Object o, string component, string property, string context
+        Object o, string property, CheckContext context
       ) => new Error(
         Type.MissingReference,
-        $"Missing Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {property}",
         o
       );
 
+      public static Error requiredComponentMissing(
+        GameObject go, System.Type requiredType, System.Type requiredBy, CheckContext context
+      ) => new Error(
+        Type.MissingRequiredComponent,
+        $"{context}. {requiredType} missing (required by {requiredBy})",
+        go
+      );
+
       public static Error nullReference(
-        Object o, string component, string property, string context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.NullReference,
-        $"Null Ref in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
       public static Error unityEventInvalidMethod(
-        Object o, string property, int number, string context
+        Object o, string property, int number, CheckContext context
       ) => new Error(
         Type.UnityEventInvalidMethod,
-        $"UnityEvent {property} callback number {number} has invalid method in [{context}]{fullPath(o)}.",
+        $"UnityEvent {property} callback number {number} has invalid method in {context}.",
         o
       );
 
       public static Error unityEventInvalid(
-        Object o, string property, int number, string context
+        Object o, string property, int number, CheckContext context
       ) => new Error(
         Type.UnityEventInvalid,
-        $"UnityEvent {property} callback number {number} is not valid in [{context}]{fullPath(o)}.",
+        $"UnityEvent {property} callback number {number} is not valid in {context}.",
         o
       );
 
       public static Error textFieldBadTag(
-        Object o, string component, string property, string context
+        Object o, string hierarchy, CheckContext context
       ) => new Error(
         Type.TextFieldBadTag,
-        $"Bad tag in: [{context}]{fullPath(o)}. Component: {component}, Property: {property}",
+        $"{context}. Property: {hierarchy}",
         o
       );
 
       #endregion
     }
 
-    [MenuItem(
+    public class CheckContext {
+      public static readonly CheckContext empty = 
+        new CheckContext(Option<string>.None, ImmutableHashSet<Type>.Empty);
+
+      public readonly Option<string> value;
+      public readonly ImmutableHashSet<Type> checkedComponentTypes;
+
+      public CheckContext(Option<string> value, ImmutableHashSet<Type> checkedComponentTypes) {
+        this.value = value;
+        this.checkedComponentTypes = checkedComponentTypes;
+      }
+
+      public CheckContext(string value) : this(value.some(), ImmutableHashSet<Type>.Empty) {}
+
+      public override string ToString() => value.getOrElse("unknown ctx");
+
+      public CheckContext withCheckedComponentType(Type c) =>
+        new CheckContext(value, checkedComponentTypes.Add(c));
+    }
+
+    [UsedImplicitly, MenuItem(
       "Tools/Validate Objects in Current Scene", 
       isValidateFunction: false, priority: 55
     )]
@@ -122,7 +155,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var t = checkScene(
         scene,
         progress => EditorUtility.DisplayProgressBar(
-          "Checking Missing References", "Please wait...", progress
+          "Validating Objects", "Please wait...", progress
         ),
         EditorUtility.ClearProgressBar
       );
@@ -132,12 +165,27 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
     }
 
+    [UsedImplicitly, MenuItem(
+      "Tools/Validate Selected Objects", 
+      isValidateFunction: false, priority: 56
+    )]
+    static void checkSelectedObjects() {
+      var errors = check(
+        new CheckContext("Selection"), Selection.objects,
+        progress => EditorUtility.DisplayProgressBar(
+          "Validating Objects", "Please wait...", progress
+        ),
+        EditorUtility.ClearProgressBar
+      );
+      showErrors(errors);
+    }
+
     public static Tpl<ImmutableList<Error>, TimeSpan> checkScene(
       Scene scene, Act<float> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = new Stopwatch().tap(_ => _.Start());
       var objects = getSceneObjects(scene);
-      var errors = check(scene.name, objects, onProgress, onFinish);
+      var errors = check(new CheckContext(scene.name), objects, onProgress, onFinish);
       return F.t(errors, stopwatch.Elapsed);
     }
 
@@ -151,12 +199,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         .Where(x => x is GameObject || x is ScriptableObject)
         .ToImmutableList();
       return check(
-        nameof(checkAssetsAndDependencies), dependencies, onProgress, onFinish
+        new CheckContext("Assets & Deps"), dependencies, onProgress, onFinish
       );
     }
 
     public static ImmutableList<Error> check(
-      string context, ICollection<Object> objects, 
+      CheckContext context, ICollection<Object> objects, 
       Act<float> onProgress = null, Action onFinish = null
     ) {
       var errors = ImmutableList<Error>.Empty;
@@ -167,12 +215,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
         var goOpt = F.opt(o as GameObject);
         if (goOpt.isDefined) {
-          var components = goOpt.get.GetComponentsInChildren<Component>();
-          foreach (var c in components) {
-            errors = 
-              c 
-              ? errors.AddRange(checkComponent(context, c))
-              : errors.Add(Error.missingComponent(c));
+          var go = goOpt.get;
+          foreach (var transform in go.transform.andAllChildrenRecursive()) {
+            var components = transform.GetComponents<Component>();
+            foreach (var c in components) {
+              errors = 
+                c 
+                ? errors.AddRange(checkComponent(context, c))
+                : errors.Add(Error.missingComponent(transform.gameObject));
+            }
           }
         }
         else {
@@ -185,8 +236,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors;
     }
 
-    public static ImmutableList<Error> checkComponent(string context, Object component) {
+    public static ImmutableList<Error> checkComponent(CheckContext context, Object component) {
       var errors = ImmutableList<Error>.Empty;
+
+      foreach (var mb in F.opt(component as MonoBehaviour)) {
+        var componentType = component.GetType();
+        if (!context.checkedComponentTypes.Contains(componentType)) {
+          errors = errors.AddRange(checkComponentType(context, mb.gameObject, componentType));
+          context = context.withCheckedComponentType(componentType);
+        }
+      }
 
       var serObj = new SerializedObject(component);
       var sp = serObj.GetIterator();
@@ -197,8 +256,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           && sp.objectReferenceValue == null
           && sp.objectReferenceInstanceIDValue != 0
         ) errors = errors.Add(Error.missingReference(
-          component, component.GetType().Name, 
-          ObjectNames.NicifyVariableName(sp.name), ""
+          component, ObjectNames.NicifyVariableName(sp.name), context
         ));
 
         if (sp.type == nameof(UnityEvent)) {
@@ -212,18 +270,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fieldErrors = validateFieldsWithAttributes(
         component,
-        (field, err) => {
-          var componentName = component.GetType().Name;
+        (err, fieldHierarchy) => {
           switch (err) {
             case FieldAttributeError.NullField:
-              return Error.nullReference(component, componentName, field.Name, context);
+              return Error.nullReference(component, fieldHierarchy, context);
             case FieldAttributeError.EmptyCollection:
-              return Error.emptyCollection(component, componentName, field.Name, context);
+              return Error.emptyCollection(component, fieldHierarchy, context);
             case FieldAttributeError.TextFieldBadTag:
-              return Error.textFieldBadTag(component, componentName, field.Name, context);
-            default:
-              throw new Exception($"Not all values of {nameof(FieldAttributeError)} enum are processed by switch");
+              return Error.textFieldBadTag(component, fieldHierarchy, context);
           }
+          return F.matchErr<Error>(nameof(FieldAttributeError), err.ToString());
         }
       );
       errors = errors.AddRange(fieldErrors);
@@ -231,8 +287,21 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors;
     }
 
+    public static ImmutableList<Error> checkComponentType(
+      CheckContext context, GameObject go, Type type
+    ) => (
+      from rc in type.getAttributes<RequireComponent>(inherit: true)
+      from requiredType in new[] {F.opt(rc.m_Type0), F.opt(rc.m_Type1), F.opt(rc.m_Type2)}.flatten()
+      where !go.GetComponent(requiredType)
+      select requiredType
+    ).Aggregate(
+      ImmutableList<Error>.Empty, 
+      (current, requiredType) => 
+        current.Add(Error.requiredComponentMissing(go, requiredType, type, context))
+    );
+
     static Option<Error> checkUnityEvent(
-      UnityEventBase evt, Object component, string propertyName, string context
+      UnityEventBase evt, Object component, string propertyName, CheckContext context
     ) {
       UnityEventReflector.rebuildPersistentCallsIfNeeded(evt);
 
@@ -268,40 +337,44 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
+    static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
+
     static IEnumerable<Error> validateFieldsWithAttributes(
-      object o, Fn<FieldInfo, FieldAttributeError, Error> createError
+      object o, Fn<FieldAttributeError, string, Error> createError,
+      Stack<string> fieldHierarchy = null
     ) {
-      var type = o.GetType();
-      var fields = type.GetFields(
-        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
-      );
+      fieldHierarchy = fieldHierarchy ?? new Stack<string>();
+
+      var fields = getFilteredFields(o);
       foreach (var fi in fields) {
+        fieldHierarchy.Push(fi.Name);
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(fi, FieldAttributeError.TextFieldBadTag);
+              yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
             }
           }
         }
         if (
           (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>())
-          || (fi.IsPrivate && fi.hasAttribute<SerializeField>())
+          || ((fi.IsPrivate || fi.IsFamily) && fi.hasAttribute<SerializeField>())
         ) {
           var fieldValue = fi.GetValue(o);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
-          if (fieldValue == null) {
-            if (hasNotNull) yield return createError(fi, FieldAttributeError.NullField);
+          // Sometimes we get empty unity object. Equals catches that
+          if (fieldValue == null || fieldValue.Equals(null)) {
+            if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isDefined) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(fi, FieldAttributeError.EmptyCollection);
+                yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
               }
               foreach (
-                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, createError)
+                var _err in validateFieldsWithAttributes(list, fi, hasNotNull, fieldHierarchy, createError)
               ) yield return _err;
             }
             else {
@@ -311,30 +384,55 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 !fieldType.IsPrimitive
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
-                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError))
+                foreach (var _err in validateFieldsWithAttributes(fieldValue, createError, fieldHierarchy))
                   yield return _err;
               }
             }
           }
         }
+        fieldHierarchy.Pop();
       }
+    }
+
+    // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
+    static IEnumerable<FieldInfo> getAllFields(Type t) {
+      if (t == null) return Enumerable.Empty<FieldInfo>();
+
+      const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | 
+                                 BindingFlags.Instance | 
+                                 BindingFlags.DeclaredOnly;
+      return t.GetFields(flags).Concat(getAllFields(t.BaseType));
+    }
+
+    static IEnumerable<FieldInfo> getFilteredFields(object o) {
+      var fields = getAllFields(o.GetType());
+      foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
+        var blacklisted = sv.blacklistedFields();
+        return fields.Where(fi => !blacklisted.Contains(fi.Name));
+      }
+      return fields;
     }
 
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      IList list, FieldInfo listFieldInfo, bool hasNotNull, Fn<FieldInfo, FieldAttributeError, Error> createError
+      IList list, FieldInfo listFieldInfo, bool hasNotNull, Stack<string> fieldHierarchy, Fn<FieldAttributeError, string, Error> createError
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(listFieldInfo, FieldAttributeError.NullField);
+        if (hasNotNull && list.Contains(null)) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
       }
       else {
-        foreach (var listItem in list)
-          foreach (var _err in validateFieldsWithAttributes(listItem, createError))
+        var index = 0;
+        foreach (var listItem in list) {
+          fieldHierarchy.Push($"[{index}]");
+          foreach (var _err in validateFieldsWithAttributes(listItem, createError, fieldHierarchy))
             yield return _err;
+          fieldHierarchy.Pop();
+          index++;
+        }
       }
     }
 
@@ -346,17 +444,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showErrors(IEnumerable<Error> errors) {
       foreach (var error in errors)
-        if (Log.isError) Log.error(error.message, error.context);
+        if (Log.isError) Log.error(error, error.obj);
     }
 
     static string fullPath(Object o) {
       var go = o as GameObject;
-      if (go)  
-        return go.transform.parent == null
-          ? go.name
-          : fullPath(go.transform.parent.gameObject) + "/" + go.name;
-
-      return o.name;
+      return 
+        go && go.transform.parent != null 
+        ? $"[{fullPath(go.transform.parent.gameObject)}]/{go}"
+        : o.ToString();
     }
   }
 }

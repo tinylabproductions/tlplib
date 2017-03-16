@@ -65,6 +65,11 @@ namespace com.tinylabproductions.TLPLib.Android {
       this AndroidJavaObject javaObject, string methodName, params object[] args
     ) { return javaObject.CallStatic<AndroidJavaObject>(methodName, args); }
 
+    /* Extension method: get static java object */
+    public static AndroidJavaObject gsjo(
+      this AndroidJavaObject javaObject, string fieldName
+    ) { return javaObject.GetStatic<AndroidJavaObject>(fieldName); }
+
     /* Extension method: call instance method on java object. */
     public static A c<A>(
       this AndroidJavaObject javaObject, string methodName, params object[] args

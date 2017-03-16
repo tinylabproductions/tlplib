@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /** Asynchronous promise that can be used to complete an asynchronous future. **/
-  public interface Promise<in A> {
+  public interface Promise<A> {
     /** Complete with value, exception if already completed. **/
     void complete(A v);
     /** Complete with value, return false if already completed. **/

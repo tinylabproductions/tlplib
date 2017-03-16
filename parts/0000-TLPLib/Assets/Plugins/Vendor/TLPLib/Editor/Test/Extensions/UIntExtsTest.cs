@@ -2,6 +2,16 @@
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  public class UIntExtsTestToIntClamped {
+    [Test]
+    public void WhenExceeds() => 
+      (int.MaxValue + 1u).toIntClamped().shouldEqual(int.MaxValue);
+
+    [Test]
+    public void WhenFits() =>
+      ((uint) int.MaxValue).toIntClamped().shouldEqual(int.MaxValue);
+  }
+
   public class UIntExtsTestAddClamped {
     [Test]
     public void WithZero() {

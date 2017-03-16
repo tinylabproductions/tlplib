@@ -48,129 +48,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
   /* See IConfig. */
   public class Config : IConfig {
-    #region Fetch errors
-
-    public abstract class ConfigFetchError {
-      public readonly Urls urls;
-      public readonly string message;
-
-      protected ConfigFetchError(Urls urls, string message) {
-        this.message = message;
-        this.urls = urls;
-      }
-
-      public override string ToString() { return $"{nameof(ConfigFetchError)}[{urls}, {message}]"; }
-    }
-
-    public class ConfigTimeoutError : ConfigFetchError {
-      public readonly Duration timeout;
-
-      public ConfigTimeoutError(Urls urls, Duration timeout)
-      : base(urls, $"Timed out: {timeout}")
-      { this.timeout = timeout; }
-    }
-
-    public class ConfigWWWError : ConfigFetchError {
-      public readonly WWWError error;
-
-      public ConfigWWWError(Urls urls, WWWError error)
-      : base(urls, $"WWW error: {error.error}")
-      { this.error = error; }
-    }
-
-    public class WrongContentType : ConfigFetchError {
-      public readonly string expectedContentType, actualContentType;
-
-      public WrongContentType(Urls urls, string expectedContentType, string actualContentType)
-      : base(
-        urls, $"Expected 'Content-Type' to be '{expectedContentType}', but it was '{actualContentType}'"
-      ) {
-        this.expectedContentType = expectedContentType;
-        this.actualContentType = actualContentType;
-      }
-    }
-
-    #endregion
-
     public struct ParsingError {
       public readonly string jsonString;
 
       public ParsingError(string jsonString) {
         this.jsonString = jsonString;
       }
-    }
-
-    public struct Urls : IEquatable<Urls> {
-      // C# calls URLs URIs. See http://stackoverflow.com/a/1984225/935259 for distinction.
-      /** Actual URL this config needs to be fetched. **/
-      public readonly Uri fetchUrl;
-      /**
-       * URL used in reporting. For example you might want to not
-       * include timestamp when sending the URL to your error logger.
-       **/
-      public readonly Uri reportUrl;
-
-      public Urls(Uri fetchUrl) : this(fetchUrl, fetchUrl) {}
-
-      public Urls(Uri fetchUrl, Uri reportUrl) {
-        this.fetchUrl = fetchUrl;
-        this.reportUrl = reportUrl;
-      }
-
-      public override string ToString() =>
-        $"{nameof(Config)}.{nameof(Urls)}[{reportUrl}]";
-
-      #region Equality
-
-      public bool Equals(Urls other) {
-        return Equals(fetchUrl, other.fetchUrl) && Equals(reportUrl, other.reportUrl);
-      }
-
-      public override bool Equals(object obj) {
-        if (ReferenceEquals(null, obj)) return false;
-        return obj is Urls && Equals((Urls) obj);
-      }
-
-      public override int GetHashCode() {
-        unchecked { return ((fetchUrl != null ? fetchUrl.GetHashCode() : 0) * 397) ^ (reportUrl != null ? reportUrl.GetHashCode() : 0); }
-      }
-
-      public static bool operator ==(Urls left, Urls right) { return left.Equals(right); }
-      public static bool operator !=(Urls left, Urls right) { return !left.Equals(right); }
-
-      #endregion
-    }
-
-    /**
-     * Fetches JSON config from URL. Checks its content type.
-     *
-     * Throws WrongContentType if unexpected content type is found.
-     **/
-    public static Future<Either<ConfigFetchError, string>> fetch(
-      Urls urls, Duration timeout, string expectedContentType="application/json"
-    ) {
-      return new WWW(urls.fetchUrl.ToString()).wwwFuture().asNonCancellable()
-        .timeout(timeout).map(wwwE =>
-          wwwE.map(
-            _ => (ConfigFetchError) new ConfigTimeoutError(urls, timeout),
-            e => e.mapLeft(err => (ConfigFetchError) new ConfigWWWError(urls, err))
-          )
-          .flatten()
-        )
-        .map(wwwE => wwwE.fold(
-          Either<ConfigFetchError, string>.Left,
-          www => {
-            var contentType = www.responseHeaders.get("CONTENT-TYPE").getOrElse("undefined");
-            // Sometimes we get redirected to internet paygate, which returns HTML
-            // instead of our content.
-            if (contentType != expectedContentType)
-              return Either<ConfigFetchError, string>.Left(
-                new WrongContentType(urls, expectedContentType, contentType)
-              );
-
-            return Either<ConfigFetchError, string>.Right(www.text);
-          })
-        );
     }
 
     public static Either<ParsingError, IConfig> parseJson(string json) {
@@ -216,18 +99,40 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static readonly Parser<List<object>> objectListParser = createCastParser<List<object>>();
 
-    public static Parser<List<A>> listParser<A>(Parser<A> parser) =>
+    public static Parser<CB> collectionParser<CB, A>(
+      Parser<A> parser,
+      Fn<int, CB> createCollectionBuilder,
+      Fn<CB, A, CB> add
+    ) =>
       objectListParser.flatMap((path, objList) => {
-        var list = new List<A>(objList.Count);
+        var builder = createCollectionBuilder(objList.Count);
         for (var idx = 0; idx < objList.Count; idx++) {
           var idxPath = path.indexed(idx);
           var parsedE = parser(idxPath, objList[idx]);
           if (parsedE.isLeft)
-            return Either<ConfigLookupError, List<A>>.Left(parsedE.__unsafeGetLeft);
-          list.Add(parsedE.__unsafeGetRight);
+            return Either<ConfigLookupError, CB>.Left(parsedE.__unsafeGetLeft);
+          builder = add(builder, parsedE.__unsafeGetRight);
         }
-        return Either<ConfigLookupError, List<A>>.Right(list);
+        return Either<ConfigLookupError, CB>.Right(builder);
       });
+
+    public static Parser<List<A>> listParser<A>(Parser<A> parser) =>
+      collectionParser(parser, count => new List<A>(count), (l, a) => {
+        l.Add(a);
+        return l;
+      });
+
+    public static Parser<ImmutableArray<A>> immutableArrayParser<A>(Parser<A> parser) =>
+      collectionParser(parser, ImmutableArray.CreateBuilder<A>, (b, a) => {
+        b.Add(a);
+        return b;
+      }).map(_ => _.MoveToImmutable());
+
+    public static Parser<ImmutableList<A>> immutableListParser<A>(Parser<A> parser) =>
+      collectionParser(parser, count => ImmutableList.CreateBuilder<A>(), (b, a) => {
+        b.Add(a);
+        return b;
+      }).map(_ => _.ToImmutable());
 
     public static readonly Parser<Dictionary<string, object>> jsClassParser =
       createCastParser<Dictionary<string, object>>();

@@ -8,7 +8,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public enum Choice : byte { A, B, C }
   }
 
-  public struct OneOf<A, B, C> : IEquatable<OneOf<A, B, C>> {
+  public
+#if ENABLE_IL2CPP
+    class
+#else
+    struct
+#endif
+    OneOf<A, B, C> : IEquatable<OneOf<A, B, C>>
+  {
     readonly A _aValue;
     readonly B _bValue;
     readonly C _cValue;
@@ -35,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       whichOne = OneOf.Choice.C;
     }
 
-    #region Equality
+#region Equality
 
     public bool Equals(OneOf<A, B, C> other) {
       if (whichOne != other.whichOne) return false;
@@ -62,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static bool operator ==(OneOf<A, B, C> left, OneOf<A, B, C> right) => left.Equals(right);
     public static bool operator !=(OneOf<A, B, C> left, OneOf<A, B, C> right) => !left.Equals(right);
 
-    #endregion
+#endregion
 
     public bool isA => whichOne == OneOf.Choice.A;
     public Option<A> aValue => isA.opt(_aValue);

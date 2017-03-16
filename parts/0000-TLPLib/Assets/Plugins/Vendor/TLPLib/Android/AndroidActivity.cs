@@ -1,7 +1,5 @@
 ﻿#if UNITY_ANDROID
 using System;
-using Assets.Vendor.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Android.Bindings;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
@@ -91,12 +89,10 @@ namespace com.tinylabproductions.TLPLib.Android {
     }));
 
     public static A runOnUIBlocking<A>(Fn<A> f) => 
-      new SyncOtherThreadOp<A>(AndroidUIThreadExecutor.a(f)).execute();
+      SyncOtherThreadOp.a(AndroidUIThreadExecutor.a(f)).execute();
 
-    public static void runOnUIBlocking(Action act) => 
-      new SyncOtherThreadOp<Unit>(AndroidUIThreadExecutor.a(
-        () => { act(); return new Unit(); }
-      )).execute();
+    public static void runOnUIBlocking(Action act) =>
+      runOnUIBlocking(() => { act(); return new Unit(); });
 
     /**
      * To use this, add the following to your AndroidManifest.xml
@@ -116,7 +112,7 @@ namespace com.tinylabproductions.TLPLib.Android {
   }
 
   public static class AndroidUIThreadExecutor {
-    public static AndroidUIThreadExecutor<A> a<A>(Fn<A> code) { return new AndroidUIThreadExecutor<A>(code); }
+    public static AndroidUIThreadExecutor<A> a<A>(Fn<A> code) => new AndroidUIThreadExecutor<A>(code);
   }
 
   // This takes 10 ms on galaxy S5
@@ -130,12 +126,8 @@ namespace com.tinylabproductions.TLPLib.Android {
 
     public void execute(Act<A> onSuccess, Act<Exception> onError) {
       AndroidActivity.runOnUI(() => {
-        try {
-          onSuccess(code());
-        }
-        catch (Exception e) {
-          onError(e);
-        }
+        try { onSuccess(code()); }
+        catch (Exception e) { onError(e); }
       });
     }
   }

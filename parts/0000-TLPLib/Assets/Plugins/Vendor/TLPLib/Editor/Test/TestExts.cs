@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
@@ -11,16 +12,18 @@ using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestBase {
-    public static void shouldEqual<A>(A a1, A a2) {
+    public static void shouldBeIdentical<A>(A a1, A a2) {
       a1.shouldEqual(a2);
       a2.shouldEqual(a1);
       a1.GetHashCode().shouldEqual(a2.GetHashCode());
     }
 
-    public static void shouldNotEqual<A>(A a1, A a2) {
+    public static void shouldNotEqualSymmetrical<A>(A a1, A a2) {
       a1.shouldNotEqual(a2);
       a2.shouldNotEqual(a1);
     }
+
+    public static Action code(Action a) => a;
   }
 
   public static class TestExts {
@@ -105,6 +108,17 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.That(a, new SetEquals<A>(expected), message);
     }
 
+    public static void shouldEqualEnum<A>(
+      this IEnumerable<A> a, IEnumerable<A> expected, string message = null
+    ) => shouldEqualEnum((IEnumerable) a, expected, message);
+
+    public static void shouldEqualEnum(
+      this IEnumerable a, IEnumerable expected, string message = null
+    ) => CollectionAssert.AreEquivalent(expected, a, message);
+
+    public static void shouldEqualEnum<A>(this IEnumerable<A> a, params A[] expected) => 
+      shouldEqualEnum(a, expected, null);
+
     public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
       if (! predicate(a))
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
@@ -122,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       where E : IEnumerable
     {
       foreach (var a in aOpt) {
-        a.shouldEqual(expected);
+        a.shouldEqualEnum(expected);
         return;
       }
       aOpt.shouldBeSome(expected, message);
@@ -143,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       this Either<A, B> either, A expected, string message = null
     ) where A : IEnumerable {
       foreach (var a in either.leftValue) {
-        a.shouldEqual(expected, message);
+        a.shouldEqualEnum(expected, message);
         return;
       }
       either.shouldEqual(F.left<A, B>(expected), message);
@@ -160,7 +174,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       this Either<A, B> either, B expected, string message = null
     ) where B : IEnumerable {
       foreach (var b in either.rightValue) {
-        b.shouldEqual(expected, message);
+        b.shouldEqualEnum(expected, message);
         return;
       }
       either.shouldEqual(F.right<A, B>(expected), message);
@@ -221,6 +235,19 @@ namespace com.tinylabproductions.TLPLib.Test {
       this string json, Config.Parser<A> parser
     ) =>
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
+
+    public static ChangeMatcher<A> shouldChange<A>(
+      this Action act, Fn<A> measure, Numeric<A> num
+    ) => new ChangeMatcher<A>(act, measure, num);
+
+    public static void shouldNotChange<A>(
+      this Action act, Fn<A> measure, Numeric<A> num
+    ) => act.shouldChange(measure, num).by(0);
+
+    public static ChangeMatcher<int> shouldChange(this Action act, Fn<int> measure) => 
+      act.shouldChange(measure, Numeric.integer);
+    public static void shouldNotChange(this Action act, Fn<int> measure) => 
+      act.shouldChange(measure).by(0);
   }
 
   public class SetEquals<A> : Constraint {
@@ -235,6 +262,37 @@ namespace com.tinylabproductions.TLPLib.Test {
     public override void WriteDescriptionTo(MessageWriter writer) {
       writer.WriteExpectedValue(expected);
       writer.WriteActualValue(actual);
+    }
+  }
+
+  public class ChangeMatcher<A> {
+    readonly Action act;
+    readonly Fn<A> measure;
+    readonly Numeric<A> num;
+
+    public ChangeMatcher(Action act, Fn<A> measure, Numeric<A> num) {
+      this.act = act;
+      this.measure = measure;
+      this.num = num;
+    }
+
+    public void by(int i, string message = null) {
+      var change = num.fromInt(i);
+      var initial = measure();
+      act();
+      var after = measure();
+      var actualChange = num.subtract(after, initial);
+
+      if (message == null) {
+        message = 
+          i == 0 
+          ? $"value should have not been changed, but it was changed " +
+            $"from {initial} to {after} by {actualChange}"
+          : $"value should have been changed from {initial} to {num.add(initial, change)} " +
+            $"by {change}, but it was changed to {after} by {actualChange}";
+      }
+
+      num.subtract(after, initial).shouldEqual(change, message);
     }
   }
 }

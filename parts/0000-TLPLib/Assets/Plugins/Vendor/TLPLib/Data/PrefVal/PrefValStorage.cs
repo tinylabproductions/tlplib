@@ -20,6 +20,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite = true) =>
       create(key, defaultVal, PrefValRW.str, saveOnEveryWrite);
 
+    public PrefVal<Uri> uri(string key, Uri defaultVal, bool saveOnEveryWrite = true) =>
+      create(key, defaultVal, PrefValRW.uri, saveOnEveryWrite);
+
     public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite = true) =>
       create(key, defaultVal, PrefValRW.integer, saveOnEveryWrite);
 

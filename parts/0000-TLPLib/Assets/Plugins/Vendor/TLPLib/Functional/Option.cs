@@ -291,9 +291,9 @@ public
     * MyClass conj = GetMyClass1() && GetMyClass2();, using && instead of &. That will only 
     * evaluate the second operand if the first one is not "false".  
     **/
-  public static bool operator false(Option<A> opt) { return opt.isEmpty; }
+  public static bool operator false(Option<A> opt) => opt.isEmpty;
 
-  public static Option<A> operator |(Option<A> o1, Option<A> o2) { return o1 ? o1 : o2; }
+  public static Option<A> operator |(Option<A> o1, Option<A> o2) => o1 ? o1 : o2;
 }
 
 public struct OptionEnumerator<A> {

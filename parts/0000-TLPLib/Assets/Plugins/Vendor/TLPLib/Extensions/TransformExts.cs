@@ -52,6 +52,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         yield return parent.GetChild(idx);
     }
 
+    public static IEnumerable<Transform> andAllChildrenRecursive(this Transform transform) {
+      yield return transform;
+      for (var i = 0; i < transform.childCount; i++) {
+        foreach (var child in transform.GetChild(i).andAllChildrenRecursive()) {
+          yield return child;
+        }
+      }
+    }
+
     public static A addChild<A>(this Transform self, A child) 
     where A : Component {
       child.transform.parent = self;

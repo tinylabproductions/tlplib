@@ -135,13 +135,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return obs;
     }
 
-    public void register(Command command) {
+    public ISubscription register(Command command) {
       var list = commands.get(command.cmdGroup).getOrElse(() => {
         var lst = new List<Command>();
         commands[command.cmdGroup] = lst;
         return lst;
       });
       list.Add(command);
+      return new Subscription(() => list.Remove(command));
     }
 
     public DConsoleRegistrar registrarFor(string prefix) => 
@@ -241,24 +242,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     static readonly HasObjFn<Unit> unitSomeFn = () => F.some(F.unit);
 
-    public void register(string name, Action run) {
+    public ISubscription register(string name, Action run) =>
       register(name, () => { run(); return F.unit; });
-    }
-    public void register<A>(string name, Fn<A> run) {
+    public ISubscription register<A>(string name, Fn<A> run) =>
       register(name, unitSomeFn, _ => run());
-    }
-    public void register<A>(string name, Fn<Future<A>> run) {
+    public ISubscription register<A>(string name, Fn<Future<A>> run) =>
       register(name, unitSomeFn, _ => run());
-    }
-    public void register<Obj>(string name, HasObjFn<Obj> objOpt, Act<Obj> run) {
+    public ISubscription register<Obj>(string name, HasObjFn<Obj> objOpt, Act<Obj> run) =>
       register(name, objOpt, obj => { run(obj); return F.unit; });
-    }
-    public void register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, A> run) {
+    public ISubscription register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, A> run) =>
       register(name, objOpt, obj => Future.successful(run(obj)));
-    }
-    public void register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, Future<A>> run) {
+    public ISubscription register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, Future<A>> run) {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
-      console.register(new DConsole.Command(commandGroup, name, () => {
+      return console.register(new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
         if (opt.isDefined) {
           var returnFuture = run(opt.get);

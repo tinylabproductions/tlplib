@@ -25,13 +25,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var unfullfilled = Future.unfulfilled<int>();
       var completed = Future.successful(3);
 
-      shouldNotEqual(unfullfilled, completed);
+      shouldNotEqualSymmetrical(unfullfilled, completed);
 
-      shouldEqual(unfullfilled, asyncF);
-      shouldNotEqual(asyncF, completed);
+      shouldBeIdentical(unfullfilled, asyncF);
+      shouldNotEqualSymmetrical(asyncF, completed);
       asyncP.complete(3);
-      shouldNotEqual(unfullfilled, asyncF);
-      shouldEqual(asyncF, completed);
+      shouldNotEqualSymmetrical(unfullfilled, asyncF);
+      shouldBeIdentical(asyncF, completed);
     }
   }
 
@@ -539,13 +539,29 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [Test]
-    public void WhenSourceTimesOut() {
+    public void WhenSourceCompletesOnFailure() {
       var f = sourceFuture.timeout(d, tc);
+      var failureResult = new List<Duration>();
+      f.onFailure(failureResult.Add);
       f.value.shouldBeNone();
       tc.timePassed = d - new Duration(1);
       f.value.shouldBeNone();
+      promise.complete(5);
+      f.value.shouldBeSome(Either<Duration, int>.Right(5));
+      tc.timePassed += d;
+      failureResult.shouldEqualEnum();
+    }
+
+    [Test]
+    public void WhenSourceDelaysOnFailure() {
+      var f = sourceFuture.timeout(d, tc);
+      var failureResult = new List<Duration>();
+      f.onFailure(failureResult.Add);
+      f.value.shouldBeNone();
       tc.timePassed = d;
-      f.value.shouldBeSome(Either<Duration, int>.Left(d));
+      f.value.shouldBeSome(F.left<Duration, int>(d));
+      tc.timePassed += d;
+      failureResult.shouldEqualEnum(d);
     }
   }
 

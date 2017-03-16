@@ -5,8 +5,8 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface ITimeContext {
     Duration passedSinceStartup { get; }
-    void after(Duration duration, Action act);
-    void afterXFrames(int framesToSkip, Action act);
+    void after(Duration duration, Action act, string name = null);
+    void afterXFrames(int framesToSkip, Action act, string name = null);
   }
 
   public static class TimeContext {
@@ -20,10 +20,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public Duration passedSinceStartup => Duration.fromSeconds(Time.realtimeSinceStartup);
 
-    public void after(Duration duration, Action act) =>
+    public void after(Duration duration, Action act, string name) =>
       ASync.WithDelay(duration.seconds, act);
 
-    public void afterXFrames(int framesToSkip, Action act) =>
+    public void afterXFrames(int framesToSkip, Action act, string name) =>
       ASync.AfterXFrames(framesToSkip, act);
   }
 }

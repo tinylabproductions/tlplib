@@ -18,7 +18,25 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     static ASyncHelperBehaviour _behaviour;
 
     static ASyncHelperBehaviour behaviour { get {
-      if (((object)_behaviour) == null) {
+      if (
+#if !UNITY_EDITOR        
+        // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator
+        // which calls into native code to check whether objects are alive (which is a lot slower than
+        // managed reference check).
+        //
+        // The only case where this should be uninitialized is until we create a reference on first access
+        // in managed code.
+        //
+        // ReSharper disable once RedundantCast.0        
+        (object)_behaviour == null
+#else
+        // However...
+        //
+        // Managed reference check fails when running in editor tests, because the behaviour gets destroyed
+        // for some reason, so we have to resort to unity checks in editor.
+        !_behaviour
+#endif
+      ) {
         const string name = "ASync Helper";
         var go = new GameObject(name);
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
@@ -127,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
-      var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtime(seconds), f);
+      var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtimeReusable(seconds), f);
       return new Coroutine(behaviour, enumerator);
     }
 
@@ -255,6 +273,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public override bool keepWaiting => Time.unscaledTime < waitTime;
   }
 
+  /** WaitForSecondsRealtime from Unity is not reusable. */
+  public class WaitForSecondsRealtimeReusable : ReusableYieldInstruction {
+    readonly float time;
+    float finishTime;
+
+    public WaitForSecondsRealtimeReusable(float time) { this.time = time; }
+
+    protected override void init() {
+      finishTime = Time.realtimeSinceStartup + time;
+    }
+
+    public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
+  }
+
   // If we extend YieldInstruction we can not reuse its instances
   // because it inits end condition only in constructor.
   // We can reuse instances of ReusableYieldInstruction but we can't
@@ -283,23 +315,3 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public object Current => null;
   }
 }
-
-#if !UNITY_5_4_OR_NEWER
-// Unity has this since 5.4
-namespace UnityEngine {
-  using com.tinylabproductions.TLPLib.Concurrent;
-
-  public class WaitForSecondsRealtime : ReusableYieldInstruction {
-    readonly float time;
-    float finishTime;
-
-    public WaitForSecondsRealtime(float time) { this.time = time; }
-
-    protected override void init() {
-      finishTime = Time.realtimeSinceStartup + time;
-    }
-
-    public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
-  }
-}
-#endif

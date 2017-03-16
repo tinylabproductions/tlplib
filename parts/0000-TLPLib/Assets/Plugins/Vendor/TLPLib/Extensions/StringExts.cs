@@ -187,5 +187,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     static StringComparison ordinalStringComparison(bool ignoreCase) =>
       ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+    public static Option<char> lastChar(this string s) =>
+      s.isEmpty() ? Option<char>.None : s[s.Length - 1].some();
   }
 }

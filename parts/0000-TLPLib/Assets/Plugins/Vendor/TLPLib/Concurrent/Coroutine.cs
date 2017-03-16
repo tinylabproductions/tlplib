@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public class Coroutine {
+  public class Coroutine : IDisposable {
     /** 
      * We could use Future here, but future is a heap allocated object and
      * we don't want each coroutine to allocate 2 extra heap objects.
@@ -37,5 +37,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public void stop() => shouldStop = true;
+
+    public void Dispose() => stop();
   }
 }

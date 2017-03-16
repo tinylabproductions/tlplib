@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Text;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct VersionNumber : IEquatable<VersionNumber> {
+  public struct VersionNumber : IEquatable<VersionNumber>, IStr {
     public const char DEFAULT_SEPARATOR = '.';
     public readonly uint major, minor, bugfix;
     public readonly char separator;
@@ -42,9 +43,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #endregion
 
-    public VersionNumber withSeparator(char separator) {
-      return new VersionNumber(major, minor, bugfix, separator);
-    }
+    public VersionNumber withSeparator(char separator) => 
+      new VersionNumber(major, minor, bugfix, separator);
 
     public static VersionNumber operator +(VersionNumber a, VersionNumber b) {
       if (a.separator != b.separator) throw new ArgumentException(
@@ -64,6 +64,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
       return sb.ToString();
     } }
+    string IStr.asString() => asString;
 
     public override string ToString() {
       var str = minor == 0 && bugfix == 0 ? $"{asString},sep={separator}" : asString;

@@ -112,6 +112,26 @@ namespace com.tinylabproductions.TLPLib.Data {
       pv.value = 5;
       Assert.Throws<SerializationException>(() => create());
     }
+
+    [Test]
+    public void SerializedHadPreviousEmptyValueReturnDefault() {
+      backend.setString(key, "");
+      var pv = storage.custom(
+        key, "foo", SerializedRW.str, log: log,
+        onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault
+      );
+      pv.value.shouldEqual("foo", "it should return default value upon deserialization");
+      log.warnMsgs.shouldNotBeEmpty("it should log a warning message");
+    }
+
+    [Test]
+    public void SerializedHadPreviousEmptyValueThrowException() {
+      backend.setString(key, "");
+      Assert.Throws<SerializationException>(() => storage.custom(
+        key, "foo", SerializedRW.str,
+        onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException
+      ));
+    }
   }
 
   class PrefValTestCustomByteArray : PrefValTestBase {
