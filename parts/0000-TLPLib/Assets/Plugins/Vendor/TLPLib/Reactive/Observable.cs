@@ -52,14 +52,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public interface IObservable<out A> : IObservable {
-    ISubscription subscribe(Act<A> onChange);
-    ISubscription subscribe(Act<A, ISubscription> onChange);
-    ISubscription subscribe(Act<A> onChange, Action onFinish);
     ISubscription subscribe(IObserver<A> observer);
-    /** Return self as IObservable. */
-    IObservable<A> asObservable { get; }
-    // Logs actions at verbose level to standard logger.
-    IObservable<A> setLogging(bool value);
   }
 
   public static class Observable {
@@ -222,17 +215,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     class SourceProperties {
       readonly IObserver<A> observer;
       readonly SubscribeFn<A> subscribeFn;
-      public readonly bool beAlwaysSubscribed;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        IObserver<A> observer, SubscribeFn<A> subscribeFn, 
-        bool beAlwaysSubscribed
+        IObserver<A> observer, SubscribeFn<A> subscribeFn
       ) {
         this.observer = observer;
         this.subscribeFn = subscribeFn;
-        this.beAlwaysSubscribed = beAlwaysSubscribed;
       }
 
       public bool trySubscribe() => 
@@ -298,15 +288,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sourceProps = F.none<SourceProperties>();
     }
 
-    public Observable(
-      SubscribeFn<A> subscribeFn,
-      bool beAlwaysSubscribed = false
-    ) {
+    public Observable(SubscribeFn<A> subscribeFn) {
       var sourceProps = new SourceProperties(
-        new Observer<A>(submit, finishObservable), subscribeFn,
-        beAlwaysSubscribed
+        new Observer<A>(submit, finishObservable), subscribeFn
       );
-      if (sourceProps.beAlwaysSubscribed) subscribeToSource(sourceProps);
       this.sourceProps = F.some(sourceProps);
     }
 
@@ -362,11 +347,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
-    public ISubscription subscribe(Act<A> onChange) => subscribe(onChange, () => {});
-
-    public ISubscription subscribe(Act<A> onChange, Action onFinish) => 
-      subscribe(new Observer<A>(onChange, onFinish));
-
     public virtual ISubscription subscribe(IObserver<A> observer) {
       if (doLogging && Log.isVerbose)
         Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
@@ -381,15 +361,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       foreach (var source in sourceProps) subscribeToSource(source);
       return subscription;
     }
-
-    public ISubscription subscribe(Act<A, ISubscription> onChange) {
-      ISubscription subscription = null;
-      // ReSharper disable once AccessToModifiedClosure
-      subscription = subscribe(a => onChange(a, subscription));
-      return subscription;
-    }
-
-    public IObservable<A> asObservable => this;
 
     public IObservable<A> setLogging(bool value) {
       doLogging = value;
@@ -410,9 +381,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // Unsubscribe from source if we don't have any subscribers that are
       // subscribed to us.
       foreach (var source in sourceProps) {
-        if (subscribers == 0 && !source.beAlwaysSubscribed) {
-          if (source.tryUnsubscribe()) log("unsubscribed from source");
-        }
+        if (subscribers == 0 && source.tryUnsubscribe())
+          log("unsubscribed from source");
       }
     }
 

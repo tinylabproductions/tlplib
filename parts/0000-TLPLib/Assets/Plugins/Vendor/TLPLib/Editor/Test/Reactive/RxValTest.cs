@@ -249,4 +249,55 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       events.shouldEqual(4);
     }
   }
+
+  public class RxValTestMap : TestBase {
+    IRxRef<int> src;
+    IRxVal<int> rx;
+    int mapperInvocations;
+
+    [SetUp]
+    public void setup() {
+      mapperInvocations = 0;
+      src = RxRef.a(0);
+      rx = src.map(i => {
+        mapperInvocations++;
+        return i + 1;
+      });
+    }
+
+    [Test]
+    public void WhenNotSubscribed() {
+      mapperInvocations.shouldEqual(0);
+
+      code(() => rx.value.shouldEqual(1)).shouldChange(() => mapperInvocations).by(1);
+
+      src.value = 2;
+      mapperInvocations.shouldEqual(1);
+
+      code(() => rx.value.shouldEqual(3)).shouldChange(() => mapperInvocations).by(1);
+
+      src.value = 4;
+      mapperInvocations.shouldEqual(2);
+      code(() => rx.value.shouldEqual(5)).shouldChange(() => mapperInvocations).by(1);
+    }
+
+    [Test]
+    public void WhenSubscribed() {
+      var src = RxRef.a(0);
+      var rx = src.map(i => i + 1);
+      var values = rx.pipeToList()._1;
+      
+      values.shouldEqual(F.list(1));
+      rx.value.shouldEqual();
+    }
+
+    [Test]
+    public void WhenMixed() {
+      
+    }
+  }
+
+  public class RxValTestFlatMap {
+    
+  }
 }

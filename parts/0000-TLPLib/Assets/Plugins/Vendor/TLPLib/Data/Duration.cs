@@ -62,6 +62,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       public Duration add(Duration a1, Duration a2) => a1 + a2;
       public Duration subtract(Duration a1, Duration a2) => a1 - a2;
       public Duration fromInt(int i) => new Duration(i);
+      public bool eql(Duration a1, Duration a2) => a1.Equals(a2);
+      public CompareResult compare(Duration a1, Duration a2) => comparable.compare(a1, a2);
     }
 
     public static readonly Comparable<Duration> comparable = 

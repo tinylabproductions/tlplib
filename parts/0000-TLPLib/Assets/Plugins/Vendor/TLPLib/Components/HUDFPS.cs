@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Utilities;
+﻿using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 
 [AddComponentMenu("Utilities/HUDFPS")]

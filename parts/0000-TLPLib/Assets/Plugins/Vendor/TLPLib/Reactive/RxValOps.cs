@@ -1,10 +1,11 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
     public static IRxVal<B> map<A, B>(this IRxVal<A> rx, Fn<A, B> mapper) =>
-      RxVal.a(() => mapper(rx.value), ObservableOpImpls.map(rx, mapper));
+      RxVal.a(rx, mapper, ObservableOpImpls.map(rx, mapper));
 
     #region #filter
 
@@ -16,11 +17,27 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #endregion
 
-    public static IRxVal<B> flatMap<A, B>(this IRxVal<A> rx, Fn<A, IRxVal<B>> mapper) => 
-      RxVal.a(
-        () => mapper(rx.value).value, 
-        ObservableOpImpls.flatMap(rx, mapper)
+    public static IRxVal<B> flatMap<A, B>(this IRxVal<A> rx, Fn<A, IRxVal<B>> mapper) {
+      var lastAVersion = Option<uint>.None;
+      var lastBVersion = Option<uint>.None;
+      var lastBRx = Option<IRxVal<B>>.None;
+      var sp = new RxVal<B>.SourceProperties(
+        () => 
+          lastAVersion.isEmpty || lastAVersion.get != rx.valueVersion
+          || lastBRx.exists(bRx => bRx)
+          ,
+        () => {
+          var newRx = mapper(rx.value);
+          lastVersion = newRx.valueVersion.some();
+          return newRx.value;
+        }
       );
+
+      RxVal.a(
+        sp,
+        ObservableOpImpls.flatMap<A, B, IRxVal<B>>(rx, mapper, newRx => {})
+      );
+    }
 
     #region #zip
 

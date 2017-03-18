@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -10,58 +11,74 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * 
    * Because it is immutable, the only way for it to change is if its source changes.
    **/
-  public interface IRxVal<A> : IObservable<A> {
-    A value { get; }
-  }
+  public interface IRxVal<out A> : VersionedVal<A>, IObservable<A> {}
   
   public class RxVal<A> : RxBase<A>, IRxVal<A> {
-    readonly Option<Fn<A>> getCurrentValue;
+    public class SourceProperties {
+      public readonly Fn<bool> shouldUpdate;
+      public readonly Fn<A> getCurrentValue;
 
-    public RxVal(A value) { _value = value; }
+      public SourceProperties(Fn<bool> shouldUpdate, Fn<A> getCurrentValue) {
+        this.shouldUpdate = shouldUpdate;
+        this.getCurrentValue = getCurrentValue;
+      }
+    }
 
-    public RxVal(A value, SubscribeFn<A> subscribeFn) 
-      : base(subscribeFn) { _value = value; }
+    readonly SourceProperties sourceProperties;
 
     public RxVal(
-      Fn<A> getCurrentValue, SubscribeFn<A> subscribeFn
+      SourceProperties sourceProperties, SubscribeFn<A> subscribeFn
     ) : base(subscribeFn) {
-      _value = getCurrentValue();
-      this.getCurrentValue = getCurrentValue.some();
+      _value = default(A);
+      this.sourceProperties = sourceProperties;
     }
 
     protected override A currentValue { get {
       /* Update current value from source because we have no subscribers, 
        * thus are not subscribed to the source and the value 
        * was not pushed by it to this RxVal. */
-      if (subscribers == 0 && getCurrentValue.isDefined) {
-        _value = getCurrentValue.get();
+      if (subscribers == 0) {
+        if (sourceProperties.shouldUpdate())
+            _value = sourceProperties.getCurrentValue();
       }
       return _value;
     } }
 
     public A value => currentValue;
 
-    public override string ToString() => $"RxVal({value})";
+    public override string ToString() => $"{nameof(RxVal)}({value})";
   }
 
   public static class RxVal {
-    public static ObserverBuilder<Elem, IRxVal<Elem>> builder<Elem>(
-      Fn<Elem> getCurrentValue
-    ) => subscribeFn => a(getCurrentValue, subscribeFn);
-
     #region Constructors
 
     /* Never changing RxVal. Useful for lifting values into reactive values. */
-    public static IRxVal<A> a<A>(A value) => new RxVal<A>(value);
+    public static IRxVal<A> a<A>(A value) => RxValStatic.a(value);
     public static IRxVal<A> cached<A>(A value) => RxValCache<A>.get(value);
 
     /* RxVal that gets its value from other reactive source where the value is always available. */
-    public static IRxVal<A> a<A>(Fn<A> getCurrentValue, SubscribeFn<A> subscribeFn) => 
-      new RxVal<A>(getCurrentValue, subscribeFn);
+    public static IRxVal<A> a<A>(
+      RxVal<A>.SourceProperties sourceProperties, SubscribeFn<A> subscribeFn
+    ) => 
+      new RxVal<A>(sourceProperties, subscribeFn);
 
-    /* RxVal that gets its value from other reactive source */
-    public static IRxVal<A> a<A>(A initial, SubscribeFn<A> subscribeFn) => 
-      new RxVal<A>(initial, subscribeFn);
+    public static IRxVal<B> a<A, B>(
+      VersionedVal<A> val, Fn<A, B> mapper, SubscribeFn<B> subscribeFn
+    ) {
+      var lastVersion = Option<uint>.None;
+      var sp = new RxVal<B>.SourceProperties(
+        () => lastVersion.isEmpty || val.valueVersion != lastVersion.get,
+        () => {
+          lastVersion = val.valueVersion.some();
+          return mapper(val.value);
+        }
+      );
+      return a(sp, subscribeFn);
+    }
+
+//    /* RxVal that gets its value from other reactive source */
+//    public static IRxVal<A> a<A>(A initial, SubscribeFn<A> subscribeFn) => 
+//      new RxVal<A>(initial, subscribeFn);
 
     #endregion
 
@@ -180,9 +197,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxVal<Option<B>> optMap<A, B>(
       this IRxVal<Option<A>> source, Fn<A, B> mapper
-    ) {
-      return source.map(aOpt => aOpt.map(mapper));
-    }
+    ) => source.map(aOpt => aOpt.map(mapper));
 
     public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) {
       return rxOpt.fold(cached(F.none<A>()), val => val.map(a => a.some()));
@@ -200,14 +215,31 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   static class RxValCache<A> {
-    static readonly Dictionary<A, IRxVal<A>> staticCache = new Dictionary<A, IRxVal<A>>();
+    static readonly Dictionary<A, RxValStatic<A>> staticCache = new Dictionary<A, RxValStatic<A>>();
 
-    public static IRxVal<A> get(A value) {
-      return staticCache.get(value).getOrElse(() => {
-        var cached = (IRxVal<A>)RxRef.a(value);
-        staticCache.Add(value, cached);
-        return cached;
-      });
+    public static IRxVal<A> get(A value) => 
+      staticCache.getOrUpdate(value, () => RxValStatic.a(value));
+  }
+
+  /** RxVal which has a constant value. */
+  class RxValStatic<A> : IRxVal<A> {
+    public A value { get; }
+
+    public uint valueVersion => 0u;
+    public int subscribers => 0;
+    public bool finished => true;
+
+    public RxValStatic(A value) {
+      this.value = value;
     }
+
+    public ISubscription subscribe(IObserver<A> observer) {
+      observer.push(value);
+      observer.finish();
+      return Subscription.empty;
+    }
+  }
+  static class RxValStatic {
+    public static RxValStatic<A> a<A>(A a) => new RxValStatic<A>(a);
   }
 }

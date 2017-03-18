@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
-  public interface Comparable<in A> {
+  public interface Comparable<in A> : Eql<A> {
     CompareResult compare(A a1, A a2);
   }
 
@@ -27,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       public Lambda(Fn<A, A, CompareResult> compare) { _compare = compare; }
 
       public CompareResult compare(A a1, A a2) => _compare(a1, a2);
+      public bool eql(A a1, A a2) => _compare(a1, a2) == CompareResult.EQ;
     }
   }
 

@@ -5,6 +5,10 @@ namespace com.tinylabproductions.TLPLib.Data {
     A value { get; }
   }
 
+  public interface VersionedVal<out A> : Val<A> {
+    uint valueVersion { get; }
+  }
+
   public interface Ref<A> : Val<A> {
     new A value { get; set; }
   }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
@@ -9,12 +8,35 @@ using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class ObservableOps {
+    #region #subscribe
+
+    public static ISubscription subscribe<A>(
+      this IObservable<A> observable,
+      Act<A> onChange, Action onFinish = null
+    ) => observable.subscribe(new Observer<A>(onChange, onFinish ?? (() => {})));
+
+    public static ISubscription subscribe<A>(
+      this IObservable<A> observable, 
+      Act<A, ISubscription> onChange,
+      Action onFinish = null
+    ) {
+      ISubscription subscription = null;
+      // ReSharper disable once AccessToModifiedClosure
+      subscription = observable.subscribe(a => onChange(a, subscription), onFinish);
+      return subscription;
+    }
+
     public static ISubscription subscribeForOneEvent<A>(
       this IObservable<A> observable, Act<A> onEvent
     ) => observable.subscribe((a, sub) => {
       sub.unsubscribe();
       onEvent(a);
     });
+
+    #endregion
+
+    /** Return self as IObservable. */
+    public static IObservable<A> asObservable<A>(this IObservable<A> observable) => observable;
 
     /** Maps events coming from this observable. **/
     public static IObservable<B> map<A, B>(
@@ -227,7 +249,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     // Convert this observable to reactive value with given initial value.
-    public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) => 
-      RxVal.a(initial, o.subscribe);
+    public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) {
+      var rx = RxRef.a(initial);
+      o.subscribe(v => rx.value = v);
+      return rx;
+    }
   }
 }

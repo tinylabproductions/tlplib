@@ -32,15 +32,21 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }, obs.finish);
 
     public static SubscribeFn<B> flatMap<A, B>(
-      IObservable<A> o, Fn<A, IObservable<B>> mapper
-    ) => 
+      IObservable<A> o, Fn<A, IObservable<B>> mapper, Act<IObservable<B>> newObsGot = null
+    ) => flatMap<A, B, IObservable<B>>(o, mapper, newObsGot);
+
+    public static SubscribeFn<B> flatMap<A, B, Obs>(
+      IObservable<A> o, Fn<A, Obs> mapper, Act<Obs> newObsGot = null
+    ) where Obs : IObservable<B> => 
       obs => {
         ISubscription innerSub = null;
         Action innerUnsub = () => innerSub?.unsubscribe();
         var thisSub = o.subscribe(
           val => {
             innerUnsub();
-            innerSub = mapper(val).subscribe(obs);
+            var newObs = mapper(val);
+            newObsGot?.Invoke(newObs);
+            innerSub = newObs.subscribe(obs);
           },
           () => {
             innerUnsub();
