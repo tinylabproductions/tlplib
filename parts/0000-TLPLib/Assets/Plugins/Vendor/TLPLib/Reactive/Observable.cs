@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
@@ -56,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public static class Observable {
-    public static IObservable<A> a<A>(SubscribeFn<A> subscribeFn) => 
+    public static IObservable<A> a<A>(SubscribeToSource<A> subscribeFn) => 
       new Observable<A>(subscribeFn);
 
     public static IObservableQueue<A, C> createQueue<A, C>(
@@ -197,11 +198,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
   }
 
-  public delegate ISubscription SubscribeFn<out Elem>(IObserver<Elem> observer);
+  public delegate ISubscription SubscribeToSource<out A>(IObserver<A> observer);
 
   public delegate ObservableImplementation ObserverBuilder<
     in Elem, out ObservableImplementation
-  >(SubscribeFn<Elem> subscriptionFn);
+  >(SubscribeToSource<Elem> subscriptionFn);
 
   public class ObservableFinishedException : Exception {
     public ObservableFinishedException(string message) : base(message) {}
@@ -214,39 +215,39 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
       readonly IObserver<A> observer;
-      readonly SubscribeFn<A> subscribeFn;
+      readonly SubscribeToSource<A> subscribeFn;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        IObserver<A> observer, SubscribeFn<A> subscribeFn
+        IObserver<A> observer, SubscribeToSource<A> subscribeFn
       ) {
         this.observer = observer;
         this.subscribeFn = subscribeFn;
       }
 
-      public bool trySubscribe() => 
-        subscription.fold(
-          () => {
-            subscription = F.some(subscribeFn(observer));
-            return true;
-          },
-          _ => false
-        );
+      public bool trySubscribe() {
+        if (subscription.isEmpty) {
+          subscription = F.some(subscribeFn(observer));
+          return true;
+        }
+        return false;
+      }
 
-      public bool tryUnsubscribe() => 
-        subscription.fold(
-          () => false, 
-          s => {
-            subscription = F.none<ISubscription>();
-            return s.unsubscribe();
-          }
-        );
+      public bool tryUnsubscribe() {
+        foreach (var sub in subscription) {
+          subscription = Option<ISubscription>.None;
+          return sub.unsubscribe();
+        }
+        return false;
+      }
     }
 
     struct Sub {
       public readonly Subscription subscription;
       public readonly IObserver<A> observer;
+      // When subscriptions happen whilst we are processing other event, they are
+      // initially inactive.
       public readonly bool active;
 
       public Sub(Subscription subscription, IObserver<A> observer, bool active) {
@@ -288,25 +289,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sourceProps = F.none<SourceProperties>();
     }
 
-    public Observable(SubscribeFn<A> subscribeFn) {
-      var sourceProps = new SourceProperties(
+    public Observable(SubscribeToSource<A> subscribeFn) {
+      sourceProps = new SourceProperties(
         new Observer<A>(submit, finishObservable), subscribeFn
-      );
-      this.sourceProps = F.some(sourceProps);
+      ).some();
     }
 
-    protected virtual void submit(A value) {
+    protected virtual void submit(A a) {
       if (doLogging) {
-        if (Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] submit: {value}");
+        if (Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] submit: {a}");
       }
 
       if (finished) throw new ObservableFinishedException(
-        $"Observable {this} is finished, but #submit called with {value}"
+        $"Observable {this} is finished, but #submit called with {a}"
       );
 
       if (iterating) {
         // Do not submit if iterating.
-        pendingSubmits.add(value);
+        pendingSubmits.add(a);
         return;
       }
 
@@ -316,7 +316,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (sub.active && sub.subscription.isSubscribed) sub.observer.push(value);
+          if (sub.active && sub.subscription.isSubscribed)
+            sub.observer.push(a);
         }
       }
       finally {
@@ -358,7 +359,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (!active) pendingSubscriptionActivations++;
       
       // Subscribe to source if we have a first subscriber.
-      foreach (var source in sourceProps) subscribeToSource(source);
+      foreach (var source in sourceProps)
+        subscribeToSource(source);
       return subscription;
     }
 

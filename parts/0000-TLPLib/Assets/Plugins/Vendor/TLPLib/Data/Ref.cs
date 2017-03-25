@@ -1,14 +1,6 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public interface Val<out A> {
-    A value { get; }
-  }
-
-  public interface VersionedVal<out A> : Val<A> {
-    uint valueVersion { get; }
-  }
-
   public interface Ref<A> : Val<A> {
     new A value { get; set; }
   }
@@ -17,9 +9,9 @@ namespace com.tinylabproductions.TLPLib.Data {
   public class SimpleRef<A> : Ref<A> {
     public A value { get; set; }
 
-    public SimpleRef(A value) {
-      this.value = value;
-    }
+    public SimpleRef(A value) { this.value = value; }
+
+    public override string ToString() => $"{nameof(SimpleRef<A>)}({value})";
   }
 
   public class LambdaRef<A> : Ref<A> {

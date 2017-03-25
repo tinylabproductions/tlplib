@@ -14,17 +14,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * Mutable reference which is also an observable.
    **/
   public class RxRef<A> : RxBase<A>, IRxRef<A> {
-    protected override A currentValue => _value;
-
-    public A value {
-      get { return currentValue; }
+    public new A value {
+      get { return base.value; }
       set { submit(value); }
     }
 
-    public RxRef(A initialValue) { _value = initialValue; }
-
-    public override string ToString() => $"RxRef({_value})";
-
+    public RxRef(A initialValue) : base(initialValue) {}
+    public override string ToString() => $"{nameof(RxRef)}({value})";
     public IRxVal<A> asVal => this;
   }
 

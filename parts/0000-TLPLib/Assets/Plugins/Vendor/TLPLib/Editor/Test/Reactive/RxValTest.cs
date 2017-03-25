@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -39,14 +41,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
   }
 
-  public class RxValTestAnyOf {
+  public class RxValTestAnyOf : Specification {
     [Test]
-    public void WhenEmptySearchForTrue() =>
-      Enumerable.Empty<IRxVal<bool>>().anyOf(searchFor: true).value.shouldBeFalse();
+    public void anyOf() => describe(_ => {
+      _.when("empty", () => {
+        var e = Enumerable.Empty<IRxVal<bool>>();
 
-    [Test]
-    public void WhenEmptySearchForFalse() =>
-      Enumerable.Empty<IRxVal<bool>>().anyOf(searchFor: false).value.shouldBeFalse();
+        _.it(
+          "should return false when searching for true", 
+          () => e.anyOf(searchFor: true).value.shouldBeFalse()
+        );
+
+        _.it(
+          "should return false when searching for false",
+          () => e.anyOf(searchFor: false).value.shouldBeFalse()
+        );
+      });
+    });
 
     [Test]
     public void WhenFromSingleItemSearchForTrue() {
@@ -131,173 +142,143 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       dst.value.shouldBeSome(1);
     }
   }
-
-  public class RxValTestNumberOfEvents {
-    [Test]
-    public void NoChangesVal() {
-      var rx = RxVal.a(5);
-      var events = 0;
-      rx.subscribe(_ => events++);
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void NoChangesRef() {
-      var rx = RxRef.a(5);
-      var events = 0;
-      rx.subscribe(_ => events++);
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void AllChanges() {
-      var rx = RxRef.a(5);
-      var events = 0;
-      rx.subscribe(_ => events++);
-      rx.value = 1;
-      rx.value = 2;
-      rx.value = 5;
-      rx.value = 1;
-      events.shouldEqual(5);
-    }
-
-    [Test]
-    public void SomeChanges() {
-      var rx = RxRef.a(5);
-      var events = 0;
-      rx.subscribe(_ => events++);
-      rx.value = 5;
-      rx.value = 5;
-      rx.value = 1;
-      rx.value = 4;
-      rx.value = 1;
-      rx.value = 1;
-      events.shouldEqual(4);
-    }
-
-    [Test]
-    public void NoChangesValMap() {
-      var rx = RxVal.a(5);
-      var rx2 = rx.map(_ => _ * 2);
-      var events = 0;
-      rx2.subscribe(_ => events++);
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void NoChangesRefMap() {
-      var rx = RxRef.a(5);
-      var rx2 = rx.map(_ => _ * 2);
-      var events = 0;
-      rx2.subscribe(_ => events++);
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void NoChangesMapCalls() {
-      var rx = RxVal.a(5);
-      var events = 0;
-      rx.map(_ => events++);
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void NoChangesFilterCalls() {
-      var rx = RxVal.a(5);
-      var events = 0;
-      rx.filter(_ => {
-        events++;
-        return true;
-      }, 1);
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void NoChangesFlatMapCalls() {
-      var rx = RxVal.a(5);
-      var events = 0;
-      rx.flatMap(_ => {
-        events++;
-        return RxRef.a(1);
-      });
-      events.shouldEqual(1);
-    }
-
-    [Test]
-    public void AllChangesMapCalls() {
-      var rx = RxRef.a(5);
-      var events = 0;
-      rx.map(_ => events++);
-      rx.value = 1;
-      rx.value = 2;
-      rx.value = 5;
-      rx.value = 1;
-      events.shouldEqual(5);
-    }
-
-    [Test]
-    public void SomeChangesMapCalls() {
-      var rx = RxRef.a(5);
-      var events = 0;
-      rx.map(_ => events++);
-      rx.value = 5;
-      rx.value = 5;
-      rx.value = 1;
-      rx.value = 4;
-      rx.value = 1;
-      rx.value = 1;
-      events.shouldEqual(4);
-    }
-  }
-
-  public class RxValTestMap : TestBase {
-    IRxRef<int> src;
-    IRxVal<int> rx;
-    int mapperInvocations;
-
-    [SetUp]
-    public void setup() {
-      mapperInvocations = 0;
-      src = RxRef.a(0);
-      rx = src.map(i => {
-        mapperInvocations++;
+  
+  public class RxValTest : Specification {
+    [Test] public void map() => describe(_ => {
+      var mapperInvocations = _.beforeEach(() => 0);
+      var src = _.beforeEach(() => RxRef.a(10));
+      var rx = _.beforeEach(() => src.value.map(i => {
+        mapperInvocations.value++;
         return i + 1;
+      }));
+
+      _.when("not subscribed", () => {
+        _.it("should not invoke mapper on creation", () => {
+          mapperInvocations.value.shouldEqual(0);
+        });
+
+        _.it("should not invoke mapper on source changes", () => {
+          src.value.value++;
+          mapperInvocations.value.shouldEqual(0);
+        });
+
+        _.it("should invoke mapper upon requesting the value", () => {
+          rx.value.value.forSideEffects();
+          mapperInvocations.value.shouldEqual(1);
+        });
+
+        _.it(
+          "should invoke mapper only once upon value request even if source changed multiple times",
+          () => {
+            src.value.value++;
+            src.value.value++;
+            rx.value.value.forSideEffects();
+            mapperInvocations.value.shouldEqual(1);
+          }
+        );
+
+        _.it(
+          "should invoke mapper again if a change happened after last value request",
+          () => {
+            rx.value.value.forSideEffects();
+            src.value.value++;
+            rx.value.value.forSideEffects();
+            mapperInvocations.value.shouldEqual(2);
+          }
+        );
+
+        _.it("should map the correctly", () => {
+          rx.value.value.shouldEqual(11);
+        });
+
+        _.it("should map the value after change correctly", () => {
+          src.value.value = 20;
+          rx.value.value.shouldEqual(21);
+        });
       });
-    }
+
+      Fn<Val<List<int>>, Act<int, int[]>> createSpec = list => (current, values) => {
+        _.it("should have the mapped value", () => rx.value.value.shouldEqual(current));
+        _.it("should push the mapped value", () => list.value.shouldEqualEnum(values));
+        _.it(
+          "should not invoke mapper again upon requesting value",
+          () => code(() => 
+            rx.value.value
+          ).shouldNotChange(mapperInvocations)
+        );
+      };
+
+      Act<int> subscribedSpec = initialValue => {
+        var list = _.beforeEach(() => rx.value.pipeToList()._1);
+        var spec = createSpec(list);
+
+        spec(initialValue + 1, new[] { initialValue + 1 });
+
+        _.when("source has been updated", () => {
+          _.beforeEach(() => src.value.value++);
+          spec(initialValue + 2, new[] { initialValue + 1, initialValue + 2 });
+
+          _.when("source has been updated again", () => {
+            _.beforeEach(() => src.value.value++);
+            spec(initialValue + 3, new[] { initialValue + 1, initialValue + 2, initialValue + 3 });
+          });
+        });
+      };
+
+      _.when("subscribed", () => subscribedSpec(10));
+
+      _.when("subscribed, changed and unsubscribed", () => {
+        _.beforeEach(() => {
+          var x = rx.value.pipeToList();
+          src.value.value++;
+          x._2.unsubscribe();
+          src.value.value++;
+
+          x._1.shouldEqualEnum(11, 12);
+          rx.value.value.shouldEqual(13);
+        });
+
+        subscribedSpec(12);
+      });
+    });
 
     [Test]
-    public void WhenNotSubscribed() {
-      mapperInvocations.shouldEqual(0);
+    public void flatMap() => describe(_ => {
+      var mapperInvocations = _.beforeEach(() => 0);
+      var src = _.beforeEach(() => RxRef.a(10));
+      var interim1 = _.beforeEach(() => RxRef.a("i1"));
+      var interim2 = _.beforeEach(() => RxRef.a("i2"));
+      var rx = _.beforeEach(() => src.value.flatMap(i => {
+        mapperInvocations.value++;
+        return i % 2 == 0 ? interim1.value : interim2.value;
+      }));
 
-      code(() => rx.value.shouldEqual(1)).shouldChange(() => mapperInvocations).by(1);
+      _.when("not subscribed", () => {
+        _.it("should not invoke mapper initially", () => mapperInvocations.value.shouldEqual(0));
+        _.it("should have the proper initial value", () => rx.value.value.shouldEqual("i1"));
+        _.it(
+          "should invoke mapper once when asking for a value", 
+          () => code(() => rx.value.value).shouldChange(mapperInvocations).by(1)
+        );
+        _.it(
+          "should not invoke mapper again if value did not change",
+          () => {
+            rx.value.value.forSideEffects();
+            code(() => rx.value.value).shouldNotChange(mapperInvocations);
+          }
+        );
+        _.it(
+          "should not invoke mapper if interim value changes",
+          () => code(() => {
+            interim1.value.value = "i1_1";
+            rx.value.value.shouldEqual("i1_1");
+          }).shouldNotChange(mapperInvocations)
+        );
+      });
 
-      src.value = 2;
-      mapperInvocations.shouldEqual(1);
-
-      code(() => rx.value.shouldEqual(3)).shouldChange(() => mapperInvocations).by(1);
-
-      src.value = 4;
-      mapperInvocations.shouldEqual(2);
-      code(() => rx.value.shouldEqual(5)).shouldChange(() => mapperInvocations).by(1);
-    }
-
-    [Test]
-    public void WhenSubscribed() {
-      var src = RxRef.a(0);
-      var rx = src.map(i => i + 1);
-      var values = rx.pipeToList()._1;
-      
-      values.shouldEqual(F.list(1));
-      rx.value.shouldEqual();
-    }
-
-    [Test]
-    public void WhenMixed() {
-      
-    }
-  }
-
-  public class RxValTestFlatMap {
-    
+      _.when("subscribed", () => {
+        
+      });
+    });
   }
 }

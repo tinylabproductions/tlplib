@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /** Maps events coming from this observable. **/
     public static IObservable<B> map<A, B>(
       this IObservable<A> o, Fn<A, B> mapper
-    ) => Observable.a(ObservableOpImpls.map(o, mapper));
+    ) => Observable.a(ObservableOpImpls.map(o.subscribe, mapper));
 
     #region #flatMap
 
@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      **/
     public static IObservable<B> flatMap<A, B>(
       this IObservable<A> o, Fn<A, IObservable<B>> mapper
-    ) => Observable.a(ObservableOpImpls.flatMap(o, mapper));
+    ) => Observable.a(ObservableOpImpls.flatMap(o.subscribe, mapper));
 
     /** 
      * Maps events coming from this observable and emits events from returned futures.

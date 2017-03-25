@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
@@ -23,7 +26,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       a2.shouldNotEqual(a1);
     }
 
-    public static Action code(Action a) => a;
+    public static Fn<Unit> code(Action a) => () => {
+      a();
+      return F.unit;
+    };
+
+    public static Fn<A> code<A>(Fn<A> a) => a;
   }
 
   public static class TestExts {
@@ -236,18 +244,33 @@ namespace com.tinylabproductions.TLPLib.Test {
     ) =>
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
 
-    public static ChangeMatcher<A> shouldChange<A>(
-      this Action act, Fn<A> measure, Numeric<A> num
-    ) => new ChangeMatcher<A>(act, measure, num);
+    public static ChangeMatcher<A, R> shouldChange<A, R>(
+      this Fn<R> fn, Fn<A> measure, Numeric<A> num
+    ) => new ChangeMatcher<A, R>(fn, measure, num);
 
-    public static void shouldNotChange<A>(
-      this Action act, Fn<A> measure, Numeric<A> num
-    ) => act.shouldChange(measure, num).by(0);
+    public static ChangeMatcher<A, R> shouldChange<A, R>(
+      this Fn<R> fn, Val<A> measure, Numeric<A> num
+    ) => new ChangeMatcher<A, R>(fn, () => measure.value, num);
 
-    public static ChangeMatcher<int> shouldChange(this Action act, Fn<int> measure) => 
-      act.shouldChange(measure, Numeric.integer);
-    public static void shouldNotChange(this Action act, Fn<int> measure) => 
-      act.shouldChange(measure).by(0);
+    public static void shouldNotChange<A, R>(
+      this Fn<R> fn, Fn<A> measure, Numeric<A> num
+    ) => fn.shouldChange(measure, num).by(0);
+
+    public static void shouldNotChange<A, R>(
+      this Fn<R> fn, Val<A> measure, Numeric<A> num
+    ) => fn.shouldChange(measure, num).by(0);
+
+    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Fn<int> measure) => 
+      fn.shouldChange(measure, Numeric.integer);
+
+    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Val<int> measure) => 
+      fn.shouldChange(measure, Numeric.integer);
+
+    public static void shouldNotChange<R>(this Fn<R> fn, Fn<int> measure) => 
+      fn.shouldChange(measure).by(0);
+
+    public static void shouldNotChange<R>(this Fn<R> fn, Val<int> measure) => 
+      fn.shouldChange(measure).by(0);
   }
 
   public class SetEquals<A> : Constraint {
@@ -265,21 +288,21 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
   }
 
-  public class ChangeMatcher<A> {
-    readonly Action act;
+  public class ChangeMatcher<A, R> {
+    readonly Fn<R> run;
     readonly Fn<A> measure;
     readonly Numeric<A> num;
 
-    public ChangeMatcher(Action act, Fn<A> measure, Numeric<A> num) {
-      this.act = act;
+    public ChangeMatcher(Fn<R> run, Fn<A> measure, Numeric<A> num) {
+      this.run = run;
       this.measure = measure;
       this.num = num;
     }
 
-    public void by(int i, string message = null) {
+    public R by(int i, string message = null) {
       var change = num.fromInt(i);
       var initial = measure();
-      act();
+      var ret = run();
       var after = measure();
       var actualChange = num.subtract(after, initial);
 
@@ -293,6 +316,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       }
 
       num.subtract(after, initial).shouldEqual(change, message);
+      return ret;
     }
   }
 }

@@ -15,37 +15,32 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public static class ObservableOpImpls {
     #region #map
 
-    public static SubscribeFn<B> map<A, B>(
-      IObservable<A> observable, Fn<A, B> mapper
+    public static SubscribeToSource<B> map<A, B>(
+      SubscribeToSource<A> subscribe, Fn<A, B> mapper
     ) =>
-      obs => observable.subscribe(val => obs.push(mapper(val)), obs.finish);
+      obs => subscribe(new Observer<A>(val => obs.push(mapper(val)), obs.finish));
 
     #endregion
 
     #region #flatMap
 
-    public static SubscribeFn<B> flatMap<A, B>(
+    public static SubscribeToSource<B> flatMap<A, B>(
       IObservable<A> observable, Fn<A, IEnumerable<B>> mapper
     ) => 
       obs => observable.subscribe(val => {
         foreach (var b in mapper(val)) obs.push(b);
       }, obs.finish);
-
-    public static SubscribeFn<B> flatMap<A, B>(
-      IObservable<A> o, Fn<A, IObservable<B>> mapper, Act<IObservable<B>> newObsGot = null
-    ) => flatMap<A, B, IObservable<B>>(o, mapper, newObsGot);
-
-    public static SubscribeFn<B> flatMap<A, B, Obs>(
-      IObservable<A> o, Fn<A, Obs> mapper, Act<Obs> newObsGot = null
-    ) where Obs : IObservable<B> => 
+    
+    public static SubscribeToSource<B> flatMap<A, B>(
+      SubscribeToSource<A> subscribe, Fn<A, IObservable<B>> mapper
+    ) => 
       obs => {
         ISubscription innerSub = null;
         Action innerUnsub = () => innerSub?.unsubscribe();
-        var thisSub = o.subscribe(
+        var observer = new Observer<A>(
           val => {
             innerUnsub();
             var newObs = mapper(val);
-            newObsGot?.Invoke(newObs);
             innerSub = newObs.subscribe(obs);
           },
           () => {
@@ -53,10 +48,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
             obs.finish();
           }
         );
+        var thisSub = subscribe(observer);
         return thisSub.andThen(innerUnsub);
       };
 
-    public static SubscribeFn<B> flatMap<A, B>(
+    public static SubscribeToSource<B> flatMap<A, B>(
       IObservable<A> o, Fn<A, Future<B>> mapper
     ) => 
       obs => {
@@ -76,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #filter
 
-    public static SubscribeFn<A> filter<A>(
+    public static SubscribeToSource<A> filter<A>(
       IObservable<A> o, Fn<A, bool> predicate
     ) =>
       obs => o.subscribe(
@@ -88,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #skip
 
-    public static SubscribeFn<A> skip<A>(IObservable<A> o, uint count) => 
+    public static SubscribeToSource<A> skip<A>(IObservable<A> o, uint count) => 
       obs => {
         var skipped = 0u;
         return o.subscribe(
@@ -104,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     
     #region #oncePerFrame
 
-    public static SubscribeFn<A> oncePerFrame<A>(IObservable<A> o)  =>
+    public static SubscribeToSource<A> oncePerFrame<A>(IObservable<A> o)  =>
       obs => {
         var last = Option<A>.None;
         var mySub = o.subscribe(v => last = v.some(), obs.finish);
@@ -122,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #zip
     
-    public static SubscribeFn<Tpl<A, B>> zip<A, B>(
+    public static SubscribeToSource<Tpl<A, B>> zip<A, B>(
       IObservable<A> o, IObservable<B> other
     ) =>
       obs => multipleFinishes(obs, 2, checkFinish => {
@@ -138,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return s1.join(s2);
       });
 
-    public static SubscribeFn<Tpl<A, B, C>> zip<A, B, C>(
+    public static SubscribeToSource<Tpl<A, B, C>> zip<A, B, C>(
       IObservable<A> o, IObservable<B> o1, IObservable<C> o2
     ) =>
       obs => multipleFinishes(obs, 3, checkFinish => {
@@ -157,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return s1.join(s2, s3);
       });
 
-    public static SubscribeFn<Tpl<A, B, C, D>> zip<A, B, C, D>(
+    public static SubscribeToSource<Tpl<A, B, C, D>> zip<A, B, C, D>(
       IObservable<A> o, IObservable<B> o1, IObservable<C> o2, IObservable<D> o3
     ) =>
       obs => multipleFinishes(obs, 4, checkFinish => {
@@ -179,7 +175,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return s1.join(s2, s3, s4);
       });
 
-    public static SubscribeFn<Tpl<A, B, C, D, E>> zip<A, B, C, D, E>(
+    public static SubscribeToSource<Tpl<A, B, C, D, E>> zip<A, B, C, D, E>(
       IObservable<A> o, IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
     ) =>
       obs => multipleFinishes(obs, 5, checkFinish => {
@@ -204,7 +200,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return s1.join(s2, s3, s4, s5);
       });
 
-    public static SubscribeFn<Tpl<A, A1, A2, A3, A4, A5>> zip<A, A1, A2, A3, A4, A5>(
+    public static SubscribeToSource<Tpl<A, A1, A2, A3, A4, A5>> zip<A, A1, A2, A3, A4, A5>(
       IObservable<A> o, IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, 
       IObservable<A4> o4, IObservable<A5> o5
     ) => 
@@ -237,14 +233,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #discardValue
 
-    public static SubscribeFn<Unit> discardValue<A>(IObservable<A> o) =>
+    public static SubscribeToSource<Unit> discardValue<A>(IObservable<A> o) =>
       obs => o.subscribe(_ => obs.push(F.unit), obs.finish);
 
     #endregion
 
     #region #collect
 
-    public static SubscribeFn<B> collect<A, B>(
+    public static SubscribeToSource<B> collect<A, B>(
       IObservable<A> o, Fn<A, Option<B>> collector
     ) =>
       obs => o.subscribe(
@@ -256,7 +252,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #buffer
 
-    public static SubscribeFn<C> buffer<A, C>(
+    public static SubscribeToSource<C> buffer<A, C>(
       IObservable<A> o, int size, IObservableQueue<A, C> queue
     ) =>
       obs => o.subscribe(
@@ -272,7 +268,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #timeBuffer
 
-    public static SubscribeFn<C> timeBuffer<A, C>(
+    public static SubscribeToSource<C> timeBuffer<A, C>(
       IObservable<A> o, Duration duration,
       IObservableQueue<Tpl<A, float>, C> queue,
       TimeScale timeScale
@@ -294,7 +290,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #join
 
-    public static SubscribeFn<A> join<A, B>(
+    public static SubscribeToSource<A> join<A, B>(
       IObservable<A> o, IObservable<B> other
     ) where B : A =>
       obs => multipleFinishes(obs, 2, checkFinished =>
@@ -311,11 +307,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #joinAll
 
-    public static SubscribeFn<A> joinAll<A>(
+    public static SubscribeToSource<A> joinAll<A>(
       IObservable<A> o, IEnumerable<IObservable<A>> others, int othersCount
     ) => joinAll(o.Yield().Concat(others), 1 + othersCount);
 
-    public static SubscribeFn<A> joinAll<A>(
+    public static SubscribeToSource<A> joinAll<A>(
       IEnumerable<IObservable<A>> observables, int count
     ) =>
       obs => multipleFinishes(obs, count, checkFinished =>
@@ -328,7 +324,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #joinDiscard
 
-    public static SubscribeFn<Unit> joinDiscard<A, X>(
+    public static SubscribeToSource<Unit> joinDiscard<A, X>(
       IObservable<A> o, IObservable<X> other
     ) =>
       obs => multipleFinishes(obs, 2, checkFinished =>
@@ -345,7 +341,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #onceEvery
 
-    public static SubscribeFn<A> onceEvery<A>(
+    public static SubscribeToSource<A> onceEvery<A>(
       IObservable<A> o, Duration duration, TimeScale timeScale
     ) => 
       obs => {
@@ -385,7 +381,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #delayed
 
     // TODO: test with ITimeContext
-    public static SubscribeFn<A> delayed<A>(IObservable<A> o, Duration delay) => 
+    public static SubscribeToSource<A> delayed<A>(IObservable<A> o, Duration delay) => 
       obs => o.subscribe(
         v => ASync.WithDelay(delay, () => obs.push(v)),
         () => ASync.WithDelay(delay, obs.finish)
@@ -395,7 +391,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #changes
 
-    static SubscribeFn<Elem> changesBase<A, Elem>(
+    static SubscribeToSource<Elem> changesBase<A, Elem>(
       IObservable<A> o, Act<IObserver<Elem>, Option<A>, A> action
     ) => obs => {
       var lastValue = F.none<A>();
@@ -405,7 +401,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }, obs.finish);
     };
 
-    public static SubscribeFn<Tpl<Option<A>, A>> changesOpt<A>(
+    public static SubscribeToSource<Tpl<Option<A>, A>> changesOpt<A>(
       IObservable<A> o, Fn<A, A, bool> areEqual
     ) => 
       changesBase<A, Tpl<Option<A>, A>>(o, (obs, lastValue, val) => {
@@ -416,7 +412,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         if (valueChanged) obs.push(F.t(lastValue, val));
       });
 
-    public static SubscribeFn<Tpl<A, A>> changes<A>(
+    public static SubscribeToSource<Tpl<A, A>> changes<A>(
       IObservable<A> o, Fn<A, A, bool> areEqual
     ) =>
       changesBase<A, Tpl<A, A>>(o, (obs, lastValue, val) => {
@@ -425,7 +421,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
             obs.push(F.t(lastVal, val));
       });
 
-    public static SubscribeFn<A> changedValues<A>(
+    public static SubscribeToSource<A> changedValues<A>(
       IObservable<A> o, Fn<A, A, bool> areEqual
     ) => changesBase<A, A>(o, (obs, lastValue, val) => {
       if (lastValue.isEmpty) obs.push(val);

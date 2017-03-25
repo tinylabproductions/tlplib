@@ -72,7 +72,7 @@ public
 {
   public static Option<A> None { get; } = new Option<A>();
 
-  readonly A value;
+  public readonly A __unsafeRawValue;
   public readonly bool isSome;
 
 #if ENABLE_IL2CPP
@@ -80,38 +80,38 @@ public
 #endif
 
   public Option(A value) : this() {
-    this.value = value;
+    __unsafeRawValue = value;
     isSome = true;
   }
 
   public A getOrThrow(Fn<Exception> getEx)
-    { return isSome ? value : F.throws<A>(getEx()); }
+    { return isSome ? __unsafeRawValue : F.throws<A>(getEx()); }
 
   public A getOrThrow(string message)
-    { return isSome ? value : F.throws<A>(new IllegalStateException(message)); }
+    { return isSome ? __unsafeRawValue : F.throws<A>(new IllegalStateException(message)); }
 
   [Obsolete("Use foreach (var item in option) item.doSomething();")]
-  public void each(Act<A> action) { if (isSome) action(value); }
+  public void each(Act<A> action) { if (isSome) action(__unsafeRawValue); }
 
   public void onNone(Action action) { if (! isSome) action(); }
 
   public Option<A> tap(Act<A> action) {
-    if (isSome) action(value);
+    if (isSome) action(__unsafeRawValue);
     return this;
   }
 
   public void voidFold(Action ifEmpty, Act<A> ifNonEmpty) {
-    if (isSome) ifNonEmpty(value);
+    if (isSome) ifNonEmpty(__unsafeRawValue);
     else ifEmpty();
   }
 
   public void voidCata(Act<A> ifNonEmpty, Action ifEmpty) { voidFold(ifEmpty, ifNonEmpty); }
 
   public Option<A> filter(Fn<A, bool> predicate) => 
-    isSome ? (predicate(value) ? this : F.none<A>()) : this;
+    isSome ? (predicate(__unsafeRawValue) ? this : F.none<A>()) : this;
 
   public bool exists(Fn<A, bool> predicate) {
-    return isSome && predicate(value);
+    return isSome && predicate(__unsafeRawValue);
   }
 
   public bool exists(A a) {
@@ -119,14 +119,14 @@ public
   }
 
   public bool exists(A a, IEqualityComparer<A> comparer) {
-    return isSome && comparer.Equals(value, a);
+    return isSome && comparer.Equals(__unsafeRawValue, a);
   }
 
   public bool isDefined => isSome;
   public bool isEmpty => ! isSome;
 
   public A get { get {
-    if (isSome) return value;
+    if (isSome) return __unsafeRawValue;
     throw new IllegalStateException("#get on None!");
   } }
 
@@ -182,11 +182,11 @@ public
   }
 
   public bool Equals(Option<A> other) {
-    return isSome ? other.exists(value) : other.isEmpty;
+    return isSome ? other.exists(__unsafeRawValue) : other.isEmpty;
   }
 
   public override int GetHashCode() {
-    return Smooth.Collections.EqComparer<A>.Default.GetHashCode(value);
+    return Smooth.Collections.EqComparer<A>.Default.GetHashCode(__unsafeRawValue);
   }
 
   public static bool operator == (Option<A> lhs, Option<A> rhs) {
@@ -211,18 +211,18 @@ public
   }
 
   public override string ToString() {
-    return isSome ? $"Some({value})" : "None";
+    return isSome ? $"Some({__unsafeRawValue})" : "None";
   }
 
   public Either<A, B> toLeft<B>(B right)
-    { return isSome ? Either<A, B>.Left(value) : Either<A, B>.Right(right); }
+    { return isSome ? Either<A, B>.Left(__unsafeRawValue) : Either<A, B>.Right(right); }
   public Either<A, B> toLeft<B>(Fn<B> right)
-    { return isSome ? Either<A, B>.Left(value) : Either<A, B>.Right(right()); }
+    { return isSome ? Either<A, B>.Left(__unsafeRawValue) : Either<A, B>.Right(right()); }
 
   public Either<B, A> toRight<B>(B left)
-    { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left); }
+    { return isSome ? Either<B, A>.Right(__unsafeRawValue) : Either<B, A>.Left(left); }
   public Either<B, A> toRight<B>(Fn<B> left)
-    { return isSome ? Either<B, A>.Right(value) : Either<B, A>.Left(left()); }
+    { return isSome ? Either<B, A>.Right(__unsafeRawValue) : Either<B, A>.Left(left()); }
 
   public IEnumerable<A> asEnum() {
     return isDefined ? get.Yield() : Enumerable.Empty<A>();
