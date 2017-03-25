@@ -269,10 +269,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         );
         _.it(
           "should not invoke mapper if interim value changes",
-          () => code(() => {
-            interim1.value.value = "i1_1";
-            rx.value.value.shouldEqual("i1_1");
-          }).shouldNotChange(mapperInvocations)
+          () => {
+            rx.value.value.shouldEqual("i1");
+            code(() => {
+              interim1.value.value = "i1_1";
+              rx.value.value.shouldEqual("i1_1");
+            }).shouldNotChange(mapperInvocations);
+          }
         );
       });
 

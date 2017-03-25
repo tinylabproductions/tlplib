@@ -33,7 +33,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     protected override A value {
       get {
-        if (sourceProperties.needsUpdate())
+        var needsUpdate = sourceProperties.needsUpdate();
+        if (needsUpdate)
           base.value = sourceProperties.getCurrentValue();
         return base.value;
       }

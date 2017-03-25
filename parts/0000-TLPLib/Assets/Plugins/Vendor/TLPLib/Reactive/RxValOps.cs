@@ -52,39 +52,46 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return mapped;
       };
 
-      Fn<bool> needsUpdate = () => 
+      Fn<bool> needsUpdate = () =>
         // Didn't request yet
         lastKnownAVersion.isEmpty 
         // Source changed since last request
-        || rx.valueVersion != lastKnownAVersion.__unsafeRawValue
+        || rx.valueVersion != lastKnownAVersion.get
         // Source did not change, but perhaps the mapped value changed?
-        || lastKnownBVersion != lastMappedBRx.__unsafeRawValue.valueVersion;
-
-      Fn<IRxVal<B>, B> extractValue = bRx => {
-        lastKnownAVersion = rx.valueVersion.some();
-        lastKnownBVersion = bRx.valueVersion;
-        return bRx.value;
-      };
-
+        || lastKnownBVersion != lastMappedBRx.get.valueVersion;
+      
       Fn<B> getLatestValue = () => {
         var bRx =
           lastMappedBRx.isEmpty
           // No value has been requested yet, update it ourselves
           ? mapper(rx.value)
           // Extract the latest RX
-          : lastMappedBRx.__unsafeRawValue;
+          : lastMappedBRx.get;
         // Update on value pull
-        return extractValue(bRx);
+        lastKnownAVersion = rx.valueVersion.some();
+        lastKnownBVersion = bRx.valueVersion;
+        return bRx.value;
       };
 
       var sourceProperties = new RxVal<B>.SourceProperties(needsUpdate, getLatestValue);
-      SubscribeToSource<B> subscribeFn = ObservableOpImpls.flatMap(
+      var originalSubscribeFn = ObservableOpImpls.flatMap(
         obs => rx.subscribe(obs, false),
-        (A a) => {
-          var ret = mapper(a);
-
-        }
+        mapper
       );
+      SubscribeToSource<B> subscribeFn = 
+        originalObserver => {
+          var obs = new Observer<B>(
+            b => {
+              // Update on value push.
+              lastKnownAVersion = rx.valueVersion.some();
+              lastKnownBVersion = lastMappedBRx.get.valueVersion;
+              originalObserver.push(b);
+            },
+            originalObserver.finish
+          );
+          return originalSubscribeFn(obs);
+        };
+
       return RxVal.a(sourceProperties, subscribeFn);
     }
 
