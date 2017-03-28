@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="tlplib:jar">
-    <output-path>$PROJECT_DIR$/../parts/0000-TLPLib/Assets/Plugins/Android/tlplib/libs</output-path>
-    <root id="archive" name="tlplib.jar">
-      <element id="module-output" name="tlplib" />
-    </root>
-  </artifact>
-</component>

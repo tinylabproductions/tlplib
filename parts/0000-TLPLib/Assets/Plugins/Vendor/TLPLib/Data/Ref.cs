@@ -1,8 +1,12 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public interface Ref<A> {
-    A value { get; set; }
+  public interface Val<out A> {
+    A value { get; }
+  }
+
+  public interface Ref<A> : Val<A> {
+    new A value { get; set; }
   }
 
   /* Simple heap-allocated reference. */
