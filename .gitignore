@@ -7,3 +7,6 @@ obj
 
 # Solution User Options
 *.suo
+
+# Intellij IDEA
+.idea
