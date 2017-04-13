@@ -1,9 +1,8 @@
-﻿using UnityEditor;
+﻿#if UNITY_5_5_OR_NEWER
+using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.extensions {
   public static class TextureImporterExts {
-
-#if UNITY_5_5_OR_NEWER
     public class Platform {
       //https://docs.unity3d.com/ScriptReference/TextureImporterPlatformSettings-name.html
       public static Platform 
@@ -52,5 +51,6 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
       $"{nameof(ps.name)}:{ps.name}, " +
       $"{nameof(ps.overridden)}:{ps.overridden}";
   }
-#endif
+  }
 }
+#endif
