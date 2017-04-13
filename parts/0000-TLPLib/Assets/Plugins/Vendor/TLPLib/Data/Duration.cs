@@ -7,6 +7,8 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Data {
   // I discovered TimeSpan after this was written...
   public struct Duration : IStr, IEquatable<Duration> {
+    public static readonly Duration zero = new Duration(0);
+
     public readonly int millis;
 
     public static Duration fromSeconds(int seconds) => new Duration(seconds * 1000);
