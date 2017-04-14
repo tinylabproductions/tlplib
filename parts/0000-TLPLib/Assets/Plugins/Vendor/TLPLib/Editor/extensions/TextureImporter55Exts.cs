@@ -51,6 +51,5 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
       $"{nameof(ps.name)}:{ps.name}, " +
       $"{nameof(ps.overridden)}:{ps.overridden}";
   }
-  }
 }
 #endif
