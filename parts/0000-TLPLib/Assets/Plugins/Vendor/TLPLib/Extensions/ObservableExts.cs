@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ObservableExts {
-    // TODO: test
     public static ISubscription subscribeWhileAlive<A>(
       this IObservable<A> obs, GameObject obj, Act<A> onChange
     ) {
