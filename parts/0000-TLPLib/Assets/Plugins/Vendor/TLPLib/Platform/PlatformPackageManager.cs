@@ -33,10 +33,11 @@ namespace com.tinylabproductions.TLPLib.Platform {
     public AndroidPlatformPackageManager() {
       androidPackageManager = AndroidActivity.packageManager;
       //Cache all of the packet names for better performance
-      packageNames = androidPackageManager
-        .getInstalledPackages(PackageManager.GetPackageInfoFlags.GET_ACTIVITIES)
-        .Select(package => package.packageName)
-        .ToImmutableList();
+      packageNames = 
+        androidPackageManager
+          .getInstalledPackages(PackageManager.GetPackageInfoFlags.GET_ACTIVITIES)
+          .Select(package => package.packageName)
+          .ToImmutableList();
     }
 
     public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
