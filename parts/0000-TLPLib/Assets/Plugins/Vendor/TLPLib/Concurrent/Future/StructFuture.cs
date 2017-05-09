@@ -106,21 +106,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       if (current.isEmpty) onComplete(a => action(a.some()));
     }
     
-    public Future<B> map<B>(Fn<A, B> mapper) {
-      return implementation.fold(
-        v => Future<B>.successful(mapper(v)), 
-        _ => Future<B>.unfulfilled,
-        f => Future<B>.async(p => f.onComplete(v => p.complete(mapper(v))))
-      );
-    }
+    public Future<B> map<B>(Fn<A, B> mapper) => implementation.fold(
+      v => Future<B>.successful(mapper(v)), 
+      _ => Future<B>.unfulfilled,
+      f => Future<B>.async(p => f.onComplete(v => p.complete(mapper(v))))
+    );
 
-    public Future<B> flatMap<B>(Fn<A, Future<B>> mapper) {
-      return implementation.fold(
-        mapper,
-        _ => Future<B>.unfulfilled,
-        f => Future<B>.async(p => f.onComplete(v => mapper(v).onComplete(p.complete)))
-      );
-    }
+    public Future<B> flatMap<B>(Fn<A, Future<B>> mapper) => implementation.fold(
+      mapper,
+      _ => Future<B>.unfulfilled,
+      f => Future<B>.async(p => f.onComplete(v => mapper(v).onComplete(p.complete)))
+    );
 
     /** Filter future on value - if predicate matches turns completed future into unfulfilled. **/
     public Future<A> filter(Fn<A, bool> predicate) {

@@ -12,16 +12,18 @@ namespace com.tinylabproductions.TLPLib.Collection {
   }
 
   public class ReadOnlyDictionary<K, V> : IReadOnlyDictionary<K, V> {
-    readonly IDictionary<K, V> backing;
-    public ReadOnlyDictionary(IDictionary<K, V> backing) { this.backing = backing; }
+    public static ReadOnlyDictionary<K, V> empty = new ReadOnlyDictionary<K, V>(new Dictionary<K, V>());
 
-    public IEnumerator<KeyValuePair<K, V>> GetEnumerator() => backing.GetEnumerator();
+    public readonly IDictionary<K, V> __unsafeBackingDictionary;
+    public ReadOnlyDictionary(IDictionary<K, V> backing) { __unsafeBackingDictionary = backing; }
+
+    public IEnumerator<KeyValuePair<K, V>> GetEnumerator() => __unsafeBackingDictionary.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    public int Count => backing.Count;
-    public bool ContainsKey(K key) => backing.ContainsKey(key);
-    public bool TryGetValue(K key, out V value) => backing.TryGetValue(key, out value);
-    public V this[K key] => backing.a(key);
-    public IEnumerable<K> Keys => backing.Keys;
-    public IEnumerable<V> Values => backing.Values;
+    public int Count => __unsafeBackingDictionary.Count;
+    public bool ContainsKey(K key) => __unsafeBackingDictionary.ContainsKey(key);
+    public bool TryGetValue(K key, out V value) => __unsafeBackingDictionary.TryGetValue(key, out value);
+    public V this[K key] => __unsafeBackingDictionary.a(key);
+    public IEnumerable<K> Keys => __unsafeBackingDictionary.Keys;
+    public IEnumerable<V> Values => __unsafeBackingDictionary.Values;
   }
 }

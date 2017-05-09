@@ -409,6 +409,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     });
 
     public static Config.Parser<B> flatMap<A, B>(
+      this Config.Parser<A> aParser, Fn<A, Option<B>> f
+    ) => aParser.flatMap((path, a) => f(a));
+
+    public static Config.Parser<B> flatMap<A, B>(
       this Config.Parser<A> aParser, Fn<ConfigPath, A, Either<ConfigLookupError, B>> f
     ) =>
       (path, o) => aParser(path, o).flatMapRight(a => f(path, a));

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -27,7 +28,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
     // Exception thrower which "returns" a value for use in expressions.
     public static A throws<A>(Exception ex) { throw ex; }
     public static A matchErr<A>(string paramName, string value) =>
-      throws<A>(new ArgumentOutOfRangeException($"Unknown {paramName} value: {value}"));
+      throws<A>(new ArgumentOutOfRangeException($"Unknown {paramName} value: '{value}'"));
+
+    public static Option<A> matchErrOpt<A>(string paramName, string value) {
+      if (Log.isError) Log.error($"Unknown {paramName} value: '{value}'");
+      return none<A>();
+    }
 
     // Function that can be used to throw exceptions.
     public static void doThrow(Exception ex) { throw ex; }

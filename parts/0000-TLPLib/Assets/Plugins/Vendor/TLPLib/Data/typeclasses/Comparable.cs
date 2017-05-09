@@ -41,7 +41,9 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static bool gt<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) == CompareResult.GT;
     public static bool gte<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) != CompareResult.LT;
     public static A min<A>(this Comparable<A> cmp, A a1, A a2) => cmp.lt(a1, a2) ? a1 : a2;
+    public static A min<A>(this A a1, A a2, Comparable<A> cmp) => cmp.min(a1, a2);
     public static A max<A>(this Comparable<A> cmp, A a1, A a2) => cmp.gt(a1, a2) ? a1 : a2;
+    public static A max<A>(this A a1, A a2, Comparable<A> cmp) => cmp.max(a1, a2);
 
     public static Option<A> max<A, Coll>(
       this Coll c, Comparable<A> comparable

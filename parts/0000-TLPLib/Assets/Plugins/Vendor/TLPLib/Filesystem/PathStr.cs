@@ -61,6 +61,12 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
     public override string ToString() { return path; }
     public string unixString => ToString().Replace('\\', '/');
+
+    // Use this with Unity Resources, AssetDatabase and PrefabUtility methods
+    public string toUnityPath() {
+      if (Path.DirectorySeparatorChar == '/') return path;
+      return path.Replace('\\' , '/');
+    }
   }
 
   public static class PathStrExts {

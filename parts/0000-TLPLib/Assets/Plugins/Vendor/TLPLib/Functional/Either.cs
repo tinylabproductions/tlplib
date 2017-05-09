@@ -196,6 +196,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
 
     public EitherEnumerator<A, B> GetEnumerator() => new EitherEnumerator<A, B>(this);
+
+    // Converstions from values.
+    public static implicit operator Either<A, B>(A left) => new Either<A, B>(left);
+    public static implicit operator Either<A, B>(B right) => new Either<A, B>(right);
   }
 
   public struct EitherEnumerator<A, B> {
