@@ -300,9 +300,16 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       };
       addExtraData.addExtras((name, value) => extras[name] = value);
 
+      // Sentry has a bug where events with same message, but different stacktrace get
+      // grouped to same group. This is a workaround for that.
+      var message = data.backtrace.headOption().fold(
+        data.message,
+        line => $"{data.message} in {line}"
+      );
+
       var json = new Dictionary<string, object> {
         // max length - 1000 chars
-        {"message", data.message.trimTo(1000)},
+        {"message", message.trimTo(1000)},
         {"level", logTypeToSentryLevel(data.errorType)},
         {"logger", loggerName},
         {"platform", Application.platform.ToString()},
