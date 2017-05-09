@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
     public bool hasSystemFeature(string feature) => 
       Application.platform != RuntimePlatform.Android || java.Call<bool>("hasSystemFeature", feature);
 
-    // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPackageInfo(java.lang.String, int)
+    // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPackageInfo(java.lang.String,%20int)
     public Option<PackageInfo> getPackageInfo(string bundleIdentifier, GetPackageInfoFlags flags) {
       if (Application.platform != RuntimePlatform.Android) return Option<PackageInfo>.None;
       try {
