@@ -31,6 +31,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
     public bool hasSystemFeature(string feature) => 
       Application.platform != RuntimePlatform.Android || java.Call<bool>("hasSystemFeature", feature);
 
+    //https://developer.android.com/reference/android/content/pm/PackageManager.html#getPackageInfo(java.lang.String, int)
     public Option<PackageInfo> getPackageInfo(string bundleIdentifier, GetPackageInfoFlags flags) {
       if (Application.platform != RuntimePlatform.Android) return Option<PackageInfo>.None;
       try {
@@ -43,6 +44,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       }
     }
 
+    //https://developer.android.com/reference/android/content/pm/PackageManager.html#getInstalledPackages(int)
     public ImmutableList<PackageInfo> getInstalledPackages(GetPackageInfoFlags flags) {
       // List<PackageInfo> getInstalledPackages(int flags)
       var jList = new List(java.cjo("getInstalledPackages", (int) flags));
