@@ -3,29 +3,22 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
-
 #endif
 
 namespace com.tinylabproductions.TLPLib.Platform {
   public interface IPlatformPackageManager {
     bool hasAppInstalled(string bundleIdentifier);
-    bool hasSystemF
   }
 
   public static class PlatformPackageManager {
-    /// <summary>
-    /// Checks for active platform, and returns platform specific package manager
-    /// </summary>
-    /// <returns>Platform specific package manager</returns>
-    public static IPlatformPackageManager a() {
+    public static readonly IPlatformPackageManager packageManager =
 #if UNITY_EDITOR
-      return new NoOpPlatformPackageManager();
+      new NoOpPlatformPackageManager();
 #elif UNITY_ANDROID
-      return new AndroidPlatformPackageManager();
+      new AndroidPlatformPackageManager();
 #else
-      return new NoOpPlatformPackageManager();
+      new NoOpPlatformPackageManager();
 #endif
-    }
   }
 
   class NoOpPlatformPackageManager : IPlatformPackageManager {
@@ -46,7 +39,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
         .ToImmutableList();
     }
 
-    public bool hasSystemFeature(string feature) => androidPackageManager.hasSystemFeature(feature);
     public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
   }
 #endif
