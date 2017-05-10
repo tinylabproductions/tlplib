@@ -45,20 +45,31 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public TestTimeContext() : this(Duration.fromSeconds(1 / 60f)) {}
 
     void triggerActions() {
-      actions.RemoveWhere(t => t.ua((runAt, act, name) => {
+      // Actions might remove themselves as side effects, so we should first evaluate
+      // all actions that should be run, then remove the ran actions if they are still 
+      // there.
+      var toRun = actions.Where(t => t.ua((runAt, act, name) => {
         var shouldRun = timePassed >= runAt;
-        if (shouldRun) act();
         return shouldRun;
-      }));
+      })).ToList();
+      foreach (var t in toRun) t._2();
+      actions.RemoveWhere(toRun.Contains);
     }
 
     public Duration passedSinceStartup => timePassed;
 
-    public void after(Duration duration, Action act, string name) =>
-      actions.Add(F.t(timePassed + duration, act, name));
+    public Coroutine after(Duration duration, Action act, string name) {
+      TestTimeContextCoroutine cr = null;
+      // ReSharper disable once PossibleNullReferenceException
+      var entry = F.t(timePassed + duration, (Action) (() => cr.timeHit()), name);
+      cr = new TestTimeContextCoroutine(() => actions.Remove(entry));
+      cr.onFinish += act;
+      actions.Add(entry);
+      return cr;
+    }
 
-    public void afterXFrames(int framesToSkip, Action act, string name) =>
-      actions.Add(F.t(timePassed + timePerFrame * framesToSkip, act, name));
+    public Coroutine afterXFrames(int framesToSkip, Action act, string name) =>
+      after(timePerFrame * framesToSkip, act, name);
 
     public override string ToString() {
       var acts = debugActions.Select(t => 
@@ -69,5 +80,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public void setTimePassedAtLeast(Duration time) =>
       timePassed = Duration.comparable.max(timePassed, time);
+  }
+
+  class TestTimeContextCoroutine : Coroutine {
+    public event Action onFinish;
+    public bool finished { get; private set; }
+
+    readonly Action onDispose;
+
+    public TestTimeContextCoroutine(Action onDispose) { this.onDispose = onDispose; }
+
+    public void timeHit() {
+      finished = true;
+      onFinish?.Invoke();
+    }
+
+    public void Dispose() {
+      onDispose();
+      finished = true;
+    }
   }
 }

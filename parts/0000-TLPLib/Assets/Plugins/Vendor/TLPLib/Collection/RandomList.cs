@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   /* A list which has random order inside. 
@@ -10,17 +11,18 @@ namespace com.tinylabproductions.TLPLib.Collection {
    * Traversals: O(n).
    */
   public class RandomList<A> : IList<A> {
-    private readonly List<A> backing = new List<A>();
+    readonly List<A> backing = new List<A>();
 
-    public void Add(A item) { backing.Add(item); }
-    public void Clear() { backing.Clear(); }
-    public bool Contains(A item) { return backing.Contains(item); }
-    public void CopyTo(A[] array, int arrayIndex) { backing.CopyTo(array, arrayIndex); }
-    public int IndexOf(A item) { return backing.IndexOf(item); }
-    public int Count { get { return backing.Count; } }
-    public bool IsReadOnly { get { return false; } }
-    public IEnumerator<A> GetEnumerator() { return backing.GetEnumerator(); }
-    IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+    public void Add(A item) => backing.Add(item);
+    public void Clear() => backing.Clear();
+    public bool Contains(A item) => backing.Contains(item);
+    public void CopyTo(A[] array, int arrayIndex) => backing.CopyTo(array, arrayIndex);
+    public int IndexOf(A item) => backing.IndexOf(item);
+    public int Count => backing.Count;
+    public bool IsReadOnly => false;
+    public IEnumerator<A> GetEnumerator() => backing.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
     public A this[int index] {
       get { return backing[index]; }
       set { backing[index] = value; }
@@ -47,7 +49,13 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     /* Removes element at index, moving last element to its position. */
     public void RemoveAt(int index) {
+      if (index < 0) throw new ArgumentOutOfRangeException(
+        $"Invalid index {index} for {nameof(RandomList<A>)} of size {Count}!"
+      );
       var lastIndex = backing.Count - 1;
+      if (lastIndex == -1) throw new ArgumentOutOfRangeException(
+        $"Can't remove index {index} from empty {nameof(RandomList<A>)}!"
+      );
       if (index == lastIndex) {
         backing.RemoveAt(lastIndex);
       }
@@ -61,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public void RemoveWhere(Fn<A, bool> predicate) {
       var idx = 0;
       while (idx < Count) {
-        var item = backing[idx];
+        var item = backing.a(idx);
         if (predicate(item)) RemoveAt(idx);
         else idx++;
       }
