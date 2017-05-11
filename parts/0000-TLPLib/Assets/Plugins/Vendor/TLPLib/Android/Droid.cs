@@ -53,8 +53,10 @@ namespace com.tinylabproductions.TLPLib.Android {
       this string className, params object[] args
     ) { return jo(className, args); }
 
-    /* Extension method: call instance method on java object and return other 
-     * java object. */
+    /// <summary>
+    /// Extension method: call instance method on java object and return other 
+    /// java object. 
+    /// </summary>
     public static AndroidJavaObject cjo(
       this AndroidJavaObject javaObject, string methodName, params object[] args
     ) { return javaObject.Call<AndroidJavaObject>(methodName, args); }

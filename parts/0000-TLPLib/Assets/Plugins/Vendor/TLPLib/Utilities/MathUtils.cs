@@ -147,5 +147,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static float remap(this float value, float from1, float to1, float from2, float to2) {
       return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
+
+    // a % b gives non positive result on negative numbersn
+    // this always gives positive
+    // http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
+    public static int modPositive(this int value, int mod) => ((value % mod) + mod) % mod;
   }
 }
