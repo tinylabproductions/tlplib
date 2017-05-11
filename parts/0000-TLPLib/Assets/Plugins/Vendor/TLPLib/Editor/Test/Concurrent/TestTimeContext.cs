@@ -44,6 +44,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public TestTimeContext(Duration timePerFrame) { this.timePerFrame = timePerFrame; }
     public TestTimeContext() : this(Duration.fromSeconds(1 / 60f)) {}
 
+    public void reset() {
+      actions.Clear();
+      timePassed = 0.seconds();
+    } 
+
     void triggerActions() {
       // Actions might remove themselves as side effects, so we should first evaluate
       // all actions that should be run, then remove the ran actions if they are still 
