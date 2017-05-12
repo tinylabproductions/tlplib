@@ -43,12 +43,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Coroutine everyFrame(this GameObject go, Action a) {
-      return go.everyFrame(() => { a(); return true; });
+      return go.everyFrame(() => {
+        a();
+        return true;
+      });
     }
 
     public static IObservable<Unit> onMouseDown(this GameObject go) {
       return (
-        go.GetComponent<OnMouseDownForwarder>() ?? 
+        go.GetComponent<OnMouseDownForwarder>() ??
         go.AddComponent<OnMouseDownForwarder>()
       ).onMouseDown;
     }
