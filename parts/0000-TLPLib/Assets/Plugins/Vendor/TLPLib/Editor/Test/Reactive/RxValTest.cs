@@ -145,12 +145,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   
   public class RxValTest : Specification {
     [Test] public void map() => describe(_ => {
-      var mapperInvocations = _.beforeEach(0);
-      var src = _.beforeEach(() => RxRef.a(10));
-      var rx = _.beforeEach(() => src.map(i => {
-        mapperInvocations++;
-        return i + 1;
-      }));
+      var mapperInvocations = 0;
+      IRxRef<int> src = null;
+      IRxVal<int> rx = null;
+
+      _.beforeEach(() => {
+        mapperInvocations = 0;
+        src = RxRef.a(10);
+        rx = src.map(i => {
+          mapperInvocations++;
+          return i + 1;
+        });
+      });
 
       _.when("not subscribed", () => {
         _.it("should not invoke mapper on creation", () => {
@@ -198,7 +204,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
 
       void subscribedSpec(int initialValue) {
-        var list = _.beforeEach(() => rx.pipeToList()._1);
+        List<int> list = null;
+        _.beforeEach(() => list = rx.pipeToList()._1);
 
         void createSpec(int current, int[] values) {
           _.it("should have the mapped value", () => rx.value.shouldEqual(current));

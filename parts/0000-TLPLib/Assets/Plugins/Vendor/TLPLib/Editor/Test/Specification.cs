@@ -97,13 +97,13 @@ namespace com.tinylabproductions.TLPLib.Test {
       tests.Add(currentContext.test($"it {name}", testAction));
     }
 
-    public ref A beforeEach<A>(A initialValue) => ref beforeEach(() => initialValue);
+    public SimpleRef<A> beforeEach<A>(A initialValue) => beforeEach(() => initialValue);
 
-    public ref A beforeEach<A>(Fn<A> createInitialValue) {
+    public SimpleRef<A> beforeEach<A>(Fn<A> createInitialValue) {
       var r = new SimpleRef<A>(default(A));
       Action reinit = () => r.value = createInitialValue();
       currentContext = currentContext.addBeforeEach(reinit);
-      return ref r.value;
+      return r;
     }
 
     public void beforeEach(Action action) {
