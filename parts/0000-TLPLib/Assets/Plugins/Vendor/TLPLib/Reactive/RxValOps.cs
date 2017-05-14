@@ -152,7 +152,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // TODO: this is probably suboptimal.
       Action rescan = () => val.value = traverse(readValues());
 
-      subscribeToRescans(vals, rescan);
+      void subscribeToRescans() {
+        var doRescans = false;
+        foreach (var rxVal in vals)
+          rxVal.subscribe(_ => { if (doRescans) rescan(); });
+        doRescans = true;
+        rescan();
+      }
+
+      subscribeToRescans();
       return val;
     }
 
@@ -174,10 +182,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           else {
             dict.Remove(rx);
             if (val.value.isDefined) {
-              val.value = 
-                dict.isEmpty() 
-                  ? Option<A>.None 
-                  : dict[dict.Keys.First()].some();
+              val.value = dict.isEmpty() ? Option<A>.None : dict.First().Value.some();
             }
           }
         });
@@ -251,15 +256,5 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, A onFiltered) => 
       a => predicate(a) ? a : onFiltered;
-
-    static void subscribeToRescans<A>(
-      IEnumerable<IRxVal<A>> vals, Action rescan
-    ) {
-      var doRescans = false;
-      foreach (var rxVal in vals)
-        rxVal.subscribe(_ => { if (doRescans) rescan(); });
-      doRescans = true;
-      rescan();
-    }
   }
 }

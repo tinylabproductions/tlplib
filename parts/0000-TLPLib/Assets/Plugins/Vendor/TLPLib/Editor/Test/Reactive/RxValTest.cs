@@ -193,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           }
         );
 
-        _.it("should map the correctly", () => {
+        _.it("should map the value correctly", () => {
           rx.value.shouldEqual(11);
         });
 
