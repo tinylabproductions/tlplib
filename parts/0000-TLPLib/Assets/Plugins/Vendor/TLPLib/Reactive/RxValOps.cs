@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<B> flatMap<A, B>(this IRxVal<A> rx, Fn<A, IRxVal<B>> originalMapper) {
       var lastKnownAVersion = Option<uint>.None;
       var lastMappedBRx = Option<IRxVal<B>>.None;
-      var lastKnownBVersion = 0u;
+      var lastKnownBVersion = default(uint);
 
       Fn<A, IRxVal<B>> mapper = a => {
         var mapped = originalMapper(a);
@@ -52,17 +52,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return mapped;
       };
 
-      Fn<bool> needsUpdate = () =>
+      Fn<bool> needsUpdateA = () =>
         // Didn't request yet
-        lastKnownAVersion.isEmpty 
+        lastKnownAVersion.isEmpty
         // Source changed since last request
-        || rx.valueVersion != lastKnownAVersion.get
+        || rx.valueVersion != lastKnownAVersion.get;
+      Fn<bool> needsUpdate = () =>
+        needsUpdateA()
         // Source did not change, but perhaps the mapped value changed?
         || lastKnownBVersion != lastMappedBRx.get.valueVersion;
       
       Fn<B> getLatestValue = () => {
+        var aNeedsUpdate = needsUpdateA();
         var bRx =
-          lastMappedBRx.isEmpty
+          aNeedsUpdate || lastMappedBRx.isEmpty
           // No value has been requested yet, update it ourselves
           ? mapper(rx.value)
           // Extract the latest RX
@@ -83,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           var obs = new Observer<B>(
             b => {
               // Update on value push.
-              lastKnownAVersion = rx.valueVersion.some();
+//              lastKnownAVersion = rx.valueVersion.some();
               lastKnownBVersion = lastMappedBRx.get.valueVersion;
               originalObserver.push(b);
             },

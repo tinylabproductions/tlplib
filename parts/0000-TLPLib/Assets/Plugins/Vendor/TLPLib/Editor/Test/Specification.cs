@@ -65,8 +65,8 @@ namespace com.tinylabproductions.TLPLib.Test {
       public Context addAfterEach(Action action) =>
         new Context(name, beforeEach, afterEach.Add(action));
 
-      public Context child(string name) => 
-        new Context(concatName(this.name, name, " and "), beforeEach, afterEach);
+      public Context child(string childName) => 
+        new Context(concatName(name, childName, " and "), beforeEach, afterEach);
 
       public Test<Action> test(string testName, Action testAction) =>
         new Test<Action>(
@@ -97,11 +97,13 @@ namespace com.tinylabproductions.TLPLib.Test {
       tests.Add(currentContext.test($"it {name}", testAction));
     }
 
-    public Ref<A> beforeEach<A>(Fn<A> createInitialValue) {
-      var r = Ref.a(default(A));
+    public ref A beforeEach<A>(A initialValue) => ref beforeEach(() => initialValue);
+
+    public ref A beforeEach<A>(Fn<A> createInitialValue) {
+      var r = new SimpleRef<A>(default(A));
       Action reinit = () => r.value = createInitialValue();
       currentContext = currentContext.addBeforeEach(reinit);
-      return r;
+      return ref r.value;
     }
 
     public void beforeEach(Action action) {

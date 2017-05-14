@@ -6,8 +6,16 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   /* Simple heap-allocated reference. */
-  public class SimpleRef<A> : Ref<A> {
-    public A value { get; set; }
+  public sealed class SimpleRef<A> : Ref<A> {
+    // For access using ref keyword.
+    public A value;
+
+    A Val<A>.value => value;
+
+    A Ref<A>.value {
+      get { return value; }
+      set { this.value = value; }
+    }
 
     public SimpleRef(A value) { this.value = value; }
 

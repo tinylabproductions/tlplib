@@ -145,143 +145,178 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   
   public class RxValTest : Specification {
     [Test] public void map() => describe(_ => {
-      var mapperInvocations = _.beforeEach(() => 0);
+      var mapperInvocations = _.beforeEach(0);
       var src = _.beforeEach(() => RxRef.a(10));
-      var rx = _.beforeEach(() => src.value.map(i => {
-        mapperInvocations.value++;
+      var rx = _.beforeEach(() => src.map(i => {
+        mapperInvocations++;
         return i + 1;
       }));
 
       _.when("not subscribed", () => {
         _.it("should not invoke mapper on creation", () => {
-          mapperInvocations.value.shouldEqual(0);
+          mapperInvocations.shouldEqual(0);
         });
 
         _.it("should not invoke mapper on source changes", () => {
-          src.value.value++;
-          mapperInvocations.value.shouldEqual(0);
+          src.value++;
+          mapperInvocations.shouldEqual(0);
         });
 
         _.it("should invoke mapper upon requesting the value", () => {
-          rx.value.value.forSideEffects();
-          mapperInvocations.value.shouldEqual(1);
+          rx.value.forSideEffects();
+          mapperInvocations.shouldEqual(1);
         });
 
         _.it(
           "should invoke mapper only once upon value request even if source changed multiple times",
           () => {
-            src.value.value++;
-            src.value.value++;
-            rx.value.value.forSideEffects();
-            mapperInvocations.value.shouldEqual(1);
+            src.value++;
+            src.value++;
+            rx.value.forSideEffects();
+            mapperInvocations.shouldEqual(1);
           }
         );
 
         _.it(
           "should invoke mapper again if a change happened after last value request",
           () => {
-            rx.value.value.forSideEffects();
-            src.value.value++;
-            rx.value.value.forSideEffects();
-            mapperInvocations.value.shouldEqual(2);
+            rx.value.forSideEffects();
+            src.value++;
+            rx.value.forSideEffects();
+            mapperInvocations.shouldEqual(2);
           }
         );
 
         _.it("should map the correctly", () => {
-          rx.value.value.shouldEqual(11);
+          rx.value.shouldEqual(11);
         });
 
         _.it("should map the value after change correctly", () => {
-          src.value.value = 20;
-          rx.value.value.shouldEqual(21);
+          src.value = 20;
+          rx.value.shouldEqual(21);
         });
       });
 
-      Fn<Val<List<int>>, Act<int, int[]>> createSpec = list => (current, values) => {
-        _.it("should have the mapped value", () => rx.value.value.shouldEqual(current));
-        _.it("should push the mapped value", () => list.value.shouldEqualEnum(values));
-        _.it(
-          "should not invoke mapper again upon requesting value",
-          () => code(() => 
-            rx.value.value
-          ).shouldNotChange(mapperInvocations)
-        );
-      };
+      void subscribedSpec(int initialValue) {
+        var list = _.beforeEach(() => rx.pipeToList()._1);
 
-      Act<int> subscribedSpec = initialValue => {
-        var list = _.beforeEach(() => rx.value.pipeToList()._1);
-        var spec = createSpec(list);
+        void createSpec(int current, int[] values) {
+          _.it("should have the mapped value", () => rx.value.shouldEqual(current));
+          _.it("should push the mapped value", () => list.shouldEqualEnum(values));
+          _.it(
+            "should not invoke mapper again upon requesting value",
+            () => code(() =>
+              rx.value
+            ).shouldNotChange(() => mapperInvocations)
+          );
+        }
 
-        spec(initialValue + 1, new[] { initialValue + 1 });
+        createSpec(initialValue + 1, new[] { initialValue + 1 });
 
         _.when("source has been updated", () => {
-          _.beforeEach(() => src.value.value++);
-          spec(initialValue + 2, new[] { initialValue + 1, initialValue + 2 });
+          _.beforeEach(() => src.value++);
+          createSpec(initialValue + 2, new[] { initialValue + 1, initialValue + 2 });
 
           _.when("source has been updated again", () => {
-            _.beforeEach(() => src.value.value++);
-            spec(initialValue + 3, new[] { initialValue + 1, initialValue + 2, initialValue + 3 });
+            _.beforeEach(() => src.value++);
+            createSpec(initialValue + 3, new[] { initialValue + 1, initialValue + 2, initialValue + 3 });
           });
         });
-      };
+      }
 
       _.when("subscribed", () => subscribedSpec(10));
 
       _.when("subscribed, changed and unsubscribed", () => {
         _.beforeEach(() => {
-          var x = rx.value.pipeToList();
-          src.value.value++;
-          x._2.unsubscribe();
-          src.value.value++;
+          var (list, subscription) = rx.pipeToList();
+          src.value++;
+          subscription.unsubscribe();
+          src.value++;
 
-          x._1.shouldEqualEnum(11, 12);
-          rx.value.value.shouldEqual(13);
+          list.shouldEqualEnum(11, 12);
+          rx.value.shouldEqual(13);
         });
 
         subscribedSpec(12);
       });
     });
 
-    [Test]
-    public void flatMap() => describe(_ => {
-      var mapperInvocations = _.beforeEach(() => 0);
-      var src = _.beforeEach(() => RxRef.a(10));
-      var interim1 = _.beforeEach(() => RxRef.a("i1"));
-      var interim2 = _.beforeEach(() => RxRef.a("i2"));
-      var rx = _.beforeEach(() => src.value.flatMap(i => {
-        mapperInvocations.value++;
-        return i % 2 == 0 ? interim1.value : interim2.value;
-      }));
-
-      _.when("not subscribed", () => {
-        _.it("should not invoke mapper initially", () => mapperInvocations.value.shouldEqual(0));
-        _.it("should have the proper initial value", () => rx.value.value.shouldEqual("i1"));
-        _.it(
-          "should invoke mapper once when asking for a value", 
-          () => code(() => rx.value.value).shouldChange(mapperInvocations).by(1)
-        );
-        _.it(
-          "should not invoke mapper again if value did not change",
-          () => {
-            rx.value.value.forSideEffects();
-            code(() => rx.value.value).shouldNotChange(mapperInvocations);
-          }
-        );
-        _.it(
-          "should not invoke mapper if interim value changes",
-          () => {
-            rx.value.value.shouldEqual("i1");
-            code(() => {
-              interim1.value.value = "i1_1";
-              rx.value.value.shouldEqual("i1_1");
-            }).shouldNotChange(mapperInvocations);
-          }
-        );
-      });
-
-      _.when("subscribed", () => {
-        
-      });
-    });
+//    [Test]
+//    public void flatMap() => describe(_ => {
+//      var mapperInvocations = _.beforeEach(() => 0);
+//      var src = _.beforeEach(() => RxRef.a(10));
+//      var interim1 = _.beforeEach(() => RxRef.a("i1"));
+//      var interim2 = _.beforeEach(() => RxRef.a("i2"));
+//      var rx = _.beforeEach(() => src.value.flatMap(i => {
+//        mapperInvocations.value++;
+//        return i % 2 == 0 ? interim1.value : interim2.value;
+//      }));
+//
+//      _.when("not subscribed", () => {
+//        _.it("should not invoke mapper initially", () => mapperInvocations.value.shouldEqual(0));
+//        _.it("should have the proper initial value", () => rx.value.shouldEqual("i1"));
+//        _.it(
+//          "should invoke mapper once when asking for a value", 
+//          () => code(() => rx.value).shouldChange(mapperInvocations).by(1)
+//        );
+//        _.it(
+//          "should not invoke mapper again if value did not change",
+//          () => {
+//            rx.value.forSideEffects();
+//            code(() => rx.value).shouldNotChange(mapperInvocations);
+//          }
+//        );
+//        _.it(
+//          "should not invoke mapper if interim value changes",
+//          () => {
+//            rx.value.shouldEqual("i1");
+//            code(() => {
+//              interim1.value = "i1_1";
+//              rx.value.shouldEqual("i1_1");
+//            }).shouldNotChange(mapperInvocations);
+//          }
+//        );
+//
+//        _.when("src changes", () => {
+//          Act<string> spec = value => {
+//            _.it(
+//              "should not invoke mapper",
+//              () => mapperInvocations.value.shouldEqual(0)
+//            );
+//            _.it(
+//              "should invoke mapper when value is being accessed",
+//              () => code(() => rx.value).shouldChange(mapperInvocations).by(1)
+//            );
+//            _.it(
+//              "should produce correct value",
+//              () => rx.value.shouldEqual(value)
+//            );
+//          };
+//
+//          _.beforeEach(() => src.value++);
+//          spec("i2");
+//
+//          _.when("second interim changes", () => {
+//            _.beforeEach(() => interim2.value = "i2_2");
+//            spec("i2_2");
+//          });
+//
+//          _.when("src changes back and first interim is changed", () => {
+//            _.beforeEach(() => {
+//              rx.value.forSideEffects();
+//              mapperInvocations.value = 0;
+//
+//              interim1.value = "i1_3";
+//              src.value++;
+//            });
+//            spec("i1_3");
+//          });
+//        });
+//      });
+//
+//      _.when("subscribed", () => {
+//        
+//      });
+//    });
   }
 }

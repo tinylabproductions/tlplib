@@ -1,10 +1,10 @@
 import java.io._
 
 object TupleData {
-  def paramsRange(params: Int) = 1 to params
-  def genericParameterNames(genericParamPrefix: String, paramsRange: Range) =
+  def paramsRange(params: Int): Range.Inclusive = 1 to params
+  def genericParameterNames(genericParamPrefix: String, paramsRange: Range): IndexedSeq[String] =
     paramsRange.map(n => s"$genericParamPrefix$n")
-  def typeSigGenerics(genericParameterNames: Seq[String]) =
+  def typeSigGenerics(genericParameterNames: Seq[String]): String =
     genericParameterNames.mkString(", ")
   def fullType(typename: String, typeSigGenerics: String) = s"$typename<$typeSigGenerics>"
 }
@@ -39,27 +39,25 @@ class TupleData(
 
   val equals = genericParameterNames.zip(propNames).map {
     case (type_, prop) =>
-      s"Smooth.Collections.EqComparer<$type_>.Default.Equals($prop, t.$prop)"
+      s"Smooth.Collections.EqComparer<${type_}>.Default.Equals($prop, t.$prop)"
   }
   val equalsS = equals.mkString(" &&\n")
 
   val hash = genericParameterNames.zip(propNames).map {
     case (type_, prop) =>
-      s"hash = 29 * hash + Smooth.Collections.EqComparer<$type_>.Default.GetHashCode($prop);"
+      s"hash = 29 * hash + Smooth.Collections.EqComparer<${type_}>.Default.GetHashCode($prop);"
   }
   val hashS = hash.mkString("\n")
 
   val compareTo = genericParameterNames.zip(propNames).map {
     case (type_, prop) =>
-      s"c = Smooth.Collections.Comparer<$type_>.Default.Compare($prop, other.$prop);"
+      s"c = Smooth.Collections.Comparer<${type_}>.Default.Compare($prop, other.$prop);"
   }
   val compareToS = compareTo.mkString(" if (c != 0) { return c; }\n")
 
   lazy val adder = nextTuple.map { nextT =>
     val lastP = nextT.genericParameterNames.last
-    s"public ${nextT.fullType} add<$lastP>($lastP a) { " +
-      s"return new ${nextT.fullType}($propArgsS, a);" +
-    "}"
+    s"public ${nextT.fullType} add<$lastP>($lastP a) => new ${nextT.fullType}($propArgsS, a);"
   }
   lazy val adderS = adder.getOrElse("")
 
@@ -70,15 +68,21 @@ class TupleData(
       types.last +: types.dropRight(1)
     })
     val nextTFullType = TupleData.fullType(typename, nextTTypeSigGenerics)
-    s"public $nextTFullType unshift<$firstP>($firstP a) { " +
-      s"return new $nextTFullType(a, $propArgsS);" +
-    "}"
+    s"public $nextTFullType unshift<$firstP>($firstP a) => new $nextTFullType(a, $propArgsS);"
   }
   lazy val unshifterS = unshifter.getOrElse("")
 
-  def fCsStr =
-    s"public static $fullType t<$typeSigGenerics>($paramArgsS) " +
-    s"{ return new $fullType($paramArgNamesS); }"
+  // public void Deconstruct(out T1 x1, ..., out Tn xn) { ... }
+  lazy val deconstructor = {
+    val params = genericParameterNames.zip(propNames).map {
+      case (type_, prop) => s"out $type_ $prop"
+    }.mkString(", ")
+    val body = propNames.map { prop => s"$prop = this.$prop;" }.mkString(" ")
+    s"public void Deconstruct($params) { $body }"
+  }
+
+  def fCsStr: String =
+    s"public static $fullType t<$typeSigGenerics>($paramArgsS) => new $fullType($paramArgNamesS);"
 
   def tupleCsStr =
     s"""
@@ -96,30 +100,26 @@ IComparable<$fullType>, IEquatable<$fullType> {
     { $constructorSettersS; }
 
   // Unapply.
-  public void ua(Act<$typeSigGenerics> f) { f($propArgsS); }
+  public void ua(Act<$typeSigGenerics> f) => f($propArgsS);
 
   // Unapply with function.
-  public R ua<R>(Fn<$typeSigGenerics, R> f) { return f($propArgsS); }
+  public R ua<R>(Fn<$typeSigGenerics, R> f) => f($propArgsS);
 
   $adderS
 
   $unshifterS
 
-  public override string ToString() {
-    return $$"($toStringFmtS)";
-  }
+  $deconstructor
 
-  public override bool Equals(object o) {
-    return o is $fullType && this.Equals(($fullType) o);
-  }
+  public override string ToString() => $$"($toStringFmtS)";
 
-  public bool Equals($fullType t) {
-    return $equalsS;
-  }
+  public override bool Equals(object o) => o is $fullType && Equals(($fullType) o);
+
+  public bool Equals($fullType t) => $equalsS;
 
   public override int GetHashCode() {
     unchecked {
-      int hash = 17;
+      var hash = 17;
       $hashS
       return hash;
     }
@@ -131,32 +131,15 @@ IComparable<$fullType>, IEquatable<$fullType> {
     return c;
   }
 
-  public static bool operator == ($fullType lhs, $fullType rhs) {
-    return lhs.Equals(rhs);
-  }
-
-  public static bool operator != ($fullType lhs, $fullType rhs) {
-    return !lhs.Equals(rhs);
-  }
-
-  public static bool operator > ($fullType lhs, $fullType rhs) {
-    return lhs.CompareTo(rhs) > 0;
-  }
-
-  public static bool operator < ($fullType lhs, $fullType rhs) {
-    return lhs.CompareTo(rhs) < 0;
-  }
-
-  public static bool operator >= ($fullType lhs, $fullType rhs) {
-    return lhs.CompareTo(rhs) >= 0;
-  }
-
-  public static bool operator <= ($fullType lhs, $fullType rhs) {
-    return lhs.CompareTo(rhs) <= 0;
-  }
+  public static bool operator == ($fullType lhs, $fullType rhs) => lhs.Equals(rhs);
+  public static bool operator != ($fullType lhs, $fullType rhs) => !lhs.Equals(rhs);
+  public static bool operator > ($fullType lhs, $fullType rhs) => lhs.CompareTo(rhs) > 0;
+  public static bool operator < ($fullType lhs, $fullType rhs) => lhs.CompareTo(rhs) < 0;
+  public static bool operator >= ($fullType lhs, $fullType rhs) => lhs.CompareTo(rhs) >= 0;
+  public static bool operator <= ($fullType lhs, $fullType rhs) => lhs.CompareTo(rhs) <= 0;
 }"""
 
-  def eitherCsStr = {
+  def eitherCsStr: String = {
     val tupledReturnType = s"Either<ImmutableList<A>, Tpl<$typeSigGenerics>>"
 
     def tupleRights =
