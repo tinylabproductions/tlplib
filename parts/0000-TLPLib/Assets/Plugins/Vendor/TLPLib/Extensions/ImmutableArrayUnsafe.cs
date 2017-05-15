@@ -16,6 +16,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       PrivateConstructor.creator<ImmutableArray<A>>();
 
     public static readonly Fn<ImmutableArray<A>, A[]> internalArray =
-      PrivateFieldAccessor.accessor<ImmutableArray<A>, A[]>("array");
+      PrivateField.getter<ImmutableArray<A>, A[]>("array");
   }
 }
