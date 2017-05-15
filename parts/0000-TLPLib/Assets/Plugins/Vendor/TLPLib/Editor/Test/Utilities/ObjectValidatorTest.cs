@@ -144,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenReferenceNotMissing() => 
-      shouldFindNoErrors<PublicField>(a => {
+      shouldNotFindErrors<PublicField>(a => {
         a.field = new GameObject();
       });
 
@@ -158,7 +158,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenReferenceNotMissingInner() => 
-      shouldFindNoErrors<NullReferencePublicField>(a => {
+      shouldNotFindErrors<NullReferencePublicField>(a => {
         a.field.field = new GameObject();
       });
 
@@ -170,7 +170,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       => shouldFindErrors<NotNullPublicField>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullPublicFieldSet() => 
-      shouldFindNoErrors<NotNullPublicField>(a => {
+      shouldNotFindErrors<NotNullPublicField>(a => {
         a.field = new GameObject();
       });
 
@@ -195,7 +195,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenNotNullSerializedFieldSet() => 
-      shouldFindNoErrors<NotNullSerializedField>(a => {
+      shouldNotFindErrors<NotNullSerializedField>(a => {
         a.setField(new GameObject());
       });
 
@@ -204,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     #region Array/List
 
     [Test] public void WhenArrayWithNulls() => 
-      shouldFindNoErrors<ArrayWithNulls>(
+      shouldNotFindErrors<ArrayWithNulls>(
         a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
       );
 
@@ -223,7 +223,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenReferenceListNotEmpty() => 
-      shouldFindNoErrors<ListNotEmpty>(
+      shouldNotFindErrors<ListNotEmpty>(
         a => {
           var inner = new InnerNotNull { field = new GameObject() };
           a.field = new List<InnerNotNull> { inner };
@@ -239,7 +239,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenNullReferenceListSet() => 
-      shouldFindNoErrors<NullReferenceList>(
+      shouldNotFindErrors<NullReferenceList>(
         a => {
           var inner = new InnerNotNull {field = new GameObject()};
           a.field = new List<InnerNotNull> {inner};
@@ -248,10 +248,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
-    [Test] public void WhenNonSerializedFieldIsNotSet() => shouldFindNoErrors<NonSerializedField>();
+    [Test] public void WhenNonSerializedFieldIsNotSet() => shouldNotFindErrors<NonSerializedField>();
 
     [Test] public void WhenNonSerializedFieldIsSet() => 
-      shouldFindNoErrors<NonSerializedField>(a => {
+      shouldNotFindErrors<NonSerializedField>(a => {
         a.setField(new GameObject());
       });
 
@@ -261,7 +261,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => 
-      shouldFindNoErrors<NullReferencePublicField>(a => {
+      shouldNotFindErrors<NullReferencePublicField>(a => {
         a.field = new InnerNotNull {field = new GameObject()};
       });
 
@@ -271,7 +271,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => 
-      shouldFindNoErrors<NullReferenceSerializedField>(a => {
+      shouldNotFindErrors<NullReferenceSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
 
@@ -279,7 +279,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       => shouldFindErrors<NotNullProtectedSerializedField>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullProtectedSerializedFieldSet() => 
-      shouldFindNoErrors<NotNullProtectedSerializedField>(a => {
+      shouldNotFindErrors<NotNullProtectedSerializedField>(a => {
         a.setField(new GameObject());
       });
 
@@ -289,13 +289,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedFieldSet() => 
-      shouldFindNoErrors<NullReferenceProtectedSerializedField>(a => {
+      shouldNotFindErrors<NullReferenceProtectedSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
 
     #region [TextField(TextFieldType.Tag)]
 
-    [Test] public void WhenTextFieldTypeNotTag() => shouldFindNoErrors<TextFieldTypeNotTag>();
+    [Test] public void WhenTextFieldTypeNotTag() => shouldNotFindErrors<TextFieldTypeNotTag>();
 
     [Test] public void WhenBadTextFieldValue() =>
       shouldFindErrors<TextFieldTypeTag>(
@@ -304,7 +304,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenGoodTextFieldValue() => 
-      shouldFindNoErrors<TextFieldTypeTag>(a => {
+      shouldNotFindErrors<TextFieldTypeTag>(a => {
         a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
       });
 
@@ -313,7 +313,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     #region RequireComponent
 
     [Test] public void WhenRequireComponentComponentsAreThere() =>
-       shouldFindNoErrors<RequireComponentBehaviour>(a => a.setup());
+       shouldNotFindErrors<RequireComponentBehaviour>(a => a.setup());
 
     [Test] public void WhenRequireComponentFirstComponentIsNotThere() =>
       shouldFindErrors<RequireComponentBehaviour>(
@@ -334,7 +334,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     [Test] public void WhenInheritingRequireComponentComponentsAreThere() =>
-      shouldFindNoErrors<InheritingRequireComponentBehaviour>(a => a.setup());
+      shouldNotFindErrors<InheritingRequireComponentBehaviour>(a => a.setup());
 
     [Test] public void WhenInheritingRequireComponentFirstComponentIsNotThere() =>
       shouldFindErrors<InheritingRequireComponentBehaviour>(
@@ -363,7 +363,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return a;
     }
 
-    public static void shouldFindNoErrors<A>(
+    public static void shouldNotFindErrors<A>(
       Act<A> setupA = null
     ) where A : Component {
       var go = setupComponent(setupA).gameObject;
