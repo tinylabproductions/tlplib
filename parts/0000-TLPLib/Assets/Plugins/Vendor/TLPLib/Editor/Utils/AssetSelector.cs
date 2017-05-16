@@ -49,10 +49,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         var objects = AssetDatabase.FindAssets("t:prefab")
           .Select(AssetDatabase.GUIDToAssetPath)
           .Select(path => AssetDatabase.LoadAssetAtPath(path, type))
-          .Where(c => {
-            if (c) return includeDerived || c.GetType() == type;
-            return false;
-          })
+          .Where(c => c && (includeDerived || c.GetType() == type))
           .Select(c => {
             foreach (var _ in F.opt(c as Component)) return _.gameObject;
             foreach (var _ in F.opt(c as MonoBehaviour)) return _.gameObject;
