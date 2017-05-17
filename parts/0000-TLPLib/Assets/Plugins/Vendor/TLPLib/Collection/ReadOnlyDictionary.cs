@@ -4,10 +4,10 @@ using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class ReadOnlyDictionary {
-    public static IReadOnlyDictionary<K, V> a<K, V>(IDictionary<K, V> backing) =>
+    public static ReadOnlyDictionary<K, V> a<K, V>(IDictionary<K, V> backing) =>
       new ReadOnlyDictionary<K, V>(backing);
 
-    public static IReadOnlyDictionary<K, V> asReadOnly<K, V>(this IDictionary<K, V> backing) =>
+    public static ReadOnlyDictionary<K, V> asReadOnly<K, V>(this IDictionary<K, V> backing) =>
       a(backing);
   }
 

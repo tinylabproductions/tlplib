@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Coroutine StartCoroutine(IEnumerator coroutine) {
-      return new Coroutine(behaviour, coroutine);
+      return new UnityCoroutine(behaviour, coroutine);
     }
 
     public static Coroutine WithDelay(
@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) {
       behaviour = behaviour ?? ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeScale);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
       var enumerator = NextFrameEnumerator(action);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     public static Coroutine AfterXFrames(
@@ -130,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(MonoBehaviour behaviour, Fn<bool> f) {
       var enumerator = EveryWaitEnumerator(null, f);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Do thing every X seconds until f returns false. */
@@ -146,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
       var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtimeReusable(seconds), f);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Returns action that cancels our delayed call. */
