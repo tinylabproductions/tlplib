@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class TypeExts {
@@ -14,5 +15,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
                                  BindingFlags.DeclaredOnly;
       return t.GetFields(flags).Concat(getAllFields(t.BaseType));
     }
+
+    // checks if type can be used in GetComponent and friends
+    public static bool canBeUnityComponent(this Type type) => 
+      type.IsInterface
+      || typeof(MonoBehaviour).IsAssignableFrom(type)
+      || typeof(Component).IsAssignableFrom(type);
   }
 }

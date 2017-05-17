@@ -4,7 +4,16 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
-  public interface Comparable<in A> {
+  public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
+
+  public static class CompareResultExts {
+    public static CompareResult asCmpRes(this int result) =>
+        result < 0 ? CompareResult.LT 
+      : result == 0 ? CompareResult.EQ 
+      : CompareResult.GT;
+  }
+
+  public interface Comparable<A> : IComparer<A> {
     CompareResult compare(A a1, A a2);
   }
 
@@ -15,6 +24,9 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<bool> bool_ = lambda<bool>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<string> string_ = 
+      lambda<string>((a1, a2) => string.CompareOrdinal(a1, a2));
 
     public static Comparable<A> lambda<A>(Fn<A, A, CompareResult> compare) =>
       new Lambda<A>(compare);
@@ -27,6 +39,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       public Lambda(Fn<A, A, CompareResult> compare) { _compare = compare; }
 
       public CompareResult compare(A a1, A a2) => _compare(a1, a2);
+      public int Compare(A x, A y) => (int) _compare(x, y);
     }
   }
 
