@@ -41,6 +41,15 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
       return ps;
     }
 
+    public static bool isEqualIgnoreName(
+      this TextureImporterPlatformSettings a, TextureImporterPlatformSettings b
+    ) => a.allowsAlphaSplitting == b.allowsAlphaSplitting
+         && a.crunchedCompression == b.crunchedCompression
+         && a.compressionQuality == b.compressionQuality
+         && a.format == b.format
+         && a.maxTextureSize == b.maxTextureSize
+         && a.textureCompression == b.textureCompression;
+
     public static string toString(this TextureImporterPlatformSettings ps) =>
       $"{nameof(ps.textureCompression)}:{ps.textureCompression}, " +
       $"{nameof(ps.allowsAlphaSplitting)}:{ps.allowsAlphaSplitting}, " +
