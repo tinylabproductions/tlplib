@@ -6,18 +6,22 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Android {
 #if UNITY_ANDROID
   public static class AndroidView {
-    private const string FLAG_HIDE_NAVIGATION = "SYSTEM_UI_FLAG_HIDE_NAVIGATION";
-    private const string FLAG_STABLE_LAYOUT = "SYSTEM_UI_FLAG_LAYOUT_STABLE";
-    private const string FLAG_IMMERSIVE_STICKY = "SYSTEM_UI_FLAG_IMMERSIVE_STICKY";
-    private const string FLAG_FULLSCREEN = "SYSTEM_UI_FLAG_FULLSCREEN";
+    const string
+      FLAG_HIDE_NAVIGATION = "SYSTEM_UI_FLAG_HIDE_NAVIGATION",
+      FLAG_STABLE_LAYOUT = "SYSTEM_UI_FLAG_LAYOUT_STABLE",
+      FLAG_IMMERSIVE_STICKY = "SYSTEM_UI_FLAG_IMMERSIVE_STICKY",
+      FLAG_FULLSCREEN = "SYSTEM_UI_FLAG_FULLSCREEN";
 
-    private static readonly AndroidJavaClass view;
+    static readonly AndroidJavaClass view;
 
     static AndroidView() {
       if (Application.isEditor) return;
       view = new AndroidJavaClass("android.view.View");
     }
 
+    /* [2017-05-18] usage of this method was removed.
+     * With Unity 5.5 screen resizing randomly while loading issue came up
+     * and removing this seems like it fixes the issue */
     /* If the layout is stable, screen space never changes, but navigation buttons just 
      * become a black stripe and never hides. */
     public static Future<bool> hideNavigationBar(bool stableLayout) {
