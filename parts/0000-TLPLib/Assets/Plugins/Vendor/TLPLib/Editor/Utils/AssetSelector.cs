@@ -11,7 +11,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   class AssetSelector : EditorWindow, IMB_OnGUI {
     [UsedImplicitly, MenuItem("Tools/Select assets of type...")]
-    static void init() => ((AssetSelector) GetWindow(typeof(AssetSelector))).Show();
+    static void init() => GetWindow<AssetSelector>("Asset Selector").Show();
 
     // Useful to clean serialized assets after migration or unity version upgrade
     [UsedImplicitly, MenuItem("Tools/Make selected objects dirty (force reserialize)")]
@@ -44,26 +44,35 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     static GameObject[] findObjects(Type type, bool includeDerived) {
-      try {
-        EditorUtility.DisplayProgressBar("Working", "Please wait...", 0);
-        var objects = AssetDatabase.FindAssets("t:prefab")
+      using (var progress = new EditorProgress(nameof(AssetSelector))) { 
+        var prefabs = progress.execute("Finding all prefabs", () => AssetDatabase.FindAssets("t:prefab"));
+
+        progress.start($"Searching for {type}");
+        var objects = 
+          prefabs
+          .Select((a, idx) => {
+            progress.progress(idx, prefabs.Length);
+            return a;
+          })
           .Select(AssetDatabase.GUIDToAssetPath)
           .Select(path => AssetDatabase.LoadAssetAtPath(path, type))
           .Where(c => c && (includeDerived || c.GetType() == type))
-          .Select(c => {
-            foreach (var _ in F.opt(c as Component)) return _.gameObject;
-            foreach (var _ in F.opt(c as MonoBehaviour)) return _.gameObject;
-            throw new Exception($"Unrecognized type {c.GetType()} on component {c}");
-          })
+          .Select(
+            c => {
+              foreach (var _ in F.opt(c as Component)) return _.gameObject;
+              foreach (var _ in F.opt(c as MonoBehaviour)) return _.gameObject;
+              throw new Exception($"Unrecognized type {c.GetType()} on component {c}");
+            })
           .ToArray();
-        Log.info($"Total objects found: {objects.Length}");
-        foreach (var obj in objects) {
-          Log.info(AssetDatabase.GetAssetPath(obj), obj);
-        }
+
+        progress.execute("Printing found objects to log.", () => {
+          Log.info($"Total objects found: {objects.Length}");
+          foreach (var obj in objects) {
+            Log.info(AssetDatabase.GetAssetPath(obj), obj);
+          }
+        });
+
         return objects;
-      }
-      finally {
-        EditorUtility.ClearProgressBar();
       }
     }
   }
