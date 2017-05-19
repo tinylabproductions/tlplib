@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       MAX_PARAM_KEY_LENGTH = 24,
       MAX_PARAM_VALUE_LENGTH = 36;
 
-    public enum Trim { Left, Right, None }
+    public enum Trim : byte { KeepLeftSide, KeepRightSide, None }
 
     static readonly ImmutableHashSet<string> reservedEventNames = ImmutableHashSet.Create(
       "app_clear_data",
@@ -124,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       new OneOf<string, long, double>(
         trim == Trim.None 
         ? value 
-        : value.trimTo(MAX_PARAM_VALUE_LENGTH, fromRight: trim == Trim.Right)
+        : value.trimTo(MAX_PARAM_VALUE_LENGTH, fromRight: trim == Trim.KeepRightSide)
       );
 
     public static OneOf<string, long, double> param(long value) =>
