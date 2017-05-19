@@ -7,59 +7,59 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// 
   /// https://forum.unity3d.com/threads/which-random-number-generator-does-unity-use.148601/
   /// https://en.wikipedia.org/wiki/Xorshift
+  /// 
+  /// This implementation uses xorshift* version.
   /// </summary>
   public struct Rng {
-    readonly uint s0, s1, s2, s3;
+    public readonly ulong seed;
 
-    /* The state array must be initialized to not be all zero */
-    Rng(uint s0, uint s1, uint s2, uint s3) {
-      this.s0 = s0;
-      this.s1 = s1;
-      this.s2 = s2;
-      this.s3 = s3;
+    public static Rng now => new Rng(DateTime.Now);
+
+    // The state must be seeded with a nonzero value.
+    public Rng(ulong seed) {
+      this.seed = seed == 0 ? ulong.MaxValue : seed;
     }
 
-    public Rng(DateTime seed) : this(
-      unchecked((uint) seed.Millisecond),
-      unchecked((uint) seed.Second),
-      unchecked((uint) seed.DayOfYear),
-      unchecked((uint) seed.Year)
-    ) {}
+    public Rng(DateTime seed) : this(unchecked((ulong) seed.Ticks)) {}
 
-    public override string ToString() => $"{nameof(Rng)}[{s0}, {s1}, {s2}, {s3}]";
+    public override string ToString() => $"{nameof(Rng)}({seed})";
 
-    public Tpl<Rng, uint> nextUIntT { get {
+    public Tpl<Rng, ulong> nextULongT { get {
       Rng newState;
-      var res = nextUInt(out newState);
+      var res = nextULong(out newState);
       return F.t(newState, res);
     } }
-    public static readonly Fn<Rng, Tpl<Rng, uint>> nextUIntS = rng => rng.nextUIntT;
+    public static readonly Fn<Rng, Tpl<Rng, ulong>> nextULongS = rng => rng.nextULongT;
 
-    public uint nextUInt(out Rng newState) {
-      var t = s3;
-      t ^= t << 11;
-      t ^= t >> 8;
-      t ^= s0;
-      t ^= s0 >> 19;
-      newState = new Rng(t, s0, s1, s2);
-      return t;
+    public ulong nextULong(out Rng newState) {
+      var x = seed;
+      x ^= x >> 12; // a
+      x ^= x << 25; // b
+      x ^= x >> 27; // c
+      newState = new Rng(x);
+      return x * 0x2545F4914F6CDD1D;
     }
 
-    const uint HALF_OF_UINT = uint.MaxValue / 2;
-    static bool uintToBool(uint v) => v >= HALF_OF_UINT;
-    public Tpl<Rng, bool> nextBoolT => nextUIntT.map2(uintToBool);
+    static uint ulongToUInt(ulong v) => unchecked((uint) v);
+    public Tpl<Rng, uint> nextUIntT => nextULongT.map2(ulongToUInt);
+    public static readonly Fn<Rng, Tpl<Rng, uint>> nextUIntS = rng => rng.nextUIntT;
+    public uint nextUInt(out Rng newState) => ulongToUInt(nextULong(out newState));
+
+    const ulong HALF_OF_ULONG = ulong.MaxValue / 2;
+    static bool ulongToBool(ulong v) => v >= HALF_OF_ULONG;
+    public Tpl<Rng, bool> nextBoolT => nextULongT.map2(ulongToBool);
     public static readonly Fn<Rng, Tpl<Rng, bool>> nextBoolS = rng => rng.nextBoolT;
-    public bool nextBool(out Rng newState) => uintToBool(nextUInt(out newState));
+    public bool nextBool(out Rng newState) => ulongToBool(nextULong(out newState));
 
-    static int uintToInt(uint v) => unchecked((int) v);
-    public Tpl<Rng, int> nextIntT => nextUIntT.map2(uintToInt);
+    static int ulongToInt(ulong v) => unchecked((int) v);
+    public Tpl<Rng, int> nextIntT => nextULongT.map2(ulongToInt);
     public static readonly Fn<Rng, Tpl<Rng, int>> nextIntS = rng => rng.nextIntT;
-    public int nextInt(out Rng newState) => uintToInt(nextUInt(out newState));
+    public int nextInt(out Rng newState) => ulongToInt(nextULong(out newState));
 
-    static float uintToFloat(uint v) => (float) v / uint.MaxValue;
-    public Tpl<Rng, float> nextFloatT => nextUIntT.map2(uintToFloat);
+    static float ulongToFloat(ulong v) => (float) v / ulong.MaxValue;
+    public Tpl<Rng, float> nextFloatT => nextULongT.map2(ulongToFloat);
     public static readonly Fn<Rng, Tpl<Rng, float>> nextFloatS = rng => rng.nextFloatT;
-    public float nextFloat(out Rng newState) => uintToFloat(nextUInt(out newState));
+    public float nextFloat(out Rng newState) => ulongToFloat(nextULong(out newState));
 
     static int floatToIntInRange(Range range, float v) => 
       range.from + (int)((range.to - range.from) * v);
