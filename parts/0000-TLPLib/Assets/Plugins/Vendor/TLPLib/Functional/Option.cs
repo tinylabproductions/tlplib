@@ -203,6 +203,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Option<B> flatMap<B>(Fn<A, Option<B>> func) => 
       isDefined ? func(get) : F.none<B>();
 
+    public Option<C> flatMap<B, C>(Fn<A, Option<B>> func, Fn<A, B, C> mapper) {
+      if (!isEmpty) return Option<C>.None;
+      var bOpt = func(value);
+      return bOpt.isEmpty ? Option<C>.None : F.some(mapper(value, bOpt.value));
+    }
+
     public override string ToString() => 
       isSome ? $"Some({value})" : "None";
 
@@ -295,5 +301,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
       read = true;
       return option.get;
     } }
+  }
+
+  public static class OptionLinqExts {
+    public static Option<B> Select<A, B>(this Option<A> opt, Fn<A, B> f) => opt.map(f);
+    public static Option<B> SelectMany<A, B>(this Option<A> opt, Fn<A, Option<B>> f) => opt.flatMap(f);
+    public static Option<C> SelectMany<A, B, C>(
+      this Option<A> opt, Fn<A, Option<B>> f, Fn<A, B, C> g
+    ) => opt.flatMap(f, g);
+    public static Option<A> Where<A>(this Option<A> opt, Fn<A, bool> f) => opt.filter(f);
   }
 }
