@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -29,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       _to = to;
     }
 
-    public int random { get { return Random.Range(from, to + 1); } }
+    public int random => Random.Range(from, to + 1);
 
     public RangeEnumerator GetEnumerator() { return new RangeEnumerator(from, to); }
   }
@@ -74,23 +73,23 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.to = to;
     }
 
-    public uint random { get { return (uint) Random.Range(from, to + 1); } }
+    public uint random => (uint) Random.Range(from, to + 1);
   }
 
   [Serializable]
   public struct FRange {
     // No it can't, Unity...
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
-    [SerializeField] private float _from, _to;
-    public float from { get { return _from; } }
-    public float to { get { return _to; } }
+    [SerializeField] float _from, _to;
+    public float from => _from;
+    public float to => _to;
 
     public FRange(float from, float to) {
       _from = from;
       _to = to;
     }
 
-    public float random { get { return Rng.range(from, to); } }
+    public float random => Random.Range(from, to);
 
     public EnumerableFRange by(float step) {
       return new EnumerableFRange(from, to, step);
@@ -110,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.step = step;
     }
 
-    public float random { get { return Rng.range(from, to); } }
+    public float random => Random.Range(from, to);
 
     public IEnumerator<float> GetEnumerator() {
       for (var i = from; i <= to; i += step)
