@@ -174,27 +174,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #joinAll
 
-    /**
-     * Joins events of more than two observables effectively.
-     **/
     public static IObservable<A> joinAll<A>(
-      this IObservable<A> o, ICollection<IObservable<A>> others
-    ) => o.joinAll(others, others.Count);
-
-    public static IObservable<A> joinAll<A>(
-      this IObservable<A> o, IEnumerable<IObservable<A>> others, int othersCount
-    ) => Observable.a(ObservableOpImpls.joinAll(o, others, othersCount));
-
-    public static IObservable<A> joinAll<A>(
-      this ICollection<IObservable<A>> observables
-    ) => observables.joinAll(observables.Count);
+      this IObservable<A> o, IEnumerable<IObservable<A>> others
+    ) => Observable.a(ObservableOpImpls.joinAll(o, others));
 
     /**
      * Joins all events from all observables into one stream.
      **/
     public static IObservable<A> joinAll<A>(
-      this IEnumerable<IObservable<A>> observables, int count
-    ) => Observable.a(ObservableOpImpls.joinAll(observables, count));
+      this IEnumerable<IObservable<A>> observables
+    ) => Observable.a(ObservableOpImpls.joinAll(observables));
 
     #endregion
 
@@ -207,10 +196,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       * Only emits an event if other event was not emmited in specified 
       * time range.
       **/
-    // TODO: test with integration tests
     public static IObservable<A> onceEvery<A>(
-      this IObservable<A> o, Duration duration, TimeScale timeScale = TimeScale.Realtime
-    ) => Observable.a(ObservableOpImpls.onceEvery(o, duration, timeScale));
+      this IObservable<A> o, Duration duration, ITimeContext timeContext = null
+    ) => Observable.a(ObservableOpImpls.onceEvery(o, duration, timeContext));
 
     /**
       * Waits until `count` events are emmited within a single `timeframe` 
