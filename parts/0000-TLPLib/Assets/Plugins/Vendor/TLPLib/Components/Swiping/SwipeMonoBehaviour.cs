@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.Swiping {
-  public class SwipeMonoBehaviour : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, ISwipeEventSource {
+  public class SwipeMonoBehaviour : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler {
     public event Action<Vector2> swipeEnded;
     public event Action swipedLeft;
     public event Action swipedRigth;
