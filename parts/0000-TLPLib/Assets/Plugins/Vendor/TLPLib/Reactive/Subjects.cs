@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public interface ISubject : IObservable, IObserver {}
+  public interface ISubject : IObservable {}
   public interface ISubject<A> : ISubject, IObservable<A>, IObserver<A> {}
 
   /** 
@@ -12,7 +10,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    **/
   public class Subject<A> : Observable<A>, ISubject<A> {
     public void push(A value) => submit(value);
-    public void finish() => finishObservable();
   }
 
   /**
@@ -20,25 +17,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * them upon subscription.
    **/
   public class ReplaySubject<A> : Observable<A>, ISubject<A> {
-    // None - stream finished, Some(value) - submited;
-    readonly List<Option<A>> events = new List<Option<A>>();
+    // Some(value) - submited;
+    readonly List<A> events = new List<A>();
 
     public override ISubscription subscribe(IObserver<A> observer) {
-      foreach (var opt in events) {
-        if (opt.isDefined) observer.push(opt.get);
-        else observer.finish();
-      }
+      foreach (var evt in events) observer.push(evt);
       return base.subscribe(observer);
     }
 
     public void push(A value) {
       submit(value);
-      events.Add(value.some());
-    }
-
-    public void finish() {
-      finishObservable();
-      events.Add(Option<A>.None);
+      events.Add(value);
     }
 
     /** Clears the event backlog. */

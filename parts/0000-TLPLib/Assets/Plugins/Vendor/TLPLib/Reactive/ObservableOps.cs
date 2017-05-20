@@ -11,18 +11,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #subscribe
 
     public static ISubscription subscribe<A>(
-      this IObservable<A> observable,
-      Act<A> onChange, Action onFinish = null
-    ) => observable.subscribe(new Observer<A>(onChange, onFinish ?? (() => {})));
+      this IObservable<A> observable, Act<A> onChange
+    ) => observable.subscribe(new Observer<A>(onChange));
 
     public static ISubscription subscribe<A>(
       this IObservable<A> observable, 
-      Act<A, ISubscription> onChange,
-      Action onFinish = null
+      Act<A, ISubscription> onChange
     ) {
       ISubscription subscription = null;
       // ReSharper disable once AccessToModifiedClosure
-      subscription = observable.subscribe(a => onChange(a, subscription), onFinish);
+      subscription = observable.subscribe(a => onChange(a, subscription));
       return subscription;
     }
 

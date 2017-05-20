@@ -3,32 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using WeakReference = com.tinylabproductions.TLPLib.System.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
-    public static IRxVal<B> map<A, B>(this IRxVal<A> rx, Fn<A, B> mapper) {
-      var lastKnownAVersion = Option<uint>.None;
+    public static ISubscription subscribe<A>(
+      this IRxVal<A> src, Act<A> onValue, bool submitCurrentValue
+    ) =>
+      src.subscribe(new Observer<A>(onValue), submitCurrentValue);
 
-      Fn<bool> needsUpdate = () => 
-        lastKnownAVersion.isEmpty 
-        || lastKnownAVersion.__unsafeRawValue != rx.valueVersion;
-      Fn<B> getLatestValue = () => {
-        // Update on value pull.
-        lastKnownAVersion = rx.valueVersion.some();
-        return mapper(rx.value);
-      };
-
-      var sourceProperties = new RxVal<B>.SourceProperties(needsUpdate, getLatestValue);
-      var subscribeFn = ObservableOpImpls.map(
-        obs => rx.subscribe(obs, false), 
-        (A a) => {
-          // Update on value push.
-          lastKnownAVersion = rx.valueVersion.some();
-          return mapper(a);
-        }
-      );
-      return RxVal.a(sourceProperties, subscribeFn);
+    public static ISubscription subscribe<A>(
+      this IRxVal<A> src, Act<A, ISubscription> onValue, bool submitCurrentValue
+    ) {
+      ISubscription sub = null;
+      // ReSharper disable once AccessToModifiedClosure
+      sub = src.subscribe(a => onValue(a, sub), submitCurrentValue);
+      return sub;
     }
+
+    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Fn<A, B> mapper) =>
+      new RxVal<B>(
+        mapper(src.value),
+        setValue => src.subscribe(
+          (a, sub) => { if (!setValue(mapper(a))) sub.unsubscribe(); },
+          submitCurrentValue: false
+        )
+      );
 
     #region #filter
 
@@ -40,79 +40,49 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #endregion
 
-    public static IRxVal<B> flatMap<A, B>(this IRxVal<A> rx, Fn<A, IRxVal<B>> originalMapper) {
-      var lastKnownAVersion = Option<uint>.None;
-      var lastMappedBRx = Option<IRxVal<B>>.None;
-      var lastKnownBVersion = default(uint);
+    public static IRxVal<B> flatMap<A, B>(this IRxVal<A> src, Fn<A, IRxVal<B>> mapper) {
+      var bRx = mapper(src.value);
 
-      Fn<A, IRxVal<B>> mapper = a => {
-        var mapped = originalMapper(a);
-        lastMappedBRx = mapped.some();
-        lastKnownBVersion = mapped.valueVersion;
-        return mapped;
-      };
+      return new RxVal<B>(
+        bRx.value,
+        setValue => {
+          var subToBRx = bRx.subscribe(b => setValue(b), submitCurrentValue: false);
 
-      Fn<bool> needsUpdateA = () =>
-        // Didn't request yet
-        lastKnownAVersion.isEmpty
-        // Source changed since last request
-        || rx.valueVersion != lastKnownAVersion.get;
-      Fn<bool> needsUpdate = () =>
-        needsUpdateA()
-        // Source did not change, but perhaps the mapped value changed?
-        || lastKnownBVersion != lastMappedBRx.get.valueVersion;
-      
-      Fn<B> getLatestValue = () => {
-        var aNeedsUpdate = needsUpdateA();
-        var bRx =
-          aNeedsUpdate || lastMappedBRx.isEmpty
-          // No value has been requested yet, update it ourselves
-          ? mapper(rx.value)
-          // Extract the latest RX
-          : lastMappedBRx.get;
-        // Update on value pull
-        lastKnownAVersion = rx.valueVersion.some();
-        lastKnownBVersion = bRx.valueVersion;
-        return bRx.value;
-      };
-
-      var sourceProperties = new RxVal<B>.SourceProperties(needsUpdate, getLatestValue);
-      var originalSubscribeFn = ObservableOpImpls.flatMap(
-        obs => rx.subscribe(obs, false),
-        mapper
-      );
-      SubscribeToSource<B> subscribeFn = 
-        originalObserver => {
-          var obs = new Observer<B>(
-            b => {
-              // Update on value push.
-//              lastKnownAVersion = rx.valueVersion.some();
-              lastKnownBVersion = lastMappedBRx.get.valueVersion;
-              originalObserver.push(b);
+          var aSub = src.subscribe(
+            a => {
+              subToBRx?.unsubscribe();
+              bRx = mapper(a);
+              subToBRx = bRx.subscribe(b => setValue(b), submitCurrentValue: true);
             },
-            originalObserver.finish
+            submitCurrentValue: false
           );
-          return originalSubscribeFn(obs);
-        };
-
-      return RxVal.a(sourceProperties, subscribeFn);
+          return aSub.andThen(() => subToBRx.unsubscribe());
+        }
+      );
     }
 
     #region #zip
 
-    public static IRxVal<Tpl<A, B>> zip<A, B>(this IRxVal<A> rx, IRxVal<B> rx2) => null;
-//      RxVal.a(
-//        () => F.t(rx.value, rx2.value),
-//        ObservableOpImpls.zip(rx, rx2)
-//      );
+    public static IRxVal<Tpl<A, B>> zip<A, B>(this IRxVal<A> aSrc, IRxVal<B> bSrc) => 
+      new RxVal<Tpl<A, B>>(
+        F.t(aSrc.value, bSrc.value),
+        setValue =>
+          aSrc.subscribe(a => setValue(F.t(a, bSrc.value)), submitCurrentValue: false)
+          .join(bSrc.subscribe(b => setValue(F.t(aSrc.value, b)), submitCurrentValue: false))
+      );
 
     public static IRxVal<Tpl<A, B, C>> zip<A, B, C>(
       this IRxVal<A> rx, IRxVal<B> rx2, IRxVal<C> rx3
-    ) => null;
-//      RxVal.a(
-//        () => F.t(rx.value, rx2.value, rx3.value),
-//        ObservableOpImpls.zip(rx, rx2, rx3)
-//      );
+    ) =>
+      new RxVal<Tpl<A, B, C>>(
+        F.t(rx.value, rx2.value, rx3.value),
+        setValue =>
+          rx.subscribe(a => setValue(F.t(a, rx2.value, rx3.value)), submitCurrentValue: false)
+          .join(
+            rx2.subscribe(b => setValue(F.t(rx.value, b, rx3.value)), submitCurrentValue: false),
+            rx3.subscribe(c => setValue(F.t(rx.value, rx2.value, c)), submitCurrentValue: false)
+          )
+      );
 
     public static IRxVal<Tpl<A, B, C, D>> zip<A, B, C, D>(
       this IRxVal<A> ref1, IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4
@@ -144,24 +114,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // TODO: test
     /** Convert an enum of rx values into one rx value using a traversal function. **/
     public static IRxVal<B> traverse<A, B>(
-      this IEnumerable<IRxVal<A>> vals, Fn<IEnumerable<A>, B> traverse
+      this IEnumerable<IRxVal<A>> valsEnum, Fn<IEnumerable<A>, B> traverseFn
+    ) => traverse(valsEnum.ToArray(), traverseFn);
+
+    /** Convert an enum of rx values into one rx value using a traversal function. **/
+    public static IRxVal<B> traverse<A, B>(
+      this ICollection<IRxVal<A>> vals, Fn<IEnumerable<A>, B> traverseFn
     ) {
-      Fn<IEnumerable<A>> readValues = () => vals.Select(v => v.value);
-      var val = RxRef.a(traverse(readValues()));
+      B getValue() => traverseFn(vals.Select(v => v.value));
 
-      // TODO: this is probably suboptimal.
-      Action rescan = () => val.value = traverse(readValues());
-
-      void subscribeToRescans() {
-        var doRescans = false;
-        foreach (var rxVal in vals)
-          rxVal.subscribe(_ => { if (doRescans) rescan(); });
-        doRescans = true;
-        rescan();
-      }
-
-      subscribeToRescans();
-      return val;
+      return new RxVal<B>(
+        getValue(),
+        setValue =>
+          vals
+            .Select(v => v.subscribe(_ => setValue(getValue()), submitCurrentValue: false))
+            .ToArray() // strict evaluation
+            .joinSubscriptions()
+      );
     }
 
     /* Returns any value that satisfies the predicate. Order is not guaranteed. */
@@ -217,7 +186,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      **/
     public static IObservable<B> toEventSource<A, B>(
       this IRxVal<A> rxVal, Fn<A, B> mapper
-    ) => new Observable<B>(obs => rxVal.subscribe(v => obs.push(mapper(v)), obs.finish));
+    ) => new Observable<B>(obs => rxVal.subscribe(v => obs.push(mapper(v))));
 
     public static IObservable<Unit> toEventSource<A>(this IRxVal<A> o) => 
       o.toEventSource(_ => F.unit);

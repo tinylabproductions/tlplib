@@ -2,46 +2,35 @@
 using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public abstract class RxBase<A> : Observable<A> {
-    static readonly IEqualityComparer<A> comparer = EqComparer<A>.Default;
+  public abstract class RxBase<A> : IObservable<A> {
+    public readonly IEqualityComparer<A> comparer;
+    protected readonly Subject<A> subject = new Subject<A>();
 
     A _value;
-    public uint valueVersion { get; private set; }
-
-    // virtual here, because children might be doing something smarter with the value
-    protected virtual A value {
+    public A value {
       get { return _value; }
       set {
-        _value = value;
-        valueVersion++;
+        if (!comparer.Equals(_value, value)) {
+          _value = value;
+          subject.push(value);
+        }
       }
     }
 
-    protected RxBase(A value) {
+    protected RxBase(A value, IEqualityComparer<A> comparer = null) {
+      this.comparer = comparer ?? EqComparer<A>.Default;
       _value = value;
     }
 
-    protected RxBase(A value, SubscribeToSource<A> subscribeFn) : base(subscribeFn) {
-      _value = value;
-    }
-
-    protected override void submit(A a) {
-      // Use our local copy and not value accessor here, because we need to check 
-      // whether an update has happened and accessing value accessor might do other side
-      // effects, like updating _value.
-      if (!comparer.Equals(_value, a)) {
-        if (!iterating) value = a;
-        base.submit(a);
-      }
-    }
-
-    public override ISubscription subscribe(IObserver<A> observer) => 
+    public ISubscription subscribe(IObserver<A> observer) =>
       subscribe(observer, true);
 
-    public ISubscription subscribe(IObserver<A> observer, bool submitCurrentValue) {
-      var subscription = base.subscribe(observer);
+    public virtual ISubscription subscribe(IObserver<A> observer, bool submitCurrentValue) {
+      var subscription = subject.subscribe(observer);
       if (submitCurrentValue) observer.push(value);
       return subscription;
     }
+
+    public int subscribers => subject.subscribers;
   }
 }

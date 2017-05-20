@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<B> map<A, B>(
       SubscribeToSource<A> subscribe, Fn<A, B> mapper
     ) =>
-      obs => subscribe(new Observer<A>(val => obs.push(mapper(val)), obs.finish));
+      obs => subscribe(new Observer<A>(val => obs.push(mapper(val))));
 
     #endregion
 
@@ -29,25 +29,19 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) => 
       obs => observable.subscribe(val => {
         foreach (var b in mapper(val)) obs.push(b);
-      }, obs.finish);
+      });
     
     public static SubscribeToSource<B> flatMap<A, B>(
       SubscribeToSource<A> subscribe, Fn<A, IObservable<B>> mapper
     ) => 
       obs => {
         ISubscription innerSub = null;
-        Action innerUnsub = () => innerSub?.unsubscribe();
-        var observer = new Observer<A>(
-          val => {
-            innerUnsub();
-            var newObs = mapper(val);
-            innerSub = newObs.subscribe(obs);
-          },
-          () => {
-            innerUnsub();
-            obs.finish();
-          }
-        );
+        void innerUnsub() => innerSub?.unsubscribe();
+        var observer = new Observer<A>(val => {
+          innerUnsub();
+          var newObs = mapper(val);
+          innerSub = newObs.subscribe(obs);
+        });
         var thisSub = subscribe(observer);
         return thisSub.andThen(innerUnsub);
       };
@@ -55,18 +49,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<B> flatMap<A, B>(
       IObservable<A> o, Fn<A, Future<B>> mapper
     ) => 
-      obs => {
-        var sourceFinished = false;
-        return o.subscribe(
-          a => mapper(a).onComplete(b => {
-            if (!sourceFinished) obs.push(b);
-          }),
-          () => {
-            sourceFinished = true;
-            obs.finish();
-          }
-        );
-      };
+      obs => o.subscribe(a => mapper(a).onComplete(obs.push));
 
     #endregion
 
@@ -75,10 +58,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<A> filter<A>(
       IObservable<A> o, Fn<A, bool> predicate
     ) =>
-      obs => o.subscribe(
-        val => { if (predicate(val)) obs.push(val); },
-        obs.finish
-      );
+      obs => o.subscribe(val => { if (predicate(val)) obs.push(val); });
 
     #endregion
 
@@ -87,13 +67,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<A> skip<A>(IObservable<A> o, uint count) => 
       obs => {
         var skipped = 0u;
-        return o.subscribe(
-          a => {
-            if (skipped < count) skipped++;
-            else obs.push(a);
-          },
-          obs.finish
-        );
+        return o.subscribe(a => {
+          if (skipped < count) skipped++;
+          else obs.push(a);
+        });
       };
 
     #endregion
@@ -103,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<A> oncePerFrame<A>(IObservable<A> o)  =>
       obs => {
         var last = Option<A>.None;
-        var mySub = o.subscribe(v => last = v.some(), obs.finish);
+        var mySub = o.subscribe(v => last = v.some());
         var luSub = ASync.onLateUpdate.subscribe(_ => {
           foreach (var val in last) { 
             // Clear last before pushing, because exception makes it loop forever.
@@ -121,97 +98,106 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<Tpl<A, B>> zip<A, B>(
       IObservable<A> o, IObservable<B> other
     ) =>
-      obs => multipleFinishes(obs, 2, checkFinish => {
+      obs => {
         var lastSelf = F.none<A>();
         var lastOther = F.none<B>();
-        Action notify = () => {
+
+        void notify() {
           foreach (var aVal in lastSelf)
-            foreach (var bVal in lastOther)
-              obs.push(F.t(aVal, bVal));
-        };
-        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); }, checkFinish);
-        var s2 = other.subscribe(val => { lastOther = F.some(val); notify(); }, checkFinish);
+          foreach (var bVal in lastOther)
+            obs.push(F.t(aVal, bVal));
+        }
+
+        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = other.subscribe(val => { lastOther = F.some(val); notify(); });
         return s1.join(s2);
-      });
+      };
 
     public static SubscribeToSource<Tpl<A, B, C>> zip<A, B, C>(
       IObservable<A> o, IObservable<B> o1, IObservable<C> o2
     ) =>
-      obs => multipleFinishes(obs, 3, checkFinish => {
+      obs => {
         var lastSelf = F.none<A>();
         var lastO1 = F.none<B>();
         var lastO2 = F.none<C>();
-        Action notify = () => {
+
+        void notify() {
           foreach (var aVal in lastSelf)
           foreach (var bVal in lastO1)
           foreach (var cVal in lastO2)
             obs.push(F.t(aVal, bVal, cVal));
-        };
-        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); }, checkFinish);
-        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); }, checkFinish);
-        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); }, checkFinish);
+        }
+
+        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
         return s1.join(s2, s3);
-      });
+      };
 
     public static SubscribeToSource<Tpl<A, B, C, D>> zip<A, B, C, D>(
       IObservable<A> o, IObservable<B> o1, IObservable<C> o2, IObservable<D> o3
     ) =>
-      obs => multipleFinishes(obs, 4, checkFinish => {
+      obs => {
         var lastSelf = F.none<A>();
         var lastO1 = F.none<B>();
         var lastO2 = F.none<C>();
         var lastO3 = F.none<D>();
-        Action notify = () => {
+
+        void notify() {
           foreach (var aVal in lastSelf)
           foreach (var bVal in lastO1)
           foreach (var cVal in lastO2)
           foreach (var dVal in lastO3)
             obs.push(F.t(aVal, bVal, cVal, dVal));
-        };
-        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); }, checkFinish);
-        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); }, checkFinish);
-        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); }, checkFinish);
-        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); }, checkFinish);
+        }
+
+        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); });
         return s1.join(s2, s3, s4);
-      });
+      };
 
     public static SubscribeToSource<Tpl<A, B, C, D, E>> zip<A, B, C, D, E>(
       IObservable<A> o, IObservable<B> o1, IObservable<C> o2, IObservable<D> o3, IObservable<E> o4
     ) =>
-      obs => multipleFinishes(obs, 5, checkFinish => {
+      obs => {
         var lastSelf = F.none<A>();
         var lastO1 = F.none<B>();
         var lastO2 = F.none<C>();
         var lastO3 = F.none<D>();
         var lastO4 = F.none<E>();
-        Action notify = () => {
+
+        void notify() {
           foreach (var aVal in lastSelf)
           foreach (var bVal in lastO1)
           foreach (var cVal in lastO2)
           foreach (var dVal in lastO3)
           foreach (var eVal in lastO4)
             obs.push(F.t(aVal, bVal, cVal, dVal, eVal));
-        };
-        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); }, checkFinish);
-        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); }, checkFinish);
-        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); }, checkFinish);
-        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); }, checkFinish);
-        var s5 = o4.subscribe(val => { lastO4 = F.some(val); notify(); }, checkFinish);
+        }
+
+        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); });
+        var s5 = o4.subscribe(val => { lastO4 = F.some(val); notify(); });
         return s1.join(s2, s3, s4, s5);
-      });
+      };
 
     public static SubscribeToSource<Tpl<A, A1, A2, A3, A4, A5>> zip<A, A1, A2, A3, A4, A5>(
       IObservable<A> o, IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, 
       IObservable<A4> o4, IObservable<A5> o5
     ) => 
-      obs => multipleFinishes(obs, 6, checkFinish => {
+      obs => {
         var lastSelf = F.none<A>();
         var lastO1 = F.none<A1>();
         var lastO2 = F.none<A2>();
         var lastO3 = F.none<A3>();
         var lastO4 = F.none<A4>();
         var lastO5 = F.none<A5>();
-        Action notify = () => {
+
+        void notify() {
           foreach (var aVal in lastSelf)
           foreach (var a1Val in lastO1)
           foreach (var a2Val in lastO2)
@@ -219,22 +205,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           foreach (var a4Val in lastO4)
           foreach (var a5Val in lastO5)
             obs.push(F.t(aVal, a1Val, a2Val, a3Val, a4Val, a5Val));
-        };
-        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); }, checkFinish);
-        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); }, checkFinish);
-        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); }, checkFinish);
-        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); }, checkFinish);
-        var s5 = o4.subscribe(val => { lastO4 = F.some(val); notify(); }, checkFinish);
-        var s6 = o5.subscribe(val => { lastO5 = F.some(val); notify(); }, checkFinish);
+        }
+
+        var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
+        var s2 = o1.subscribe(val => { lastO1 = F.some(val); notify(); });
+        var s3 = o2.subscribe(val => { lastO2 = F.some(val); notify(); });
+        var s4 = o3.subscribe(val => { lastO3 = F.some(val); notify(); });
+        var s5 = o4.subscribe(val => { lastO4 = F.some(val); notify(); });
+        var s6 = o5.subscribe(val => { lastO5 = F.some(val); notify(); });
         return s1.join(s2, s3, s4, s5, s6);
-      });
+      };
 
     #endregion
 
     #region #discardValue
 
     public static SubscribeToSource<Unit> discardValue<A>(IObservable<A> o) =>
-      obs => o.subscribe(_ => obs.push(F.unit), obs.finish);
+      obs => o.subscribe(_ => obs.push(F.unit));
 
     #endregion
 
@@ -244,8 +231,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IObservable<A> o, Fn<A, Option<B>> collector
     ) =>
       obs => o.subscribe(
-        val => { foreach (var b in collector(val)) obs.push(b); },
-        obs.finish
+        val => { foreach (var b in collector(val)) obs.push(b); }
       );
 
     #endregion
@@ -255,14 +241,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<C> buffer<A, C>(
       IObservable<A> o, int size, IObservableQueue<A, C> queue
     ) =>
-      obs => o.subscribe(
-        val => {
-          queue.addLast(val);
-          if (queue.count > size) queue.removeFirst();
-          obs.push(queue.collection);
-        },
-        obs.finish
-      );
+      obs => o.subscribe(val => {
+        queue.addLast(val);
+        if (queue.count > size) queue.removeFirst();
+        obs.push(queue.collection);
+      });
 
     #endregion
 
@@ -293,32 +276,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<A> join<A, B>(
       IObservable<A> o, IObservable<B> other
     ) where B : A =>
-      obs => multipleFinishes(obs, 2, checkFinished =>
-        o.subscribe(
-          obs.push,
-          checkFinished
-        ).join(other.subscribe(
-          v => obs.push(v),
-          checkFinished
-        ))
-      );
+      obs => 
+        o.subscribe(obs.push)
+        .join(other.subscribe(v => obs.push(v)));
 
     #endregion
 
     #region #joinAll
 
     public static SubscribeToSource<A> joinAll<A>(
-      IObservable<A> o, IEnumerable<IObservable<A>> others, int othersCount
-    ) => joinAll(o.Yield().Concat(others), 1 + othersCount);
+      IObservable<A> o, IEnumerable<IObservable<A>> others
+    ) => joinAll(o.Yield().Concat(others));
 
     public static SubscribeToSource<A> joinAll<A>(
-      IEnumerable<IObservable<A>> observables, int count
+      IEnumerable<IObservable<A>> observables
     ) =>
-      obs => multipleFinishes(obs, count, checkFinished =>
-        observables.Select(aObs =>
-          aObs.subscribe(obs.push, checkFinished)
-        ).ToArray().joinSubscriptions()
-      );
+      obs =>
+        observables.Select(aObs => aObs.subscribe(obs.push)).ToArray().joinSubscriptions();
 
     #endregion
 
@@ -327,35 +301,28 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<Unit> joinDiscard<A, X>(
       IObservable<A> o, IObservable<X> other
     ) =>
-      obs => multipleFinishes(obs, 2, checkFinished =>
-        o.subscribe(
-          _ => obs.push(F.unit),
-          checkFinished
-        ).join(other.subscribe(
-          v => obs.push(F.unit),
-          checkFinished
-        ))
-      );
+      obs => 
+        o.subscribe(_ => obs.push(F.unit))
+        .join(other.subscribe(_ => obs.push(F.unit)));
 
     #endregion
 
     #region #onceEvery
 
     public static SubscribeToSource<A> onceEvery<A>(
-      IObservable<A> o, Duration duration, TimeScale timeScale
-    ) => 
-      obs => {
-        var lastEmit = float.NegativeInfinity;
-        return o.subscribe(
-          value => {
-            var now = timeScale.now();
-            if (lastEmit + duration.seconds > now) return;
-            lastEmit = now;
-            obs.push(value);
-          },
-          obs.finish
-        );
+      IObservable<A> o, Duration duration, ITimeContext timeContext = null
+    ) {
+      timeContext = timeContext.orDefault();
+      return obs => {
+        var lastEmit = new Duration(int.MinValue);
+        return o.subscribe(value => {
+          var now = timeContext.passedSinceStartup;
+          if (lastEmit + duration > now) return;
+          lastEmit = now;
+          obs.push(value);
+        });
       };
+    }
 
     #endregion
 
@@ -381,11 +348,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #delayed
 
     // TODO: test with ITimeContext
-    public static SubscribeToSource<A> delayed<A>(IObservable<A> o, Duration delay) => 
-      obs => o.subscribe(
-        v => ASync.WithDelay(delay, () => obs.push(v)),
-        () => ASync.WithDelay(delay, obs.finish)
-      );
+    public static SubscribeToSource<A> delayed<A>(
+      IObservable<A> o, Duration delay, ITimeContext timeContext = null
+    ) {
+      timeContext = timeContext.orDefault();  
+      return obs => o.subscribe(v => timeContext.after(delay, () => obs.push(v)));
+    }
 
     #endregion
 
@@ -398,7 +366,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return o.subscribe(val => {
         action(obs, lastValue, val);
         lastValue = F.some(val);
-      }, obs.finish);
+      });
     };
 
     public static SubscribeToSource<Tpl<Option<A>, A>> changesOpt<A>(
@@ -431,17 +399,5 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #endregion
 
-    #region Helpers
-
-    public static Ret multipleFinishes<B, Ret>(IObserver<B> obs, int count, Fn<Action, Ret> f) {
-      var finished = 0;
-      Action checkFinish = () => {
-        finished++;
-        if (finished == count) obs.finish();
-      };
-      return f(checkFinish);
-    }
-
-    #endregion
   }
 }

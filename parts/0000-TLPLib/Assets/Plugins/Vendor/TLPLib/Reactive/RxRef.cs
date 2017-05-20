@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
-   * RxRef is a reactive reference, which stores a value and also acts as a IObserver.
+   * RxRef is a reactive reference, which stores a value and also acts as a IObservable.
    **/
   public interface IRxRef<A> : Ref<A>, IRxVal<A> {
     new A value { get; set; }
@@ -14,12 +15,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * Mutable reference which is also an observable.
    **/
   public class RxRef<A> : RxBase<A>, IRxRef<A> {
-    public new A value {
-      get { return base.value; }
-      set { submit(value); }
-    }
-
-    public RxRef(A initialValue) : base(initialValue) {}
+    public RxRef(A value, IEqualityComparer<A> comparer = null) : base(value, comparer) {}
+    
     public override string ToString() => $"{nameof(RxRef)}({value})";
     public IRxVal<A> asVal => this;
   }

@@ -49,7 +49,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    **/
   public interface IObservable {
     int subscribers { get; }
-    bool finished { get; }
   }
 
   public interface IObservable<out A> : IObservable {
@@ -271,11 +270,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     SList4<A> pendingSubmits = new SList4<A>();
 
     // Are we currently iterating through subscriptions?
-    protected bool iterating { get; private set; }
-    // We were iterating when #finish was called, so we have to finish when we clean up.
-    bool willFinish;
-    // Is this observable finished and will not take any more submits.
-    public bool finished { get; private set; }
+    bool iterating;
     // How many subscription activations do we have pending?
     int pendingSubscriptionActivations;
     // How many subscription removals we have pending?
@@ -290,19 +285,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public Observable(SubscribeToSource<A> subscribeFn) {
-      sourceProps = new SourceProperties(
-        new Observer<A>(submit, finishObservable), subscribeFn
-      ).some();
+      sourceProps = new SourceProperties(new Observer<A>(submit), subscribeFn).some();
     }
 
     protected virtual void submit(A a) {
       if (doLogging) {
         if (Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] submit: {a}");
       }
-
-      if (finished) throw new ObservableFinishedException(
-        $"Observable {this} is finished, but #submit called with {a}"
-      );
 
       if (iterating) {
         // Do not submit if iterating.
@@ -328,30 +317,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    protected void finishObservable() {
-      if (iterating) {
-        willFinish = true;
-        return;
-      }
-
-      finished = true;
-      iterating = true;
-      for (var idx = 0; idx < subscriptions.Count; idx++) {
-        var sub = subscriptions[idx];
-        sub.observer.finish();
-        sub.subscription.unsubscribe();
-      }
-      iterating = false;
-      afterIteration();
-      subscriptions.Clear();
-    }
-
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
     public virtual ISubscription subscribe(IObserver<A> observer) {
       if (doLogging && Log.isVerbose)
         Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
-      if (finished) return Subscription.empty;
 
       var subscription = new Subscription(onUnsubscribed);
       var active = !iterating;
@@ -403,10 +373,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (pendingRemovals != 0) {
         subscriptions.RemoveWhere(sub => !sub.subscription.isSubscribed);
         pendingRemovals = 0;
-      }
-      if (willFinish) {
-        willFinish = false;
-        finishObservable();
       }
     }
 

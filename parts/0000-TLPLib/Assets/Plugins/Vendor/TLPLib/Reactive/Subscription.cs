@@ -1,15 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubscription : IDisposable {
     bool isSubscribed { get; }
     bool unsubscribe();
-    ISubscription andThen(Action action);
-    ISubscription join(params ISubscription[] other);
-    ISubscription joinEnum(IEnumerable<ISubscription> others);
   }
+
+  public static class ISubscriptionExts {
+    public static ISubscription andThen(this ISubscription sub, Action action) => 
+      new Subscription(() => {
+        sub.unsubscribe();
+        action();
+      });
+
+    public static ISubscription join(this ISubscription sub1, ISubscription sub2) =>
+      sub1.andThen(() => sub2.unsubscribe());
+
+    public static ISubscription join(this ISubscription sub, params ISubscription[] other) =>
+      sub.joinEnum(other);
+
+    public static ISubscription joinEnum(this ISubscription sub, IEnumerable<ISubscription> others) =>
+      new Subscription(() => {
+        sub.unsubscribe();
+        foreach (var other in others) other.unsubscribe();
+      });
+
+    public static ISubscription joinSubscriptions(
+      this IEnumerable<ISubscription> subscriptions
+    ) => new Subscription(() => {
+      foreach (var sub in subscriptions) sub.unsubscribe();
+    });
+  }
+
 
   public class Subscription : ISubscription {
     /** Already unsubscribed subscription. */
@@ -38,32 +61,5 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public void Dispose() => unsubscribe();
-
-    public ISubscription andThen(Action action) => new Subscription(() => {
-      unsubscribe();
-      action();
-    });
-
-    public ISubscription join(params ISubscription[] other) => joinEnum(other);
-
-    public ISubscription joinEnum(IEnumerable<ISubscription> others) => new Subscription(() => {
-      unsubscribe();
-      foreach (var other in others) other.unsubscribe();
-    });
-  }
-
-  public static class ISubscriptionExts {
-    public static ISubscription joinSubscriptions(
-      this IEnumerable<ISubscription> subscriptions
-    ) => new Subscription(() => {
-      foreach (var sub in subscriptions) sub.unsubscribe();
-    });
-  }
-
-  [Obsolete("Use DisposableTracker")]
-  public class SubscriptionTracker : DisposeTracker<ISubscription> {
-    static readonly Act<ISubscription> dispose = s => s.unsubscribe();
-
-    public SubscriptionTracker() : base(dispose) {}
   }
 }
