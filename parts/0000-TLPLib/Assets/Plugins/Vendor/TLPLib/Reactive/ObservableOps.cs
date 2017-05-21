@@ -235,10 +235,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     // Convert this observable to reactive value with given initial value.
-    public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) {
-      var rx = RxRef.a(initial);
-      o.subscribe(v => rx.value = v);
-      return rx;
-    }
+    public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) => new RxVal<A>(
+      initial,
+      setValue => o.subscribe((a, sub) => {
+        if (!setValue(a)) sub.unsubscribe();
+      })
+    );
   }
 }

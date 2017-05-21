@@ -12,28 +12,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       ISubscription sub, IObservable<A> obs, params ISubject[] subjects
     ) {
       sub.testUnsubscriptionC(subjects);
-      obs.testFinishing(subjects);
-    }
-
-    public static void testFinishing<A, B>(
-      this Subject<A> subj, Fn<Subject<A>, IObservable<B>> obsFn
-    ) => obsFn(subj).testFinishing(subj);
-
-    public static void testFinishing<A>(
-      this IObservable<A> obs, params IObserver[] subjects
-    ) {
-      var sub = obs.subscribe(_ => { });
-      sub.isSubscribed.shouldBeTrue("Subscription should be active before finish.");
-      obs.finished.shouldBeFalse("Observable should not be finished prior to source finish.");
-      for (var idx = 0; idx < subjects.Length - 1; idx++) {
-        subjects[idx].finish();
-        var cond = $"when {idx + 1}/{subjects.Length} sources  has finished";
-        sub.isSubscribed.shouldBeTrue($"Subscription should be active {cond}.");
-        obs.finished.shouldBeFalse($"Observable should not be finished {cond}.");
-      }
-      subjects.Last().finish();
-      obs.finished.shouldBeTrue("Observable should be finished after all sources finish.");
-      sub.isSubscribed.shouldBeFalse("Subscription should be cancelled after all sources finish.");
     }
 
     public static void testUnsubscription(

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using WeakReference = com.tinylabproductions.TLPLib.System.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {

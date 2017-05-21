@@ -1,7 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
-using WeakReference = com.tinylabproductions.TLPLib.System.WeakReference;
+using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**

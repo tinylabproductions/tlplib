@@ -104,17 +104,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subject.push(F.unit);
       Assert.AreEqual(1, called);
     }
-
-    [Test]
-    public void SubscribeToFinishedObservable() {
-      var subject = new Subject<Unit>();
-      var s1 = subject.subscribe(_ => {});
-      s1.isSubscribed.shouldBeTrue("Subscription should be alive initially.");
-      subject.finish();
-      s1.isSubscribed.shouldBeFalse("Subscription should be killed after observable finishes.");
-      subject.subscribe(_ => {}).isSubscribed
-        .shouldBeFalse("Subscription to finished observable should come out dead.");
-    }
   }
 
   public class IObservableTestToFuture {
@@ -138,7 +127,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         subj.pushMany(1, 2, 3, 4, 5);
         list.shouldEqual(F.list(2, 4, 6, 8, 10));
         sub.testUnsubscription(subj);
-        obs.testFinishing(subj);
       });
     }
   }
@@ -153,7 +141,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         subj.pushMany(1, 2, 3, 4);
         evts.value.shouldEqual(4u);
         sub.testUnsubscription(subj);
-        obs.testFinishing(subj);
       });
     }
   }
@@ -171,7 +158,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           0, 1, 2
         ));
         sub.testUnsubscription(subj);
-        obs.testFinishing(subj);
       });
     }
 
@@ -184,10 +170,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = obs.pipeToList();
       var list = t._1;
       var sub = t._2;
-      Act<int, int> checkSubs = (s1, s2) => {
+
+      void checkSubs(int s1, int s2) {
         subj1.subscribers.shouldEqual(s1);
         subj2.subscribers.shouldEqual(s2);
-      };
+      }
 
       list.shouldBeEmpty();
       checkSubs(0, 0);
@@ -217,7 +204,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       list.shouldEqual(F.list(1, -2, 3));
 
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
       checkSubs(0, 0);
     }
 
@@ -235,7 +221,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       gateP.complete(F.unit);
       list.shouldEqual(F.list(1, 2, 3));
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
 
     [Test]
@@ -247,8 +232,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = obs.pipeToList();
       var list = t._1;
       subj.pushMany(1, 2, 3);
-      list.shouldBeEmpty();
-      subj.finish();
       list.shouldBeEmpty();
       gateP.complete(F.unit);
       list.shouldBeEmpty();
@@ -266,7 +249,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       foreach (var i in Enumerable.Range(0, 5)) subj.push(i);
       list.shouldEqual(F.list(0, 2, 4));
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
   }
 
@@ -281,7 +263,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj.pushMany(0, 1, 2, 3, 4, 5, 6);
       list.shouldEqual(F.list(0, 4, 8, 12));
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
   }
 
@@ -346,7 +327,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       r.value.shouldBeSomeEnum(createCollection(F.list(3, 4, 5)));
 
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
   }
 
@@ -365,7 +345,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         subj2.push(4);
         list.shouldEqual(F.list(1, 2, 3, 4));
         sub.testUnsubscription(subj1, subj2);
-        obs.testFinishing(subj1, subj2);
       });
     }
   }
@@ -380,7 +359,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var otherSubjects = ImmutableList.Create(new Subject<B>(), new Subject<B>());
       var otherObservables = otherSubjects.Select(s => s.map(_ => (A)_)).ToImmutableList();
       var allObservables = aSubj.Yield<IObservable>().Concat(otherObservables.Cast<IObservable>()).ToArray();
-      var allSubjects = aSubj.Yield<IObserver>().Concat(otherSubjects.Cast<IObserver>()).ToArray();
 
       var obs = aSubj.joinAll(otherObservables);
       var t = obs.pipeToList();
@@ -391,7 +369,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       foreach (var subj in otherSubjects) subj.push(b);
       t._1.shouldEqual(F.list(a, b, b));
       t._2.testUnsubscriptionC(allObservables);
-      obs.testFinishing(allSubjects);
     }
 
     [Test]
@@ -402,7 +379,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       foreach (var subj in subjs) subj.push(1);
       t._1.shouldEqual(F.list(1, 1, 1));
       t._2.testUnsubscriptionC(subjs);
-      obs.testFinishing(subjs);
     }
   }
 
@@ -668,12 +644,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public class IObservableTestSkip {
-    [Test]
-    public void Finishing() {
-      new Subject<int>().testFinishing(_ => _.skip(3));
-      new Subject<int>().testFinishing(_ => _.skip(0));
-    }
-
     [Test]
     public void Some() {
       var subj = new Subject<int>();

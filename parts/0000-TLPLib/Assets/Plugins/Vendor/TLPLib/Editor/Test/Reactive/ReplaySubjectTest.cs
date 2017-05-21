@@ -28,17 +28,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t3 = s.pipeToList();
       t3._1.shouldEqual(F.list(1, 2, 3, 4));
       t3._2.isSubscribed.shouldBeTrue();
-
-      s.finish();
-      t1._2.isSubscribed.shouldBeFalse();
-      t2._2.isSubscribed.shouldBeFalse();
-      t3._2.isSubscribed.shouldBeFalse();
-
-      Assert.Throws<ObservableFinishedException>(() => s.push(-1));
-
-      var t4 = s.pipeToList();
-      t4._1.shouldEqual(F.list(1, 2, 3, 4));
-      t4._2.isSubscribed.shouldBeFalse();
     }
 
     [Test]
@@ -59,14 +48,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       t1._1.shouldEqual(F.list(1, 2, 1, 2));
       t2._1.shouldEqual(F.list(1, 2));
-
-      s.finish();
-      s.finished.shouldBeTrue();
-      s.clear();
-
-      var t3 = s.pipeToList();
-      t3._1.shouldBeEmpty();
-      t3._2.isSubscribed.shouldBeFalse();
     }
   }
 }
