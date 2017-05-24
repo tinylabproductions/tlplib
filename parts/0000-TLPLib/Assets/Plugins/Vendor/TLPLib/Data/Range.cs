@@ -12,6 +12,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Range until(this int from, int to) {
       return new Range(from, to - 1);
     }
+
+    public static float lerpVal(this FRange range, float t) => Mathf.Lerp(range.from, range.to, t);
+    public static float lerpVal(this Range range, float t) => Mathf.Lerp(range.from, range.to, t);
   }
 
   [Serializable]
