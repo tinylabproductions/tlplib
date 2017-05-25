@@ -1,4 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -14,5 +16,24 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           ? Either<WWWError, Texture2D>.Left(new WWWError(www, "WWW didn't produce a texture!"))
           : Either<WWWError, Texture2D>.Right(www.texture)
       );
+
+    public static WWWWithHeaders headers(this WWW www) => 
+      new WWWWithHeaders(www, www.responseHeaders.asReadOnly());
+  }
+
+  /** 
+   * Struct that wraps the parsed headers, because `www.responseHeaders` parses headers 
+   * each time it is called.
+   **/
+  public struct WWWWithHeaders {
+    public readonly WWW www;
+    public readonly IReadOnlyDictionary<string, string> headers;
+
+    public WWWWithHeaders(WWW www, IReadOnlyDictionary<string, string> headers) {
+      this.www = www;
+      this.headers = headers;
+    }
+
+    public Option<string> this[string key] => headers.get(key);
   }
 }

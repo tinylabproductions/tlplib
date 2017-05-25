@@ -117,14 +117,84 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
+    // https://docs.sentry.io/clientdev/interfaces/user/
+    public struct UserInterface {
+      public struct Id {
+        public readonly string value;
+        public Id(string value) { this.value = value; }
+        public override string ToString() => $"{nameof(Id)}({value})";
+      }
+
+      public struct IpAddress {
+        public readonly string value;
+        public IpAddress(string value) { this.value = value; }
+        public override string ToString() => $"{nameof(IpAddress)}({value})";
+      }
+
+      public readonly These<Id, IpAddress> uniqueIdentifier;
+      public readonly Option<string> email, username;
+      public readonly IReadOnlyDictionary<string, string> extras;
+
+      public Option<Id> id => uniqueIdentifier.thisValue;
+      public Option<IpAddress> ipAddress => uniqueIdentifier.thatValue;
+
+      public UserInterface(
+        These<Id, IpAddress> uniqueIdentifier, 
+        Option<string> email = default(Option<string>), 
+        Option<string> username = default(Option<string>),
+        IReadOnlyDictionary<string, string> extras = null
+      ) {
+        Option.ensureValue(ref email);
+        Option.ensureValue(ref username);
+
+        this.uniqueIdentifier = uniqueIdentifier;
+        this.email = email;
+        this.username = username;
+        this.extras = extras ?? ReadOnlyDictionary<string, string>.empty;
+      }
+    }
+
+    public struct MessageData {
+      public readonly string loggerName;
+      public readonly ApiKeys keys;
+      public readonly ErrorReporter.AppInfo appInfo;
+      public readonly ErrorReporter.ErrorData data;
+      public readonly ExtraData addExtraData;
+      public readonly Option<UserInterface> userOpt;
+
+      public MessageData(string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo, ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt) {
+        this.loggerName = loggerName;
+        this.keys = keys;
+        this.appInfo = appInfo;
+        this.data = data;
+        this.addExtraData = addExtraData;
+        this.userOpt = userOpt;
+      }
+    }
+
+    public struct SendOnErrorData {
+      public readonly string loggerName;
+      public readonly ErrorReporter.AppInfo appInfo;
+      public readonly ExtraData addExtraData;
+      public readonly Option<UserInterface> userOpt;
+
+      public SendOnErrorData(string loggerName, ErrorReporter.AppInfo appInfo, ExtraData addExtraData, Option<UserInterface> userOpt) {
+        this.loggerName = loggerName;
+        this.appInfo = appInfo;
+        this.addExtraData = addExtraData;
+        this.userOpt = userOpt;
+      }
+    }
+
     public static ErrorReporter.OnError createSendOnError(
-      string loggerName, Uri reportingUrl, ApiKeys keys, ErrorReporter.AppInfo appInfo,
-      ExtraData addExtraData, bool onlySendUniqueErrors
+      SendOnErrorData sendData, Uri reportingUrl, ApiKeys keys, bool onlySendUniqueErrors
     ) {
       var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
 
       return data => {
-        var msg = message(loggerName, keys, appInfo, data, addExtraData);
+        var msg = message(
+          sendData.loggerName, keys, sendData.appInfo, data, sendData.addExtraData, sendData.userOpt
+        );
         Action send = () => msg.send(reportingUrl);
         sentJsonsOpt.voidFold(
           send,
@@ -137,20 +207,21 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     }
 
     public static ErrorReporter.OnError createLogOnError(
-      string loggerName, DSN dsn, ErrorReporter.AppInfo appInfo,
-      ExtraData addExtraData
+      SendOnErrorData sendData, DSN dsn
     ) {
       return data => {
         if (Log.isInfo) Log.info(
           $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
-          message(loggerName, dsn.keys, appInfo, data, addExtraData)
+          message(
+            sendData.loggerName, dsn.keys, sendData.appInfo, data, sendData.addExtraData, sendData.userOpt
+          )
         );
       };
     }
 
     public static SentryMessage message(
       string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo,
-      ErrorReporter.ErrorData data, ExtraData addExtraData
+      ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt
     ) {
       var eventId = Guid.NewGuid();
       var timestamp = DateTime.UtcNow;
@@ -178,8 +249,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"App:ProductName", tag(Application.productName)},
         {"App:CompanyName", tag(Application.companyName)},
         {"App:CloudProjectId", tag(Application.cloudProjectId)},
-        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
-        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},
         {"App:TargetFrameRate", tag(Application.targetFrameRate)},
         {"App:SystemLanguage", tag(Application.systemLanguage)},
         {"App:BackgroundLoadingPriority", tag(Application.backgroundLoadingPriority)},
@@ -200,7 +269,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:GraphicsShaderLevel", tag(SystemInfo.graphicsShaderLevel)},
         {"SI:GraphicsMultiThreaded", tag(SystemInfo.graphicsMultiThreaded)},
         {"SI:SupportsShadows", tag(SystemInfo.supportsShadows)},
-        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
         {"SI:SupportsRenderToCubemap", tag(SystemInfo.supportsRenderToCubemap)},
         {"SI:SupportsImageEffects", tag(SystemInfo.supportsImageEffects)},
         {"SI:Supports3DTextures", tag(SystemInfo.supports3DTextures)},
@@ -208,7 +276,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:SupportsInstancing", tag(SystemInfo.supportsInstancing)},
         {"SI:SupportsSparseTextures", tag(SystemInfo.supportsSparseTextures)},
         {"SI:SupportedRenderTargetCount", tag(SystemInfo.supportedRenderTargetCount)},
-        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
         {"SI:NPOTsupport", tag(SystemInfo.npotSupport)},
         {"SI:DeviceName", tag(SystemInfo.deviceName)},
         {"SI:DeviceModel", tag(SystemInfo.deviceModel)},
@@ -218,6 +285,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:SupportsVibration", tag(SystemInfo.supportsVibration)},
         {"SI:DeviceType", tag(SystemInfo.deviceType)},
         {"SI:MaxTextureSize", tag(SystemInfo.maxTextureSize)},
+#if !UNITY_5_5_OR_NEWER
+        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
+        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
+        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
+        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
+#endif
       };
       addExtraData.addTags((name, value) => tags[name] = tag(value));
 
@@ -227,9 +300,16 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       };
       addExtraData.addExtras((name, value) => extras[name] = value);
 
+      // Sentry has a bug where events with same message, but different stacktrace get
+      // grouped to same group. This is a workaround for that.
+      var message = data.backtrace.headOption().fold(
+        data.message,
+        line => $"{data.message} in {line}"
+      );
+
       var json = new Dictionary<string, object> {
         // max length - 1000 chars
-        {"message", data.message.trimTo(1000)},
+        {"message", message.trimTo(1000)},
         {"level", logTypeToSentryLevel(data.errorType)},
         {"logger", loggerName},
         {"platform", Application.platform.ToString()},
@@ -238,9 +318,23 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"extra", extras},
         {"stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}}}
       };
+      foreach (var user in userOpt)
+        json.Add("user", userInterfaceParametersJson(user, json));
       if (!data.backtrace.isEmpty()) json.Add("culprit", data.backtrace[0].method);
       
       return new SentryMessage(keys, eventId, timestamp, json);
+    }
+
+    static Dictionary<string, object> userInterfaceParametersJson(
+      UserInterface user, IDictionary<string, object> json
+    ) {
+      var userDict = new Dictionary<string, object>();
+      foreach (var value in user.id) userDict.Add("id", value.value);
+      foreach (var value in user.username) userDict.Add("username", value);
+      foreach (var value in user.email) userDict.Add("email", value);
+      foreach (var value in user.ipAddress) userDict.Add("ip_address", value.value);
+      foreach (var kv in user.extras) userDict.Add(kv.Key, kv.Value);
+      return userDict;
     }
 
     // max tag value length = 200

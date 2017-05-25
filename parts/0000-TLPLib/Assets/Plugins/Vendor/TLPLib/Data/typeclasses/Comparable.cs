@@ -4,7 +4,16 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
-  public interface Comparable<in A> {
+  public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
+
+  public static class CompareResultExts {
+    public static CompareResult asCmpRes(this int result) =>
+        result < 0 ? CompareResult.LT 
+      : result == 0 ? CompareResult.EQ 
+      : CompareResult.GT;
+  }
+
+  public interface Comparable<A> : IComparer<A> {
     CompareResult compare(A a1, A a2);
   }
 
@@ -15,6 +24,9 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<bool> bool_ = lambda<bool>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<string> string_ = 
+      lambda<string>((a1, a2) => string.CompareOrdinal(a1, a2));
 
     public static Comparable<A> lambda<A>(Fn<A, A, CompareResult> compare) =>
       new Lambda<A>(compare);
@@ -27,6 +39,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       public Lambda(Fn<A, A, CompareResult> compare) { _compare = compare; }
 
       public CompareResult compare(A a1, A a2) => _compare(a1, a2);
+      public int Compare(A x, A y) => (int) _compare(x, y);
     }
   }
 
@@ -40,7 +53,9 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static bool gt<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) == CompareResult.GT;
     public static bool gte<A>(this Comparable<A> cmp, A a1, A a2) => cmp.compare(a1, a2) != CompareResult.LT;
     public static A min<A>(this Comparable<A> cmp, A a1, A a2) => cmp.lt(a1, a2) ? a1 : a2;
+    public static A min<A>(this A a1, A a2, Comparable<A> cmp) => cmp.min(a1, a2);
     public static A max<A>(this Comparable<A> cmp, A a1, A a2) => cmp.gt(a1, a2) ? a1 : a2;
+    public static A max<A>(this A a1, A a2, Comparable<A> cmp) => cmp.max(a1, a2);
 
     public static Option<A> max<A, Coll>(
       this Coll c, Comparable<A> comparable

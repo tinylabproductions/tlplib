@@ -356,10 +356,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             }
           }
         }
-        if (
-          (fi.IsPublic && !fi.hasAttribute<NonSerializedAttribute>())
-          || ((fi.IsPrivate || fi.IsFamily) && fi.hasAttribute<SerializeField>())
-        ) {
+        if (fi.isSerializable()) {
           var fieldValue = fi.GetValue(o);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
@@ -394,18 +391,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
-    // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
-    static IEnumerable<FieldInfo> getAllFields(Type t) {
-      if (t == null) return Enumerable.Empty<FieldInfo>();
-
-      const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | 
-                                 BindingFlags.Instance | 
-                                 BindingFlags.DeclaredOnly;
-      return t.GetFields(flags).Concat(getAllFields(t.BaseType));
-    }
-
     static IEnumerable<FieldInfo> getFilteredFields(object o) {
-      var fields = getAllFields(o.GetType());
+      var fields = o.GetType().getAllFields();
       foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
         var blacklisted = sv.blacklistedFields();
         return fields.Where(fi => !blacklisted.Contains(fi.Name));

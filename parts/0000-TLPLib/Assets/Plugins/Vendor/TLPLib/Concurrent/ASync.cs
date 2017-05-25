@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static Coroutine StartCoroutine(IEnumerator coroutine) {
-      return new Coroutine(behaviour, coroutine);
+      return new UnityCoroutine(behaviour, coroutine);
     }
 
     public static Coroutine WithDelay(
@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) {
       behaviour = behaviour ?? ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeScale);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
       var enumerator = NextFrameEnumerator(action);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     public static Coroutine AfterXFrames(
@@ -130,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(MonoBehaviour behaviour, Fn<bool> f) {
       var enumerator = EveryWaitEnumerator(null, f);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Do thing every X seconds until f returns false. */
@@ -145,8 +145,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
-      var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtime(seconds), f);
-      return new Coroutine(behaviour, enumerator);
+      var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtimeReusable(seconds), f);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Returns action that cancels our delayed call. */
@@ -273,6 +273,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public override bool keepWaiting => Time.unscaledTime < waitTime;
   }
 
+  /** WaitForSecondsRealtime from Unity is not reusable. */
+  public class WaitForSecondsRealtimeReusable : ReusableYieldInstruction {
+    readonly float time;
+    float finishTime;
+
+    public WaitForSecondsRealtimeReusable(float time) { this.time = time; }
+
+    protected override void init() {
+      finishTime = Time.realtimeSinceStartup + time;
+    }
+
+    public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
+  }
+
   // If we extend YieldInstruction we can not reuse its instances
   // because it inits end condition only in constructor.
   // We can reuse instances of ReusableYieldInstruction but we can't
@@ -301,23 +315,3 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public object Current => null;
   }
 }
-
-#if !UNITY_5_4_OR_NEWER
-// Unity has this since 5.4
-namespace UnityEngine {
-  using com.tinylabproductions.TLPLib.Concurrent;
-
-  public class WaitForSecondsRealtime : ReusableYieldInstruction {
-    readonly float time;
-    float finishTime;
-
-    public WaitForSecondsRealtime(float time) { this.time = time; }
-
-    protected override void init() {
-      finishTime = Time.realtimeSinceStartup + time;
-    }
-
-    public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
-  }
-}
-#endif

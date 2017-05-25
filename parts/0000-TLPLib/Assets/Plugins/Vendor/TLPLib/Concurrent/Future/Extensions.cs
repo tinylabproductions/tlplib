@@ -65,6 +65,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return rx;
     }
 
+    public static ISubscription onCompleteCancellable<A>(this Future<A> future, Act<A> action) {
+      var sub = new Subscription(() => { });
+      future.onComplete(val => { if (sub.isSubscribed) action(val); });
+      return sub;
+    }
+
     public static IRxVal<A> toRxVal<A>(
       this Future<IRxVal<A>> future, A whileNotCompleted
     ) {

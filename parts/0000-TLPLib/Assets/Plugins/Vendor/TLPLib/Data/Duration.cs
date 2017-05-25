@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
@@ -6,6 +7,8 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Data {
   // I discovered TimeSpan after this was written...
   public struct Duration : IStr, IEquatable<Duration> {
+    public static readonly Duration zero = new Duration(0);
+
     public readonly int millis;
 
     public static Duration fromSeconds(int seconds) => new Duration(seconds * 1000);
@@ -68,6 +71,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public static readonly ISerializedRW<Duration> serializedRW =
       SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
+
+    public static readonly Config.Parser<Duration> configParser =
+      Config.intParser.map(ms => new Duration(ms));
   }
 
   public static class DurationExts {

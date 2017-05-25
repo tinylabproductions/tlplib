@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Code.UI {
-  [Serializable]
-  public class GraphicStyle {
-
+namespace com.tinylabproductions.TLPLib.Utilities {
+  [Serializable] public class GraphicStyle {
     public Color graphicColor;
     public Color outlineColor;
-    
+
     public bool gradient;
     bool gradientOn => gradient;
     [Inspect(nameof(gradientOn))] public Color gradientColor;
@@ -23,7 +20,7 @@ namespace Assets.Code.UI {
       this.gradientColor = gradientColor;
       this.outlineColor = outlineColor;
     }
-    
+
     public void applyStyle(List<Graphic> graphics) {
       foreach (var graphic in graphics) {
         applyStyle(graphic);

@@ -1,9 +1,12 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public interface IObserver<in A> {
-    void push(A value);
+  public interface IObserver {
     void finish();
+  }
+
+  public interface IObserver<in A> : IObserver {
+    void push(A value);
   }
 
   public class Observer<A> : IObserver<A> {

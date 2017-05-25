@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<B>().asEnum<A, B>().shouldEqual(Enumerable.Empty<A>());
+      Option<B>.None.asEnum<A, B>().shouldEqual(Enumerable.Empty<A>());
     }
   }
 
@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Test]
     public void WhenNone() {
       var ran = false;
-      new Option<string>().createOrTap(() => "new stuff", p1 => ran = true).
+      Option<string>.None.createOrTap(() => "new stuff", p1 => ran = true).
         shouldBeSome("new stuff");
       ran.shouldBeFalse();
     }
@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<string>().
+      Option<string>.None.
         fold(() => false, op => op == "this is a set option").
         shouldBeFalse();
     }
@@ -118,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<string>().
+      Option<string>.None.
         fold(false, op => op == "this is a set option").
         shouldBeFalse();
     }
@@ -141,7 +141,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<string>().
+      Option<string>.None.
         fold(false, true).
         shouldBeFalse();
     }
@@ -162,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<bool>().getOrElse(() => false).shouldBeFalse();
+      Option<bool>.None.getOrElse(() => false).shouldBeFalse();
     }
   }
 
@@ -174,7 +174,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<bool>().getOrElse(false).shouldBeFalse();
+      Option<bool>.None.getOrElse(false).shouldBeFalse();
     }
   }
 
@@ -185,7 +185,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
     [Test]
     public void WhenNone() {
-      new Option<string>().getOrNull().shouldEqual(null);
+      Option<string>.None.getOrNull().shouldEqual(null);
     }
   }
 
@@ -197,7 +197,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      new Option<string>().orNull().shouldEqual(null);
+      Option<string>.None.orNull().shouldEqual(null);
     }
   }
 
@@ -215,7 +215,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      var test = new Option<int>();
+      var test = Option<int>.None;
       var ran = false;
       foreach (var number in test) ran = true;
       ran.shouldBeFalse();
@@ -247,7 +247,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      var option = new Option<string>();
+      var option = Option<string>.None;
       var newOption = new Option<string>("if it was not set now it is");
       (option || newOption).shouldEqual(newOption);
     }

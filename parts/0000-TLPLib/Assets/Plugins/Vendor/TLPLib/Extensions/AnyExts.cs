@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Functional;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
@@ -15,6 +17,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static void locally(this object any, Action local) => local();
     public static T locally<T>(this object any, Fn<T> local) => local();
     public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
+    public static To upcast<From, To>(this From any) where From : To => any;
+    public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To 
+      => any.Select(_ => _.upcast<From, To>());
 
     public static A tap<A>(this A any, Act<A> tapper) {
       tapper(any);

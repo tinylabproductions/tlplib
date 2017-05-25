@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       warnMsgs = new List<Entry>(),
       errorMsgs = new List<Entry>();
 
-    readonly bool errorsAsExceptions;
+    public bool errorsAsExceptions;
 
     public TestLogger(bool errorsAsExceptions = false) {
       this.errorsAsExceptions = errorsAsExceptions;
