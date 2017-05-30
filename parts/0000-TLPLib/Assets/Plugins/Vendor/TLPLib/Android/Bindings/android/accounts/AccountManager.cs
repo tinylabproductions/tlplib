@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
+﻿#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 
@@ -15,3 +16,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.accounts {
       java.Call<AndroidJavaObject[]>("getAccounts").map(ajo => new Account(ajo));
   }
 }
+#endif
