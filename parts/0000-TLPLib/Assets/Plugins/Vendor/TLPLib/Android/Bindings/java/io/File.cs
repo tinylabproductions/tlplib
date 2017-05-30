@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_ANDROID
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.java.io {
   public class File : Binding {
@@ -7,3 +8,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.io {
     public string getPath() => java.Call<string>("getPath");
   }
 }
+#endif

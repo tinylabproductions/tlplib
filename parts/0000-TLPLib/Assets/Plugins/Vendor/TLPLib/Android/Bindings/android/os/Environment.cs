@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Android.Bindings.java.io;
+﻿#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Android.Bindings.java.io;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.os {
@@ -14,3 +15,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.os {
       new File(klass.csjo("getExternalStoragePublicDirectory", type));
   }
 }
+#endif

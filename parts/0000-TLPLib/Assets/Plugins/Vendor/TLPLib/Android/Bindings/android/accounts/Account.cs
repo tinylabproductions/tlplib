@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_ANDROID
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.accounts {
   public class Account : Binding {
@@ -9,3 +10,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.accounts {
     public string type => java.Get<string>("type");
   }
 }
+#endif
