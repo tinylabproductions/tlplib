@@ -112,6 +112,29 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Test]
     public void TestFailure() => 
       rw.deserialize(noise.toArray(), 0).shouldBeNone();
+
+  }
+
+  public class SerializationTestEitherRW : SerializationTestBase {
+    static readonly ISerializedRW<Either<int, string>> rw = SerializedRW.either(SerializedRW.integer, SerializedRW.str);
+    
+    [Test]
+    public void TestLeft() {
+      const int value = int.MaxValue;
+      var leftVal = Either<int, string>.Left(value);
+      var serialized = rw.serialize(leftVal);
+      checkWithNoise(rw, serialized, leftVal);
+    }
+
+    [Test]
+    public void TestRight() {
+      const string value = "test";
+      var rightVal = Either<int, string>.Right(value);
+      var serialized = rw.serialize(rightVal);
+      checkWithNoise(rw, serialized, rightVal);
+    }
+
+    public void TestFailure() => rw.deserialize(noise.toArray(), 0).shouldBeNone();
   }
 
   public class SerializationTestCollection : SerializationTestBase {

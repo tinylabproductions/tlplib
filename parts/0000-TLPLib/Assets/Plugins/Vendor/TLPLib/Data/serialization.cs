@@ -400,6 +400,21 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
 
       public Option<DeserializeInfo<Either<A, B>>> deserialize(byte[] serialized, int startIndex) {
+        if (serialized.Length == 0 || startIndex > serialized.Length - 1)
+          return Option<DeserializeInfo<Either<A, B>>>.None;
+        var discriminator = serialized[startIndex];
+        switch (discriminator) {
+          case EitherByteArrayRW.DISCRIMINATOR_LEFT:
+            return aRW.deserialize(serialized, startIndex + 1).map(info =>
+              new DeserializeInfo<Either<A, B>>(Either<A, B>.Left(info.value), info.bytesRead + 1)
+            );
+          case EitherByteArrayRW.DISCRIMINATOR_RIGHT:
+            return bRW.deserialize(serialized, startIndex + 1).map(info =>
+              new DeserializeInfo<Either<A, B>>(Either<A,B>.Right(info.value), info.bytesRead + 1)
+            );
+          default:
+            return Option<DeserializeInfo<Either<A, B>>>.None;
+        }
       }
 
       public Rope<byte> serialize(Either<A, B> either) =>
@@ -407,11 +422,6 @@ namespace com.tinylabproductions.TLPLib.Data {
         ? EitherByteArrayRW.DISCRIMINATOR_LEFT_ROPE + aRW.serialize(either.__unsafeGetLeft)
         : EitherByteArrayRW.DISCRIMINATOR_RIGHT_ROPE + bRW.serialize(either.__unsafeGetRight);
     }
-
-       public static ISerializedRW<A> serializedRW<A>() where A : UnityEngine.Object => PathStr.serializedRW.map(
-       path => AssetDatabase.LoadAssetAtPath<A>(path).opt(),
-       module => module.path()
-    );
 
     class ICollectionSerializer<A, C> : ISerializer<C> where C : ICollection<A> {
       readonly ISerializer<A> serializer;
