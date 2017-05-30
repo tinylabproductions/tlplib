@@ -99,6 +99,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static readonly Parser<List<object>> objectListParser = createCastParser<List<object>>();
 
+    public static Parser<Option<A>> opt<A>(Parser<A> parser) => 
+      (path, o) => 
+        o == null 
+        ? Either<ConfigLookupError, Option<A>>.Right(Option<A>.None) 
+        : parser(path, o).mapRight(_ => _.some());
+
     public static Parser<CB> collectionParser<CB, A>(
       Parser<A> parser,
       Fn<int, CB> createCollectionBuilder,
