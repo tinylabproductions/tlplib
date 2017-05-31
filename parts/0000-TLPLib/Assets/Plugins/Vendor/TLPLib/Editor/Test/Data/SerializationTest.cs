@@ -134,6 +134,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       checkWithNoise(rw, serialized, rightVal);
     }
 
+    [Test]
     public void TestFailure() => rw.deserialize(noise.toArray(), 0).shouldBeNone();
   }
 
