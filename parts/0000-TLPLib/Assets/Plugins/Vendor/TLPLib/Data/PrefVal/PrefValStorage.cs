@@ -108,8 +108,16 @@ namespace com.tinylabproductions.TLPLib.Data {
       key, defaultVal, PrefValRW.custom(aRW, onDeserializeFailure, log), saveOnEveryWrite
     );
 
+    public PrefVal<Option<A>> opt<A>(
+      string key, Option<A> defaultVal,
+      ISerializedRW<A> aRW,
+      bool saveOnEveryWrite = true,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
+      ILog log = null
+    ) => create(key, defaultVal, PrefValRW.opt(aRW, onDeserializeFailure, log), saveOnEveryWrite);
+
     #endregion
-    
+
     #region Custom Collection
 
     public PrefVal<C> collection<A, C>(
