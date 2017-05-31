@@ -13,5 +13,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.accounts {
 
     public Account[] getAccounts() =>
       java.Call<AndroidJavaObject[]>("getAccounts").map(ajo => new Account(ajo));
+
+    public Account[] getAccountsByType(string type) =>
+      java.Call<AndroidJavaObject[]>("getAccountsByType", type).map(ajo => new Account(ajo));
+
+    public static Account[] getGoogleAccounts() =>
+      get(AndroidActivity.current).getAccountsByType("com.google");
   }
 }
