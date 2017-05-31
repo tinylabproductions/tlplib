@@ -112,7 +112,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Test]
     public void TestFailure() => 
       rw.deserialize(noise.toArray(), 0).shouldBeNone();
-
   }
 
   public class SerializationTestEitherRW : SerializationTestBase {

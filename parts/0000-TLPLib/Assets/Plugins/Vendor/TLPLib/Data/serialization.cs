@@ -178,7 +178,6 @@ namespace com.tinylabproductions.TLPLib.Data {
         var bInfo = new DeserializeInfo<B>(bOpt.get, aInfo.bytesRead);
         return F.some(bInfo);
       }
-
   }
 
     class MappedRW<A, B> : ISerializedRW<B> {
