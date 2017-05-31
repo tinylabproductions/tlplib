@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -67,6 +68,9 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       if (Path.DirectorySeparatorChar == '/') return path;
       return path.Replace('\\' , '/');
     }
+
+    public static readonly ISerializedRW<PathStr> serializedRW = 
+      SerializedRW.str.map(s => new PathStr(s).some(), path => path.path);
   }
 
   public static class PathStrExts {

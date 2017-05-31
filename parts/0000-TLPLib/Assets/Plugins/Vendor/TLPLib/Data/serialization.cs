@@ -4,7 +4,9 @@ using System.Collections.Immutable;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public interface ISerializer<in A> {
@@ -56,7 +58,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<bool> boolean = new boolRW();
     public static readonly ISerializedRW<float> flt = new floatRW();
     public static readonly ISerializedRW<long> lng = new longRW();
-    public static readonly ISerializedRW<Duration> duration = new DurationRW();
     public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
     public static readonly ISerializedRW<Uri> uri = lambda(
       uri => str.serialize(uri.ToString()),
@@ -106,6 +107,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) => 
       new OptRW<A>(rw);
+
+    public static ISerializedRW<Either<A, B>> either<A, B>(ISerializedRW<A> aRW, ISerializedRW<B> bRW) => 
+      new EitherRW<A, B>(aRW, bRW);
 
     public static ISerializer<ICollection<A>> collectionSerializer<A>(ISerializer<A> serializer) =>
       collectionSerializer<A, ICollection<A>>(serializer);
@@ -331,13 +335,6 @@ namespace com.tinylabproductions.TLPLib.Data {
       public override Rope<byte> serialize(long a) => Rope.a(BitConverter.GetBytes(a));
     }
 
-    class DurationRW : ISerializedRW<Duration> {
-      public Rope<byte> serialize(Duration a) => integer.serialize(a.millis);
-
-      public Option<DeserializeInfo<Duration>> deserialize(byte[] serialized, int startIndex) =>
-        integer.deserialize(serialized, startIndex).map(millis => new Duration(millis));
-    }
-
     class DateTimeRW : BaseRW<DateTime> {
       protected override DeserializeInfo<DateTime> tryDeserialize(byte[] serialized, int startIndex) =>
         lng.deserialize(serialized, startIndex).map(DateTime.FromBinary).get;
@@ -380,6 +377,49 @@ namespace com.tinylabproductions.TLPLib.Data {
         a.isDefined 
         ? OptByteArrayRW.DISCRIMINATOR_SOME_ROPE + rw.serialize(a.get)
         : OptByteArrayRW.DISCRIMINATOR_NONE_ROPE;
+    }
+
+    static class EitherByteArrayRW {
+      public const byte
+        DISCRIMINATOR_LEFT = (byte) 'l',
+        DISCRIMINATOR_RIGHT = (byte) 'r';
+
+      public static readonly Rope<byte>
+        DISCRIMINATOR_LEFT_ROPE = Rope.a(new[] { DISCRIMINATOR_LEFT }),
+        DISCRIMINATOR_RIGHT_ROPE = Rope.a(new[] { DISCRIMINATOR_RIGHT });
+    }
+
+    class EitherRW<A, B> : ISerializedRW<Either<A, B>> {
+      readonly ISerializedRW<A> aRW;
+      readonly ISerializedRW<B> bRW;
+
+      public EitherRW(ISerializedRW<A> aRw, ISerializedRW<B> bRw) {
+        aRW = aRw;
+        bRW = bRw;
+      }
+
+      public Option<DeserializeInfo<Either<A, B>>> deserialize(byte[] serialized, int startIndex) {
+        if (serialized.Length == 0 || startIndex > serialized.Length - 1)
+          return Option<DeserializeInfo<Either<A, B>>>.None;
+        var discriminator = serialized[startIndex];
+        switch (discriminator) {
+          case EitherByteArrayRW.DISCRIMINATOR_LEFT:
+            return aRW.deserialize(serialized, startIndex + 1).map(info =>
+              new DeserializeInfo<Either<A, B>>(Either<A, B>.Left(info.value), info.bytesRead + 1)
+            );
+          case EitherByteArrayRW.DISCRIMINATOR_RIGHT:
+            return bRW.deserialize(serialized, startIndex + 1).map(info =>
+              new DeserializeInfo<Either<A, B>>(Either<A,B>.Right(info.value), info.bytesRead + 1)
+            );
+          default:
+            return Option<DeserializeInfo<Either<A, B>>>.None;
+        }
+      }
+
+      public Rope<byte> serialize(Either<A, B> either) =>
+        either.isLeft 
+        ? EitherByteArrayRW.DISCRIMINATOR_LEFT_ROPE + aRW.serialize(either.__unsafeGetLeft)
+        : EitherByteArrayRW.DISCRIMINATOR_RIGHT_ROPE + bRW.serialize(either.__unsafeGetRight);
     }
 
     class ICollectionSerializer<A, C> : ISerializer<C> where C : ICollection<A> {
