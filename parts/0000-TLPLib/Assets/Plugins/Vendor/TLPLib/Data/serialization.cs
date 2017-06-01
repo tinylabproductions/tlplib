@@ -6,7 +6,9 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace com.tinylabproductions.TLPLib.Data {
   public interface ISerializer<in A> {
@@ -65,6 +67,13 @@ namespace com.tinylabproductions.TLPLib.Data {
         str.deserialize(bytes, startIndex)
         .flatMap(di => di.flatMapTry(s => new Uri(s)))
     );
+
+#if UNITY_EDITOR
+    public static ISerializedRW<A> unityObjectSerializedRW<A>() where A : UnityEngine.Object => PathStr.serializedRW.map(
+       path => AssetDatabase.LoadAssetAtPath<A>(path).opt(),
+       module => module.path()
+    );
+#endif
 
     public static ISerializedRW<A> a<A>(
       ISerializer<A> serializer, IDeserializer<A> deserializer
