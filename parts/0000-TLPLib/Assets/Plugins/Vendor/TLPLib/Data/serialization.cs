@@ -58,6 +58,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<bool> boolean = new boolRW();
     public static readonly ISerializedRW<float> flt = new floatRW();
     public static readonly ISerializedRW<long> lng = new longRW();
+    public static readonly ISerializedRW<Duration> duration = new DurationRW();
     public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
     public static readonly ISerializedRW<Uri> uri = lambda(
       uri => str.serialize(uri.ToString()),
@@ -333,6 +334,13 @@ namespace com.tinylabproductions.TLPLib.Data {
         new DeserializeInfo<long>(BitConverter.ToInt64(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(long a) => Rope.a(BitConverter.GetBytes(a));
+    }
+
+    class DurationRW : ISerializedRW<Duration> {
+      public Rope<byte> serialize(Duration a) => integer.serialize(a.millis);
+
+      public Option<DeserializeInfo<Duration>> deserialize(byte[] serialized, int startIndex) =>
+        integer.deserialize(serialized, startIndex).map(millis => new Duration(millis));
     }
 
     class DateTimeRW : BaseRW<DateTime> {
