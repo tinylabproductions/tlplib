@@ -66,6 +66,13 @@ namespace com.tinylabproductions.TLPLib.Data {
         .flatMap(di => di.flatMapTry(s => new Uri(s)))
     );
 
+#if UNITY_EDITOR
+    public static ISerializedRW<A> unityObjectSerializedRW<A>() where A : UnityEngine.Object => PathStr.serializedRW.map(
+       path => AssetDatabase.LoadAssetAtPath<A>(path).opt(),
+       module => module.path()
+    );
+#endif
+
     public static ISerializedRW<A> a<A>(
       ISerializer<A> serializer, IDeserializer<A> deserializer
     ) => new JointRW<A>(serializer, deserializer);
