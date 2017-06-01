@@ -6,7 +6,9 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace com.tinylabproductions.TLPLib.Data {
   public interface ISerializer<in A> {
