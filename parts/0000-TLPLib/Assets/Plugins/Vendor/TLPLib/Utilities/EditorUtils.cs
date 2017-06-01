@@ -2,6 +2,7 @@
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditorInternal;
 #endif
 
 namespace com.tinylabproductions.TLPLib.Utilities {
@@ -23,9 +24,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static void userInfo(string title, string body, Log.Level level = Log.Level.INFO) {
       var log = Log.defaultLogger;
-      if (log.willLog(level)) log.log(level, $"{title}\n\n{body}");
+      if (log.willLog(level)) log.log(
+        level, 
+        $"########## {title} ##########\n\n" +
+        $"{body}\n\n" +
+        $"############################################################"
+      );
 #if UNITY_EDITOR
-      EditorUtility.DisplayDialog(title, body, "OK");
+      if (!InternalEditorUtility.inBatchMode) EditorUtility.DisplayDialog(title, body, "OK");
 #endif
     }
   }
