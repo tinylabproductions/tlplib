@@ -64,5 +64,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var a = new[] {1, 2, 3};
       a.toImmutable(i => i * 2).shouldEqual(ImmutableArray.Create(2, 4, 6));
     }
+
+    [Test]
+    public void RemoveAtTest() {
+      var a1 = new[] {1, 2, 3, 4};
+      a1.removeAt(0, 1000);
+      a1.shouldEqualEnum(2, 3, 4, 1000);
+
+      var a2 = new[] {0};
+      a2.removeAt(0, 1000);
+      a2.shouldEqualEnum(1000);
+    }
   }
 }
