@@ -103,34 +103,42 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static IObservable<Unit> registerDebugSequence(
-      DebugSequenceMouseData mouseData=null, DebugSequenceDirectionData directionData=null,
+      DebugSequenceMouseData mouseData=null, 
+      Option<DebugSequenceDirectionData> directionDataOpt=default(Option<DebugSequenceDirectionData>),
       DebugConsoleBinding binding=null
     ) {
+      Option.ensureValue(ref directionDataOpt);
+
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
-      directionData = directionData ?? DEFAULT_DIRECTION_DATA;
 
       var mouseObs = 
         new RegionClickObservable(mouseData.width, mouseData.height)
         .sequenceWithinTimeframe(mouseData.sequence, 3);
 
-      var directions = Observable.everyFrame.collect(_ => {
-        var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
-        var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
-        // Both are equal, can't decide.
-        if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
-        return 
-          Math.Abs(horizontal) > Math.Abs(vertical) 
-          ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
-          : F.some(vertical > 0 ? Direction.Up : Direction.Down);
-      }).changedValues();
+      var directionObs = directionDataOpt.fold(
+        Observable<Unit>.empty,
+        directionData => {
+          var directions = Observable.everyFrame.collect(_ => {
+            var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
+            var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
+            // Both are equal, can't decide.
+            if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
+            return 
+              Math.Abs(horizontal) > Math.Abs(vertical) 
+              ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
+              : F.some(vertical > 0 ? Direction.Up : Direction.Down);
+          }).changedValues();
 
-      var directionObs = 
-        directions
-        .withinTimeframe(directionData.sequence.Count, directionData.timeframe)
-        .filter(l => l.Select(t => t._1).SequenceEqual(directionData.sequence));
+          return
+            directions
+            .withinTimeframe(directionData.sequence.Count, directionData.timeframe)
+            .filter(l => l.Select(t => t._1).SequenceEqual(directionData.sequence))
+            .discardValue();
+        }
+      );
 
-      var obs = mouseObs.joinDiscard(directionObs);
+      var obs = mouseObs.join(directionObs);
       obs.subscribe(_ => instance.show(binding));
       return obs;
     }

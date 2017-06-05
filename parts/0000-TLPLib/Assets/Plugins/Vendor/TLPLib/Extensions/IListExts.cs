@@ -112,6 +112,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return b.ToString();
     }
 
+    /// <summary>Any that is garbage free.</summary>
+    public static bool anyGCFree<A>(this IList<A> coll, Fn<A, bool> predicate) {
+      // ReSharper disable once ForCanBeConvertedToForeach, LoopCanBeConvertedToQuery
+      for (var idx = 0; idx < coll.Count; idx++)
+        if (predicate(coll[idx])) return true;
+      return false;
+    }
+
     public static Option<int> indexWhere<A>(this IList<A> list, Fn<A, bool> predicate) {
       for (var idx = 0; idx < list.Count; idx++)
         if (predicate(list[idx])) return F.some(idx);
