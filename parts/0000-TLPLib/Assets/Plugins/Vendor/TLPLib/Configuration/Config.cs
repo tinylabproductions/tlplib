@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   /** Representation of configuration path. */
@@ -294,11 +292,20 @@ namespace com.tinylabproductions.TLPLib.Configuration {
           ? Either<ConfigLookupError, DateTime>.Right(t.__unsafeGet) 
           : parseErrorEFor<DateTime>(path, s, t.__unsafeException.Message);
       }));
-    
+
+    public static Parser<R> rangeParser<A, R>(Parser<A> aParser, Fn<A, A, R> lowerUpperToRange) =>
+      configPathedParser("lower", aParser)
+      .and(configPathedParser("upper", aParser))
+      .map((path, t) => lowerUpperToRange(t._1, t._2));
+
+    public static readonly Parser<Range> iRangeParser =
+      rangeParser(intParser, (l, u) => new Range(l, u));
+
     public static readonly Parser<FRange> fRangeParser =
-      configPathedParser("lower", floatParser)
-      .and(configPathedParser("upper", floatParser))
-      .map((path, t) => new FRange(t._1, t._2));
+      rangeParser(floatParser, (l, u) => new FRange(l, u));
+    
+    public static readonly Parser<URange> uRangeParser =
+      rangeParser(uintParser, (l, u) => new URange(l, u));
 
     public static readonly Parser<Url> 
       urlParser = stringParser.map(s => new Url(s)),

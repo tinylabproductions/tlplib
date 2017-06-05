@@ -55,7 +55,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static float getFloat(this IConfig cfg, string key) => cfg.get(key, floatParser);
     public static double getDouble(this IConfig cfg, string key) => cfg.get(key, doubleParser);
     public static bool getBool(this IConfig cfg, string key) => cfg.get(key, boolParser);
+    public static Range getIRange(this IConfig cfg, string key) => cfg.get(key, iRangeParser);
     public static FRange getFRange(this IConfig cfg, string key) => cfg.get(key, fRangeParser);
+    public static URange getURange(this IConfig cfg, string key) => cfg.get(key, uRangeParser);
     public static DateTime getDateTime(this IConfig cfg, string key) => cfg.get(key, dateTimeParser);
     public static IConfig getSubConfig(this IConfig cfg, string key) => cfg.get(key, configParser);
     public static IList<IConfig> getSubConfigList(this IConfig cfg, string key) => cfg.getList(key, configParser);
@@ -82,7 +84,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Option<float> optFloat(this IConfig cfg, string key) => cfg.optGet(key, floatParser);
     public static Option<double> optDouble(this IConfig cfg, string key) => cfg.optGet(key, doubleParser);
     public static Option<bool> optBool(this IConfig cfg, string key) => cfg.optGet(key, boolParser);
+    public static Option<Range> optIRange(this IConfig cfg, string key) => cfg.optGet(key, iRangeParser);
     public static Option<FRange> optFRange(this IConfig cfg, string key) => cfg.optGet(key, fRangeParser);
+    public static Option<URange> optURange(this IConfig cfg, string key) => cfg.optGet(key, uRangeParser);
     public static Option<DateTime> optDateTime(this IConfig cfg, string key) => cfg.optGet(key, dateTimeParser);
     public static Option<IConfig> optSubConfig(this IConfig cfg, string key) => cfg.optGet(key, configParser);
     public static Option<List<IConfig>> optSubConfigList(this IConfig cfg, string key) => cfg.optList(key, configParser);
@@ -108,7 +112,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Either<ConfigLookupError, float> eitherFloat(this IConfig cfg, string key) => cfg.eitherGet(key, floatParser);
     public static Either<ConfigLookupError, double> eitherDouble(this IConfig cfg, string key) => cfg.eitherGet(key, doubleParser);
     public static Either<ConfigLookupError, bool> eitherBool(this IConfig cfg, string key) => cfg.eitherGet(key, boolParser);
+    public static Either<ConfigLookupError, Range> eitherIRange(this IConfig cfg, string key) => cfg.eitherGet(key, iRangeParser);
     public static Either<ConfigLookupError, FRange> eitherFRange(this IConfig cfg, string key) => cfg.eitherGet(key, fRangeParser);
+    public static Either<ConfigLookupError, URange> eitherURange(this IConfig cfg, string key) => cfg.eitherGet(key, uRangeParser);
     public static Either<ConfigLookupError, DateTime> eitherDateTime(this IConfig cfg, string key) => cfg.eitherGet(key, dateTimeParser);
     public static Either<ConfigLookupError, IConfig> eitherSubConfig(this IConfig cfg, string key) => cfg.eitherGet(key, configParser);
     public static Either<ConfigLookupError, List<IConfig>> eitherSubConfigList(this IConfig cfg, string key) => cfg.eitherList(key, configParser);
@@ -135,7 +141,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Try<float> tryFloat(this IConfig cfg, string key) => cfg.tryGet(key, floatParser);
     public static Try<double> tryDouble(this IConfig cfg, string key) => cfg.tryGet(key, doubleParser);
     public static Try<bool> tryBool(this IConfig cfg, string key) => cfg.tryGet(key, boolParser);
+    public static Try<Range> tryIRange(this IConfig cfg, string key) => cfg.tryGet(key, iRangeParser);
     public static Try<FRange> tryFRange(this IConfig cfg, string key) => cfg.tryGet(key, fRangeParser);
+    public static Try<URange> tryURange(this IConfig cfg, string key) => cfg.tryGet(key, uRangeParser);
     public static Try<DateTime> tryDateTime(this IConfig cfg, string key) => cfg.tryGet(key, dateTimeParser);
     public static Try<IConfig> trySubConfig(this IConfig cfg, string key) => cfg.tryGet(key, configParser);
     public static Try<List<IConfig>> trySubConfigList(this IConfig cfg, string key) => cfg.tryList(key, configParser);

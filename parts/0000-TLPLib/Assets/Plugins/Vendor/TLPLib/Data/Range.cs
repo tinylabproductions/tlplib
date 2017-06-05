@@ -18,11 +18,15 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  // [from, to]
   public struct Range {
-    // No it can't, Unity...
-    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    #region Unity Serialized Fields
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
+#pragma warning disable 649
     [SerializeField] int _from, _to;
+#pragma warning restore 649
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
+    #endregion
+
     public int from => _from;
     public int to => _to;
 
@@ -32,6 +36,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public int random => Random.Range(from, to + 1);
+    public int this[Percentage p] => from + (int) ((to - from) * p.value);
+    public override string ToString() => $"({from} to {to})";
 
     public RangeEnumerator GetEnumerator() { return new RangeEnumerator(from, to); }
   }
@@ -65,25 +71,40 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public int Current { get; set; }
   }
-
-
+  
   [Serializable]
   public struct URange {
-    public readonly uint from, to;
+    #region Unity Serialized Fields
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
+#pragma warning disable 649
+    [SerializeField] uint _from, _to;
+#pragma warning restore 649
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
+    #endregion
+
+    public uint from => _from;
+    public uint to => _to;
 
     public URange(uint from, uint to) {
-      this.from = from;
-      this.to = to;
+      _from = from;
+      _to = to;
     }
 
     public uint random => (uint) Random.Range(from, to + 1);
+    public uint this[Percentage p] => from + (uint) ((to - from) * p.value);
+    public override string ToString() => $"({from} to {to})";
   }
 
   [Serializable]
   public struct FRange {
-    // No it can't, Unity...
-    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    #region Unity Serialized Fields
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
+#pragma warning disable 649
     [SerializeField] float _from, _to;
+#pragma warning restore 649
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
+    #endregion
+
     public float from => _from;
     public float to => _to;
 
@@ -93,38 +114,41 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public float random => Random.Range(from, to);
+    public float this[Percentage p] => from + (to - from) * p.value;
+    public override string ToString() => $"({from} to {to})";
 
-    public EnumerableFRange by(float step) {
-      return new EnumerableFRange(from, to, step);
-    }
-
-    public override string ToString() {
-      return string.Format("({0} to {1})", from, to);
-    }
+    public EnumerableFRange by(float step) => new EnumerableFRange(@from, to, step);
   }
 
+  [Serializable]
   public struct EnumerableFRange : IEnumerable<float> {
-    public readonly float from, to, step;
+    #region Unity Serialized Fields
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
+#pragma warning disable 649
+    [SerializeField] float _from, _to, _step;
+#pragma warning restore 649
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
+    #endregion
+
+    public float from => _from;
+    public float to => _to;
+    public float step => _step;
 
     public EnumerableFRange(float from, float to, float step) {
-      this.from = from;
-      this.to = to;
-      this.step = step;
+      _from = from;
+      _to = to;
+      _step = step;
     }
 
     public float random => Random.Range(from, to);
+    public float this[Percentage p] => from + (to - from) * p.value;
+    public override string ToString() => $"({from} to {to} by {step})";
 
     public IEnumerator<float> GetEnumerator() {
       for (var i = from; i <= to; i += step)
         yield return i;
     }
 
-    IEnumerator IEnumerable.GetEnumerator() {
-      return GetEnumerator();
-    }
-
-    public override string ToString() {
-      return string.Format("({0} to {1} by {2})", from, to, step);
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
   }
 }
