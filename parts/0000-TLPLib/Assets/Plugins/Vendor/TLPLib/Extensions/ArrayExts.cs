@@ -79,5 +79,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in source) b.Add(mapper(a));
       return b.MoveToImmutable(); 
     }
+
+    /// <summary>
+    /// Removes specified index, shifting everything to left and replaces last element with given value.
+    /// </summary>
+    public static void removeAt<A>(this A[] arr, int idx, A replaceLastElementWith) {
+      for (var i = idx; i < arr.Length - 1; i++) {
+        arr[i] = arr[i + 1];
+      }
+      arr[arr.Length - 1] = replaceLastElementWith;
+    }
   }
 }
