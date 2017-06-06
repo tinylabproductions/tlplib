@@ -67,6 +67,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return encoding.GetString(Convert.FromBase64String(source));
     }
 
+    public static Either<Exception, string> fromBase64Safe(this string source, Encoding encoding = null) => 
+      F.doTry(() => fromBase64(source, encoding)).toEither;
+
     public static string trimTo(this string s, int length, bool fromRight=false) => 
       s.Length > length ? s.Substring(
         fromRight ? s.Length - length : 0, 
