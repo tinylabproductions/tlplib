@@ -5,7 +5,7 @@ using UnityEditor;
 #endif
 
 
-namespace com.tinylabproductions.TLPGame {
+namespace com.tinylabproductions.TLPLib.ResourceReference {
   public abstract class ResourceReference<A> : ScriptableObject where A : Object {
 #pragma warning disable 649
     [SerializeField, NotNull] A _reference;

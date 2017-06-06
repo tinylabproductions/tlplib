@@ -1,6 +1,5 @@
-﻿using com.tinylabproductions.TLPGame;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Vendor.TLPGameAds {
+namespace com.tinylabproductions.TLPLib.ResourceReference {
   public class SpriteResourceReference : ResourceReference<Sprite> { }
 }
