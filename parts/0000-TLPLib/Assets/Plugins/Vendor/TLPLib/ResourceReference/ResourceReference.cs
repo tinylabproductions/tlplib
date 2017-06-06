@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       return csr ? csr.reference.some() : Option<A>.None;
     }
 
-    public static Tpl<ResourceRequest, Future<Option<A>>> loadCarSpritesAsync<A>(
+    public static Tpl<ResourceRequest, Future<Option<A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object {
       var path = loadPath.toUnityPath();
