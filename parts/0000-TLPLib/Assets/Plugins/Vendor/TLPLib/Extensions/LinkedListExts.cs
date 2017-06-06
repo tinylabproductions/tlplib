@@ -4,11 +4,8 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class LinkedListExts {
-    public static bool isEmpty<A>(this ReadOnlyLinkedList<A> list) 
-    { return list.Count == 0; }
-
-    public static bool isEmpty<A>(this LinkedList<A> list) 
-    { return list.Count == 0; }
+    public static bool isEmpty<A>(this ReadOnlyLinkedList<A> list) => list.Count == 0;
+    public static bool isEmpty<A>(this LinkedList<A> list) => list.Count == 0;
 
     /* Removes first element and returns it. */
     public static Option<A> shift<A>(this LinkedList<A> list) {
@@ -23,5 +20,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       list.RemoveLast();
       return a.map(_ => _.Value);
     }
+
+    public static LinkedListNode<A> nextOrFirst<A>(
+      this LinkedListNode<A> node
+    ) => node.Next ?? node.List.First;
   }
 }
