@@ -1,5 +1,13 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using System.Collections;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Filesystem;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -32,5 +40,27 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       return so;
     }
 #endif
+
+    public static Option<A> load<A>(PathStr loadPath) where A : Object {
+      var path = loadPath.toUnityPath();
+      var csr = Resources.Load<ResourceReference<A>>(path);
+      return csr ? csr.reference.some() : Option<A>.None;
+    }
+
+    public static Tpl<ResourceRequest, Future<Option<A>>> loadCarSpritesAsync<A>(PathStr loadPath) where A : Object {
+      var path = loadPath.toUnityPath();
+      var request = Resources.LoadAsync<ResourceReference<A>>(path);
+      return F.t(request, Future<Option<A>>.async(
+        p => ASync.StartCoroutine(waitForLoadCoroutine(request, p))
+      ));
+    }
+
+    static IEnumerator waitForLoadCoroutine<A>(
+      ResourceRequest request, Promise<Option<A>> p
+    ) where A : Object {
+      yield return request;
+      var csr = (ResourceReference<A>) request.asset;
+      p.complete(csr ? csr.reference.some() : Option<A>.None);
+    }
   }
 }
