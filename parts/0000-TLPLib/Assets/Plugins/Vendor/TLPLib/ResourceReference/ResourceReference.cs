@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
@@ -13,7 +12,8 @@ using UnityEditor;
 #endif
 
 
-namespace com.tinylabproductions.TLPLib.ResourceReference {
+namespace com.tinylabproductions.TLPLib.ResourceReference
+{
   public abstract class ResourceReference<A> : ScriptableObject where A : Object {
 #pragma warning disable 649
     [SerializeField, NotNull] A _reference;
