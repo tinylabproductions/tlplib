@@ -12,8 +12,7 @@ using UnityEditor;
 #endif
 
 
-namespace com.tinylabproductions.TLPLib.ResourceReference
-{
+namespace com.tinylabproductions.TLPLib.ResourceReference {
   public abstract class ResourceReference<A> : ScriptableObject where A : Object {
 #pragma warning disable 649
     [SerializeField, NotNull] A _reference;
@@ -68,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference
 
     /// <summary>
     /// Tries to load a resource asynchronously.
-    /// If it fails, it logs an error and returns an unfulfilled future.
+    /// If it fails - logs an error and returns an unfulfilled future.
     /// Otherwise returns fullfilled future with the requested resource. 
     /// </summary>
     public static Tpl<ResourceRequest, Future<A>> loadAsyncUnsafe<A>(
