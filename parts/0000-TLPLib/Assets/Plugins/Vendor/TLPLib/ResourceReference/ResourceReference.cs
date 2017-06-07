@@ -11,7 +11,6 @@ using Object = UnityEngine.Object;
 using UnityEditor;
 #endif
 
-
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   public abstract class ResourceReference<A> : ScriptableObject where A : Object {
 #pragma warning disable 649
