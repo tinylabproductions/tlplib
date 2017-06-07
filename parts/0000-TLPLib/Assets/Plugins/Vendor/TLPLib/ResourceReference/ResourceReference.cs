@@ -39,6 +39,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       return so;
     }
 #endif
+
     static string notFound(string path) => $"Resource not found: {path}";
 
     public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
@@ -47,12 +48,6 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       return csr 
         ? F.right<string, A>(csr.reference) 
         : F.left<string, A>(notFound(path));
-    }
-
-    public static A loadOrThrow<A>(PathStr loadPath) where A : Object {
-      var loaded = load<A>(loadPath);
-      if (loaded.isLeft) throw new Exception(loaded.leftOrThrow);
-      return loaded.rightOrThrow;
     }
 
     public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
@@ -65,25 +60,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       ));
     }
 
-    /// <summary>
-    /// Tries to load a resource asynchronously.
-    /// If it fails - logs an error and returns an unfulfilled future.
-    /// Otherwise returns fullfilled future with the requested resource. 
-    /// </summary>
-    public static Tpl<ResourceRequest, Future<A>> loadAsyncUnsafe<A>(
-      PathStr loadPath
-    ) where A : Object {
-      var loadResult = loadAsync<A>(loadPath);
-      var throwOrReturnFtr = loadResult._2.flatMap(errorOrResource => {
-        if (errorOrResource.isRight) return Future<A>.successful(errorOrResource.rightOrThrow);
-        Log.error(errorOrResource.leftOrThrow);
-        return Future<A>.unfulfilled;
-      });
-
-      return F.t(loadResult._1, throwOrReturnFtr);
-    }
-
-    static IEnumerator waitForLoadCoroutine<A>(
+    public static IEnumerator waitForLoadCoroutine<A>(
       ResourceRequest request, Promise<Either<string, A>> p, string path
     ) where A : Object {
       yield return request;
