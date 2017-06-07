@@ -55,16 +55,17 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       var path = loadPath.toUnityPath();
       var request = Resources.LoadAsync<ResourceReference<A>>(path);
       return F.t(request, Future<Either<string, A>>.async(
-        p => ASync.StartCoroutine(waitForLoadCoroutine(request, p, path))
+        p => ASync.StartCoroutine(waitForLoadCoroutine(request, p.complete, path))
       ));
     }
 
     public static IEnumerator waitForLoadCoroutine<A>(
-      ResourceRequest request, Promise<Either<string, A>> p, string path
+      ResourceRequest request, Action<Either<string, A>> whenDone, string path
     ) where A : Object {
       yield return request;
       var csr = (ResourceReference<A>) request.asset;
-      p.complete(csr
+      whenDone(
+        csr
         ? F.right<string, A>(csr.reference)
         : F.left<string, A>(notFound(path))
       );
