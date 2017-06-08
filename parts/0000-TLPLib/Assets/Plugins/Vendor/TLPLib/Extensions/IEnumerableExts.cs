@@ -8,9 +8,10 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
     /* This should really be used only for debugging. It is pretty slow. */
+
     public static string asString(
       this IEnumerable enumerable,
-      bool newlines=true, bool fullClasses=false
+      bool newlines = true, bool fullClasses = false
     ) {
       if (enumerable == null) return "null";
       var sb = new StringBuilder();
@@ -53,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static string mkString<A>(
-      this IEnumerable<A> e, Act<StringBuilder> appendSeparator, 
+      this IEnumerable<A> e, Act<StringBuilder> appendSeparator,
       string start = null, string end = null
     ) {
       var sb = new StringBuilder();
@@ -96,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       if (separator.Contains("\0")) throwNullStringBuilderException();
       return e.mkString(sb => sb.Append(separator), start, end);
-    } 
+    }
 
     // AOT safe version of ToDictionary.
     public static Dictionary<K, V> toDict<A, K, V>(
@@ -126,12 +127,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var _child in e2) yield return _child;
     }
 
-    public static IEnumerable<A> Yield<A>(this A any) {
-      yield return any;
-    }
+    public static IEnumerable<A> Yield<A>(this A any) { yield return any; }
 
-    [Obsolete("Use foreach instead.")]
-    public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
+    [Obsolete("Use foreach instead.")] public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
       foreach (var el in enumerable) f(el);
     }
 
@@ -146,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
 
-      while (aEnum.MoveNext() && bEnum.MoveNext()) 
+      while (aEnum.MoveNext() && bEnum.MoveNext())
         yield return f(aEnum.Current, bEnum.Current);
 
       aEnum.Dispose();
@@ -185,11 +183,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable)
-      { return enumerable.SelectMany(_ => _.asEnum()); }
+    public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable) {
+      return enumerable.SelectMany(_ => _.asEnum());
+    }
 
-    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable)
-      { return enumerable.SelectMany(_ => _); }
+    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) {
+      return enumerable.SelectMany(_ => _);
+    }
 
     public static IEnumerable<B> collect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
@@ -210,11 +210,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<B>();
     }
 
-    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) {
-      return new HashSet<A>(enumerable);
-    }
+    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) { return new HashSet<A>(enumerable); }
 
     /** Partitions enumerable into two lists using a predicate: (all false elements, all true elements) **/
+
     public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
       var trues = new List<A>();
       var falses = new List<A>();
@@ -239,7 +238,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is Partitioned<A> && Equals((Partitioned<A>) obj);
+      return obj is Partitioned<A> && Equals((Partitioned<A>)obj);
     }
 
     public override int GetHashCode() { return base.GetHashCode(); }
@@ -251,9 +250,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
              $"]";
     }
   }
+
   public static class Partitioned {
-    public static Partitioned<A> a<A>(List<A> trues, List<A> falses) {
-      return new Partitioned<A>(trues, falses);
-    }
+    public static Partitioned<A> a<A>(List<A> trues, List<A> falses) { return new Partitioned<A>(trues, falses); }
   }
 }
