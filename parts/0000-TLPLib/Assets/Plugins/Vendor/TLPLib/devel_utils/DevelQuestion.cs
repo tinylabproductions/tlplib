@@ -14,6 +14,7 @@ namespace com.tinylabproductions.TLPLib.devel_utils {
 #endif
       ;
 
+#if UNITY_EDITOR
     static DevelQuestion() {
       DConsole.instance.onShow += dc => {
         var r = dc.registrarFor(nameof(DevelQuestion));
@@ -21,6 +22,7 @@ namespace com.tinylabproductions.TLPLib.devel_utils {
         r.registerToggle("enabled", () => enabled, v => enabled = v);
       };
     }
+#endif
 
     public static bool askDeveloper(
       string title, bool defaultValue, string info = "",
