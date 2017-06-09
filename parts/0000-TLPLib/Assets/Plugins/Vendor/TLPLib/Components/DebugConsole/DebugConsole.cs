@@ -181,11 +181,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var view = binding.clone();
       Object.DontDestroyOnLoad(view);
-      foreach (var commandGroup in commands) {
-        var button = addButton(view.buttonPrefab, view.commandGroupsHolder.transform);
+
+      var currentGroupButtons = ImmutableList<ButtonBinding>.Empty;
+      setupList(view.commands, () => currentGroupButtons);
+
+      var commandGroups = commands.Select(commandGroup => {
+        var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
         button.text.text = commandGroup.Key;
-        button.button.onClick.AddListener(() => showGroup(view, commandGroup.Key, commandGroup.Value));
-      }
+        button.button.onClick.AddListener(() =>
+          currentGroupButtons = showGroup(view, commandGroup.Key, commandGroup.Value)
+        );
+        return button;
+      }).ToImmutableList();
+      setupList(view.commandGroups, () => commandGroups);
 
       Application.logMessageReceivedThreaded += onLogMessageReceived;
       view.closeButton.onClick.AddListener(destroy);
@@ -193,14 +201,28 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       current = new Instance(view).some();
     }
 
-    static void showGroup(DebugConsoleBinding view, string groupName, IEnumerable<Command> commands) {
+    static void setupList(DebugConsoleListBinding listBinding, Fn<ImmutableList<ButtonBinding>> contents) {
+      listBinding.clearFilterButton.onClick.AddListener(() => listBinding.filterInput.text = "");
+      listBinding.filterInput.onValueChanged.AddListener(value => {
+        foreach (var button in contents()) {
+          var active = button.text.text.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+          button.gameObject.SetActive(active);
+        }
+      });
+    }
+    
+    static ImmutableList<ButtonBinding> showGroup(
+      DebugConsoleBinding view, string groupName, IEnumerable<Command> commands
+    ) {
       view.commandGroupLabel.text = groupName;
-      foreach (var t in view.commandsHolder.transform.children()) Object.Destroy(t.gameObject);
-      foreach (var command in commands) {
-        var button = addButton(view.buttonPrefab, view.commandsHolder.transform);
+      var commandsHolder = view.commands.holder;
+      foreach (var t in commandsHolder.transform.children()) Object.Destroy(t.gameObject);
+      return commands.Select(command => {
+        var button = addButton(view.buttonPrefab, commandsHolder.transform);
         button.text.text = command.name;
         button.button.onClick.AddListener(() => command.run());
-      }
+        return button;
+      }).ToImmutableList();
     }
 
     static ButtonBinding addButton(ButtonBinding prefab, Transform target) {
