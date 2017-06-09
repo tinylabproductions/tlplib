@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
         $"{nameof(ErrorData)}[" +
         $"{nameof(errorType)}: '{errorType}', " +
         $"{nameof(message)}: '{message}', " +
-        $"{nameof(backtrace)}: {backtrace.asString()}" +
+        $"{nameof(backtrace)}: {backtrace.asDebugString()}" +
         $"]";
     }
 
@@ -87,13 +87,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
         if (!string.IsNullOrEmpty(www.error)) {
           if (Log.isInfo) Log.info(
             prefix + " send failed with: " + www.error + 
-            "\nRequest headers=" + headers.asString() +
-            "\nResponse headers=" + www.responseHeaders.asString()
+            "\nRequest headers=" + headers.asDebugString() +
+            "\nResponse headers=" + www.responseHeaders.asDebugString()
           );
         }
         else {
           if (Debug.isDebugBuild && Log.isInfo) Log.info(
-            prefix + " send succeeded with response headers=" + www.responseHeaders.asString()
+            prefix + " send succeeded with response headers=" + www.responseHeaders.asDebugString()
           );
         }
       }));

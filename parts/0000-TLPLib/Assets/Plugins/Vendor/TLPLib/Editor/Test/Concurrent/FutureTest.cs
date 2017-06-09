@@ -375,7 +375,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void ItemNotFound() {
       new [] { FT.left(1), FT.left(2), FT.left(3), FT.left(4) }.
         Select(Future.successful).firstOfSuccessfulCollect().value.get.
-        leftValue.get.asString().shouldEqual(new[] { 1, 2, 3, 4 }.asString());
+        leftValue.get.asDebugString().shouldEqual(new[] { 1, 2, 3, 4 }.asDebugString());
     }
 
     [Test]

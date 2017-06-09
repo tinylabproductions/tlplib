@@ -245,8 +245,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public override string ToString() {
       return $"{nameof(Partitioned)}[" +
-             $"{nameof(trues)}: {trues.asString()}, " +
-             $"{nameof(falses)}: {falses.asString()}" +
+             $"{nameof(trues)}: {trues.asDebugString()}, " +
+             $"{nameof(falses)}: {falses.asDebugString()}" +
              $"]";
     }
   }

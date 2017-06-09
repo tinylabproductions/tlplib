@@ -75,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) {
       var extraS = extraInfo == null ? "" : $", {extraInfo}";
       return ConfigLookupError.wrongType(F.lazy(() =>
-        $"Can't parse {path} as {typeof(A)}{extraS}, node contents: {node.asString()}"
+        $"Can't parse {path} as {typeof(A)}{extraS}, node contents: {node.asDebugString()}"
       ));
     }
 
@@ -393,7 +393,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) {
       if (!current.ContainsKey(part))
         return F.left<ConfigLookupError, A>(ConfigLookupError.keyNotFound(F.lazy(() =>
-          $"Cannot find part '{part}' from path '{path}' in {current.asString()} " +
+          $"Cannot find part '{part}' from path '{path}' in {current.asDebugString()} " +
           $"[{nameof(scope)}='{scope}']"
         )));
 

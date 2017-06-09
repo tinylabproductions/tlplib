@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public class IEnumerableTestAsString {
     [Test]
     public void TestNull() => 
-      ((IEnumerable) null).asString().shouldEqual("null");
+      ((IEnumerable) null).asDebugString().shouldEqual("null");
 
     [Test]
     public void TestList() {
@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [Test]
     public void TestNestedList() {
-      F.list(F.list(1, 2), F.list(3)).asString().shouldEqual(
+      F.list(F.list(1, 2), F.list(3)).asDebugString().shouldEqual(
 @"List`1[
   List`1[
     1,

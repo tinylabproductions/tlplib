@@ -160,10 +160,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       string name, Ref<ImmutableHashSet<A>> pv, IEnumerable<A> options
     ) {
       var r = registrarFor(name);
-      r.register("List", () => pv.value.asString());
+      r.register("List", () => pv.value.asDebugString());
       r.register("Clear", () => {
         pv.value = ImmutableHashSet<A>.Empty;
-        return pv.value.asString();
+        return pv.value.asDebugString();
       });
       foreach (var f in options) {
         r.register($"{f}?", () => pv.value.Contains(f));

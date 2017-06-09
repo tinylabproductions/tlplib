@@ -384,7 +384,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static void shouldHave(this ImmutableList<ObjectValidator.Error> errors, ErrorType type) =>
       errors.shouldMatch(
         t => t.Exists(x => x.type == type),
-        $"{type} does not exist in errors {errors.asString()}"
+        $"{type} does not exist in errors {errors.asDebugString()}"
       );
   }
 }
