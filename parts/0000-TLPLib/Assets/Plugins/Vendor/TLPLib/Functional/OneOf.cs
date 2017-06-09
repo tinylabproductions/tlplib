@@ -111,5 +111,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
       throw new IllegalStateException("Unreachable code");
     }
+
+    public static implicit operator OneOf<A, B, C>(A a) => new OneOf<A, B, C>(a);
+    public static implicit operator OneOf<A, B, C>(B b) => new OneOf<A, B, C>(b);
+    public static implicit operator OneOf<A, B, C>(C c) => new OneOf<A, B, C>(c);
   }
 }
