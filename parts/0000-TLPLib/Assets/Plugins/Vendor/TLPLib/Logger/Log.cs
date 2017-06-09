@@ -53,6 +53,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
       set { _defaultLogger = value; }
     }
 
+    public static void log(Level l, object o, Object context = null) => defaultLogger.log(l, o, context);
+    public static bool willLog(Level l) => defaultLogger.willLog(l);
+
     public static void verbose(object o, Object context = null) => 
       defaultLogger.verbose(o, context);
     public static bool isVerbose => defaultLogger.isVerbose();
@@ -189,7 +192,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     ConsoleLog() {}
 
     protected override void logInner(Log.Level l, string s, Option<Object> context) {
-      if (context.isDefined) s = $"{s} (ctx={context.get})";
+      if (context.isSome) s = $"{s} (ctx={context.get})";
       Console.WriteLine(s);
     }
   }

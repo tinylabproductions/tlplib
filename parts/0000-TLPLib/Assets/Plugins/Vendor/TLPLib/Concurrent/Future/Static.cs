@@ -72,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           f.onComplete(a => {
             completed++;
             var res = predicate(a);
-            if (res.isDefined) p.tryComplete(res);
+            if (res.isSome) p.tryComplete(res);
             else if (completed == futures.Count) p.tryComplete(F.none<B>());
           });
       });
@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Fn<Option<A>> checker) {
       var valOpt = checker();
-      while (valOpt.isEmpty) {
+      while (valOpt.isNone) {
         yield return delay;
         valOpt = checker();
       }

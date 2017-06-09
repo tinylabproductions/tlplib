@@ -214,7 +214,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         onProgress?.Invoke(progress);
 
         var goOpt = F.opt(o as GameObject);
-        if (goOpt.isDefined) {
+        if (goOpt.isSome) {
           var go = goOpt.get;
           foreach (var transform in go.transform.andAllChildrenRecursive()) {
             var components = transform.GetComponents<Component>();
@@ -307,7 +307,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var persistentCalls = evt.__persistentCalls();
       var listPersistentCallOpt = persistentCalls.calls;
-      if (listPersistentCallOpt.isEmpty) return Option<Error>.None;
+      if (listPersistentCallOpt.isNone) return Option<Error>.None;
       var listPersistentCall = listPersistentCallOpt.get;
 
       var index = 0;
@@ -315,7 +315,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         index++;
 
         if (persistentCall.isValid) {
-          if (evt.__findMethod(persistentCall).isEmpty)
+          if (evt.__findMethod(persistentCall).isNone)
             return Error.unityEventInvalidMethod(component, propertyName, index, context).some();
         }
         else
@@ -330,7 +330,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fiOpt = F.opt(obj.GetType().GetField(fieldName));
       return 
-        fiOpt.isDefined 
+        fiOpt.isSome 
         ? F.opt(fiOpt.get.GetValue(obj) as UnityEvent) 
         : Option<UnityEvent>.None;
     }
@@ -365,7 +365,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
           else {
             var listOpt = F.opt(fieldValue as IList);
-            if (listOpt.isDefined) {
+            if (listOpt.isSome) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
                 yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));

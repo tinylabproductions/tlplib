@@ -124,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
     public void progress() { state = state.flatMap(skipper); }
 
     /* Does this Iter currently has a value? */
-    public bool hasValue { get { return state.isDefined; } }
+    public bool hasValue { get { return state.isSome; } }
 
     /* Get the current value of Iter. Returns None if iter is finished. */
     public Option<A> current { get { return state.map(getter); } }
@@ -146,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
     /* Returns how many elements are left in this Iter. 
      * Not always possible to know that (e.g. if iterating IEnumerable). */
     public Option<int> elementsLeft { get {
-      return state.isEmpty ? F.some(0) : sizeHint(state.get);
+      return state.isNone ? F.some(0) : sizeHint(state.get);
     } }
 
     /* Alias to .hasValue */
@@ -191,7 +191,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
      * provide a size hint. */
     public static A[] toArray<A, Ctx>(this Iter<A, Ctx> iter) {
       var leftOpt = iter.elementsLeft;
-      if (leftOpt.isDefined) {
+      if (leftOpt.isSome) {
         var arr = new A[leftOpt.get];
         var idx = 0;
         for (var i = iter; i; i++, idx++) arr[idx] = ~i;
@@ -433,7 +433,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
           var leftOpt = iter.elementsLeft;
           var takeLeft = max - taken + 1;
           return F.some(
-            leftOpt.isEmpty ? takeLeft : Math.Min(leftOpt.get, takeLeft)
+            leftOpt.isNone ? takeLeft : Math.Min(leftOpt.get, takeLeft)
           );
         }) 
       ))).iter(F.t(__iter, 1, __count) /* iter, taken, max */);
@@ -463,7 +463,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
       for (var i = iter; i; i++) {
         var current = ~i;
         var found = finder(current);
-        if (found.isDefined) return found;
+        if (found.isSome) return found;
       }
       return F.none<B>();
     }
@@ -476,7 +476,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
       for (var i = iter; i; i++, idx++) {
         var current = ~i;
         var found = finder(current, idx);
-        if (found.isDefined) return found;
+        if (found.isSome) return found;
       }
       return F.none<B>();
     }
@@ -514,7 +514,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
       Fn<A, float> weightSelector
     ) {
       var totalWeightOpt = iter.reduceLeft(weightSelector, (s, i) => s + weightSelector(i));
-      if (totalWeightOpt.isEmpty) return F.none<A>();
+      if (totalWeightOpt.isNone) return F.none<A>();
 
       var totalWeight = totalWeightOpt.get;
       // The weight we are after...

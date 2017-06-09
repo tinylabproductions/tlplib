@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       /* Update current value from source because we have no subscribers, 
        * thus are not subscribed to the source and the value 
        * was not pushed by it to this RxVal. */
-      if (subscribers == 0 && getCurrentValue.isDefined) {
+      if (subscribers == 0 && getCurrentValue.isSome) {
         _value = getCurrentValue.get();
       }
       return _value;
@@ -105,11 +105,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
           if (matched) {
             dict[rx] = a;
-            if (val.value.isEmpty) val.value = a.some();
+            if (val.value.isNone) val.value = a.some();
           }
           else {
             dict.Remove(rx);
-            if (val.value.isDefined) {
+            if (val.value.isSome) {
               val.value = 
                 dict.isEmpty() 
                   ? Option<A>.None 
@@ -127,13 +127,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
       where C : IEnumerable<IRxVal<bool>> 
     => 
-      vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isDefined);
+      vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isSome);
 
     public static IRxVal<Option<A>> anyDefined<A>(
       this IEnumerable<IRxVal<Option<A>>> vals
     ) => 
       vals
-      .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isDefined)
+      .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isSome)
       .map(_ => _.flatten());
 
     // TODO: test

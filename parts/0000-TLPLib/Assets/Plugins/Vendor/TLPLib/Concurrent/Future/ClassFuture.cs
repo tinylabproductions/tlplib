@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     IList<Act<A>> listeners = pool.Borrow();
 
-    public bool isCompleted => value.isDefined;
+    public bool isCompleted => value.isSome;
     public Option<A> value { get; private set; } = F.none<A>();
 
     public override string ToString() => $"{nameof(FutureImpl<A>)}({value})";
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public bool tryComplete(A v) {
       // Cannot use fold here because of iOS AOT.
-      var ret = value.isEmpty;
+      var ret = value.isNone;
       if (ret) {
         value = F.some(v);
         // completed should be called only once
@@ -44,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public void onComplete(Act<A> action) {
-      if (value.isDefined) action(value.get);
+      if (value.isSome) action(value.get);
       else listeners.Add(action);
     }
 

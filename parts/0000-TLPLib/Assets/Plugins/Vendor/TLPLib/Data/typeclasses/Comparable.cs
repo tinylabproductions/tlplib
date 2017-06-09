@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     ) where Coll : IEnumerable<A> {
       var current = Option<A>.None;
       foreach (var a in c) {
-        if (current.isEmpty) current = a.some();
+        if (current.isNone) current = a.some();
         else {
           if (comparable.compare(extract(a), extract(current.get)) == lookFor)
             current = a.some();

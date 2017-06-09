@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Option<DeserializeInfo<B>> map<A, B>(
       this Option<DeserializeInfo<A>> aOpt, Fn<A, B> mapper
     ) {
-      if (aOpt.isEmpty) return Option<DeserializeInfo<B>>.None;
+      if (aOpt.isNone) return Option<DeserializeInfo<B>>.None;
       var aInfo = aOpt.get;
       return F.some(new DeserializeInfo<B>(mapper(aInfo.value), aInfo.bytesRead));
     }
@@ -180,10 +180,10 @@ namespace com.tinylabproductions.TLPLib.Data {
         byte[] serialized, int startIndex
       ) {
         var aInfoOpt = aDeserializer.deserialize(serialized, startIndex);
-        if (aInfoOpt.isEmpty) return Option<DeserializeInfo<B>>.None;
+        if (aInfoOpt.isNone) return Option<DeserializeInfo<B>>.None;
         var aInfo = aInfoOpt.get;
         var bOpt = mapper(aInfo.value);
-        if (bOpt.isEmpty) return Option<DeserializeInfo<B>>.None;
+        if (bOpt.isNone) return Option<DeserializeInfo<B>>.None;
         var bInfo = new DeserializeInfo<B>(bOpt.get, aInfo.bytesRead);
         return F.some(bInfo);
       }
@@ -237,10 +237,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       public Option<DeserializeInfo<Tpl<A, B>>> deserialize(byte[] serialized, int startIndex) {
         try {
           var aOpt = aRW.deserialize(serialized, startIndex);
-          if (aOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
+          if (aOpt.isNone) return Option<DeserializeInfo<Tpl<A, B>>>.None;
           var aInfo = aOpt.get;
           var bOpt = bRW.deserialize(serialized, startIndex + aInfo.bytesRead);
-          if (bOpt.isEmpty) return Option<DeserializeInfo<Tpl<A, B>>>.None;
+          if (bOpt.isNone) return Option<DeserializeInfo<Tpl<A, B>>>.None;
           var bInfo = bOpt.get;
           var info = new DeserializeInfo<Tpl<A, B>>(
             F.t(aInfo.value, bInfo.value),
@@ -383,7 +383,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
 
       public Rope<byte> serialize(Option<A> a) => 
-        a.isDefined 
+        a.isSome 
         ? OptByteArrayRW.DISCRIMINATOR_SOME_ROPE + rw.serialize(a.get)
         : OptByteArrayRW.DISCRIMINATOR_NONE_ROPE;
     }
@@ -467,7 +467,7 @@ namespace com.tinylabproductions.TLPLib.Data {
           for (var idx = 0; idx < count; idx++) {
             var aOpt = deserializer.deserialize(serialized, readIdx);
 
-            if (aOpt.isEmpty) {
+            if (aOpt.isNone) {
               return Option<DeserializeInfo<ImmutableArray<A>>>.None;
             }
             var aInfo = aOpt.get;

@@ -103,7 +103,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void nowAndOnComplete(Act<Option<A>> action) {
       var current = value;
       action(current);
-      if (current.isEmpty) onComplete(a => action(a.some()));
+      if (current.isNone) onComplete(a => action(a.some()));
     }
     
     public Future<B> map<B>(Fn<A, B> mapper) => implementation.fold(

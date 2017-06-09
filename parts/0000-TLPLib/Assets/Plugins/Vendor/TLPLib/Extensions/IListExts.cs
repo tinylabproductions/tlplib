@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IList<T> list, Fn<T, bool> finder, Fn<T> ifNotFound, Fn<T, T> ifFound
     ) {
       var idxOpt = list.indexWhere(finder);
-      if (idxOpt.isEmpty) {
+      if (idxOpt.isNone) {
         var item = ifNotFound();
         list.Add(item);
         return item;
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IList<T> list, Fn<T, bool> finder, Fn<T, T> ifFound
     ) {
       var idxOpt = list.indexWhere(finder);
-      if (idxOpt.isEmpty) return;
+      if (idxOpt.isNone) return;
 
       var idx = idxOpt.get;
       list[idx] = ifFound(list[idx]);

@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
     Option<Vector3> lastPlacedPosition = Option<Vector3>.None;
 
     static Option<LockedAxis2> next(Option<LockedAxis2> current) =>
-        current.isEmpty ? LockedAxis2.A.some()
+        current.isNone ? LockedAxis2.A.some()
       : current.exists(LockedAxis2.A) ? LockedAxis2.B.some()
       : Option<LockedAxis2>.None;
 
@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
             _target.lockedAxis, lockedAxis2
           );
 
-          if (objectToMoveAroundOpt.isEmpty) {
+          if (objectToMoveAroundOpt.isNone) {
             foreach (var position in newObjPositionOpt) {
               var instantiator = new PrefabInstantiator(data.prefab);
               var obj = instantiator.instantiate();
@@ -104,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
         lockedAxis == ObjectCloner.LockedAxis.Z ? originPosition.z : originPosition.z - 1
       );
 
-      return secondaryLockedAxis.isDefined
+      return secondaryLockedAxis.isSome
         ? projectToLine(ray, originPosition, shiftedPosition, lockedAxis, secondaryLockedAxis.get)
         : projectToPlane(ray, originPosition, shiftedPosition);
     }

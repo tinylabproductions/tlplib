@@ -196,7 +196,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
-        if (bOpt.isDefined) yield return bOpt.get;
+        if (bOpt.isSome) yield return bOpt.__unsafeGetValue;
       }
     }
 
@@ -205,7 +205,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
-        if (bOpt.isDefined) return bOpt;
+        if (bOpt.isSome) return bOpt;
       }
       return F.none<B>();
     }

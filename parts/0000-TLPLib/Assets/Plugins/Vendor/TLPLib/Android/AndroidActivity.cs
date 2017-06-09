@@ -71,7 +71,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     static Option<bool> _isTablet = F.none<bool>();
 
     public static bool isTablet { get {
-      if (_isTablet.isEmpty) {
+      if (_isTablet.isNone) {
         // cache result
         _isTablet = F.some(bridge.CallStatic<bool>("isTablet"));
       }

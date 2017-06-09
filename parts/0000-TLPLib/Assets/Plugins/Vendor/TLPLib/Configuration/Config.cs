@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public string pathStr => path.mkString(SEPARATOR);
 
     public string pathStrWithBase { get {
-      var basedS = basedFrom.isDefined ? $"({basedFrom.get})." : "";
+      var basedS = basedFrom.isSome ? $"({basedFrom.get})." : "";
       return $"{basedS}{pathStr}";
     } }
 
@@ -416,7 +416,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       this Config.Parser<A> aParser, Fn<ConfigPath, A, Option<B>> f
     ) => aParser.flatMap((path, a) => {
       var bOpt = f(path, a);
-      return bOpt.isDefined
+      return bOpt.isSome
         ? Either<ConfigLookupError, B>.Right(bOpt.get) 
         : Config.parseErrorEFor<B>(path, a);
     });
@@ -452,7 +452,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) =>
       (path, o) => parser(path, o).flatMapRight(a => {
         var bOpt = collector(a);
-        return bOpt.isDefined
+        return bOpt.isSome
           ? new Either<ConfigLookupError, B>(bOpt.get)
           : Config.parseErrorEFor<B>(path, a, "didn't pass collector");
       });

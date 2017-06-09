@@ -359,7 +359,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"function", bt.method},
         {"in_app", bt.inApp}
       };
-      if (bt.fileInfo.isDefined) {
+      if (bt.fileInfo.isSome) {
         var fi = bt.fileInfo.get;
         json.Add("lineno", fi.lineNo);
         json.Add("filename", fi.file);

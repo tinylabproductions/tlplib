@@ -264,7 +264,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
       return console.register(new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
-        if (opt.isDefined) {
+        if (opt.isSome) {
           var returnFuture = run(opt.get);
           Act<A> onComplete = t => Debug.Log($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.

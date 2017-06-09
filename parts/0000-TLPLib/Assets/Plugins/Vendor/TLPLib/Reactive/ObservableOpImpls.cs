@@ -422,7 +422,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeFn<A> changedValues<A>(
       IObservable<A> o, Fn<A, A, bool> areEqual
     ) => changesBase<A, A>(o, (obs, lastValue, val) => {
-      if (lastValue.isEmpty) obs.push(val);
+      if (lastValue.isNone) obs.push(val);
       else if (! areEqual(lastValue.get, val))
         obs.push(val);
     });

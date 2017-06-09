@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public override ISubscription subscribe(IObserver<A> observer) {
       foreach (var opt in events) {
-        if (opt.isDefined) observer.push(opt.get);
+        if (opt.isSome) observer.push(opt.get);
         else observer.finish();
       }
       return base.subscribe(observer);

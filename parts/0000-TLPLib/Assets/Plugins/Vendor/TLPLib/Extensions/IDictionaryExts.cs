@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Option<V> getAndRemove<K, V>(this IDictionary<K, V> dict, K key) {
       var opt = dict.get(key);
-      if (opt.isDefined) dict.Remove(key);
+      if (opt.isSome) dict.Remove(key);
       return opt;
     }
 

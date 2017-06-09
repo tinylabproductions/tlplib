@@ -140,7 +140,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
         var serializedWithoutDiscriminator = serialized.Substring(1);
         var opt = deserialize(serializedWithoutDiscriminator);
-        return opt.isDefined ? opt.get : deserializationFailed(key, defaultVal, serialized);
+        return opt.isSome ? opt.get : deserializationFailed(key, defaultVal, serialized);
       }
 
       A deserializationFailed(string key, A defaultVal, string serialized) {

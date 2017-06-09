@@ -177,7 +177,7 @@ namespace com.tinylabproductions.TLPLib.Iter {
     #region Option
 
     public static Iter<A, A> asIter<A>(this Option<A> opt) {
-      return opt.isDefined ? opt.get.singleIter() : Iter<A, A>.empty;
+      return opt.isSome ? opt.get.singleIter() : Iter<A, A>.empty;
     }
 
     #endregion
