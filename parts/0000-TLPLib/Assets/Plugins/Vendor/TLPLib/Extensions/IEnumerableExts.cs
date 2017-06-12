@@ -99,6 +99,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return e.mkString(sb => sb.Append(separator), start, end);
     }
 
+    public static Dictionary<K, A> toDict<A, K>(
+      this IEnumerable<A> list, Fn<A, K> keyGetter
+    ) => list.toDict(keyGetter, _ => _);
+
     // AOT safe version of ToDictionary.
     public static Dictionary<K, V> toDict<A, K, V>(
       this IEnumerable<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
@@ -106,8 +110,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var dict = new Dictionary<K, V>();
       // ReSharper disable once LoopCanBeConvertedToQuery
       // We're trying to avoid LINQ to avoid iOS AOT related issues.
-      foreach (var item in list)
-        dict.Add(keyGetter(item), valueGetter(item));
+      foreach (var item in list) {
+        var key = keyGetter(item);
+        var value = valueGetter(item);
+        if (dict.ContainsKey(key)) {
+          throw new ArgumentException(
+            $"Can't add duplicate key '{key}', current value={dict[key]}, new value={value}"
+          );
+        }
+        dict.Add(key, value);
+      }
       return dict;
     }
 
