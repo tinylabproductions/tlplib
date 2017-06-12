@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
     /* This should really be used only for debugging. It is pretty slow. */
 
-    public static string asString(
+    public static string asDebugString(
       this IEnumerable enumerable,
       bool newlines = true, bool fullClasses = false
     ) {

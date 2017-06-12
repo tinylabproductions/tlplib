@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     static string notFound(string path) => $"Resource not found: {path}";
 
     public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
-      var path = loadPath.toUnityPath();
+      var path = loadPath.unityPath;
       var csr = Resources.Load<ResourceReference<A>>(path);
       return csr 
         ? F.right<string, A>(csr.reference) 
@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object {
-      var path = loadPath.toUnityPath();
+      var path = loadPath.unityPath;
       var request = Resources.LoadAsync<ResourceReference<A>>(path);
       return F.t(request, Future<Either<string, A>>.async(
         p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))

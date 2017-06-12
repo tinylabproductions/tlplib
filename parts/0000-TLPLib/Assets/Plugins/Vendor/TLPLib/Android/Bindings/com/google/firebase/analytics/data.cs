@@ -92,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
     }
 
     public override string ToString() =>
-      $"{nameof(FirebaseEvent)}[{name}, {parameters.asString(newlines: false)}]";
+      $"{nameof(FirebaseEvent)}[{name}, {parameters.asDebugString(newlines: false)}]";
 
     static ImmutableList<string> validateName(string errorPrefix, int maxLength, string name) {
       var errors = ImmutableList<string>.Empty;

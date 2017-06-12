@@ -120,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.ABTest {
 
     public override string ToString() { return string.Format(
       "ABTest[name: {0}, variants: {1}, startAt: {2}, endAt: {3}, seed: {4}]",
-      name, variants.asString(false), startAt, endAt, seed
+      name, variants.asDebugString(false), startAt, endAt, seed
     ); }
   }
 }

@@ -13,10 +13,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [Test]
     public void TestList() {
-      F.list(1, 2, 3).asString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");
-      F.list(1, 2, 3).asString(newlines: false, fullClasses: false).shouldEqual("List`1[1, 2, 3]");
-      F.list("1", "2", "3").asString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");
-      F.list("1", "2", "3").asString(newlines: false, fullClasses: false).shouldEqual("List`1[1, 2, 3]");
+      F.list(1, 2, 3).asDebugString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");
+      F.list(1, 2, 3).asDebugString(newlines: false, fullClasses: false).shouldEqual("List`1[1, 2, 3]");
+      F.list("1", "2", "3").asDebugString(newlines: true, fullClasses: false).shouldEqual("List`1[\n  1,\n  2,\n  3\n]");
+      F.list("1", "2", "3").asDebugString(newlines: false, fullClasses: false).shouldEqual("List`1[1, 2, 3]");
     }
 
     [Test]
@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   ]
 ]"
       );
-      F.list(F.list("1", "2"), F.list("3")).asString(newlines:true, fullClasses:false).shouldEqual(
+      F.list(F.list("1", "2"), F.list("3")).asDebugString(newlines:true, fullClasses:false).shouldEqual(
 @"List`1[
   List`1[
     1,
@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [Test]
     public void TestDictionary() {
-      F.dict(F.t(1, 2), F.t(2, 3)).asString(newlines: true, fullClasses: false)
+      F.dict(F.t(1, 2), F.t(2, 3)).asDebugString(newlines: true, fullClasses: false)
         .shouldEqual("Dictionary`2[\n  [1, 2],\n  [2, 3]\n]");
     }
 
@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         F.t(1, F.dict(F.t(2, "2"))),
         F.t(2, F.dict(F.t(3, "3")))
       );
-      dict.asString(newlines:true, fullClasses:false).shouldEqual(
+      dict.asDebugString(newlines:true, fullClasses:false).shouldEqual(
 @"Dictionary`2[
   [1, Dictionary`2[
     [2, 2]

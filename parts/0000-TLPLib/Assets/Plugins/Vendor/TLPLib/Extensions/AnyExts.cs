@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var enumerable = a as IEnumerable;
       // ReSharper disable once InvokeAsExtensionMethod
       return enumerable != null 
-        ? IEnumerableExts.asString(enumerable) 
+        ? IEnumerableExts.asDebugString(enumerable) 
         : a == null ? "null" : a.ToString();
     }
   }

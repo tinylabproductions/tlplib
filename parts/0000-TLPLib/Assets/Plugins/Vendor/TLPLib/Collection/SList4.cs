@@ -155,7 +155,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public void Insert(int index, A item) => IListDefaultImpls.insert(ref this, index, item);
 
     public override string ToString() => 
-      $"{nameof(SList4<A>)}({s0}, {s1}, {s2}, {s3}, {F.opt(fallback).map(_ => _.asString(false)).getOrElse("-")})";
+      $"{nameof(SList4<A>)}({s0}, {s1}, {s2}, {s3}, {F.opt(fallback).map(_ => _.asDebugString(false)).getOrElse("-")})";
 
     public IListStructEnumerator<SList4<A>, A> GetEnumerator() => 
       new IListStructEnumerator<SList4<A>, A>(this);
