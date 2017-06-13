@@ -232,6 +232,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in enumerable) (predicate(a) ? trues : falses).Add(a);
       return Partitioned.a(trues, falses);
     }
+
+    public static IOrderedEnumerable<A> OrderBySafe<A, B>(
+      this IEnumerable<A> source, Func<A, B> keySelector
+    ) where B : IComparable<B> => source.OrderBy(keySelector);
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
