@@ -118,6 +118,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       f => Future<B>.async(p => f.onComplete(v => mapper(v).onComplete(p.complete)))
     );
 
+    public Future<C> flatMap<B, C>(Fn<A, Future<B>> mapper, Fn<A, B, C> joiner) => implementation.fold(
+      a => mapper(a).map(b => joiner(a, b)),
+      _ => Future<C>.unfulfilled,
+      f => Future<C>.async(p => f.onComplete(a => mapper(a).onComplete(b => p.complete(joiner(a, b)))))
+    );
+
     /** Filter future on value - if predicate matches turns completed future into unfulfilled. **/
     public Future<A> filter(Fn<A, bool> predicate) {
       var self = this;
