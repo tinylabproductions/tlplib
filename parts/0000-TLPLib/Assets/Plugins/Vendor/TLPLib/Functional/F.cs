@@ -114,16 +114,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static LazyVal<A> lazy<A>(Fn<A> func) => new LazyValImpl<A>(func);
     public static LazyVal<A> lazy<A>(A a) => new NotReallyLazyVal<A>(a);
 
-    public static Action andThen(this Action first, Action second) {
-      return () => { first(); second(); };
-    }
+    public static Fn<Unit> actToFn(Action action) =>
+      () => { action(); return unit; };
 
-    public static Action andThenSys(this Action first, Action second) {
-      return () => { first(); second(); };
-    }
+    public static Action andThen(this Action first, Action second) => 
+      () => { first(); second(); };
 
-    public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) {
-      return () => second(first());
-    }
+    public static Action andThenSys(this Action first, Action second) => 
+      () => { first(); second(); };
+
+    public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) => 
+      () => second(first());
   }
 }
