@@ -14,7 +14,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Assets.Code.Editor.AssetReferences {
+namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
   class AssetReferencesAssetProcessor : AssetPostprocessor {
     [UsedImplicitly]
     static void OnPostprocessAllAssets(

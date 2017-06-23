@@ -9,7 +9,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEditor;
 
-namespace Assets.Code.Editor.AssetReferences {
+namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
   public class AssetReferences {
     public readonly Dictionary<string, HashSet<string>> parents =
       new Dictionary<string, HashSet<string>>();

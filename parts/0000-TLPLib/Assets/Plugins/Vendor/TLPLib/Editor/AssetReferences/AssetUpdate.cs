@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Assets.Code.Editor.AssetReferences {
+namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
   public class AssetUpdate {
     public struct Move {
       public readonly string fromPath, toPath;
