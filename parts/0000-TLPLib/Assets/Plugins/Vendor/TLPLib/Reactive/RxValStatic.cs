@@ -10,10 +10,10 @@
     }
 
     public ISubscription subscribe(IObserver<A> observer) => 
-      subscribe(observer, true);
+      subscribe(observer, RxSubscriptionMode.ForSideEffects);
 
-    public ISubscription subscribe(IObserver<A> observer, bool submitCurrentValue) {
-      if (submitCurrentValue) observer.push(value);
+    public ISubscription subscribe(IObserver<A> observer, RxSubscriptionMode mode) {
+      if (mode == RxSubscriptionMode.ForSideEffects) observer.push(value);
       return Subscription.empty;
     }
   }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
+using Smooth.Collections;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -10,10 +12,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * Because it is immutable, the only way for it to change is if its source changes.
    **/
   public interface IRxVal<out A> : Val<A>, IObservable<A> {
-    ISubscription subscribe(IObserver<A> observer, bool submitCurrentValue);
+    ISubscription subscribe(IObserver<A> observer, RxSubscriptionMode mode);
   }
 
-  public class RxVal<A> : RxBase<A>, IRxVal<A> {
+  public class RxVal<A> : IRxVal<A> {
+    public readonly IEqualityComparer<A> comparer;
+    protected readonly Subject<A> subject = new Subject<A>();
+    public int subscribers => subject.subscribers;
+
+    int sideEffectSubscribers;
+
+    A _value;
+    public A value {
+      get { return _value; }
+      set { RxBase.set(comparer, ref _value, value, subject); }
+    }
+
     /***
      * Set the value of this RxVal. bool indicates whether a set was successful.
      * 
@@ -30,7 +44,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ISubscription sourceSubscription;
 
     /* RxVal that gets its value from other reactive source where the value is always available. */
-    public RxVal(A value, Fn<SetValue, ISubscription> subscribeToSource) : base(value) {
+    public RxVal(
+      A initialValue, Fn<SetValue, ISubscription> subscribeToSource, 
+      IEqualityComparer<A> comparer = null
+    ) {
+      this.comparer = comparer ?? EqComparer<A>.Default;
+      _value = initialValue;
+
       // To always have the newest value, RxVal has to always be subscribed to its source.
       // However, this creates a reference from the source to the destination RxVal.
       //
@@ -73,17 +93,31 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     A Val<A>.value => value;
     public override string ToString() => $"{nameof(RxVal)}({value})";
 
-    public override ISubscription subscribe(IObserver<A> observer, bool submitCurrentValue) {
-      if (subscribers == 0) {
+    public ISubscription subscribe(IObserver<A> observer) => 
+      subscribe(observer, RxSubscriptionMode.ForSideEffects);
+
+    public ISubscription subscribe(IObserver<A> observer, RxSubscriptionMode mode) {
+      if (mode == RxSubscriptionMode.ForSideEffects && sideEffectSubscribers == 0) {
         sourceSubscription.unsubscribe();
         sourceSubscription = subscribeToSource(strongRefSetValue);
       }
 
-      var sub = base.subscribe(observer, submitCurrentValue);
-      return sub.andThen(() => {
-        if (subscribers == 0) {
-          sourceSubscription.unsubscribe();
-          sourceSubscription = subscribeToSource(weakRefSetValue);
+      if (mode == RxSubscriptionMode.ForSideEffects) {
+        sideEffectSubscribers++;
+        observer.push(value);
+      }
+
+      return subject.subscribe(observer).andThen(() => {
+        // On unsubscribe
+        if (mode == RxSubscriptionMode.ForSideEffects) {
+          sideEffectSubscribers--;
+          if (sideEffectSubscribers == 0) {
+            sourceSubscription.unsubscribe();
+            sourceSubscription = subscribeToSource(weakRefSetValue);
+          }
+          else if (sideEffectSubscribers < 0) Log.error(
+            $"WTF, {nameof(RxVal<A>)}#{nameof(sideEffectSubscribers)} < 0! {nameof(mode)}={mode}"
+          );
         }
       });
     }

@@ -7,16 +7,16 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
     public static ISubscription subscribe<A>(
-      this IRxVal<A> src, Act<A> onValue, bool submitCurrentValue
+      this IRxVal<A> src, Act<A> onValue, RxSubscriptionMode mode
     ) =>
-      src.subscribe(new Observer<A>(onValue), submitCurrentValue);
+      src.subscribe(new Observer<A>(onValue), mode);
 
     public static ISubscription subscribe<A>(
-      this IRxVal<A> src, Act<A, ISubscription> onValue, bool submitCurrentValue
+      this IRxVal<A> src, Act<A, ISubscription> onValue, RxSubscriptionMode mode
     ) {
       ISubscription sub = null;
       // ReSharper disable once AccessToModifiedClosure
-      sub = src.subscribe(a => onValue(a, sub), submitCurrentValue);
+      sub = src.subscribe(a => onValue(a, sub), mode);
       return sub;
     }
 
@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         mapper(src.value),
         setValue => src.subscribe(
           (a, sub) => { if (!setValue(mapper(a))) sub.unsubscribe(); },
-          submitCurrentValue: false
+          RxSubscriptionMode.ForRxMapping
         )
       );
 
@@ -45,15 +45,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return new RxVal<B>(
         bRx.value,
         setValue => {
-          var subToBRx = bRx.subscribe(b => setValue(b), submitCurrentValue: false);
+          var subToBRx = bRx.subscribe(b => setValue(b), RxSubscriptionMode.ForRxMapping);
 
           var aSub = src.subscribe(
             a => {
-              subToBRx?.unsubscribe();
+              subToBRx.unsubscribe();
               bRx = mapper(a);
-              subToBRx = bRx.subscribe(b => setValue(b), submitCurrentValue: true);
+              setValue(bRx.value);
+              subToBRx = bRx.subscribe(b => setValue(b), RxSubscriptionMode.ForRxMapping);
             },
-            submitCurrentValue: false
+            RxSubscriptionMode.ForRxMapping
           );
           return aSub.andThen(() => subToBRx.unsubscribe());
         }
@@ -66,50 +67,29 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       new RxVal<Tpl<A, B>>(
         F.t(aSrc.value, bSrc.value),
         setValue =>
-          aSrc.subscribe(a => setValue(F.t(a, bSrc.value)), submitCurrentValue: false)
-          .join(bSrc.subscribe(b => setValue(F.t(aSrc.value, b)), submitCurrentValue: false))
+          aSrc.subscribe(a => setValue(F.t(a, bSrc.value)), RxSubscriptionMode.ForRxMapping)
+          .join(bSrc.subscribe(b => setValue(F.t(aSrc.value, b)), RxSubscriptionMode.ForRxMapping))
       );
 
     public static IRxVal<Tpl<A, B, C>> zip<A, B, C>(
       this IRxVal<A> rx, IRxVal<B> rx2, IRxVal<C> rx3
-    ) =>
-      new RxVal<Tpl<A, B, C>>(
-        F.t(rx.value, rx2.value, rx3.value),
-        setValue =>
-          rx.subscribe(a => setValue(F.t(a, rx2.value, rx3.value)), submitCurrentValue: false)
-          .join(
-            rx2.subscribe(b => setValue(F.t(rx.value, b, rx3.value)), submitCurrentValue: false),
-            rx3.subscribe(c => setValue(F.t(rx.value, rx2.value, c)), submitCurrentValue: false)
-          )
-      );
+    ) => rx.zip(rx2).zip(rx3).map(t => t.flatten());
 
     public static IRxVal<Tpl<A, B, C, D>> zip<A, B, C, D>(
       this IRxVal<A> ref1, IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4
-    ) => null;
-//      RxVal.a(
-//        () => F.t(ref1.value, ref2.value, ref3.value, ref4.value),
-//        ObservableOpImpls.zip(ref1, ref2, ref3, ref4)
-//      );
+    ) => ref1.zip(ref2).zip(ref3).zip(ref4).map(t => t.flatten());
 
     public static IRxVal<Tpl<A, B, C, D, E>> zip<A, B, C, D, E>(
       this IRxVal<A> ref1, IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4, IRxVal<E> ref5
-    ) => null;
-//      RxVal.a(
-//        () => F.t(ref1.value, ref2.value, ref3.value, ref4.value, ref5.value),
-//        ObservableOpImpls.zip(ref1, ref2, ref3, ref4, ref5)
-//      );
+    ) => ref1.zip(ref2).zip(ref3).zip(ref4).zip(ref5).map(t => t.flatten());
 
     public static IRxVal<Tpl<A, A1, A2, A3, A4, A5>> zip<A, A1, A2, A3, A4, A5>(
       this IRxVal<A> ref1, IRxVal<A1> ref2, IRxVal<A2> ref3, IRxVal<A3> ref4, IRxVal<A4> ref5,
       IRxVal<A5> ref6
-    ) => null;
-    //      RxVal.a(
-    //        () => F.t(ref1.value, ref2.value, ref3.value, ref4.value, ref5.value, ref6.value),
-    //        ObservableOpImpls.zip(ref1, ref2, ref3, ref4, ref5, ref6)
-    //      );
+    ) => ref1.zip(ref2).zip(ref3).zip(ref4).zip(ref5).zip(ref6).map(t => t.flatten());
 
     #endregion
-      
+
     // TODO: test
     /** Convert an enum of rx values into one rx value using a traversal function. **/
     public static IRxVal<B> traverse<A, B>(
@@ -126,7 +106,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         getValue(),
         setValue =>
           vals
-            .Select(v => v.subscribe(_ => setValue(getValue()), submitCurrentValue: false))
+            .Select(v => v.subscribe(_ => setValue(getValue()), RxSubscriptionMode.ForRxMapping))
             .ToArray() // strict evaluation
             .joinSubscriptions()
       );

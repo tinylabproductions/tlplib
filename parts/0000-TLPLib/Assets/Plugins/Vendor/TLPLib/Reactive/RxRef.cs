@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
+using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -14,23 +14,36 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /**
    * Mutable reference which is also an observable.
    **/
-  public class RxRef<A> : RxBase<A>, IRxRef<A> {
-    public RxRef(A value, IEqualityComparer<A> comparer = null) : base(value, comparer) {}
-    
+  public class RxRef<A> : IRxRef<A> {
+    public readonly IEqualityComparer<A> comparer;
+    protected readonly Subject<A> subject = new Subject<A>();
+    public int subscribers => subject.subscribers;
+
+    A _value;
+    public A value {
+      get { return _value; }
+      set { RxBase.set(comparer, ref _value, value, subject); }
+    }
+
+    public RxRef(A value, IEqualityComparer<A> comparer = null) {
+      this.comparer = comparer ?? EqComparer<A>.Default;
+      _value = value;
+    }
+
+    public ISubscription subscribe(IObserver<A> observer) => 
+      subscribe(observer, RxSubscriptionMode.ForSideEffects);
+
+    public ISubscription subscribe(IObserver<A> observer, RxSubscriptionMode mode) {
+      var subscription = subject.subscribe(observer);
+      if (mode == RxSubscriptionMode.ForSideEffects) observer.push(value);
+      return subscription;
+    }
+
     public override string ToString() => $"{nameof(RxRef)}({value})";
     public IRxVal<A> asVal => this;
   }
 
   public static class RxRef {
     public static IRxRef<A> a<A>(A value) => new RxRef<A>(value);
-  }
-
-  public static class RxRefOps {
-    /** Returns a new ref that is bound to this ref and vice versa. **/
-    public static IRxRef<B> comap<A, B>(this IRxRef<A> rx, Fn<A, B> mapper, Fn<B, A> comapper) {
-      var bRef = RxRef.a(mapper(rx.value));
-      bRef.subscribe(b => rx.value = comapper(b));
-      return bRef;
-    }
   }
 }
