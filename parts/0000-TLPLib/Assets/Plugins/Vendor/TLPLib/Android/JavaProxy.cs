@@ -1,4 +1,6 @@
 ﻿#if UNITY_ANDROID
+using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android {
