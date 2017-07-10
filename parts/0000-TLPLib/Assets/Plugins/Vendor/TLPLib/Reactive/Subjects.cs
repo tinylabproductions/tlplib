@@ -15,10 +15,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void finish() => finishObservable();
   }
 
-  /**
-   * Replay subject stores all the events that comes into it and resubmits 
-   * them upon subscription.
-   **/
+  /// <summary>
+  /// Replay subject stores all the events that comes into it and resubmits them upon subscription.
+  /// </summary>
   public class ReplaySubject<A> : Observable<A>, ISubject<A> {
     // None - stream finished, Some(value) - submited;
     readonly List<Option<A>> events = new List<Option<A>>();
@@ -43,5 +42,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     /** Clears the event backlog. */
     public void clear() => events.Clear();
+  }
+
+  /// <summary>Subject that only allows having one subscription.</summary>
+  public class SingleSubscriberSubject<A> : Observable<A>, ISubject<A> {
+    Option<ISubscription> lastSubscription = Option<ISubscription>.None;
+
+    public override ISubscription subscribe(IObserver<A> observer) {
+      foreach (var lastSub in lastSubscription) lastSub.unsubscribe();
+      var sub = base.subscribe(observer);
+      lastSubscription = sub.some();
+      return sub;
+    }
+
+    public void push(A value) => submit(value);
+    public void finish() => finishObservable();
   }
 }
