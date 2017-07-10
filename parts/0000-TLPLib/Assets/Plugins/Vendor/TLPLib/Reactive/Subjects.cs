@@ -46,13 +46,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   /// <summary>Subject that only allows having one subscription.</summary>
   public class SingleSubscriberSubject<A> : Observable<A>, ISubject<A> {
-    Option<ISubscription> lastSubscription = Option<ISubscription>.None;
+    ISubscription lastSubscription = Subscription.empty;
 
     public override ISubscription subscribe(IObserver<A> observer) {
-      foreach (var lastSub in lastSubscription) lastSub.unsubscribe();
-      var sub = base.subscribe(observer);
-      lastSubscription = sub.some();
-      return sub;
+      lastSubscription.unsubscribe();
+      lastSubscription = base.subscribe(observer);
+      return lastSubscription;
     }
 
     public void push(A value) => submit(value);
