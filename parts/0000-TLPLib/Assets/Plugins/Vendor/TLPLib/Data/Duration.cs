@@ -65,6 +65,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public TimeSpan toTimeSpan => new TimeSpan(millis * TimeSpan.TicksPerMillisecond);
     public static implicit operator TimeSpan(Duration d) => d.toTimeSpan;
 
+    public string toMinSecString() => $"{(int) (seconds / 60)}:{(int) seconds % 60}";
+
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
     public string asString() => $"{millis}ms";
 
