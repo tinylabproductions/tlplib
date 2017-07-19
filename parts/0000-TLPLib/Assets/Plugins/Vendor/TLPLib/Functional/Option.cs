@@ -203,7 +203,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isSome ? func(get) : F.none<B>();
 
     public Option<C> flatMap<B, C>(Fn<A, Option<B>> func, Fn<A, B, C> mapper) {
-      if (!isNone) return Option<C>.None;
+      if (isNone) return Option<C>.None;
       var bOpt = func(__unsafeGetValue);
       return bOpt.isNone ? Option<C>.None : F.some(mapper(__unsafeGetValue, bOpt.__unsafeGetValue));
     }
