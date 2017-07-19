@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
   #if ENABLE_IL2CPP
     protected bool Equals(Option<A> other) {
-      return EqualityComparer<A>.Default.Equals(value, other.value) && isSome == other.isSome;
+      return EqualityComparer<A>.Default.Equals(__unsafeGetValue, other.__unsafeGetValue) && isSome == other.isSome;
     }
 
     public override bool Equals(object obj) {
@@ -143,7 +143,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public override int GetHashCode() {
       unchecked {
-        return (EqualityComparer<A>.Default.GetHashCode(value) * 397) ^ isSome.GetHashCode();
+        return (EqualityComparer<A>.Default.GetHashCode(__unsafeGetValue) * 397) ^ isSome.GetHashCode();
       }
     }
 
@@ -153,24 +153,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
         if (ReferenceEquals(x, null)) return false;
         if (ReferenceEquals(y, null)) return false;
         if (x.GetType() != y.GetType()) return false;
-        return EqualityComparer<A>.Default.Equals(x.value, y.value) && x.isSome == y.isSome;
+        return EqualityComparer<A>.Default.Equals(x.__unsafeGetValue, y.__unsafeGetValue) && x.isSome == y.isSome;
       }
 
       public int GetHashCode(Option<A> obj) {
         unchecked {
-          return (EqualityComparer<A>.Default.GetHashCode(obj.value) * 397) ^ obj.isSome.GetHashCode();
+          return (EqualityComparer<A>.Default.GetHashCode(obj.__unsafeGetValue) * 397) ^ obj.isSome.GetHashCode();
         }
       }
     }
 
-    static readonly IEqualityComparer<Option<A>> valueIsSomeComparerInstance = new ValueIsSomeEqualityComparer();
+    public static readonly IEqualityComparer<Option<A>> valueIsSomeComparer = new ValueIsSomeEqualityComparer();
 
-    public static IEqualityComparer<Option<A>> valueIsSomeComparer
-    {
-      get { return valueIsSomeComparerInstance; }
-    }
-
-  #else
+#else
     public override bool Equals(object o) {
       return o is Option<A> && Equals((Option<A>)o);
     }
