@@ -15,6 +15,7 @@ namespace Assets.Code.UI {
       vh.GetUIVertexStream(verts);
       ModifyVertices(verts);  // calls the old ModifyVertices which was used on pre 5.2
       vh.AddUIVertexTriangleStream(verts);
+      ListPool<UIVertex>.Instance.Release(verts);
     }
   }
 }
