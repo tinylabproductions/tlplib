@@ -86,6 +86,15 @@ namespace com.tinylabproductions.TLPLib.Test {
     ) where C : ICollection, ICollection<A> =>
       Assert.Contains(a, collection, message);
 
+    public static void shouldContain<A>(
+      this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
+    ) {
+      if (enumerable.find(predicate).isNone) Assert.Fail(
+        message ??
+        $"Expected enumerable to contain {typeof(A)} which matches predicate, but nothing was found."
+      );
+    }
+
     public static void shouldNotContain<A>(
       this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
     ) {
