@@ -26,7 +26,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
     protected BannerBase(
             Activity activity, final boolean isTopBanner, final BannerMode.Mode mode,
-            final Fn1<Banner> createBanner, final boolean preloadBanner
+            final Fn1<Banner> createBanner, final boolean autoShow
     ) {
         this.activity = activity;
 
@@ -34,12 +34,12 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
             @Override
             public void run() {
                 banner = createBanner.run();
-                addToUI(mode, isTopBanner, preloadBanner);
+                addToUI(mode, isTopBanner, autoShow);
             }
         });
     }
 
-    protected void addToUI(BannerMode.Mode mode, boolean isTopBanner, boolean preloadBanner) {
+    protected void addToUI(BannerMode.Mode mode, boolean isTopBanner, boolean autoShow) {
         int finalWidth, finalHeight;
 
         if (mode instanceof BannerMode.WrapContent) {
@@ -69,7 +69,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
         activity.addContentView(banner, params);
 
         Log.d(TAG(), "Banner added to UI.");
-        setVisibilityRunsOnUiThread(!preloadBanner);
+        setVisibilityRunsOnUiThread(!autoShow);
     }
 
     @Override
