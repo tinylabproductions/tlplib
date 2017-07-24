@@ -8,8 +8,7 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
 
     readonly Gyroscope gyro = Input.gyro;
     public Vector2 offset { get; private set; } = Vector2.zero;
-    public Vector2 axisLocks = new Vector2(1, 1);
-    public float speed = 10;
+    public Vector2 axisLocks = Vector2.one;
     public float friction = 0.01f;
 
     GyroOffset() {
@@ -32,8 +31,6 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
       // We get gyro rotation rate in radians / sec
       var gyroRate = gyro.rotationRateUnbiased;
       // We sum the offsets as we want them to be applied frame after frame
-      // We multiply by timeDelta to make sure it is stable across the time frame
-      // We multiply by Rad2Deg as we want to translate radians into degrees for calculations to be correct
       offset += new Vector2(-gyroRate.z, -gyroRate.x) * Time.deltaTime;
       // We clamp the offset to certain values to make sure to lock the camera's paralax effect
       // Only to a certain sphere area
