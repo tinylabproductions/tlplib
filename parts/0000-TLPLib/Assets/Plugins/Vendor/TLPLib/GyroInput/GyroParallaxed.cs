@@ -6,11 +6,9 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
 #pragma warning disable 649
     [SerializeField] float zValue;
 #pragma warning restore 649
-    public bool enabled = true;
+
     public void Update() {
-      if (enabled) {
-        transform.localPosition = GyroOffset.instance.offset * -zValue;
-      }
+      transform.localPosition = GyroOffset.instance.offset * -zValue;
     }
   }
 }
