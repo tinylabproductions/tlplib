@@ -69,7 +69,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
         activity.addContentView(banner, params);
 
         Log.d(TAG(), "Banner added to UI.");
-        setVisibilityRunsOnUiThread(!autoShow);
+        setVisibilityRunsOnUiThread(autoShow);
     }
 
     @Override
