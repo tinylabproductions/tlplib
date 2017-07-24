@@ -21,7 +21,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
             final boolean isTopBanner, final BannerMode.Mode mode,
             final Fn1<Banner> createBanner
     ) {
-        this(activity, isTopBanner, mode, createBanner, true);
+        this(activity, isTopBanner, mode, createBanner, false);
     }
 
     protected BannerBase(
