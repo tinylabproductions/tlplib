@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.tinylabproductions.tlplib.fns.Fn1;
+import com.tinylabproductions.tlplib.utils.Utils;
 
 @SuppressWarnings("unused")
 public abstract class BannerBase<Banner extends View> implements IStandardBanner {
@@ -22,7 +23,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
     ) {
         this.activity = activity;
 
-        activity.runOnUiThread(new Runnable() {
+        Utils.runOnUiSafe("BannerBase constructor", new Runnable() {
             @Override
             public void run() {
                 banner = createBanner.run();
@@ -66,7 +67,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
     @Override
     public final void load() {
-        activity.runOnUiThread(new Runnable() {
+        Utils.runOnUiSafe("Banner load", new Runnable() {
             @Override
             public void run() {
                 loadRunsOnUiThread();
@@ -86,7 +87,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
     @SuppressWarnings("unused")
     public void setVisibility(final boolean visible) {
-        activity.runOnUiThread(new Runnable() {
+        Utils.runOnUiSafe("Banner setVisibility", new Runnable() {
             @Override
             public void run() {
                 setVisibilityRunsOnUiThread(visible);
@@ -96,7 +97,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
     @SuppressWarnings("unused")
     public final void destroy() {
-        activity.runOnUiThread(new Runnable() {
+        Utils.runOnUiSafe("Banner destroy", new Runnable() {
             @Override
             public void run() {
                 destroyRunsOnUiThread();
