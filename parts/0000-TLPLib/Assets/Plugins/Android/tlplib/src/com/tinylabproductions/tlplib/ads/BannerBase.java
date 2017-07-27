@@ -125,4 +125,24 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
     protected void beforeDestroyRunsOnUiThread() {}
     protected void afterDestroyRunsOnUiThread() {}
+
+    @Override public void onPause() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onPauseRunsOnUiThread();
+            }
+        });
+    }
+    @Override public void onResume() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onPauseRunsOnUiThread();
+            }
+        });
+    }
+
+    protected void onPauseRunsOnUiThread() {}
+    protected void onResumeRunsOnUiThread() {}
 }
