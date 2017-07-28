@@ -23,16 +23,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return subscription;
     }
 
-    public static ISubscription subscribeWhileAlive<A>(
-      this IObservable<A> obs, MonoBehaviour behaviour, Act<A, ISubscription> onChange
-    ) => obs.subscribeWhileAlive(behaviour.gameObject, onChange);
+    // If you do Destroy(behaviour) gameObject with subscription is still alive
+    //public static ISubscription subscribeWhileAlive<A>(
+    //  this IObservable<A> obs, MonoBehaviour behaviour, Act<A, ISubscription> onChange
+    //) => obs.subscribeWhileAlive(behaviour.gameObject, onChange);
 
     public static ISubscription subscribeWhileAlive<A>(
       this IObservable<A> obs, GameObject obj, Act<A> onChange
     ) => subscribeWhileAlive(obs, obj, (val, _) => onChange(val));
-
-    public static ISubscription subscribeWhileAlive<A>(
-      this IObservable<A> obs, MonoBehaviour behaviour, Act<A> onChange
-    ) => obs.subscribeWhileAlive(behaviour.gameObject, onChange);
   }
 }
