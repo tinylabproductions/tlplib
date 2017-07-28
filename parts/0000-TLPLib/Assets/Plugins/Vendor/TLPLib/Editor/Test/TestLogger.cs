@@ -49,6 +49,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       warnMsgs = new List<Entry>(),
       errorMsgs = new List<Entry>();
 
+    public int count => 
+      verboseMsgs.Count + debugMsgs.Count + infoMsgs.Count + warnMsgs.Count + errorMsgs.Count;
+
+    public bool isEmpty => count == 0;
+    public bool nonEmpty => !isEmpty;
+
     public bool errorsAsExceptions;
 
     public TestLogger(bool errorsAsExceptions = false) {

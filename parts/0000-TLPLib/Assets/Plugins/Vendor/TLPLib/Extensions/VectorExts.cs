@@ -12,38 +12,23 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector2 with2(
       this Vector2 v,
-#if ENABLE_IL2CPP
-      Option<float> x = null,
-      Option<float> y = null
-#else
-      Option<float> x = new Option<float>(), 
-      Option<float> y = new Option<float>()
-#endif
+      Option<float> x = default(Option<float>), 
+      Option<float> y = default(Option<float>)
     ) {
-#if ENABLE_IL2CPP
-      if (null == x) x = Option<float>.None;
-      if (null == y) y = Option<float>.None;
-#endif
+      Option.ensureValue(ref x);
+      Option.ensureValue(ref y);
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y));
     }
 
     public static Vector3 with3(
       this Vector3 v,
-#if ENABLE_IL2CPP
-      Option<float> x = null,
-      Option<float> y = null,
-      Option<float> z = null
-#else
-      Option<float> x = new Option<float>(), 
-      Option<float> y = new Option<float>(),
-      Option<float> z = new Option<float>()
-#endif
+      Option<float> x = default(Option<float>), 
+      Option<float> y = default(Option<float>), 
+      Option<float> z = default(Option<float>)
     ) {
-#if ENABLE_IL2CPP
-      if (null == x) x = Option<float>.None;
-      if (null == y) y = Option<float>.None;
-      if (null == z) z = Option<float>.None; 
-#endif
+      Option.ensureValue(ref x);
+      Option.ensureValue(ref y);
+      Option.ensureValue(ref z);
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
     }
 
