@@ -14,10 +14,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return list[index];
     }
 
-    public static Option<T> get<T>(this IList<T> list, int index) {
-      return (index >= 0 && index < list.Count)
-        ? F.some(list[index]) : F.none<T>();
-    }
+    public static Option<T> get<T>(this IList<T> list, int index) => 
+      index >= 0 && index < list.Count ? F.some(list[index]) : F.none<T>();
 
     public static List<A> reversed<A>(this List<A> list) {
       var reversed = new List<A>(list);
