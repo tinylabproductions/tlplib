@@ -1,5 +1,7 @@
 ﻿using System;
+#if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
+#endif
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
@@ -29,6 +31,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
       ;
   }
 
+#if UNITY_ANDROID
   class AdvertisingIdClientAndroid : IAdvertisingIdClient {
     /** Includes both the advertising ID as well as the limit ad tracking setting. */
     public class Info : AdvertisingIdClientInfo {
@@ -61,4 +64,5 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
         (AdvertisingIdClientInfo) new Info(klass.csjo("getAdvertisingIdInfo", context.java))
       ));
   }
+#endif
 }
