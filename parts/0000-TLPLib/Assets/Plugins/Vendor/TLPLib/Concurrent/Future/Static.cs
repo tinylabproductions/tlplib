@@ -21,11 +21,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc=null) => 
       a<A>(p => tc.orDefault().after(duration, () => p.complete(value)));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue, ITimeContext tc=null) => 
-      a<A>(p => tc.orDefault().afterXFrames(framesToSkip, () => p.complete(createValue())));
+    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue) => 
+      a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(createValue())));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, A value, ITimeContext tc=null) => 
-      a<A>(p => tc.orDefault().afterXFrames(framesToSkip, () => p.complete(value)));
+    public static Future<A> delayFrames<A>(int framesToSkip, A value) => 
+      a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(value)));
 
     /**
      * Converts enumerable of futures into future of enumerable that is completed

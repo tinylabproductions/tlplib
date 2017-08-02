@@ -205,10 +205,30 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Duration duration, Action action, TimeScale timeScale=TimeScale.Unity
     ) {
       var seconds = duration.seconds;
-      if (timeScale == TimeScale.Unity) yield return new WaitForSeconds(seconds);
+      Option<object> yieldInstruction;
+      switch (timeScale) {
+        case TimeScale.Unity:
+          yieldInstruction = F.some<object>(new WaitForSeconds(seconds));
+          break;
+        case TimeScale.Realtime:
+          yieldInstruction = F.some<object>(new WaitForSecondsRealtime(seconds));
+          break;
+        case TimeScale.FixedTime:
+          yieldInstruction = Option<object>.None;
+          break;
+        case TimeScale.UnscaledTime:
+          yieldInstruction = F.some<object>(new WaitForSecondsUnscaled(seconds));
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(timeScale), timeScale, null);
+      }
+
+      if (yieldInstruction.isSome)
+        yield return yieldInstruction.get;
       else {
+        var waiter = timeScale == TimeScale.FixedTime ? new WaitForFixedUpdate() : null;
         var waitTime = timeScale.now() + seconds;
-        while (waitTime > timeScale.now()) yield return null;
+        while (waitTime > timeScale.now()) yield return waiter;
       }
       action();
     }
