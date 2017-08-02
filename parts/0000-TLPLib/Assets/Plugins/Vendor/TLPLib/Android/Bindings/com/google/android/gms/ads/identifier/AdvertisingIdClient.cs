@@ -1,5 +1,4 @@
-﻿#if UNITY_ANDROID
-using System;
+﻿using System;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -63,4 +62,3 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
       ));
   }
 }
-#endif
