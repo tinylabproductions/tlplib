@@ -28,7 +28,9 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
       _exceptionColor = Color.red, 
       _assertColor = Color.cyan, 
       _warningColor = Color.yellow, 
-      _logColor = Color.gray;
+      _logColor = Color.gray,
+      _stacktraceColor = Color.gray;
+    [SerializeField] uint _stacktraceTextSize = 20;
 #pragma warning restore 649
 // ReSharper restore FieldCanBeMadeReadOnly.Local
 
@@ -99,18 +101,25 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
 
       void logMessageHandlerThreaded(string message, string stackTrace, LogType type) {
         if (!handledTypes.Contains(type)) return;
-        lock (this) logMessageHandler(message, type);
+        lock (this) logMessageHandler(message, stackTrace, type);
       }
 
-      void logMessageHandler(string message, LogType type) {
-        enqueue(message, type);
+      void logMessageHandler(string message, string stackTrace, LogType type) {
+        enqueue(message, stackTrace, type);
         setText();
         show();
       }
 
-      void enqueue(string message, LogType type) {
+      void enqueue(string message, string stacktrace, LogType type) {
         var color = logTypeToColor(type);
         var entry = $"<color=#{color.toHex()}>{message}</color>";
+        if (binding._stacktraceTextSize != 0) {
+          Color32 stacktraceColor = binding._stacktraceColor;
+          entry += 
+            $"\n<color=#{stacktraceColor.toHex()}><size={binding._stacktraceTextSize}>" +
+            stacktrace +
+            $"</size></color>";
+        }
         if (entries.Count == queueSize) entries.RemoveLast();
         entries.AddFirst(entry);
       }

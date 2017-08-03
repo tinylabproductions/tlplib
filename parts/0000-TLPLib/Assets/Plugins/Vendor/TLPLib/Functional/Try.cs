@@ -38,6 +38,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public A __unsafeGet => _value;
     public Exception __unsafeException => _exception;
 
+    public A getOrElse(A a) => isSuccess ? _value : a;
+    public A getOrElse(Fn<A> a) => isSuccess ? _value : a();
+
     public Either<Exception, A> toEither =>
       isSuccess ? Either<Exception, A>.Right(_value) : Either<Exception, A>.Left(_exception);
 

@@ -6,7 +6,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface ITimeContext {
     Duration passedSinceStartup { get; }
     Coroutine after(Duration duration, Action act, string name = null);
-    Coroutine afterXFrames(int framesToSkip, Action act, string name = null);
   }
 
   public static class TimeContextExts {
@@ -50,16 +49,43 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static ITimeContext orDefault(this ITimeContext tc) => tc ?? DEFAULT;
   }
 
-  class PlayModeTimeContext : ITimeContext {
+  public class PlayModeTimeContext : ITimeContext {
     public static readonly PlayModeTimeContext instance = new PlayModeTimeContext();
     PlayModeTimeContext() {}
 
     public Duration passedSinceStartup => Duration.fromSeconds(Time.time);
 
     public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration.seconds, act);
+      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.Unity);
+  }
 
-    public Coroutine afterXFrames(int framesToSkip, Action act, string name) =>
-      ASync.AfterXFrames(framesToSkip, act);
+  public class UnscaledTimeContext : ITimeContext {
+    public static readonly UnscaledTimeContext instance = new UnscaledTimeContext();
+    UnscaledTimeContext() {}
+
+    public Duration passedSinceStartup => Duration.fromSeconds(Time.unscaledTime);
+
+    public Coroutine after(Duration duration, Action act, string name) =>
+      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.UnscaledTime);
+  }
+
+  public class FixedTimeContext : ITimeContext {
+    public static readonly FixedTimeContext instance = new FixedTimeContext();
+    FixedTimeContext() {}
+
+    public Duration passedSinceStartup => Duration.fromSeconds(Time.fixedTime);
+
+    public Coroutine after(Duration duration, Action act, string name) =>
+      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.FixedTime);
+  }
+
+  public class RealTimeContext : ITimeContext {
+    public static readonly RealTimeContext instance = new RealTimeContext();
+    RealTimeContext() {}
+
+    public Duration passedSinceStartup => Duration.fromSeconds(Time.realtimeSinceStartup);
+
+    public Coroutine after(Duration duration, Action act, string name) =>
+      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.Realtime);
   }
 }

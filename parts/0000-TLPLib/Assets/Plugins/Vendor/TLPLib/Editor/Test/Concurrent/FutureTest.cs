@@ -437,17 +437,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class FutureTestDelayFrames {
-    [Test]
-    public void Test() {
-      var frameDuration = new Duration(20);
-      var tc = new TestTimeContext(frameDuration);
-      var f = Future.delayFrames(3, 3, tc);
-      f.value.shouldBeNone();
-      tc.timePassed = frameDuration * 2;
-      f.value.shouldBeNone();
-      tc.timePassed = frameDuration * 3;
-      f.value.shouldBeSome(3);
-    }
+    [Test] public void Test() => Assert.Ignore("TODO: test with integration tests");
   }
 
   public class FutureTestDelayUntilSignal {
