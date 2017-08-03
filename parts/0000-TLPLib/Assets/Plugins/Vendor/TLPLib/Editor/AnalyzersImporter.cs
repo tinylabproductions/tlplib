@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace AnalyzersImporter {
   /// <summary>
+  /// !!! For analyzers to work as expected you need to change Visual Studio settings:
+  /// Tools -> Options -> Text Editor -> C# -> Advanced -> Check "Enable full solution analysis"
+  /// And delete current files: *.csproj,.sln and current .vs folder 
   /// Class for supporting Visual Studio analyzers
   /// Imports all dll's from `analyzers` folder
   /// </summary>
