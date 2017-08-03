@@ -1,4 +1,11 @@
-﻿namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
+﻿using System;
+
+namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
+  public static class Tween {
+    public static TweenCallback callback(Action callback) => 
+      new TweenCallback(callback);
+  }
+
   public class Tween<A> {
     public readonly A start, end;
     public readonly Ease ease;
@@ -14,5 +21,12 @@
     }
 
     public A eval(float timePassed) => lerp(start, end, ease(timePassed / duration));
+
+    public override string ToString() => 
+      $"{nameof(Tween)}[" +
+      $"{nameof(start)}={start}, " +
+      $"{nameof(end)}={end}, " +
+      $"{nameof(duration)}={duration}" +
+      $"]";
   }
 }

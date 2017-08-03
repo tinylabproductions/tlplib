@@ -3,43 +3,50 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tweener {
-    public static Tweener<A> a<A>(Tween<A> tween, Act<A> changeState) =>
-      new Tweener<A>(tween, changeState);
+    public static Tweener<A, T> a<A, T>(Tween<A> tween, T t, Act<A, T> changeState) =>
+      new Tweener<A, T>(tween, t, changeState);
 
-    public static Tweener<Vector3> tweenPosition(
+    #region Transform Position
+
+    public static Tweener<Vector3, Transform> tweenPosition(
       this Transform t, Vector3 start, Vector3 to, Ease ease, float duration
     ) => a(
       TweenLerp.vector3.tween(start, to, ease, duration),
-      TweenMutators.position(t)
+      t, TweenMutators.position
     );
 
-    public static Tweener<Vector3> tweenPosition(
+    public static Tweener<Vector3, Transform> tweenPosition(
       this Transform t, Vector3 to, Ease ease, float duration
-    ) => a(
-      TweenLerp.vector3.tween(t.position, to, ease, duration),
-      TweenMutators.position(t)
-    );
+    ) => tweenPosition(t, t.position, to, ease, duration);
 
-    public static Tweener<Vector3> tweenPositionRelative(
+    public static Tweener<Vector3, Transform> tweenPositionRelative(
       this Transform t, Vector3 to, Ease ease, float duration
-    ) => a(
-      TweenLerp.vector3.tween(t.position, t.position + to, ease, duration),
-      TweenMutators.position(t)
-    );
+    ) => tweenPosition(t, t.position, t.position + to, ease, duration);
+
+    public static Tweener<Vector3, Transform> tweenPositionRelative(
+      this Tweener<Vector3, Transform> t, Vector3 to, Ease ease, float duration
+    ) => t.t.tweenPosition(t.tween.end, t.tween.end + to, ease, duration);
+
+    #endregion
   }
 
-  public class Tweener<A> : TweenSequenceElement {
+  public class Tweener<A, T> : TweenSequenceElement {
     public float duration => tween.duration;
 
-    readonly Tween<A> tween;
-    readonly Act<A> changeState;
+    public readonly Tween<A> tween;
+    public readonly T t;
+    readonly Act<A, T> changeState;
 
-    public Tweener(Tween<A> tween, Act<A> changeState) {
+    public Tweener(Tween<A> tween, T t, Act<A, T> changeState) {
       this.tween = tween;
+      this.t = t;
       this.changeState = changeState;
     }
 
     public void setRelativeTimePassed(float t) => 
-      changeState(tween.eval(t / duration));
+      changeState(tween.eval(t), this.t);
+
+    public override string ToString() => 
+      $"{nameof(Tweener)}[on {t}, {tween}]";
   }
 }

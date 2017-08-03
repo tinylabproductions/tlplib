@@ -1,5 +1,7 @@
-﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
+﻿using System;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween;
 using UnityEngine;
 
@@ -24,6 +26,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 //
 //      // 
 //
+      var t1 = obj1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration);
+      tr = TweenSequence.sequential(
+        Tween.callback(() => print("start")),
+        t1,
+        Tween.callback(() => print("1")),
+        obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
+        Tween.callback(() => print("2")),
+        t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
+        Tween.callback(() => print("end"))
+      );
+
 //      var tr1 =
 //        TweenSequence.Builder.create()
 //          .append(obj1.tweenPositionRelative(Vector3.right * 10, Eases.cubic, duration))
