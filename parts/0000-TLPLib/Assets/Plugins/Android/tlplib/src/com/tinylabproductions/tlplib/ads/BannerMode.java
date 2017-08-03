@@ -12,6 +12,15 @@ public class BannerMode {
         }
     }
 
+    public static class PercentileSize implements Mode {
+        public final float width, height;
+
+        public PercentileSize(float width, float height) {
+            this.width = width;
+            this.height = height;
+        }
+    }
+
     public static class WrapContent implements Mode {
         public final static WrapContent instance = new WrapContent();
         private WrapContent() {}
