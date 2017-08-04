@@ -18,16 +18,16 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
     protected Banner banner;
 
     protected BannerBase(
-            Activity activity,
-            final boolean isTopBanner, final BannerMode.Mode mode,
-            final Fn1<Banner> createBanner
+        Activity activity,
+        final boolean isTopBanner, final BannerMode.Mode mode,
+        final Fn1<Banner> createBanner
     ) {
         this(activity, isTopBanner, mode, createBanner, true);
     }
 
     protected BannerBase(
-            Activity activity, final boolean isTopBanner, final BannerMode.Mode mode,
-            final Fn1<Banner> createBanner, final boolean hideAfterCreation
+        Activity activity, final boolean isTopBanner, final BannerMode.Mode mode,
+        final Fn1<Banner> createBanner, final boolean hideAfterCreation
     ) {
         this.activity = activity;
 
@@ -42,6 +42,9 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
     protected void addToUI(BannerMode.Mode mode, boolean isTopBanner, boolean hideAfterCreation) {
         if (mode instanceof BannerMode.PercentileSize) {
+            // Reason for these views in short - to be able to place, position, and scale
+            // banner sizes based on percentage of the screen taken
+            // https://inthecheesefactory.com/blog/know-percent-support-library/en
             BannerMode.PercentileSize _mode = (BannerMode.PercentileSize) mode;
 
             View spacerView = new View(activity);
@@ -168,7 +171,7 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                onPauseRunsOnUiThread();
+                onResumeRunsOnUiThread();
             }
         });
     }
