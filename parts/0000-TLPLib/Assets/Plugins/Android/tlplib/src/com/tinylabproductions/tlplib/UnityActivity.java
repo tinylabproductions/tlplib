@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UnityActivity extends UnityPlayerActivity {
+    private int requestCodeBase = 1000000;
     public interface IActivityResult {
         void onActivityResult(int requestCode, int resultCode, Intent data);
     }
@@ -19,6 +20,10 @@ public class UnityActivity extends UnityPlayerActivity {
 
     public void unsubscribeOnActivityResult(IActivityResult f) {
         if (activityResultListeners.contains(f)) activityResultListeners.remove(f);
+    }
+
+    public int generateRequestCode() {
+        return requestCodeBase++;
     }
 
     @Override
