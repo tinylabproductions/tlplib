@@ -146,24 +146,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    public struct MessageData {
-      public readonly string loggerName;
-      public readonly ApiKeys keys;
-      public readonly ErrorReporter.AppInfo appInfo;
-      public readonly ErrorReporter.ErrorData data;
-      public readonly ExtraData addExtraData;
-      public readonly Option<UserInterface> userOpt;
-
-      public MessageData(string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo, ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt) {
-        this.loggerName = loggerName;
-        this.keys = keys;
-        this.appInfo = appInfo;
-        this.data = data;
-        this.addExtraData = addExtraData;
-        this.userOpt = userOpt;
-      }
-    }
-
     public struct SendOnErrorData {
       public readonly string loggerName;
       public readonly ErrorReporter.AppInfo appInfo;
@@ -178,6 +160,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
+    // ReSharper disable once UnusedMember.Global
     public static ErrorReporter.OnError createSendOnError(
       SendOnErrorData sendData, Uri reportingUrl, ApiKeys keys, bool onlySendUniqueErrors
     ) {
