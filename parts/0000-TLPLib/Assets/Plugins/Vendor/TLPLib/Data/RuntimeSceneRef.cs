@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+#if ADVANCED_INSPECTOR
 using AdvancedInspector;
+#endif
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -11,9 +13,15 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
+#if ADVANCED_INSPECTOR
   [AdvancedInspector(true)]
+#endif
   public class RuntimeSceneRef {
+#if ADVANCED_INSPECTOR
     [SerializeField, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))]
+#else
+    [SerializeField]
+#endif
     public Object scene;
 
     [SerializeField, HideInInspector] string _sceneName, _scenePath;

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+#if ADVANCED_INSPECTOR
 using AdvancedInspector;
+#endif
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -112,13 +114,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     class TextFieldTypeNotTag : MonoBehaviour {
 #pragma warning disable 649
+#if ADVANCED_INSPECTOR
       [TextField(TextFieldType.Area)]
+#endif
       public string field;
 #pragma warning restore 649
     }
 
     class TextFieldTypeTag : MonoBehaviour {
+#if ADVANCED_INSPECTOR
       [TextField(TextFieldType.Tag)]
+#endif
       public string field;
     }
 

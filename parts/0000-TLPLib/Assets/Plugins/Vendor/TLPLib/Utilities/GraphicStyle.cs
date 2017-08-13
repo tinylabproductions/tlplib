@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+#if ADVANCED_INSPECTOR
 using AdvancedInspector;
+#endif
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +14,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public bool gradient;
     bool gradientOn => gradient;
-    [Inspect(nameof(gradientOn))] public Color gradientColor;
+#if ADVANCED_INSPECTOR
+    [Inspect(nameof(gradientOn))] 
+#endif
+    public Color gradientColor;
 
     public GraphicStyle(Color graphicColor, bool gradient, Color gradientColor, Color outlineColor) {
       this.graphicColor = graphicColor;

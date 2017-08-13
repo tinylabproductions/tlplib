@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+#if ADVANCED_INSPECTOR
 using AdvancedInspector;
+#endif
 using UnityEngine;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
@@ -9,9 +11,15 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
+#if ADVANCED_INSPECTOR
   [AdvancedInspector(true)]
+#endif
   public class RuntimeFolderRef {
+#if ADVANCED_INSPECTOR
     [SerializeField, DontAllowSceneObject, Inspect(nameof(inspect))]
+#else
+    [SerializeField]
+#endif
     public Object folder;
 
     [SerializeField, HideInInspector] string _folderName;
