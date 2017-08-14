@@ -14,11 +14,13 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
     [
       SerializeField, Inspect, FormerlySerializedAs("isSome"),
       Descriptor(nameof(isSomeDescription))
     ] bool _isSome;
     [SerializeField, Inspect(nameof(inspectValue)), Descriptor(nameof(description)), NotNull] A _value;
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     #endregion

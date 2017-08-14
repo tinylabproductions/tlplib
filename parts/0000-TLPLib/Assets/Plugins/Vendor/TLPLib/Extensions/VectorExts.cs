@@ -17,6 +17,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Vector3 addY(this Vector3 v, float y) => new Vector3(v.x, v.y + y, v.z);
     public static Vector3 addZ(this Vector3 v, float z) => new Vector3(v.x, v.y, v.z + z);
 
+    static string logFormat(float f) => $"{f,10:0.000}";
+    public static string logFormat(this Vector2 v) => $"({logFormat(v.x)},{logFormat(v.y)})";
+    public static string logFormat(this Vector3 v) => $"({logFormat(v.x)},{logFormat(v.y)},{logFormat(v.z)})";
+
     public static Vector2 with2(
       this Vector2 v,
       Option<float> x = default(Option<float>), 
