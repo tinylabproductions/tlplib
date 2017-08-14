@@ -2,9 +2,7 @@
 using AdvancedInspector;
 using com.tinylabproductions.TLPGame.unity_serialization;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -14,8 +12,7 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     [
       SerializeField,
       Help(HelpType.Info, "Events are emitted on release.\n" +
-                          "If set, event will also be emiited once drag threshold is reached. " +
-                          "But no more than one event per swipe.\n" +
+                          "If set, event will be emiited once drag threshold is reached instead. " +
                           "value is in screen coordinates.")
     ] UnityOptionFloat eventOnThreshold;
 #pragma warning restore 649
@@ -50,6 +47,7 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     }
 
     public void OnEndDrag(PointerEventData eventData) {
+      if (_eventOnThresholdSqr.isSome) return;
       if (!mayDrag(eventData)) return;
       if (dragFinished) return;
       finishSwipe(screenToLocal(rt, eventData) - dragBeginPos);
@@ -61,6 +59,8 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
       foreach (var thresholdSqr in _eventOnThresholdSqr) {
         var delta = screenToLocal(rt, eventData) - dragBeginPos;
         if (delta.sqrMagnitude >= thresholdSqr) {
+          // if we have UIClickForwarder on the same object we want to skip the click event on that
+          eventData.eligibleForClick = false;
           finishSwipe(delta);
         }
       }
