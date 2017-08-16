@@ -19,4 +19,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public IObservable<Unit> onLateUpdate => _onLateUpdate;
     public void LateUpdate() => _onLateUpdate.push(F.unit);
   }
+
+  // Don't implement unity interfaces if not used
+  class ASyncHelperBehaviourEmpty : MonoBehaviour {}
 }
