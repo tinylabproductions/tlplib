@@ -194,28 +194,32 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       };
     }
 
-    public static Dictionary<string, string> dynamicTags(Act<ExtraData.AddTag> addTag) {
+    public static Dictionary<string, string> dynamicTags(
+      Act<ExtraData.AddTag> addTag, ErrorReporter.AppInfo appInfo
+    ) {
       var dict = new Dictionary<string, string> {
         {"App:LoadedLevelNames", tag(
           Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
             Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
         )},
+        {"ProductName", tag(appInfo.productName)},
+        {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
+        {"App:Platform", tag(Application.platform)},
+        {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
+        {"SI:ProcessorType", tag(SystemInfo.processorType)},
+        {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
+        {"SI:DeviceModel", tag(SystemInfo.deviceModel)}
       };
       addTag((name, value) => dict[name] = tag(value));
       return dict;
     }
 
-    static Dictionary<string, string> sentryApiSpecificTags(ErrorReporter.AppInfo appInfo) => new Dictionary<string, string> {
-      {"ProductName", tag(appInfo.productName)},
-      {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
-      {"App:Platform", tag(Application.platform)},
-      {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
-      {"SI:ProcessorType", tag(SystemInfo.processorType)},
-      {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
-      {"SI:DeviceModel", tag(SystemInfo.deviceModel)},
-    };
-
-    public static Dictionary<string, string> commonTags = new Dictionary<string, string> {
+   
+    /*
+     * In Sentry Android plugin we can set these once on initialization,
+     * so it had to be made separate from dynamic tags
+     */
+    public static readonly Dictionary<string, string> staticTags = new Dictionary<string, string> {
       // max tag name length = 32
       {"App:LevelCount", tag(SceneManager.sceneCountInBuildSettings)},
       {"App:UnityVersion", tag(Application.unityVersion)},
@@ -278,9 +282,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       var stacktraceFrames = data.backtrace.Select(a => backtraceElemToJson(a)).Reverse().ToList();
 
       var tags = 
-        commonTags
-        .concatDicts(sentryApiSpecificTags(appInfo))
-        .concatDicts(dynamicTags(addExtraData.addTags));
+        staticTags
+        .concatDicts(dynamicTags(addExtraData.addTags, appInfo));
 
       // Should we have this extra?
       // Extra contextual data is limited to 4096 characters.
