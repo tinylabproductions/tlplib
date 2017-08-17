@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.changeState = changeState;
     }
 
-    public void setRelativeTimePassed(float t) => 
+    public void setRelativeTimePassed(float t, bool playingForwards) => 
       changeState(tween.eval(t), this.t);
 
     public override string ToString() => 

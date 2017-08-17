@@ -1,12 +1,12 @@
-﻿using System;
-
-namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
+﻿namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public class TweenCallback : TweenSequenceElement {
-    readonly Action callback;
+    public delegate void Act(bool playingForwards);
 
-    public TweenCallback(Action callback) { this.callback = callback; }
+    readonly Act callback;
+
+    public TweenCallback(Act callback) { this.callback = callback; }
 
     public float duration => 0;
-    public void setRelativeTimePassed(float t) => callback();
+    public void setRelativeTimePassed(float t, bool playingForwards) => callback(playingForwards);
   }
 }

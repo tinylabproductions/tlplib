@@ -7,10 +7,11 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public class TweenTestBed : MonoBehaviour, IMB_Start, IMB_Update {
+    public SpriteRenderer indicator;
     public Transform obj1, obj2, obj3, obj4;
     public float duration = 5;
 
-    TweenSequence tr;
+    TweenManager manager;
 
     public void Start() {
 //      var obj3T = TweenLerp.vector3.tween(
@@ -27,15 +28,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 //      // 
 //
       var t1 = obj1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration);
-      tr = TweenSequence.sequential(
-        Tween.callback(() => print("start")),
+      var tr = TweenSequence.sequential(
+        Tween.callback(_ => print($"start {_}")),
         t1,
-        Tween.callback(() => print("1")),
+        Tween.callback(_ => print($"1 {_}")),
         obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
-        Tween.callback(() => print("2")),
+        Tween.callback(_ => print($"2 {_}")),
         t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
-        Tween.callback(() => print("end"))
-      );
+        Tween.callback(_ => print($"end {_}"))
+      ).build();
+      manager = tr.managed()
+        .onStart(forwards => indicator.color = forwards ? Color.black : Color.green)
+        .onEnd(forwards => indicator.color = forwards ? Color.gray : Color.red);
 
 //      var tr1 =
 //        TweenSequence.Builder.create()
@@ -56,7 +60,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public void Update() {
-      tr.update(Time.deltaTime);
+      if (Input.GetKeyDown(KeyCode.P)) manager.play();
+      if (Input.GetKeyDown(KeyCode.LeftBracket)) manager.play(forwards: true);
+      if (Input.GetKeyDown(KeyCode.RightBracket)) manager.play(forwards: false);
+      if (Input.GetKeyDown(KeyCode.R)) manager.rewind();
+      if (Input.GetKeyDown(KeyCode.T)) manager.resume();
+      if (Input.GetKeyDown(KeyCode.Y)) manager.resume(true);
+      if (Input.GetKeyDown(KeyCode.U)) manager.resume(false);
+      if (Input.GetKeyDown(KeyCode.S)) manager.stop();
+      if (Input.GetKeyDown(KeyCode.G)) manager.reverse();
+      if (Input.GetKeyDown(KeyCode.Alpha1)) manager.timescale = -2f;
+      if (Input.GetKeyDown(KeyCode.Alpha2)) manager.timescale = -1.5f;
+      if (Input.GetKeyDown(KeyCode.Alpha3)) manager.timescale = -1f;
+      if (Input.GetKeyDown(KeyCode.Alpha4)) manager.timescale = -0.5f;
+      if (Input.GetKeyDown(KeyCode.Alpha5)) manager.timescale = 0f;
+      if (Input.GetKeyDown(KeyCode.Alpha6)) manager.timescale = 0.5f;
+      if (Input.GetKeyDown(KeyCode.Alpha7)) manager.timescale = 1f;
+      if (Input.GetKeyDown(KeyCode.Alpha8)) manager.timescale = 1.5f;
+      if (Input.GetKeyDown(KeyCode.Alpha9)) manager.timescale = 2f;
     }
   }
 }

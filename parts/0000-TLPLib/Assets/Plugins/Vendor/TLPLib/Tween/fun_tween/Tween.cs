@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
+﻿namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tween {
-    public static TweenCallback callback(Action callback) => 
+    public static TweenCallback callback(TweenCallback.Act callback) => 
       new TweenCallback(callback);
   }
 
