@@ -35,27 +35,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Object.Destroy(go);
     }
 
-    public static Coroutine everyFrame(this GameObject go, Fn<bool> f) {
-      var behaviour =
-        go.GetComponent<ASyncHelperBehaviour>() ??
-        go.AddComponent<ASyncHelperBehaviour>();
-      return ASync.EveryFrame(behaviour, f);
-    }
+    public static Coroutine everyFrame(this GameObject go, Fn<bool> f) => ASync.EveryFrame(go, f);
 
-    public static Coroutine everyFrame(this GameObject go, Action a) {
-      return go.everyFrame(() => { a(); return true; });
-    }
+    public static Coroutine everyFrame(this GameObject go, Action a) => 
+      go.everyFrame(() => { a(); return true; });
 
-    public static IObservable<Unit> onMouseDown(this GameObject go) {
-      return (
-        go.GetComponent<OnMouseDownForwarder>() ?? 
-        go.AddComponent<OnMouseDownForwarder>()
-      ).onMouseDown;
-    }
+    public static IObservable<Unit> onMouseDown(this GameObject go) => 
+      go.EnsureComponent<OnMouseDownForwarder>().onMouseDown;
 
-    public static A EnsureComponent<A>(this GameObject go) where A : Component {
-      return go.GetComponent<A>() ?? go.AddComponent<A>();
-    }
+    public static A EnsureComponent<A>(this GameObject go) where A : Component => 
+      go.GetComponent<A>() ?? go.AddComponent<A>();
 
     // Modified from unity decompiled dll.
     // Added includeInactive parameter.

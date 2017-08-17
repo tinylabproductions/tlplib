@@ -11,11 +11,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       : F.left<WWWError, WWW>(new WWWError(www));
 
     public static Either<WWWError, Texture2D> asTexture(this Either<WWWError, WWW> either) =>
-      either.flatMapRight(www =>
-        !www.texture
-          ? Either<WWWError, Texture2D>.Left(new WWWError(www, "WWW didn't produce a texture!"))
-          : Either<WWWError, Texture2D>.Right(www.texture)
-      );
+      either.flatMapRight(www => {
+        // NonReadable textures take 2x less ram
+        var tex = www.textureNonReadable;
+        return tex
+          ? Either<WWWError, Texture2D>.Right(tex)
+          : Either<WWWError, Texture2D>.Left(new WWWError(www, "WWW didn't produce a texture!"));
+      });
 
     public static WWWWithHeaders headers(this WWW www) => 
       new WWWWithHeaders(www, www.responseHeaders.asReadOnly());
