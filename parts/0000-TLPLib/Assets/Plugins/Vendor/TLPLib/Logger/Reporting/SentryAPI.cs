@@ -195,31 +195,25 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     }
 
     public static Dictionary<string, string> dynamicTags(
-      Act<ExtraData.AddTag> addTag, ErrorReporter.AppInfo appInfo
+      Act<ExtraData.AddTag> addTag
     ) {
       var dict = new Dictionary<string, string> {
         {"App:LoadedLevelNames", tag(
           Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
             Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
         )},
-        {"ProductName", tag(appInfo.productName)},
-        {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
-        {"App:Platform", tag(Application.platform)},
-        {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
-        {"SI:ProcessorType", tag(SystemInfo.processorType)},
-        {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
-        {"SI:DeviceModel", tag(SystemInfo.deviceModel)}
+        {"App:InternetReachability", tag(Application.internetReachability)},
+        {"App:TargetFrameRate", tag(Application.targetFrameRate)},
       };
       addTag((name, value) => dict[name] = tag(value));
       return dict;
     }
-
    
     /*
      * In Sentry Android plugin we can set these once on initialization,
      * so it had to be made separate from dynamic tags
      */
-    public static readonly Dictionary<string, string> staticTags = new Dictionary<string, string> {
+    public static Dictionary<string, string> staticTags(ErrorReporter.AppInfo appInfo) => new Dictionary<string, string> {
       // max tag name length = 32
       {"App:LevelCount", tag(SceneManager.sceneCountInBuildSettings)},
       {"App:UnityVersion", tag(Application.unityVersion)},
@@ -230,10 +224,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       {"App:ProductName", tag(Application.productName)},
       {"App:CompanyName", tag(Application.companyName)},
       {"App:CloudProjectId", tag(Application.cloudProjectId)},
-      {"App:TargetFrameRate", tag(Application.targetFrameRate)},
       {"App:SystemLanguage", tag(Application.systemLanguage)},
       {"App:BackgroundLoadingPriority", tag(Application.backgroundLoadingPriority)},
-      {"App:InternetReachability", tag(Application.internetReachability)},
       {"App:GenuineCheckAvailable", tag(Application.genuineCheckAvailable)},
       {"App:Genuine", tag(Application.genuineCheckAvailable && Application.genuine)},
       {"SI:ProcessorCount", tag(SystemInfo.processorCount)},
@@ -262,11 +254,18 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       {"SI:SupportsVibration", tag(SystemInfo.supportsVibration)},
       {"SI:DeviceType", tag(SystemInfo.deviceType)},
       {"SI:MaxTextureSize", tag(SystemInfo.maxTextureSize)},
+      {"ProductName", tag(appInfo.productName)},
+      {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
+      {"App:Platform", tag(Application.platform)},
+      {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
+      {"SI:ProcessorType", tag(SystemInfo.processorType)},
+      {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
+      {"SI:DeviceModel", tag(SystemInfo.deviceModel)}
 #if !UNITY_5_5_OR_NEWER
-        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
-        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
-        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
-        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
+      {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
+      {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
+      {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
+      {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
 #endif
     };
 
@@ -282,8 +281,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       var stacktraceFrames = data.backtrace.Select(a => backtraceElemToJson(a)).Reverse().ToList();
 
       var tags = 
-        staticTags
-        .concatDicts(dynamicTags(addExtraData.addTags, appInfo));
+        staticTags(appInfo)
+        .concatDicts(dynamicTags(addExtraData.addTags));
 
       // Should we have this extra?
       // Extra contextual data is limited to 4096 characters.
