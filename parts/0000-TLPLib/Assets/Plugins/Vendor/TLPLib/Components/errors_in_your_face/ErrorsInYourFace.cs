@@ -133,8 +133,8 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
           case LogType.Exception: return binding._exceptionColor;
           case LogType.Warning: return binding._warningColor;
           case LogType.Log: return binding._logColor;
-          default: return Color.white;
         }
+        return Color.white;
       }
     }
   }

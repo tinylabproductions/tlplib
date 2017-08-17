@@ -50,7 +50,7 @@ namespace com.tinylabproductions.Cryptography {
         case Kind.MD5: return 32;
         case Kind.SHA1: return 40;
         case Kind.SHA256: return 64;
-        default: return F.matchErr<int>(nameof(Kind), kind.ToString());
+        default: throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
       }
     }
 
@@ -78,7 +78,7 @@ namespace com.tinylabproductions.Cryptography {
         case Kind.MD5: return md5.ComputeHash(bytes);
         case Kind.SHA1: return sha1.ComputeHash(bytes);
         case Kind.SHA256: return sha256.ComputeHash(bytes);
-        default: return F.matchErr<byte[]>(nameof(Kind), kind.ToString());
+        default: throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
       }
     }
   }

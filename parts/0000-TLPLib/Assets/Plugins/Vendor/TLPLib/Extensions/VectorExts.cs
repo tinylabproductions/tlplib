@@ -6,9 +6,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Vector2 withX(this Vector2 v, float x) => new Vector2(x, v.y);
     public static Vector2 withY(this Vector2 v, float y) => new Vector2(v.x, y);
 
+    public static Vector2 addX(this Vector2 v, float x) => new Vector2(v.x + x, v.y);
+    public static Vector2 addY(this Vector2 v, float y) => new Vector2(v.x, v.y + y);
+
     public static Vector3 withX(this Vector3 v, float x) => new Vector3(x, v.y, v.z);
     public static Vector3 withY(this Vector3 v, float y) => new Vector3(v.x, y, v.z);
     public static Vector3 withZ(this Vector3 v, float z) => new Vector3(v.x, v.y, z);
+
+    public static Vector3 addX(this Vector3 v, float x) => new Vector3(v.x + x, v.y, v.z);
+    public static Vector3 addY(this Vector3 v, float y) => new Vector3(v.x, v.y + y, v.z);
+    public static Vector3 addZ(this Vector3 v, float z) => new Vector3(v.x, v.y, v.z + z);
+
+    static string logFormat(float f) => $"{f,10:0.000}";
+    public static string logFormat(this Vector2 v) => $"({logFormat(v.x)},{logFormat(v.y)})";
+    public static string logFormat(this Vector3 v) => $"({logFormat(v.x)},{logFormat(v.y)},{logFormat(v.z)})";
 
     public static Vector2 with2(
       this Vector2 v,
