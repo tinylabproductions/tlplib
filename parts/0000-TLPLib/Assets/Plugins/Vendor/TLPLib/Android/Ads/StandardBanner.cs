@@ -1,4 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Reactive;
+﻿using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Reactive;
 #if UNITY_ANDROID
 using System.Collections.Immutable;
 using System.Linq;
@@ -12,6 +14,8 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     void setVisibility(bool visible);
     void load();
     void destroy();
+    void onPause();
+    void onResume();
   }
 
   public interface IStandardBannerKnowsState : IStandardBanner {
@@ -22,12 +26,27 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
   // Banners that extend com.tinylabproductions.tlplib.ads.BannerBase in Java.
   public class StandardBanner : IStandardBanner {
     protected readonly AndroidJavaObject java;
+    readonly DisposableTracker dt = new DisposableTracker();
 
-    public StandardBanner(AndroidJavaObject java) { this.java = java; }
+    public StandardBanner(AndroidJavaObject java) {
+      this.java = java;
+      dt.track(ASync.onAppPause.subscribe(paused => {
+        if (paused) onPause();
+        else onResume();
+      }));
+      dt.track(ASync.onAppQuit.subscribe(_ => {
+        destroy();
+      }));
+    }
 
     public void setVisibility(bool visible) => java.Call("setVisibility", visible);
     public void load() => java.Call("load");
-    public void destroy() => java.Call("destroy");
+    public void destroy() {
+      dt.Dispose();
+      java.Call("destroy");
+    }
+    public void onPause() => java.Call("onPause");
+    public void onResume() => java.Call("onResume");
   }
 
   public class StandardBannerAggregator : IStandardBannerKnowsState {
@@ -69,6 +88,10 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     public void load() { foreach (var b in banners) b.load(); }
 
     public void destroy() { foreach (var b in banners) b.destroy(); }
+
+    public void onPause() { foreach (var b in banners) b.onPause(); }
+
+    public void onResume() { foreach (var b in banners) b.onResume(); }
   }
 #endif
 }
