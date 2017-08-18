@@ -7,23 +7,26 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UnityActivity extends UnityPlayerActivity {
-    private int requestCodeBase = 1000000;
+    public const int REQUEST_CODE_BASE = 1000000;
+    private int requestCode = REQUEST_CODE_BASE;
+
     public interface IActivityResult {
         void onActivityResult(int requestCode, int resultCode, Intent data);
     }
 
-    Set<IActivityResult> activityResultListeners = new HashSet<>();
+    final Set<IActivityResult> activityResultListeners = new HashSet<>();
 
     public void subscribeOnActivityResult(IActivityResult f) {
         activityResultListeners.add(f);
     }
 
     public void unsubscribeOnActivityResult(IActivityResult f) {
-        if (activityResultListeners.contains(f)) activityResultListeners.remove(f);
+        if (activityResultListeners.contains(f))
+            activityResultListeners.remove(f);
     }
 
     public int generateRequestCode() {
-        return requestCodeBase++;
+        return requestCode++;
     }
 
     @Override
@@ -33,7 +36,7 @@ public class UnityActivity extends UnityPlayerActivity {
             try {
                 f.onActivityResult(requestCode, resultCode, data);
             } catch (Exception e) {
-                Log.e(Tag.TAG, "Error executing onActivityResult subscriber");
+                Log.e(Tag.TAG, "Error executing onActivityResult subscriber " + f, e);
             }
         }
     }
