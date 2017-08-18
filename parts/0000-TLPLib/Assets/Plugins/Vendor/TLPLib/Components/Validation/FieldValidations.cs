@@ -1,4 +1,5 @@
 ﻿using System;
+#if ADVANCED_INSPECTOR
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 
@@ -15,3 +16,4 @@ namespace com.tinylabproductions.TLPLib.Components.Validation {
     }
   }
 }
+#endif

@@ -8,7 +8,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+#if ADVANCED_INSPECTOR
 using AdvancedInspector;
+#endif
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -373,6 +375,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fields = getFilteredFields(o);
       foreach (var fi in fields) {
         fieldHierarchy.Push(fi.Name);
+        #if ADVANCED_INSPECTOR
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
@@ -380,7 +383,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
             }
           }
+
         }
+        #endif
         if (fi.isSerializable()) {
           var fieldValue = fi.GetValue(o);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
