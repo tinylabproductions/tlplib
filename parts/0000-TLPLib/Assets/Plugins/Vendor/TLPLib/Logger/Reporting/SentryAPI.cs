@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
@@ -101,19 +102,10 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public struct ExtraData {
       public delegate void AddTag(string name, string value);
-      public delegate void AddExtra(string name, string value);
-
-      public static readonly ExtraData noExtraData = new ExtraData(_ => {}, _ => {});
-
       public readonly Act<AddTag> addTags;
-      public readonly Act<AddExtra> addExtras;
 
-      public ExtraData(
-        Act<AddTag> addTags = null, 
-        Act<AddExtra> addExtras = null
-      ) {
+      public ExtraData(Act<AddTag> addTags = null) {
         this.addTags = addTags ?? (_ => {});
-        this.addExtras = addExtras ?? (_ => {});
       }
     }
 
@@ -154,24 +146,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    public struct MessageData {
-      public readonly string loggerName;
-      public readonly ApiKeys keys;
-      public readonly ErrorReporter.AppInfo appInfo;
-      public readonly ErrorReporter.ErrorData data;
-      public readonly ExtraData addExtraData;
-      public readonly Option<UserInterface> userOpt;
-
-      public MessageData(string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo, ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt) {
-        this.loggerName = loggerName;
-        this.keys = keys;
-        this.appInfo = appInfo;
-        this.data = data;
-        this.addExtraData = addExtraData;
-        this.userOpt = userOpt;
-      }
-    }
-
     public struct SendOnErrorData {
       public readonly string loggerName;
       public readonly ErrorReporter.AppInfo appInfo;
@@ -186,6 +160,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
+    // ReSharper disable once UnusedMember.Global
     public static ErrorReporter.OnError createSendOnError(
       SendOnErrorData sendData, Uri reportingUrl, ApiKeys keys, bool onlySendUniqueErrors
     ) {
@@ -219,7 +194,82 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       };
     }
 
-    public static SentryMessage message(
+    public static Dictionary<string, string> dynamicTags(
+      Act<ExtraData.AddTag> addTag
+    ) {
+      var dict = new Dictionary<string, string> {
+        {"App:LoadedLevelNames", tag(
+          Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
+            Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
+        )},
+        {"App:InternetReachability", tag(Application.internetReachability)},
+        {"App:TargetFrameRate", tag(Application.targetFrameRate)},
+      };
+      addTag((name, value) => dict[name] = tag(value));
+      return dict;
+    }
+   
+    /*
+     * In Sentry Android plugin we can set these once on initialization,
+     * so it had to be made separate from dynamic tags
+     */
+    public static Dictionary<string, string> staticTags(ErrorReporter.AppInfo appInfo) => new Dictionary<string, string> {
+      // max tag name length = 32
+      {"App:LevelCount", tag(SceneManager.sceneCountInBuildSettings)},
+      {"App:UnityVersion", tag(Application.unityVersion)},
+      {"App:Version", tag(Application.version)},
+      {"App:BundleIdentifier", tag(Application.bundleIdentifier)},
+      {"App:InstallMode", tag(Application.installMode)},
+      {"App:SandboxType", tag(Application.sandboxType)},
+      {"App:ProductName", tag(Application.productName)},
+      {"App:CompanyName", tag(Application.companyName)},
+      {"App:CloudProjectId", tag(Application.cloudProjectId)},
+      {"App:SystemLanguage", tag(Application.systemLanguage)},
+      {"App:BackgroundLoadingPriority", tag(Application.backgroundLoadingPriority)},
+      {"App:GenuineCheckAvailable", tag(Application.genuineCheckAvailable)},
+      {"App:Genuine", tag(Application.genuineCheckAvailable && Application.genuine)},
+      {"SI:ProcessorCount", tag(SystemInfo.processorCount)},
+      {"SI:GraphicsMemorySize", tag(SystemInfo.graphicsMemorySize)},
+      {"SI:GraphicsDeviceName", tag(SystemInfo.graphicsDeviceName)},
+      {"SI:GraphicsDeviceVendor", tag(SystemInfo.graphicsDeviceVendor)},
+      {"SI:GraphicsDeviceID", tag(SystemInfo.graphicsDeviceID)},
+      {"SI:GraphicsDeviceVendorID", tag(SystemInfo.graphicsDeviceVendorID)},
+      {"SI:GraphicsDeviceType", tag(SystemInfo.graphicsDeviceType)},
+      {"SI:GraphicsDeviceVersion", tag(SystemInfo.graphicsDeviceVersion)},
+      {"SI:GraphicsShaderLevel", tag(SystemInfo.graphicsShaderLevel)},
+      {"SI:GraphicsMultiThreaded", tag(SystemInfo.graphicsMultiThreaded)},
+      {"SI:SupportsShadows", tag(SystemInfo.supportsShadows)},
+      {"SI:SupportsRenderToCubemap", tag(SystemInfo.supportsRenderToCubemap)},
+      {"SI:SupportsImageEffects", tag(SystemInfo.supportsImageEffects)},
+      {"SI:Supports3DTextures", tag(SystemInfo.supports3DTextures)},
+      {"SI:SupportsComputeShaders", tag(SystemInfo.supportsComputeShaders)},
+      {"SI:SupportsInstancing", tag(SystemInfo.supportsInstancing)},
+      {"SI:SupportsSparseTextures", tag(SystemInfo.supportsSparseTextures)},
+      {"SI:SupportedRenderTargetCount", tag(SystemInfo.supportedRenderTargetCount)},
+      {"SI:NPOTsupport", tag(SystemInfo.npotSupport)},
+      {"SI:DeviceName", tag(SystemInfo.deviceName)},
+      {"SI:SupportsAccelerometer", tag(SystemInfo.supportsAccelerometer)},
+      {"SI:SupportsGyroscope", tag(SystemInfo.supportsGyroscope)},
+      {"SI:SupportsLocationService", tag(SystemInfo.supportsLocationService)},
+      {"SI:SupportsVibration", tag(SystemInfo.supportsVibration)},
+      {"SI:DeviceType", tag(SystemInfo.deviceType)},
+      {"SI:MaxTextureSize", tag(SystemInfo.maxTextureSize)},
+      {"ProductName", tag(appInfo.productName)},
+      {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
+      {"App:Platform", tag(Application.platform)},
+      {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
+      {"SI:ProcessorType", tag(SystemInfo.processorType)},
+      {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
+      {"SI:DeviceModel", tag(SystemInfo.deviceModel)}
+#if !UNITY_5_5_OR_NEWER
+      {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
+      {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
+      {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
+      {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
+#endif
+    };
+
+    static SentryMessage message(
       string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo,
       ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt
     ) {
@@ -230,83 +280,17 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       // ReSharper disable once ConvertClosureToMethodGroup - MCS bug
       var stacktraceFrames = data.backtrace.Select(a => backtraceElemToJson(a)).Reverse().ToList();
 
-      // Tags are properties that can be filtered/grouped by.
-      var tags = new Dictionary<string, object> {
-        // max tag name length = 32
-        {"ProductName", tag(appInfo.productName)},
-        {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
-        {"App:LoadedLevelNames", tag(
-          Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
-          Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
-        )},
-        {"App:LevelCount", tag(SceneManager.sceneCountInBuildSettings)},
-        {"App:Platform", tag(Application.platform)},
-        {"App:UnityVersion", tag(Application.unityVersion)},
-        {"App:Version", tag(Application.version)},
-        {"App:BundleIdentifier", tag(Application.bundleIdentifier)},
-        {"App:InstallMode", tag(Application.installMode)},
-        {"App:SandboxType", tag(Application.sandboxType)},
-        {"App:ProductName", tag(Application.productName)},
-        {"App:CompanyName", tag(Application.companyName)},
-        {"App:CloudProjectId", tag(Application.cloudProjectId)},
-        {"App:TargetFrameRate", tag(Application.targetFrameRate)},
-        {"App:SystemLanguage", tag(Application.systemLanguage)},
-        {"App:BackgroundLoadingPriority", tag(Application.backgroundLoadingPriority)},
-        {"App:InternetReachability", tag(Application.internetReachability)},
-        {"App:GenuineCheckAvailable", tag(Application.genuineCheckAvailable)},
-        {"App:Genuine", tag(Application.genuineCheckAvailable && Application.genuine)},
-        {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
-        {"SI:ProcessorType", tag(SystemInfo.processorType)},
-        {"SI:ProcessorCount", tag(SystemInfo.processorCount)},
-        {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
-        {"SI:GraphicsMemorySize", tag(SystemInfo.graphicsMemorySize)},
-        {"SI:GraphicsDeviceName", tag(SystemInfo.graphicsDeviceName)},
-        {"SI:GraphicsDeviceVendor", tag(SystemInfo.graphicsDeviceVendor)},
-        {"SI:GraphicsDeviceID", tag(SystemInfo.graphicsDeviceID)},
-        {"SI:GraphicsDeviceVendorID", tag(SystemInfo.graphicsDeviceVendorID)},
-        {"SI:GraphicsDeviceType", tag(SystemInfo.graphicsDeviceType)},
-        {"SI:GraphicsDeviceVersion", tag(SystemInfo.graphicsDeviceVersion)},
-        {"SI:GraphicsShaderLevel", tag(SystemInfo.graphicsShaderLevel)},
-        {"SI:GraphicsMultiThreaded", tag(SystemInfo.graphicsMultiThreaded)},
-        {"SI:SupportsShadows", tag(SystemInfo.supportsShadows)},
-        {"SI:SupportsRenderToCubemap", tag(SystemInfo.supportsRenderToCubemap)},
-        {"SI:SupportsImageEffects", tag(SystemInfo.supportsImageEffects)},
-        {"SI:Supports3DTextures", tag(SystemInfo.supports3DTextures)},
-        {"SI:SupportsComputeShaders", tag(SystemInfo.supportsComputeShaders)},
-        {"SI:SupportsInstancing", tag(SystemInfo.supportsInstancing)},
-        {"SI:SupportsSparseTextures", tag(SystemInfo.supportsSparseTextures)},
-        {"SI:SupportedRenderTargetCount", tag(SystemInfo.supportedRenderTargetCount)},
-        {"SI:NPOTsupport", tag(SystemInfo.npotSupport)},
-        {"SI:DeviceName", tag(SystemInfo.deviceName)},
-        {"SI:DeviceModel", tag(SystemInfo.deviceModel)},
-        {"SI:SupportsAccelerometer", tag(SystemInfo.supportsAccelerometer)},
-        {"SI:SupportsGyroscope", tag(SystemInfo.supportsGyroscope)},
-        {"SI:SupportsLocationService", tag(SystemInfo.supportsLocationService)},
-        {"SI:SupportsVibration", tag(SystemInfo.supportsVibration)},
-        {"SI:DeviceType", tag(SystemInfo.deviceType)},
-        {"SI:MaxTextureSize", tag(SystemInfo.maxTextureSize)},
-#if !UNITY_5_5_OR_NEWER
-        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
-        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
-        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
-        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
-#endif
-      };
-      addExtraData.addTags((name, value) => tags[name] = tag(value));
+      var tags = 
+        staticTags(appInfo)
+        .concatDicts(dynamicTags(addExtraData.addTags));
 
+      // Should we have this extra?
       // Extra contextual data is limited to 4096 characters.
       var extras = new Dictionary<string, object> {
         {"App:StreamedBytes", Application.streamedBytes},
       };
-      addExtraData.addExtras((name, value) => extras[name] = value);
 
-      // Sentry has a bug where events with same message, but different stacktrace get
-      // grouped to same group. This is a workaround for that.
-      var message = data.backtrace.headOption().fold(
-        data.message,
-        line => $"{data.message} in {line}"
-      );
-
+      var message = msgWithBacktrace(data.message, data.backtrace);
       var json = new Dictionary<string, object> {
         // max length - 1000 chars
         {"message", message.trimTo(1000)},
@@ -324,6 +308,13 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       
       return new SentryMessage(keys, eventId, timestamp, json);
     }
+
+    // Sentry has a bug where events with same message, but different stacktrace get
+    // grouped to same group. This is a workaround for that.
+    public static string msgWithBacktrace(string origMessage, ImmutableList<BacktraceElem> backtrace) => backtrace.headOption().fold(
+      origMessage,
+      line => $"{origMessage} in {line}"
+    );
 
     static Dictionary<string, object> userInterfaceParametersJson(
       UserInterface user, IDictionary<string, object> json
@@ -354,7 +345,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       throw new IllegalStateException("unreachable code");
     }
 
-    public static Dictionary<string, object> backtraceElemToJson(this BacktraceElem bt) {
+    static Dictionary<string, object> backtraceElemToJson(this BacktraceElem bt) {
       var json = new Dictionary<string, object> {
         {"function", bt.method},
         {"in_app", bt.inApp}

@@ -100,6 +100,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Dictionary<K, A> toDict<A, K>(
+      this IEnumerable<KeyValuePair<K, A>> list
+    ) => list.toDict(p => p.Key, p => p.Value);
+
+    public static Dictionary<K, A> toDict<A, K>(
       this IEnumerable<A> list, Fn<A, K> keyGetter
     ) => list.toDict(keyGetter, _ => _);
 
