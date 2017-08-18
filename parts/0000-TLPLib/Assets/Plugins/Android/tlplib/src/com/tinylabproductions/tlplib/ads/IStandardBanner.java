@@ -8,4 +8,6 @@ public interface IStandardBanner {
     void setVisibility(final boolean visible);
     void load();
     void destroy();
+    void onPause();
+    void onResume();
 }
