@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         if (
           type == LogType.Assert || type == LogType.Error || type == LogType.Exception
-          || (logWarnings && type == LogType.Warning)
+          || logWarnings && type == LogType.Warning
         ) {
           try {
             // We want to collect backtrace on the current thread
@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
         if (!string.IsNullOrEmpty(www.error)) {
           if (Log.isInfo) Log.info(
-            prefix + " send failed with: " + www.error + 
+            $"{prefix} send to '{www.url}' failed with: {www.error}" + 
             "\nRequest headers=" + headers.asDebugString() +
             "\nResponse headers=" + www.responseHeaders.asDebugString()
           );

@@ -72,8 +72,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return dict;
     }
 
-    public static IDictionary<K, V> concatDicts<K, V>(
-      this IDictionary<K, V> dict, IDictionary<K, V> dict2
-    ) => dict.Concat(dict2).toDict();
+    public static IDictionary<K, V> addAll<K, V>(
+      this IDictionary<K, V> dict, IEnumerable<KeyValuePair<K, V>> enumerable
+    ) {
+      foreach (var kv in enumerable)
+        dict.Add(kv);
+      return dict;
+    }
   }
 }
