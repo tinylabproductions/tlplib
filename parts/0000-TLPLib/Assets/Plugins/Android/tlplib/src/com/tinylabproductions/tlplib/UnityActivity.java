@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UnityActivity extends UnityPlayerActivity {
-    public const int REQUEST_CODE_BASE = 1000000;
+    public final int REQUEST_CODE_BASE = 1000000;
     private int requestCode = REQUEST_CODE_BASE;
 
     public interface IActivityResult {
