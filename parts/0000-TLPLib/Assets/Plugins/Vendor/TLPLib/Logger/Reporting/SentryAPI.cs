@@ -101,12 +101,17 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       // Parses DSN like "http://public:secret@errors.tinylabproductions.com/project_id"
       public static Either<string, DSN> fromDSN(string dsn) {
         try {
+          if (dsn == null)
+            return "dsn is null!";
+          dsn = dsn.Trim();
+          if (dsn == "")
+            return "dsn is empty!";
           var baseUri = new Uri(dsn);
           if (string.IsNullOrEmpty(baseUri.UserInfo))
-            return ("user info in dsn '" + dsn + "' is empty!").left().r<DSN>();
+            return $"user info in dsn '{dsn}' is empty!";
           var userInfoSplit = baseUri.UserInfo.Split(new[] {':'}, 2);
           if (userInfoSplit.Length != 2)
-            return ("user info in dsn '" + dsn + "' is does not have secret key!").left().r<DSN>();
+            return $"user info in dsn '{dsn}' is does not have secret key!";
           var keys = new SentryRESTAPI.ApiKeys(userInfoSplit[0], userInfoSplit[1]);
           var projectId = baseUri.LocalPath.Substring(1);
           var reportingUri = new Uri(
@@ -357,7 +362,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           }
         };
         var www = new WWW(reportingUrl.OriginalString, Encoding.UTF8.GetBytes(json), headers);
-        ErrorReporter.trackWWWSend("Sentry API", www, headers);
+        www.trackWWWSend("Sentry API", headers);
         return www;
       }
     }

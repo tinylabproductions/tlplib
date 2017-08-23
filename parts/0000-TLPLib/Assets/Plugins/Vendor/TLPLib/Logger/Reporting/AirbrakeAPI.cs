@@ -3,7 +3,6 @@ using System.Text;
 using System.Xml;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting {
@@ -16,11 +15,11 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public WWW send(string reportingUrl) {
         var headers = new Dictionary<string, string> {{"Content-Type", "text/xml"}};
         var www = new WWW(reportingUrl, Encoding.UTF8.GetBytes(doc.OuterXml), headers);
-        ErrorReporter.trackWWWSend("Airbrake API", www, headers);
+        www.trackWWWSend("Airbrake API", headers);
         return www;
       }
 
-      public override string ToString() { return string.Format("AirbrakeXML[\n{0}\n]", doc.OuterXml); }
+      public override string ToString() => $"AirbrakeXML[\n{doc.OuterXml}\n]";
     }
 
     public static ErrorReporter.OnError createOnError(
@@ -63,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         env.AppendChild(doc.textElem(
           "environment-name", Debug.isDebugBuild ? "debug" : "production"
         ));
-        env.AppendChild(doc.textElem("app-version", appInfo.bundleVersion));
+        env.AppendChild(doc.textElem("app-version", appInfo.bundleVersion.asString));
       }));
 
       root.AppendChild(doc.CreateElement("error").tap(err => {

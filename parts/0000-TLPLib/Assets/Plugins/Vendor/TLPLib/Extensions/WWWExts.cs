@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -21,6 +24,41 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static WWWWithHeaders headers(this WWW www) => 
       new WWWWithHeaders(www, www.responseHeaders.asReadOnly());
+
+    public static void trackWWWSend(this WWW www, string prefix, Dictionary<string, string> headers) {
+      ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
+        if (!string.IsNullOrEmpty(www.error)) {
+          if (Log.isInfo) Log.info(
+            $"{prefix} send to '{www.url}' failed with: {www.error}" +
+            "\nRequest headers=" + headers.asDebugString() +
+            "\nResponse headers=" + www.responseHeaders.asDebugString()
+          );
+        }
+        else {
+          if (Debug.isDebugBuild && Log.isInfo) Log.info(
+            prefix + " send succeeded with response headers=" + www.responseHeaders.asDebugString()
+          );
+        }
+      }));
+    }
+
+    public static void trackWWWSend(this WWW www, string prefix, WWWForm form) {
+      ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
+        if (!string.IsNullOrEmpty(www.error)) {
+          if (Log.isInfo) Log.info(
+            $"{prefix} POST send to '{www.url}' failed with: {www.error}" +
+            "\nRequest headers=" + form.headers.asDebugString() +
+            "\nRequest body=" + Encoding.UTF8.GetString(form.data) +
+            "\nResponse headers=" + www.responseHeaders.asDebugString()
+          );
+        }
+        else {
+          if (Debug.isDebugBuild && Log.isInfo) Log.info(
+            prefix + " POST send succeeded with response headers=" + www.responseHeaders.asDebugString()
+          );
+        }
+      }));
+    }
   }
 
   /** 
