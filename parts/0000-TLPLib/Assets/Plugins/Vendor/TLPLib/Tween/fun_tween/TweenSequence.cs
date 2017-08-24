@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -15,7 +16,28 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     void setRelativeTimePassed(float t, bool playingForwards);
   }
 
-  public class TweenSequence : TweenSequenceElement {
+  public interface ITweenSequence : TweenSequenceElement {
+    float timePassed { get; set; }
+    void update(float deltaTime);
+  }
+
+  public static class TweenSequenceExts {
+    // ReSharper disable CompareOfFloatsByEqualityOperator
+    public static bool isAtZero(this ITweenSequence ts) => ts.timePassed == 0;
+    public static bool isAtDuration(this ITweenSequence ts) => ts.timePassed == ts.duration;
+    // ReSharper restore CompareOfFloatsByEqualityOperator
+
+    public static ITweenSequence reversed(this ITweenSequence ts) {
+      foreach (var r in F.opt(ts as TweenSequenceReversed))
+        return r.original;
+      return new TweenSequenceReversed(ts);
+    }
+
+    public static void setRelativeTimePassedDefault(this ITweenSequence ts, float t) =>
+      ts.update(t - ts.timePassed);
+  }
+
+  public class TweenSequence : ITweenSequence {
     struct Effect {
       public readonly float startsAt, endsAt;
       public readonly TweenSequenceElement element;
@@ -39,18 +61,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       set { update(value - _timePassed); }
     }
 
-    // ReSharper disable CompareOfFloatsByEqualityOperator
-    public bool atZero => _timePassed == 0;
-    public bool atDuration => _timePassed == duration;
-    // ReSharper restore CompareOfFloatsByEqualityOperator
-
     TweenSequence(float duration, Effect[] effects) {
       this.duration = duration;
       this.effects = effects;
     }
 
     public void setRelativeTimePassed(float t, bool playingForwards) =>
-      update(t - _timePassed);
+      this.setRelativeTimePassedDefault(t);
 
     public void update(float deltaTime) {
       var previousTime = timePassed;
@@ -95,8 +112,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         }
       }
     }
-
-    public void reset() => timePassed = 0;
 
     public class Builder {
       public float totalDuration { get; private set; }
@@ -157,5 +172,25 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         builder.append(element);
       return builder;
     }
+  }
+
+  // TODO: this fires forwards events, when playing from the end. We should fix this.
+  class TweenSequenceReversed : ITweenSequence {
+    public readonly ITweenSequence original;
+
+    public TweenSequenceReversed(ITweenSequence original) { this.original = original; }
+
+    public float duration => original.duration;
+
+    public void setRelativeTimePassed(float t, bool playingForwards) =>
+      this.setRelativeTimePassedDefault(t);
+
+    public float timePassed {
+      get { return original.duration - original.timePassed; }
+      set { original.timePassed = original.duration - value; }
+    }
+
+    public void update(float deltaTime) => 
+      original.update(-deltaTime);
   }
 }

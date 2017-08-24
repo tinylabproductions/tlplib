@@ -19,6 +19,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public uint times_;
       public readonly Mode mode;
 
+      public bool shouldLoop(uint currentIteration) => isForever || currentIteration < times_ - 1;
+      public bool isForever => times_ == TIMES_FOREVER;
+
       public Loop(uint times, Mode mode) {
         times_ = times;
         this.mode = mode;
@@ -29,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
 
-    public readonly TweenSequence sequence;
+    public readonly ITweenSequence sequence;
     public readonly TweenTime time;
 
     public event TweenCallback.Act onStart_, onEnd_;
@@ -37,11 +40,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public float timescale = 1;
     public bool forwards = true;
     public Loop looping;
+    public uint currentIteration;
 
     // TODO: implement me: loop(times, forever, yoyo)
     // notice: looping needs to take into account that some duration might have passed in the 
     // new iteration
-    public TweenManager(TweenSequence sequence, TweenTime time, Loop looping) {
+    public TweenManager(ITweenSequence sequence, TweenTime time, Loop looping) {
       this.sequence = sequence;
       this.time = time;
       this.looping = looping;
@@ -54,15 +58,34 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
 
-      if (forwards && sequence.atZero || !forwards && sequence.atDuration) {
+      if (forwards && sequence.isAtZero() || !forwards && sequence.isAtDuration()) {
         onStart_?.Invoke(forwards);
       }
 
+      var previousTime = sequence.timePassed;
       sequence.update(deltaTime);
 
-      if (forwards && sequence.atDuration || !forwards && sequence.atZero) {
-        onEnd_?.Invoke(forwards);
-        stop();
+      if (forwards && sequence.isAtDuration() || !forwards && sequence.isAtZero()) {
+        if (looping.shouldLoop(currentIteration)) {
+          currentIteration++;
+          var unusedTime =
+            Math.Abs(previousTime + deltaTime - (forwards ? sequence.duration : 0));
+          switch (looping.mode) {
+            case Loop.Mode.YoYo:
+              reverse();
+              break;
+            case Loop.Mode.Normal:
+              rewindTimePassed();
+              break;
+            default:
+              throw new ArgumentOutOfRangeException();
+          }
+          update(unusedTime);
+        }
+        else {
+          onEnd_?.Invoke(forwards);
+          stop();
+        }
       }
     }
 
@@ -106,18 +129,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public TweenManager rewind() {
-      sequence.timePassed = forwards ? 0 : sequence.duration;
+      currentIteration = 0;
+      rewindTimePassed();
       return this;
     }
+
+    void rewindTimePassed() =>
+      sequence.timePassed = forwards ? 0 : sequence.duration;
   }
 
   public static class TweenManagerExts {
     public static TweenManager managed(
-      this TweenSequence sequence, TweenTime time = TweenTime.OnUpdate
+      this ITweenSequence sequence, TweenTime time = TweenTime.OnUpdate
     ) => new TweenManager(sequence, time, TweenManager.Loop.single);
 
     public static TweenManager managed(
-      this TweenSequence sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
+      this ITweenSequence sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
     ) => new TweenManager(sequence, time, looping);
   }
 

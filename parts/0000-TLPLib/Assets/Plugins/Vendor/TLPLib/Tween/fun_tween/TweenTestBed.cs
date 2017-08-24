@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 //      // 
 //
       var t1 = obj1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration);
-      var tr = TweenSequence.sequential(
+      var tra = TweenSequence.sequential(
         Tween.callback(_ => print($"start {_}")),
         t1,
         Tween.callback(_ => print($"1 {_}")),
@@ -36,6 +36,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         Tween.callback(_ => print($"2 {_}")),
         t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
         Tween.callback(_ => print($"end {_}"))
+      ).build();
+      var tr = TweenSequence.sequential(
+        /*tra, tra.reversed(), tra.reversed().reversed(), */tra.reversed()
       ).build();
       manager = tr.managed()
         .onStart(forwards => indicator.color = forwards ? Color.black : Color.green)
