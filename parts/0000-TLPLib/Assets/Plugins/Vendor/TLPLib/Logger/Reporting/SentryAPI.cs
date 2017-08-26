@@ -242,7 +242,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         // max tag name length = 32
         {"App:LevelCount", new Tag(s(SceneManager.sceneCountInBuildSettings))},
         {"App:UnityVersion", new Tag(Application.unityVersion)},
-        {"App:Version", new Tag(Application.version)},
         {"App:BundleIdentifier", new Tag(Application.bundleIdentifier)},
         {"App:InstallMode", new Tag(Application.installMode.ToString())},
         {"App:SandboxType", new Tag(Application.sandboxType.ToString())},
