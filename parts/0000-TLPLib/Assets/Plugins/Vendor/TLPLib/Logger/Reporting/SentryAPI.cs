@@ -90,13 +90,20 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     public struct DSN {
       public readonly Uri reportingUrl;
       public readonly string projectId;
-      public readonly SentryRESTAPI.ApiKeys keys;
+      public readonly ApiKeys keys;
 
-      public DSN(Uri reportingUrl, string projectId, SentryRESTAPI.ApiKeys keys) {
+      public DSN(Uri reportingUrl, string projectId, ApiKeys keys) {
         this.reportingUrl = reportingUrl;
         this.projectId = projectId;
         this.keys = keys;
       }
+
+      public override string ToString() => 
+        $"{nameof(SentryAPI)}.{nameof(DSN)}[" +
+        $"{nameof(reportingUrl)}: {reportingUrl}, " +
+        $"{nameof(projectId)}: {projectId}, " +
+        $"{nameof(keys)}: {keys}" +
+        $"]";
 
       // Parses DSN like "http://public:secret@errors.tinylabproductions.com/project_id"
       public static Either<string, DSN> fromDSN(string dsn) {
@@ -112,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           var userInfoSplit = baseUri.UserInfo.Split(new[] {':'}, 2);
           if (userInfoSplit.Length != 2)
             return $"user info in dsn '{dsn}' is does not have secret key!";
-          var keys = new SentryRESTAPI.ApiKeys(userInfoSplit[0], userInfoSplit[1]);
+          var keys = new ApiKeys(userInfoSplit[0], userInfoSplit[1]);
           var projectId = baseUri.LocalPath.Substring(1);
           var reportingUri = new Uri(
             $"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/api/{projectId}/store/"
@@ -123,6 +130,21 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           return e.ToString().left().r<DSN>();
         }
       }
+    }
+
+    public struct ApiKeys {
+      public readonly string publicKey, secretKey;
+
+      public ApiKeys(string publicKey, string secretKey) {
+        this.publicKey = publicKey;
+        this.secretKey = secretKey;
+      }
+
+      public override string ToString() => 
+        $"{nameof(SentryAPI)}.{nameof(ApiKeys)}[" +
+        $"{nameof(publicKey)}={publicKey}, " +
+        $"{nameof(secretKey)}={secretKey}" +
+        $"]";
     }
 
     public struct ExtraData {
@@ -310,19 +332,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   }
 
   public static class SentryRESTAPI {
-    public struct ApiKeys {
-      public readonly string publicKey, secretKey;
-
-      public ApiKeys(string publicKey, string secretKey) {
-        this.publicKey = publicKey;
-        this.secretKey = secretKey;
-      }
-
-      public override string ToString() { return $"SentryAPI.ApiKeys[public={publicKey}, secret={secretKey}]"; }
-    }
-
     public struct Message {
-      public readonly ApiKeys keys;
+      public readonly SentryAPI.ApiKeys keys;
       public readonly Guid eventId;
       public readonly DateTime timestamp;
       public readonly string json;
@@ -330,7 +341,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       readonly Dictionary<string, object> jsonDict;
 
       public Message(
-        ApiKeys keys, Guid eventId, DateTime timestamp,
+        SentryAPI.ApiKeys keys, Guid eventId, DateTime timestamp,
         Dictionary<string, object> jsonDict
       ) {
         this.keys = keys;
@@ -369,7 +380,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     // ReSharper disable once UnusedMember.Global
     public static ErrorReporter.OnError createSendOnError(
-      SentryAPI.SendOnErrorData sendData, Uri reportingUrl, ApiKeys keys, bool onlySendUniqueErrors
+      SentryAPI.SendOnErrorData sendData, Uri reportingUrl, SentryAPI.ApiKeys keys, bool onlySendUniqueErrors
     ) {
       var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
 
@@ -391,7 +402,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     }
 
     public static Message message(
-      string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo,
+      string loggerName, SentryAPI.ApiKeys keys, ErrorReporter.AppInfo appInfo,
       SentryAPI.ErrorData data, SentryAPI.ExtraData extraData, Option<SentryAPI.UserInterface> userOpt,
       IDictionary<string, SentryAPI.Tag> staticTags
     ) {
