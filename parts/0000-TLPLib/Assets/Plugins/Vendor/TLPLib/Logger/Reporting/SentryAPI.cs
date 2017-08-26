@@ -205,7 +205,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     }
 
     public struct SendOnErrorData {
-      public readonly string loggerName;
       public readonly ErrorReporter.AppInfo appInfo;
       public readonly ExtraData addExtraData;
       public readonly Option<UserInterface> userOpt;
@@ -213,11 +212,10 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public readonly IDictionary<string, string> staticExtras;
 
       public SendOnErrorData(
-        string loggerName, ErrorReporter.AppInfo appInfo, ExtraData addExtraData, 
+        ErrorReporter.AppInfo appInfo, ExtraData addExtraData, 
         Option<UserInterface> userOpt, 
         IDictionary<string, Tag> staticTags, IDictionary<string, string> staticExtras
       ) {
-        this.loggerName = loggerName;
         this.appInfo = appInfo;
         this.addExtraData = addExtraData;
         this.userOpt = userOpt;
@@ -322,7 +320,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         if (Log.isInfo) Log.info(
           $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
           SentryRESTAPI.message(
-            sendData.loggerName, dsn.keys, sendData.appInfo, data, sendData.addExtraData,
+            dsn.keys, sendData.appInfo, data, sendData.addExtraData,
             sendData.userOpt, sendData.staticTags
           )
         );
@@ -386,7 +384,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       return __data => {
         var data = new SentryAPI.ErrorData(__data);
         var msg = message(
-          sendData.loggerName, keys, sendData.appInfo, data, sendData.addExtraData,
+          keys, sendData.appInfo, data, sendData.addExtraData,
           sendData.userOpt, sendData.staticTags
         );
         Action send = () => msg.send(reportingUrl);
@@ -401,10 +399,11 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     }
 
     public static Message message(
-      string loggerName, SentryAPI.ApiKeys keys, ErrorReporter.AppInfo appInfo,
+      SentryAPI.ApiKeys keys, ErrorReporter.AppInfo appInfo,
       SentryAPI.ErrorData data, SentryAPI.ExtraData extraData, Option<SentryAPI.UserInterface> userOpt,
       IDictionary<string, SentryAPI.Tag> staticTags
     ) {
+      const string logger = "tlplib-" + nameof(SentryRESTAPI);
       var eventId = Guid.NewGuid();
       var timestamp = DateTime.UtcNow;
 
@@ -423,7 +422,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       var json = new Dictionary<string, object> {
         {"message", s(data.message)},
         {"level", s(data.logLevel, SentryAPI.LogLevel_.str)},
-        {"logger", s(loggerName)},
+        {"logger", s(logger)},
         {"platform", s(Application.platform.ToString())},
         {"release", s(appInfo.bundleVersion)},
         {"tags", tags.toDict(_ => _.Key, _ => _.Value.s)},
