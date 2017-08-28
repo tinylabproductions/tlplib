@@ -17,6 +17,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<T> get<T>(this IList<T> list, int index) => 
       index >= 0 && index < list.Count ? F.some(list[index]) : F.none<T>();
 
+    public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) => 
+      index >= 0 && index < list.Count ? list[index] : defaultValue;
+
     public static List<A> reversed<A>(this List<A> list) {
       var reversed = new List<A>(list);
       reversed.Reverse();
