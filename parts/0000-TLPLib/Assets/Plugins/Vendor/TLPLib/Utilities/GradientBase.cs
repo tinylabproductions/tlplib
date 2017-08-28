@@ -6,6 +6,15 @@ using UnityEngine.UI;
 namespace Assets.Code.UI {
   public class GradientBase : BaseMeshEffect {
 
+    #region Unity Serialized Fields
+
+#pragma warning disable 649
+    [SerializeField]
+    protected GradientHelper.GradientType type = GradientHelper.GradientType.Vertical;
+#pragma warning restore 649
+
+    #endregion
+
     public virtual void ModifyVertices(List<UIVertex> vertexList) {
 
     }
