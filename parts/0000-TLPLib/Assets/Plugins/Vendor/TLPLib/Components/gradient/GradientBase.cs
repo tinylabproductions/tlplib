@@ -3,7 +3,7 @@ using Smooth.Pools;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace com.tinylabproductions.TLPLib.Components {
+namespace com.tinylabproductions.TLPLib.Components.gradient {
   public class GradientBase : BaseMeshEffect {
     #region Unity Serialized Fields
 
