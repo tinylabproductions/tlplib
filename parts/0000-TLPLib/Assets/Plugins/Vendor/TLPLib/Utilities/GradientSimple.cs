@@ -10,6 +10,6 @@ public class GradientSimple : GradientBase {
   public Color32 bottomColor = Color.black;
 
   public override void ModifyVertices(List<UIVertex> vertexList) {
-    GradientHelper.modifyVertices(vertexList, (c, t) => Color32.Lerp(bottomColor, topColor, t));
+    GradientHelper.modifyVertices(vertexList, (c, t) => Color32.Lerp(bottomColor, topColor, t), type);
   }
 }
