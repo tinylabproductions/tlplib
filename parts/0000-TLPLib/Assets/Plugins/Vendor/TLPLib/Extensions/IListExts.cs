@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using Random = UnityEngine.Random;
 
@@ -69,13 +70,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static bool nonEmpty<A>(this IList<A> list) => list.Count != 0;
 
-    public static Option<A> random<A>(this IList<A> list)
-      { return list.randomIndex().map(idx => list[idx]); }
+    public static Option<A> random<A>(this IList<A> list) => 
+      list.randomIndex().map(idx => list[idx]);
 
-    public static Option<int> randomIndex<A>(this IList<A> list) {
-      return list.Count == 0
-        ? F.none<int>() : F.some(Random.Range(0, list.Count));
-    }
+    public static Option<Tpl<Rng, A>> random<A>(this IList<A> list, Rng rng) =>
+      list.randomIndex(rng).map(t => t.map2(idx => list[idx]));
+
+    public static Option<int> randomIndex<A>(this IList<A> list) => 
+      list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
+
+    public static Option<Tpl<Rng, int>> randomIndex<A>(this IList<A> list, Rng rng) => 
+      list.Count == 0 
+      ? F.none<Tpl<Rng, int>>() 
+      : F.some(rng.nextIntInRangeT(new Range(0, list.Count - 1)));
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {
       var temp = list[aIndex];
