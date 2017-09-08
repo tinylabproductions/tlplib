@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 
@@ -27,9 +28,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public struct AppInfo {
-      public readonly string bundleIdentifier, bundleVersion, productName;
+      public readonly string bundleIdentifier, productName;
+      public readonly VersionNumber bundleVersion;
 
-      public AppInfo(string bundleIdentifier, string bundleVersion, string productName) {
+      public AppInfo(string bundleIdentifier, VersionNumber bundleVersion, string productName) {
         this.bundleIdentifier = bundleIdentifier;
         this.bundleVersion = bundleVersion;
         this.productName = productName;
@@ -56,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         if (
           type == LogType.Assert || type == LogType.Error || type == LogType.Exception
-          || (logWarnings && type == LogType.Warning)
+          || logWarnings && type == LogType.Warning
         ) {
           try {
             // We want to collect backtrace on the current thread
@@ -80,23 +82,6 @@ namespace com.tinylabproductions.TLPLib.Logger {
           catch (Exception e) { logExceptionSafe(e); }
         }
       };
-    }
-
-    public static void trackWWWSend(string prefix, WWW www, Dictionary<string, string> headers) {
-      ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
-        if (!string.IsNullOrEmpty(www.error)) {
-          if (Log.isInfo) Log.info(
-            prefix + " send failed with: " + www.error + 
-            "\nRequest headers=" + headers.asDebugString() +
-            "\nResponse headers=" + www.responseHeaders.asDebugString()
-          );
-        }
-        else {
-          if (Debug.isDebugBuild && Log.isInfo) Log.info(
-            prefix + " send succeeded with response headers=" + www.responseHeaders.asDebugString()
-          );
-        }
-      }));
     }
   }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -24,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       dict.get(key).toRight($"Can't find '{key}'!");
 
     public static V getOrUpdate<K, V>(
-     this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
+      this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
     ) {
       return dict.getOrElse(key, () => {
         var v = ifNotFound();
@@ -68,6 +69,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IDictionary<K, V> dict, K key, Option<V> valueOpt
     ) {
       foreach (var value in valueOpt) dict.Add(key, value);
+      return dict;
+    }
+
+    public static IDictionary<K, V> addAll<K, V>(
+      this IDictionary<K, V> dict, IEnumerable<KeyValuePair<K, V>> enumerable
+    ) {
+      foreach (var kv in enumerable)
+        dict.Add(kv);
       return dict;
     }
   }

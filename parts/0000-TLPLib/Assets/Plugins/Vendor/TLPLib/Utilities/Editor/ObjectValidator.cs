@@ -38,6 +38,30 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public readonly string objFullPath;
       public readonly Option<string> assetPath;
 
+      #region Equality
+
+      public bool Equals(Error other) {
+        return type == other.type && string.Equals(message, other.message) && Equals(obj, other.obj) && string.Equals(objFullPath, other.objFullPath) && Equals(assetPath, other.assetPath);
+      }
+
+      public override bool Equals(object obj) {
+        if (ReferenceEquals(null, obj)) return false;
+        return obj is Error && Equals((Error) obj);
+      }
+
+      public override int GetHashCode() {
+        unchecked {
+          var hashCode = (int) type;
+          hashCode = (hashCode * 397) ^ (message != null ? message.GetHashCode() : 0);
+          hashCode = (hashCode * 397) ^ (obj != null ? obj.GetHashCode() : 0);
+          hashCode = (hashCode * 397) ^ (objFullPath != null ? objFullPath.GetHashCode() : 0);
+          hashCode = (hashCode * 397) ^ (assetPath != null ? assetPath.GetHashCode() : 0);
+          return hashCode;
+        }
+      }
+
+      #endregion
+      
       public override string ToString() => 
         $"{nameof(Error)}[{type} in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'|{message}]";
 
@@ -233,7 +257,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       onFinish?.Invoke();
 
-      return errors;
+      // FIXME: there should not be a need to a Distinct call here, we have a bug somewhere in the code.
+      return errors.Distinct().ToImmutableList();
     }
 
     public static ImmutableList<Error> checkComponent(CheckContext context, Object component) {

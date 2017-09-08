@@ -14,8 +14,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
      **/
     public static void forSideEffects<A>(this A a) {}
 
-    public static void locally(this object any, Action local) => local();
-    public static T locally<T>(this object any, Fn<T> local) => local();
     public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
     public static To upcast<From, To>(this From any) where From : To => any;
     public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To 

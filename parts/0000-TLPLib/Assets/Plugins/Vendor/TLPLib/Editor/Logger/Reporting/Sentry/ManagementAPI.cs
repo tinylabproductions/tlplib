@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -13,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
   public static class ManagementAPI {
     #region Methods
 
-    public static Either<Error, List<ClientKey>> listClientKeys(
+    public static Either<Error, ImmutableList<ClientKey>> listClientKeys(
       string baseUrl, ProjectData projectData, ApiKey key
     ) {
       return request(
@@ -22,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
       ).mapRight(www => 
         ((List<object>) Json.Deserialize(www.text)).
         Select(item => ClientKey.readFromJson((Dictionary<string, object>)item)).
-        ToList()
+        ToImmutableList()
       );
     }
 

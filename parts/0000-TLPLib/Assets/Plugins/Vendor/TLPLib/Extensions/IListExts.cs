@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using Random = UnityEngine.Random;
 
@@ -14,10 +15,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return list[index];
     }
 
-    public static Option<T> get<T>(this IList<T> list, int index) {
-      return (index >= 0 && index < list.Count)
-        ? F.some(list[index]) : F.none<T>();
-    }
+    public static Option<T> get<T>(this IList<T> list, int index) => 
+      index >= 0 && index < list.Count ? F.some(list[index]) : F.none<T>();
+
+    public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) => 
+      index >= 0 && index < list.Count ? list[index] : defaultValue;
 
     public static List<A> reversed<A>(this List<A> list) {
       var reversed = new List<A>(list);
@@ -68,13 +70,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static bool nonEmpty<A>(this IList<A> list) => list.Count != 0;
 
-    public static Option<A> random<A>(this IList<A> list)
-      { return list.randomIndex().map(idx => list[idx]); }
+    public static Option<A> random<A>(this IList<A> list) => 
+      list.randomIndex().map(idx => list[idx]);
 
-    public static Option<int> randomIndex<A>(this IList<A> list) {
-      return list.Count == 0
-        ? F.none<int>() : F.some(Random.Range(0, list.Count));
-    }
+    public static Option<Tpl<Rng, A>> random<A>(this IList<A> list, Rng rng) =>
+      list.randomIndex(rng).map(t => t.map2(idx => list[idx]));
+
+    public static Option<int> randomIndex<A>(this IList<A> list) => 
+      list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
+
+    public static Option<Tpl<Rng, int>> randomIndex<A>(this IList<A> list, Rng rng) => 
+      list.Count == 0 
+      ? F.none<Tpl<Rng, int>>() 
+      : F.some(rng.nextIntInRangeT(new Range(0, list.Count - 1)));
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {
       var temp = list[aIndex];

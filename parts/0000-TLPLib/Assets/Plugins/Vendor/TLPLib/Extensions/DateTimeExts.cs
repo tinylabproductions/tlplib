@@ -10,8 +10,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return (uint) (dateTime.ToUniversalTime() - UNIX_EPOCH_START).TotalSeconds;
     }
 
-    public static DateTime fromUnixTimestamp(this uint timestamp) {
+    public static DateTime fromUnixTimestampInSeconds(this uint timestamp) {
       return UNIX_EPOCH_START.AddSeconds(timestamp);
+    }
+
+    public static DateTime fromUnixTimestampInMilliseconds(this long timestamp) {
+      return UNIX_EPOCH_START.AddMilliseconds(timestamp);
     }
 
     public static int secondsFromNow(this DateTime d) =>

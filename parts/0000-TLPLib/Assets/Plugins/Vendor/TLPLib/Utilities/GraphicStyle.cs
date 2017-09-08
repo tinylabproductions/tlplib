@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Components.gradient;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   [Serializable] public class GraphicStyle {
-    public Color graphicColor;
-    public Color outlineColor;
+    public Color graphicColor, outlineColor;
 
     public bool gradient;
     bool gradientOn => gradient;
