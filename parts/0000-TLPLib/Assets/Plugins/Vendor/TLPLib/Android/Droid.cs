@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.reflection;
 using UnityEngine;
@@ -21,37 +23,38 @@ namespace com.tinylabproductions.TLPLib.Android {
     #region static methods
 
     /* New java object. */
-    public static AndroidJavaObject jo(string className, params object[] args) 
-    { return new AndroidJavaObject(className, args); }
+    public static AndroidJavaObject jo(string className, params object[] args) => 
+      new AndroidJavaObject(className, args);
 
     /* New java class. */
-    public static AndroidJavaClass jc(string className) 
-    { return new AndroidJavaClass(className); }
+    public static AndroidJavaClass jc(string className) => 
+      new AndroidJavaClass(className);
 
     /* New intent. */
-    public static AndroidJavaObject intent(params object[] args)
-    { return jo(CN_INTENT, args); }
+    public static AndroidJavaObject intent(params object[] args) => 
+      jo(CN_INTENT, args);
 
     public static bool hasSystemFeature(string feature) => 
       AndroidActivity.packageManager.hasSystemFeature(feature);
 
-    private static readonly LazyVal<bool> _hasTouchscreen = 
+    static readonly LazyVal<bool> _hasTouchscreen = 
       F.lazy(() => hasSystemFeature("android.hardware.touchscreen"));
 
     /* Is touchscreen supported? */
-    public static bool hasTouchscreen { get { return _hasTouchscreen.get; } }
+    public static bool hasTouchscreen => _hasTouchscreen.get;
 
     #endregion
 
     #region extension methods
 
     /* New java class: string extension method. */
-    public static AndroidJavaClass javaClass(this string className) { return jc(className); }
+    public static AndroidJavaClass javaClass(this string className) => 
+      jc(className);
 
     /* New java object: string extension method. */
     public static AndroidJavaObject javaObject(
       this string className, params object[] args
-    ) { return jo(className, args); }
+    ) => jo(className, args);
 
     /// <summary>
     /// Extension method: call instance method on java object and return other 
@@ -59,23 +62,23 @@ namespace com.tinylabproductions.TLPLib.Android {
     /// </summary>
     public static AndroidJavaObject cjo(
       this AndroidJavaObject javaObject, string methodName, params object[] args
-    ) { return javaObject.Call<AndroidJavaObject>(methodName, args); }
+    ) => javaObject.Call<AndroidJavaObject>(methodName, args);
 
     /* Extension method: call static method on java object and return other 
      * java object. */
     public static AndroidJavaObject csjo(
       this AndroidJavaObject javaObject, string methodName, params object[] args
-    ) { return javaObject.CallStatic<AndroidJavaObject>(methodName, args); }
+    ) => javaObject.CallStatic<AndroidJavaObject>(methodName, args);
 
     /* Extension method: get static java object */
     public static AndroidJavaObject gsjo(
       this AndroidJavaObject javaObject, string fieldName
-    ) { return javaObject.GetStatic<AndroidJavaObject>(fieldName); }
+    ) => javaObject.GetStatic<AndroidJavaObject>(fieldName);
 
     /* Extension method: call instance method on java object. */
     public static A c<A>(
       this AndroidJavaObject javaObject, string methodName, params object[] args
-    ) { return javaObject.Call<A>(methodName, args); }
+    ) => javaObject.Call<A>(methodName, args);
 
     /** Access to ```internal AndroidJavaObject(IntPtr jobject)``` */
     static readonly Fn<object[], AndroidJavaObject> ajoCreator = 
@@ -105,6 +108,30 @@ namespace com.tinylabproductions.TLPLib.Android {
       }
       finally {
         AndroidJNIHelper.DeleteJNIArgArray(args, jniArgArray);
+      }
+    }
+
+    /// <summary>
+    /// Unity has a bug, where if you pass java.world.FooClass[] to Java, it works
+    /// correctly in production build, but not in development. 
+    /// 
+    /// This function is a workaround for that.
+    /// </summary>
+    /// <param name="values"></param>
+    /// <param name="javaClassNameOfA">for example: java.lang.String</param>
+    /// <returns>a reference to array of a specific type, in java</returns>
+    public static AndroidJavaObject ToArrayJava(
+      this IList<AndroidJavaObject> values, string javaClassNameOfA
+    ) {
+      using (var klass = new AndroidJavaClass("java.lang.reflect.Array")) {
+        using (var reprKlass = new AndroidJavaClass(javaClassNameOfA)) {
+          var arr = klass.csjo("newInstance", reprKlass, values.Count);
+
+          for (var idx = 0; idx < values.Count; idx++)
+            klass.CallStatic("set", arr, idx, values[idx]);
+
+          return arr;
+        }
       }
     }
 
