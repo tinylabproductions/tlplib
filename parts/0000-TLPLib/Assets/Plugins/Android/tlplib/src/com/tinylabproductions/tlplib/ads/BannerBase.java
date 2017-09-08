@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import com.tinylabproductions.tlplib.fns.Fn1;
-import com.tinylabproductions.tlplib.utils.Utils;
+import com.tinylabproductions.tlplib.util.Utils;
 
 @SuppressWarnings("unused")
 public abstract class BannerBase<Banner extends View> implements IStandardBanner {
