@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class TimeSpanExts {
@@ -18,6 +19,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var result = string.Join(" ", parts); // combine the result
 
       return result;
+    }
+
+    public static string toHoursAndMinutes(this TimeSpan time) {
+      var totalHours = time.Days * 24 + time.Hours;
+      return totalHours > 0
+              ? $"{Str.s(totalHours)} h {Str.s(time.Minutes)} min"
+              : $"{Str.s(time.Minutes)} min {Str.s(time.Seconds)} s";
     }
   }
 }
