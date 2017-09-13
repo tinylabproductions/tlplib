@@ -89,4 +89,5 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
   [Serializable] public class UnityOptionText : UnityOption<Text> {}
   [Serializable] public class UnityOptionUIClickForwarder : UnityOption<UIClickForwarder> { }
   [Serializable] public class UnityOptionTransform : UnityOption<Transform> { }
+  [Serializable] public class UnityOptionImage : UnityOption<Image> { }
 }

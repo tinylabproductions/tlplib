@@ -1,0 +1,52 @@
+﻿#if UNITY_ANDROID
+using System;
+using com.tinylabproductions.TLPLib.Android.Ads;
+using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
+using UnityEngine;
+
+namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
+  public class AndroidVideoPlayer : IVideoPlayer {
+    readonly MediaPlayerBinding binding;
+    readonly Action onStartShow, onVideoComplete;
+
+    public AndroidVideoPlayer(Action onStartShow, Action onVideoComplete) {
+      binding = new MediaPlayerBinding();
+      this.onStartShow = onStartShow;
+      this.onVideoComplete = onVideoComplete;
+    }
+
+    public void show(string fileName, Url clickUrl) {
+      var listener = new VideoListener();
+      if (Log.isDebug) {
+        listener.canceled += () => logDebug("canceled");
+        listener.videoCompleted += () => logDebug("completed");
+        listener.clicked += () => logDebug("clicked");
+      }
+      onStartShow();
+      listener.videoCompleted += onVideoComplete;
+      binding.showVideo(fileName, clickUrl.url, listener);
+    }
+
+    static void logDebug(string msg) {
+      Log.rdebug($"{nameof(AndroidVideoPlayer)}|{msg}");
+    }
+
+    class MediaPlayerBinding : Binding {
+      public MediaPlayerBinding() 
+        : base(new AndroidJavaObject("com.tinylabproductions.tlplib.video_player.VideoPlayerBridge")) { }
+      public void showVideo(string fileName, string url, VideoListener listener) { java.CallStatic("showVideo", fileName, url, listener); }
+    }
+
+    public class VideoListener : BaseAdListener {
+      public VideoListener() : base("com.tinylabproductions.tlplib.video_player.VideoPlayerListener") { }
+      public event Action canceled, videoCompleted, clicked;
+
+      [UsedImplicitly] void onCancel() => invoke(() => canceled);
+      [UsedImplicitly] void onVideoComplete() => invoke(() => videoCompleted);
+      [UsedImplicitly] void onVideoClick() => invoke(() => clicked);
+    }
+  }
+}
+#endif
