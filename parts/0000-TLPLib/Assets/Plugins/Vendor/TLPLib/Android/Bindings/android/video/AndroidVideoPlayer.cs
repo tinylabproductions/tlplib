@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
       this.onVideoComplete = onVideoComplete;
     }
 
-    public void show(string fileName, Url clickUrl) {
+    public void playFromStreamingAssets(string fileName, Url clickUrl) {
       var listener = new VideoListener();
       if (Log.isDebug) {
         listener.canceled += () => logDebug("canceled");
@@ -36,7 +36,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
     class MediaPlayerBinding : Binding {
       public MediaPlayerBinding() 
         : base(new AndroidJavaObject("com.tinylabproductions.tlplib.video_player.VideoPlayerBridge")) { }
-      public void showVideo(string fileName, string url, VideoListener listener) { java.CallStatic("showVideo", fileName, url, listener); }
+
+      public void showVideo(string fileName, string clickUrl, VideoListener listener) 
+        => java.CallStatic("playFromStreamingAssets", fileName, clickUrl, listener); 
     }
 
     public class VideoListener : BaseAdListener {

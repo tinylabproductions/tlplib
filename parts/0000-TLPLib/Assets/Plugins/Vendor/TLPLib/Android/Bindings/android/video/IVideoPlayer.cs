@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
   public interface IVideoPlayer {
-    void show(string fileName, Url clickUrl);
+    void playFromStreamingAssets(string fileName, Url clickUrl);
   }
 
   public static class VideoPlayer {
@@ -17,6 +17,6 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
   }
 
   public class VideoPlayerNoOp : IVideoPlayer {
-    public void show(string fileName, Url clickUrl) { }
+    public void playFromStreamingAssets(string fileName, Url clickUrl) { }
   }
 }
