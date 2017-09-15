@@ -19,11 +19,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
   public class VideoPlayerNoOp : IVideoPlayer {
     public void show(string fileName, Url clickUrl) { }
   }
-
-  public interface IVideoListener {
-    Action showed { get; }
-    Action canceled { get; }
-    Action completed { get; }
-    Action clicked { get; }
-  }
 }
