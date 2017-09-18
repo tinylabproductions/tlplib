@@ -65,11 +65,11 @@ public class AndroidVideoPlayer extends Activity {
     videoView.start();
   }
 
-  static void setListener(VideoPlayerListener videoListener){
+  static void setListener(VideoPlayerListener videoListener) {
     listener = videoListener;
   }
 
-  private void openUrl(String url){
+  private void openUrl(String url) {
     Intent i = new Intent(Intent.ACTION_VIEW);
     try {
       i.setData(Uri.parse(url));
@@ -108,8 +108,7 @@ public class AndroidVideoPlayer extends Activity {
     return file;
   }
 
-  void closeActivity(){
+  void closeActivity() {
     finish();
   }
-
 }
