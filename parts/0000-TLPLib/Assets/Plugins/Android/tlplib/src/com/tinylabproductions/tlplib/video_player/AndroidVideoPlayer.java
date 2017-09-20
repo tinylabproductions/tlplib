@@ -60,9 +60,12 @@ public class AndroidVideoPlayer extends Activity {
     });
 
     File file = extractFromResource("/assets/" + fileName);
-    videoView.setVideoPath(file.getAbsolutePath());
-    videoView.requestFocus();
-    videoView.start();
+    if (file != null) {
+      videoView.setVideoPath(file.getAbsolutePath());
+      videoView.requestFocus();
+      videoView.start();
+    }
+    else closeActivity();
   }
 
   static void setListener(VideoPlayerListener videoListener) {
@@ -95,15 +98,15 @@ public class AndroidVideoPlayer extends Activity {
         }
         file.deleteOnExit();
       } catch (IOException ex) {
-        Log.log(Log.ERROR, "TLP", ex.toString());
+        Log.log(Log.ERROR, TAG, ex.toString());
       }
     } else {
       //this will probably work in your IDE, but not from a JAR
       file = new File(res.getFile());
     }
 
-    if (file != null && !file.exists()) {
-      throw new RuntimeException("Error: File " + file + " not found!");
+    if (file == null || !file.exists()) {
+      Log.log(Log.ERROR, TAG, "Error: File " + file + " not found!");
     }
     return file;
   }
