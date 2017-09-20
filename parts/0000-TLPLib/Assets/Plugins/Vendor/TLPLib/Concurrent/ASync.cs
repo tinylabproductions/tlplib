@@ -9,11 +9,9 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    static ASyncHelperBehaviour coroutineHelper(GameObject go) {
-      return
-        go.GetComponent<ASyncHelperBehaviour>() ??
-        go.AddComponent<ASyncHelperBehaviour>();
-    }
+    static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) => 
+      go.GetComponent<ASyncHelperBehaviourEmpty>()
+      ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
 
     static ASyncHelperBehaviour _behaviour;
 
@@ -42,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
         // be part of an editor script.
         if (Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(go);
-        _behaviour = coroutineHelper(go);
+        _behaviour = go.EnsureComponent<ASyncHelperBehaviour>();
       }
       return _behaviour;
     } }
@@ -51,13 +49,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
-    ) {
-      return Future<A>.async(p => behaviour.StartCoroutine(coroutine(p)));
-    }
+    ) => Future<A>.async(p => behaviour.StartCoroutine(coroutine(p)));
 
-    public static Coroutine StartCoroutine(IEnumerator coroutine) {
-      return new UnityCoroutine(behaviour, coroutine);
-    }
+    public static Coroutine StartCoroutine(IEnumerator coroutine) =>
+      new UnityCoroutine(behaviour, coroutine);
 
     public static Coroutine WithDelay(
       float seconds, Action action, 
@@ -76,13 +71,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
       Threads.OnMainThread.run(action, runNowIfOnMainThread);
 
-    public static Coroutine NextFrame(Action action) {
-      return NextFrame(behaviour, action);
-    }
+    public static Coroutine NextFrame(Action action) => NextFrame(behaviour, action);
 
-    public static Coroutine NextFrame(GameObject gameObject, Action action) {
-      return NextFrame(coroutineHelper(gameObject), action);
-    }
+    public static Coroutine NextFrame(GameObject gameObject, Action action) => 
+      NextFrame(coroutineHelper(gameObject), action);
 
     public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
       var enumerator = NextFrameEnumerator(action);
@@ -91,7 +83,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Coroutine AfterXFrames(
       int framesToSkip, Action action
-    ) { return AfterXFrames(behaviour, framesToSkip, action); }
+    ) => AfterXFrames(behaviour, framesToSkip, action);
 
     public static Coroutine AfterXFrames(
       MonoBehaviour behaviour, int framesToSkip, Action action
@@ -108,9 +100,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public static void NextPostRender(Camera camera, Action action) {
-      NextPostRender(camera, 1, action);
-    }
+    public static void NextPostRender(Camera camera, Action action) => NextPostRender(camera, 1, action);
 
     public static void NextPostRender(Camera camera, int afterFrames, Action action) {
       var pr = camera.gameObject.AddComponent<NextPostRenderBehaviour>();
@@ -118,14 +108,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(Fn<bool> f) {
-      return EveryFrame(behaviour, f);
-    }
+    public static Coroutine EveryFrame(Fn<bool> f) => EveryFrame(behaviour, f);
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(GameObject go, Fn<bool> f) {
-      return EveryFrame(coroutineHelper(go), f);
-    }
+    public static Coroutine EveryFrame(GameObject go, Fn<bool> f) => EveryFrame(coroutineHelper(go), f);
 
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(MonoBehaviour behaviour, Fn<bool> f) {
@@ -134,14 +120,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) {
-      return EveryXSeconds(seconds, behaviour, f);
-    }
+    public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) => EveryXSeconds(seconds, behaviour, f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) {
-      return EveryXSeconds(seconds, coroutineHelper(go), f);
-    }
+    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) => 
+      EveryXSeconds(seconds, coroutineHelper(go), f);
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
@@ -286,9 +269,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public WaitForSecondsUnscaled(float time) { this.time = time; }
 
-    protected override void init() {
-      waitTime = Time.unscaledTime + time;
-    }
+    protected override void init() => waitTime = Time.unscaledTime + time;
 
     public override bool keepWaiting => Time.unscaledTime < waitTime;
   }
@@ -300,9 +281,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public WaitForSecondsRealtimeReusable(float time) { this.time = time; }
 
-    protected override void init() {
-      finishTime = Time.realtimeSinceStartup + time;
-    }
+    protected override void init() => finishTime = Time.realtimeSinceStartup + time;
 
     public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
   }

@@ -1,16 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static com.tinylabproductions.TLPLib.Data.typeclasses.Str;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   public static class SentryAPI {
+    public struct Tag : IEquatable<Tag> {
+      // max tag value length = 200
+      public readonly string s;
+
+      public Tag(string s) { this.s = s.trimTo(200); }
+      public static Tag a(object o) => new Tag(o.ToString());
+
+      public override string ToString() => $"{nameof(SentryAPI)}.{nameof(Tag)}({s})";
+
+      #region Equality
+
+      public bool Equals(Tag other) => string.Equals(s, other.s);
+
+      public override bool Equals(object obj) {
+        if (ReferenceEquals(null, obj)) return false;
+        return obj is Tag && Equals((Tag) obj);
+      }
+
+      public override int GetHashCode() => (s != null ? s.GetHashCode() : 0);
+
+      public static bool operator ==(Tag left, Tag right) { return left.Equals(right); }
+      public static bool operator !=(Tag left, Tag right) { return !left.Equals(right); }
+
+      #endregion
+
+      public static implicit operator Tag(string s) => new Tag(s);
+    }
+
+    public enum LogLevel : byte { FATAL, ERROR, WARNING, INFO, DEBUG }
+    public static class LogLevel_ {
+      public static readonly Str<LogLevel> str = new LambdaStr<LogLevel>(s => {
+        switch (s) {
+          case LogLevel.FATAL: return "fatal";
+          case LogLevel.ERROR: return "error";
+          case LogLevel.WARNING: return "warning";
+          case LogLevel.INFO: return "info";
+          case LogLevel.DEBUG: return "debug";
+          default:
+            throw new ArgumentOutOfRangeException(nameof(s), s, null);
+        }
+      });
+    }
+
+    public struct ErrorData {
+      public readonly ErrorReporter.ErrorData original;
+      public readonly LogLevel logLevel;
+      // Sentry has a bug where events with same message, but different stacktrace get
+      // grouped to same group. This is a workaround for that.
+      // max length - 1000 chars
+      public readonly string message;
+      public readonly Option<string> culprit;
+
+      public ImmutableList<BacktraceElem> backtrace => original.backtrace;
+
+      public ErrorData(ErrorReporter.ErrorData original) {
+        this.original = original;
+        culprit = original.backtrace.isEmpty() ? Option<string>.None : original.backtrace[0].method.some();
+
+        message = 
+          original.backtrace.headOption()
+          .fold(original.message, line => $"{original.message} in {line}")
+          .trimTo(1000);
+        logLevel = logTypeToSentryLevel(original.errorType);
+      }
+
+      public override string ToString() =>
+        $"{nameof(SentryAPI)}.{nameof(ErrorData)}[" +
+        $"{nameof(original)}: {original}, " +
+        $"{nameof(logLevel)}: {logLevel}, " +
+        $"{nameof(culprit)}: {culprit}" +
+        $"]";
+    }
+
     public struct DSN {
       public readonly Uri reportingUrl;
       public readonly string projectId;
@@ -22,18 +98,32 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         this.keys = keys;
       }
 
+      public override string ToString() => 
+        $"{nameof(SentryAPI)}.{nameof(DSN)}[" +
+        $"{nameof(reportingUrl)}: {reportingUrl}, " +
+        $"{nameof(projectId)}: {projectId}, " +
+        $"{nameof(keys)}: {keys}" +
+        $"]";
+
       // Parses DSN like "http://public:secret@errors.tinylabproductions.com/project_id"
       public static Either<string, DSN> fromDSN(string dsn) {
         try {
+          if (dsn == null)
+            return "dsn is null!";
+          dsn = dsn.Trim();
+          if (dsn == "")
+            return "dsn is empty!";
           var baseUri = new Uri(dsn);
           if (string.IsNullOrEmpty(baseUri.UserInfo))
-            return ("user info in dsn '" + dsn + "' is empty!").left().r<DSN>();
+            return $"user info in dsn '{dsn}' is empty!";
           var userInfoSplit = baseUri.UserInfo.Split(new[] {':'}, 2);
           if (userInfoSplit.Length != 2)
-            return ("user info in dsn '" + dsn + "' is does not have secret key!").left().r<DSN>();
+            return $"user info in dsn '{dsn}' is does not have secret key!";
           var keys = new ApiKeys(userInfoSplit[0], userInfoSplit[1]);
           var projectId = baseUri.LocalPath.Substring(1);
-          var reportingUri = new Uri($"{baseUri.Scheme}://{baseUri.Host}/api/{projectId}/store/");
+          var reportingUri = new Uri(
+            $"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/api/{projectId}/store/"
+          );
           return new DSN(reportingUri, projectId, keys).right().l<string>();
         }
         catch (Exception e) {
@@ -50,19 +140,205 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         this.secretKey = secretKey;
       }
 
-      public override string ToString() { return $"SentryAPI.ApiKeys[public={publicKey}, secret={secretKey}]"; }
+      public override string ToString() => 
+        $"{nameof(SentryAPI)}.{nameof(ApiKeys)}[" +
+        $"{nameof(publicKey)}={publicKey}, " +
+        $"{nameof(secretKey)}={secretKey}" +
+        $"]";
     }
 
-    public struct SentryMessage {
-      public readonly ApiKeys keys;
+    public struct ExtraData {
+      /// <summary>
+      /// This is needed, because tag values can change over the runtime. Therefore
+      /// we want to add the tags to the data immediatelly before sending the data.
+      /// </summary>
+      public delegate void AddTag(string key, Tag tag);
+      public delegate void AddExtra(string key, string extra);
+
+      public readonly Act<AddTag> addTags;
+      public readonly Act<AddExtra> addExtras;
+
+      public ExtraData(Act<AddTag> addTags, Act<AddExtra> addExtras) {
+        this.addTags = addTags;
+        this.addExtras = addExtras;
+      }
+
+      public void addTagsToDictionary(IDictionary<string, Tag> dict) => addTags(dict.Add);
+      public void addExtrasToDictionary(IDictionary<string, string> dict) => addExtras(dict.Add);
+    }
+
+    // https://docs.sentry.io/clientdev/interfaces/user/
+    public struct UserInterface {
+      public struct Id {
+        public readonly string value;
+        public Id(string value) { this.value = value; }
+        public override string ToString() => $"{nameof(Id)}({value})";
+      }
+
+      public struct IpAddress {
+        public readonly string value;
+        public IpAddress(string value) { this.value = value; }
+        public override string ToString() => $"{nameof(IpAddress)}({value})";
+      }
+
+      public readonly These<Id, IpAddress> uniqueIdentifier;
+      public readonly Option<string> email, username;
+      public readonly IDictionary<string, string> extras;
+
+      public Option<Id> id => uniqueIdentifier.thisValue;
+      public Option<IpAddress> ipAddress => uniqueIdentifier.thatValue;
+
+      public UserInterface(
+        These<Id, IpAddress> uniqueIdentifier, 
+        Option<string> email = default(Option<string>), 
+        Option<string> username = default(Option<string>),
+        IDictionary<string, string> extras = null
+      ) {
+        Option.ensureValue(ref email);
+        Option.ensureValue(ref username);
+
+        this.uniqueIdentifier = uniqueIdentifier;
+        this.email = email;
+        this.username = username;
+        this.extras = extras ?? new Dictionary<string, string>();
+      }
+    }
+
+    public struct SendOnErrorData {
+      public readonly ErrorReporter.AppInfo appInfo;
+      public readonly ExtraData addExtraData;
+      public readonly Option<UserInterface> userOpt;
+      public readonly IDictionary<string, Tag> staticTags;
+      public readonly IDictionary<string, string> staticExtras;
+
+      public SendOnErrorData(
+        ErrorReporter.AppInfo appInfo, ExtraData addExtraData, 
+        Option<UserInterface> userOpt, 
+        IDictionary<string, Tag> staticTags, IDictionary<string, string> staticExtras
+      ) {
+        this.appInfo = appInfo;
+        this.addExtraData = addExtraData;
+        this.userOpt = userOpt;
+        this.staticTags = staticTags;
+        this.staticExtras = staticExtras;
+      }
+    }
+
+    /// <summary>Tags that might change during runtime.</summary>
+    public static Dictionary<string, Tag> dynamicTags() => new Dictionary<string, Tag> {
+      {"App:LoadedLevelNames", new Tag(
+        Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
+          Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
+      )},
+      {"App:InternetReachability", Tag.a(Application.internetReachability)},
+      {"App:TargetFrameRate", Tag.a(Application.targetFrameRate)},
+    };
+    
+    /// <summary>Tags that will never change during runtime.</summary>
+    public static Dictionary<string, Tag> staticTags(ErrorReporter.AppInfo appInfo) => 
+      new Dictionary<string, Tag> {
+        // max tag name length = 32
+        {"App:LevelCount", new Tag(s(SceneManager.sceneCountInBuildSettings))},
+        {"App:UnityVersion", new Tag(Application.unityVersion)},
+        {"App:BundleIdentifier", new Tag(Application.bundleIdentifier)},
+        {"App:InstallMode", new Tag(Application.installMode.ToString())},
+        {"App:SandboxType", new Tag(Application.sandboxType.ToString())},
+        {"App:ProductName", new Tag(Application.productName)},
+        {"App:CompanyName", new Tag(Application.companyName)},
+        {"App:CloudProjectId", new Tag(Application.cloudProjectId)},
+        {"App:SystemLanguage", new Tag(Application.systemLanguage.ToString())},
+        {"App:BackgroundLoadingPriority", new Tag(Application.backgroundLoadingPriority.ToString())},
+        {"App:GenuineCheckAvailable", new Tag(s(Application.genuineCheckAvailable))},
+        {"App:Genuine", new Tag(s(Application.genuineCheckAvailable && Application.genuine))},
+        {"SI:ProcessorCount", new Tag(s(SystemInfo.processorCount))},
+        {"SI:GraphicsMemorySize", new Tag(s(SystemInfo.graphicsMemorySize))},
+        {"SI:GraphicsDeviceName", new Tag(SystemInfo.graphicsDeviceName)},
+        {"SI:GraphicsDeviceVendor", new Tag(SystemInfo.graphicsDeviceVendor)},
+        {"SI:GraphicsDeviceID", new Tag(s(SystemInfo.graphicsDeviceID))},
+        {"SI:GraphicsDeviceVendorID", new Tag(s(SystemInfo.graphicsDeviceVendorID))},
+        {"SI:GraphicsDeviceType", new Tag(SystemInfo.graphicsDeviceType.ToString())},
+        {"SI:GraphicsDeviceVersion", new Tag(SystemInfo.graphicsDeviceVersion)},
+        {"SI:GraphicsShaderLevel", new Tag(s(SystemInfo.graphicsShaderLevel))},
+        {"SI:GraphicsMultiThreaded", new Tag(s(SystemInfo.graphicsMultiThreaded))},
+        {"SI:SupportsShadows", new Tag(s(SystemInfo.supportsShadows))},
+        {"SI:SupportsRenderToCubemap", new Tag(s(SystemInfo.supportsRenderToCubemap))},
+        {"SI:SupportsImageEffects", new Tag(s(SystemInfo.supportsImageEffects))},
+        {"SI:Supports3DTextures", new Tag(s(SystemInfo.supports3DTextures))},
+        {"SI:SupportsComputeShaders", new Tag(s(SystemInfo.supportsComputeShaders))},
+        {"SI:SupportsInstancing", new Tag(s(SystemInfo.supportsInstancing))},
+        {"SI:SupportsSparseTextures", new Tag(s(SystemInfo.supportsSparseTextures))},
+        {"SI:SupportedRenderTargetCount", new Tag(s(SystemInfo.supportedRenderTargetCount))},
+        {"SI:NPOTsupport", new Tag(SystemInfo.npotSupport.ToString())},
+        {"SI:DeviceName", new Tag(SystemInfo.deviceName)},
+        {"SI:SupportsAccelerometer", new Tag(s(SystemInfo.supportsAccelerometer))},
+        {"SI:SupportsGyroscope", new Tag(s(SystemInfo.supportsGyroscope))},
+        {"SI:SupportsLocationService", new Tag(s(SystemInfo.supportsLocationService))},
+        {"SI:SupportsVibration", new Tag(s(SystemInfo.supportsVibration))},
+        {"SI:DeviceType", new Tag(SystemInfo.deviceType.ToString())},
+        {"SI:MaxTextureSize", new Tag(s(SystemInfo.maxTextureSize))},
+        {"ProductName", new Tag(appInfo.productName)},
+        {"BundleIdentifier", new Tag(appInfo.bundleIdentifier)},
+        {"App:Platform", new Tag(Application.platform.ToString())},
+        {"SI:OperatingSystem", new Tag(SystemInfo.operatingSystem)},
+        {"SI:ProcessorType", new Tag(SystemInfo.processorType)},
+        {"SI:SystemMemorySize", new Tag(s(SystemInfo.systemMemorySize))},
+        {"SI:DeviceModel", new Tag(SystemInfo.deviceModel)}
+#if !UNITY_5_5_OR_NEWER
+        {"SI:SupportsRenderTextures", new Tag(s(SystemInfo.supportsRenderTextures))},
+        {"SI:SupportsStencil", new Tag(s(SystemInfo.supportsStencil))},
+        {"App:WebSecurityEnabled", new Tag(s(Application.webSecurityEnabled))},
+        {"App:WebSecurityHostUrl", new Tag(Application.webSecurityHostUrl)},   
+#endif
+      };
+
+    public static Dictionary<string, string> dynamicExtras() => new Dictionary<string, string> {
+      {"App:StreamedBytes", s(Application.streamedBytes)},
+    };
+
+    public static Dictionary<string, string> staticExtras = new Dictionary<string, string>();
+
+    public static LogLevel logTypeToSentryLevel(LogType type) {
+      switch (type) {
+        case LogType.Assert:
+        case LogType.Error: 
+        case LogType.Exception:
+          return LogLevel.ERROR;
+        case LogType.Log:
+          return LogLevel.DEBUG;
+        case LogType.Warning:
+          return LogLevel.WARNING;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(type), type, null);
+      }
+    }
+
+    public static ErrorReporter.OnError createLogOnError(
+      SendOnErrorData sendData, DSN dsn
+    ) {
+      return __data => {
+        var data = new ErrorData(__data);
+        if (Log.isInfo) Log.info(
+          $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
+          SentryRESTAPI.message(
+            dsn.keys, sendData.appInfo, data, sendData.addExtraData,
+            sendData.userOpt, sendData.staticTags
+          )
+        );
+      };
+    }
+  }
+
+  public static class SentryRESTAPI {
+    public struct Message {
+      public readonly SentryAPI.ApiKeys keys;
       public readonly Guid eventId;
       public readonly DateTime timestamp;
       public readonly string json;
 
       readonly Dictionary<string, object> jsonDict;
 
-      public SentryMessage(
-        ApiKeys keys, Guid eventId, DateTime timestamp,
+      public Message(
+        SentryAPI.ApiKeys keys, Guid eventId, DateTime timestamp,
         Dictionary<string, object> jsonDict
       ) {
         this.keys = keys;
@@ -94,106 +370,22 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           }
         };
         var www = new WWW(reportingUrl.OriginalString, Encoding.UTF8.GetBytes(json), headers);
-        ErrorReporter.trackWWWSend("Sentry API", www, headers);
+        www.trackWWWSend("Sentry API", headers);
         return www;
       }
     }
 
-    public struct ExtraData {
-      public delegate void AddTag(string name, string value);
-      public delegate void AddExtra(string name, string value);
-
-      public static readonly ExtraData noExtraData = new ExtraData(_ => {}, _ => {});
-
-      public readonly Act<AddTag> addTags;
-      public readonly Act<AddExtra> addExtras;
-
-      public ExtraData(
-        Act<AddTag> addTags = null, 
-        Act<AddExtra> addExtras = null
-      ) {
-        this.addTags = addTags ?? (_ => {});
-        this.addExtras = addExtras ?? (_ => {});
-      }
-    }
-
-    // https://docs.sentry.io/clientdev/interfaces/user/
-    public struct UserInterface {
-      public struct Id {
-        public readonly string value;
-        public Id(string value) { this.value = value; }
-        public override string ToString() => $"{nameof(Id)}({value})";
-      }
-
-      public struct IpAddress {
-        public readonly string value;
-        public IpAddress(string value) { this.value = value; }
-        public override string ToString() => $"{nameof(IpAddress)}({value})";
-      }
-
-      public readonly These<Id, IpAddress> uniqueIdentifier;
-      public readonly Option<string> email, username;
-      public readonly IReadOnlyDictionary<string, string> extras;
-
-      public Option<Id> id => uniqueIdentifier.thisValue;
-      public Option<IpAddress> ipAddress => uniqueIdentifier.thatValue;
-
-      public UserInterface(
-        These<Id, IpAddress> uniqueIdentifier, 
-        Option<string> email = default(Option<string>), 
-        Option<string> username = default(Option<string>),
-        IReadOnlyDictionary<string, string> extras = null
-      ) {
-        Option.ensureValue(ref email);
-        Option.ensureValue(ref username);
-
-        this.uniqueIdentifier = uniqueIdentifier;
-        this.email = email;
-        this.username = username;
-        this.extras = extras ?? ReadOnlyDictionary<string, string>.empty;
-      }
-    }
-
-    public struct MessageData {
-      public readonly string loggerName;
-      public readonly ApiKeys keys;
-      public readonly ErrorReporter.AppInfo appInfo;
-      public readonly ErrorReporter.ErrorData data;
-      public readonly ExtraData addExtraData;
-      public readonly Option<UserInterface> userOpt;
-
-      public MessageData(string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo, ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt) {
-        this.loggerName = loggerName;
-        this.keys = keys;
-        this.appInfo = appInfo;
-        this.data = data;
-        this.addExtraData = addExtraData;
-        this.userOpt = userOpt;
-      }
-    }
-
-    public struct SendOnErrorData {
-      public readonly string loggerName;
-      public readonly ErrorReporter.AppInfo appInfo;
-      public readonly ExtraData addExtraData;
-      public readonly Option<UserInterface> userOpt;
-
-      public SendOnErrorData(string loggerName, ErrorReporter.AppInfo appInfo, ExtraData addExtraData, Option<UserInterface> userOpt) {
-        this.loggerName = loggerName;
-        this.appInfo = appInfo;
-        this.addExtraData = addExtraData;
-        this.userOpt = userOpt;
-      }
-    }
-
+    // ReSharper disable once UnusedMember.Global
     public static ErrorReporter.OnError createSendOnError(
-      SendOnErrorData sendData, Uri reportingUrl, ApiKeys keys, bool onlySendUniqueErrors
+      SentryAPI.SendOnErrorData sendData, Uri reportingUrl, SentryAPI.ApiKeys keys, bool onlySendUniqueErrors
     ) {
       var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
 
-      return data => {
+      return __data => {
+        var data = new SentryAPI.ErrorData(__data);
         var msg = message(
-          sendData.loggerName, keys, sendData.appInfo, data, sendData.addExtraData, sendData.userOpt
+          keys, sendData.appInfo, data, sendData.addExtraData,
+          sendData.userOpt, sendData.staticTags
         );
         Action send = () => msg.send(reportingUrl);
         sentJsonsOpt.voidFold(
@@ -206,23 +398,12 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       };
     }
 
-    public static ErrorReporter.OnError createLogOnError(
-      SendOnErrorData sendData, DSN dsn
+    public static Message message(
+      SentryAPI.ApiKeys keys, ErrorReporter.AppInfo appInfo,
+      SentryAPI.ErrorData data, SentryAPI.ExtraData extraData, Option<SentryAPI.UserInterface> userOpt,
+      IDictionary<string, SentryAPI.Tag> staticTags
     ) {
-      return data => {
-        if (Log.isInfo) Log.info(
-          $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
-          message(
-            sendData.loggerName, dsn.keys, sendData.appInfo, data, sendData.addExtraData, sendData.userOpt
-          )
-        );
-      };
-    }
-
-    public static SentryMessage message(
-      string loggerName, ApiKeys keys, ErrorReporter.AppInfo appInfo,
-      ErrorReporter.ErrorData data, ExtraData addExtraData, Option<UserInterface> userOpt
-    ) {
+      const string logger = "tlplib-" + nameof(SentryRESTAPI);
       var eventId = Guid.NewGuid();
       var timestamp = DateTime.UtcNow;
 
@@ -230,104 +411,34 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       // ReSharper disable once ConvertClosureToMethodGroup - MCS bug
       var stacktraceFrames = data.backtrace.Select(a => backtraceElemToJson(a)).Reverse().ToList();
 
-      // Tags are properties that can be filtered/grouped by.
-      var tags = new Dictionary<string, object> {
-        // max tag name length = 32
-        {"ProductName", tag(appInfo.productName)},
-        {"BundleIdentifier", tag(appInfo.bundleIdentifier)},
-        {"App:LoadedLevelNames", tag(
-          Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
-          Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
-        )},
-        {"App:LevelCount", tag(SceneManager.sceneCountInBuildSettings)},
-        {"App:Platform", tag(Application.platform)},
-        {"App:UnityVersion", tag(Application.unityVersion)},
-        {"App:Version", tag(Application.version)},
-        {"App:BundleIdentifier", tag(Application.bundleIdentifier)},
-        {"App:InstallMode", tag(Application.installMode)},
-        {"App:SandboxType", tag(Application.sandboxType)},
-        {"App:ProductName", tag(Application.productName)},
-        {"App:CompanyName", tag(Application.companyName)},
-        {"App:CloudProjectId", tag(Application.cloudProjectId)},
-        {"App:TargetFrameRate", tag(Application.targetFrameRate)},
-        {"App:SystemLanguage", tag(Application.systemLanguage)},
-        {"App:BackgroundLoadingPriority", tag(Application.backgroundLoadingPriority)},
-        {"App:InternetReachability", tag(Application.internetReachability)},
-        {"App:GenuineCheckAvailable", tag(Application.genuineCheckAvailable)},
-        {"App:Genuine", tag(Application.genuineCheckAvailable && Application.genuine)},
-        {"SI:OperatingSystem", tag(SystemInfo.operatingSystem)},
-        {"SI:ProcessorType", tag(SystemInfo.processorType)},
-        {"SI:ProcessorCount", tag(SystemInfo.processorCount)},
-        {"SI:SystemMemorySize", tag(SystemInfo.systemMemorySize)},
-        {"SI:GraphicsMemorySize", tag(SystemInfo.graphicsMemorySize)},
-        {"SI:GraphicsDeviceName", tag(SystemInfo.graphicsDeviceName)},
-        {"SI:GraphicsDeviceVendor", tag(SystemInfo.graphicsDeviceVendor)},
-        {"SI:GraphicsDeviceID", tag(SystemInfo.graphicsDeviceID)},
-        {"SI:GraphicsDeviceVendorID", tag(SystemInfo.graphicsDeviceVendorID)},
-        {"SI:GraphicsDeviceType", tag(SystemInfo.graphicsDeviceType)},
-        {"SI:GraphicsDeviceVersion", tag(SystemInfo.graphicsDeviceVersion)},
-        {"SI:GraphicsShaderLevel", tag(SystemInfo.graphicsShaderLevel)},
-        {"SI:GraphicsMultiThreaded", tag(SystemInfo.graphicsMultiThreaded)},
-        {"SI:SupportsShadows", tag(SystemInfo.supportsShadows)},
-        {"SI:SupportsRenderToCubemap", tag(SystemInfo.supportsRenderToCubemap)},
-        {"SI:SupportsImageEffects", tag(SystemInfo.supportsImageEffects)},
-        {"SI:Supports3DTextures", tag(SystemInfo.supports3DTextures)},
-        {"SI:SupportsComputeShaders", tag(SystemInfo.supportsComputeShaders)},
-        {"SI:SupportsInstancing", tag(SystemInfo.supportsInstancing)},
-        {"SI:SupportsSparseTextures", tag(SystemInfo.supportsSparseTextures)},
-        {"SI:SupportedRenderTargetCount", tag(SystemInfo.supportedRenderTargetCount)},
-        {"SI:NPOTsupport", tag(SystemInfo.npotSupport)},
-        {"SI:DeviceName", tag(SystemInfo.deviceName)},
-        {"SI:DeviceModel", tag(SystemInfo.deviceModel)},
-        {"SI:SupportsAccelerometer", tag(SystemInfo.supportsAccelerometer)},
-        {"SI:SupportsGyroscope", tag(SystemInfo.supportsGyroscope)},
-        {"SI:SupportsLocationService", tag(SystemInfo.supportsLocationService)},
-        {"SI:SupportsVibration", tag(SystemInfo.supportsVibration)},
-        {"SI:DeviceType", tag(SystemInfo.deviceType)},
-        {"SI:MaxTextureSize", tag(SystemInfo.maxTextureSize)},
-#if !UNITY_5_5_OR_NEWER
-        {"SI:SupportsRenderTextures", tag(SystemInfo.supportsRenderTextures)},
-        {"SI:SupportsStencil", tag(SystemInfo.supportsStencil)},
-        {"App:WebSecurityEnabled", tag(Application.webSecurityEnabled)},
-        {"App:WebSecurityHostUrl", tag(Application.webSecurityHostUrl)},   
-#endif
-      };
-      addExtraData.addTags((name, value) => tags[name] = tag(value));
+      // Beware of the order! Do not mutate static tags!
+      var tags = SentryAPI.dynamicTags().addAll(staticTags);
+      extraData.addTagsToDictionary(tags);
 
       // Extra contextual data is limited to 4096 characters.
-      var extras = new Dictionary<string, object> {
-        {"App:StreamedBytes", Application.streamedBytes},
-      };
-      addExtraData.addExtras((name, value) => extras[name] = value);
-
-      // Sentry has a bug where events with same message, but different stacktrace get
-      // grouped to same group. This is a workaround for that.
-      var message = data.backtrace.headOption().fold(
-        data.message,
-        line => $"{data.message} in {line}"
-      );
+      var extras = SentryAPI.dynamicExtras();
+      extraData.addExtrasToDictionary(extras);
 
       var json = new Dictionary<string, object> {
-        // max length - 1000 chars
-        {"message", message.trimTo(1000)},
-        {"level", logTypeToSentryLevel(data.errorType)},
-        {"logger", loggerName},
-        {"platform", Application.platform.ToString()},
-        {"release", appInfo.bundleVersion},
-        {"tags", tags},
+        {"message", s(data.message)},
+        {"level", s(data.logLevel, SentryAPI.LogLevel_.str)},
+        {"logger", s(logger)},
+        {"platform", s(Application.platform.ToString())},
+        {"release", s(appInfo.bundleVersion)},
+        {"tags", tags.toDict(_ => _.Key, _ => _.Value.s)},
         {"extra", extras},
         {"stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}}}
       };
       foreach (var user in userOpt)
-        json.Add("user", userInterfaceParametersJson(user, json));
-      if (!data.backtrace.isEmpty()) json.Add("culprit", data.backtrace[0].method);
-      
-      return new SentryMessage(keys, eventId, timestamp, json);
+        json.Add("user", userInterfaceParametersJson(user));
+
+      foreach (var culprit in data.culprit)
+        json.Add("culprit", culprit);
+
+      return new Message(keys, eventId, timestamp, json);
     }
 
-    static Dictionary<string, object> userInterfaceParametersJson(
-      UserInterface user, IDictionary<string, object> json
-    ) {
+    static Dictionary<string, object> userInterfaceParametersJson(SentryAPI.UserInterface user) {
       var userDict = new Dictionary<string, object>();
       foreach (var value in user.id) userDict.Add("id", value.value);
       foreach (var value in user.username) userDict.Add("username", value);
@@ -337,24 +448,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       return userDict;
     }
 
-    // max tag value length = 200
-    static string tag(object o) { return o.ToString().trimTo(200); }
-
-    public static string logTypeToSentryLevel(LogType type) {
-      switch (type) {
-        case LogType.Assert:
-        case LogType.Error: 
-        case LogType.Exception:
-          return "error";
-        case LogType.Log:
-          return "debug";
-        case LogType.Warning:
-          return "warning";
-      }
-      throw new IllegalStateException("unreachable code");
-    }
-
-    public static Dictionary<string, object> backtraceElemToJson(this BacktraceElem bt) {
+    static Dictionary<string, object> backtraceElemToJson(this BacktraceElem bt) {
       var json = new Dictionary<string, object> {
         {"function", bt.method},
         {"in_app", bt.inApp}

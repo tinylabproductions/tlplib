@@ -43,5 +43,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       return t;
     }
+
+    public static Sprite toSprite(this Texture2D texture) {
+      var rec = new Rect(0, 0, texture.width, texture.height);
+      return Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
+    }
   }
 }

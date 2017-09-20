@@ -76,6 +76,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       "notification_foreground",
       "notification_open",
       "notification_receive",
+      "screen_view",
       "os_update",
       "session_start",
       "user_engagement"

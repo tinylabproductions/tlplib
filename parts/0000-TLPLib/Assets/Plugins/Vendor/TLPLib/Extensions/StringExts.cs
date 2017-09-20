@@ -193,5 +193,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Option<char> lastChar(this string s) =>
       s.isEmpty() ? Option<char>.None : s[s.Length - 1].some();
+
+    /// <summary>obfuscates the string by shifting every char code in it by given amount</summary>
+    public static string shiftCharValues(this string s, int shiftBy) =>
+      new string(s.ToCharArray().map(c => (char) (c + shiftBy)));
   }
 }
