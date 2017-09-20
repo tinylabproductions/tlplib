@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
       return new EditorObjectInfo<A>(o, assetInfoOpt);
     }
 
-    [UsedImplicitly, MenuItem("Assets/Debug/Debug info")]
+    [UsedImplicitly, MenuItem("TLP/Debug/Debug info")]
     public static void editorUtility() {
       var obj = F.opt(Selection.activeObject);
       obj.voidFold(
