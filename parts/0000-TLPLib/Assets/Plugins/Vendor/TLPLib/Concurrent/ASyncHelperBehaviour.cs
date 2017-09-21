@@ -13,6 +13,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     readonly Subject<Unit> _onQuit = new Subject<Unit>();
     public IObservable<Unit> onQuit => _onQuit;
+    /**
+     * CAUTION: OnApplicationQuit is not guaranteed to fire on Android.
+     * e.g. When you kill an app by swiping, the app is killed immediately and 
+     * OnApplicationQuit is not being called.
+     **/
     public void OnApplicationQuit() => _onQuit.push(F.unit);
 
     readonly Subject<Unit> _onLateUpdate = new Subject<Unit>();
