@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     // code refresh happens on code change and when entering play mode
     public static readonly IRxRef<bool> enabled = RxRef.a(false);
 
-    [MenuItem("TLP/Asset References")]
+    [MenuItem("TLP/Window/Asset References")]
     public static void init() {
       // Get existing open window or if none, make a new one:
       var window = GetWindow<AssetReferencesWindow>("Asset References");

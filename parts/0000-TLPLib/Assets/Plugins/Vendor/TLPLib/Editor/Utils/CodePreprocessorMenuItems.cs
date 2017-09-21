@@ -11,10 +11,10 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public class CodePreprocessorMenuItems : MonoBehaviour {
-    [UsedImplicitly, MenuItem("TLP/Code Processor/Compiler Warnings/Enable")]
+    [UsedImplicitly, MenuItem("Assets/TLP/Code Processor/Compiler Warnings/Enable")]
     static void addPragmas() => enablePragmas(false);
 
-    [UsedImplicitly, MenuItem("TLP/Code Processor/Compiler Warnings/Disable")]
+    [UsedImplicitly, MenuItem("Assets/TLP/Code Processor/Compiler Warnings/Disable")]
     static void removePragmas() => enablePragmas(true);
     
     static void enablePragmas(bool addPragma) {

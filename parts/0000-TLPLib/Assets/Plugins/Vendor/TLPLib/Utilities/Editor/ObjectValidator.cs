@@ -162,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [UsedImplicitly, MenuItem(
-      "TLP/Validate Objects in Current Scene", 
+      "TLP/Tools/Validate Objects in Current Scene", 
       isValidateFunction: false, priority: 55
     )]
     static void checkCurrentSceneMenuItem() {
@@ -190,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [UsedImplicitly, MenuItem(
-      "TLP/Validate Selected Objects", 
+      "TLP/Tools/Validate Selected Objects", 
       isValidateFunction: false, priority: 56
     )]
     static void checkSelectedObjects() {

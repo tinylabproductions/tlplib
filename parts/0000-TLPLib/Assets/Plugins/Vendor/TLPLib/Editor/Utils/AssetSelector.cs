@@ -10,11 +10,11 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   class AssetSelector : EditorWindow, IMB_OnGUI {
-    [UsedImplicitly, MenuItem("TLP/Select assets of type...")]
+    [UsedImplicitly, MenuItem("TLP/Tools/Select assets of type...")]
     static void init() => GetWindow<AssetSelector>("Asset Selector").Show();
 
     // Useful to clean serialized assets after migration or unity version upgrade
-    [UsedImplicitly, MenuItem("TLP/Make selected objects dirty (force reserialize)")]
+    [UsedImplicitly, MenuItem("TLP/Tools/Make selected objects dirty (force reserialize)")]
     static void makeObjectsDirty() {
       var objects = Selection.objects;
       Undo.RecordObjects(objects, "Set objects dirty");

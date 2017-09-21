@@ -6,7 +6,7 @@ using UnityEngine;
 // Modified class from here: https://gist.github.com/Seneral/d88d2079ff17f77f2bd1775aadb8547b
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class ConvertSerializationVersion {
-    const string MENU_PATH = "TLP/Convert Serialization To 5.3";
+    const string MENU_PATH = "TLP/Tools/Convert Serialization To 5.3";
 
     [MenuItem(MENU_PATH, false)]
     public static void ConvertSerializationVersion53() { ConvertSelectedAssetSerializationVersion(); }
