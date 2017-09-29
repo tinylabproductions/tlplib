@@ -65,6 +65,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       // max length - 1000 chars
       public readonly string message;
       public readonly Option<string> culprit;
+      public readonly string[] fingerprint;
 
       public ImmutableList<BacktraceElem> backtrace => original.backtrace;
 
@@ -77,6 +78,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           .fold(original.message, line => $"{original.message} in {line}")
           .trimTo(1000);
         logLevel = logTypeToSentryLevel(original.errorType);
+        fingerprint = createFingerPrint(message);
       }
 
       public override string ToString() =>
@@ -223,6 +225,11 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         this.staticExtras = staticExtras;
       }
     }
+
+    // A value of {{ default }} will be replaced with the built-in behavior, thus allowing you to extend it, or completely replace it.
+    // https://docs.sentry.io/clientdev/attributes/
+    public static string[] createFingerPrint(string message)
+      => new[] {"{{ default }}", message};
 
     /// <summary>Tags that might change during runtime.</summary>
     public static Dictionary<string, Tag> dynamicTags() => new Dictionary<string, Tag> {
@@ -427,7 +434,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"release", s(appInfo.bundleVersion)},
         {"tags", tags.toDict(_ => _.Key, _ => _.Value.s)},
         {"extra", extras},
-        {"stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}}}
+        {"stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}}},
+        {"fingerprint", data.fingerprint}
       };
       foreach (var user in userOpt)
         json.Add("user", userInterfaceParametersJson(user));

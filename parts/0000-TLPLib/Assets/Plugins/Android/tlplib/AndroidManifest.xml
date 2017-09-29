@@ -16,5 +16,11 @@
         <action android:name="com.android.vending.INSTALL_REFERRER" />
       </intent-filter>
     </receiver>
+
+    <activity
+        android:name="com.tinylabproductions.tlplib.video_player.AndroidVideoPlayer"
+        android:screenOrientation="landscape" >
+    </activity>
+
   </application>
 </manifest>
