@@ -10,7 +10,8 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       public IRxVal<float> totalMultiplier => _totalMultiplier;
 
       /// <summary>
-      /// Collects all created multipliers, and calculates their total multiplier
+      /// Creates and collects toggleable multipliers, 
+      /// and updates the totalMultiplier based on active multipliers.
       /// </summary>
       public ToggleableMultiplier createMultiplier(float multiplier, bool active = true) =>
         new ToggleableMultiplier(multiplier, list, _totalMultiplier, active);
