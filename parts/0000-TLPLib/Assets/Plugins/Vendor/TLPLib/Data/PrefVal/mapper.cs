@@ -21,6 +21,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       set { backing.value = bimap.comap(value); }
     }
 
+    public object valueUntyped {
+      get { return value; }
+      set { this.trySetUntyped(value); }
+    }
+
     public void forceSave() => backing.forceSave();
   }
 }

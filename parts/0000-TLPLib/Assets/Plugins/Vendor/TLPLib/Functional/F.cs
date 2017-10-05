@@ -15,6 +15,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
         ? Option<A>.None : new Option<A>(value);
     }
 
+    public static Option<A> opt<A>(A? value) where A : struct => 
+      value == null ? Option<A>.None : some((A) value);
+
     public static Option<A> some<A>(A value) => new Option<A>(value);
     public static Option<A> none<A>() => Option<A>.None;
 
