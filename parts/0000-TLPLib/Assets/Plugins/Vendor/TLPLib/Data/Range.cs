@@ -113,6 +113,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       _to = to;
     }
 
+    public bool isInRange(float value) => value >= from && value <= to;
     public float random => Random.Range(from, to);
     public float this[Percentage p] => from + (to - from) * p.value;
     public override string ToString() => $"({from} to {to})";
