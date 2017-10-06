@@ -80,7 +80,11 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
   [Serializable] public class UnityOptionInt : UnityOption<int> {}
   [Serializable] public class UnityOptionFloat : UnityOption<float> {}
   [Serializable] public class UnityOptionBool : UnityOption<bool> {}
-  [Serializable] public class UnityOptionString : UnityOption<string> {}
+  [Serializable]
+  public class UnityOptionString : UnityOption<string> {
+    public UnityOptionString() { }
+    public UnityOptionString(Option<string> value) : base(value) { }
+  }
   [Serializable] public class UnityOptionVector2 : UnityOption<Vector2> {}
   [Serializable] public class UnityOptionVector3 : UnityOption<Vector3> {}
   [Serializable] public class UnityOptionVector4 : UnityOption<Vector4> {}
