@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
   
   public class RxVal<A> : RxBase<A>, IRxVal<A> {
-    readonly Option<Fn<A>> getCurrentValue;
+    readonly Option<Fn<A>> getCurrentValue = Option<Fn<A>>.None;
 
     public RxVal(A value) { _value = value; }
 
