@@ -1,6 +1,5 @@
 ﻿using System;
-using Assets.Vendor.TLPLib.Components.Forwarders;
-using com.tinylabproductions.TLPLib.Components;
+using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -40,8 +39,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Coroutine everyFrame(this GameObject go, Action a) => 
       go.everyFrame(() => { a(); return true; });
 
-    public static IObservable<Unit> onMouseDown(this GameObject go) => 
-      go.EnsureComponent<OnMouseDownForwarder>().onMouseDown;
+    public static IObservable<Unit> onMouseDown(this GameObject go) =>
+      go.onEvent<Unit, OnMouseDownForwarder>();
+
+    public static IObservable<Unit> onMouseUp(this GameObject go) =>
+      go.onEvent<Unit, OnMouseUpForwarder>();
+
+    public static IObservable<A> onEvent<A, Forwarder>(this GameObject go) where Forwarder : EventForwarder<A> =>
+      go.EnsureComponent<Forwarder>().onEvent;
 
     public static A EnsureComponent<A>(this GameObject go) where A : Component => 
       go.GetComponent<A>() ?? go.AddComponent<A>();
