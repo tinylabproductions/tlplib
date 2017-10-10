@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
       rt = GetComponent<RectTransform>();
     }
 
-    Vector2 screenToLocal(RectTransform rt, PointerEventData eventData) {
+    static Vector2 screenToLocal(RectTransform rt, PointerEventData eventData) {
       Vector2 localPoint;
       RectTransformUtility.ScreenPointToLocalPointInRectangle(
         rt, eventData.position, eventData.pressEventCamera, out localPoint
@@ -96,9 +96,8 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
         : delta.y > 0 
           ? SwipeDirection.Up 
           : SwipeDirection.Down;
-      
-    
 
-    static bool mayDrag(PointerEventData eventData) => eventData.button == PointerEventData.InputButton.Left;
+    static bool mayDrag(PointerEventData eventData) => 
+      eventData.button == PointerEventData.InputButton.Left;
   }
 }
