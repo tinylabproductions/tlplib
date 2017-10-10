@@ -80,12 +80,11 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
       var swipeDir = getSwipeDirection(delta);
       swipeAction.push(swipeDir);
       switch (swipeDir) {
-        case SwipeDirection.Left: swipedLeft?.Invoke(); break;
+        case SwipeDirection.Left:  swipedLeft?.Invoke();  break;
         case SwipeDirection.Right: swipedRigth?.Invoke(); break;
-        case SwipeDirection.Up: swipedUp?.Invoke(); break;
-        case SwipeDirection.Down: swipedDown?.Invoke(); break;
-        default:
-          throw new ArgumentOutOfRangeException();
+        case SwipeDirection.Up:    swipedUp?.Invoke();    break;
+        case SwipeDirection.Down:  swipedDown?.Invoke();  break;
+        default: throw new ArgumentOutOfRangeException();
       }
     }
 
