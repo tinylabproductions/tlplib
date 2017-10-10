@@ -3,10 +3,15 @@ using AdvancedInspector;
 using com.tinylabproductions.TLPGame.unity_serialization;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.Swiping {
+  public enum SwipeDirection : byte {
+    Left, Right, Up, Down  
+  }
+
   public class SwipeMonoBehaviour : MonoBehaviour, IMB_Awake, IBeginDragHandler, IEndDragHandler, IDragHandler {
 #pragma warning disable 649
     [
@@ -26,6 +31,9 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     bool dragFinished;
     Option<float> _eventOnThresholdSqr;
     RectTransform rt;
+
+    readonly Subject<SwipeDirection> swipeAction = new Subject<SwipeDirection>();
+    public IObservable<SwipeDirection> swipe => swipeAction;
 
     public void Awake() {
       _eventOnThresholdSqr = eventOnThreshold.value.map(_ => _ * _);
@@ -69,15 +77,36 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     void finishSwipe(Vector2 delta) {
       dragFinished = true;
       swipeEnded?.Invoke(delta);
-      if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y)) {
-        if (delta.x > 0) swipedRigth?.Invoke();
-        else swipedLeft?.Invoke();
-      }
-      else {
-        if (delta.y > 0) swipedUp?.Invoke();
-        else swipedDown?.Invoke();
+      var swipeDir = getSwipeDirection(delta);
+      swipeAction.push(swipeDir);
+      switch (swipeDir) {
+        case SwipeDirection.Left:
+          swipedLeft?.Invoke();
+          break;
+        case SwipeDirection.Right:
+          swipedRigth?.Invoke();
+          break;
+        case SwipeDirection.Up:
+          swipedUp?.Invoke();
+          break;
+        case SwipeDirection.Down:
+          swipedDown?.Invoke();
+          break;
+        default:
+          throw new ArgumentOutOfRangeException();
       }
     }
+
+    public static SwipeDirection getSwipeDirection(Vector2 delta) =>
+      (Mathf.Abs(delta.x) > Mathf.Abs(delta.y)) 
+        ? delta.x > 0 
+          ? SwipeDirection.Right 
+          : SwipeDirection.Left
+        : delta.y > 0 
+          ? SwipeDirection.Up 
+          : SwipeDirection.Down;
+      
+    
 
     static bool mayDrag(PointerEventData eventData) => eventData.button == PointerEventData.InputButton.Left;
   }
