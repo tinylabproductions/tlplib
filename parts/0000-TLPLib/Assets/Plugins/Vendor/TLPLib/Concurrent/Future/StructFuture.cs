@@ -43,8 +43,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future(IHeapFuture<A> future) : this(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(future)) {}
 
     #region Equality
-
-    public bool Equals(Future<A> other) => value == other.value;
+    
+    public bool Equals(Future<A> other) => value.Equals(other.value);
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
