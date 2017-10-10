@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
   public interface IVideoPlayer {
@@ -17,6 +18,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
   }
 
   public class VideoPlayerNoOp : IVideoPlayer {
-    public void playFromStreamingAssets(string fileName, Url clickUrl) { }
+    public void playFromStreamingAssets(string fileName, Url clickUrl) {
+      if (Log.isDebug) Log.rdebug(
+        $"{nameof(VideoPlayerNoOp)}#{nameof(playFromStreamingAssets)}({fileName}, {clickUrl})"
+      );
+    }
   }
 }

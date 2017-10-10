@@ -1,6 +1,7 @@
 ﻿using System;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -10,7 +11,7 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPGame.unity_serialization {
-  public abstract class UnityOption<A> : ISkipObjectValidationFields {
+  public abstract class UnityOption<A> : ISkipObjectValidationFields, Ref<Option<A>> {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -34,7 +35,6 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
 
     public bool isSome { get {
       if (_isSome) {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (Application.isPlaying && _value == null) {
           if (Log.isError) Log.error(
             $"{nameof(UnityOption<A>)} of {GetType()} was marked as Some, but referencing value was null!"
@@ -60,6 +60,14 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
     public Option<A> value => isSome ? F.some(_value) : Option<A>.None;
+    Option<A> Ref<Option<A>>.value {
+      get { return value; }
+      set {
+        _isSome = value.isSome;
+        // ReSharper disable once AssignNullToNotNullAttribute
+        _value = value.isSome ? value.__unsafeGetValue : default(A);
+      }
+    }
 
     public string[] blacklistedFields() => 
       isSome
@@ -72,7 +80,11 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
   [Serializable] public class UnityOptionInt : UnityOption<int> {}
   [Serializable] public class UnityOptionFloat : UnityOption<float> {}
   [Serializable] public class UnityOptionBool : UnityOption<bool> {}
-  [Serializable] public class UnityOptionString : UnityOption<string> {}
+  [Serializable]
+  public class UnityOptionString : UnityOption<string> {
+    public UnityOptionString() { }
+    public UnityOptionString(Option<string> value) : base(value) { }
+  }
   [Serializable] public class UnityOptionVector2 : UnityOption<Vector2> {}
   [Serializable] public class UnityOptionVector3 : UnityOption<Vector3> {}
   [Serializable] public class UnityOptionVector4 : UnityOption<Vector4> {}

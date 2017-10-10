@@ -34,15 +34,15 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       Selection.activeGameObject = prevSelection;
     }
 
-    [MenuItem("Assets/Inspect This &i", false, 20)]
+    [MenuItem("Assets/TLP/Inspect This &i", false, 20)]
     public static void InspectThis() {
       var o = Selection.activeObject;
       if (o) InspectTarget(o);
     }
 
-    [MenuItem("Tools/Shortcuts/Break Prefab Instance &b")]
+    [MenuItem("TLP/Tools/Shortcuts/Break Prefab Instance &b")]
     public static void BreakPrefabInstance() {
-      EditorApplication.ExecuteMenuItem("GameObject/Break Prefab Instance");
+      EditorApplication.ExecuteMenuItem("TLP/GameObject/Break Prefab Instance");
     }
   }
 }

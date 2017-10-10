@@ -1,5 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -9,6 +11,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public static class TimeContextExts {
+    public static ITimeContext orDefault(this ITimeContext tc) => tc ?? TimeContext.DEFAULT;
+
     /* action should return true if it wants to keep running. */
     public static Coroutine every(
       this ITimeContext tc, Duration duration, Fn<bool> action, string name = null
@@ -44,48 +48,36 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
   }
 
-  public static class TimeContext {
-    public static ITimeContext DEFAULT => PlayModeTimeContext.instance;
-    public static ITimeContext orDefault(this ITimeContext tc) => tc ?? DEFAULT;
-  }
+  public class TimeContext : ITimeContext {
+    public static readonly TimeContext 
+      playMode = new TimeContext(TimeScale.Unity, () => Duration.fromSeconds(Time.time)),
+      unscaledTime = new TimeContext(TimeScale.UnscaledTime, () => Duration.fromSeconds(Time.unscaledTime)),
+      fixedTime = new TimeContext(TimeScale.FixedTime, () => Duration.fromSeconds(Time.fixedTime)),
+      realTime = new TimeContext(TimeScale.Realtime, () => Duration.fromSeconds(Time.realtimeSinceStartup));
 
-  public class PlayModeTimeContext : ITimeContext {
-    public static readonly PlayModeTimeContext instance = new PlayModeTimeContext();
-    PlayModeTimeContext() {}
+    public static ITimeContext DEFAULT => playMode;
 
-    public Duration passedSinceStartup => Duration.fromSeconds(Time.time);
+    readonly TimeScale timeScale;
+    readonly Fn<Duration> _passedSinceStartup;
+    readonly Option<MonoBehaviour> behaviour;
 
-    public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.Unity);
-  }
+    public TimeContext(
+      TimeScale timeScale, Fn<Duration> passedSinceStartup, 
+      Option<MonoBehaviour> behaviour = default(Option<MonoBehaviour>)
+    ) {
+      Option.ensureValue(ref behaviour);
 
-  public class UnscaledTimeContext : ITimeContext {
-    public static readonly UnscaledTimeContext instance = new UnscaledTimeContext();
-    UnscaledTimeContext() {}
+      this.timeScale = timeScale;
+      _passedSinceStartup = passedSinceStartup;
+      this.behaviour = behaviour;
+    }
 
-    public Duration passedSinceStartup => Duration.fromSeconds(Time.unscaledTime);
+    public TimeContext withBehaviour(MonoBehaviour behaviour) =>
+      new TimeContext(timeScale, _passedSinceStartup, behaviour.some());
 
-    public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.UnscaledTime);
-  }
-
-  public class FixedTimeContext : ITimeContext {
-    public static readonly FixedTimeContext instance = new FixedTimeContext();
-    FixedTimeContext() {}
-
-    public Duration passedSinceStartup => Duration.fromSeconds(Time.fixedTime);
+    public Duration passedSinceStartup => _passedSinceStartup();
 
     public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.FixedTime);
-  }
-
-  public class RealTimeContext : ITimeContext {
-    public static readonly RealTimeContext instance = new RealTimeContext();
-    RealTimeContext() {}
-
-    public Duration passedSinceStartup => Duration.fromSeconds(Time.realtimeSinceStartup);
-
-    public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration.seconds, act, timeScale: TimeScale.Realtime);
+      ASync.WithDelay(duration.seconds, act, behaviour: behaviour.orNull(), timeScale: timeScale);
   }
 }
