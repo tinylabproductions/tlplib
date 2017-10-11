@@ -15,9 +15,10 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public static Rng now => new Rng(DateTime.Now);
 
-    // The state must be seeded with a nonzero value.
     public Rng(ulong seed) {
-      this.seed = seed == 0 ? ulong.MaxValue : seed;
+      // XORSHIFT does not work with 0 seeds.
+      if (seed == 0) throw new ArgumentOutOfRangeException(nameof(seed), seed, "seed can't be 0!");
+      this.seed = seed;
     }
 
     public Rng(DateTime seed) : this(unchecked((ulong) seed.Ticks)) {}
@@ -69,6 +70,15 @@ namespace com.tinylabproductions.TLPLib.Data {
       rng => rng.nextIntInRangeT(range);
     public int nextIntInRange(Range range, out Rng newState) => 
       floatToIntInRange(range, nextFloat(out newState));
+
+    static uint floatToUIntInRange(URange range, float v) => 
+      range.from + (uint)((range.to - range.from) * v);
+    public Tpl<Rng, uint> nextUIntInRangeT(URange range) =>
+      nextFloatT.map2(v => floatToUIntInRange(range, v));
+    public static Fn<Rng, Tpl<Rng, uint>> nextUIntInRangeS(URange range) => 
+      rng => rng.nextUIntInRangeT(range);
+    public uint nextUIntInRange(URange range, out Rng newState) => 
+      floatToUIntInRange(range, nextFloat(out newState));
 
     static float floatToFloatInRange(FRange range, float v) => 
       range.from + (range.to - range.from) * v;
