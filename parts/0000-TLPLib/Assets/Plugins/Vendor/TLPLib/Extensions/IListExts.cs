@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using Random = UnityEngine.Random;
@@ -75,6 +76,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Option<Tpl<Rng, A>> random<A>(this IList<A> list, Rng rng) =>
       list.randomIndex(rng).map(t => t.map2(idx => list[idx]));
+
+    public static A random<A>(this NonEmptyImmutableList<A> list, ref Rng rng) => 
+      list.list[rng.nextIntInRange(new Range(0, list.list.Count), out rng)];
 
     public static Option<int> randomIndex<A>(this IList<A> list) => 
       list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
