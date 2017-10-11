@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       list.randomIndex(rng).map(t => t.map2(idx => list[idx]));
 
     public static A random<A>(this NonEmptyImmutableList<A> list, ref Rng rng) => 
-      list[rng.nextUIntInRange(new URange(0, list.countUInt), out rng)];
+      list.list[rng.nextIntInRange(new Range(0, list.list.Count), out rng)];
 
     public static Option<int> randomIndex<A>(this IList<A> list) => 
       list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
