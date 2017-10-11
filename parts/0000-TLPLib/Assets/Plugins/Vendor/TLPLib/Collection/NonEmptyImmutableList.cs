@@ -1,41 +1,42 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class NonEmptyImmutableList {
-    public static Option<NonEmptyImmutableList<A>> a<A>(IEnumerable<A> enumerable) {
-      var first = Option<A>.None;
-      ImmutableList<A>.Builder restBuilder = null;
-      foreach (var a in enumerable) {
-        if (first.isNone) {
-          first = F.some(a);
-          restBuilder = ImmutableList.CreateBuilder<A>();
-        }
-        else {
-          // ReSharper disable once PossibleNullReferenceException
-          restBuilder.Add(a);
-        }
-      }
-      // ReSharper disable once PossibleNullReferenceException
-      return first.map(a => new NonEmptyImmutableList<A>(a, restBuilder.ToImmutable()));
-    }
+    public static Option<NonEmptyImmutableList<A>> a<A>(ImmutableList<A> list) => NonEmptyImmutableList<A>.a(list);
+    public static Option<NonEmptyImmutableList<A>> toNonEmpty<A>(this ImmutableList<A> list) => a(list);
   }
 
-  public class NonEmptyImmutableList<A> {
-    public readonly A first;
-    public readonly ImmutableList<A> rest;
+  public struct NonEmptyImmutableList<A> : IEquatable<NonEmptyImmutableList<A>> {
+    public readonly ImmutableList<A> list;
 
-    public NonEmptyImmutableList(A first, ImmutableList<A> rest) {
-      this.first = first;
-      this.rest = rest;
+    #region Equality
+
+    public bool Equals(NonEmptyImmutableList<A> other) {
+      return Equals(list, other.list);
     }
 
-    public int count => rest.Count + 1;
-    public uint countUInt => (uint) rest.Count + 1;
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      return obj is NonEmptyImmutableList<A> && Equals((NonEmptyImmutableList<A>)obj);
+    }
 
-    public A this[int idx] => idx == 0 ? first : rest[idx - 1];
-    public A this[uint idx] => idx == 0 ? first : rest[idx.toIntClamped() - 1];
+    public override int GetHashCode() {
+      return (list != null ? list.GetHashCode() : 0);
+    }
+
+    public static bool operator ==(NonEmptyImmutableList<A> left, NonEmptyImmutableList<A> right) { return left.Equals(right); }
+    public static bool operator !=(NonEmptyImmutableList<A> left, NonEmptyImmutableList<A> right) { return !left.Equals(right); }
+
+    #endregion
+
+    NonEmptyImmutableList(ImmutableList<A> list) { this.list = list; }
+    
+    public static Option<NonEmptyImmutableList<A>> a(ImmutableList<A> list) =>
+      list.isEmpty() ? Option<NonEmptyImmutableList<A>>.None : F.some(new NonEmptyImmutableList<A>(list));
+
+    public override string ToString() => $"{nameof(NonEmptyImmutableList<A>)}({list.mkStringEnum()})";
   }
 }
