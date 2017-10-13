@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Logger;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public
@@ -70,6 +72,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
         catch (Exception e) { return new Try<B>(e); }
       }
       return new Try<B>(_exception);
+    }
+
+    public Option<A> getOrLog(object errorMessage, Object context = null, ILog log = null) {
+      if (isError) {
+        log = log ?? Log.defaultLogger;
+        if (log.isError()) log.error(errorMessage, _exception, context);
+      }
+      return value;
     }
 
     public override string ToString() => 
