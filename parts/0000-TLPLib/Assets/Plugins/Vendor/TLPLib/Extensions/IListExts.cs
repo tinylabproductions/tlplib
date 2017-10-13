@@ -69,7 +69,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static bool isEmpty<A>(this IList<A> list) => list.Count == 0;
-
     public static bool nonEmpty<A>(this IList<A> list) => list.Count != 0;
 
     public static Option<A> random<A>(this IList<A> list) => 
