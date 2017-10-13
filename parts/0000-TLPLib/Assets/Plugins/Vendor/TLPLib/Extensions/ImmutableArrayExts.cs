@@ -15,6 +15,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Option<T> get<T>(this ImmutableArray<T> list, int index) =>
       index >= 0 && index < list.Length ? F.some(list[index]) : F.none<T>();
+
+    public static bool isEmpty<A>(this ImmutableArray<A> list) => list.Length == 0;
+    public static bool nonEmpty<A>(this ImmutableArray<A> list) => list.Length != 0;
   }
 
   public static class ImmutableArrayBuilderExts {
