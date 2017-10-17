@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     [MenuItem("TLP/Tools/Shortcuts/Break Prefab Instance &b")]
     public static void BreakPrefabInstance() {
-      EditorApplication.ExecuteMenuItem("TLP/GameObject/Break Prefab Instance");
+      EditorApplication.ExecuteMenuItem("GameObject/Break Prefab Instance");
     }
   }
 }
