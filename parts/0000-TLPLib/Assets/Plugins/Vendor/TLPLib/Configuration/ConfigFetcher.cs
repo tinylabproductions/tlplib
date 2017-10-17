@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) => 
       F.t(
         urls,
-        new WWW(urls.fetchUrl.ToString()).wwwFuture().asNonCancellable().map(wwwE => {
+        new WWW(urls.fetchUrl.ToString()).toFuture().asNonCancellable().map(wwwE => {
           var www = wwwE.fold(err => err.www, _ => _);
           var headers = www.headers();
           return wwwE.map(

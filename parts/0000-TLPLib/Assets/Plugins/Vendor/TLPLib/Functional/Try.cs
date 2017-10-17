@@ -46,6 +46,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<Exception, A> toEither =>
       isSuccess ? Either<Exception, A>.Right(_value) : Either<Exception, A>.Left(_exception);
 
+    public Either<string, A> toEitherStr =>
+      isSuccess ? Either<string, A>.Right(_value) : Either<string, A>.Left(_exception.ToString());
+
     public Either<ImmutableList<string>, A> toValidation =>
       isSuccess 
       ? Either<ImmutableList<string>, A>.Right(_value) 

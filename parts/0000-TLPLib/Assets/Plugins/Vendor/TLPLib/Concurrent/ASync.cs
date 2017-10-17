@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
@@ -151,7 +152,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do async cancellable WWW request. */
-    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> wwwFuture(this WWW www) {
+    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
       Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
       var f = Future<Either<Cancelled, Either<WWWError, WWW>>>.async(out promise);
 
@@ -165,6 +166,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         promise.complete(new Either<Cancelled, Either<WWWError, WWW>>(Cancelled.instance));
         return true;
       });
+    }
+
+    public static Future<Either<string, UnityWebRequest>> toFuture(this UnityWebRequest req) {
+      Promise<Either<string, UnityWebRequest>> promise;
+      var f = Future<Either<string, UnityWebRequest>>.async(out promise);
+      StartCoroutine(webRequestEnumerator(req, promise));
+      return f;
+    }
+
+    public static IEnumerator webRequestEnumerator(
+      UnityWebRequest req, Promise<Either<string, UnityWebRequest>> p
+    ) {
+      yield return req.Send();
+      if (req.isError) {
+        p.complete(req.error);
+        req.Dispose();
+      }
+      else p.complete(req);
     }
 
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
