@@ -7,6 +7,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     A multiply(A a1, float y);
   }
 
+  /// <summary>Knows how to linearly interpolate <see cref="A"/>. Should return start when y = 0 and end when y = 1.</summary>
   public delegate A TweenLerp<A>(A start, A end, float y);
   public static class TweenLerp {
     public static readonly TweenLerp<float> float_ = Mathf.Lerp;

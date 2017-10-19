@@ -30,6 +30,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     #endregion
   }
 
+  /// <summary>
+  /// Knows how to change state of some property <see cref="A"/> on <see cref="T"/>.
+  /// 
+  /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
+  /// </summary>
   public class Tweener<A, T> : TweenSequenceElement {
     public float duration => tween.duration;
 
