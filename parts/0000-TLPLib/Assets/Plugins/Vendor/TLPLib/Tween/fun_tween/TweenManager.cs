@@ -8,6 +8,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     OnUpdate, OnUpdateUnscaled, OnLateUpdate, OnLateUpdateUnscaled, OnFixedUpdate
   }
 
+  /// <summary>
+  /// Manages a sequence, calling its <see cref="TweenSequence.update"/> method for you on
+  /// your specified terms (for example loop 3 times, run on fixed update).
+  /// </summary>
   public class TweenManager {
     public struct Loop {
       public enum Mode { Normal, YoYo }
@@ -148,6 +152,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) => new TweenManager(sequence, time, looping);
   }
 
+  /// <summary>
+  /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
+  /// </summary>
   public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
     public static readonly TweenManagerRunner instance;
 
