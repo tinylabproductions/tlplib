@@ -48,5 +48,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
       isEmpty(c) ? Option<NonEmpty<A>>.None : F.some(new NonEmpty<A>(c));
 
     public override string ToString() => $"{nameof(NonEmpty<A>)}({a})";
+
+    public static implicit operator A(NonEmpty<A> ne) => ne.a;
   }
 }
