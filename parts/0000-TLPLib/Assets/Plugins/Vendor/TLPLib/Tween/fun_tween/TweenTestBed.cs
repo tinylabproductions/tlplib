@@ -40,9 +40,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       var tr = TweenSequence.sequential(
         /*tra, tra.reversed(), tra.reversed().reversed(), */tra.reversed()
       ).build();
-      manager = tr.managed()
-        .onStart(forwards => indicator.color = forwards ? Color.black : Color.green)
-        .onEnd(forwards => indicator.color = forwards ? Color.gray : Color.red);
+//      manager = tr.managed()
+//        .onStart(forwards => indicator.color = forwards ? Color.black : Color.green)
+//        .onEnd(forwards => indicator.color = forwards ? Color.gray : Color.red);
 
 //      var tr1 =
 //        TweenSequence.Builder.create()
