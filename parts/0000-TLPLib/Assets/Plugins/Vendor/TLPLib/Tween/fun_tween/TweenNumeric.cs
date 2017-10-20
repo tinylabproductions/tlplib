@@ -14,6 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static readonly TweenLerp<Vector2> vector2 = Vector2.Lerp;
     public static readonly TweenLerp<Vector3> vector3 = Vector3.Lerp;
     public static readonly TweenLerp<Quaternion> quaternion = Quaternion.Lerp;
+    public static readonly TweenLerp<Color> color = Color.Lerp;
 
     public static TweenLerp<A> fromNumeric<A>(TweenNumeric<A> n) =>
       (start, end, y) => n.add(start, n.multiply(n.subtract(end, start), y));
