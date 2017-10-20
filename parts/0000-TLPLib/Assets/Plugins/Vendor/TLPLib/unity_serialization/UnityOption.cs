@@ -77,7 +77,11 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
     public override string ToString() => $"{nameof(UnityOption<A>)}({value})";
   }
 
-  [Serializable] public class UnityOptionInt : UnityOption<int> {}
+  [Serializable]
+  public class UnityOptionInt : UnityOption<int> {
+    public UnityOptionInt() { }
+    public UnityOptionInt(Option<int> value) : base(value) { }
+  }
   [Serializable] public class UnityOptionFloat : UnityOption<float> {}
   [Serializable] public class UnityOptionBool : UnityOption<bool> {}
   [Serializable]
@@ -92,6 +96,11 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
   [Serializable] public class UnityOptionMonoBehaviour : UnityOption<MonoBehaviour> {}
   [Serializable] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
   [Serializable] public class UnityOptionAudioClip : UnityOption<AudioClip> {}
+  [Serializable]
+  public class UnityOptionUInt : UnityOption<uint> {
+    public UnityOptionUInt() { }
+    public UnityOptionUInt(Option<uint> value) : base(value) { }
+  }
   [Serializable] public class UnityOptionUIntArray : UnityOption<uint[]> { }
   [Serializable] public class UnityOptionGameObject : UnityOption<GameObject> {
     public UnityOptionGameObject() {}
