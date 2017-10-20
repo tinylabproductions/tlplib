@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -39,7 +42,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public readonly ITweenSequence sequence;
     public readonly TweenTime time;
 
-    public event TweenCallback.Act onStart_, onEnd_;
+    // These are null intentionally. We try not to create objects if they are not needed.
+    ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
+    ISubject<TweenCallback.Event> onStart_ => __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
+    ISubject<TweenCallback.Event> onEnd_ => __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
+
+    public IObservable<TweenCallback.Event> onStart => onStart_;
+    public IObservable<TweenCallback.Event> onEnd => onEnd_;
 
     public float timescale = 1;
     public bool forwards = true;
@@ -63,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       if (deltaTime == 0) return;
 
       if (forwards && sequence.isAtZero() || !forwards && sequence.isAtDuration()) {
-        onStart_?.Invoke(forwards);
+        __onStartSubject?.push(new TweenCallback.Event(forwards));
       }
 
       var previousTime = sequence.timePassed;
@@ -87,20 +96,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
           update(unusedTime);
         }
         else {
-          onEnd_?.Invoke(forwards);
+          __onEndSubject?.push(new TweenCallback.Event(forwards));
           stop();
         }
       }
-    }
-
-    public TweenManager onStart(TweenCallback.Act act) {
-      onStart_ += act;
-      return this;
-    }
-
-    public TweenManager onEnd(TweenCallback.Act act) {
-      onEnd_ += act;
-      return this;
     }
 
     /// <summary>Plays a tween from the start/end.</summary>
