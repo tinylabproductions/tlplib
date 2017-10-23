@@ -40,6 +40,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static Tweener<Vector3, Transform> tweenScaleRelative(
       this Transform t, Vector3 to, Ease ease, float duration
     ) => tweenScale(t, t.localScale, to, ease, duration);
+
+    public static Tweener<Vector3, Transform> tweenScaleMultiply(
+      this Transform t, float multiplier, Ease ease, float duration
+    ) => tweenScale(t, t.localScale, t.localScale * multiplier, ease, duration);
     #endregion
 
     #region Transform Color

@@ -35,6 +35,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
 
       public static Loop forever(Mode mode = Mode.Normal) => new Loop(TIMES_FOREVER, mode);
+      public static Loop foreverYoYo => new Loop(TIMES_FOREVER, Mode.YoYo);
       public static Loop single => new Loop(TIMES_SINGLE, Mode.Normal);
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
@@ -149,6 +150,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static TweenManager managed(
       this ITweenSequence sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
     ) => new TweenManager(sequence, time, looping);
+
+    public static TweenManager managed(
+      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
+    ) => new TweenManager(TweenSequence.single(sequence), time, looping);
   }
 
   /// <summary>

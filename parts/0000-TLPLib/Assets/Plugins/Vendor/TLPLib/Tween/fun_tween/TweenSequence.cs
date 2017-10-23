@@ -50,6 +50,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.effects = effects;
     }
 
+    // optimized for minimal allocations
+    public static TweenSequence single(TweenSequenceElement sequence) => 
+      new TweenSequence(sequence.duration, new []{ new Effect(0, sequence.duration, sequence) });
+
     public void setRelativeTimePassed(float t, bool playingForwards) =>
       this.setRelativeTimePassedDefault(t);
 
@@ -200,6 +204,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public static TweenSequence single(this TweenSequenceElement element) =>
-      element.singleBuilder().build();
+      TweenSequence.single(element);
   }
 }
