@@ -128,6 +128,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.Yield());
+    public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, Option<A> aOpt) =>
+      aOpt.isSome ? e.Concat(aOpt.__unsafeGetValue) : e;
 
     public static IEnumerable<Base> Concat2<Child, Base>(
       this IEnumerable<Child> e1, IEnumerable<Base> e2
