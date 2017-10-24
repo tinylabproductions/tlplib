@@ -109,6 +109,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       return rewind();
     }
 
+    // TODO: add an option to play backwards (and test it)
+    /// <summary>Plays a tween from the start at a given position.</summary>
+    public TweenManager play(float startTime) {
+      rewind();
+      resume(true);
+      sequence.timePassed = startTime;
+      return this;
+    }
+
     /// <summary>Resumes playback from the last position, changing the direction.</summary>
     public TweenManager resume(bool forwards) {
       this.forwards = forwards;
@@ -152,8 +161,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) => new TweenManager(sequence, time, looping);
 
     public static TweenManager managed(
-      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(TweenSequence.single(sequence), time, looping);
+      this TweenSequenceElement sequence, TweenTime time = TweenTime.OnUpdate, float delay = 0
+    ) => sequence.managed(TweenManager.Loop.single, time, delay);
+
+    public static TweenManager managed(
+      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate, 
+      float delay = 0
+    ) => new TweenManager(TweenSequence.single(sequence, delay), time, looping);
   }
 
   /// <summary>

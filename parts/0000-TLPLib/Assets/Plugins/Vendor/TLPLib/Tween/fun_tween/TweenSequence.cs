@@ -51,8 +51,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     // optimized for minimal allocations
-    public static TweenSequence single(TweenSequenceElement sequence) => 
-      new TweenSequence(sequence.duration, new []{ new Effect(0, sequence.duration, sequence) });
+    public static TweenSequence single(TweenSequenceElement sequence, float delay = 0) => 
+      new TweenSequence(sequence.duration + delay, new []{ new Effect(delay, sequence.duration + delay, sequence) });
 
     public void setRelativeTimePassed(float t, bool playingForwards) =>
       this.setRelativeTimePassedDefault(t);
