@@ -10,15 +10,15 @@ using ALog = com.tinylabproductions.TLPLib.Android.Bindings.android.util.Log;
 #endif
 
 namespace com.tinylabproductions.TLPLib.Android {
-  public class AppStateListener {
+  public class AppAbandonedListener {
     readonly Subject<Unit> _onAppAbandonedViaPause = new Subject<Unit>();
     public readonly IObservable<Unit> onAppAbandoned;
 
-    public AppStateListener(Duration timeout) {
+    public AppAbandonedListener(Duration timeout) {
       var lastFlag = F.none<Ref<bool>>();
       if (Log.isInfo) Log.info($"Creating {nameof(onAppAbandoned)} with {timeout}.");
       ASync.onAppPause.subscribe(paused => {
-        const string TAG = nameof(AppStateListener);
+        const string TAG = nameof(AppAbandonedListener);
         if (paused) {
           var r = Ref.a(true);
           lastFlag = r.some();
