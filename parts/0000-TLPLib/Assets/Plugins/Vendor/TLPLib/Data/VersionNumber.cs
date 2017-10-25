@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -94,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       )));
     }
 
-    static Either<string, uint> getIdx(string[] parts, int idx)
-      { return parts.get(idx).fold(0u.right().l<string>(), _ => _.parseUInt()); }
+    static Either<string, uint> getIdx(IList<string> parts, int idx) => 
+      parts.get(idx).fold(0u.right().l<string>(), _ => _.parseUInt());
   }
 }

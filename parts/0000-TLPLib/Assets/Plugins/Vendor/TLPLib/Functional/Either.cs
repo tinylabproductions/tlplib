@@ -153,6 +153,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<A, C> flatMapRight<C>(Fn<B, Either<A, C>> mapper) =>
       isLeft ? new Either<A, C>(_leftValue) : mapper(_rightValue);
 
+    public Either<A, C1> flatMapRight<C, C1>(Fn<B, Either<A, C>> f, Fn<B, C, C1> g) {
+      var self = this;
+      return isLeft 
+        ? new Either<A, C1>(_leftValue) 
+        : f(_rightValue).mapRight(c => g(self._rightValue, c));
+    }
+
     public Either<AA, BB> map<AA, BB>(Fn<A, AA> leftMapper, Fn<B, BB> rightMapper) =>
       isLeft
         ? new Either<AA, BB>(leftMapper(_leftValue))
@@ -237,5 +244,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public readonly B rightValue;
     public RightEitherBuilder(B rightValue) { this.rightValue = rightValue; }
     public Either<A, B> l<A>() => new Either<A, B>(rightValue);
+  }
+
+
+  public static class EitherLinqExts {
+    public static Either<L, R1> Select<L, R, R1>(this Either<L, R> e, Fn<R, R1> f) => 
+      e.mapRight(f);
+    public static Either<L, R1> SelectMany<L, R, R1>(this Either<L, R> e, Fn<R, Either<L, R1>> f) => 
+      e.flatMapRight(f);
+    public static Either<L, R2> SelectMany<L, R, R1, R2>(
+      this Either<L, R> opt, Fn<R, Either<L, R1>> f, Fn<R, R1, R2> g
+    ) => opt.flatMapRight(f, g);
   }
 }

@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         onChange(val, sub);
       });
       onDestroySub = 
-        obj.EnsureComponent<OnDestroyForwarder>().onDestroy
+        obj.EnsureComponent<OnDestroyForwarder>().onEvent
         .subscribeForOneEvent(_ => subscription.unsubscribe());
       return subscription;
     }

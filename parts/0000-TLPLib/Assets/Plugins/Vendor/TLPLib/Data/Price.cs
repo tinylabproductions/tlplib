@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public struct Price : IEquatable<Price> {
@@ -29,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public override string ToString() => $"{nameof(Price)}({cents * 0.01})";
 
-    public static readonly Numeric<Price> numeric = new Numeric();
+    [HideInInspector] public static readonly Numeric<Price> numeric = new Numeric();
     class Numeric : Numeric<Price> {
       public Price add(Price a1, Price a2) => new Price(a1.cents + a2.cents);
       public Price subtract(Price a1, Price a2) => new Price(a1.cents - a2.cents);

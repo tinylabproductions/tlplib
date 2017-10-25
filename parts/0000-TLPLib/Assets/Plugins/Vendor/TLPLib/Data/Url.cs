@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -10,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
-    [SerializeField] string _url;
+    [SerializeField, NotNull] string _url;
 #pragma warning restore 649
 
     #endregion

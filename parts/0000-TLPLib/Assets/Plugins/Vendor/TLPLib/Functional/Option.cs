@@ -129,9 +129,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
   #region Equality
 
-  #if ENABLE_IL2CPP
-    protected bool Equals(Option<A> other) {
-      return EqualityComparer<A>.Default.Equals(__unsafeGetValue, other.__unsafeGetValue) && isSome == other.isSome;
+#if ENABLE_IL2CPP
+    public bool Equals(Option<A> other) {
+      return isSome == other.isSome && EqualityComparer<A>.Default.Equals(__unsafeGetValue, other.__unsafeGetValue);
     }
 
     public override bool Equals(object obj) {
@@ -153,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
         if (ReferenceEquals(x, null)) return false;
         if (ReferenceEquals(y, null)) return false;
         if (x.GetType() != y.GetType()) return false;
-        return EqualityComparer<A>.Default.Equals(x.__unsafeGetValue, y.__unsafeGetValue) && x.isSome == y.isSome;
+        return x.isSome == y.isSome && EqualityComparer<A>.Default.Equals(x.__unsafeGetValue, y.__unsafeGetValue);
       }
 
       public int GetHashCode(Option<A> obj) {

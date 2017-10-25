@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -8,6 +11,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     OnUpdate, OnUpdateUnscaled, OnLateUpdate, OnLateUpdateUnscaled, OnFixedUpdate
   }
 
+  /// <summary>
+  /// Manages a sequence, calling its <see cref="TweenSequence.update"/> method for you on
+  /// your specified terms (for example loop 3 times, run on fixed update).
+  /// </summary>
   public class TweenManager {
     public struct Loop {
       public enum Mode { Normal, YoYo }
@@ -28,6 +35,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
 
       public static Loop forever(Mode mode = Mode.Normal) => new Loop(TIMES_FOREVER, mode);
+      public static Loop foreverYoYo => new Loop(TIMES_FOREVER, Mode.YoYo);
       public static Loop single => new Loop(TIMES_SINGLE, Mode.Normal);
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
@@ -35,7 +43,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public readonly ITweenSequence sequence;
     public readonly TweenTime time;
 
-    public event TweenCallback.Act onStart_, onEnd_;
+    // These are null intentionally. We try not to create objects if they are not needed.
+    ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
+    ISubject<TweenCallback.Event> onStart_ => __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
+    ISubject<TweenCallback.Event> onEnd_ => __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
+
+    public IObservable<TweenCallback.Event> onStart => onStart_;
+    public IObservable<TweenCallback.Event> onEnd => onEnd_;
 
     public float timescale = 1;
     public bool forwards = true;
@@ -59,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       if (deltaTime == 0) return;
 
       if (forwards && sequence.isAtZero() || !forwards && sequence.isAtDuration()) {
-        onStart_?.Invoke(forwards);
+        __onStartSubject?.push(new TweenCallback.Event(forwards));
       }
 
       var previousTime = sequence.timePassed;
@@ -83,26 +97,25 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
           update(unusedTime);
         }
         else {
-          onEnd_?.Invoke(forwards);
+          __onEndSubject?.push(new TweenCallback.Event(forwards));
           stop();
         }
       }
-    }
-
-    public TweenManager onStart(TweenCallback.Act act) {
-      onStart_ += act;
-      return this;
-    }
-
-    public TweenManager onEnd(TweenCallback.Act act) {
-      onEnd_ += act;
-      return this;
     }
 
     /// <summary>Plays a tween from the start/end.</summary>
     public TweenManager play(bool forwards = true) {
       resume(forwards);
       return rewind();
+    }
+
+    // TODO: add an option to play backwards (and test it)
+    /// <summary>Plays a tween from the start at a given position.</summary>
+    public TweenManager play(float startTime) {
+      rewind();
+      resume(true);
+      sequence.timePassed = startTime;
+      return this;
     }
 
     /// <summary>Resumes playback from the last position, changing the direction.</summary>
@@ -146,8 +159,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static TweenManager managed(
       this ITweenSequence sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
     ) => new TweenManager(sequence, time, looping);
+
+    public static TweenManager managed(
+      this TweenSequenceElement sequence, TweenTime time = TweenTime.OnUpdate, float delay = 0
+    ) => sequence.managed(TweenManager.Loop.single, time, delay);
+
+    public static TweenManager managed(
+      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate, 
+      float delay = 0
+    ) => new TweenManager(TweenSequence.single(sequence, delay), time, looping);
   }
 
+  /// <summary>
+  /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
+  /// </summary>
   public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
     public static readonly TweenManagerRunner instance;
 

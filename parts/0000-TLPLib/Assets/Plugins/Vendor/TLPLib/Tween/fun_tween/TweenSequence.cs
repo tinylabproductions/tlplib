@@ -5,36 +5,20 @@ using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
-  public static class TweenMutators {
-    public static readonly Act<Vector3, Transform> 
-      position = (v, t) => t.position = v,
-      localPosition = (v, t) => t.localPosition = v;
-  }
-
+  /// <summary>
+  /// Anything that can be added into a <see cref="ITweenSequence"/>.
+  /// </summary>
   public interface TweenSequenceElement {
     float duration { get; }
     void setRelativeTimePassed(float t, bool playingForwards);
   }
 
+  /// <summary>
+  /// A sequence of <see cref="TweenSequenceElement"/> arranged in time.
+  /// </summary>
   public interface ITweenSequence : TweenSequenceElement {
     float timePassed { get; set; }
     void update(float deltaTime);
-  }
-
-  public static class TweenSequenceExts {
-    // ReSharper disable CompareOfFloatsByEqualityOperator
-    public static bool isAtZero(this ITweenSequence ts) => ts.timePassed == 0;
-    public static bool isAtDuration(this ITweenSequence ts) => ts.timePassed == ts.duration;
-    // ReSharper restore CompareOfFloatsByEqualityOperator
-
-    public static ITweenSequence reversed(this ITweenSequence ts) {
-      foreach (var r in F.opt(ts as TweenSequenceReversed))
-        return r.original;
-      return new TweenSequenceReversed(ts);
-    }
-
-    public static void setRelativeTimePassedDefault(this ITweenSequence ts, float t) =>
-      ts.update(t - ts.timePassed);
   }
 
   public class TweenSequence : ITweenSequence {
@@ -65,6 +49,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.duration = duration;
       this.effects = effects;
     }
+
+    // optimized for minimal allocations
+    public static TweenSequence single(TweenSequenceElement sequence, float delay = 0) => 
+      new TweenSequence(sequence.duration + delay, new []{ new Effect(delay, sequence.duration + delay, sequence) });
 
     public void setRelativeTimePassed(float t, bool playingForwards) =>
       this.setRelativeTimePassedDefault(t);
@@ -192,5 +180,30 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public void update(float deltaTime) => 
       original.update(-deltaTime);
+  }
+
+  public static class TweenSequenceExts {
+    // ReSharper disable CompareOfFloatsByEqualityOperator
+    public static bool isAtZero(this ITweenSequence ts) => ts.timePassed == 0;
+    public static bool isAtDuration(this ITweenSequence ts) => ts.timePassed == ts.duration;
+    // ReSharper restore CompareOfFloatsByEqualityOperator
+
+    public static ITweenSequence reversed(this ITweenSequence ts) {
+      foreach (var r in F.opt(ts as TweenSequenceReversed))
+        return r.original;
+      return new TweenSequenceReversed(ts);
+    }
+
+    public static void setRelativeTimePassedDefault(this ITweenSequence ts, float t) =>
+      ts.update(t - ts.timePassed);
+
+    public static TweenSequence.Builder singleBuilder(this TweenSequenceElement element) {
+      var builder = TweenSequence.Builder.create();
+      builder.append(element);
+      return builder;
+    }
+
+    public static TweenSequence single(this TweenSequenceElement element) =>
+      TweenSequence.single(element);
   }
 }

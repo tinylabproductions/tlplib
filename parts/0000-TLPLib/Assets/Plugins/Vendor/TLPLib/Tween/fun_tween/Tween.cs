@@ -4,6 +4,11 @@
       new TweenCallback(callback);
   }
 
+  /// <summary>
+  /// Description about <see cref="A"/> start, end, ease, way to linearly interpolate and duration, packaged together.
+  /// 
+  /// Essentially a function from (time passed) -> (<see cref="A"/> value)
+  /// </summary>
   public class Tween<A> {
     public readonly A start, end;
     public readonly Ease ease;

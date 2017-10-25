@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class EditorPrefUtils {
-    [MenuItem("Tools/Prefs/Clear PlayerPrefs")]
+    [MenuItem("TLP/Tools/Prefs/Clear PlayerPrefs")]
     public static void clearPlayerPrefs() {
       if (EditorUtility.DisplayDialog("Clear player prefs?", "Are you sure?", "Clear", "Cancel")) {
         PlayerPrefs.DeleteAll();
@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       }
     }
 
-    [MenuItem("Tools/Prefs/Clear EditorPrefs")]
+    [MenuItem("TLP/Tools/Prefs/Clear EditorPrefs")]
     public static void clearEditorPrefs() {
       Fn<string, bool> check = title =>
         EditorUtility.DisplayDialog(
