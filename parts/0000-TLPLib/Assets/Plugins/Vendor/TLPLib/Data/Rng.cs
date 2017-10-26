@@ -13,7 +13,9 @@ namespace com.tinylabproductions.TLPLib.Data {
   public struct Rng {
     public readonly ulong seed;
 
-    public static Rng now => new Rng(DateTime.Now);
+    public static ulong seedFrom(DateTime dt) => unchecked((ulong) dt.Ticks);
+    public static ulong nowSeed => seedFrom(DateTime.Now);
+    public static Rng now => new Rng(nowSeed);
 
     public Rng(ulong seed) {
       // XORSHIFT does not work with 0 seeds.
@@ -21,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.seed = seed;
     }
 
-    public Rng(DateTime seed) : this(unchecked((ulong) seed.Ticks)) {}
+    public Rng(DateTime seed) : this(seedFrom(seed)) {}
 
     public override string ToString() => $"{nameof(Rng)}({seed})";
 

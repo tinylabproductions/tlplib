@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -242,6 +244,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IOrderedEnumerable<A> OrderBySafe<A, B>(
       this IEnumerable<A> source, Func<A, B> keySelector
     ) where B : IComparable<B> => source.OrderBy(keySelector);
+
+    /// <summary>Take <see cref="count"/> random unique elements from a finite enumerable.</summary>
+    public static ImmutableList<A> takeRandomly<A>(
+      this IEnumerable<A> enumerable, int count, ref Rng rng
+    ) {
+      var r = rng;
+      // Need to force the evaluation to update rng state.
+      var result = enumerable.OrderBySafe(_ => r.nextInt(out r)).Take(count).ToImmutableList();
+      rng = r;
+      return result;
+    }
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
