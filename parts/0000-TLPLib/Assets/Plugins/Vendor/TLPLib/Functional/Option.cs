@@ -18,6 +18,21 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #endif
     }
 
+    /// <summary>
+    /// Example usage:
+    /// 
+    /// <code><![CDATA[
+    /// Option<NonEmpty<ImmutableList<DraggablePart>>> __parts = 
+    ///   Option<NonEmpty<ImmutableList<DraggablePart>>>.None;
+    /// public NonEmpty<ImmutableList<DraggablePart>> parts =>
+    ///   Option.getOrUpdate(ref __parts, () => _parts.ToImmutableList().toNonEmpty().get);
+    /// ]]></code>
+    /// </summary>
+    public static A getOrUpdate<A>(ref Option<A> opt, Fn<A> create) {
+      if (opt.isNone) opt = new Option<A>(create());
+      return opt.__unsafeGetValue;
+    }
+
     public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt)
     where Child : Base {
       return opt.isSome ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
@@ -46,7 +61,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
      * getOrElse is written as an extension method to make it easier to use in IL2CPP builds
      * where it is a class.
      */
-
     public static A getOrElse<A>(this Option<A> opt, Fn<A> orElse) {
 #if ENABLE_IL2CPP
       if (opt == null) return orElse();
