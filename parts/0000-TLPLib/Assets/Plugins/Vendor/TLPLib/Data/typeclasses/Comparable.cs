@@ -69,6 +69,10 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       this IEnumerable<A> c, Comparable<B> comparable, Fn<A, B> extract
     ) => maxBy<A, B, IEnumerable<A>>(c, comparable, extract);
 
+    public static Option<A> maxBy<A>(
+      this IEnumerable<A> c, Comparable<A> comparable
+    ) => c.maxBy(comparable, _ => _);
+
     public static Option<A> min<A, Coll>(
       this Coll c, Comparable<A> comparable
     ) where Coll : IEnumerable<A> => minBy<A, A, Coll>(c, comparable, _ => _);
@@ -80,6 +84,10 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static Option<A> minBy<A, B>(
       this IEnumerable<A> c, Comparable<B> comparable, Fn<A, B> extract
     ) => minBy<A, B, IEnumerable<A>>(c, comparable, extract);
+
+    public static Option<A> minBy<A>(
+      this IEnumerable<A> c, Comparable<A> comparable
+    ) => c.minBy(comparable, _ => _);
 
     static Option<A> minMax<A, B, Coll>(
       this Coll c, Fn<A, B> extract, Comparable<B> comparable, CompareResult lookFor
