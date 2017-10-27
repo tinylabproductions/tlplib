@@ -13,7 +13,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField] int _millis;
+    // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     #endregion
