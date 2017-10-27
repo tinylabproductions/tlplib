@@ -30,6 +30,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static CastBuilder<A> cast<A>(this A a) where A : class { return new CastBuilder<A>(a); }
 
     public static string asDebugString<A>(this A a) {
+      // strings are enumrables, but we don't want to look at them like that...
+      if (a is string) return $"'{a}'";
       var enumerable = a as IEnumerable;
       // ReSharper disable once InvokeAsExtensionMethod
       return enumerable != null 
