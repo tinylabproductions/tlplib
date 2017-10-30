@@ -1,6 +1,7 @@
 ﻿#if UNITY_ANDROID
 using System.Collections.Immutable;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.java.util;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
@@ -49,6 +50,15 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       // List<PackageInfo> getInstalledPackages(int flags)
       var jList = new List(java.cjo("getInstalledPackages", (int) flags));
       return jList.Select(jo => new PackageInfo(jo)).ToImmutableList();
+    }
+
+    public void openApp(Activity activity, string bundleIdentifier) {
+      var launchIntent = new Try<AndroidJavaObject>(
+        java.Call<AndroidJavaObject>("getLaunchIntentForPackage", bundleIdentifier)
+      );
+      foreach (var intent in launchIntent.value) {
+        activity.java.Call("startActivity", intent);
+      }
     }
   }
 }

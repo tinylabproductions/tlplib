@@ -2,12 +2,14 @@
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android;
+using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 #endif
 
 namespace com.tinylabproductions.TLPLib.Platform {
   public interface IPlatformPackageManager {
     bool hasAppInstalled(string bundleIdentifier);
+    void openApp(string bundleIdentifier);
   }
 
   public static class PlatformPackageManager {
@@ -23,15 +25,18 @@ namespace com.tinylabproductions.TLPLib.Platform {
 
   class NoOpPlatformPackageManager : IPlatformPackageManager {
     public bool hasAppInstalled(string bundleIdentifier) => false;
+    public void openApp(string bundleIdentifier) { }
   }
 
 #if UNITY_ANDROID
   class AndroidPlatformPackageManager : IPlatformPackageManager {
     readonly PackageManager androidPackageManager;
     readonly ImmutableList<string> packageNames;
+    readonly Activity activity;
 
     public AndroidPlatformPackageManager() {
       androidPackageManager = AndroidActivity.packageManager;
+      activity = AndroidActivity.current;
       //Cache all of the packet names for better performance
       packageNames = 
         androidPackageManager
@@ -41,6 +46,7 @@ namespace com.tinylabproductions.TLPLib.Platform {
     }
 
     public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
+    public void openApp(string bundleIdentifier) => androidPackageManager.openApp(activity, bundleIdentifier);
   }
 #endif
 }
