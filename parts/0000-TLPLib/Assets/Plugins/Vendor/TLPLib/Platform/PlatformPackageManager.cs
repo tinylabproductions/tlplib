@@ -1,15 +1,17 @@
 ﻿#if UNITY_ANDROID
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
+using com.tinylabproductions.TLPLib.Functional;
 #endif
 
 namespace com.tinylabproductions.TLPLib.Platform {
   public interface IPlatformPackageManager {
     bool hasAppInstalled(string bundleIdentifier);
-    void openApp(string bundleIdentifier);
+    Option<Exception> openApp(string bundleIdentifier);
   }
 
   public static class PlatformPackageManager {
@@ -25,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Platform {
 
   class NoOpPlatformPackageManager : IPlatformPackageManager {
     public bool hasAppInstalled(string bundleIdentifier) => false;
-    public void openApp(string bundleIdentifier) { }
+    public Option<Exception> openApp(string bundleIdentifier) => F.none<Exception>();
   }
 
 #if UNITY_ANDROID
@@ -46,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Platform {
     }
 
     public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
-    public void openApp(string bundleIdentifier) => androidPackageManager.openApp(activity, bundleIdentifier);
+    public Option<Exception> openApp(string bundleIdentifier) => androidPackageManager.openApp(activity, bundleIdentifier);
   }
 #endif
 }

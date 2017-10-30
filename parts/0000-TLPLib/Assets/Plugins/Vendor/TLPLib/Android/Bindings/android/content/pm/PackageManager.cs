@@ -1,4 +1,5 @@
 ﻿#if UNITY_ANDROID
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
@@ -52,13 +53,14 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       return jList.Select(jo => new PackageInfo(jo)).ToImmutableList();
     }
 
-    public void openApp(Activity activity, string bundleIdentifier) {
+    public Option<Exception> openApp(Activity activity, string bundleIdentifier) {
       var launchIntent = new Try<AndroidJavaObject>(
-        java.Call<AndroidJavaObject>("getLaunchIntentForPackage", bundleIdentifier)
+        java.cjo("getLaunchIntentForPackage", bundleIdentifier)
       );
       foreach (var intent in launchIntent.value) {
         activity.java.Call("startActivity", intent);
       }
+      return launchIntent.exception;
     }
   }
 }
