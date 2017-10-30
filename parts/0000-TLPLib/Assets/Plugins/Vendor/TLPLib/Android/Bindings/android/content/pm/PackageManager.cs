@@ -54,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
     }
 
     public Option<Exception> openApp(Activity activity, string bundleIdentifier) {
-      var launchIntent = new Try<AndroidJavaObject>(
+      var launchIntent = F.scs(
         java.cjo("getLaunchIntentForPackage", bundleIdentifier)
       );
       foreach (var intent in launchIntent.value) {
