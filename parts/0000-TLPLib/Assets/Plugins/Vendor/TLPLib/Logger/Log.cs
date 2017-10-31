@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -53,7 +54,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
       set { _defaultLogger = value; }
     }
 
-    public static void log(Level l, object o, Object context = null) => defaultLogger.log(l, o, context);
+    public static void log(Level l, object o, Object context = null) => 
+      defaultLogger.log(l, LogEntry.simple(o, context));
+    public static void log(Level l, LogEntry entry) => defaultLogger.log(l, entry);
     public static bool willLog(Level l) => defaultLogger.willLog(l);
 
     public static void verbose(object o, Object context = null) => 
@@ -114,11 +117,57 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
   }
 
+  public struct LogEntry {
+    /// <summary>Message for the log entry.</summary>
+    public readonly object message;
+    /// <summary>key -> value pairs where values make up a set. Things like
+    /// type -> (dog or cat or fish) are a good fit here.</summary>
+    public readonly ImmutableArray<Tpl<string, string>> tags;
+    /// <summary>
+    /// key -> value pairs where values can be anything. Things like
+    /// bytesRead -> 322344 are a good fit here.
+    /// </summary>
+    public readonly ImmutableArray<Tpl<string, string>> extras;
+    /// <summary>Unity object which is related to this entry.</summary>
+    public readonly Option<Object> context;
+
+    public LogEntry(
+      object message, ImmutableArray<Tpl<string, string>> tags, 
+      ImmutableArray<Tpl<string, string>> extras,
+      Option<Object> context = default(Option<Object>)
+    ) {
+      Option.ensureValue(ref context);
+      this.message = message;
+      this.tags = tags;
+      this.extras = extras;
+      this.context = context;
+    }
+
+    public override string ToString() {
+      var sb = new StringBuilder(message.ToString());
+      if (context.isSome) sb.Append($" (ctx={context.__unsafeGetValue})");
+      if (tags.nonEmpty()) sb.Append($"\n{nameof(tags)}={tags.mkStringEnumNewLines()}");
+      if (extras.nonEmpty()) sb.Append($"\n{nameof(extras)}={extras.mkStringEnumNewLines()}");
+      return sb.ToString();
+    }
+
+    public static LogEntry simple(object message, Object context = null) => new LogEntry(
+      message, ImmutableArray<Tpl<string, string>>.Empty, 
+      ImmutableArray<Tpl<string, string>>.Empty, context.opt()
+    );
+
+    public LogEntry withMessage(string message) => 
+      new LogEntry(message, tags, extras, context);
+
+    public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
+      SerializedRW.immutableArray(SerializedRW.str.and(SerializedRW.str));
+  }
+
   public interface ILog {
     Log.Level level { get; set; }
 
     bool willLog(Log.Level l);
-    void log(Log.Level l, object o, Object context = null);
+    void log(Log.Level l, LogEntry o);
   }
 
   public static class ILogExts {
@@ -129,15 +178,19 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static bool isError(this ILog log) => log.willLog(Log.Level.ERROR);
 
     public static void verbose(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.VERBOSE, o, context);
+      log.log(Log.Level.VERBOSE, LogEntry.simple(o, context));
     public static void debug(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.DEBUG, o, context);
+      log.log(Log.Level.DEBUG, LogEntry.simple(o, context));
     public static void info(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.INFO, o, context);
+      log.log(Log.Level.INFO, LogEntry.simple(o, context));
     public static void warn(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.WARN, o, context);
+      log.warn(LogEntry.simple(o, context));
+    public static void warn(this ILog log, LogEntry entry) => 
+      log.log(Log.Level.WARN, entry);
     public static void error(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.ERROR, o, context);
+      log.error(LogEntry.simple(o, context));
+    public static void error(this ILog log, LogEntry entry) => 
+      log.log(Log.Level.ERROR, entry);
     public static void error(this ILog log, Exception ex, Object context = null) => 
       log.error(Log.exToStr(ex), context);
     public static void error(this ILog log, object o, Exception ex, Object context = null) => 
@@ -164,8 +217,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, object o, Object context = null) => 
-      defer(() => backing.log(l, o, context));
+    public void log(Log.Level l, LogEntry entry) => 
+      defer(() => backing.log(l, entry));
 
     static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
   }
@@ -174,9 +227,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public Log.Level level { get; set; } = Log.defaultLogLevel;
     public bool willLog(Log.Level l) => level >= l;
 
-    public void log(Log.Level l, object o, Object context = null) => 
-      logInner(l, line(l.ToString(), o), context.opt());
-    protected abstract void logInner(Log.Level l, string s, Option<Object> context);
+    public void log(Log.Level l, LogEntry entry) => 
+      logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
+    protected abstract void logInner(Log.Level l, LogEntry entry);
 
     static string line(string level, object o) => $"[{thread}|{level}]> {o}";
 
@@ -191,28 +244,26 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly ConsoleLog instance = new ConsoleLog();
     ConsoleLog() {}
 
-    protected override void logInner(Log.Level l, string s, Option<Object> context) {
-      if (context.isSome) s = $"{s} (ctx={context.get})";
-      Console.WriteLine(s);
-    }
+    protected override void logInner(Log.Level l, LogEntry entry) => 
+      Console.WriteLine(entry.ToString());
   }
 
   public class UnityLog : LogBase {
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
 
-    protected override void logInner(Log.Level l, string s, Option<Object> context) {
+    protected override void logInner(Log.Level l, LogEntry entry) {
       switch (l) {
         case Log.Level.VERBOSE:
         case Log.Level.DEBUG:
         case Log.Level.INFO:
-          Debug.Log(s, context.getOrNull());
+          Debug.Log(entry, entry.context.getOrNull());
           break;
         case Log.Level.WARN:
-          Debug.LogWarning(s, context.getOrNull());
+          Debug.LogWarning(entry, entry.context.getOrNull());
           break;
         case Log.Level.ERROR:
-          Debug.LogError(s, context.getOrNull());
+          Debug.LogError(entry, entry.context.getOrNull());
           break;
         case Log.Level.NONE:
           break;
@@ -226,7 +277,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly NoOpLog instance = new NoOpLog();
     NoOpLog() {}
 
-    protected override void logInner(Log.Level l, string s, Option<Object> context) {}
+    protected override void logInner(Log.Level l, LogEntry entry) {}
   }
 
   class EditorLog {

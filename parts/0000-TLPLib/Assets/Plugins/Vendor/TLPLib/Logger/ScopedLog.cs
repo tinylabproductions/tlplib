@@ -16,8 +16,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, object o, Object context = null) => 
-      backing.log(l, wrap(o), context);
+    public void log(Log.Level l, LogEntry entry) => 
+      backing.log(l, entry.withMessage(wrap(entry.message)));
 
     string wrap(object o) => $"{scope} {o}";
   }

@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static bool inBatchMode =>
 #if UNITY_EDITOR
-      UnityEditorInternal.InternalEditorUtility.inBatchMode
+      InternalEditorUtility.inBatchMode
 #else
       false
 #endif
@@ -26,9 +26,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       var log = Log.defaultLogger;
       if (log.willLog(level)) log.log(
         level, 
-        $"########## {title} ##########\n\n" +
-        $"{body}\n\n" +
-        $"############################################################"
+        LogEntry.simple(
+          $"########## {title} ##########\n\n" +
+          $"{body}\n\n" +
+          $"############################################################"
+        )
       );
 #if UNITY_EDITOR
       if (!InternalEditorUtility.inBatchMode) EditorUtility.DisplayDialog(title, body, "OK");
