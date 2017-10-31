@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.cra
 
     public void report(Throwable throwable) {
       klass.CallStatic("report", throwable.java);
-      if (Log.isDebug) Log.rdebug(
+      if (Log.d.isDebug()) Log.d.debug(
         $"[{nameof(FirebaseCrash)}] reported: {throwable}\n" +
         $"Android Stacktrace: \n" +
         $"  {throwable.getStackTrace().Select(ste => ste.ToString()).mkString("\n  ")}"

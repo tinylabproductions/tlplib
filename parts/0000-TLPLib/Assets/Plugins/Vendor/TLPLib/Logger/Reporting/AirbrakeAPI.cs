@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       string apiKey, ErrorReporter.AppInfo appInfo
     ) {
       return (data => ASync.NextFrame(() => {
-        if (Log.isInfo) Log.info("Airbrake error:\n\n" + data + "\n" + xml(apiKey, appInfo, data));
+        if (Log.d.isInfo()) Log.d.info("Airbrake error:\n\n" + data + "\n" + xml(apiKey, appInfo, data));
       }));
     }
 
@@ -67,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
       root.AppendChild(doc.CreateElement("error").tap(err => {
         err.AppendChild(doc.textElem("class", data.errorType.ToString()));
-        err.AppendChild(doc.textElem("message", data.message));
+        err.AppendChild(doc.textElem("message", data.entry));
         err.AppendChild(doc.CreateElement("backtrace").tap(xmlBt => {
           foreach (var btElem in data.backtrace) xmlBt.AppendChild(doc.backtraceElem(btElem));
         }));

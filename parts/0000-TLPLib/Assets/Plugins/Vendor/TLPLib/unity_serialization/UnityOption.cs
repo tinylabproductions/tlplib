@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPGame.unity_serialization {
     public bool isSome { get {
       if (_isSome) {
         if (Application.isPlaying && _value == null) {
-          if (Log.isError) Log.error(
+          Log.d.error(
             $"{nameof(UnityOption<A>)} of {GetType()} was marked as Some, but referencing value was null!"
           );
           return false;

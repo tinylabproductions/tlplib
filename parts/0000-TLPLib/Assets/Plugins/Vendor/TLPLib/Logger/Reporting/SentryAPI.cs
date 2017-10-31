@@ -75,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
         message = 
           original.backtrace.headOption()
-          .fold(original.message, line => $"{original.message} in {line}")
+          .fold(original.entry, line => $"{original.entry} in {line}")
           .trimTo(1000);
         logLevel = logTypeToSentryLevel(original.errorType);
         fingerprint = createFingerPrint(message);
@@ -304,16 +304,17 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static Dictionary<string, string> staticExtras = new Dictionary<string, string>();
 
-    public static LogLevel logTypeToSentryLevel(LogType type) {
+    public static LogLevel logTypeToSentryLevel(Log.Level type) {
       switch (type) {
-        case LogType.Assert:
-        case LogType.Error: 
-        case LogType.Exception:
+        case Log.Level.ERROR:
           return LogLevel.ERROR;
-        case LogType.Log:
-          return LogLevel.DEBUG;
-        case LogType.Warning:
+        case Log.Level.WARN:
           return LogLevel.WARNING;
+        case Log.Level.INFO:
+          return LogLevel.INFO;
+        case Log.Level.DEBUG:
+        case Log.Level.VERBOSE:
+          return LogLevel.INFO;
         default:
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
@@ -324,7 +325,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     ) {
       return __data => {
         var data = new ErrorData(__data);
-        if (Log.isInfo) Log.info(
+        if (Log.d.isInfo()) Log.d.info(
           $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
           SentryRESTAPI.message(
             dsn.keys, sendData.appInfo, data, sendData.addExtraData,
@@ -399,7 +400,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           send,
           sentJsons => {
             if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
-            else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
+            else if (Log.d.isDebug()) Log.d.debug($"Not sending duplicate Sentry msg: {msg}");
           }
         );
       };

@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
           current = actions.Dequeue();
         }
         try { current(); }
-        catch (Exception e) { Log.error(e); }
+        catch (Exception e) { Log.d.error(e); }
       }
       return true;
     }

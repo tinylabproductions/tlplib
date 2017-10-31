@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Option<A> getOrLog(object errorMessage, Object context = null, ILog log = null) {
       if (isError) {
-        log = log ?? Log.defaultLogger;
+        log = log ?? Log.@default;
         if (log.isError()) log.error(errorMessage, _exception, context);
       }
       return value;

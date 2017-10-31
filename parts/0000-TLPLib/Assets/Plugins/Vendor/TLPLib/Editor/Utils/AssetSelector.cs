@@ -66,9 +66,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
           .ToArray();
 
         progress.execute("Printing found objects to log.", () => {
-          Log.info($"Total objects found: {objects.Length}");
+          Log.d.info($"Total objects found: {objects.Length}");
           foreach (var obj in objects) {
-            Log.info(AssetDatabase.GetAssetPath(obj), obj);
+            Log.d.info(AssetDatabase.GetAssetPath(obj), obj);
           }
         });
 

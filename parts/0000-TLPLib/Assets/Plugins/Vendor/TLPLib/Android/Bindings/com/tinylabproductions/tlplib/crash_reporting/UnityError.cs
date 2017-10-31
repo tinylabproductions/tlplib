@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
 
     UnityError(string className, ErrorReporter.ErrorData data) : base(new AndroidJavaObject(
       $"com.tinylabproductions.tlplib.crash_reporting.{className}",
-      data.message
+      data.entry
     )) {
       this.className = className;
       this.data = data;

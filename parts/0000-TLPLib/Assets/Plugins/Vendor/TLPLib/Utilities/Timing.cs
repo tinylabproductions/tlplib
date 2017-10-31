@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
 
     public static ITiming ifLogLevel(this ITiming backing, Log.Level level, ILog log=null) =>
-      new TimingConditional(backing, (log ?? Log.defaultLogger).willLog(level));
+      new TimingConditional(backing, (log ?? Log.@default).willLog(level));
   }
 
   public class TimingNoOp : ITiming {

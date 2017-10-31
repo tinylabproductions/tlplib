@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       ;
 
     public static void userInfo(string title, string body, Log.Level level = Log.Level.INFO) {
-      var log = Log.defaultLogger;
+      var log = Log.@default;
       if (log.willLog(level)) log.log(
         level, 
         LogEntry.simple(

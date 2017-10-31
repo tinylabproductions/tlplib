@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Android {
           Get<int>("versionCode");
       }
       catch (Exception e) {
-        Log.error(e);
+        Log.d.error(e);
         return 0;
       }
     } }
@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Android {
           Get<string>("versionName");
       }
       catch (Exception e) {
-        Log.error(e);
+        Log.d.error(e);
         return "";
       }
     } }

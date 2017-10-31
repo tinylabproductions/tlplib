@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     public EditorProgress(string title, ILog log = null) {
       this.title = title;
-      this.log = (log ?? Log.defaultLogger).withScope($"{s(title)}:");
+      this.log = (log ?? Log.@default).withScope($"{s(title)}:");
     }
 
     public void execute(string name, Action a) => 
