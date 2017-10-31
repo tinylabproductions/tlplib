@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -20,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     // Required for AI
     // ReSharper disable once NotNullMemberIsNotInitialized
-    RuntimeSceneRef() {}
+    protected RuntimeSceneRef() {}
 
     public RuntimeSceneRef(Object scene) {
       this.scene = scene;
@@ -56,5 +59,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       prepareForRuntime();
       return true;
     }
+  }
+
+  [Serializable]
+  public abstract class RuntimeSceneRef<A> : RuntimeSceneRef where A : MonoBehaviour {
+    protected RuntimeSceneRef() { }
+    protected RuntimeSceneRef(Object scene) : base(scene) { }
+
+    public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
+      SceneWithObjectLoader.load<A>(new ScenePath(scenePath), loadSceneMode).map(e => e.rightOrThrow);
   }
 }

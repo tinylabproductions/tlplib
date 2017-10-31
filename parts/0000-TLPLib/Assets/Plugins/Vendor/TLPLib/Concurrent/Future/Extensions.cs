@@ -4,54 +4,6 @@ using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class FutureExts {
-    public static Future<Either<Err, To>> mapE<From, To, Err>(
-      this Future<Either<Err, From>> future, Fn<From, To> mapper
-    ) { return future.map(e => e.mapRight(mapper)); }
-
-    public static Future<Either<Err, To>> mapE<From, To, Err>(
-      this Future<Either<Err, From>> future, Fn<From, Either<Err, To>> mapper
-    ) { return future.map(e => e.flatMapRight(mapper)); }
-
-    public static Future<Option<To>> mapO<From, To>(
-      this Future<Option<From>> future, Fn<From, To> mapper
-    ) { return future.map(opt => opt.map(mapper)); }
-
-    public static Future<Option<B>> flatMapO<A, B>(
-      this Future<Option<A>> future, Fn<A, Future<Option<B>>> mapper
-    ) {
-      return future.flatMap(opt => opt.fold(
-        () => Future.successful(F.none<B>()),
-        mapper
-      ));
-    }
-
-    public static Future<Either<Err, To>> flatMapE<From, To, Err>(
-      this Future<Either<Err, From>> future, Fn<From, Future<To>> mapper
-    ) {
-      return future.flatMap(e => e.fold(
-        err => Future.successful(Either<Err, To>.Left(err)),
-        from => mapper(from).map(Either<Err, To>.Right)
-      ));
-    }
-
-    public static Future<Either<Err, To>> flatMapE<From, To, Err>(
-      this Future<Either<Err, From>> future, Fn<From, Future<Either<Err, To>>> mapper
-    ) {
-      return future.flatMap(e => e.fold(
-        err => Future.successful(Either<Err, To>.Left(err)),
-        mapper
-      ));
-    }
-
-    public static Future<Try<To>> flatMapT<From, To>(
-      this Future<Try<From>> future, Fn<From, Future<To>> mapper
-    ) {
-      return future.flatMap(t => t.fold(
-        from => mapper(from).map(F.scs),
-        err => Future.successful(F.err<To>(err))
-      ));
-    }
-
     public static Future<A> flatten<A>(this Future<Future<A>> future) =>
       future.flatMap(_ => _);
 
