@@ -199,6 +199,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public static void update(this ITweenSequence element, float deltaTime) {
+      if (deltaTime == 0) return;
+      
       var directionForwards = Mathf.Sign(deltaTime) >= 0;
       element.setRelativeTimePassed(element.timePassed + deltaTime , directionForwards);
     }
