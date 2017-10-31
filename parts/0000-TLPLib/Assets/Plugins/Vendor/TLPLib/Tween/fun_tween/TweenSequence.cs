@@ -10,7 +10,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// </summary>
   public interface TweenSequenceElement {
     float duration { get; }
-    // Should this interface have playingForwards bool?
     void setRelativeTimePassed(float t, bool playingForwards);
   }
 
@@ -19,10 +18,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// </summary>
   public interface ITweenSequence : TweenSequenceElement {
     float timePassed { get; set; }
-  }
-
-  public struct PlayDelta {
-    public readonly float delta;
   }
 
   public class TweenSequence : ITweenSequence {
@@ -35,22 +30,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         this.endsAt = endsAt;
         this.element = element;
       }
-
-      // ReSharper disable once CompareOfFloatsByEqualityOperator
-      public bool isInstant => startsAt == endsAt;
     }
 
     public float duration { get; }
     readonly Effect[] effects;
 
     bool lastDirectionWasForwards = false;
-    float _timePassed;
 
+    float _timePassed;
     public float timePassed {
       get { return _timePassed; }
       set {
         var diff = value - _timePassed;
-        var playingForwards = Mathf.Sign(diff) >= 0;
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        if (diff == 0f) return;
+
+        var playingForwards = Mathf.Sign(diff) > 0;
         setRelativeTimePassed(value, playingForwards);
       }
     }
@@ -169,7 +164,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   // TODO: this fires forwards events, when playing from the end. We should fix this.
-  // TODO: this is broken...
   class TweenSequenceReversed : ITweenSequence {
     public readonly ITweenSequence original;
 
@@ -178,7 +172,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public float duration => original.duration;
 
     public void setRelativeTimePassed(float t, bool playingForwards) =>
-      original.setRelativeTimePassed(t, playingForwards);
+      original.setRelativeTimePassed(original.duration - t, !playingForwards);
 
     public float timePassed {
       get { return original.duration - original.timePassed; }

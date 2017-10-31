@@ -30,6 +30,9 @@ namespace com.tinylabproductions.TLPLib.Tween {
       bool running;
 
       public void add(TweenManager tm) {
+        // If we made a call to add a tween on the same phase
+        // as we are running the tween, we want to set it's state to zero
+        // and run on the next frame.
         if (phaseEqualsTweenTime(instance.phase, tm.time)) {
           tm.update(0);
         }
