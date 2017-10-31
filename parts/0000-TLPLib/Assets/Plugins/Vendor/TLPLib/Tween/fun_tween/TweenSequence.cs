@@ -169,6 +169,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   // TODO: this fires forwards events, when playing from the end. We should fix this.
+  // TODO: this is broken...
   class TweenSequenceReversed : ITweenSequence {
     public readonly ITweenSequence original;
 
@@ -177,7 +178,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public float duration => original.duration;
 
     public void setRelativeTimePassed(float t, bool playingForwards) =>
-      original.setRelativeTimePassed(t, !playingForwards);
+      original.setRelativeTimePassed(t, playingForwards);
 
     public float timePassed {
       get { return original.duration - original.timePassed; }
@@ -207,7 +208,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       var directionForwards = Mathf.Sign(deltaTime) >= 0;
       element.setRelativeTimePassed(element.timePassed + deltaTime , directionForwards);
     }
-
+    
     public static TweenSequence single(this TweenSequenceElement element) =>
       TweenSequence.single(element);
   }
