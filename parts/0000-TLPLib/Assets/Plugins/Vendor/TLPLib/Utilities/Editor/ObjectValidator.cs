@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
+using Assets.Code.GameType;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -466,5 +468,28 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ? $"[{fullPath(go.transform.parent.gameObject)}]/{go}"
         : o.ToString();
     }
+  }
+
+  public static class ObjectValidatorExts {
+    public static SceneValidator validator<A>(
+      this RuntimeSceneRef<A> sceneRef
+    ) where A : Component =>
+      scene => {
+        var ass = scene.GetRootGameObjects().collect(go => go.GetComponent<A>().opt()).ToImmutableList();
+        return ass.Count != 1
+          ? ImmutableList.Create(new ErrorMsg(
+            $"Found {ass.Count} of {typeof(A)} in scene '{scene.path}' root game objects, expected 1."
+          ))
+          : ImmutableList<ErrorMsg>.Empty;
+      };
+
+    public static SceneValidator join(
+      this SceneValidator a, SceneValidator b
+    ) => scene => a(scene).AddRange(b(scene));
+
+    public static SceneValidator oneRootObjectValidator() =>
+      scene => scene.GetRootGameObjects().Length != 1 
+        ? ImmutableList.Create(new ErrorMsg($"Scene has more than one object [{scene}]")) 
+        : ImmutableList<ErrorMsg>.Empty;
   }
 }

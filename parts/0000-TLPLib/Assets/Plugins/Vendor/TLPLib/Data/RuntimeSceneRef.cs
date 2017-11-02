@@ -61,14 +61,21 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
   }
 
+  public abstract class RuntimeSceneRefWithComponentBase : RuntimeSceneRef {
+    protected RuntimeSceneRefWithComponentBase() { }
+    protected RuntimeSceneRefWithComponentBase(Object scene) : base(scene) { }
+
+    public abstract SceneValidator getValidator();
+  }
+
   /// <summary>
   /// Reference to a <see cref="Scene"/> which has a <see cref="Component"/> of type <see cref="A"/> on
   /// a root <see cref="GameObject"/> in it.
   /// </summary>
   [Serializable]
-  public abstract class RuntimeSceneRef<A> : RuntimeSceneRef where A : Component {
-    protected RuntimeSceneRef() { }
-    protected RuntimeSceneRef(Object scene) : base(scene) { }
+  public abstract class RuntimeSceneRefWithComponent<A> : RuntimeSceneRefWithComponentBase where A : Component {
+    protected RuntimeSceneRefWithComponent() { }
+    protected RuntimeSceneRefWithComponent(Object scene) : base(scene) { }
 
     public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
       SceneWithObjectLoader.load<A>(scenePath, loadSceneMode).map(e => e.rightOrThrow);
