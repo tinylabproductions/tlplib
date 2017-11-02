@@ -67,15 +67,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
   }
 
   public struct LogEntry {
-    public interface IExceptionData {}
-
-    public class StandardExceptionData : IExceptionData {
-      public readonly Exception exception;
-      public StandardExceptionData(Exception exception) { this.exception = exception; }
-    }
-
     /// <summary>Message for the log entry.</summary>
-    public readonly object message;
+    public readonly string message;
     /// <summary>key -> value pairs where values make up a set. Things like
     /// type -> (dog or cat or fish) are a good fit here.</summary>
     public readonly ImmutableArray<Tpl<string, string>> tags;
@@ -86,45 +79,49 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public readonly ImmutableArray<Tpl<string, string>> extras;
     /// <summary>Unity object which is related to this entry.</summary>
     public readonly Option<Object> context;
-    /// <summary>A log entry might have a exception attached to it.</summary>
-    public readonly Option<IExceptionData> exception;
+    /// <summary>A log entry might have backtrace attached to it.</summary>
+    public readonly Option<Backtrace> backtrace;
 
     public LogEntry(
-      object message, 
+      string message, 
       ImmutableArray<Tpl<string, string>> tags, 
       ImmutableArray<Tpl<string, string>> extras, 
-      Option<IExceptionData> exception = default(Option<IExceptionData>),
+      Option<Backtrace> backtrace = default(Option<Backtrace>),
       Option<Object> context = default(Option<Object>)
     ) {
-      Option.ensureValue(ref exception);
+      Option.ensureValue(ref backtrace);
       Option.ensureValue(ref context);
 
       this.message = message;
       this.tags = tags;
       this.extras = extras;
-      this.exception = exception;
+      this.backtrace = backtrace;
       this.context = context;
     }
 
     public override string ToString() {
-      var sb = new StringBuilder(message.ToString());
+      var sb = new StringBuilder(message);
       if (context.isSome) sb.Append($" (ctx={context.__unsafeGetValue})");
       if (tags.nonEmpty()) sb.Append($"\n{nameof(tags)}={tags.mkStringEnumNewLines()}");
       if (extras.nonEmpty()) sb.Append($"\n{nameof(extras)}={extras.mkStringEnumNewLines()}");
-      if (exception.isSome) sb.Append($"\n{exception.__unsafeGetValue}");
+      if (backtrace.isSome) sb.Append($"\n{backtrace.__unsafeGetValue}");
       return sb.ToString();
     }
 
     public static LogEntry simple(
-      object message, IExceptionData exceptionData = null, Object context = null
+      string message, Option<Backtrace> backtrace = default(Option<Backtrace>), Object context = null
     ) => new LogEntry(
       message, ImmutableArray<Tpl<string, string>>.Empty, 
       ImmutableArray<Tpl<string, string>>.Empty, 
-      exception: exceptionData.opt(), context: context.opt()
+      backtrace: backtrace, context: context.opt()
     );
 
+    public static LogEntry fromException(
+      string message, Exception ex, Object context = null
+    ) => simple($"{message}: {ex.Message}", Backtrace.fromException(ex), context);
+
     public LogEntry withMessage(string message) => 
-      new LogEntry(message, tags, extras, exception, context);
+      new LogEntry(message, tags, extras, backtrace, context);
 
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.and(SerializedRW.str));
@@ -159,24 +156,24 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static void log(this ILog log, Log.Level l, string message) => 
       log.log(l, LogEntry.simple(message));
 
-    public static void verbose(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.VERBOSE, LogEntry.simple(o, context: context));
-    public static void debug(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.DEBUG, LogEntry.simple(o, context: context));
-    public static void info(this ILog log, object o, Object context = null) => 
-      log.log(Log.Level.INFO, LogEntry.simple(o, context: context));
-    public static void warn(this ILog log, object o, Object context = null) => 
-      log.warn(LogEntry.simple(o, context: context));
+    public static void verbose(this ILog log, string msg, Object context = null) => 
+      log.log(Log.Level.VERBOSE, LogEntry.simple(msg, context: context));
+    public static void debug(this ILog log, string msg, Object context = null) => 
+      log.log(Log.Level.DEBUG, LogEntry.simple(msg, context: context));
+    public static void info(this ILog log, string msg, Object context = null) => 
+      log.log(Log.Level.INFO, LogEntry.simple(msg, context: context));
+    public static void warn(this ILog log, string msg, Object context = null) => 
+      log.warn(LogEntry.simple(msg, context: context));
     public static void warn(this ILog log, LogEntry entry) => 
       log.log(Log.Level.WARN, entry);
-    public static void error(this ILog log, object o, Object context = null) => 
-      log.error(LogEntry.simple(o, context: context));
+    public static void error(this ILog log, string msg, Object context = null) => 
+      log.error(LogEntry.simple(msg, context: context));
     public static void error(this ILog log, LogEntry entry) => 
       log.log(Log.Level.ERROR, entry);
     public static void error(this ILog log, Exception ex, Object context = null) => 
       log.error(ex.Message, ex, context);
-    public static void error(this ILog log, object o, Exception ex, Object context = null) => 
-      log.error(LogEntry.simple(o, new LogEntry.StandardExceptionData(ex), context));
+    public static void error(this ILog log, string msg, Exception ex, Object context = null) => 
+      log.error(LogEntry.fromException(msg, ex, context));
   }
 
   /**
@@ -264,33 +261,25 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static string s(LogEntry e) => $"{MESSAGE_PREFIX}{e}";
 
-    public class UnityBacktraceExceptionData : LogEntry.IExceptionData {
-      public readonly ImmutableList<BacktraceElem> elements;
-      public UnityBacktraceExceptionData(ImmutableList<BacktraceElem> elements) { this.elements = elements; }
-    }
-
     static Try<LogEvent> convertUnityMessageToLogEvent(
-      string message, string backtrace, LogType type, int stackFramesToSkipWhenGenerating
+      string message, string backtraceS, LogType type, int stackFramesToSkipWhenGenerating
     ) {
       try {
         var level = convertLevel(type);
         // We want to collect backtrace on the current thread
-        var exceptionData =
+        var backtrace =
           level >= Log.Level.WARN
-            ? F.some<LogEntry.IExceptionData>(new UnityBacktraceExceptionData(
+            ?
               // backtrace may be empty in release mode.
-              string.IsNullOrEmpty(backtrace)
-                ? BacktraceElem.generateFromHere(
-                  stackFramesToSkipWhenGenerating + 1 /*this stack frame*/
-                )
-                : BacktraceElem.parseUnityBacktrace(backtrace)
-            ))
-            : Option<LogEntry.IExceptionData>.None;
+              string.IsNullOrEmpty(backtraceS)
+                ? Backtrace.generateFromHere(stackFramesToSkipWhenGenerating + 1 /*this stack frame*/)
+                : Backtrace.parseUnityBacktrace(backtraceS)
+            : Option<Backtrace>.None;
         var logEvent = new LogEvent(level, new LogEntry(
           message,
           ImmutableArray<Tpl<string, string>>.Empty,
           ImmutableArray<Tpl<string, string>>.Empty,
-          exception: exceptionData, context: Option<Object>.None
+          backtrace, context: Option<Object>.None
         ));
         return F.scs(logEvent);
       }
@@ -311,9 +300,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
         );
         var logEvent =
           logEventTry.isSuccess ? logEventTry.__unsafeGet
-          : new LogEvent(Log.Level.ERROR, LogEntry.simple(
-            $"Error while converting Unity log message (type: {type}): {message}, backtrace: {backtrace}",
-            exceptionData: new LogEntry.StandardExceptionData(logEventTry.__unsafeException)
+          : new LogEvent(Log.Level.ERROR, LogEntry.fromException(
+            $"Error while converting Unity log message (type: {type}): {message}, backtrace: [{backtrace}]",
+            logEventTry.__unsafeException
           ));
 
         ASync.OnMainThread(

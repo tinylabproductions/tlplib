@@ -197,13 +197,13 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
           return true;
         }
         else {
-          if (log.isError()) log.error($"Guid not found for: {assetPath}");
+          log.error($"Guid not found for: {assetPath}");
           guid = null;
           return false;
         }
       }
       else {
-        if (log.isError()) log.error($"Meta file not found for: {assetPath}");
+        log.error($"Meta file not found for: {assetPath}");
         guid = null;
         return false;
       }

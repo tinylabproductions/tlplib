@@ -77,10 +77,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B>(_exception);
     }
 
-    public Option<A> getOrLog(object errorMessage, Object context = null, ILog log = null) {
+    public Option<A> getOrLog(string errorMessage, Object context = null, ILog log = null) {
       if (isError) {
         log = log ?? Log.@default;
-        if (log.isError()) log.error(errorMessage, _exception, context);
+        log.error(errorMessage, _exception, context);
       }
       return value;
     }

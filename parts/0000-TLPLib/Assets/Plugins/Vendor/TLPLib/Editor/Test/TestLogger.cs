@@ -34,8 +34,6 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     protected override void logInner(Log.Level l, LogEntry entry) {
       switch (l) {
-        case Log.Level.NONE:
-          break;
         case Log.Level.ERROR:
           if (errorsAsExceptions) throw new Exception(entry.ToString());
           errorMsgs.Add(entry);

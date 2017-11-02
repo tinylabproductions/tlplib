@@ -456,7 +456,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showErrors(IEnumerable<Error> errors) {
       foreach (var error in errors)
-        Log.d.error(error, error.obj);
+        Log.d.error(error.ToString(), context: error.obj);
     }
 
     static string fullPath(Object o) {
