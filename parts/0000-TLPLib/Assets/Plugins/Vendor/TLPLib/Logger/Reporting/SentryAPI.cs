@@ -57,38 +57,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       });
     }
 
-    public struct ErrorData {
-      public readonly ErrorReporter.ErrorData original;
-      public readonly LogLevel logLevel;
-      // Sentry has a bug where events with same message, but different stacktrace get
-      // grouped to same group. This is a workaround for that.
-      // max length - 1000 chars
-      public readonly string message;
-      public readonly Option<string> culprit;
-      public readonly string[] fingerprint;
-
-      public ImmutableList<BacktraceElem> backtrace => original.backtrace;
-
-      public ErrorData(ErrorReporter.ErrorData original) {
-        this.original = original;
-        culprit = original.backtrace.isEmpty() ? Option<string>.None : original.backtrace[0].method.some();
-
-        message = 
-          original.backtrace.headOption()
-          .fold(original.message, line => $"{original.message} in {line}")
-          .trimTo(1000);
-        logLevel = logTypeToSentryLevel(original.errorType);
-        fingerprint = createFingerPrint(message);
-      }
-
-      public override string ToString() =>
-        $"{nameof(SentryAPI)}.{nameof(ErrorData)}[" +
-        $"{nameof(original)}: {original}, " +
-        $"{nameof(logLevel)}: {logLevel}, " +
-        $"{nameof(culprit)}: {culprit}" +
-        $"]";
-    }
-
     public struct DSN {
       public readonly Uri reportingUrl;
       public readonly string projectId;
@@ -226,11 +194,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    // A value of {{ default }} will be replaced with the built-in behavior, thus allowing you to extend it, or completely replace it.
-    // https://docs.sentry.io/clientdev/attributes/
-    public static string[] createFingerPrint(string message)
-      => new[] {"{{ default }}", message};
-
     /// <summary>Tags that might change during runtime.</summary>
     public static Dictionary<string, Tag> dynamicTags() => new Dictionary<string, Tag> {
       {"App:LoadedLevelNames", new Tag(
@@ -304,16 +267,17 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static Dictionary<string, string> staticExtras = new Dictionary<string, string>();
 
-    public static LogLevel logTypeToSentryLevel(LogType type) {
+    public static LogLevel asSentry(this Log.Level type) {
       switch (type) {
-        case LogType.Assert:
-        case LogType.Error: 
-        case LogType.Exception:
+        case Log.Level.ERROR:
           return LogLevel.ERROR;
-        case LogType.Log:
-          return LogLevel.DEBUG;
-        case LogType.Warning:
+        case Log.Level.WARN:
           return LogLevel.WARNING;
+        case Log.Level.INFO:
+          return LogLevel.INFO;
+        case Log.Level.DEBUG:
+        case Log.Level.VERBOSE:
+          return LogLevel.INFO;
         default:
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
@@ -321,18 +285,23 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static ErrorReporter.OnError createLogOnError(
       SendOnErrorData sendData, DSN dsn
-    ) {
-      return __data => {
-        var data = new ErrorData(__data);
-        if (Log.isInfo) Log.info(
-          $"Sentry error:\n\n{data}\nreporting url={dsn.reportingUrl}\n" +
-          SentryRESTAPI.message(
-            dsn.keys, sendData.appInfo, data, sendData.addExtraData,
-            sendData.userOpt, sendData.staticTags
-          )
-        );
-      };
-    }
+    ) => logEvent => {
+      if (Log.d.isInfo()) Log.d.info(
+        $"Sentry error:\n\n{logEvent}\nreporting url={dsn.reportingUrl}\n" +
+        SentryRESTAPI.message(
+          dsn.keys, sendData.appInfo, logEvent, sendData.addExtraData,
+          sendData.userOpt, sendData.staticTags
+        )
+      );
+    };
+
+    public static IEnumerable<KeyValuePair<string, Tag>> convertTags(
+      ImmutableArray<Tpl<string, string>> source
+    ) => source.Select(t => F.kv(t._1, new Tag(t._2)));
+
+    public static IEnumerable<KeyValuePair<string, string>> convertExtras(
+      ImmutableArray<Tpl<string, string>> source
+    ) => source.Select(t => F.kv(t._1, t._2));
   }
 
   public static class SentryRESTAPI {
@@ -388,10 +357,9 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     ) {
       var sentJsonsOpt = onlySendUniqueErrors.opt(() => new HashSet<string>());
 
-      return __data => {
-        var data = new SentryAPI.ErrorData(__data);
+      return logEvent => {
         var msg = message(
-          keys, sendData.appInfo, data, sendData.addExtraData,
+          keys, sendData.appInfo, logEvent, sendData.addExtraData,
           sendData.userOpt, sendData.staticTags
         );
         Action send = () => msg.send(reportingUrl);
@@ -399,7 +367,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           send,
           sentJsons => {
             if (sentJsons.Add(msg.jsonWithoutTimestamps)) send();
-            else if (Log.isDebug) Log.rdebug($"Not sending duplicate Sentry msg: {msg}");
+            else if (Log.d.isDebug()) Log.d.debug($"Not sending duplicate Sentry msg: {msg}");
           }
         );
       };
@@ -407,7 +375,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static Message message(
       SentryAPI.ApiKeys keys, ErrorReporter.AppInfo appInfo,
-      SentryAPI.ErrorData data, SentryAPI.ExtraData extraData, Option<SentryAPI.UserInterface> userOpt,
+      LogEvent data, SentryAPI.ExtraData extraData, Option<SentryAPI.UserInterface> userOpt,
       IDictionary<string, SentryAPI.Tag> staticTags
     ) {
       const string logger = "tlplib-" + nameof(SentryRESTAPI);
@@ -415,33 +383,39 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       var timestamp = DateTime.UtcNow;
 
       // The list of frames should be ordered by the oldest call first.
-      // ReSharper disable once ConvertClosureToMethodGroup - MCS bug
-      var stacktraceFrames = data.backtrace.Select(a => backtraceElemToJson(a)).Reverse().ToList();
+      var stacktraceFrames = data.entry.backtrace.map(
+        // ReSharper disable once ConvertClosureToMethodGroup - MCS bug
+        b => b.elements.a.Select(a => backtraceElemToJson(a)).Reverse().ToList()
+      );
 
       // Beware of the order! Do not mutate static tags!
-      var tags = SentryAPI.dynamicTags().addAll(staticTags);
+      var tags = 
+        SentryAPI.dynamicTags()
+        .addAll(staticTags)
+        .addAll(SentryAPI.convertTags(data.entry.tags));
       extraData.addTagsToDictionary(tags);
 
       // Extra contextual data is limited to 4096 characters.
-      var extras = SentryAPI.dynamicExtras();
+      var extras = 
+        SentryAPI.dynamicExtras()
+        .addAll(SentryAPI.convertExtras(data.entry.extras));
       extraData.addExtrasToDictionary(extras);
 
       var json = new Dictionary<string, object> {
-        {"message", s(data.message)},
-        {"level", s(data.logLevel, SentryAPI.LogLevel_.str)},
+        {"message", s(data.entry.message)},
+        {"level", s(data.level.asSentry(), SentryAPI.LogLevel_.str)},
         {"logger", s(logger)},
         {"platform", s(Application.platform.ToString())},
         {"release", s(appInfo.bundleVersion)},
         {"tags", tags.toDict(_ => _.Key, _ => _.Value.s)},
-        {"extra", extras},
-        {"stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}}},
-        {"fingerprint", data.fingerprint}
+        {"extra", extras}
       };
+      foreach (var stacktrace in stacktraceFrames)
+        json.Add("stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}});
+      foreach (var fingerprint in data.entry.toSentryFingerprint())
+        json.Add("fingerprint", fingerprint);
       foreach (var user in userOpt)
         json.Add("user", userInterfaceParametersJson(user));
-
-      foreach (var culprit in data.culprit)
-        json.Add("culprit", culprit);
 
       return new Message(keys, eventId, timestamp, json);
     }
@@ -468,5 +442,19 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
       return json;
     }
+  }
+
+  public static class LogEventExts {
+    /// <summary>
+    /// An array of strings used to dictate the deduplication of this event.
+    /// A value of {{ default }} will be replaced with the built-in behavior, 
+    /// thus allowing you to extend it, or completely replace it.
+    /// 
+    /// https://docs.sentry.io/clientdev/attributes/
+    /// </summary>
+    public static Option<string[]> toSentryFingerprint(this LogEntry e) =>
+      e.backtrace.map(b =>
+        new[] { "{{ default }}", b.elements.head().asString() }
+      );
   }
 }

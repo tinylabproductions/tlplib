@@ -87,6 +87,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IEnumerable<A> e, string separator = ", ", string start = "[", string end = "]"
     ) => e.mkString(separator, start, end);
 
+    public static string mkStringEnumNewLines<A>(
+      this IEnumerable<A> e, string separator = ",\n  ", string start = "[\n  ", string end = "\n]"
+    ) => e.mkString(separator, start, end);
+
     public static string mkString<A>(
       this IEnumerable<A> e, char separator, string start = null, string end = null
     ) {

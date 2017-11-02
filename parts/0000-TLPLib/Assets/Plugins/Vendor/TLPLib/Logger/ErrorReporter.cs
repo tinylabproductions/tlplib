@@ -1,32 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
-using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public static class ErrorReporter {
-    public struct ErrorData {
-      public readonly LogType errorType;
-      public readonly string message;
-      public readonly ImmutableList<BacktraceElem> backtrace;
-
-      public ErrorData(LogType errorType, string message, ImmutableList<BacktraceElem> backtrace) {
-        this.errorType = errorType;
-        this.message = message;
-        this.backtrace = backtrace;
-      }
-
-      public override string ToString() =>
-        $"{nameof(ErrorData)}[" +
-        $"{nameof(errorType)}: '{errorType}', " +
-        $"{nameof(message)}: '{message}', " +
-        $"{nameof(backtrace)}: {backtrace.asDebugString()}" +
-        $"]";
-    }
-
     public struct AppInfo {
       public readonly string bundleIdentifier, productName;
       public readonly VersionNumber bundleVersion;
@@ -38,50 +15,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
     }
 
-    public delegate void OnError(ErrorData data);
+    public delegate void OnError(LogEvent data);
 
-    public static void registerToUnity(OnError onError, bool logWarnings) {
-      Action<Exception> logExceptionSafe = e => {
-        ASync.OnMainThread(
-          () => {
-            // Log at info level so that we wouldn't trigger this handler again.
-            Log.info(
-              $"[{nameof(ErrorReporter)}] Exception in " +
-              $"{nameof(Application)}.{nameof(Application.logMessageReceivedThreaded)}" +
-              $" handler!\n\n{e}"
-            );
-          },
-          // https://fogbugz.unity3d.com/default.asp?832198_48nbh0a3a8cjpr12
-          runNowIfOnMainThread: false
-        );
-      };
-      Application.logMessageReceivedThreaded += (message, backtrace, type) => {
-        if (
-          type == LogType.Assert || type == LogType.Error || type == LogType.Exception
-          || logWarnings && type == LogType.Warning
-        ) {
-          try {
-            // We want to collect backtrace on the current thread
-            var parsedBacktrace =
-              // backtrace may be empty in release mode.
-              string.IsNullOrEmpty(backtrace)
-                ? BacktraceElem.generateFromHere(1)
-                : BacktraceElem.parseUnityBacktrace(backtrace);
-            var data = new ErrorData(type, message, parsedBacktrace);
-            // But call our error handler on main thread
-            // because handlers are not guaranteed to be thread safe
-            // and Log.info would not work in our handler
-            ASync.OnMainThread(
-              () => {
-                try { onError(data); }
-                catch (Exception e) { logExceptionSafe(e); }
-              },
-              runNowIfOnMainThread: false
-            );
-          }
-          catch (Exception e) { logExceptionSafe(e); }
-        }
-      };
-    }
+    public static readonly LazyVal<IObservable<LogEvent>> defaultStream =
+      UnityLog.fromUnityLogMessages.map(o => o.join(Log.@default.messageLogged));
+
+    /// <summary>
+    /// Report warnings and errors from default logger and unity log messages.
+    /// </summary>
+    public static ISubscription registerDefault(
+      this OnError onError, Log.Level logFrom = Log.Level.WARN
+    ) => defaultStream.get.filter(e => e.level >= logFrom).subscribe(e => onError(e));
   }
 }

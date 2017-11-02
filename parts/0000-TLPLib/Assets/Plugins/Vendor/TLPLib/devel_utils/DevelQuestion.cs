@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.devel_utils {
       string title, bool defaultValue, string info = "",
       string yesButtonText = "Yes", string noButtonText = "No"
     ) {
-      if (Log.isDebug) Log.rdebug(
+      if (Log.d.isDebug()) Log.d.debug(
         $"{nameof(DevelQuestion)}#{nameof(askDeveloper)}[" +
         $"{nameof(enabled)}={enabled}, " +
         $"{nameof(title)}={title}, {nameof(defaultValue)}={defaultValue}, " +

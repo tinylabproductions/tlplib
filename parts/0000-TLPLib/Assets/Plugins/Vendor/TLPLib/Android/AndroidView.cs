@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static Future<bool> hideNavigationBar(bool stableLayout) {
       if (Application.platform != RuntimePlatform.Android) return Future.successful(false);
 
-      if (Log.isDebug) Log.rdebug("Trying to hide android navigation bar.");
+      if (Log.d.isDebug()) Log.d.debug("Trying to hide android navigation bar.");
       var activity = AndroidActivity.current;
       return Future<bool>.async(p => {
         AndroidActivity.runOnUI(() => {
@@ -41,11 +41,11 @@ namespace com.tinylabproductions.TLPLib.Android {
               Call<AndroidJavaObject>("getWindow").
               Call<AndroidJavaObject>("getDecorView");
             decor.Call("setSystemUiVisibility", flags);
-            if (Log.isDebug) Log.rdebug("Hiding android navigation bar succeeded.");
+            if (Log.d.isDebug()) Log.d.debug("Hiding android navigation bar succeeded.");
             p.complete(true);
           }
           catch (Exception e) {
-            if (Log.isDebug) Log.rdebug(
+            if (Log.d.isDebug()) Log.d.debug(
               "Error while trying to hide navigation bar on android: " + e
             );
             p.complete(false);

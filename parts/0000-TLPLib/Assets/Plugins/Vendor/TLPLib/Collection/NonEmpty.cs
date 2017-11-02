@@ -18,6 +18,11 @@ namespace com.tinylabproductions.TLPLib.Collection {
       NonEmpty<ImmutableSortedSet<A>>.__unsafeApply(c, _ => _.IsEmpty);
   }
 
+  public static class NonEmptyExts {
+    public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
+    public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
+  }
+
   public struct NonEmpty<A> : IEquatable<NonEmpty<A>> {
     public readonly A a;
 

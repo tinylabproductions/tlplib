@@ -18,9 +18,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * <code>
    * void example(IObservable<A> observable) {
    *   observable.subscribe(a => {
-   *     Log.info("A " + a);
+   *     Log.d.info("A " + a);
    *     observable.subscribe(a1 => {
-   *       Log.info("A1 " + a);
+   *       Log.d.info("A1 " + a);
    *     });
    *   });
    * }
@@ -34,11 +34,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * <code>
    * void example(Subject<int> observable) {
    *   observable.subscribe(a => {
-   *     Log.info("A1=" + a);
+   *     Log.d.info("A1=" + a);
    *     if (a == 0) observable.push(a + 1);
    *   });
    *   observable.subscribe(a => {
-   *     Log.info("A2=" + a);
+   *     Log.d.info("A2=" + a);
    *   });
    *   observable.push(0);
    * }
@@ -312,7 +312,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     protected virtual void submit(A value) {
       if (doLogging) {
-        if (Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] submit: {value}");
+        if (Log.d.isVerbose()) Log.d.verbose($"[{nameof(Observable<A>)}] submit: {value}");
       }
 
       if (finished) throw new ObservableFinishedException(
@@ -368,8 +368,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subscribe(new Observer<A>(onChange, onFinish));
 
     public virtual ISubscription subscribe(IObserver<A> observer) {
-      if (doLogging && Log.isVerbose)
-        Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
+      if (doLogging && Log.d.isVerbose())
+        Log.d.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
       if (finished) return Subscription.empty;
 
       var subscription = new Subscription(onUnsubscribed);
@@ -417,7 +417,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     void log(string s) {
-      if (doLogging && Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] {s}");
+      if (doLogging && Log.d.isVerbose()) Log.d.verbose($"[{nameof(Observable<A>)}] {s}");
     }
 
     void afterIteration() {

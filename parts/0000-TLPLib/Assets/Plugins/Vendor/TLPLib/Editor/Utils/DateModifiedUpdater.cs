@@ -15,7 +15,7 @@ public class DateModifiedUpdater : AssetPostprocessor {
   static void OnPostprocessAllAssets(
     string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths
   ) {
-    if (movedAssets.Length > 0 && Log.isDebug) Log.rdebug(
+    if (movedAssets.Length > 0 && Log.d.isDebug()) Log.d.debug(
       $"{nameof(DateModifiedUpdater)}.{nameof(OnPostprocessAllAssets)}[\n" +
       $"  {nameof(movedAssets)}: {movedAssets.mkStringEnum()}\n" +
       $"]"

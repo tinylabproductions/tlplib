@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using static com.tinylabproductions.TLPLib.Configuration.Config;
 
@@ -155,21 +157,21 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public enum Kind { KEY_NOT_FOUND, WRONG_TYPE }
 
     public readonly Kind kind;
-    public readonly LazyVal<string> messageLazy;
-    public string message => messageLazy.get;
+    public readonly LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras;
+    public ImmutableArray<Tpl<string, string>> extras => lazyExtras.get;
 
-    public ConfigLookupError(Kind kind, LazyVal<string> messageLazy) {
+    public ConfigLookupError(Kind kind, LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras) {
       this.kind = kind;
-      this.messageLazy = messageLazy;
+      this.lazyExtras = lazyExtras;
     }
 
-    public static ConfigLookupError keyNotFound(LazyVal<string> message) => 
-      new ConfigLookupError(Kind.KEY_NOT_FOUND, message);
+    public static ConfigLookupError keyNotFound(LazyVal<ImmutableArray<Tpl<string, string>>> extras) => 
+      new ConfigLookupError(Kind.KEY_NOT_FOUND, extras);
 
-    public static ConfigLookupError wrongType(LazyVal<string> message) => 
-      new ConfigLookupError(Kind.WRONG_TYPE, message);
+    public static ConfigLookupError wrongType(LazyVal<ImmutableArray<Tpl<string, string>>> extras) => 
+      new ConfigLookupError(Kind.WRONG_TYPE, extras);
 
-    public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {message}]";
+    public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {extras.mkStringEnum()}]";
   }
 
   public class ConfigFetchException : Exception {

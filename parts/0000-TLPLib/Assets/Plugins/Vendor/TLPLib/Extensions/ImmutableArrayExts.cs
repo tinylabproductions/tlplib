@@ -41,5 +41,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       b.AddRange(aEnumerable);
       return b;
     }
+
+    /// <summary>
+    /// Builder throws an exception if capacity != count, this equalizes capacity before move.
+    /// </summary>
+    /// <typeparam name="A"></typeparam>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    public static ImmutableArray<A> MoveToImmutableSafe<A>(
+      this ImmutableArray<A>.Builder b
+    ) => b.Capacity == b.Count ? b.MoveToImmutable() : b.ToImmutable();
   }
 }

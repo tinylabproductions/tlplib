@@ -184,7 +184,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         EditorUtility.ClearProgressBar
       );
       showErrors(t._1);
-      if (Log.isInfo) Log.info(
+      if (Log.d.isInfo()) Log.d.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
       );
     }
@@ -456,7 +456,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void showErrors(IEnumerable<Error> errors) {
       foreach (var error in errors)
-        if (Log.isError) Log.error(error, error.obj);
+        Log.d.error(error.ToString(), context: error.obj);
     }
 
     static string fullPath(Object o) {

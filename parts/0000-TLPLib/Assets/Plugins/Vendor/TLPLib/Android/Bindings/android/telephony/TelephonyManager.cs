@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.telephony {
         return jStringToCountryCode(java.Call<string>(method));
       }
       catch (AndroidJavaException e) {
-        if (Log.isDebug) Log.rdebug($"Error fetching country iso code from android via '{method}': {e}");
+        if (Log.d.isDebug()) Log.d.debug($"Error fetching country iso code from android via '{method}': {e}");
         return F.none<string>();
       }
     }

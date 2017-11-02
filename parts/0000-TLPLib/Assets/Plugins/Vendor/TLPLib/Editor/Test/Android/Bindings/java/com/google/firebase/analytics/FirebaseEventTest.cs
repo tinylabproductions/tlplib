@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       var parameters = FirebaseEvent.createEmptyParams();
       for (var idx = 0; idx < FirebaseEvent.MAX_PARAM_COUNT; idx++) {
         var key = idx.ToString().PadLeft(FirebaseEvent.MAX_PARAM_KEY_LENGTH, 'a');
-        Log.info(key);
+        Log.d.info(key);
         parameters.Add(key, paramValue);
       }
       FirebaseEvent.a(
