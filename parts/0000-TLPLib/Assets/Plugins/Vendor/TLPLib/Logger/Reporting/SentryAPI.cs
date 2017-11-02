@@ -408,12 +408,11 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"platform", s(Application.platform.ToString())},
         {"release", s(appInfo.bundleVersion)},
         {"tags", tags.toDict(_ => _.Key, _ => _.Value.s)},
-        {"extra", extras}
+        {"extra", extras},
+        {"fingerprint", data.entry.toSentryFingerprint()}
       };
       foreach (var stacktrace in stacktraceFrames)
-        json.Add("stacktrace", new Dictionary<string, object> {{"frames", stacktraceFrames}});
-      foreach (var fingerprint in data.entry.toSentryFingerprint())
-        json.Add("fingerprint", fingerprint);
+        json.Add("stacktrace", new Dictionary<string, object> {{"frames", stacktrace}});
       foreach (var user in userOpt)
         json.Add("user", userInterfaceParametersJson(user));
 
@@ -452,9 +451,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     /// 
     /// https://docs.sentry.io/clientdev/attributes/
     /// </summary>
-    public static Option<string[]> toSentryFingerprint(this LogEntry e) =>
-      e.backtrace.map(b =>
-        new[] { "{{ default }}", b.elements.head().asString() }
-      );
+    public static string[] toSentryFingerprint(this LogEntry e) =>
+      new[] {"{{ default }}", e.message};
   }
 }
