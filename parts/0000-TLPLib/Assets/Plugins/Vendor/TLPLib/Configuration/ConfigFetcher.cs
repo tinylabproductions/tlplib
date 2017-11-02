@@ -110,7 +110,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
             var actual = headers[headerName];
             return actual.exists(expectedValue)
               ? wwwE
-              : Either<ConfigFetchError, WWWWithHeaders>.Left(new ConfigServerCheckFailed(
+              : Either<ConfigFetchError, WWWWithHeaders>.Left(new ConfigHeaderCheckFailed(
                 urls, headerName, expectedValue, actual
               ));
           }

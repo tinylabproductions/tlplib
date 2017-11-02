@@ -23,8 +23,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     { this.timeout = timeout; }
   }
 
-  public class ConfigServerCheckFailed : ConfigFetchError {
-    public ConfigServerCheckFailed(
+  public class ConfigHeaderCheckFailed : ConfigFetchError {
+    public ConfigHeaderCheckFailed(
       ConfigFetcher.UrlWithContext url, string headerName, string expectedValue, Option<string> actual
     ) : base(
       url, $"Expected header '{headerName}' to be '{expectedValue}', but it was {actual}"
@@ -39,15 +39,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     { this.wwwWithHeaders = wwwWithHeaders; }
   }
 
-  public class ConfigWrongContentType : ConfigFetchError {
-    public readonly string expectedContentType, actualContentType;
-
-    public ConfigWrongContentType(ConfigFetcher.UrlWithContext url, string expectedContentType, string actualContentType)
-    : base(
-      url, $"Expected 'Content-Type' to be '{expectedContentType}', but it was '{actualContentType}'"
-    ) {
-      this.expectedContentType = expectedContentType;
-      this.actualContentType = actualContentType;
-    }
+  public class ConfigWrongContentType : ConfigHeaderCheckFailed {
+    public ConfigWrongContentType(ConfigFetcher.UrlWithContext url, string expected, string actual)
+    : base(url, "Content-Type", expected, actual.some()) {}
   }
 }
