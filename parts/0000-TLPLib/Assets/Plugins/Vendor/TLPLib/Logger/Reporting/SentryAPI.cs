@@ -454,7 +454,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     /// </summary>
     public static Option<string[]> toSentryFingerprint(this LogEntry e) =>
       e.backtrace.map(b =>
-        new[] { "{{ default }}", b.elements.a[0].asString() }
+        new[] { "{{ default }}", b.elements.head().asString() }
       );
   }
 }

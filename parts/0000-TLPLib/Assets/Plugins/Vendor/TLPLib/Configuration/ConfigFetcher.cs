@@ -12,9 +12,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   public static class ConfigFetcher {
     public struct UrlWithContext : IEquatable<UrlWithContext> {
       // C# calls URLs URIs. See http://stackoverflow.com/a/1984225/935259 for distinction.
-      /** Actual URL this config needs to be fetched. **/
       public readonly Uri url;
 
+      /// <summary>
+      /// <see cref="LogEntry.tags"/> and <see cref="LogEntry.extras"/>
+      /// </summary>
       public readonly ImmutableArray<Tpl<string, string>> tags, extras;
 
       public UrlWithContext(
@@ -28,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       }
 
       public override string ToString() =>
-        $"{nameof(Config)}.{nameof(UrlWithContext)}[" +
+        $"{nameof(ConfigFetcher)}.{nameof(UrlWithContext)}[" +
         $"{nameof(url)}={url}, " +
         $"{nameof(tags)}={tags.mkStringEnum()}, " +
         $"{nameof(extras)}={extras.mkStringEnum()}" +

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -21,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       #region Equality
 
       public bool Equals(FileInfo other) {
-        return String.Equals(file, other.file) && lineNo == other.lineNo;
+        return string.Equals(file, other.file) && lineNo == other.lineNo;
       }
 
       public override bool Equals(object obj) {
@@ -38,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
       sealed class FileLineNoEqualityComparer : IEqualityComparer<FileInfo> {
         public bool Equals(FileInfo x, FileInfo y) {
-          return String.Equals(x.file, y.file) && x.lineNo == y.lineNo;
+          return string.Equals(x.file, y.file) && x.lineNo == y.lineNo;
         }
 
         public int GetHashCode(FileInfo obj) {
@@ -87,8 +88,17 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public string asString() => $"{method}{fileInfo.fold("", fi => $" (at {fi})")}";
     public override string ToString() => asString();
 
+    /*
+    Example backtrace:
+UnityEngine.Debug:LogError(Object)
+com.tinylabproductions.TLPLib.Logger.Log:error(Object) (at Assets/Vendor/TLPLib/Logger/Log.cs:14)
+Assets.Code.Main:<Awake>m__32() (at Assets/Code/Main.cs:60)
+com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveNext() (at Assets/Vendor/TLPLib/Concurrent/ASync.cs:175)
+    */
+    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?)( \(at (.*?):(\d+)\))?$");
+
     public static BacktraceElem parseUnityBacktraceLine(string line) {
-      var match = Backtrace.UNITY_BACKTRACE_LINE.Match(line);
+      var match = UNITY_BACKTRACE_LINE.Match(line);
 
       var method = match.Groups[1].Value;
       var hasLineNo = match.Groups[2].Success;

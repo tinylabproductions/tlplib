@@ -17,15 +17,6 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     #region Parsing
 
-    /*
-    Example backtrace:
-UnityEngine.Debug:LogError(Object)
-com.tinylabproductions.TLPLib.Logger.Log:error(Object) (at Assets/Vendor/TLPLib/Logger/Log.cs:14)
-Assets.Code.Main:<Awake>m__32() (at Assets/Code/Main.cs:60)
-com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveNext() (at Assets/Vendor/TLPLib/Concurrent/ASync.cs:175)
-    */
-    public static readonly Regex UNITY_BACKTRACE_LINE = new Regex(@"^(.+?)( \(at (.*?):(\d+)\))?$");
-
     public static Option<Backtrace> parseUnityBacktrace(string backtrace) =>
       Regex.Split(backtrace, "\n")
         .Select(s => s.Trim())
