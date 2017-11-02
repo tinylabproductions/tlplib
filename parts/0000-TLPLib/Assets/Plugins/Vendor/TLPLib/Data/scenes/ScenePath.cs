@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
@@ -48,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Data.scenes {
 
     public override string ToString() => $"{nameof(ScenePath)}({path})";
 
-    public SceneName toSceneName => new SceneName(path.Split('/').Last().ensureDoesNotEndWith(".unity"));
+    public SceneName toSceneName => new SceneName(Path.GetFileNameWithoutExtension(path));
 
     public PathStr toPathStr => PathStr.a(path);
 

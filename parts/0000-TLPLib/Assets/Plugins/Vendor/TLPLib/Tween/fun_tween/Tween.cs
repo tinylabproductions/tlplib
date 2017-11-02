@@ -9,7 +9,7 @@
   /// 
   /// Essentially a function from (time passed) -> (<see cref="A"/> value)
   /// </summary>
-  public class Tween<A> {
+  public sealed class Tween<A> {
     public readonly A start, end;
     public readonly Ease ease;
     public readonly TweenLerp<A> lerp;

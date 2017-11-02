@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         Tween.callback(_ => print($"end {_}"))
       ).build();
       var tr = TweenSequence.sequential(
-        /*tra, tra.reversed(), tra.reversed().reversed(), */tra.reversed()
+        /*tra, tra.reversed(), tra.reversed().reversed(), *//*tra.reversed()*/
       ).build();
 //      manager = tr.managed()
 //        .onStart(forwards => indicator.color = forwards ? Color.black : Color.green)
