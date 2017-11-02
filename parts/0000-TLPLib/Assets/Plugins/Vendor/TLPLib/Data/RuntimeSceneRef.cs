@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -20,21 +23,21 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     // Required for AI
     // ReSharper disable once NotNullMemberIsNotInitialized
-    RuntimeSceneRef() {}
+    protected RuntimeSceneRef() {}
 
     public RuntimeSceneRef(Object scene) {
       this.scene = scene;
       prepareForRuntime();
     }
 
-    public string sceneName { get {
+    public SceneName sceneName { get {
       prepareForRuntime();
-      return _sceneName;
+      return new SceneName(_sceneName);
     } }
 
-    public string scenePath { get {
+    public ScenePath scenePath { get {
       prepareForRuntime();
-      return _scenePath;
+      return new ScenePath(_scenePath);
     } }
 
     [Conditional("UNITY_EDITOR")]
@@ -56,5 +59,18 @@ namespace com.tinylabproductions.TLPLib.Data {
       prepareForRuntime();
       return true;
     }
+  }
+
+  /// <summary>
+  /// Reference to a <see cref="Scene"/> which has a <see cref="Component"/> of type <see cref="A"/> on
+  /// a root <see cref="GameObject"/> in it.
+  /// </summary>
+  [Serializable]
+  public abstract class RuntimeSceneRef<A> : RuntimeSceneRef where A : Component {
+    protected RuntimeSceneRef() { }
+    protected RuntimeSceneRef(Object scene) : base(scene) { }
+
+    public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
+      SceneWithObjectLoader.load<A>(scenePath, loadSceneMode).map(e => e.rightOrThrow);
   }
 }
