@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     [
       SerializeField,
       Help(HelpType.Info, "Events are emitted on release.\n" +
-                          "If set, event will be emiited once drag threshold is reached instead. " +
+                          "If set, event will be emitted once drag threshold is reached instead. " +
                           "value is in screen coordinates.")
     ] UnityOptionFloat eventOnThreshold;
 #pragma warning restore 649

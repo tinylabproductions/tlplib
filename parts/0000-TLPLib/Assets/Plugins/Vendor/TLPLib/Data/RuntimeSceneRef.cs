@@ -30,14 +30,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       prepareForRuntime();
     }
 
-    public string sceneName { get {
+    public SceneName sceneName { get {
       prepareForRuntime();
-      return _sceneName;
+      return new SceneName(_sceneName);
     } }
 
-    public string scenePath { get {
+    public ScenePath scenePath { get {
       prepareForRuntime();
-      return _scenePath;
+      return new ScenePath(_scenePath);
     } }
 
     [Conditional("UNITY_EDITOR")]
@@ -61,12 +61,16 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
   }
 
+  /// <summary>
+  /// Reference to a <see cref="Scene"/> which has a <see cref="Component"/> of type <see cref="A"/> on
+  /// a root <see cref="GameObject"/> in it.
+  /// </summary>
   [Serializable]
-  public abstract class RuntimeSceneRef<A> : RuntimeSceneRef where A : MonoBehaviour {
+  public abstract class RuntimeSceneRef<A> : RuntimeSceneRef where A : Component {
     protected RuntimeSceneRef() { }
     protected RuntimeSceneRef(Object scene) : base(scene) { }
 
     public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
-      SceneWithObjectLoader.load<A>(new ScenePath(scenePath), loadSceneMode).map(e => e.rightOrThrow);
+      SceneWithObjectLoader.load<A>(scenePath, loadSceneMode).map(e => e.rightOrThrow);
   }
 }
