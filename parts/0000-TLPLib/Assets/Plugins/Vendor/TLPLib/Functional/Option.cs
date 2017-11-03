@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -293,6 +294,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static bool operator false(Option<A> opt) => opt.isNone;
 
     public static Option<A> operator |(Option<A> o1, Option<A> o2) => o1 ? o1 : o2;
+
+    public ImmutableList<A> toImmutableList() => isSome 
+      ? ImmutableList.Create(__unsafeGetValue) 
+      : ImmutableList<A>.Empty;
   }
 
   public struct OptionEnumerator<A> {
