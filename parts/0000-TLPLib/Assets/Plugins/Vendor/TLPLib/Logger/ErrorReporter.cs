@@ -24,7 +24,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// Report warnings and errors from default logger and unity log messages.
     /// </summary>
     public static ISubscription registerDefault(
-      this OnError onError, Log.Level logFrom = Log.Level.WARN
-    ) => defaultStream.get.filter(e => e.level >= logFrom).subscribe(e => onError(e));
+      this OnError onError, Log.Level logFrom
+    ) => 
+      defaultStream.get
+      .filter(e => e.level <= logFrom)
+      .subscribe(e => onError(e));
   }
 }
