@@ -294,10 +294,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static bool operator false(Option<A> opt) => opt.isNone;
 
     public static Option<A> operator |(Option<A> o1, Option<A> o2) => o1 ? o1 : o2;
-
-    public ImmutableList<A> toImmutableList() => isSome 
-      ? ImmutableList.Create(__unsafeGetValue) 
-      : ImmutableList<A>.Empty;
   }
 
   public struct OptionEnumerator<A> {
@@ -314,6 +310,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       read = true;
       return option.get;
     } }
+  }
+
+  public static class OptionExts {
+    public static ImmutableList<A> toImmutableList<A>(this Option<A> opt) => 
+      opt.isSome
+      ? ImmutableList.Create(opt.__unsafeGetValue)
+      : ImmutableList<A>.Empty;
   }
 
   public static class OptionLinqExts {
