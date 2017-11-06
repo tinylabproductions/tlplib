@@ -1,10 +1,11 @@
 ﻿using System;
+using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.Sprites;
+using UnityEngine.UI;
 
-namespace UnityEngine.UI {
-
+namespace com.tinylabproductions.TLPLib.Components.ui {
   // Copied from unity bitbucket and added spritePixelsPerUnit
-
   [AddComponentMenu("UI/CustomImage", 11)]
   public class CustomImage : MaskableGraphic, ISerializationCallbackReceiver, ILayoutElement, ICanvasRaycastFilter {
     public enum Type {
@@ -225,7 +226,7 @@ namespace UnityEngine.UI {
 
     /// Image's dimensions used for drawing. X = left, Y = bottom, Z = right, W = top.
     private Vector4 GetDrawingDimensions(bool shouldPreserveAspect) {
-      var padding = activeSprite == null ? Vector4.zero : Sprites.DataUtility.GetPadding(activeSprite);
+      var padding = activeSprite == null ? Vector4.zero : DataUtility.GetPadding(activeSprite);
       var size = activeSprite == null ? Vector2.zero : new Vector2(activeSprite.rect.width, activeSprite.rect.height);
 
       Rect r = GetPixelAdjustedRect();
@@ -328,7 +329,7 @@ namespace UnityEngine.UI {
     /// </summary>
     void GenerateSimpleSprite(VertexHelper vh, bool lPreserveAspect) {
       Vector4 v = GetDrawingDimensions(lPreserveAspect);
-      var uv = (activeSprite != null) ? Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
+      var uv = (activeSprite != null) ? DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
 
       var color32 = color;
       vh.Clear();
@@ -357,9 +358,9 @@ namespace UnityEngine.UI {
       Vector4 outer, inner, padding, border;
 
       if (activeSprite != null) {
-        outer = Sprites.DataUtility.GetOuterUV(activeSprite);
-        inner = Sprites.DataUtility.GetInnerUV(activeSprite);
-        padding = Sprites.DataUtility.GetPadding(activeSprite);
+        outer = DataUtility.GetOuterUV(activeSprite);
+        inner = DataUtility.GetInnerUV(activeSprite);
+        padding = DataUtility.GetPadding(activeSprite);
         border = activeSprite.border;
       }
       else {
@@ -422,8 +423,8 @@ namespace UnityEngine.UI {
       Vector2 spriteSize;
 
       if (activeSprite != null) {
-        outer = Sprites.DataUtility.GetOuterUV(activeSprite);
-        inner = Sprites.DataUtility.GetInnerUV(activeSprite);
+        outer = DataUtility.GetOuterUV(activeSprite);
+        inner = DataUtility.GetInnerUV(activeSprite);
         border = activeSprite.border;
         spriteSize = activeSprite.rect.size;
       }
@@ -682,7 +683,7 @@ namespace UnityEngine.UI {
         return;
 
       Vector4 v = GetDrawingDimensions(preserveAspect);
-      Vector4 outer = activeSprite != null ? Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
+      Vector4 outer = activeSprite != null ? DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
       UIVertex uiv = UIVertex.simpleVert;
       uiv.color = color;
 
@@ -957,7 +958,7 @@ namespace UnityEngine.UI {
         if (activeSprite == null)
           return 0;
         if (type == Type.Sliced || type == Type.Tiled)
-          return Sprites.DataUtility.GetMinSize(activeSprite).x / pixelsPerUnit;
+          return DataUtility.GetMinSize(activeSprite).x / pixelsPerUnit;
         return activeSprite.rect.size.x / pixelsPerUnit;
       }
     }
@@ -973,7 +974,7 @@ namespace UnityEngine.UI {
         if (activeSprite == null)
           return 0;
         if (type == Type.Sliced || type == Type.Tiled)
-          return Sprites.DataUtility.GetMinSize(activeSprite).y / pixelsPerUnit;
+          return DataUtility.GetMinSize(activeSprite).y / pixelsPerUnit;
         return activeSprite.rect.size.y / pixelsPerUnit;
       }
     }
