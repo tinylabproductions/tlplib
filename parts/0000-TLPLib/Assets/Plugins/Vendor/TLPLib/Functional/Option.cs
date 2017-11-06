@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -309,6 +310,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       read = true;
       return option.get;
     } }
+  }
+
+  public static class OptionExts {
+    public static ImmutableList<A> toImmutableList<A>(this Option<A> opt) => 
+      opt.isSome
+      ? ImmutableList.Create(opt.__unsafeGetValue)
+      : ImmutableList<A>.Empty;
   }
 
   public static class OptionLinqExts {
