@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     public static B withSceneObject<A, B>(
-      this RuntimeSceneRef<A> sceneRef, Fn<A, B> f
+      this RuntimeSceneRefWithComponent<A> sceneRef, Fn<A, B> f
     ) where A : Component =>
       withScene(sceneRef.scenePath, scene => f(scene.findComponentOnRootGameObjects<A>().rightOrThrow));
   }

@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -50,6 +51,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static A EnsureComponent<A>(this GameObject go) where A : Component => 
       go.GetComponent<A>() ?? go.AddComponent<A>();
+    
+    public static Option<A> GetComponentSafe<A>(this GameObject go) where A : Component =>
+      go.GetComponent<A>().opt();
+
+    public static Either<ErrorMsg, A> GetComponentSafeE<A>(this GameObject go) where A : Component {
+      var res = go.GetComponentSafe<A>();
+      return 
+        res.isNone 
+        ? (Either<ErrorMsg, A>) new ErrorMsg($"Can't find component {typeof(A)} on '{go}'") 
+        : res.__unsafeGetValue;
+    }
 
     // Modified from unity decompiled dll.
     // Added includeInactive parameter.
