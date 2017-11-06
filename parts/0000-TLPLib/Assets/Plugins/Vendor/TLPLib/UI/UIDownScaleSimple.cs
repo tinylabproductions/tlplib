@@ -1,16 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using com.tinylabproductions.TLPLib.UI;
 using UnityEngine;
 
-public class UIDownScaleSimple : MonoBehaviour {
+public class UIDownScaleSimple : UIDownScaleBase {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+  public override Vector3 targetLocalScale {
+    get { return target.localScale; }
+    set { target.localScale = value; }
+  }
+
+  public override Action onPointerUp { get; }
 }
