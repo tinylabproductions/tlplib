@@ -2,9 +2,9 @@
 
 namespace com.tinylabproductions.TLPLib.Components.animations {
   public class SinusoidScale : MonoBehaviour {
-    public Vector3 from = Vector3.one;
-    public Vector3 to = Vector3.one;
+    public Vector3 from = Vector3.one, to = Vector3.one;
     public float speed = 1;
+
     float timeShift;
     bool timeshiftSet;
 
