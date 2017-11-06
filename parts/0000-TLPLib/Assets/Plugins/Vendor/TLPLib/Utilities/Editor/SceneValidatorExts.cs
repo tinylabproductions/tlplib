@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public delegate ImmutableList<ErrorMsg> SceneValidator(Scene scene);
 
- public struct SceneWithValidator {
+  public struct SceneWithValidator {
     public readonly ScenePath path;
     public readonly SceneValidator validator;
 
@@ -53,11 +53,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static SceneValidator validateForNRootObjects(int n) =>
       scene => {
         var rootObjectCount = scene.GetRootGameObjects().Length;
-        return rootObjectCount != n
-          ? ImmutableList.Create(
-            new ErrorMsg($"Expected {n} root game objects but found {rootObjectCount}")
-          )
-          : ImmutableList<ErrorMsg>.Empty;
+        return (rootObjectCount != n).opt(
+          new ErrorMsg($"Expected {n} root game objects but found {rootObjectCount}")
+        ).toImmutableList();
       };
 
     public static SceneValidator validateForGameObjectWithComponent<C>(string path) where C : Component =>
