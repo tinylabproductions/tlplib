@@ -31,10 +31,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static SceneValidator validateForComponent<A>(
       this RuntimeSceneRefWithComponent<A> sceneRef
     ) where A : Component => validateForComponent<A>();
-    
-    public static SceneWithValidator toSceneWithValidator(
-      this Tpl<ScenePath, SceneValidator> sceneAndValidator
-    ) => new SceneWithValidator(sceneAndValidator._1, sceneAndValidator._2);
 
     public static Tpl<SceneName, SceneValidator> toSceneNameAndValidator<A>(
       this RuntimeSceneRefWithComponent<A> sceneRef
@@ -48,20 +44,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         )).toImmutableList();
       };
 
-    public static SceneValidator validateForOneRootObject =
-      scene => scene.GetRootGameObjects().Length != 1 
-        ? ImmutableList.Create(new ErrorMsg($"Scene has more than one object [{scene}]")) 
-        : ImmutableList<ErrorMsg>.Empty;
+    public static SceneValidator validateForOneRootObject = validateForNRootObjects(1);
+    public static SceneValidator validateForNoRootObjects = validateForNRootObjects(0);
 
-    public static SceneValidator validateForGameObjectWithComponent<C>(
-      string path
-    ) where C : Component =>
+    public static SceneValidator validateForNRootObjects(int n) =>
+      scene => {
+        var rootObjectCount = scene.GetRootGameObjects().Length;
+        return rootObjectCount != n
+          ? ImmutableList.Create(
+            new ErrorMsg($"Expected {n} root game objects but found {rootObjectCount}")
+          )
+          : ImmutableList<ErrorMsg>.Empty;
+      };
+
+    public static SceneValidator validateForGameObjectWithComponent<C>(string path) where C : Component =>
       scene => GameObject.Find(path).opt()
         .toRight(new ErrorMsg($"Can't find GO at path {path}"))
-        .flatMapRight(_ => 
-          _.GetComponent<C>().opt()
-          .toRight(new ErrorMsg($"Can't find component {typeof(C)}"))
-        )
+        .flatMapRight(_ => _.GetComponent<C>().opt().toRight(new ErrorMsg($"Can't find component {typeof(C)}")))
         .leftValue
         .toImmutableList();
 
