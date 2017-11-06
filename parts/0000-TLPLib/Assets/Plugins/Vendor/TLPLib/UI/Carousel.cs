@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPGame.unity_serialization;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.Swiping;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.unity_serialization;
 using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;

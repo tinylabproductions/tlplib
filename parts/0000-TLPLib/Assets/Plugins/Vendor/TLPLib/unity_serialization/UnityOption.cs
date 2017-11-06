@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace com.tinylabproductions.TLPGame.unity_serialization {
+namespace com.tinylabproductions.TLPLib.unity_serialization {
   public abstract class UnityOption<A> : ISkipObjectValidationFields, Ref<Option<A>> {
     #region Unity Serialized Fields
 

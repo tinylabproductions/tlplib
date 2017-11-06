@@ -5,7 +5,7 @@ using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPGame.unity_serialization {
+namespace com.tinylabproductions.TLPLib.unity_serialization {
   public abstract class UnityEither<A, B> : ISkipObjectValidationFields {
 #pragma warning disable 649
     // protected is only needed for tests
