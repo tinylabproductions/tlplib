@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
 
     public void playFromStreamingAssets(string fileName, Url clickUrl) {
       var listener = new VideoListener();
-      if (Log.isDebug) {
+      if (Log.d.isDebug()) {
         listener.canceled += () => logDebug("canceled");
         listener.videoCompleted += () => logDebug("completed");
         listener.clicked += () => logDebug("clicked");
@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
     }
 
     static void logDebug(string msg) {
-      Log.rdebug($"{nameof(AndroidVideoPlayer)}|{msg}");
+      Log.d.debug($"{nameof(AndroidVideoPlayer)}|{msg}");
     }
 
     class MediaPlayerBinding : Binding {

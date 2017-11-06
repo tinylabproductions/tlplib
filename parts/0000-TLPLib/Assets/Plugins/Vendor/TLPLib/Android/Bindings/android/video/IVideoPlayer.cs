@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
 
   public class VideoPlayerNoOp : IVideoPlayer {
     public void playFromStreamingAssets(string fileName, Url clickUrl) {
-      if (Log.isDebug) Log.rdebug(
+      if (Log.d.isDebug()) Log.d.debug(
         $"{nameof(VideoPlayerNoOp)}#{nameof(playFromStreamingAssets)}({fileName}, {clickUrl})"
       );
     }

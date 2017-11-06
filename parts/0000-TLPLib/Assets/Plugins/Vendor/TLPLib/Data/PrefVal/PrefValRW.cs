@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.defaultLogger);
+    ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.@default);
 
     public static IPrefValueRW<A> custom<A>(
       ISerializedRW<A> aRW,

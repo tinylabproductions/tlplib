@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
     public static void processFiles(AssetUpdate data) {
       if (!enabled.value) return;
-      var log = Log.defaultLogger;
+      var log = Log.@default;
       worker.EnqueueItem(() => {
         try {
           process(data, log);

@@ -171,6 +171,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<A, C> mapRight<C>(Fn<B, C> mapper) =>
       isLeft ? new Either<A, C>(_leftValue) : new Either<A, C>(mapper(_rightValue));
 
+    public B getOrElse(B onLeft) =>
+      isLeft ? onLeft : __unsafeGetRight;
+
+    public B getOrElse(Fn<B> onLeft) =>
+      isLeft ? onLeft() : __unsafeGetRight;
+
     public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight) => 
       isLeft ? onLeft(_leftValue) : onRight(_rightValue);
 

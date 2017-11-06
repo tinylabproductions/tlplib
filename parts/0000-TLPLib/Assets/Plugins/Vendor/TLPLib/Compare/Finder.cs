@@ -45,7 +45,7 @@ namespace Smooth.Compare {
 					break;
 				}
 			} else {
-				if (Log.isError) Log.error("Tried to register a non-enumeration type as an enumeration.");
+				Log.d.error("Tried to register a non-enumeration type as an enumeration.");
 			}
 		}
 
@@ -144,7 +144,7 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 
 			if (comparer == null) {
-				if (Log.isError) Log.error("Tried to register a null comparer for: " + type.FullName);
+				Log.d.error("Tried to register a null comparer for: " + type.FullName);
 			} else {
 				lock (comparers) {
 					if (comparers.ContainsKey(type)) {
@@ -226,7 +226,7 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 			
 			if (EqComparer == null) {
-				if (Log.isError) Log.error("Tried to register a null equality comparer for: " + type.FullName);
+				Log.d.error("Tried to register a null equality comparer for: " + type.FullName);
 			} else {
 				lock (EqComparers) {
 					if (EqComparers.ContainsKey(type)) {
@@ -288,14 +288,14 @@ namespace Smooth.Compare {
 						if (ctor != null) {
 							config = (Configuration) customType.GetConstructor(Type.EmptyTypes).Invoke(null);
 						} else {
-							if (Log.isError) Log.error("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does have a default constructor.");
+							Log.d.error("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does have a default constructor.");
 						}
 					} else {
-						if (Log.isError) Log.error("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does not inherit from " + typeof(Configuration).FullName + ".");
+						Log.d.error("A " + customConfigurationClassName + " class exists in your project, but will not be used because it does not inherit from " + typeof(Configuration).FullName + ".");
 					}
 				}
 			} catch (Exception e) {
-				if (Log.isError) Log.error(e);
+				Log.d.error(e);
 			} finally {
 				config = config ?? new Configuration();
 			}
@@ -303,7 +303,7 @@ namespace Smooth.Compare {
 			try {
 				config.RegisterComparers();
 			} catch (Exception e) {
-				if (Log.isError) Log.error(e);
+				Log.d.error(e);
 			}
 		}
 

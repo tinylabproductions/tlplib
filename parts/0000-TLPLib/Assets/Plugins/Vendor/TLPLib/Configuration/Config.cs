@@ -49,9 +49,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public struct ParsingError {
       public readonly string jsonString;
 
-      public ParsingError(string jsonString) {
-        this.jsonString = jsonString;
-      }
+      public ParsingError(string jsonString) { this.jsonString = jsonString; }
     }
 
     public static Either<ParsingError, IConfig> parseJson(string json) {
@@ -72,12 +70,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static ConfigLookupError parseErrorFor<A>(
       ConfigPath path, object node, string extraInfo = null
-    ) {
-      var extraS = extraInfo == null ? "" : $", {extraInfo}";
-      return ConfigLookupError.wrongType(F.lazy(() =>
-        $"Can't parse {path} as {typeof(A)}{extraS}, node contents: {node.asDebugString()}"
-      ));
-    }
+    ) => 
+      ConfigLookupError.wrongType(F.lazy(() => ImmutableArray.Create(
+        F.t("path", path.pathStrWithBase),
+        F.t("type", typeof(A).FullName),
+        F.t("extraInfo", extraInfo ?? ""),
+        F.t("node-contents", node.asDebugString())
+      )));
 
     public static Either<ConfigLookupError, A> parseErrorEFor<A>(
       ConfigPath path, object node, string extraInfo = null
@@ -392,10 +391,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       IDictionary<string, object> current, ConfigPath path, string part, Parser<A> parser
     ) {
       if (!current.ContainsKey(part))
-        return F.left<ConfigLookupError, A>(ConfigLookupError.keyNotFound(F.lazy(() =>
-          $"Cannot find part '{part}' from path '{path}' in {current.asDebugString()} " +
-          $"[{nameof(scope)}='{scope}']"
-        )));
+        return F.left<ConfigLookupError, A>(ConfigLookupError.keyNotFound(F.lazy(() => ImmutableArray.Create(
+          F.t(nameof(part), part),
+          F.t(nameof(path), path.pathStrWithBase),
+          F.t(nameof(current), current.asDebugString()),
+          F.t(nameof(scope), scope.pathStrWithBase)
+        ))));
 
       var node = current[part];
       return parser(path, node);

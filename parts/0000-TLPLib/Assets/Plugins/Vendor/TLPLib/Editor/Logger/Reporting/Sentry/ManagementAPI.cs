@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
               $"Fetching WWW (try {retry + 1})", $"{request.method} {url}", www.progress
             )) {
               www.Dispose();
-              Log.info($"Request to {url} cancelled.");
+              Log.d.info($"Request to {url} cancelled.");
               return Either<Error, WWW>.Left(CancelledByUser.instance);
             }
           }

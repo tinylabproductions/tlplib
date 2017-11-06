@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       throws<A>(new ArgumentOutOfRangeException($"Unknown {paramName} value: '{value}'"));
 
     public static Option<A> matchErrOpt<A>(string paramName, string value) {
-      if (Log.isError) Log.error($"Unknown {paramName} value: '{value}'");
+      Log.d.error($"Unknown {paramName} value: '{value}'");
       return none<A>();
     }
 

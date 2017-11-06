@@ -28,14 +28,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static void trackWWWSend(this WWW www, string prefix, Dictionary<string, string> headers) {
       ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
         if (!string.IsNullOrEmpty(www.error)) {
-          if (Log.isInfo) Log.info(
+          if (Log.d.isInfo()) Log.d.info(
             $"{prefix} send to '{www.url}' failed with: {www.error}" +
             "\nRequest headers=" + headers.asDebugString() +
             "\nResponse headers=" + www.responseHeaders.asDebugString()
           );
         }
         else {
-          if (Debug.isDebugBuild && Log.isInfo) Log.info(
+          if (Debug.isDebugBuild && Log.d.isInfo()) Log.d.info(
             prefix + " send succeeded with response headers=" + www.responseHeaders.asDebugString()
           );
         }
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static void trackWWWSend(this WWW www, string prefix, WWWForm form) {
       ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {
         if (!string.IsNullOrEmpty(www.error)) {
-          if (Log.isInfo) Log.info(
+          if (Log.d.isInfo()) Log.d.info(
             $"{prefix} POST send to '{www.url}' failed with: {www.error}" +
             "\nRequest headers=" + form.headers.asDebugString() +
             "\nRequest body=" + Encoding.UTF8.GetString(form.data) +
@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           );
         }
         else {
-          if (Debug.isDebugBuild && Log.isInfo) Log.info(
+          if (Debug.isDebugBuild && Log.d.isInfo()) Log.d.info(
             prefix + " POST send succeeded with response headers=" + www.responseHeaders.asDebugString()
           );
         }
