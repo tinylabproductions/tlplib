@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       "This script should be used for elements which are in Canvas. For non-canvas elements use " +
       nameof(ScreenAspectRatioScaler) + " script.\n\n" +
       "!!! This component needs to be on a game object which is set to 'Stretch over all parent' " +
-      "on RectTransform. !!!"
+      "on RectTransform and left, top, right, bottom should = 0 !!!"
     )
   ]
   public class CanvasAspectRatioScaler : UIBehaviour {
@@ -45,10 +45,12 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     protected override void OnRectTransformDimensionsChange() {
       base.OnRectTransformDimensionsChange();
 
-      target.localScale = ScreenAspectRatioScaler.calculateLocalScale(
-        new Vector2(originalWidth, originalHeight), 
-        new Vector2(transform.rect.width, transform.rect.height)
-      );
+      // transform may be null if OnRectTransformDimensionsChange was called before Awake
+      var transform = this.transform ?? ((RectTransform)base.transform);
+      var widthScaleRatio = originalWidth / transform.rect.width;
+      var heightScaleRatio = originalHeight / transform.rect.height;
+      var scale = 1 / Mathf.Max(widthScaleRatio, heightScaleRatio);
+      target.localScale = Vector3.one * scale;
     }
   }
 }
