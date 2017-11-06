@@ -24,6 +24,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   }
 
   public static class SceneValidatorExts {
+    public static SceneWithValidator withValidator(this ScenePath path, SceneValidator validator) =>
+      SceneWithValidator.a(path, validator);
+
     public static SceneValidator join(
       this SceneValidator a, SceneValidator b
     ) => scene => a(scene).AddRange(b(scene));
