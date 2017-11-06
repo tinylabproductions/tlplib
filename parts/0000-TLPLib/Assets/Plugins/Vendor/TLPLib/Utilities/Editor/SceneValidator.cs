@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.scenes;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace com.tinylabproductions.TLPLib.Utilities.Editor {
+  public delegate ImmutableList<ErrorMsg> SceneValidator(Scene scene);
+
+  public static class SceneValidator_ {
+    public static readonly SceneValidator
+      validateForOneRootObject = validateForNRootObjects(1),
+      validateForNoRootObjects = validateForNRootObjects(0),
+      noValidations = scene => ImmutableList<ErrorMsg>.Empty;
+
+    public static SceneValidator validateForComponent<A>() where A : Component =>
+      scene => {
+        var ass = scene.GetRootGameObjects().collect(go => go.GetComponent<A>().opt()).ToImmutableList();
+        return (ass.Count != 1).opt(new ErrorMsg(
+          $"Found {ass.Count} of {typeof(A)} in scene '{scene.path}' root game objects, expected 1."
+        )).toImmutableList();
+      };
+
+    public static SceneValidator validateForNRootObjects(int n) =>
+      scene => {
+        var rootObjectCount = scene.GetRootGameObjects().Length;
+        return (rootObjectCount != n).opt(
+          new ErrorMsg($"Expected {n} root game objects but found {rootObjectCount}")
+        ).toImmutableList();
+      };
+
+    public static SceneValidator validateForGameObjectWithComponent<C>(string path) where C : Component =>
+      scene => (
+        from go in GameObject.Find(path).opt().toRight(new ErrorMsg($"Can't find GO at path {path}"))
+        from _ in go.GetComponentSafeE<C>()
+        select _
+      ).leftValue.toImmutableList();
+  }
+
+  public static class WithSceneValidator {
+    public static WithSceneValidator<A> a<A>(A a, SceneValidator validator) =>
+      new WithSceneValidator<A>(a, validator);
+  }
+
+  public struct WithSceneValidator<A> {
+    public readonly A a;
+    public readonly SceneValidator validator;
+
+    public WithSceneValidator(A a, SceneValidator validator) {
+      this.a = a;
+      this.validator = validator;
+    }
+
+    public WithSceneValidator<B> map<B>(Fn<A, B> mapper) =>
+      new WithSceneValidator<B>(mapper(a), validator);
+  }
+
+  public static class SceneValidatorExts {
+    public static WithSceneValidator<ScenePath> withValidator(
+      this RuntimeSceneRef path, SceneValidator validator
+    ) =>
+      path.scenePath.withValidator(validator);
+
+    public static WithSceneValidator<ScenePath> withValidator(
+      this ScenePath path, SceneValidator validator
+    ) =>
+      WithSceneValidator.a(path, validator);
+
+    public static SceneValidator join(
+      this SceneValidator a, SceneValidator b
+    ) => scene => a(scene).AddRange(b(scene));
+
+    public static SceneValidator createComponentValidator<A>(
+      this RuntimeSceneRefWithComponent<A> sceneRef
+    ) where A : Component => SceneValidator_.validateForComponent<A>();
+
+    public static WithSceneValidator<ScenePath> toSceneNameAndValidator<A>(
+      this RuntimeSceneRefWithComponent<A> sceneRef
+    ) where A : Component => WithSceneValidator.a(sceneRef.scenePath, sceneRef.createComponentValidator());
+  }
+}
