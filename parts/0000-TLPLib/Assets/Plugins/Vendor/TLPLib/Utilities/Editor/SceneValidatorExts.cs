@@ -24,6 +24,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   }
 
   public static class SceneValidatorExts {
+    public static SceneWithValidator withValidator(this RuntimeSceneRef path, SceneValidator validator) =>
+      path.scenePath.withValidator(validator);
+
     public static SceneWithValidator withValidator(this ScenePath path, SceneValidator validator) =>
       SceneWithValidator.a(path, validator);
 
