@@ -9,7 +9,7 @@ using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace com.tinylabproductions.TLPLib.UI {
+namespace com.tinylabproductions.TLPLib.Components.ui {
   public class Carousel : UIBehaviour, IMB_Update {
     public enum Direction : byte { Horizontal = 0, Vertical = 1 }
 
