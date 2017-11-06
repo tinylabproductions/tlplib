@@ -18,9 +18,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static SceneValidator validateForComponent<A>() where A : Component =>
       scene => {
-        var ass = scene.GetRootGameObjects().collect(go => go.GetComponent<A>().opt()).ToImmutableList();
-        return (ass.Count != 1).opt(new ErrorMsg(
-          $"Found {ass.Count} of {typeof(A)} in scene '{scene.path}' root game objects, expected 1."
+        var aList = scene.GetRootGameObjects().collect(go => go.GetComponentSafe<A>()).ToImmutableList();
+        return (aList.Count != 1).opt(new ErrorMsg(
+          $"Found {aList.Count} of {typeof(A)} in scene '{scene.path}' root game objects, expected 1."
         )).toImmutableList();
       };
 
@@ -59,16 +59,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   }
 
   public static class SceneValidatorExts {
-    public static WithSceneValidator<ScenePath> withValidator(
-      this RuntimeSceneRef path, SceneValidator validator
-    ) =>
-      path.scenePath.withValidator(validator);
-
-    public static WithSceneValidator<ScenePath> withValidator(
-      this ScenePath path, SceneValidator validator
-    ) =>
-      WithSceneValidator.a(path, validator);
-
     public static SceneValidator join(
       this SceneValidator a, SceneValidator b
     ) => scene => a(scene).AddRange(b(scene));
