@@ -3,7 +3,7 @@ using Smooth.Pools;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Plugins.Vendor.TLPLib.UI {
+namespace com.tinylabproductions.TLPLib.Components.ui {
   public class Skew : BaseMeshEffect {
     public float xSkew, ySkew;
 

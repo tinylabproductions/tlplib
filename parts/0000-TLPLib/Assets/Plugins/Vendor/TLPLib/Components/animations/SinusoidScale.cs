@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Code.Utils {
+namespace com.tinylabproductions.TLPLib.Components.animations {
   public class SinusoidScale : MonoBehaviour {
     public Vector3 from = Vector3.one;
     public Vector3 to = Vector3.one;

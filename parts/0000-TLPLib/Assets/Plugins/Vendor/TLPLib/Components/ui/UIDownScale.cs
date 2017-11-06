@@ -1,24 +1,28 @@
-﻿using System;
-using Assets.Code.Utils;
+﻿using com.tinylabproductions.TLPLib.Components.animations;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using UnityEngine.EventSystems;
-namespace com.tinylabproductions.TLPLib.UI {
-  public abstract class UIDownScaleBase : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IMB_Awake {
+
+namespace com.tinylabproductions.TLPLib.Components.ui {
+  public class UIDownScale : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IMB_Awake {
     public float scale = 1.1f;
     [Header("Optional, default to this.transform")]
     public Transform target;
 
     protected Vector3 previous;
     protected bool isDown;
-    protected new SinusoidScale animation;
+    protected new Option<SinusoidScale> animation;
 
-    public abstract Vector3 targetLocalScale { get; set; }
-    public abstract Action onPointerUp { get; }
+    public virtual Vector3 targetLocalScale {
+      get { return target.localScale; }
+      set { target.localScale = value; }
+    }
 
     public void Awake() {
       if (!target) target = transform;
-      animation = target.GetComponent<SinusoidScale>();
+      animation = target.gameObject.GetComponentSafe<SinusoidScale>();
     }
 
     public void OnPointerDown(PointerEventData eventData) {
@@ -31,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.UI {
         isDown = true;
         previous = targetLocalScale;
         targetLocalScale *= scale;
-        if (animation != null) animation.enabled = !isDown;
+        foreach (var anim in animation) anim.enabled = !isDown;
       }
     }
 
@@ -40,13 +44,15 @@ namespace com.tinylabproductions.TLPLib.UI {
       pointerUp();
     }
 
-    public virtual void pointerUp() {
+    public void pointerUp() {
       if (isDown) {
         isDown = false;
         targetLocalScale = previous;
-        if (animation != null) animation.enabled = !isDown;
+        foreach (var anim in animation) anim.enabled = !isDown;
         onPointerUp();
       }
     }
+
+    public virtual void onPointerUp() {}
   }
 }
