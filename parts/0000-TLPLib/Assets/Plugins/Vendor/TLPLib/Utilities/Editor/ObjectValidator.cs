@@ -37,6 +37,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public readonly Object obj;
       public readonly string objFullPath;
       public readonly Option<string> assetPath;
+      public readonly Option<string> sceneName;
 
       #region Equality
 
@@ -63,7 +64,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       #endregion
       
       public override string ToString() => 
-        $"{nameof(Error)}[{type} in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'|{message}]";
+        $"{nameof(Error)}[{type} " +
+        $"in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'| " +
+        $"{sceneName.fold(() => "prefab", _ => $"scene path: {_}")}'| " +
+        $"{message}]";
 
       #region Constructors
 
@@ -72,7 +76,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         this.message = message;
         this.obj = obj;
         objFullPath = fullPath(obj);
-        assetPath = AssetDatabase.GetAssetPath(obj).opt();
+        assetPath = AssetDatabase.GetAssetPath(obj).nonEmptyOpt();
+        sceneName = ((obj as GameObject).opt() || (obj as Component).opt()
+          .map(c => c.gameObject)).flatMap(go => (go?.scene.path).opt());
       }
 
       // Missing component is null, that is why we need GO
@@ -389,6 +395,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
+            foreach (var prepable in (fieldValue as PrepareBeforeBuild).opt()) prepable.prepareBeforeBuild();
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
               var list = listOpt.get;

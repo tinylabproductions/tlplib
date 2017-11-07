@@ -4,6 +4,7 @@ using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,7 +16,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
   [AdvancedInspector(true)]
-  public class RuntimeSceneRef {
+  public class RuntimeSceneRef : PrepareBeforeBuild {
     [SerializeField, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))]
     public Object scene;
 
@@ -59,6 +60,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       prepareForRuntime();
       return true;
     }
+
+    public void prepareBeforeBuild() => prepareForRuntime();
   }
 
   /// <summary>
