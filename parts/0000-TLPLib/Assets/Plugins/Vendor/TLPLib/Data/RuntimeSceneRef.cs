@@ -4,6 +4,7 @@ using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -16,7 +17,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
   [AdvancedInspector(true)]
-  public class RuntimeSceneRef : PrepareBeforeBuild {
+  public class RuntimeSceneRef : TLPForceUpdateObject {
     [SerializeField, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))]
     public Object scene;
 
@@ -44,6 +45,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Conditional("UNITY_EDITOR")]
     public void prepareForRuntime() {
 #if UNITY_EDITOR
+      var previousPath = _scenePath;
       if (!AssetDatabase.GetAssetPath(scene).EndsWithFast(".unity")) {
         // ReSharper disable once AssignNullToNotNullAttribute
         scene = null;
@@ -53,6 +55,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         _sceneName = scene.name;
         _scenePath = AssetDatabase.GetAssetPath(scene);
       }
+      if (previousPath != _scenePath) Log.d.warn($"Scene name : {_sceneName}");
 #endif
     }
 
@@ -61,7 +64,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       return true;
     }
 
-    public void prepareBeforeBuild() => prepareForRuntime();
+    public void forceUpdateObject(Object containingComponent) {
+      containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(forceUpdateObject)}");
+      prepareForRuntime();
+    }
   }
 
   /// <summary>

@@ -1,5 +1,5 @@
 ﻿namespace com.tinylabproductions.TLPLib.Utilities {
-  public interface PrepareBeforeBuild {
-    void prepareBeforeBuild();
+  public interface TLPForceUpdateObject {
+    void forceUpdateObject(UnityEngine.Object containingComponent);
   }
 }
