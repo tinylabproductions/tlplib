@@ -17,7 +17,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
   [AdvancedInspector(true)]
-  public class RuntimeSceneRef : TLPOnObjectValidate {
+  public class RuntimeSceneRef : OnObjectValidate {
     [SerializeField, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))]
     public Object scene;
 
