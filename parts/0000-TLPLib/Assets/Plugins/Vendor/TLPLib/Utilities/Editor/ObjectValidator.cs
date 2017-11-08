@@ -396,8 +396,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
-            foreach (var prepable in (fieldValue as TLPForceUpdateObject).opt()) {
-              prepable.forceUpdateObject(containingComponent);
+            foreach (var prepable in (fieldValue as TLPOnObjectValidate).opt()) {
+              prepable.onObjectValidate(containingComponent);
             }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {

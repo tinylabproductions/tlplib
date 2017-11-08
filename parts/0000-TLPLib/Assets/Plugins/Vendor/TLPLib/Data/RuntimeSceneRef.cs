@@ -17,7 +17,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
   [AdvancedInspector(true)]
-  public class RuntimeSceneRef : TLPForceUpdateObject {
+  public class RuntimeSceneRef : TLPOnObjectValidate {
     [SerializeField, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))]
     public Object scene;
 
@@ -64,8 +64,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       return true;
     }
 
-    public void forceUpdateObject(Object containingComponent) {
-      containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(forceUpdateObject)}");
+    public void onObjectValidate(Object containingComponent) {
+      containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(onObjectValidate)}");
       prepareForRuntime();
     }
   }

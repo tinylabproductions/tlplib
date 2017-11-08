@@ -1,5 +1,5 @@
 ﻿namespace com.tinylabproductions.TLPLib.Utilities {
-  public interface TLPForceUpdateObject {
-    void forceUpdateObject(UnityEngine.Object containingComponent);
+  public interface TLPOnObjectValidate {
+    void onObjectValidate(UnityEngine.Object containingComponent);
   }
 }
