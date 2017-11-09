@@ -87,7 +87,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #endregion
 
-    #region ofTry
+    #region of Try
 
     public static Future<Try<To>> flatMapT<From, To>(
       this Future<Try<From>> m, Fn<From, Future<To>> mapper
@@ -95,6 +95,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
       from => mapper(from).map(F.scs),
       err => Future.successful(F.err<To>(err))
     ));
+
+    #endregion
+
+    #endregion
+
+    #region LazyVal
+
+    #region of Try
+
+    public static LazyVal<Try<B>> mapT<A, B>(
+      this LazyVal<Try<A>> m, Fn<A, B> mapper
+    ) => m.map(_ => _.map(mapper));
 
     #endregion
 
