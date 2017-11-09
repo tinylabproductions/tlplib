@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -20,6 +21,10 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
+    public delegate ImmutableList<ErrorMsg> CustomObjectValidator(object obj);
+
+    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag, CustomError }
+
     public struct Error {
       public enum Type : byte {
         MissingComponent,
@@ -312,7 +317,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               return Error.textFieldBadTag(o: component, hierarchy: fieldHierarchy, context: context);
           }
           return F.matchErr<Error>(paramName: nameof(FieldAttributeError), value: err.ToString());
-        }
+        },
+        customObjectValidatorOpt: 
       );
       errors = errors.AddRange(items: fieldErrors);
 
@@ -367,13 +373,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         : Option<UnityEvent>.None;
     }
 
-    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
-
     static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      Object containingComponent, object o, Fn<FieldAttributeError, string, Error> createError,
-      Stack<string> fieldHierarchy = null
+      Object containingComponent, object o, Fn<FieldAttributeError, string, Error> createError, 
+      Option<CustomObjectValidator> customObjectValidatorOpt, Stack<string> fieldHierarchy = null
     ) {
       fieldHierarchy = fieldHierarchy ?? new Stack<string>();
 
@@ -399,6 +403,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             foreach (var prepable in (fieldValue as OnObjectValidate).opt()) {
               prepable.onObjectValidate(containingComponent);
             }
+            foreach (var customValidator in customObjectValidatorOpt) {
+              foreach (var customValidationResults in customValidator(o)) {
+                yield return createError(FieldAttributeError.CustomError, customValidationResults.ToString());
+              }
+            }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
               var list = listOpt.get;
@@ -416,8 +425,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 !fieldType.IsPrimitive
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
-                foreach (var _err in validateFieldsWithAttributes(containingComponent, fieldValue, createError, fieldHierarchy))
-                  yield return _err;
+                var validationErrors = validateFieldsWithAttributes(
+                  containingComponent, fieldValue, createError, customObjectValidatorOpt, fieldHierarchy
+                );
+                foreach (var _err in validationErrors) yield return _err;
               }
             }
           }
@@ -438,7 +449,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFieldsWithAttributes(
-      Object containingComponent, IList list, FieldInfo listFieldInfo, bool hasNotNull, Stack<string> fieldHierarchy, Fn<FieldAttributeError, string, Error> createError
+      Object containingComponent, IList list, FieldInfo listFieldInfo, 
+      bool hasNotNull, Stack<string> fieldHierarchy, 
+      Fn<FieldAttributeError, string, Error> createError,
+      Option<CustomObjectValidator> customObjectValidatorOpt 
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
@@ -450,8 +464,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         var index = 0;
         foreach (var listItem in list) {
           fieldHierarchy.Push($"[{index}]");
-          foreach (var _err in validateFieldsWithAttributes(containingComponent, listItem, createError, fieldHierarchy))
-            yield return _err;
+          var validationResults = validateFieldsWithAttributes(
+            containingComponent, listItem, createError, customObjectValidatorOpt, fieldHierarchy
+          );
+          foreach (var _err in validationResults) yield return _err;
           fieldHierarchy.Pop();
           index++;
         }

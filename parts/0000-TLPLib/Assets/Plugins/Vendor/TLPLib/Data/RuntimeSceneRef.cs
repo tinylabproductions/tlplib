@@ -55,7 +55,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         _sceneName = scene.name;
         _scenePath = AssetDatabase.GetAssetPath(scene);
       }
-      if (previousPath != _scenePath) Log.d.warn($"Scene name : {_sceneName}");
+      // Can this be made in such way to only work during the build processes?
+      //if (previousPath != _scenePath) Log.d.warn($"Scene name : {_sceneName}");
 #endif
     }
 
