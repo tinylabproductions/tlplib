@@ -102,6 +102,12 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public UnityOptionUInt(Option<uint> value) : base(value) { }
   }
   [Serializable] public class UnityOptionUIntArray : UnityOption<uint[]> { }
+  [Serializable]
+  public class UnityOptionULong : UnityOption<ulong> {
+    public UnityOptionULong() { }
+    public UnityOptionULong(Option<ulong> value) : base(value) { }
+  }
+  [Serializable] public class UnityOptionULongArray : UnityOption<ulong[]> { }
   [Serializable] public class UnityOptionGameObject : UnityOption<GameObject> {
     public UnityOptionGameObject() {}
     public UnityOptionGameObject(Option<GameObject> value) : base(value) {}
