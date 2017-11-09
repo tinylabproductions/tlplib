@@ -44,6 +44,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Vector2 rotate90(this Vector2 v) => new Vector2(-v.y, v.x);
+    public static Vector2 rotate180(this Vector2 v) => new Vector2(-v.x, -v.y);
+    public static Vector2 rotate270(this Vector2 v) => new Vector2(v.y, -v.x);
+
+    public static float cross(this Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
 
     public static Vector2 rotate(this Vector2 v, float degrees) {
       var radians = degrees * Mathf.Deg2Rad;

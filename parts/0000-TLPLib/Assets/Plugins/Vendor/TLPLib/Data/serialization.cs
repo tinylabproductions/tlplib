@@ -130,6 +130,10 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static ISerializedRW<Either<A, B>> either<A, B>(ISerializedRW<A> aRW, ISerializedRW<B> bRW) => 
       new EitherRW<A, B>(aRW, bRW);
 
+    public static ISerializedRW<ImmutableArray<A>> immutableArray<A>(
+      ISerializedRW<A> rw
+    ) => a(collectionSerializer<A, ImmutableArray<A>>(rw), collectionDeserializer(rw));
+
     public static ISerializer<ICollection<A>> collectionSerializer<A>(ISerializer<A> serializer) =>
       collectionSerializer<A, ICollection<A>>(serializer);
 
@@ -550,9 +554,7 @@ namespace com.tinylabproductions.TLPLib.Data {
             readIdx += aInfo.bytesRead;
             builder.Add(aInfo.value);
           }
-          // MoveToImmutable throws an exception if capacity != count
-          builder.Capacity = builder.Count;
-          return F.some(new DeserializeInfo<ImmutableArray<A>>(builder.MoveToImmutable(), bytesRead));
+          return F.some(new DeserializeInfo<ImmutableArray<A>>(builder.MoveToImmutableSafe(), bytesRead));
         }
         catch (Exception) { return Option<DeserializeInfo<ImmutableArray<A>>>.None; }
       }

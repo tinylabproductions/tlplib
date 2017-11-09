@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Net {
           onDispose: t => {
             Object.Destroy(t);
             cache.Remove(url);
-            if (Log.isDebug) Log.rdebug($"{nameof(ImageDownloader)} disposed texture: {url}");
+            if (Log.d.isDebug()) Log.d.debug($"{nameof(ImageDownloader)} disposed texture: {url}");
           })
         );
 

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public class ScopedLog : ILog {
@@ -15,9 +15,11 @@ namespace com.tinylabproductions.TLPLib.Logger {
       set { backing.level = value; }
     }
 
+    public IObservable<LogEvent> messageLogged => backing.messageLogged;
+
     public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, object o, Object context = null) => 
-      backing.log(l, wrap(o), context);
+    public void log(Log.Level l, LogEntry entry) => 
+      backing.log(l, entry.withMessage(wrap(entry.message)));
 
     string wrap(object o) => $"{scope} {o}";
   }

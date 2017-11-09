@@ -113,7 +113,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
         case 4: s3 = value; break;
         default:
           if (fallback == null) {
-            if (Log.isVerbose) Log.verbose(
+            if (Log.d.isVerbose()) Log.d.verbose(
               $"Creating fallback list for {nameof(SList4<A>)}"
             );
             fallback = new List<A>();

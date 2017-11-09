@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public static void clearPlayerPrefs() {
       if (EditorUtility.DisplayDialog("Clear player prefs?", "Are you sure?", "Clear", "Cancel")) {
         PlayerPrefs.DeleteAll();
-        Log.info("Player prefs cleared");
+        Log.d.info("Player prefs cleared");
       }
     }
 
@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         && check("You're sure you understand the consequences?")
       ) {
         EditorPrefs.DeleteAll();
-        Log.info("Editor prefs cleared. Good luck with that.");
+        Log.d.info("Editor prefs cleared. Good luck with that.");
       }
     }
   }

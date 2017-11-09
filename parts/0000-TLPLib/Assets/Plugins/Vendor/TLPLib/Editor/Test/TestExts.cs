@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -257,6 +259,10 @@ namespace com.tinylabproductions.TLPLib.Test {
       act.shouldChange(measure, Numeric.integer);
     public static void shouldNotChange(this Action act, Fn<int> measure) => 
       act.shouldChange(measure).by(0);
+
+    public static StreamMatcher<A> shouldPushTo<A>(
+      this Action act, IObservable<A> obs
+    ) => new StreamMatcher<A>(act, obs);
   }
 
   public class SetEquals<A> : Constraint {
@@ -302,6 +308,40 @@ namespace com.tinylabproductions.TLPLib.Test {
       }
 
       num.subtract(after, initial).shouldEqual(change, message);
+    }
+  }
+
+  /// <summary>
+  /// More specialized ChangeMatcher
+  /// For use when we are not only interested in the amount of callback calls
+  /// But also in the results of those calls
+  /// </summary>
+  /// <typeparam name="A"></typeparam>
+  public class StreamMatcher<A> {
+    readonly Action act;
+    readonly IObservable<A> obs;
+
+    public StreamMatcher(Action act, IObservable<A> obs) {
+      this.act = act;
+      this.obs = obs;
+    }
+
+    public void resultIn(params A[] vals) => resultIn(vals, message: null);
+
+    public void resultIn(ICollection<A> match, string message = null) {
+      var streamValues = new List<A>();
+      var sub = obs.subscribe(streamValues.Add);
+      act();
+      sub.unsubscribe();
+
+      if (message == null) {
+        message = match.Any()
+          ? $"call results do not match expected results "
+          : $"there should have been no calls, but they still occured ";
+        message += $"expected {match} received {streamValues}";
+      }
+
+      streamValues.shouldEqualEnum(match, message);
     }
   }
 }
