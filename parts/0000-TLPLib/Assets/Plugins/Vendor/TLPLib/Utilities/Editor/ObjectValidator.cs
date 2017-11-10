@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public delegate IEnumerable<ErrorMsg> CustomObjectValidator(object obj);
 
-    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag, CustomError }
+    enum FieldError { NullField, EmptyCollection, TextFieldBadTag }
 
     public struct Error {
       public enum Type : byte {
@@ -34,7 +34,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         EmptyCollection,
         UnityEventInvalidMethod,
         UnityEventInvalid,
-        TextFieldBadTag
+        TextFieldBadTag,
+        CustomValidation
       }
 
       public readonly Type type;
@@ -146,6 +147,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       ) => new Error(
         Type.TextFieldBadTag,
         $"{context}. Property: {hierarchy}",
+        o
+      );
+
+      public static Error customError(
+        Object o, string hierarchy, ErrorMsg error, CheckContext context  
+      ) => new Error(
+        Type.CustomValidation,
+        $"{context}. Property: {hierarchy}. Error: {error}",
         o
       );
 
@@ -313,20 +322,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      var fieldErrors = validateFieldsWithAttributes(
+      var fieldErrors = validateFields(
         containingComponent: component,
         o: component,
         createError: (err, fieldHierarchy) => {
           switch (err) {
-            case FieldAttributeError.NullField:
+            case FieldError.NullField:
               return Error.nullReference(o: component, hierarchy: fieldHierarchy, context: context);
-            case FieldAttributeError.EmptyCollection:
+            case FieldError.EmptyCollection:
               return Error.emptyCollection(o: component, hierarchy: fieldHierarchy, context: context);
-            case FieldAttributeError.TextFieldBadTag:
+            case FieldError.TextFieldBadTag:
               return Error.textFieldBadTag(o: component, hierarchy: fieldHierarchy, context: context);
           }
-          return F.matchErr<Error>(paramName: nameof(FieldAttributeError), value: err.ToString());
+          return F.matchErr<Error>(paramName: nameof(FieldError), value: err.ToString());
         },
+        createCustomError: (fieldHierarchy, errorMsg) => Error.customError(
+          o: component, hierarchy: fieldHierarchy, error: errorMsg, context: context
+        ), 
         customObjectValidatorOpt: customObjectValidatorOpt
       );
       errors = errors.AddRange(items: fieldErrors);
@@ -384,8 +396,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
 
-    static IEnumerable<Error> validateFieldsWithAttributes(
-      Object containingComponent, object o, Fn<FieldAttributeError, string, Error> createError, 
+    static IEnumerable<Error> validateFields(
+      Object containingComponent, object o, Fn<FieldError, string, Error> createError, 
+      Fn<string, ErrorMsg, Error> createCustomError,
       Option<CustomObjectValidator> customObjectValidatorOpt, Stack<string> fieldHierarchy = null
     ) {
       fieldHierarchy = fieldHierarchy ?? new Stack<string>();
@@ -397,7 +410,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
+              yield return createError(FieldError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
             }
           }
         }
@@ -406,7 +419,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
+            if (hasNotNull) yield return createError(FieldError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
             foreach (var prepable in (fieldValue as OnObjectValidate).opt()) {
@@ -414,21 +427,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             }
             foreach (var customValidator in customObjectValidatorOpt) {
               foreach (var customValidationResults in customValidator(o)) {
-                yield return createError(
-                  FieldAttributeError.CustomError, 
-                  hierarchyToString(fieldHierarchy) + " " + customValidationResults
-                );
+                yield return createCustomError(hierarchyToString(fieldHierarchy), customValidationResults);
               }
             }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
+                yield return createError(FieldError.EmptyCollection, hierarchyToString(fieldHierarchy));
               }
-              var fieldValidationResults = validateFieldsWithAttributes(
+              var fieldValidationResults = validateFields(
                 containingComponent, list, fi, hasNotNull, 
-                fieldHierarchy, createError, customObjectValidatorOpt
+                fieldHierarchy, createError, createCustomError, customObjectValidatorOpt
               );
               foreach (var _err in fieldValidationResults) yield return _err;
             }
@@ -439,8 +449,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 !fieldType.IsPrimitive
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
-                var validationErrors = validateFieldsWithAttributes(
-                  containingComponent, fieldValue, createError, 
+                var validationErrors = validateFields(
+                  containingComponent, fieldValue, createError, createCustomError,
                   customObjectValidatorOpt, fieldHierarchy
                 );
                 foreach (var _err in validationErrors) yield return _err;
@@ -463,24 +473,26 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static readonly Type unityObjectType = typeof(Object);
 
-    static IEnumerable<Error> validateFieldsWithAttributes(
+    static IEnumerable<Error> validateFields(
       Object containingComponent, IList list, FieldInfo listFieldInfo, 
       bool hasNotNull, Stack<string> fieldHierarchy, 
-      Fn<FieldAttributeError, string, Error> createError,
+      Fn<FieldError, string, Error> createError,
+      Fn<string, ErrorMsg, Error> createCustomError,
       Option<CustomObjectValidator> customObjectValidatorOpt 
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
+        if (hasNotNull && list.Contains(null)) yield return createError(FieldError.NullField, hierarchyToString(fieldHierarchy));
       }
       else {
         var index = 0;
         foreach (var listItem in list) {
           fieldHierarchy.Push($"[{index}]");
-          var validationResults = validateFieldsWithAttributes(
-            containingComponent, listItem, createError, customObjectValidatorOpt, fieldHierarchy
+          var validationResults = validateFields(
+            containingComponent, listItem, createError, createCustomError, 
+            customObjectValidatorOpt, fieldHierarchy
           );
           foreach (var _err in validationResults) yield return _err;
           fieldHierarchy.Pop();
