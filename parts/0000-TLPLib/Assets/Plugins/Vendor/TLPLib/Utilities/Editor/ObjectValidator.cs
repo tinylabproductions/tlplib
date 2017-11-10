@@ -402,6 +402,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<CustomObjectValidator> customObjectValidatorOpt, Stack<string> fieldHierarchy = null
     ) {
       fieldHierarchy = fieldHierarchy ?? new Stack<string>();
+      foreach (var customValidator in customObjectValidatorOpt) {
+        foreach (var _err in customValidator(containingComponent, o)) {
+          yield return createCustomError(hierarchyToString(fieldHierarchy), _err);
+        }
+      }
 
       var fields = getFilteredFields(o);
       foreach (var fi in fields) {
@@ -424,11 +429,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           else {
             foreach (var prepable in (fieldValue as OnObjectValidate).opt()) {
               prepable.onObjectValidate(containingComponent);
-            }
-            foreach (var customValidator in customObjectValidatorOpt) {
-              foreach (var _err in customValidator(containingComponent, o)) {
-                yield return createCustomError(hierarchyToString(fieldHierarchy), _err);
-              }
             }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
