@@ -21,7 +21,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
-    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(object obj);
+    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(Object containingObject, object obj);
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
@@ -402,6 +402,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<CustomObjectValidator> customObjectValidatorOpt, Stack<string> fieldHierarchy = null
     ) {
       fieldHierarchy = fieldHierarchy ?? new Stack<string>();
+      foreach (var customValidator in customObjectValidatorOpt) {
+        foreach (var _err in customValidator(containingComponent, o)) {
+          yield return createCustomError(hierarchyToString(fieldHierarchy), _err);
+        }
+      }
 
       var fields = getFilteredFields(o);
       foreach (var fi in fields) {
@@ -424,11 +429,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           else {
             foreach (var prepable in (fieldValue as OnObjectValidate).opt()) {
               prepable.onObjectValidate(containingComponent);
-            }
-            foreach (var customValidator in customObjectValidatorOpt) {
-              foreach (var _err in customValidator(o)) {
-                yield return createCustomError(hierarchyToString(fieldHierarchy), _err);
-              }
             }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
@@ -524,6 +524,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static class CustomObjectValidatorExts {
     public static ObjectValidator.CustomObjectValidator join(
       this ObjectValidator.CustomObjectValidator a, ObjectValidator.CustomObjectValidator b
-    ) => obj => a(obj).Concat(b(obj));
+    ) => (containingObject, obj) => a(containingObject, obj).Concat(b(containingObject, obj));
   }
 }
