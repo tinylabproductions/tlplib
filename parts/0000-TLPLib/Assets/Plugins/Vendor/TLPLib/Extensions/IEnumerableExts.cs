@@ -259,6 +259,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       rng = r;
       return result;
     }
+
+    public static bool isEmpty<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
+    public static bool nonEmpty<A>(this IEnumerable<A> enumerable) => enumerable.Any();
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
