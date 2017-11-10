@@ -21,7 +21,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
-    public delegate ImmutableList<ErrorMsg> CustomObjectValidator(object obj);
+    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(object obj);
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag, CustomError }
 
@@ -189,6 +189,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var scene = SceneManager.GetActiveScene();
       var t = checkScene(
         scene,
+        Option<CustomObjectValidator>.None,
         progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress
         ),
@@ -207,6 +208,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static void checkSelectedObjects() {
       var errors = check(
         new CheckContext("Selection"), Selection.objects,
+        Option<CustomObjectValidator>.None,
         progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress
         ),
@@ -216,16 +218,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     public static Tpl<ImmutableList<Error>, TimeSpan> checkScene(
-      Scene scene, Act<float> onProgress = null, Action onFinish = null
+      Scene scene, Option<CustomObjectValidator> customValidatorOpt, 
+      Act<float> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = new Stopwatch().tap(_ => _.Start());
       var objects = getSceneObjects(scene);
-      var errors = check(new CheckContext(scene.name), objects, onProgress, onFinish);
+      var errors = check(new CheckContext(scene.name), objects, customValidatorOpt, onProgress, onFinish);
       return F.t(errors, stopwatch.Elapsed);
     }
 
     public static ImmutableList<Error> checkAssetsAndDependencies(
-      IEnumerable<PathStr> assets, Act<float> onProgress = null, Action onFinish = null
+      IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt,
+      Act<float> onProgress = null, Action onFinish = null
     ) {
       var loadedAssets = 
         assets.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
@@ -234,14 +238,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         .Where(x => x is GameObject || x is ScriptableObject)
         .ToImmutableList();
       return check(
-        new CheckContext("Assets & Deps"), dependencies, onProgress, onFinish
+        new CheckContext("Assets & Deps"), dependencies, customValidatorOpt, onProgress, onFinish
       );
     }
 
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects, 
+      Option<CustomObjectValidator> customValidatorOpt = default(Option<CustomObjectValidator>),
       Act<float> onProgress = null, Action onFinish = null
     ) {
+      Option.ensureValue(ref customValidatorOpt);
+
       var errors = ImmutableList<Error>.Empty;
       var scanned = 0;
       foreach (var o in objects) {
@@ -256,13 +263,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             foreach (var c in components) {
               errors = 
                 c 
-                ? errors.AddRange(checkComponent(context, c))
+                ? errors.AddRange(checkComponent(context, c, customValidatorOpt))
                 : errors.Add(Error.missingComponent(transform.gameObject));
             }
           }
         }
         else {
-          errors = errors.AddRange(checkComponent(context, o));
+          errors = errors.AddRange(checkComponent(context, o, customValidatorOpt));
         }
       }
 
@@ -272,7 +279,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors.Distinct().ToImmutableList();
     }
 
-    public static ImmutableList<Error> checkComponent(CheckContext context, Object component) {
+    public static ImmutableList<Error> checkComponent(
+      CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt
+    ) {
       var errors = ImmutableList<Error>.Empty;
 
       foreach (var mb in F.opt(value: component as MonoBehaviour)) {
@@ -318,7 +327,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
           return F.matchErr<Error>(paramName: nameof(FieldAttributeError), value: err.ToString());
         },
-        customObjectValidatorOpt: 
+        customObjectValidatorOpt: customObjectValidatorOpt
       );
       errors = errors.AddRange(items: fieldErrors);
 
@@ -405,7 +414,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             }
             foreach (var customValidator in customObjectValidatorOpt) {
               foreach (var customValidationResults in customValidator(o)) {
-                yield return createError(FieldAttributeError.CustomError, customValidationResults.ToString());
+                yield return createError(
+                  FieldAttributeError.CustomError, 
+                  hierarchyToString(fieldHierarchy) + " " + customValidationResults
+                );
               }
             }
             var listOpt = F.opt(fieldValue as IList);
@@ -414,9 +426,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
                 yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
               }
-              foreach (
-                var _err in validateFieldsWithAttributes(containingComponent, list, fi, hasNotNull, fieldHierarchy, createError)
-              ) yield return _err;
+              var fieldValidationResults = validateFieldsWithAttributes(
+                containingComponent, list, fi, hasNotNull, 
+                fieldHierarchy, createError, customObjectValidatorOpt
+              );
+              foreach (var _err in fieldValidationResults) yield return _err;
             }
             else {
               var fieldType = fi.FieldType;
@@ -426,7 +440,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
                 var validationErrors = validateFieldsWithAttributes(
-                  containingComponent, fieldValue, createError, customObjectValidatorOpt, fieldHierarchy
+                  containingComponent, fieldValue, createError, 
+                  customObjectValidatorOpt, fieldHierarchy
                 );
                 foreach (var _err in validationErrors) yield return _err;
               }
@@ -492,5 +507,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ? $"[{fullPath(go.transform.parent.gameObject)}]/{go}"
         : o.ToString();
     }
+  }
+
+  public static class CustomObjectValidatorExts {
+    public static ObjectValidator.CustomObjectValidator join(
+      this ObjectValidator.CustomObjectValidator a, ObjectValidator.CustomObjectValidator b
+    ) => obj => a(obj).Concat(b(obj));
   }
 }
