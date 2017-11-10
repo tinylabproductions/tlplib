@@ -120,8 +120,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public void voidCata(Act<A> ifNonEmpty, Action ifEmpty) => 
       voidFold(ifEmpty, ifNonEmpty);
 
+    public Option<A> filter(bool keepValue) =>
+      keepValue ? this : F.none<A>();
+
     public Option<A> filter(Fn<A, bool> predicate) => 
-      isSome ? (predicate(__unsafeGetValue) ? this : F.none<A>()) : this;
+      isSome && predicate(__unsafeGetValue) ? this : F.none<A>();
 
     public bool exists(Fn<A, bool> predicate) => 
       isSome && predicate(__unsafeGetValue);
