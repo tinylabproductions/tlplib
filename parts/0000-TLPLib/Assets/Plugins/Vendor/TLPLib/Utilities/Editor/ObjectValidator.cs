@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
     public delegate IEnumerable<ErrorMsg> CustomObjectValidator(object obj);
 
-    enum FieldError { NullField, EmptyCollection, TextFieldBadTag }
+    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
     public struct Error {
       public enum Type : byte {
@@ -327,14 +327,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         o: component,
         createError: (err, fieldHierarchy) => {
           switch (err) {
-            case FieldError.NullField:
+            case FieldAttributeError.NullField:
               return Error.nullReference(o: component, hierarchy: fieldHierarchy, context: context);
-            case FieldError.EmptyCollection:
+            case FieldAttributeError.EmptyCollection:
               return Error.emptyCollection(o: component, hierarchy: fieldHierarchy, context: context);
-            case FieldError.TextFieldBadTag:
+            case FieldAttributeError.TextFieldBadTag:
               return Error.textFieldBadTag(o: component, hierarchy: fieldHierarchy, context: context);
           }
-          return F.matchErr<Error>(paramName: nameof(FieldError), value: err.ToString());
+          return F.matchErr<Error>(paramName: nameof(FieldAttributeError), value: err.ToString());
         },
         createCustomError: (fieldHierarchy, errorMsg) => Error.customError(
           o: component, hierarchy: fieldHierarchy, error: errorMsg, context: context
@@ -397,7 +397,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
 
     static IEnumerable<Error> validateFields(
-      Object containingComponent, object o, Fn<FieldError, string, Error> createError, 
+      Object containingComponent, object o, Fn<FieldAttributeError, string, Error> createError, 
       Fn<string, ErrorMsg, Error> createCustomError,
       Option<CustomObjectValidator> customObjectValidatorOpt, Stack<string> fieldHierarchy = null
     ) {
@@ -410,7 +410,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(o);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(FieldError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
+              yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
             }
           }
         }
@@ -419,7 +419,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError(FieldError.NullField, hierarchyToString(fieldHierarchy));
+            if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
           }
           else {
             foreach (var prepable in (fieldValue as OnObjectValidate).opt()) {
@@ -434,7 +434,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (listOpt.isSome) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(FieldError.EmptyCollection, hierarchyToString(fieldHierarchy));
+                yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
               }
               var fieldValidationResults = validateFields(
                 containingComponent, list, fi, hasNotNull, 
@@ -476,7 +476,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static IEnumerable<Error> validateFields(
       Object containingComponent, IList list, FieldInfo listFieldInfo, 
       bool hasNotNull, Stack<string> fieldHierarchy, 
-      Fn<FieldError, string, Error> createError,
+      Fn<FieldAttributeError, string, Error> createError,
       Fn<string, ErrorMsg, Error> createCustomError,
       Option<CustomObjectValidator> customObjectValidatorOpt 
     ) {
@@ -484,7 +484,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(FieldError.NullField, hierarchyToString(fieldHierarchy));
+        if (hasNotNull && list.Contains(null)) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
       }
       else {
         var index = 0;
