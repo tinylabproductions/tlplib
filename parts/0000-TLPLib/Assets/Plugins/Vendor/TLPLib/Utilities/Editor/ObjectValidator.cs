@@ -21,7 +21,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
-    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(object obj);
+    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(Object containingObject, object obj);
 
     enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
 
@@ -426,7 +426,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               prepable.onObjectValidate(containingComponent);
             }
             foreach (var customValidator in customObjectValidatorOpt) {
-              foreach (var customValidationResults in customValidator(o)) {
+              foreach (var customValidationResults in customValidator(containingComponent, o)) {
                 yield return createCustomError(hierarchyToString(fieldHierarchy), customValidationResults);
               }
             }
@@ -524,6 +524,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static class CustomObjectValidatorExts {
     public static ObjectValidator.CustomObjectValidator join(
       this ObjectValidator.CustomObjectValidator a, ObjectValidator.CustomObjectValidator b
-    ) => obj => a(obj).Concat(b(obj));
+    ) => (containingObject, obj) => a(containingObject, obj).Concat(b(containingObject, obj));
   }
 }
