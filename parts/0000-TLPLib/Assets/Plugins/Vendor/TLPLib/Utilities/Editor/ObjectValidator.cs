@@ -426,8 +426,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               prepable.onObjectValidate(containingComponent);
             }
             foreach (var customValidator in customObjectValidatorOpt) {
-              foreach (var customValidationResults in customValidator(o)) {
-                yield return createCustomError(hierarchyToString(fieldHierarchy), customValidationResults);
+              foreach (var _err in customValidator(o)) {
+                yield return createCustomError(hierarchyToString(fieldHierarchy), _err);
               }
             }
             var listOpt = F.opt(fieldValue as IList);
