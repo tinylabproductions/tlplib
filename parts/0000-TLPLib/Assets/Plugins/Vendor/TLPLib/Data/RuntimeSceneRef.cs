@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data.scenes;
@@ -61,9 +63,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       return true;
     }
 
-    public void onObjectValidate(Object containingComponent) {
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(onObjectValidate)}");
       prepareForRuntime();
+      return Enumerable.Empty<ErrorMsg>();
     }
 
     public override string ToString() => $"{nameof(RuntimeSceneRef)}({_scenePath})";

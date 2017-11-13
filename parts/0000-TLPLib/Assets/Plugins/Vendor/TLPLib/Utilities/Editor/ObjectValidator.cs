@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -21,9 +22,17 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class ObjectValidator {
+    /// <param name="containingObject">Unity object </param>
+    /// <param name="obj">Object that is being validated.</param>
+    /// <returns></returns>
     public delegate IEnumerable<ErrorMsg> CustomObjectValidator(Object containingObject, object obj);
 
-    enum FieldAttributeError { NullField, EmptyCollection, TextFieldBadTag }
+    interface IErrorFactory {
+      Error nullField(FieldHierarchyStr hierarchy);
+      Error emptyCollection(FieldHierarchyStr hierarchy);
+      Error badTextFieldTag(FieldHierarchyStr hierarchy);
+      Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage);
+    }
 
     public struct Error {
       public enum Type : byte {
@@ -43,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public readonly Object obj;
       public readonly string objFullPath;
       public readonly Option<string> assetPath;
-      public readonly Option<string> sceneName;
+      public readonly Option<ScenePath> scenePath;
 
       #region Equality
 
@@ -72,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public override string ToString() => 
         $"{nameof(Error)}[{type} " +
         $"in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'| " +
-        $"{sceneName.fold(() => "prefab", _ => $"scene path: {_}")}'| " +
+        $"{scenePath.fold("prefab", _ => _.ToString())}'| " +
         $"{message}]";
 
       #region Constructors
@@ -83,8 +92,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         this.obj = obj;
         objFullPath = fullPath(obj);
         assetPath = AssetDatabase.GetAssetPath(obj).nonEmptyOpt();
-        sceneName = ((obj as GameObject).opt() || (obj as Component).opt()
-          .map(c => c.gameObject)).flatMap(go => (go?.scene.path).opt());
+        scenePath = (
+          F.opt(obj as GameObject) 
+          || F.opt(obj as Component).map(c => c.gameObject)
+        ).map(go => new ScenePath(go.scene.path));
       }
 
       // Missing component is null, that is why we need GO
@@ -95,10 +106,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error emptyCollection(
-        Object o, string hierarchy, CheckContext context
+        Object o, FieldHierarchyStr hierarchy, CheckContext context
       ) => new Error(
         Type.EmptyCollection,
-        $"{context}. Property: {hierarchy}",
+        $"{context}. Property: {hierarchy.s}",
         o
       );
 
@@ -119,10 +130,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error nullReference(
-        Object o, string hierarchy, CheckContext context
+        Object o, FieldHierarchyStr hierarchy, CheckContext context
       ) => new Error(
         Type.NullReference,
-        $"{context}. Property: {hierarchy}",
+        $"{context}. Property: {hierarchy.s}",
         o
       );
 
@@ -142,19 +153,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         o
       );
 
-      public static Error textFieldBadTag(
-        Object o, string hierarchy, CheckContext context
+      public static Error badTextFieldTag(
+        Object o, FieldHierarchyStr hierarchy, CheckContext context
       ) => new Error(
         Type.TextFieldBadTag,
-        $"{context}. Property: {hierarchy}",
+        $"{context}. Property: {hierarchy.s}",
         o
       );
 
       public static Error customError(
-        Object o, string hierarchy, ErrorMsg error, CheckContext context  
+        Object o, FieldHierarchyStr hierarchy, ErrorMsg error, CheckContext context  
       ) => new Error(
         Type.CustomValidation,
-        $"{context}. Property: {hierarchy}. Error: {error}",
+        $"{context}. Property: {hierarchy.s}. Error: {error}",
         o
       );
 
@@ -324,26 +335,35 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fieldErrors = validateFields(
         containingComponent: component,
-        o: component,
-        createError: (err, fieldHierarchy) => {
-          switch (err) {
-            case FieldAttributeError.NullField:
-              return Error.nullReference(o: component, hierarchy: fieldHierarchy, context: context);
-            case FieldAttributeError.EmptyCollection:
-              return Error.emptyCollection(o: component, hierarchy: fieldHierarchy, context: context);
-            case FieldAttributeError.TextFieldBadTag:
-              return Error.textFieldBadTag(o: component, hierarchy: fieldHierarchy, context: context);
-          }
-          return F.matchErr<Error>(paramName: nameof(FieldAttributeError), value: err.ToString());
-        },
-        createCustomError: (fieldHierarchy, errorMsg) => Error.customError(
-          o: component, hierarchy: fieldHierarchy, error: errorMsg, context: context
-        ), 
+        objectBeingValidated: component,
+        createError: new ErrorFactory(component, context), 
         customObjectValidatorOpt: customObjectValidatorOpt
       );
       errors = errors.AddRange(items: fieldErrors);
 
       return errors;
+    }
+
+    class ErrorFactory : IErrorFactory {
+      readonly Object component;
+      readonly CheckContext context;
+
+      public ErrorFactory(Object component, CheckContext context) {
+        this.component = component;
+        this.context = context;
+      }
+
+      public Error nullField(FieldHierarchyStr hierarchy) =>
+        Error.nullReference(o: component, hierarchy: hierarchy, context: context);
+
+      public Error emptyCollection(FieldHierarchyStr hierarchy) =>
+        Error.emptyCollection(o: component, hierarchy: hierarchy, context: context);
+
+      public Error badTextFieldTag(FieldHierarchyStr hierarchy) =>
+        Error.badTextFieldTag(o: component, hierarchy: hierarchy, context: context);
+
+      public Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage) =>
+        Error.customError(o: component, hierarchy: hierarchy, error: customErrorMessage, context: context);
     }
 
     public static ImmutableList<Error> checkComponentType(
@@ -394,51 +414,65 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         : Option<UnityEvent>.None;
     }
 
-    static string hierarchyToString(Stack<string> fieldHierarchy) => fieldHierarchy.Reverse().mkString('.');
+    public struct FieldHierarchyStr {
+      public readonly string s;
+      public FieldHierarchyStr(string s) { this.s = s; }
+      public override string ToString() => $"{nameof(FieldHierarchy)}({s})";
+    }
+
+    class FieldHierarchy {
+      public readonly Stack<string> stack = new Stack<string>();
+
+      public FieldHierarchyStr asString() => new FieldHierarchyStr(stack.Reverse().mkString('.'));
+    }
 
     static IEnumerable<Error> validateFields(
-      Object containingComponent, object o, Fn<FieldAttributeError, string, Error> createError, 
-      Fn<string, ErrorMsg, Error> createCustomError,
-      Option<CustomObjectValidator> customObjectValidatorOpt, Stack<string> fieldHierarchy = null
+      Object containingComponent, 
+      object objectBeingValidated,
+      IErrorFactory createError, 
+      Option<CustomObjectValidator> customObjectValidatorOpt,
+      FieldHierarchy fieldHierarchy = null
     ) {
-      fieldHierarchy = fieldHierarchy ?? new Stack<string>();
+      fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
       foreach (var customValidator in customObjectValidatorOpt) {
-        foreach (var _err in customValidator(containingComponent, o)) {
-          yield return createCustomError(hierarchyToString(fieldHierarchy), _err);
+        foreach (var _err in customValidator(containingComponent, objectBeingValidated)) {
+          yield return createError.custom(fieldHierarchy.asString(), _err);
         }
       }
 
-      var fields = getFilteredFields(o);
+      var fields = getFilteredFields(objectBeingValidated);
       foreach (var fi in fields) {
-        fieldHierarchy.Push(fi.Name);
+        fieldHierarchy.stack.Push(fi.Name);
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
-            var fieldValue = (string)fi.GetValue(o);
+            var fieldValue = (string)fi.GetValue(objectBeingValidated);
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
-              yield return createError(FieldAttributeError.TextFieldBadTag, hierarchyToString(fieldHierarchy));
+              yield return createError.badTextFieldTag(fieldHierarchy.asString());
             }
           }
         }
         if (fi.isSerializable()) {
-          var fieldValue = fi.GetValue(o);
+          var fieldValue = fi.GetValue(objectBeingValidated);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
+            if (hasNotNull) yield return createError.nullField(fieldHierarchy.asString());
           }
           else {
-            foreach (var prepable in (fieldValue as OnObjectValidate).opt()) {
-              prepable.onObjectValidate(containingComponent);
+            foreach (var prepable in F.opt(fieldValue as OnObjectValidate)) {
+              foreach (var error in prepable.onObjectValidate(containingComponent)) {
+                yield return createError.custom(fieldHierarchy.asString(), error);
+              }
             }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
               var list = listOpt.get;
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
-                yield return createError(FieldAttributeError.EmptyCollection, hierarchyToString(fieldHierarchy));
+                yield return createError.emptyCollection(fieldHierarchy.asString());
               }
               var fieldValidationResults = validateFields(
                 containingComponent, list, fi, hasNotNull, 
-                fieldHierarchy, createError, createCustomError, customObjectValidatorOpt
+                fieldHierarchy, createError, customObjectValidatorOpt
               );
               foreach (var _err in fieldValidationResults) yield return _err;
             }
@@ -450,7 +484,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
                 var validationErrors = validateFields(
-                  containingComponent, fieldValue, createError, createCustomError,
+                  containingComponent, fieldValue, createError,
                   customObjectValidatorOpt, fieldHierarchy
                 );
                 foreach (var _err in validationErrors) yield return _err;
@@ -458,7 +492,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             }
           }
         }
-        fieldHierarchy.Pop();
+        fieldHierarchy.stack.Pop();
       }
     }
 
@@ -475,27 +509,27 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static IEnumerable<Error> validateFields(
       Object containingComponent, IList list, FieldInfo listFieldInfo, 
-      bool hasNotNull, Stack<string> fieldHierarchy, 
-      Fn<FieldAttributeError, string, Error> createError,
-      Fn<string, ErrorMsg, Error> createCustomError,
+      bool hasNotNull, FieldHierarchy fieldHierarchy,
+      IErrorFactory createError,
       Option<CustomObjectValidator> customObjectValidatorOpt 
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
-        if (hasNotNull && list.Contains(null)) yield return createError(FieldAttributeError.NullField, hierarchyToString(fieldHierarchy));
+        if (hasNotNull && list.Contains(null))
+          yield return createError.nullField(fieldHierarchy.asString());
       }
       else {
         var index = 0;
         foreach (var listItem in list) {
-          fieldHierarchy.Push($"[{index}]");
+          fieldHierarchy.stack.Push($"[{index}]");
           var validationResults = validateFields(
-            containingComponent, listItem, createError, createCustomError, 
+            containingComponent, listItem, createError, 
             customObjectValidatorOpt, fieldHierarchy
           );
           foreach (var _err in validationResults) yield return _err;
-          fieldHierarchy.Pop();
+          fieldHierarchy.stack.Pop();
           index++;
         }
       }
