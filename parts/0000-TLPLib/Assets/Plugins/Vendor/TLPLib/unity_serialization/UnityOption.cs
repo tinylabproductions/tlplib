@@ -74,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       ? new string[] {}
       : new [] { nameof(_value) };
 
-    public override string ToString() => $"{nameof(UnityOption<A>)}({value})";
+    public override string ToString() => value.ToString();
   }
 
   [Serializable]
