@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Filesystem;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
@@ -125,11 +127,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Missing References
 
-    static Object getPrefab(string prefabName) {
-      return AssetDatabase.GetAllAssetPaths().find(s => 
-        s.EndsWithFast($"TLPLib/Editor/Test/Utilities/{prefabName}.prefab")
-      ).map(AssetDatabase.LoadMainAssetAtPath).get;
-    }
+    static readonly LazyVal<PathStr> testPrefabsDirectory =
+      new LazyValImpl<PathStr>(() =>
+        AssetDatabase.GetAllAssetPaths().find(s =>
+          s.EndsWithFast($"TLPLib/Editor/Test/Utilities/{nameof(ObjectValidatorTest)}.cs")
+        ).map(p => PathStr.a(p).dirname).get
+      );
+
+    static Object getPrefab(string prefabName) =>
+      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.get}/{prefabName}.prefab");
 
     [Test] public void WhenMissingComponent() {
       var go = getPrefab("TestMissingComponent");
