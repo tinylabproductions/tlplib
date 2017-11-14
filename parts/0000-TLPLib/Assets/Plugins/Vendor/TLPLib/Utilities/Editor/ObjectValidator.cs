@@ -407,7 +407,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static Option<UnityEvent> getUnityEvent(object obj, string fieldName) {
       if (obj == null) return Option<UnityEvent>.None;
 
-      var fiOpt = F.opt(obj.GetType().GetField(fieldName));
+      var fiOpt = obj.GetType().getFieldByName(fieldName);
       return 
         fiOpt.isSome 
         ? F.opt(fiOpt.get.GetValue(obj) as UnityEvent) 

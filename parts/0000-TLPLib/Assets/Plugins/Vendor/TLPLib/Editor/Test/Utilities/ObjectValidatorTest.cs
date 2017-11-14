@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
@@ -126,10 +125,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Missing References
 
-    [Test] public void WhenMissingComponent() {
-      var go = AssetDatabase.GetAllAssetPaths().find(s => 
-        s.EndsWithFast("TLPLib/Editor/Test/Utilities/ObjectValidatorTestGameObject.prefab")
+    static Object getPrefab(string prefabName) {
+      return AssetDatabase.GetAllAssetPaths().find(s => 
+        s.EndsWithFast($"TLPLib/Editor/Test/Utilities/{prefabName}.prefab")
       ).map(AssetDatabase.LoadMainAssetAtPath).get;
+    }
+
+    [Test] public void WhenMissingComponent() {
+      var go = getPrefab("TestMissingComponent");
       var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
       errors.shouldHave(ErrorType.MissingComponent);
     }
@@ -354,6 +357,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         a => a.setup(third: false)
       );
 
+    #endregion
+
+    #region UnityEvent
+
+    [Test] public void WhenUnityEventInvalid() {
+      var go = getPrefab("TestUnityEventInvalid");
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
+      errors.shouldHave(ErrorType.UnityEventInvalid);
+    }
+
+    [Test] public void WhenUnityEventInvalidMethod() {
+      var go = getPrefab("TestUnityEventInvalidMethod");
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
+      errors.shouldHave(ErrorType.UnityEventInvalidMethod);
+    }
+    
     #endregion
 
     static A setupComponent<A>(Act<A> setupA = null) where A : Component {
