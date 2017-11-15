@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage);
     }
 
-    public struct Error {
+    public struct Error : IEquatable<Error> {
       public enum Type : byte {
         MissingComponent,
         MissingRequiredComponent,
@@ -51,13 +51,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public readonly string message;
       public readonly Object obj;
       public readonly string objFullPath;
-      public readonly Option<string> assetPath;
-      public readonly Option<ScenePath> scenePath;
+      public readonly Either<AssetPath, ScenePath> location;
 
       #region Equality
 
       public bool Equals(Error other) {
-        return type == other.type && string.Equals(message, other.message) && Equals(obj, other.obj) && string.Equals(objFullPath, other.objFullPath) && Equals(assetPath, other.assetPath);
+        return type == other.type && string.Equals(message, other.message) && Equals(obj, other.obj) && string.Equals(objFullPath, other.objFullPath) && location.Equals(other.location);
       }
 
       public override bool Equals(object obj) {
@@ -71,18 +70,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           hashCode = (hashCode * 397) ^ (message != null ? message.GetHashCode() : 0);
           hashCode = (hashCode * 397) ^ (obj != null ? obj.GetHashCode() : 0);
           hashCode = (hashCode * 397) ^ (objFullPath != null ? objFullPath.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ (assetPath != null ? assetPath.GetHashCode() : 0);
+          hashCode = (hashCode * 397) ^ location.GetHashCode();
           return hashCode;
         }
       }
 
+      public static bool operator ==(Error left, Error right) { return left.Equals(right); }
+      public static bool operator !=(Error left, Error right) { return !left.Equals(right); }
+
       #endregion
       
       public override string ToString() => 
-        $"{nameof(Error)}[{type} " +
-        $"in '{objFullPath} @ {assetPath.getOrElse("scene obj")}'| " +
-        $"{scenePath.fold("prefab", _ => _.ToString())}'| " +
-        $"{message}]";
+        $"{nameof(Error)}[" +
+        $"{type} " +
+        $"in '{objFullPath}' " +
+        $"@ '{location.fold(asset => asset.path, scenePath => scenePath.path)}'. " +
+        $"{message}" +
+        $"]";
 
       #region Constructors
 
@@ -91,12 +95,24 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         this.message = message;
         this.obj = obj;
         objFullPath = fullPath(obj);
-        assetPath = AssetDatabase.GetAssetPath(obj).nonEmptyOpt();
-        scenePath = (
-          F.opt(obj as GameObject) 
-          || F.opt(obj as Component).map(c => c.gameObject)
-        ).map(go => new ScenePath(go.scene.path));
+
+        location = (
+             lookupAssetPath(obj).map(_ => _.left().r<ScenePath>())
+          || lookupScenePath(obj).map(_ => _.right().l<AssetPath>())
+        ).getOrThrow(() => new Exception(
+          $"Unable to find a location of '{obj}'! It's neither an asset, " +
+          $"nor in a scene. Where is it? I don't know. But this sure as heck " +
+          $"needs to be fixed."
+        ));
       }
+
+      static Option<AssetPath> lookupAssetPath(Object o) =>
+        AssetDatabase.GetAssetPath(o).nonEmptyOpt().map(_ => new AssetPath(_));
+
+      static Option<ScenePath> lookupScenePath(Object o) =>
+        from go in F.opt(o as GameObject) || F.opt(o as Component).map(c => c.gameObject)
+        from path in go.scene.path.nonEmptyOpt(trim: true)
+        select new ScenePath(path);
 
       // Missing component is null, that is why we need GO
       public static Error missingComponent(GameObject o) => new Error(
@@ -137,19 +153,26 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         o
       );
 
+      static string unityEventMessagePrefix(string property, int index) =>
+        $"In property '{property}' callback at index {index} of UnityEvent";
+      static string unityEventMessageSuffix(CheckContext context) =>
+        $"in context '{context}'.";
+
       public static Error unityEventInvalidMethod(
-        Object o, string property, int number, CheckContext context
+        Object o, string property, int index, CheckContext context
       ) => new Error(
         Type.UnityEventInvalidMethod,
-        $"UnityEvent {property} callback number {number} has invalid method in {context}.",
+        $"{unityEventMessagePrefix(property, index)} has invalid method " +
+          unityEventMessageSuffix(context),
         o
       );
 
       public static Error unityEventInvalid(
-        Object o, string property, int number, CheckContext context
+        Object o, string property, int index, CheckContext context
       ) => new Error(
         Type.UnityEventInvalid,
-        $"UnityEvent {property} callback number {number} is not valid in {context}.",
+        $"{unityEventMessagePrefix(property, index)} is not valid " + 
+          unityEventMessageSuffix(context),
         o
       );
 
@@ -258,7 +281,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         .Where(x => x is GameObject || x is ScriptableObject)
         .ToImmutableList();
       return check(
-        new CheckContext("Assets & Deps"), dependencies, customValidatorOpt, onProgress, onFinish
+        // and instead of &, because unity does not show '&' in some windows
+        new CheckContext("Assets and Deps"),
+        dependencies, customValidatorOpt, onProgress, onFinish
       );
     }
 
@@ -321,13 +346,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           && sp.objectReferenceValue == null
           && sp.objectReferenceInstanceIDValue != 0
         ) errors = errors.Add(value: Error.missingReference(
-          o: component, property: ObjectNames.NicifyVariableName(name: sp.name), context: context
+          o: component, property: sp.name, context: context
         ));
 
         if (sp.type == nameof(UnityEvent)) {
-          var evt = getUnityEvent(obj: component, fieldName: sp.propertyPath).getOrThrow(
-            $"There should have been a {nameof(UnityEvent)} in {sp} on {component}, " +
-            $"but we could not find it! This seems like a programmer error!"
+          var evt = getUnityEvent(obj: component, fieldName: sp.propertyPath).getOrThrow(() => 
+            new Exception(
+              $"There should have been a {nameof(UnityEvent)} in property '{sp.name}' " +
+              $"on '{component}' @ '{AssetDatabase.GetAssetPath(component)}', " +
+              $"but we could not find it! This seems like a programmer error!"
+            )
           );
           errors = errors.AddRange(checkUnityEvent(
             evt: evt, component: component, propertyName: sp.name, context: context
@@ -393,14 +421,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var index = 0;
       foreach (var persistentCall in listPersistentCall) {
-        index++;
-
         if (persistentCall.isValid) {
           if (evt.__findMethod(persistentCall).isNone)
             return Error.unityEventInvalidMethod(component, propertyName, index, context).some();
         }
         else
           return Error.unityEventInvalid(component, propertyName, index, context).some();
+
+        index++;
       }
 
       return Option<Error>.None;
@@ -409,7 +437,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static Option<UnityEvent> getUnityEvent(object obj, string fieldName) {
       if (obj == null) return Option<UnityEvent>.None;
 
-      var fiOpt = obj.GetType().getFieldByName(fieldName);
+      var fiOpt = obj.GetType().GetFieldInHierarchy(fieldName);
       return 
         fiOpt.isSome 
         ? F.opt(fiOpt.__unsafeGetValue.GetValue(obj) as UnityEvent) 
