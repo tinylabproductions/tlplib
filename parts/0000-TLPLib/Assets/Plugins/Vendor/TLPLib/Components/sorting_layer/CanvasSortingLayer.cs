@@ -1,20 +1,20 @@
-﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
-using JetBrains.Annotations;
+﻿using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   [RequireComponent(typeof(Canvas))]
-  public partial class CanvasSortingLayer : MonoBehaviour, IMB_Awake {
-#pragma warning disable 649
-    // ReSharper disable NotNullMemberIsNotInitialized
-    [SerializeField, NotNull] SortingLayerReference sortingLayer;
-    // ReSharper restore NotNullMemberIsNotInitialized
-#pragma warning restore 649
+  public sealed class CanvasSortingLayer : SortingLayerSetter {
+    Canvas canvas => GetComponent<Canvas>();
 
-    public void Awake() {
-      if (!Application.isPlaying) return;
-      var canvas = GetComponent<Canvas>();
+    protected override void recordEditorChanges() => 
+      canvas.recordEditorChanges("Canvas sorting layer changed");
+
+    protected override void apply(SortingLayerReference sortingLayer) => 
       sortingLayer.applyTo(canvas);
+
+    protected override SortingLayerAndOrder extract() {
+      var canvas = this.canvas;
+      return new SortingLayerAndOrder(canvas.sortingLayerID, canvas.sortingOrder);
     }
   }
 }

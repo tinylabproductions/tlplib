@@ -5,7 +5,6 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
   [CustomPropertyDrawer(typeof(SortingLayerAttribute))]
   public class SortyingLayerPropertyDrawer : PropertyDrawer {
-
     //https://forum.unity.com/threads/sorting-layer-vs-layer-mask-scripting.339444/#post-2451899
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
       if (property.propertyType != SerializedPropertyType.Integer) {
