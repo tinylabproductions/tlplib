@@ -437,8 +437,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     ) {
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
 
-      foreach (var prepable in F.opt(objectBeingValidated as OnObjectValidate)) {
-        foreach (var error in prepable.onObjectValidate(containingComponent)) {
+      foreach (var onObjectValidatable in F.opt(objectBeingValidated as OnObjectValidate)) {
+        foreach (var error in onObjectValidatable.onObjectValidate(containingComponent)) {
           yield return createError.custom(fieldHierarchy.asString(), error);
         }
       }
