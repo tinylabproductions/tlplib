@@ -320,6 +320,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
       opt.isSome
       ? ImmutableList.Create(opt.__unsafeGetValue)
       : ImmutableList<A>.Empty;
+
+    public static IEnumerable<A> getOrEmpty<A>(this Option<IEnumerable<A>> enumerableOpt) =>
+      enumerableOpt.isSome
+      ? enumerableOpt.__unsafeGetValue
+      : Enumerable.Empty<A>();
   }
 
   public static class OptionLinqExts {
