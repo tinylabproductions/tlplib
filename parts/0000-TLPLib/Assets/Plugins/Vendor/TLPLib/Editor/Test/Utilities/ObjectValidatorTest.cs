@@ -129,6 +129,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static readonly LazyVal<PathStr> testPrefabsDirectory =
       new LazyValImpl<PathStr>(() =>
+        // There is no such thing as editor resources folder, so we have to resort to this hack
         AssetDatabase.GetAllAssetPaths().find(s =>
           s.EndsWithFast($"TLPLib/Editor/Test/Utilities/{nameof(ObjectValidatorTest)}.cs")
         ).map(p => PathStr.a(p).dirname).get
