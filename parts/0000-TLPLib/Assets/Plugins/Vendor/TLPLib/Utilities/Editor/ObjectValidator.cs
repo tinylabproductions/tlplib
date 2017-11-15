@@ -325,11 +325,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ));
 
         if (sp.type == nameof(UnityEvent)) {
-          foreach (var evt in getUnityEvent(obj: component, fieldName: sp.propertyPath)) {
-            foreach (var err in checkUnityEvent(evt: evt, component: component, propertyName: sp.name, context: context)) {
-              errors = errors.Add(value: err);
-            }
-          }
+          var evt = getUnityEvent(obj: component, fieldName: sp.propertyPath).getOrThrow(
+            $"There should have been a {nameof(UnityEvent)} in {sp} on {component}, " +
+            $"but we could not find it! This seems like a programmer error!"
+          );
+          errors = errors.AddRange(checkUnityEvent(
+            evt: evt, component: component, propertyName: sp.name, context: context
+          ).asEnum());
         }
       }
 
