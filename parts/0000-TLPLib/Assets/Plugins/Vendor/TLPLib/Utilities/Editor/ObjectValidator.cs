@@ -436,6 +436,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       FieldHierarchy fieldHierarchy = null
     ) {
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
+
+      foreach (var prepable in F.opt(objectBeingValidated as OnObjectValidate)) {
+        foreach (var error in prepable.onObjectValidate(containingComponent)) {
+          yield return createError.custom(fieldHierarchy.asString(), error);
+        }
+      }
+
       foreach (var customValidator in customObjectValidatorOpt) {
         foreach (var _err in customValidator(containingComponent, objectBeingValidated)) {
           yield return createError.custom(fieldHierarchy.asString(), _err);
@@ -461,11 +468,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (hasNotNull) yield return createError.nullField(fieldHierarchy.asString());
           }
           else {
-            foreach (var prepable in F.opt(fieldValue as OnObjectValidate)) {
-              foreach (var error in prepable.onObjectValidate(containingComponent)) {
-                yield return createError.custom(fieldHierarchy.asString(), error);
-              }
-            }
             var listOpt = F.opt(fieldValue as IList);
             if (listOpt.isSome) {
               var list = listOpt.get;
