@@ -6,10 +6,10 @@ namespace com.tinylabproductions.TLPLib.Components.animations {
     public float speed = 1;
 
     float timeShift;
-    bool timeshiftSet;
+    bool timeShiftSet;
 
     internal void Start() {
-      if (!timeshiftSet) {
+      if (!timeShiftSet) {
         setTimeShift(Random.value);
       }
     }
@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Components.animations {
     }
 
     public void setTimeShift(float t) {
-      timeshiftSet = true;
+      timeShiftSet = true;
       timeShift = t * Mathf.PI * 2;
       Update();
     }

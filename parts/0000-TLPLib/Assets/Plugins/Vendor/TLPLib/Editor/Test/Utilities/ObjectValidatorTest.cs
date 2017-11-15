@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
@@ -126,10 +127,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Missing References
 
+    static readonly LazyVal<PathStr> testPrefabsDirectory =
+      new LazyValImpl<PathStr>(() =>
+        // There is no such thing as editor resources folder, so we have to resort to this hack
+        AssetDatabase.GetAllAssetPaths().find(s =>
+          s.EndsWithFast($"TLPLib/Editor/Test/Utilities/{nameof(ObjectValidatorTest)}.cs")
+        ).map(p => PathStr.a(p).dirname).get
+      );
+
+    static Object getPrefab(string prefabName) =>
+      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.get}/{prefabName}.prefab");
+
     [Test] public void WhenMissingComponent() {
-      var go = AssetDatabase.GetAllAssetPaths().find(s => 
-        s.EndsWithFast("TLPLib/Editor/Test/Utilities/ObjectValidatorTestGameObject.prefab")
-      ).map(AssetDatabase.LoadMainAssetAtPath).get;
+      var go = getPrefab("TestMissingComponent");
       var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
       errors.shouldHave(ErrorType.MissingComponent);
     }
@@ -354,6 +364,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         a => a.setup(third: false)
       );
 
+    #endregion
+
+    #region UnityEvent
+
+    [Test] public void WhenUnityEventInvalid() {
+      var go = getPrefab("TestUnityEventInvalid");
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
+      errors.shouldHave(ErrorType.UnityEventInvalid);
+    }
+
+    [Test] public void WhenUnityEventInvalidMethod() {
+      var go = getPrefab("TestUnityEventInvalidMethod");
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
+      errors.shouldHave(ErrorType.UnityEventInvalidMethod);
+    }
+    
     #endregion
 
     static A setupComponent<A>(Act<A> setupA = null) where A : Component {
