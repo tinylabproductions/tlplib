@@ -61,6 +61,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static FRange getFRange(this IConfig cfg, string key) => cfg.get(key, fRangeParser);
     public static URange getURange(this IConfig cfg, string key) => cfg.get(key, uRangeParser);
     public static DateTime getDateTime(this IConfig cfg, string key) => cfg.get(key, dateTimeParser);
+    public static Duration getDuration(this IConfig cfg, string key) => cfg.get(key, Duration.configParser);
     public static IConfig getSubConfig(this IConfig cfg, string key) => cfg.get(key, configParser);
     public static IList<IConfig> getSubConfigList(this IConfig cfg, string key) => cfg.getList(key, configParser);
 
