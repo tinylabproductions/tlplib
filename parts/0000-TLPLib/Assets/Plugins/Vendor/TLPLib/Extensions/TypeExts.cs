@@ -15,17 +15,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       BindingFlags.DeclaredOnly;
 
     // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
-    public static IEnumerable<FieldInfo> getAllFields(this Type t) {
-      if (t == null) return Enumerable.Empty<FieldInfo>();
-      
-      return t.GetFields(FLAGS_ANY_FIELD_TYPE).Concat(getAllFields(t.BaseType));
-    }
+    public static IEnumerable<FieldInfo> getAllFields(this Type t) => 
+      t.GetFields(FLAGS_ANY_FIELD_TYPE)
+      .Concat(F.opt(t.BaseType).map(getAllFields).getOrEmpty());
 
-    public static Option<FieldInfo> getFieldByName(this Type t, string fieldName) {
-      if (t == null) return Option<FieldInfo>.None;
-
-      return F.opt(t.GetField(fieldName, FLAGS_ANY_FIELD_TYPE));
-    }
+    public static Option<FieldInfo> getFieldByName(this Type t, string fieldName) => 
+      F.opt(t.GetField(fieldName, FLAGS_ANY_FIELD_TYPE));
 
     // checks if type can be used in GetComponent and friends
     public static bool canBeUnityComponent(this Type type) => 

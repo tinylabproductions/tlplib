@@ -412,7 +412,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fiOpt = obj.GetType().getFieldByName(fieldName);
       return 
         fiOpt.isSome 
-        ? F.opt(fiOpt.get.GetValue(obj) as UnityEvent) 
+        ? F.opt(fiOpt.__unsafeGetValue.GetValue(obj) as UnityEvent) 
         : Option<UnityEvent>.None;
     }
 
