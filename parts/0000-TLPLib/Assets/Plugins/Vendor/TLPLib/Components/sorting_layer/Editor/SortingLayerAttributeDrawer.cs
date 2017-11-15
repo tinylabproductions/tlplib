@@ -1,4 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Extensions;
+﻿using com.tinylabproductions.TLPLib.Editor.gui;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,22 +14,21 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
         return;
       }
 
-      var selected = -1;
+      var selectedIdx = Option<int>.None;
 
       var layers = SortingLayer.layers;
       var names = layers.map(_ => _.name);
       if (!property.hasMultipleDifferentValues) {
-        for (var i = 0; i < layers.Length; i++) {
-          if (property.intValue == layers[i].id) selected = i;
-        }
+        selectedIdx = layers.indexWhere(_ => _.id == property.intValue);
       }
 
       EditorGUI.BeginProperty(position, label, property);
       position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
-      selected = EditorGUI.Popup(position, selected, names);
+      selectedIdx = EditorGUI_.IndexPopup(position, selectedIdx, names);
       EditorGUI.EndProperty();
 
-      if (selected >= 0) property.intValue = layers[selected].id;
+      foreach (var idx in selectedIdx)
+        property.intValue = layers[idx].id;
     }
   }
 }

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System;
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
