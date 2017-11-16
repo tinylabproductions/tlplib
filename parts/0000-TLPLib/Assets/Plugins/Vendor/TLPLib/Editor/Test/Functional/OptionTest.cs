@@ -268,4 +268,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
       called.shouldBeFalse();
     }
   }
+
+  public class OptionTestJoin {
+    static string joiner(string a, string b) => $"{a}|{b}";
+
+    [Test] public void WhenFirstIsSome() => 
+      F.some("a").join(F.none<string>(), joiner).shouldBeSome("a");
+
+    [Test] public void WhenSecondIsSome() =>
+      F.none<string>().join(F.some("b"), joiner).shouldBeSome("b");
+
+    [Test] public void WhenBothAreSome() =>
+      F.some("a").join(F.some("b"), joiner).shouldBeSome("a|b");
+
+    [Test] public void WhenBothAreNone() =>
+      F.none<string>().join(F.none<string>(), joiner).shouldBeNone();
+  }
 }
