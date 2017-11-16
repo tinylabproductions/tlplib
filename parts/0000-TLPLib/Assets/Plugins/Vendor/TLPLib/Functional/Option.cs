@@ -276,6 +276,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
       ? F.some(mapper(get, opt2.get))
       : F.none<C>();
 
+    /// <summary>
+    /// If both options are Some, join them together and return Some(result).
+    /// 
+    /// Otherwise return that option which is Some, or None if both are None.
+    /// </summary>
+    public Option<A> join(Option<A> opt, Fn<A, A, A> joiner) =>
+      isSome
+        ? opt.isSome
+          ? joiner(__unsafeGetValue, opt.__unsafeGetValue).some()
+          : this
+        : opt;
+
     /**
      * If Some() returns None. If None returns b.
      **/
