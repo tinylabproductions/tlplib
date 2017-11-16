@@ -47,11 +47,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         CustomValidation
       }
 
+      public struct UnknownLocation : IEquatable<UnknownLocation> {
+        public bool Equals(UnknownLocation other) => true;
+      }
+
       public readonly Type type;
       public readonly string message;
       public readonly Object obj;
       public readonly string objFullPath;
-      public readonly Either<AssetPath, ScenePath> location;
+      public readonly OneOf<AssetPath, ScenePath, UnknownLocation> location;
 
       #region Equality
 
@@ -84,7 +88,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         $"{nameof(Error)}[" +
         $"{type} " +
         $"in '{objFullPath}' " +
-        $"@ '{location.fold(asset => asset.path, scenePath => scenePath.path)}'. " +
+        $@"@ '{location.fold(
+          asset => asset.path, 
+          scenePath => scenePath.path, 
+          unknownLocation => "Unknown location"
+        )}'. " +
         $"{message}" +
         $"]";
 
@@ -95,15 +103,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         this.message = message;
         this.obj = obj;
         objFullPath = fullPath(obj);
+        location = findLocation(obj);
+      }
 
-        location = (
-             lookupAssetPath(obj).map(_ => _.left().r<ScenePath>())
-          || lookupScenePath(obj).map(_ => _.right().l<AssetPath>())
-        ).getOrThrow(() => new Exception(
-          $"Unable to find a location of '{obj}'! It's neither an asset, " +
-          $"nor in a scene. Where is it? I don't know. But this sure as heck " +
-          $"needs to be fixed."
-        ));
+      static OneOf<AssetPath, ScenePath, UnknownLocation> findLocation(Object obj) {
+        foreach (var _ in lookupAssetPath(obj)) return _;
+        foreach (var _ in lookupScenePath(obj)) return _;
+        // Objects created in Editor Tests don't have a real scene attached
+        return new UnknownLocation();
       }
 
       static Option<AssetPath> lookupAssetPath(Object o) =>
