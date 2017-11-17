@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -134,5 +135,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
 
     public static T[] emptyArray<T>() => EmptyArray<T>.value;
+
+    class EmptyDisposable : IDisposable {
+      public void Dispose() { }
+    }
+
+    public static readonly IDisposable emptyDisposable = new EmptyDisposable();
   }
 }
