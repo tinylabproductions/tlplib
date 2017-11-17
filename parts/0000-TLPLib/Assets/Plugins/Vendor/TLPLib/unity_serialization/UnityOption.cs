@@ -49,6 +49,8 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
     public bool isNone => !isSome;
 
+    public A __unsafeGetValue => _value;
+
     bool inspectValue() {
       // ReSharper disable once AssignNullToNotNullAttribute
       if (!_isSome) _value = default(A);
