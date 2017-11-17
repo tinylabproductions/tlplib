@@ -128,5 +128,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) => 
       () => second(first());
+
+    static class EmptyArray<T> {
+      public static readonly T[] value = new T[0];
+    }
+
+    public static T[] emptyArray<T>() => EmptyArray<T>.value;
   }
 }
