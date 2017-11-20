@@ -20,6 +20,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         this.seed = seed;
       }
 
+      public bool isInitialized => seed != 0;
+
       public override string ToString() => $"{nameof(Seed)}({seed})";
     }
 
@@ -34,6 +36,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public Rng(DateTime seed) : this(seedFrom(seed)) {}
+
+    public bool isInitialized => seed.isInitialized;
 
     public override string ToString() => $"{nameof(Rng)}({seed})";
 
