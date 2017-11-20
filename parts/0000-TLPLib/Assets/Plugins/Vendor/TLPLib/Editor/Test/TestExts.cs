@@ -98,10 +98,11 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldNotContain<A>(
-      this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
+      this IEnumerable<A> enumerable, Fn<A, bool> predicate, 
+      Fn<A, string> message = null
     ) {
       foreach (var a in enumerable.find(predicate)) Assert.Fail(
-        message ??
+        message?.Invoke(a) ??
         $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
       );
     }

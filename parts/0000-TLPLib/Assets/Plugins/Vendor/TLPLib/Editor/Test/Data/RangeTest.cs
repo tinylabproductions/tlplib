@@ -1,35 +1,46 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using System.Linq;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Data {
   class RangeTestEnumerator {
     [Test]
-    public void WhenHasElements() {
-      var l = F.emptyList<int>();
-      foreach (var i in new Range(0, 5)) l.Add(i);
-      l.shouldEqual(F.list(0, 1, 2, 3, 4, 5));
-    }
+    public void WhenHasElements() => 
+      new Range(0, 5).ToList().shouldEqual(F.list(0, 1, 2, 3, 4, 5));
 
     [Test]
-    public void WhenHasElementsMinValue() {
-      var l = F.emptyList<int>();
-      foreach (var i in new Range(int.MinValue, int.MinValue + 1)) l.Add(i);
-      l.shouldEqual(F.list(int.MinValue, int.MinValue + 1));
-    }
+    public void WhenHasElementsMinValue() => 
+      new Range(int.MinValue, int.MinValue + 1).ToList()
+      .shouldEqual(F.list(int.MinValue, int.MinValue + 1));
 
     [Test]
-    public void WhenHasElementsMaxValue() {
-      var l = F.emptyList<int>();
-      foreach (var i in new Range(int.MaxValue - 1, int.MaxValue)) l.Add(i);
-      l.shouldEqual(F.list(int.MaxValue - 1, int.MaxValue));
-    }
+    public void WhenHasElementsMaxValue() => 
+      new Range(int.MaxValue - 1, int.MaxValue).ToList()
+      .shouldEqual(F.list(int.MaxValue - 1, int.MaxValue));
 
     [Test]
-    public void WhenNoElements() {
-      var l = F.emptyList<int>();
-      foreach (var i in new Range(0, -1)) l.Add(i);
-      l.shouldBeEmpty();
-    }
+    public void WhenNoElements() =>
+      new Range(0, -1).shouldBeEmpty();
+  }
+
+  class URangeTestEnumerator {
+    [Test]
+    public void WhenHasElements() => 
+      new URange(0, 5).ToList().shouldEqual(F.list(0u, 1u, 2u, 3u, 4u, 5u));
+
+    [Test]
+    public void WhenHasElementsMinValue() => 
+      new URange(uint.MinValue, uint.MinValue + 1).ToList()
+      .shouldEqual(F.list(uint.MinValue, uint.MinValue + 1));
+
+    [Test]
+    public void WhenHasElementsMaxValue() => 
+      new URange(uint.MaxValue - 1, uint.MaxValue).ToList()
+      .shouldEqual(F.list(uint.MaxValue - 1, uint.MaxValue));
+
+    [Test]
+    public void WhenNoElements() => 
+      new URange(1, 0).shouldBeEmpty();
   }
 }

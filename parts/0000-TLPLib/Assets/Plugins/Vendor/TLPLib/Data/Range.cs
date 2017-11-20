@@ -17,19 +17,21 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static float lerpVal(this Range range, float t) => Mathf.Lerp(range.from, range.to, t);
   }
 
+  /// <summary>Integer range: [from, to].</summary>
   [Serializable]
-  public struct Range {
+  public struct Range : IEnumerable<int> {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
-    [SerializeField] int _from, _to;
+    [SerializeField] int _from;
+    [SerializeField, Tooltip("Inclusive")] int _to;
 #pragma warning restore 649
     // ReSharper restore FieldCanBeMadeReadOnly.Local
     #endregion
 
     public int from => _from;
     public int to => _to;
-
+    
     public Range(int from, int to) {
       _from = from;
       _to = to;
@@ -39,18 +41,22 @@ namespace com.tinylabproductions.TLPLib.Data {
     public int this[Percentage p] => from + (int) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
 
-    public RangeEnumerator GetEnumerator() { return new RangeEnumerator(from, to); }
+    public RangeEnumerator GetEnumerator() => new RangeEnumerator(from, to);
+    IEnumerator<int> IEnumerable<int>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
   }
 
-  public struct RangeEnumerator {
+  public struct RangeEnumerator : IEnumerator<int> {
     public readonly int start, end;
     bool firstElement;
+
+    public int Current { get; set; }
 
     public RangeEnumerator(int start, int end) {
       this.start = start;
       this.end = end;
-      firstElement = default(bool);
-      Current = default(int);
+      firstElement = false;
+      Current = 0;
       Reset();
     }
 
@@ -69,15 +75,17 @@ namespace com.tinylabproductions.TLPLib.Data {
       Current = start;
     }
 
-    public int Current { get; set; }
+    object IEnumerator.Current => Current;
+    public void Dispose() {}
   }
   
   [Serializable]
-  public struct URange {
+  public struct URange : IEnumerable<uint> {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
-    [SerializeField] uint _from, _to;
+    [SerializeField] uint _from;
+    [SerializeField, Tooltip("Inclusive")] uint _to;
 #pragma warning restore 649
     // ReSharper restore FieldCanBeMadeReadOnly.Local
     #endregion
@@ -93,6 +101,43 @@ namespace com.tinylabproductions.TLPLib.Data {
     public uint random => (uint) Random.Range(from, to + 1);
     public uint this[Percentage p] => from + (uint) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
+
+    public URangeEnumerator GetEnumerator() => new URangeEnumerator(from, to);
+    IEnumerator<uint> IEnumerable<uint>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+  }
+
+  public struct URangeEnumerator : IEnumerator<uint> {
+    public readonly uint start, end;
+    bool firstElement;
+
+    public uint Current { get; set; }
+
+    public URangeEnumerator(uint start, uint end) {
+      this.start = start;
+      this.end = end;
+      firstElement = false;
+      Current = 0;
+      Reset();
+    }
+
+    public bool MoveNext() {
+      if (firstElement && Current <= end) {
+        firstElement = false;
+        return true;
+      }
+      if (Current == end) return false;
+      Current++;
+      return Current <= end;
+    }
+
+    public void Reset() {
+      firstElement = true;
+      Current = start;
+    }
+
+    object IEnumerator.Current => Current;
+    public void Dispose() { }
   }
 
   [Serializable]
@@ -100,7 +145,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
-    [SerializeField] float _from, _to;
+    [SerializeField] float _from;
+    [SerializeField, Tooltip("Inclusive")] float _to;
 #pragma warning restore 649
     // ReSharper restore FieldCanBeMadeReadOnly.Local
     #endregion
@@ -125,7 +171,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
-    [SerializeField] float _from, _to, _step;
+    [SerializeField] float _from;
+    [SerializeField, Tooltip("Inclusive")] float _to;
+    [SerializeField] float _step;
 #pragma warning restore 649
     // ReSharper restore FieldCanBeMadeReadOnly.Local
     #endregion
