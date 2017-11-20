@@ -16,6 +16,9 @@
   /// <see cref="Rng"/> instance with a different seed.
   /// </summary>
   public class RngSeeder {
+    static RngSeeder _global;
+    public static RngSeeder global => _global ?? (_global = new RngSeeder());
+
     Rng.Seed currentSeed;
     Rng seedRng;
 
