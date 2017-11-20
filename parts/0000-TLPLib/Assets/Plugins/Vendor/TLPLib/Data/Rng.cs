@@ -11,15 +11,25 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// This implementation uses xorshift* version.
   /// </summary>
   public struct Rng {
-    public readonly ulong seed;
+    public struct Seed {
+      public readonly ulong seed;
 
-    public static ulong seedFrom(DateTime dt) => unchecked((ulong) dt.Ticks);
-    public static ulong nowSeed => seedFrom(DateTime.Now);
+      public Seed(ulong seed) {
+        // XORSHIFT does not work with 0 seeds.
+        if (seed == 0) throw new ArgumentOutOfRangeException(nameof(seed), seed, "seed can't be 0!");
+        this.seed = seed;
+      }
+
+      public override string ToString() => $"{nameof(Seed)}({seed})";
+    }
+
+    public readonly Seed seed;
+
+    public static Seed seedFrom(DateTime dt) => new Seed(unchecked((ulong) dt.Ticks));
+    public static Seed nowSeed => seedFrom(DateTime.Now);
     public static Rng now => new Rng(nowSeed);
 
-    public Rng(ulong seed) {
-      // XORSHIFT does not work with 0 seeds.
-      if (seed == 0) throw new ArgumentOutOfRangeException(nameof(seed), seed, "seed can't be 0!");
+    public Rng(Seed seed) {
       this.seed = seed;
     }
 
@@ -35,11 +45,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly Fn<Rng, Tpl<Rng, ulong>> nextULongS = rng => rng.nextULongT;
 
     public ulong nextULong(out Rng newState) {
-      var x = seed;
+      var x = seed.seed;
       x ^= x >> 12; // a
       x ^= x << 25; // b
       x ^= x >> 27; // c
-      newState = new Rng(x);
+      newState = new Rng(new Seed(x));
       return x * 0x2545F4914F6CDD1D;
     }
 
