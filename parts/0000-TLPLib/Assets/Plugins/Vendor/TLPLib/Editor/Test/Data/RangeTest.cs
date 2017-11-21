@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace com.tinylabproductions.TLPLib.Data {
   class RangeTest : ImplicitSpecification {
     [Test]
-    public void enumerator() => describe(_ => {
+    public void enumerator() => describe(() => {
       when["has elements"] = () => {
         it["should enumerate through all of them"] = () => 
           new Range(0, 5).ToList().shouldEqual(F.list(0, 1, 2, 3, 4, 5));
