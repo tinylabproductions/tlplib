@@ -4,24 +4,30 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  class RangeTestEnumerator {
+  class RangeTest : ImplicitSpecification {
     [Test]
-    public void WhenHasElements() => 
-      new Range(0, 5).ToList().shouldEqual(F.list(0, 1, 2, 3, 4, 5));
+    public void enumerator() => describe(_ => {
+      when["has elements"] = () => {
+        it["should enumerate through all of them"] = () => 
+          new Range(0, 5).ToList().shouldEqual(F.list(0, 1, 2, 3, 4, 5));
 
-    [Test]
-    public void WhenHasElementsMinValue() => 
-      new Range(int.MinValue, int.MinValue + 1).ToList()
-      .shouldEqual(F.list(int.MinValue, int.MinValue + 1));
+        when["at min value edge"] = () => {
+          it["should work"] = () => 
+            new Range(int.MinValue, int.MinValue + 1).ToList()
+            .shouldEqual(F.list(int.MinValue, int.MinValue + 1));
+        };
 
-    [Test]
-    public void WhenHasElementsMaxValue() => 
-      new Range(int.MaxValue - 1, int.MaxValue).ToList()
-      .shouldEqual(F.list(int.MaxValue - 1, int.MaxValue));
+        when["at max value edge"] = () => {
+          it["should work"] = () =>
+            new Range(int.MaxValue - 1, int.MaxValue).ToList()
+            .shouldEqual(F.list(int.MaxValue - 1, int.MaxValue));
+        };
+      };
 
-    [Test]
-    public void WhenNoElements() =>
-      new Range(0, -1).shouldBeEmpty();
+      when["range is empty"] = () => {
+        it["should not yield any values"] = () => new Range(0, -1).shouldBeEmpty();
+      };
+    });
   }
 
   class URangeTestEnumerator {

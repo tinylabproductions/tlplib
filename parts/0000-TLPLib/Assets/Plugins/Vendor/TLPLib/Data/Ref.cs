@@ -16,9 +16,9 @@ namespace com.tinylabproductions.TLPLib.Data {
   public class SimpleRef<A> : Ref<A> {
     public A value { get; set; }
 
-    public SimpleRef(A value) {
-      this.value = value;
-    }
+    public SimpleRef(A value) { this.value = value; }
+
+    public static implicit operator A(SimpleRef<A> r) => r.value;
   }
 
   public class LambdaRef<A> : Ref<A> {

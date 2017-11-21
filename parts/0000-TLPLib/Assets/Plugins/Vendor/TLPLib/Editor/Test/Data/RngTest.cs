@@ -5,15 +5,14 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public class RngTest {
+  public class RngTest : ImplicitSpecification {
     static Rng newRng => new Rng(new Rng.Seed(100));
 
-    static void test<A>(
+    void test<A>(
       Fn<Rng, Tpl<Rng, A>> nextA, A min, A max, Option<ImmutableHashSet<A>> allOpt,
       uint iterations = 10000, double tolerance = 0.9
     ) where A : IComparable<A> {
@@ -23,34 +22,37 @@ namespace com.tinylabproductions.TLPLib.Data {
         var t = nextA(rng);
         rng = t._1;
         var a = t._2;
-        if (a.lt(min) || a.gt(max)) Assert.Fail(
-          $"rng should not generate higher than {min} and lower than {max}, but found {a}"
-        );
         seen[a] = seen.getOrElse(a, 0u) + 1;
       }
 
-      foreach (var all in allOpt) {
-        var seenList = seen.Keys.ToImmutableHashSet();
-        var notGenerated = all.Except(seenList);
-        notGenerated.shouldBeEmpty(
-          "All values should have been generated, but these ones were not."
-        );
-      }
+      describe(() => {
+        it[$"should not generate values out of [{min}, {max}]"] = () => 
+          seen.Keys.shouldNotContain(a => a.lt(min) || a.gt(max), a => $"value {a} is not in range");
 
-      var maxOccurences = 
-        seen.maxBy(Comparable.uint_, _ => _.Value).getOrThrow("empty range in test!");
-      var occurenceDict = 
-        seen
-        .Select(kv => F.kv(kv.Key, (double) kv.Value / maxOccurences.Value))
-        .ToImmutableDictionary();
-      Log.d.info(occurenceDict.asDebugString());
-      occurenceDict.shouldNotContain(
-        kv => kv.Value < tolerance,
-        kv => 
-          $"All values should be generated uniformly, but {kv.Key} " +
-          $"was only generated {kv.Value * 100}% as often as the most generated value " +
-          $"'{maxOccurences.Key}' (which were generated {maxOccurences.Value} times)"
-      );
+        it["should generate values uniformly"] = () => {
+          var maxOccurences =
+            seen.maxBy(Comparable.uint_, _ => _.Value).getOrThrow("empty range in test!");
+          var occurenceDict =
+            seen
+              .Select(kv => F.kv(kv.Key, (double) kv.Value / maxOccurences.Value))
+              .ToImmutableDictionary();
+          occurenceDict.shouldNotContain(
+            kv => kv.Value < tolerance,
+            kv =>
+              $"All values should be generated uniformly, but {kv.Key} " +
+              $"was only generated {kv.Value * 100}% as often as the most generated value " +
+              $"'{maxOccurences.Key}' (which were generated {maxOccurences.Value} times)"
+          );
+        };
+
+        foreach (var all in allOpt) {
+          it["should generate all possible values"] = () => {
+            var seenList = seen.Keys.ToImmutableHashSet();
+            var notGenerated = all.Except(seenList);
+            notGenerated.shouldBeEmpty("these values were not generated:");
+          };
+        }
+      });
     }
 
     [Test]
