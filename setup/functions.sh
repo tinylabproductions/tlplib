@@ -14,8 +14,12 @@ junction() {
 
 notif() {
   echo $@
-  echo "Press any key to continue or ctrl+c to abort."
-  read
+  if [[ "$CI" != "" ]]; then
+    echo "Running on CI, not asking for permission."
+  else
+    echo "Press any key to continue or ctrl+c to abort."
+    read
+  fi
 }
 
 ctx() {
