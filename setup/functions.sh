@@ -23,7 +23,8 @@ notif() {
 }
 
 ctx() {
-  echo $(dirname $1) | sed -E -e "s|[^/]+|..|g"
+  # osx does not have readlink -f, so we have this abomination
+  echo $(cd "$(dirname "$1")"; pwd)
 }
 
 # : separated list of files/dirs that were added using *link functions.
