@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Linq;
+using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Sprites;
@@ -7,8 +12,8 @@ using UnityEngine.UI;
 namespace com.tinylabproductions.TLPLib.Components.ui {
   // Copied from unity bitbucket and added spritePixelsPerUnit
   // https://bitbucket.org/Unity-Technologies/ui/src/f0c70f707cf09f959ad417049cb070f8e296ffe2/UnityEngine.UI/UI/Core/Image.cs?at=5.5&fileviewer=file-view-default
-  [AddComponentMenu("UI/CustomImage", 11)]
-  public class CustomImage : MaskableGraphic, ISerializationCallbackReceiver, ILayoutElement, ICanvasRaycastFilter {
+  [AddComponentMenu("")]
+  public class CustomImageLegacy : MaskableGraphic, ISerializationCallbackReceiver, ILayoutElement, ICanvasRaycastFilter {
     public enum Type {
       Simple,
       Sliced,
@@ -125,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public float eventAlphaThreshold { get { return 1 - alphaHitTestMinimumThreshold; } set { alphaHitTestMinimumThreshold = 1 - value; } }
     public float alphaHitTestMinimumThreshold { get { return m_AlphaHitTestMinimumThreshold; } set { m_AlphaHitTestMinimumThreshold = value; } }
 
-    protected CustomImage() {
+    protected CustomImageLegacy() {
       useLegacyMeshGeneration = false;
     }
 
@@ -180,20 +185,33 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     const float referencePPU = 100;
     [SerializeField] float spritePixelsPerUnit = referencePPU;
 
+    [Inspect]
+    void migrateToFixedPixelsPerUnit() {
+      var so = new SerializedObject(this);
+      var scriptProp = so.FindProperty("m_Script");
+      var newScriptPath =
+        AssetDatabase.GetAllAssetPaths()
+        .Where(path => path.EndsWithFast($"{nameof(CustomImage)}.cs"))
+        .ElementAt(0);
+      var newScript = AssetDatabase.LoadMainAssetAtPath(newScriptPath);
+      scriptProp.objectReferenceValue = newScript;
+      
+      var scaleFix = activeSprite.pixelsPerUnit / referencePPU;
+      var spritePixelsPerUnitProp = so.FindProperty(nameof(spritePixelsPerUnit));
+      spritePixelsPerUnitProp.floatValue = spritePixelsPerUnit /= scaleFix;
+
+      so.ApplyModifiedProperties();
+    }
+
     public float pixelsPerUnit
     {
       get
       {
-        float originalSpritePixelsPerUnit = 100;
-        if (activeSprite)
-          originalSpritePixelsPerUnit = activeSprite.pixelsPerUnit;
-
         float referencePixelsPerUnit = 100;
         if (canvas)
           referencePixelsPerUnit = canvas.referencePixelsPerUnit;
-
-        var ppuScale = spritePixelsPerUnit / referencePPU;
-        return originalSpritePixelsPerUnit / referencePixelsPerUnit * ppuScale;
+        
+        return spritePixelsPerUnit / referencePixelsPerUnit;
       }
     }
 
