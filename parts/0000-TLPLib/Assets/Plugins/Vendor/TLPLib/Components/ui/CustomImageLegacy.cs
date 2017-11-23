@@ -2,8 +2,7 @@
 using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Utilities;
-using UnityEditor;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Sprites;
@@ -185,15 +184,16 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     const float referencePPU = 100;
     [SerializeField] float spritePixelsPerUnit = referencePPU;
 
-    [Inspect]
+#if UNITY_EDITOR
+    [Inspect, UsedImplicitly]
     void migrateToFixedPixelsPerUnit() {
-      var so = new SerializedObject(this);
+      var so = new UnityEditor.SerializedObject(this);
       var scriptProp = so.FindProperty("m_Script");
       var newScriptPath =
-        AssetDatabase.GetAllAssetPaths()
+        UnityEditor.AssetDatabase.GetAllAssetPaths()
         .Where(path => path.EndsWithFast($"{nameof(CustomImage)}.cs"))
         .ElementAt(0);
-      var newScript = AssetDatabase.LoadMainAssetAtPath(newScriptPath);
+      var newScript = UnityEditor.AssetDatabase.LoadMainAssetAtPath(newScriptPath);
       scriptProp.objectReferenceValue = newScript;
       
       var scaleFix = activeSprite.pixelsPerUnit / referencePPU;
@@ -202,6 +202,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       so.ApplyModifiedProperties();
     }
+#endif
 
     public float pixelsPerUnit
     {
