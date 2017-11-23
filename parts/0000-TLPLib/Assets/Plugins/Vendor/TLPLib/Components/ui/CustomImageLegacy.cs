@@ -186,9 +186,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField] float spritePixelsPerUnit = referencePPU;
 
     [Inspect]
-    void migrate() {
-      this.recordEditorChanges("migrate");
-
+    void migrateToFixedPixelsPerUnit() {
       var so = new SerializedObject(this);
       var scriptProp = so.FindProperty("m_Script");
       var newScriptPath =
@@ -197,10 +195,12 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         .ElementAt(0);
       var newScript = AssetDatabase.LoadMainAssetAtPath(newScriptPath);
       scriptProp.objectReferenceValue = newScript;
-      so.ApplyModifiedProperties();
-
+      
       var scaleFix = activeSprite.pixelsPerUnit / referencePPU;
-      spritePixelsPerUnit /= scaleFix;
+      var spritePixelsPerUnitProp = so.FindProperty(nameof(spritePixelsPerUnit));
+      spritePixelsPerUnitProp.floatValue = spritePixelsPerUnit /= scaleFix;
+
+      so.ApplyModifiedProperties();
     }
 
     public float pixelsPerUnit
