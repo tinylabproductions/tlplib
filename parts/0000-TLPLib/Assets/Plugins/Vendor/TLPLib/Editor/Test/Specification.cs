@@ -61,8 +61,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     ) : base(
       "Following tests failed:\n\n" + failures.Select(f => {
         var err = F.opt(f.a as AssertionException).fold(f.a.ToString, e => e.Message);
-        var location = $"{f.stackFrame.GetFileName()}:{f.stackFrame.GetFileLineNumber()}";
-        return $"### {f.name}\n{err.Trim()}\n@ {location}\n";
+        return $"### {f.name}\n{err.Trim()}\n@ {f.stackFrame.fileAndLine()}\n";
       }).mkString("\n")
     ) { }
   }
@@ -87,10 +86,10 @@ namespace com.tinylabproductions.TLPLib.Test {
         "", ImmutableList<Action>.Empty, ImmutableList<Action>.Empty
       );
 
-      public readonly string name;
-      public readonly ImmutableList<Action> beforeEach, afterEach;
+      readonly string name;
+      readonly ImmutableList<Action> beforeEach, afterEach;
 
-      public Context(string name, ImmutableList<Action> beforeEach, ImmutableList<Action> afterEach) {
+      Context(string name, ImmutableList<Action> beforeEach, ImmutableList<Action> afterEach) {
         this.name = name;
         this.beforeEach = beforeEach;
         this.afterEach = afterEach;
