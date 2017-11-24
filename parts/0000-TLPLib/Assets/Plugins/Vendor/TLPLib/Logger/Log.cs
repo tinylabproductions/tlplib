@@ -294,7 +294,6 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         // Ignore messages that we ourselves sent to Unity.
         if (message.StartsWithFast(MESSAGE_PREFIX)) return;
-
         var logEventTry = convertUnityMessageToLogEvent(
           message, backtrace, type, 
           stackFramesToSkipWhenGenerating: 1 /* This stack frame */
