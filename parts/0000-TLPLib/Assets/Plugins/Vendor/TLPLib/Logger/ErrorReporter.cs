@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       this OnError onError, Log.Level logFrom
     ) => 
       defaultStream.get
-      .filter(e => e.level <= logFrom)
+      .filter(e => e.level >= logFrom)
       .subscribe(e => onError(e));
   }
 }
