@@ -1,4 +1,5 @@
 ﻿#if UNITY_ANDROID
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android.Bindings.java.util;
@@ -32,17 +33,19 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       Application.platform != RuntimePlatform.Android || java.Call<bool>("hasSystemFeature", feature);
 
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPackageInfo(java.lang.String,%20int)
-    public Option<PackageInfo> getPackageInfo(string bundleIdentifier, GetPackageInfoFlags flags) {
-      if (Application.platform != RuntimePlatform.Android) return Option<PackageInfo>.None;
-      try {
-        return F.some(new PackageInfo(
-          java.cjo("getPackageInfo", bundleIdentifier, (int) flags)
-        ));
-      }
-      catch (AndroidJavaException) {
-        return Option<PackageInfo>.None;
-      }
-    }
+    public Try<PackageInfo> getPackageInfo(
+      string bundleIdentifier, GetPackageInfoFlags flags
+    ) => F.doTry(
+      () => new PackageInfo(java.cjo("getPackageInfo", bundleIdentifier, (int) flags))
+    );
+
+    // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPermissionInfo(java.lang.String,%20int)
+    public Try<PermissionInfo> getPermissionInfo(
+      string permission, bool getMetaData = false
+    ) => F.doTry(() => {
+      var flags = getMetaData ? (int) GetPackageInfoFlags.GET_META_DATA : 0;
+      return new PermissionInfo(permission, java.cjo("getPermissionInfo", permission, flags));
+    });
 
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getInstalledPackages(int)
     public ImmutableList<PackageInfo> getInstalledPackages(GetPackageInfoFlags flags) {
@@ -50,6 +53,13 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       var jList = new List(java.cjo("getInstalledPackages", (int) flags));
       return jList.Select(jo => new PackageInfo(jo)).ToImmutableList();
     }
+
+    public Try<IEnumerable<PermissionInfo>> getDangerousPermissionsFor(
+      string bundleIdentifier
+    ) =>
+      from info in getPackageInfo(bundleIdentifier, GetPackageInfoFlags.GET_PERMISSIONS)
+      from permissions in info.requestedPermissions.Select(p => getPermissionInfo(p)).sequence()
+      select permissions.Where(_ => _.isProtectionLevel(PermissionInfo.ProtectionLevel.Dangerous));
   }
 }
 #endif
