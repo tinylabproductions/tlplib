@@ -338,13 +338,4 @@ namespace com.tinylabproductions.TLPLib.Functional {
       ? enumerableOpt.__unsafeGetValue
       : Enumerable.Empty<A>();
   }
-
-  public static class OptionLinqExts {
-    public static Option<B> Select<A, B>(this Option<A> opt, Fn<A, B> f) => opt.map(f);
-    public static Option<B> SelectMany<A, B>(this Option<A> opt, Fn<A, Option<B>> f) => opt.flatMap(f);
-    public static Option<C> SelectMany<A, B, C>(
-      this Option<A> opt, Fn<A, Option<B>> f, Fn<A, B, C> g
-    ) => opt.flatMap(f, g);
-    public static Option<A> Where<A>(this Option<A> opt, Fn<A, bool> f) => opt.filter(f);
-  }
 }
