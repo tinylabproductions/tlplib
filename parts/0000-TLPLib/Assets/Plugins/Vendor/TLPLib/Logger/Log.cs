@@ -205,7 +205,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public IObservable<LogEvent> messageLogged => _messageLogged;
 
     public Log.Level level { get; set; } = Log.defaultLogLevel;
-    public bool willLog(Log.Level l) => level >= l;
+    public bool willLog(Log.Level l) => l >= level;
 
     public void log(Log.Level l, LogEntry entry) {
       logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
