@@ -136,10 +136,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     static Object getPrefab(string prefabName) =>
-      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.get}/{prefabName}.prefab");
+      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.get}/{prefabName}");
 
     [Test] public void WhenMissingComponent() {
-      var go = getPrefab("TestMissingComponent");
+      var go = getPrefab("TestMissingComponent.prefab");
       var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
       errors.shouldHave(ErrorType.MissingComponent);
     }
@@ -368,18 +368,24 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region UnityEvent
 
-    [Test] public void WhenUnityEventInvalid() {
-      var go = getPrefab("TestUnityEventInvalid");
-      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
-      errors.shouldHave(ErrorType.UnityEventInvalid);
+    void testPrefab(string prefabName, ErrorType errorType) {
+      var go = getPrefab(prefabName);
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] { go });
+      errors.shouldHave(errorType);
     }
 
-    [Test] public void WhenUnityEventInvalidMethod() {
-      var go = getPrefab("TestUnityEventInvalidMethod");
-      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
-      errors.shouldHave(ErrorType.UnityEventInvalidMethod);
-    }
-    
+    [Test] public void WhenUnityEventInvalid() => 
+      testPrefab("TestUnityEventInvalid.prefab", ErrorType.UnityEventInvalid);
+
+    [Test] public void WhenUnityEventInvalidMethod() =>
+      testPrefab("TestUnityEventInvalidMethod.prefab", ErrorType.UnityEventInvalidMethod);
+
+    [Test] public void WhenUnityEventInvalidNested() =>
+      testPrefab("TestUnityEventInvalidNested.asset", ErrorType.UnityEventInvalid);
+
+    [Test] public void WhenUnityEventInvalidNestedInArray() =>
+      testPrefab("TestUnityEventInvalidNestedInArray.asset", ErrorType.UnityEventInvalid);
+
     #endregion
 
     static A setupComponent<A>(Act<A> setupA = null) where A : Component {
