@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor;
-
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class SerializedObjectExts {
     public static IEnumerable<SerializedProperty> iterate(
@@ -18,3 +18,4 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
   }
 }
+#endif

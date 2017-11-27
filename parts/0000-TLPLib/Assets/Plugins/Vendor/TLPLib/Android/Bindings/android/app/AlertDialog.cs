@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_ANDROID
+using System;
 using com.tinylabproductions.TLPLib.Concurrent;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -50,3 +51,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.app {
     public void show() => java.Call("show");
   }
 }
+#endif
