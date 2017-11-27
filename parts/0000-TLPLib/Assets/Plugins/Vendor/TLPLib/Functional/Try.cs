@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Logger;
 using Object = UnityEngine.Object;
@@ -77,6 +78,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B>(_exception);
     }
 
+    public Try<B1> flatMap<B, B1>(Fn<A, Try<B>> onValue, Fn<A, B, B1> g) {
+      if (isSuccess) {
+        try {
+          var a = _value;
+          return onValue(a).map(b => g(a, b));
+        }
+        catch (Exception e) { return new Try<B1>(e); }
+      }
+      return new Try<B1>(_exception);
+    }
+
     public Option<A> getOrLog(string errorMessage, Object context = null, ILog log = null) {
       if (isError) {
         log = log ?? Log.@default;
@@ -87,5 +99,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public override string ToString() => 
       isSuccess ? $"Success({_value})" : $"Error({_exception})";
+  }
+
+  public static class TryExts {
+    public static Try<ImmutableList<A>> sequence<A>(
+      this IEnumerable<Try<A>> enumerable
+    ) {
+      // mutable for performance
+      var b = ImmutableList.CreateBuilder<A>();
+      foreach (var t in enumerable) {
+        if (t.isError) return F.err<ImmutableList<A>>(t.__unsafeException);
+        b.Add(t.__unsafeGet);
+      }
+      return F.scs(b.ToImmutable());
+    }
   }
 }

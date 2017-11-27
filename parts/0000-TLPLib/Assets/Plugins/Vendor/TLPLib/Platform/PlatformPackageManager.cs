@@ -27,14 +27,12 @@ namespace com.tinylabproductions.TLPLib.Platform {
 
 #if UNITY_ANDROID
   class AndroidPlatformPackageManager : IPlatformPackageManager {
-    readonly PackageManager androidPackageManager;
     readonly ImmutableList<string> packageNames;
 
     public AndroidPlatformPackageManager() {
-      androidPackageManager = AndroidActivity.packageManager;
       //Cache all of the packet names for better performance
-      packageNames = 
-        androidPackageManager
+      packageNames =
+        AndroidActivity.packageManager
           .getInstalledPackages(PackageManager.GetPackageInfoFlags.GET_ACTIVITIES)
           .Select(package => package.packageName)
           .ToImmutableList();
