@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Logger;
-using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
-    public static Option<A> opt<A>(A value) where A : class {
+    public static bool isNull<A>(A value) where A : class =>
       // This might seem to be overkill, but on the case of Transforms that
       // have been destroyed, target == null will return false, whereas
       // target.Equals(null) will return true.  Otherwise we don't really
       // get the benefits of the nanny.
-      return value == null || value.Equals(null)
-        ? Option<A>.None : new Option<A>(value);
-    }
+      value == null || value.Equals(null);
+
+    public static Option<A> opt<A>(A value) where A : class => 
+      isNull(value) ? Option<A>.None : new Option<A>(value);
 
     public static Option<A> opt<A>(A? value) where A : struct => 
       value == null ? Option<A>.None : some((A) value);
