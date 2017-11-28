@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class EitherExts {
@@ -218,6 +219,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
         $"Can't {nameof(__unsafeCastRight)}, because this is {this}"
       );
       return new Either<A, BB>(_leftValue);
+    }
+
+    public Option<B> getOrLog(
+      string errorMessage, UnityEngine.Object context = null, ILog log = null
+    ) {
+      if (isLeft) {
+        log = log ?? Log.@default;
+        log.error($"{errorMessage}: {__unsafeGetLeft}", context);
+      }
+      return rightValue;
     }
 
     public EitherEnumerator<A, B> GetEnumerator() => new EitherEnumerator<A, B>(this);
