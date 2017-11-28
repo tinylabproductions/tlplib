@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.Swiping;
 using com.tinylabproductions.TLPLib.Functional;
@@ -42,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     // disables elements for which position from center exceeds this value
-    public Option<float> disableDistantElements = F.none<float>();
+    [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
     public bool loopable => wrapCarouselAround && elements.Count > 4;
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
