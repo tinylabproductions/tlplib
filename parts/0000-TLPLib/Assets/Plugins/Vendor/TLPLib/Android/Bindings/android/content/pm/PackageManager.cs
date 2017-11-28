@@ -1,8 +1,8 @@
 ﻿#if UNITY_ANDROID
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android.Bindings.java.util;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
@@ -40,12 +40,22 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
     );
 
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPermissionInfo(java.lang.String,%20int)
-    public Try<PermissionInfo> getPermissionInfo(
+    public Option<PermissionInfo> getPermissionInfo(
       string permission, bool getMetaData = false
-    ) => F.doTry(() => {
+    ) {
       var flags = getMetaData ? (int) GetPackageInfoFlags.GET_META_DATA : 0;
-      return new PermissionInfo(permission, java.cjo("getPermissionInfo", permission, flags));
-    });
+      try {
+        return new PermissionInfo(
+          permission, java.cjo("getPermissionInfo", permission, flags)
+        ).some();
+      }
+      catch (AndroidJavaException e) {
+        if (e.Message.StartsWithFast("android.content.pm.PackageManager$NameNotFoundException:"))
+          return Option<PermissionInfo>.None;
+        else
+          throw;
+      }
+    }
 
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getInstalledPackages(int)
     public ImmutableList<PackageInfo> getInstalledPackages(GetPackageInfoFlags flags) {
@@ -53,13 +63,6 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       var jList = new List(java.cjo("getInstalledPackages", (int) flags));
       return jList.Select(jo => new PackageInfo(jo)).ToImmutableList();
     }
-
-    public Try<IEnumerable<PermissionInfo>> getDangerousPermissionsFor(
-      string bundleIdentifier
-    ) =>
-      from info in getPackageInfo(bundleIdentifier, GetPackageInfoFlags.GET_PERMISSIONS)
-      from permissions in info.requestedPermissions.Select(p => getPermissionInfo(p)).sequence()
-      select permissions.Where(_ => _.isProtectionLevel(PermissionInfo.ProtectionLevel.Dangerous));
   }
 }
 #endif
