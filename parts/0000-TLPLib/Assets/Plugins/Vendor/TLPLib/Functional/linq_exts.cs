@@ -30,6 +30,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       t.flatMap(f, g);
   }
 
+  public static class IOLinqExts {
+    public static IO<B> Select<A, B>(this IO<A> t, Fn<A, B> f) => t.map(f);
+    public static IO<B> SelectMany<A, B>(this IO<A> t, Fn<A, IO<B>> f) => t.flatMap(f);
+    public static IO<B1> SelectMany<A, B, B1>(this IO<A> t, Fn<A, IO<B>> f, Fn<A, B, B1> g) => 
+      t.flatMap(f, g);
+  }
+
   public static class FutureLinqExts {
     public static Future<B> Select<A, B>(this Future<A> fa, Fn<A, B> f) => fa.map(f);
 

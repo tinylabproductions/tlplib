@@ -234,15 +234,30 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<B>();
     }
 
-    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) { return new HashSet<A>(enumerable); }
+    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) => 
+      new HashSet<A>(enumerable);
 
-    /** Partitions enumerable into two lists using a predicate: (all false elements, all true elements) **/
-
+    /// <summary>Partitions enumerable into two lists using a predicate.</summary>
     public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
-      var trues = new List<A>();
-      var falses = new List<A>();
+      var trues = ImmutableList.CreateBuilder<A>();
+      var falses = ImmutableList.CreateBuilder<A>();
       foreach (var a in enumerable) (predicate(a) ? trues : falses).Add(a);
-      return Partitioned.a(trues, falses);
+      return Partitioned.a(trues.ToImmutable(), falses.ToImmutable());
+    }
+
+    public static Tpl<ImmutableList<A>, ImmutableList<B>> partitionCollect<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+    ) {
+      var nones = ImmutableList.CreateBuilder<A>();
+      var somes = ImmutableList.CreateBuilder<B>();
+      foreach (var a in enumerable) {
+        var bOpt = collector(a);
+        if (bOpt.isSome)
+          somes.Add(bOpt.__unsafeGetValue);
+        else
+          nones.Add(a);
+      }
+      return F.t(nones.ToImmutable(), somes.ToImmutable());
     }
 
     public static IOrderedEnumerable<A> OrderBySafe<A, B>(
@@ -265,35 +280,44 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
-    public readonly List<A> trues, falses;
+    public readonly ImmutableList<A> trues, falses;
 
-    public Partitioned(List<A> trues, List<A> falses) {
+    public Partitioned(ImmutableList<A> trues, ImmutableList<A> falses) {
       this.trues = trues;
       this.falses = falses;
     }
 
+    #region Equality
+
     public bool Equals(Partitioned<A> other) {
-      throw new InvalidOperationException(
-        "Can't compare two partitioned datasets, because their lists are mutable!"
-      );
+      return trues.SequenceEqual(other.trues) && falses.SequenceEqual(other.falses);
     }
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is Partitioned<A> && Equals((Partitioned<A>)obj);
+      return obj is Partitioned<A> && Equals((Partitioned<A>) obj);
     }
 
-    public override int GetHashCode() { return base.GetHashCode(); }
-
-    public override string ToString() {
-      return $"{nameof(Partitioned)}[" +
-             $"{nameof(trues)}: {trues.asDebugString()}, " +
-             $"{nameof(falses)}: {falses.asDebugString()}" +
-             $"]";
+    public override int GetHashCode() {
+      unchecked {
+        return ((trues != null ? trues.GetHashCode() : 0) * 397) ^ (falses != null ? falses.GetHashCode() : 0);
+      }
     }
+
+    public static bool operator ==(Partitioned<A> left, Partitioned<A> right) { return left.Equals(right); }
+    public static bool operator !=(Partitioned<A> left, Partitioned<A> right) { return !left.Equals(right); }
+
+    #endregion
+
+    public override string ToString() => 
+      $"{nameof(Partitioned)}[" +
+      $"{nameof(trues)}: {trues.asDebugString()}, " +
+      $"{nameof(falses)}: {falses.asDebugString()}" +
+      $"]";
   }
 
   public static class Partitioned {
-    public static Partitioned<A> a<A>(List<A> trues, List<A> falses) { return new Partitioned<A>(trues, falses); }
+    public static Partitioned<A> a<A>(ImmutableList<A> trues, ImmutableList<A> falses) => 
+      new Partitioned<A>(trues, falses);
   }
 }
