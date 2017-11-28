@@ -357,7 +357,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ));
 
         if (sp.type == nameof(UnityEvent)) {
-          var evt = findField(component, sp).flatMap(o => F.opt(o as UnityEvent)).getOrThrow(() => 
+          var evt = sp.findFieldValueInObject(component).flatMap(o => F.opt(o as UnityEvent)).getOrThrow(() => 
             new Exception(
               $"There should have been a {nameof(UnityEvent)} in property '{sp.name}' " +
               $"on '{component}' @ '{AssetDatabase.GetAssetPath(component)}', " +
@@ -439,47 +439,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       return Option<Error>.None;
-    }
-
-    static Option<object> getFieldValue(object obj, string fieldName) => 
-      obj.GetType().GetFieldInHierarchy(fieldName).flatMap(fi => F.opt(fi.GetValue(obj)));
-
-    static Option<object> findField(object obj, SerializedProperty sp) {
-      var path = sp.propertyPath.Split('.');
-
-      var firstFieldName = path[0];
-      var currentOpt = getFieldValue(obj, firstFieldName);
-
-      var currentSp = sp.serializedObject.FindProperty(firstFieldName);
-      for (var idx = 1; idx < path.Length; idx++) {
-        if (currentOpt.isNone) return Option<object>.None;
-        var current = currentOpt.__unsafeGetValue;
-        var currentFieldName = path[idx];
-        if (currentSp.isArray) {
-          // if we have an array named myArray, 
-          // then its first element will be serialized as myArray.Array.data[0]
-          idx++;
-          var nextFieldName = path[idx];
-          currentSp = currentSp
-            .FindPropertyRelative(currentFieldName) // Array
-            .FindPropertyRelative(nextFieldName);   // data[arrayIndex]
-          var arrayIndex = parseArrayIndex(nextFieldName);
-          currentOpt = F.opt((current as IList)[arrayIndex]);
-        }
-        else {
-          // non-array-element field
-          currentOpt = getFieldValue(current, currentFieldName);
-          currentSp = currentSp.FindPropertyRelative(currentFieldName);
-        }
-      }
-      return currentOpt;
-    }
-
-    /// <summary> Parses array idx from property field name ("data[5]" -> 5) </summary>
-    static int parseArrayIndex(string propertyFieldName) {
-      var startIndex = propertyFieldName.LastIndexOf('[') + 1;
-      var length = propertyFieldName.LastIndexOf(']') - startIndex;
-      return int.Parse(propertyFieldName.Substring(startIndex, length));
     }
 
     public struct FieldHierarchyStr {
