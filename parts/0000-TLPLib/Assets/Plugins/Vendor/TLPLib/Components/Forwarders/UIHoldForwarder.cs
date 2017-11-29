@@ -9,11 +9,11 @@ namespace com.tinylabproductions.TLPLib.Components {
     readonly IRxRef<bool> _isHeldDown = RxRef.a(false);
     public IRxVal<bool> isHeldDown => _isHeldDown;
 
-    readonly Subject<Unit> _onHold = new Subject<Unit>();
-    public IObservable<Unit> onHold => _onHold;
+    readonly Subject<Unit> _onHoldEveryFrame = new Subject<Unit>();
+    public IObservable<Unit> onHoldEveryFrame => _onHoldEveryFrame;
 
     public void Update() {
-      if (isHeldDown.value) _onHold.push(F.unit);
+      if (isHeldDown.value) _onHoldEveryFrame.push(F.unit);
     }
 
     public void OnPointerDown(PointerEventData eventData) => 
