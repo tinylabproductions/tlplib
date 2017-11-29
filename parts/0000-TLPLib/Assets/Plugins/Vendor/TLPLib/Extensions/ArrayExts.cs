@@ -89,5 +89,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       arr[arr.Length - 1] = replaceLastElementWith;
     }
+
+    public static bool contains<A>(this A[] arr, A a) => Array.IndexOf(arr, a) != -1;
   }
 }
