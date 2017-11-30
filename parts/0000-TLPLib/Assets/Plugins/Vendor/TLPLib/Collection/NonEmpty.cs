@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Collection {
@@ -21,6 +22,8 @@ namespace com.tinylabproductions.TLPLib.Collection {
   public static class NonEmptyExts {
     public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
     public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
+    public static int randomIndex<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a.randomIndex().get;
+    public static A random<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a.random().get;
   }
 
   public struct NonEmpty<A> : IEquatable<NonEmpty<A>> {
