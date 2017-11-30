@@ -375,10 +375,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [Test] public void WhenUnityEventInvalid() => 
-      testPrefab("TestUnityEventInvalid.prefab", ErrorType.UnityEventInvalid);
+      testPrefab("TestUnityEventInvalid.asset", ErrorType.UnityEventInvalid);
 
     [Test] public void WhenUnityEventInvalidMethod() =>
-      testPrefab("TestUnityEventInvalidMethod.prefab", ErrorType.UnityEventInvalidMethod);
+      testPrefab("TestUnityEventInvalidMethod.asset", ErrorType.UnityEventInvalidMethod);
 
     [Test] public void WhenUnityEventInvalidNested() =>
       testPrefab("TestUnityEventInvalidNested.asset", ErrorType.UnityEventInvalid);
