@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class AssetDatabaseUtils {
-    public static void withEveryPrefabOfType<A>(Act<A> f) {
+    public static void withEveryPrefabOfType<A>(Act<A> act) {
       var prefabGuids = AssetDatabase.FindAssets("t:prefab");
 
       var prefabs = prefabGuids
@@ -15,13 +15,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         .Select(AssetDatabase.LoadMainAssetAtPath)
         .OfType<GameObject>();
 
-      var list = new List<A>();
+      var components = new List<A>();
 
       foreach (var go in prefabs) {
-        go.GetComponentsInChildren<A>(true, list);
-        foreach (var component in list) {
-          f(component);
-        }
+        go.GetComponentsInChildren<A>(includeInactive: true, results: components);
+        foreach (var c in components) act(c);
       }
     }
   }
