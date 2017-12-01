@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class AssetDatabaseUtils {
-    public static void withEveryPrefabOfType<A>(Act<A> act) {
+    public static IEnumerable<A> getPrefabsOfType<A>() {
       var prefabGuids = AssetDatabase.FindAssets("t:prefab");
 
       var prefabs = prefabGuids
@@ -19,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
       foreach (var go in prefabs) {
         go.GetComponentsInChildren<A>(includeInactive: true, results: components);
-        foreach (var c in components) act(c);
+        foreach (var c in components) yield return c;
       }
     }
   }

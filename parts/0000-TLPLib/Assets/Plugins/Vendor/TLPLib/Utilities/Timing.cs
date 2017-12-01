@@ -7,12 +7,15 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   /// <summary> 
-  /// Tracks how much time has passed from the moment scope is opened <see cref="openScope"/> until it is closed <see cref="closeScope"/>,
-  /// counts how many iterations occured inside scope. Tracking also supports nesting (scope inside a scope).<para></para>
+  ///   <para>
+  ///    Tracks how much time has passed from the moment scope is opened <see cref="openScope"/> until it is closed <see cref="closeScope"/>,
+  ///    counts how many iterations occured inside scope. Tracking also supports nesting (scope inside a scope).
+  ///   </para>
   /// Can be used to analyze how long it takes for specific parts of code to be executed.
   /// </summary>
   /// <example>
   /// <code>
+  /// <![CDATA[
   ///   ITiming timing = new Timing(data => Log.d("Elapsed time: ", data.durationStr));
   ///   timing.openScope("add one");
   ///   var numbers = Enumerable.Range(0, 100);
@@ -21,6 +24,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   ///     return number++;
   ///   });
   ///   timing.closeScope();
+  /// ]]>
   /// </code>
   /// </example>
   public interface ITiming {
