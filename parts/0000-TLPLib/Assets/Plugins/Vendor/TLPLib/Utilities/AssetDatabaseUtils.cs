@@ -21,6 +21,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         foreach (var c in components) yield return c;
       }
     }
+
+    public static IEnumerable<A> getScriptableObjectsOfType<A>() where A : ScriptableObject => 
+      AssetDatabase.FindAssets($"t:{typeof(A).Name}")
+      .Select(AssetDatabase.GUIDToAssetPath)
+      .Select(AssetDatabase.LoadMainAssetAtPath)
+      .OfType<A>();
   }
 }
 #endif
