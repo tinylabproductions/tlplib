@@ -61,9 +61,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return durationS;
     } }
 
-    public override string ToString() {
-      return $"{nameof(TimingData)}[{scope}, {durationStr}]";
-    } 
+    public override string ToString() => $"{nameof(TimingData)}[{scope}, {durationStr}]";
   }
 
   public static class ITimingExts {
