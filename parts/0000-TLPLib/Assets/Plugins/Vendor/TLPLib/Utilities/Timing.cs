@@ -6,6 +6,27 @@ using Smooth.Pools;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
+  /// <summary> 
+  ///   <para>
+  ///    Tracks how much time has passed from the moment scope is opened <see cref="openScope"/> until it is closed <see cref="closeScope"/>,
+  ///    counts how many iterations occured inside scope. Tracking also supports nesting (scope inside a scope).
+  ///   </para>
+  /// Can be used to analyze how long it takes for specific parts of code to be executed.
+  /// </summary>
+  /// <example>
+  /// <code>
+  /// <![CDATA[
+  ///   ITiming timing = new Timing(data => Log.d("Elapsed time: ", data.durationStr));
+  ///   timing.openScope("add one");
+  ///   var numbers = Enumerable.Range(0, 100);
+  ///   var result = numbers.Select(number => {
+  ///     timing.scopeIteration();
+  ///     return number++;
+  ///   });
+  ///   timing.closeScope();
+  /// ]]>
+  /// </code>
+  /// </example>
   public interface ITiming {
     void openScope(string name);
     void scopeIteration();
@@ -40,9 +61,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return durationS;
     } }
 
-    public override string ToString() {
-      return $"{nameof(TimingData)}[{scope}, {durationStr}]";
-    } 
+    public override string ToString() => $"{nameof(TimingData)}[{scope}, {durationStr}]";
   }
 
   public static class ITimingExts {
