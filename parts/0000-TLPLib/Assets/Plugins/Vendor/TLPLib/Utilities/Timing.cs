@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public override string ToString() {
       return $"{nameof(TimingData)}[{scope}, {durationStr}]";
     } 
-}
+  }
 
   public static class ITimingExts {
     public static void scoped(this ITiming timing, string name, Action f) {
