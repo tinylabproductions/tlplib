@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Collection {
@@ -21,6 +22,35 @@ namespace com.tinylabproductions.TLPLib.Collection {
   public static class NonEmptyExts {
     public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
     public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
+
+    public static NonEmpty<IEnumerable<B>> map<A, B, C>(
+      this NonEmpty<C> ne, Func<A, B> f
+    ) where C : IEnumerable<A> =>
+      NonEmpty<IEnumerable<B>>.__unsafeNew(ne.a.Select(f));
+
+    public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableArray<A>> ne, Func<A, B> f) =>
+      map<A, B, ImmutableArray<A>>(ne, f);
+
+    public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableList<A>> ne, Func<A, B> f) =>
+      map<A, B, ImmutableList<A>>(ne, f);
+
+    public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableHashSet<A>> ne, Func<A, B> f) =>
+      map<A, B, ImmutableHashSet<A>>(ne, f);
+
+    public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableSortedSet<A>> ne, Func<A, B> f) =>
+      map<A, B, ImmutableSortedSet<A>>(ne, f);
+
+    public static NonEmpty<ImmutableArray<A>> ToImmutableArray<A>(this NonEmpty<IEnumerable<A>> ne) =>
+      NonEmpty<ImmutableArray<A>>.__unsafeNew(ne.a.ToImmutableArray());
+
+    public static NonEmpty<ImmutableList<A>> ToImmutableList<A>(this NonEmpty<IEnumerable<A>> ne) =>
+      NonEmpty<ImmutableList<A>>.__unsafeNew(ne.a.ToImmutableList());
+
+    public static NonEmpty<ImmutableHashSet<A>> ToImmutableHashSet<A>(this NonEmpty<IEnumerable<A>> ne) =>
+      NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ne.a.ToImmutableHashSet());
+
+    public static NonEmpty<ImmutableSortedSet<A>> ToImmutableSortedSet<A>(this NonEmpty<IEnumerable<A>> ne) =>
+      NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ne.a.ToImmutableSortedSet());
   }
 
   public struct NonEmpty<A> : IEquatable<NonEmpty<A>> {
@@ -49,8 +79,11 @@ namespace com.tinylabproductions.TLPLib.Collection {
     NonEmpty(A a) { this.a = a; }
 
     /// <summary>You should never use this method directly.</summary>
-    public static Option<NonEmpty<A>> __unsafeApply(A c, Fn<A, bool> isEmpty) =>
-      isEmpty(c) ? Option<NonEmpty<A>>.None : F.some(new NonEmpty<A>(c));
+    internal static Option<NonEmpty<A>> __unsafeApply(A c, Fn<A, bool> isEmpty) =>
+      isEmpty(c) ? Option<NonEmpty<A>>.None : F.some(__unsafeNew(c));
+
+    /// <summary>Never use this from user code, this is only intended for library use.</summary>
+    internal static NonEmpty<A> __unsafeNew(A c) => new NonEmpty<A>(c);
 
     public override string ToString() => $"{nameof(NonEmpty<A>)}({a})";
 
