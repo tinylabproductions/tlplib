@@ -16,6 +16,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return bArr;
     }
 
+    public static Range indexRange<A>(this ICollection<A> coll) => 
+      new Range(0, coll.Count - 1);
+
     /// <summary>
     /// Given a collection of tuples (A, B), shuffle their Bs.
     /// 
