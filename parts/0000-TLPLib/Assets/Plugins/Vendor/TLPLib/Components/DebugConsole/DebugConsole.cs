@@ -372,5 +372,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           return comment == null ? a.ToString() : $"{comment}: value={a}";
         });
     }
+
+    static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
+    public void registerBools(string name, Ref<Option<bool>> reference, string comment = null) =>
+      registerEnum(name, reference, OPT_BOOLS, comment);
   }
 }
