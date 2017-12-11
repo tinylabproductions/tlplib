@@ -1,6 +1,9 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEditor;
@@ -24,38 +27,40 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return result;
     }
 
-    static bool _modifyAllScenesInProject(Fn<Scene, bool> modifyScene) {
+    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Act<Scene> doWithLoadedScene) {
       try {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
           return false;
         }
-        var allScenePaths = AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).ToArray();
-        var total = allScenePaths.Length;
-        for (var i = 0; i < total; i++) {
-          var currentPath = allScenePaths[i];
+        var scenesToUse = scenes.ToImmutableArray();
+        var sceneCount = scenesToUse.Count();
+        for (var i = 0; i < sceneCount; i++) {
+          var currentPath = scenesToUse[i];
           if (EditorUtility.DisplayCancelableProgressBar(
-            nameof(modifyAllScenesInProject),
-            $"({i}/{total}) ...{currentPath.trimToRight(40)}",
-            i / (float)total
+            nameof(openScenesAndDo),
+            $"({i}/{sceneCount}) ...{currentPath.path.trimToRight(40)}",
+            i / (float)sceneCount
           )) {
             return false;
           }
           var loadedScene = EditorSceneManager.OpenScene(currentPath, OpenSceneMode.Single);
-          if (modifyScene(loadedScene)) {
-            EditorSceneManager.SaveScene(loadedScene);
-          }
+          doWithLoadedScene(loadedScene);
         }
-        if (Log.d.isInfo()) Log.d.info($"{nameof(modifyAllScenesInProject)} completed successfully");
         return true;
       }
       catch (Exception e) {
-        EditorUtils.userInfo($"Error in {nameof(modifyAllScenesInProject)}", e.ToString(), Log.Level.ERROR);
+        EditorUtils.userInfo($"Error in {nameof(openScenesAndDo)}", e.ToString(), Log.Level.ERROR);
         throw;
       }
       finally {
         EditorUtility.ClearProgressBar();
       }
     }
+
+    static bool _modifyAllScenesInProject(Fn<Scene, bool> modifyScene) => openScenesAndDo(
+      AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Select(_ => new ScenePath(_)),
+      scene => { if (modifyScene(scene)) EditorSceneManager.SaveScene(scene); }
+    );
   }
 }
 #endif
