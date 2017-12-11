@@ -1,10 +1,29 @@
 ﻿using System;
+using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public struct ErrorMsg : IEquatable<ErrorMsg> {
     public readonly string s;
+    public readonly Option<Object> o;
 
-    public ErrorMsg(string s) { this.s = s; }
+    public ErrorMsg(string s) {
+      this.s = s;
+      o = Option<Object>.None;
+    }
+
+    public ErrorMsg(string s, Object o) {
+      this.s = s;
+      this.o = o.some();
+    }
+
+    public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
+      errorMsg.s, ImmutableArray<Tpl<string, string>>.Empty, 
+      ImmutableArray<Tpl<string, string>>.Empty, context: errorMsg.o
+    );
 
     #region Equality
 
