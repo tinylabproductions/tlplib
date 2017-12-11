@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return result;
     }
 
-    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Act<Scene> doWithScene) {
+    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Act<Scene> doWithLoadedScene) {
       try {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
           return false;
@@ -44,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
             return false;
           }
           var loadedScene = EditorSceneManager.OpenScene(currentPath, OpenSceneMode.Single);
-          doWithScene(loadedScene);
+          doWithLoadedScene(loadedScene);
         }
         return true;
       }
