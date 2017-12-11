@@ -570,7 +570,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       .Cast<Object>()
       .ToImmutableList();
 
-    static void showErrors(IEnumerable<Error> errors) {
+    public static void showErrors(IEnumerable<Error> errors) {
       foreach (var error in errors)
         Log.d.error(error.ToString(), context: error.obj);
     }
