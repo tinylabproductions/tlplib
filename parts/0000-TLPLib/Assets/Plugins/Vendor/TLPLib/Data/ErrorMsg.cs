@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly string s;
     public readonly Option<Object> context;
 
-    public ErrorMsg(string s, Object context = default(Object)) {
+    public ErrorMsg(string s, Object context = null) {
       this.s = s;
       this.context = context.opt();
     }
