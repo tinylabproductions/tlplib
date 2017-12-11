@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly string s;
     public readonly Option<Object> context;
 
-    public ErrorMsg(string s, Object context = default(Object)) {
+    public ErrorMsg(string s, Object context = null) {
       this.s = s;
       this.context = context.opt();
     }
@@ -24,9 +24,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #region Equality
 
-    public bool Equals(ErrorMsg other) {
-      return string.Equals(s, other.s);
-    }
+    public bool Equals(ErrorMsg other) => string.Equals(s, other.s) && context.Equals(other.context);
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
@@ -34,11 +32,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public override int GetHashCode() {
-      return (s != null ? s.GetHashCode() : 0);
+      unchecked {
+        return ((s != null ? s.GetHashCode() : 0) * 397) ^ context.GetHashCode();
+      }
     }
 
-    public static bool operator ==(ErrorMsg left, ErrorMsg right) { return left.Equals(right); }
-    public static bool operator !=(ErrorMsg left, ErrorMsg right) { return !left.Equals(right); }
+    public static bool operator ==(ErrorMsg left, ErrorMsg right) => left.Equals(right);
+    public static bool operator !=(ErrorMsg left, ErrorMsg right) => !left.Equals(right);
 
     #endregion
 
