@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return result;
     }
 
-    public static bool openSceneAndDo(IEnumerable<ScenePath> scenes, Act<Scene> doWithScene) {
+    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Act<Scene> doWithScene) {
       try {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
           return false;
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         for (var i = 0; i < sceneCount; i++) {
           var currentPath = scenesToUse[i];
           if (EditorUtility.DisplayCancelableProgressBar(
-            nameof(openSceneAndDo),
+            nameof(openScenesAndDo),
             $"({i}/{sceneCount}) ...{currentPath.path.trimToRight(40)}",
             i / (float)sceneCount
           )) {
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         return true;
       }
       catch (Exception e) {
-        EditorUtils.userInfo($"Error in {nameof(openSceneAndDo)}", e.ToString(), Log.Level.ERROR);
+        EditorUtils.userInfo($"Error in {nameof(openScenesAndDo)}", e.ToString(), Log.Level.ERROR);
         throw;
       }
       finally {
@@ -57,45 +57,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       }
     }
 
-    static bool _modifyAllScenesInProject(Fn<Scene, bool> modifyScene) => openSceneAndDo(
+    static bool _modifyAllScenesInProject(Fn<Scene, bool> modifyScene) => openScenesAndDo(
       AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Select(_ => new ScenePath(_)),
-      scene => {
-        if (modifyScene(scene)) EditorSceneManager.SaveScene(scene);
-      }
+      scene => { if (modifyScene(scene)) EditorSceneManager.SaveScene(scene); }
     );
-
-    //{
-    //  try {
-    //    if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
-    //      return false;
-    //    }
-    //    var allScenePaths = .ToArray();
-    //    var total = allScenePaths.Length;
-    //    for (var i = 0; i < total; i++) {
-    //      var currentPath = allScenePaths[i];
-    //      if (EditorUtility.DisplayCancelableProgressBar(
-    //        nameof(modifyAllScenesInProject),
-    //        $"({i}/{total}) ...{currentPath.trimToRight(40)}",
-    //        i / (float)total
-    //      )) {
-    //        return false;
-    //      }
-    //      var loadedScene = EditorSceneManager.OpenScene(currentPath, OpenSceneMode.Single);
-    //      if (modifyScene(loadedScene)) {
-    //        EditorSceneManager.SaveScene(loadedScene);
-    //      }
-    //    }
-    //    if (Log.d.isInfo()) Log.d.info($"{nameof(modifyAllScenesInProject)} completed successfully");
-    //    return true;
-    //  }
-    //  catch (Exception e) {
-    //    EditorUtils.userInfo($"Error in {nameof(modifyAllScenesInProject)}", e.ToString(), Log.Level.ERROR);
-    //    throw;
-    //  }
-    //  finally {
-    //    EditorUtility.ClearProgressBar();
-    //  }
-    //}
   }
 }
 #endif

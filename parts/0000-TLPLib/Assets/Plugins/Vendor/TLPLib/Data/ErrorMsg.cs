@@ -8,21 +8,18 @@ using Object = UnityEngine.Object;
 namespace com.tinylabproductions.TLPLib.Data {
   public struct ErrorMsg : IEquatable<ErrorMsg> {
     public readonly string s;
-    public readonly Option<Object> o;
+    public readonly Option<Object> context;
 
-    public ErrorMsg(string s) {
+    public ErrorMsg(string s, Object context = default(Object)) {
       this.s = s;
-      o = Option<Object>.None;
-    }
-
-    public ErrorMsg(string s, Object o) {
-      this.s = s;
-      this.o = o.some();
+      this.context = context.opt();
     }
 
     public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
-      errorMsg.s, ImmutableArray<Tpl<string, string>>.Empty, 
-      ImmutableArray<Tpl<string, string>>.Empty, context: errorMsg.o
+      errorMsg.s, 
+      ImmutableArray<Tpl<string, string>>.Empty, 
+      ImmutableArray<Tpl<string, string>>.Empty, 
+      context: errorMsg.context
     );
 
     #region Equality
