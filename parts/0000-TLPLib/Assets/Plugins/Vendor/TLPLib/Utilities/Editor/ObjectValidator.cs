@@ -237,7 +237,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       var scene = SceneManager.GetActiveScene();
-      var t = checkScene(
+      var t = checkSceneWithTime(
         scene,
         Option<CustomObjectValidator>.None,
         progress => EditorUtility.DisplayProgressBar(
@@ -267,13 +267,21 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       showErrors(errors);
     }
 
-    public static Tpl<ImmutableList<Error>, TimeSpan> checkScene(
+    public static ImmutableList<Error> checkScene(
+      Scene scene, Option<CustomObjectValidator> customValidatorOpt,
+      Act<float> onProgress = null, Action onFinish = null
+    ) {
+      var objects = getSceneObjects(scene);
+      var errors = check(new CheckContext(scene.name), objects, customValidatorOpt, onProgress, onFinish);
+      return errors;
+    }
+
+    public static Tpl<ImmutableList<Error>, TimeSpan> checkSceneWithTime(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt, 
       Act<float> onProgress = null, Action onFinish = null
     ) {
-      var stopwatch = new Stopwatch().tap(_ => _.Start());
-      var objects = getSceneObjects(scene);
-      var errors = check(new CheckContext(scene.name), objects, customValidatorOpt, onProgress, onFinish);
+      var stopwatch = Stopwatch.StartNew();
+      var errors = checkScene(scene, customValidatorOpt, onProgress, onFinish);
       return F.t(errors, stopwatch.Elapsed);
     }
 
