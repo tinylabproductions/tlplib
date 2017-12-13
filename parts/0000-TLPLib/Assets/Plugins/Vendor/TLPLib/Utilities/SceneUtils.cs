@@ -17,7 +17,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     /// </param>
     /// <returns>true - if operation was not canceled by user</returns>
     public static bool modifyAllScenesInProject(Fn<Scene, bool> modifyScene) {
-      var result = _modifyAllScenesInProject(modifyScene);
+      var result = openScenesAndDo(
+        AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Select(_ => new ScenePath(_)),
+        scene => { if (modifyScene(scene)) EditorSceneManager.SaveScene(scene); }
+      );
+
       if (result) {
         if (Log.d.isInfo()) Log.d.info($"{nameof(modifyAllScenesInProject)} completed successfully");
       }
@@ -56,11 +60,6 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         EditorUtility.ClearProgressBar();
       }
     }
-
-    static bool _modifyAllScenesInProject(Fn<Scene, bool> modifyScene) => openScenesAndDo(
-      AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Select(_ => new ScenePath(_)),
-      scene => { if (modifyScene(scene)) EditorSceneManager.SaveScene(scene); }
-    );
   }
 }
 #endif
