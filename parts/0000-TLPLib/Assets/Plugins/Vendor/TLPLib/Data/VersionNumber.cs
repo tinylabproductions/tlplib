@@ -80,19 +80,23 @@ namespace com.tinylabproductions.TLPLib.Data {
       return $"{nameof(VersionNumber)}[{str}]";
     }
 
-    public static Either<string, VersionNumber> parseString(string s, char separator=DEFAULT_SEPARATOR) {
+    public static Either<ErrorMsg, VersionNumber> parseString(
+      string s, char separator=DEFAULT_SEPARATOR, UnityEngine.Object context = null
+    ) {
       var errHeader = $"Can't parse '{s}' as version number with separator '{separator}'";
       var parts = s.Split(separator);
       if (parts.Length > 3)
-        return $"{errHeader}: too many parts!".left().r<VersionNumber>();
+        return new ErrorMsg($"{errHeader}: too many parts!", context);
       if (parts.isEmpty())
-        return $"{errHeader}: empty!".left().r<VersionNumber>();
-      var majorE = parts[0].parseUInt().mapLeft(e => $"{errHeader} (major): {e}");
-      var minorE = getIdx(parts, 1).mapLeft(e => $"{errHeader} (minor): {e}");
-      var bugfixE = getIdx(parts, 2).mapLeft(e => $"{errHeader} (bugfix): {e}");
-      return majorE.flatMapRight(major => minorE.flatMapRight(minor => bugfixE.mapRight(bugfix =>
-        new VersionNumber(major, minor, bugfix, separator)
-      )));
+        return new ErrorMsg($"{errHeader}: empty!", context);
+      var majorE = parts[0].parseUInt().mapLeft(e => new ErrorMsg($"{errHeader} (major): {e}", context));
+      var minorE = getIdx(parts, 1).mapLeft(e => new ErrorMsg($"{errHeader} (minor): {e}", context));
+      var bugfixE = getIdx(parts, 2).mapLeft(e => new ErrorMsg($"{errHeader} (bugfix): {e}", context));
+      return 
+        from major in majorE
+        from minor in minorE
+        from bugfix in bugfixE
+        select new VersionNumber(major, minor, bugfix, separator);
     }
 
     static Either<string, uint> getIdx(IList<string> parts, int idx) => 

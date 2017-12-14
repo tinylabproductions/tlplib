@@ -10,10 +10,15 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly string s;
     public readonly Option<Object> context;
 
-    public ErrorMsg(string s, Object context = null) {
+    public ErrorMsg(string s, Option<Object> context) {
       this.s = s;
-      this.context = context.opt();
+      this.context = context;
     }
+
+    public ErrorMsg(string s, Object context = null) : this(s, context.opt()) {}
+
+    public ErrorMsg withMessage(Func<string, string> f) => new ErrorMsg(f(s), context);
+    public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
 
     public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
       message: errorMsg.s, 

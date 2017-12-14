@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
@@ -42,12 +42,12 @@ namespace com.tinylabproductions.TLPLib.Assertions {
       }
     }
 
-    public static Option<string> requireExistsOpt(this UnityEngine.Object a, string message = null) => 
-      (!a).opt(() => message ?? $"Expected unity object to exist, but it did not!");
+    public static Option<ErrorMsg> requireExistsOpt(this UnityEngine.Object a, string message = null) => 
+      (!a).opt(() => new ErrorMsg(message ?? $"Expected unity object to exist, but it did not!", a));
 
     public static void requireExists(this UnityEngine.Object a, string message = null) {
       foreach (var err in requireExistsOpt(a, message)) 
-        throw new RequirementFailedError(err);
+        throw new RequirementFailedError(err.s);
     }
   }
 }
