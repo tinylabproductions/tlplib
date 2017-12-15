@@ -43,14 +43,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public Option<int> maxElementsFromCenterOpt => maxElementsFromCenter.value;
 
-    List<A> _elements = new List<A>();
-    public List<A> elements {
-      get { return _elements; }
-      set {
-        _elements = value;
-        initPositions();
-      }
-    }
+    public readonly List<A> elements = new List<A>();
+
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
@@ -122,7 +116,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
       var isMovingLeft = targetPageValue < currentPosition;
-      var elementsOnTheLeft = _elements.Count / 2 + (isMovingLeft ? -1 : 0);
+      var elementsOnTheLeft = elements.Count / 2 + (isMovingLeft ? -1 : 0);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
@@ -177,7 +171,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       return newPos;
     }
 
-    void initPositions() => lerpPosition(1);
+    /// <summary>
+    /// Immediately refresh carousel content. Call after modifying <see cref="elements"/> to prevent 
+    /// visual flicker.
+    /// </summary>
+    public void forceUpdate() => lerpPosition(1);
 
     public void handleCarouselSwipe(SwipeDirection swipeDirection) {
       switch (direction) {
