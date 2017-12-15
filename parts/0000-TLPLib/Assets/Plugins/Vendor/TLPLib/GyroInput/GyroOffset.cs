@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
       // We get gyro rotation rate in radians / sec
       var gyroRate = gyro.rotationRateUnbiased;
       // We sum the offsets as we want them to be applied frame after frame
-      offset += new Vector2(-gyroRate.y, -gyroRate.x) * Time.deltaTime;
+      offset += new Vector2(gyroRate.y, -gyroRate.x) * Time.deltaTime;
       // We clamp the offset to certain values to make sure to lock the camera's paralax effect
       // Only to a certain sphere area
       offset = new Vector2(
