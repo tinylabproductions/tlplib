@@ -45,6 +45,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public readonly List<A> elements = new List<A>();
 
+
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
     public bool loopable => wrapCarouselAround && elements.Count > 4;
