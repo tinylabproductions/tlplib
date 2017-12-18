@@ -20,6 +20,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public ErrorMsg withMessage(Func<string, string> f) => new ErrorMsg(f(s), context);
     public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
 
+    public static implicit operator ErrorMsg(string s) => new ErrorMsg(s);
     public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
       message: errorMsg.s, 
       tags: ImmutableArray<Tpl<string, string>>.Empty, 
@@ -47,6 +48,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #endregion
 
-    public override string ToString() => $"{nameof(ErrorMsg)}({s})";
+    public override string ToString() => 
+      context.isSome
+      ? $"{s} on {context.__unsafeGetValue}"
+      : s;
   }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using com.tinylabproductions.TLPLib.Functional;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
@@ -51,18 +52,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public CastBuilder(From from) { this.from = from; }
 
-    public Either<string, To> toE<To>() where To : class, From {
+    public Either<string, To> toE<To>() where To : class, From =>
+      toEMsg<To>().mapLeft(_ => _.s);
+
+    public Either<ErrorMsg, To> toEMsg<To>() where To : class, From {
       var to = from as To;
-      return to == null
-        ? Either<string, To>.Left(errorMsg<To>())
-        : Either<string, To>.Right(to);
+      return to ?? new Either<ErrorMsg, To>(errorMsg<To>());
     }
 
-    string errorMsg<To>() => $"Can't cast {from.GetType()} to {typeof(To)}";
+    ErrorMsg errorMsg<To>() => $"Can't cast {from.GetType()} to {typeof(To)}";
 
     public To to<To>() where To : class, From {
       var to = from as To;
-      if (to == null) throw new InvalidCastException(errorMsg<To>());
+      if (to == null) throw new InvalidCastException(errorMsg<To>().s);
       return to;
     }
   }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
 using Object = UnityEngine.Object;
 
@@ -48,12 +49,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isSuccess ? Either<Exception, A>.Right(_value) : Either<Exception, A>.Left(_exception);
 
     public Either<string, A> toEitherStr =>
-      isSuccess ? Either<string, A>.Right(_value) : Either<string, A>.Left(_exception.ToString());
+      isSuccess ? Either<string, A>.Right(_value) : _exception.ToString();
 
-    public Either<ImmutableList<string>, A> toValidation =>
-      isSuccess 
-      ? Either<ImmutableList<string>, A>.Right(_value) 
-      : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.Message));
+    public Either<ErrorMsg, A> toEitherErrorMsg =>
+      isSuccess ? Either<ErrorMsg, A>.Right(_value) : new ErrorMsg(_exception.ToString());
 
     public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) => 
       isSuccess ? onValue(_value) : onException(_exception);

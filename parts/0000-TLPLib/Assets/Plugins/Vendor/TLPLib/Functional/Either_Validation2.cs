@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   // Non-generated methods for validation.
@@ -10,6 +11,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Either<ImmutableList<string>, A> stringValidationSuccess<A>(this A b) => 
       b.validationSuccess<string, A>();
+
+    public static Either<ImmutableList<ErrorMsg>, A> errorMsgValidationSuccess<A>(this A b) => 
+      b.validationSuccess<ErrorMsg, A>();
 
     public static Either<ImmutableList<A>, B> asValidationErrors<A, B>(
       this ImmutableList<A> errors, B b
