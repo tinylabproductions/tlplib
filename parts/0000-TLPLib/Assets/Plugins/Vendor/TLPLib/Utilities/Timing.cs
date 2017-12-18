@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Pools;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   /// <summary> 
@@ -28,10 +29,26 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   /// </code>
   /// </example>
   public interface ITiming {
+    FrameTimingScope frameScope(string name);
     void openScope(string name);
     void scopeIteration();
     void closeScope();
   }
+
+  public struct FrameTimingScope : IDisposable {
+    readonly ITiming timing;
+
+    public FrameTimingScope(string name, ITiming timing) {
+      this.timing = timing;
+      Profiler.BeginSample(name);
+      timing.openScope(name);
+    }
+
+    public void Dispose() {
+      timing.closeScope();
+      Profiler.EndSample();
+    }
+  } 
 
   public struct TimingData {
     public readonly string scope;
@@ -83,9 +100,16 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   }
 
   public class TimingNoOp : ITiming {
-    public static ITiming instance = new TimingNoOp();
+    public static readonly ITiming instance = new TimingNoOp();
+    public static readonly FrameTimingScope noOpScope;
+
+    static TimingNoOp() {
+      noOpScope = new FrameTimingScope(null, instance);
+    }
+    
     TimingNoOp() {}
 
+    public FrameTimingScope frameScope(string name) => noOpScope;
     public void openScope(string name) {}
     public void scopeIteration() {}
     public void closeScope() {}
@@ -100,6 +124,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       this.shouldRun = shouldRun;
     }
 
+    public FrameTimingScope frameScope(string name) => shouldRun ? backing.frameScope(name) : TimingNoOp.noOpScope;
     public void openScope(string name) { if (shouldRun) backing.openScope(name); }
     public void scopeIteration() { if (shouldRun) backing.scopeIteration(); }
     public void closeScope() { if (shouldRun) backing.closeScope(); }
@@ -116,8 +141,9 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     readonly Stack<Data> scopes = new Stack<Data>();
     readonly Act<TimingData> onData;
 
-    public Timing(Act<TimingData> onData)
-    { this.onData = onData; }
+    public Timing(Act<TimingData> onData) { this.onData = onData; }
+
+    public FrameTimingScope frameScope(string name) => new FrameTimingScope(name, this);
 
     public void openScope(string name) {
       var hasParentScope = scopes.Count != 0;

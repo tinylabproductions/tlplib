@@ -29,8 +29,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public enum Level : byte { VERBOSE = 10, DEBUG = 20, INFO = 30, WARN = 40, ERROR = 50 }
 
     public static readonly Level defaultLogLevel =
-      Application.isEditor || Debug.isDebugBuild
-      ? Level.DEBUG : Level.INFO;
+      /*Application.isEditor || Debug.isDebugBuild
+      ? Level.DEBUG : */Level.INFO;
 
     static readonly bool useConsoleLog = EditorUtils.inBatchMode;
 

@@ -1,20 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public interface IHeapFuture<A> {
+  /// <summary>Covariant version of heap future.</summary>
+  public interface IHeapFuture<out A> {
     bool isCompleted { get; }
-    Option<A> value { get; }
     void onComplete(Act<A> action);
   }
 
-  public static class IHeapFutureExts {
-    public static Future<A> asFuture<A>(this IHeapFuture<A> f) => Future.a(f);
+  public interface IHeapValueFuture<A> : IHeapFuture<A> {
+    Option<A> value { get; }
   }
 
-  class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
+  public static class IHeapFutureExts {
+    public static Future<A> asFuture<A>(this IHeapValueFuture<A> f) => Future.a(f);
+  }
+
+  class FutureImpl<A> : IHeapValueFuture<A>, Promise<A> {
     static readonly Pool<IList<Act<A>>> pool = new Pool<IList<Act<A>>>(
       () => new List<Act<A>>(), list => list.Clear()
     );
@@ -54,5 +59,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       pool.Release(listeners);
       listeners = null;
     }
+  }
+  
+  public sealed class SingletonActionRegistry<A> {
+    readonly Dictionary<IHeapFuture<A>, Act<A>> callbacks = new Dictionary<IHeapFuture<A>, Act<A>>();
+
+    public Act<A> this[IHeapFuture<A> ftr] {
+      set { singletonAction(ftr, value); }
+    }
+    
+    public void singletonAction(IHeapFuture<A> ftr, Act<A> action) {
+      if (!callbacks.Remove(ftr)) {
+        ftr.onComplete(a => futureCompleted(ftr, a));
+      }
+      callbacks.Add(ftr, action);
+    }
+
+    void futureCompleted(IHeapFuture<A> ftr, A a) => callbacks.a(ftr)(a);
   }
 }

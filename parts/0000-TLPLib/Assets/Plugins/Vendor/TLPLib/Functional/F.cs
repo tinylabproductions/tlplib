@@ -115,8 +115,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Unit unit => Unit.instance;
 
-    public static LazyVal<A> lazy<A>(Fn<A> func) => new LazyValImpl<A>(func);
-    public static LazyVal<A> lazy<A>(A a) => new NotReallyLazyVal<A>(a);
+    public static LazyVal<A> lazy<A>(Fn<A> func, Act<A> afterInitialization = null) => 
+      new LazyValImpl<A>(func, afterInitialization);
+    /// <summary>Lift a value into lazy type.</summary>
+    public static LazyVal<A> lazyLift<A>(A a) => new NotReallyLazyVal<A>(a);
 
     public static Fn<Unit> actToFn(Action action) =>
       () => { action(); return unit; };

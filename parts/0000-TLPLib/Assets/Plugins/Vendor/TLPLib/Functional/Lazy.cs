@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -9,13 +10,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
       F.lazy(() => mapper(lazy.get));
   }
 
-  // Not `Lazy<A>` because of `System.Lazy<A>`.
-  public interface LazyVal<A> : IHeapFuture<A> {
+  /// <summary>
+  /// Covariant version of <see cref="LazyVal{A}"/>.
+  /// </summary>
+  public interface LazyValCV<out A> : IHeapFuture<A> {
     bool initialized { get; }
     A get { get; }
-    // For those cases where we want it happen as a side effect.
+    /// <summary>For those cases where we want it happen as a side effect.</summary>
     A getM();
   }
+  
+  // Not `Lazy<A>` because of `System.Lazy<A>`.
+  public interface LazyVal<A> : LazyValCV<A>, IHeapValueFuture<A> {}
 
   public class NotReallyLazyVal<A> : LazyVal<A> {
     public bool initialized { get; } = true;
@@ -37,11 +43,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
     A obj;
     public bool initialized { get; private set; }
     readonly Fn<A> initializer;
+    readonly Option<Act<A>> afterInitialization;
 
     List<Act<A>> listeners;
 
-    public LazyValImpl(Fn<A> initializer) {
+    public LazyValImpl(Fn<A> initializer, Act<A> afterInitialization = null) {
       this.initializer = initializer;
+      this.afterInitialization = afterInitialization.opt();
     }
 
     public A get { get {
@@ -67,11 +75,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    void onValueInited(A obj) {
+    void onValueInited(A a) {
       if (listeners != null) {
-        foreach (var listener in listeners) listener(obj);
+        foreach (var listener in listeners) listener(a);
         listenerPool.Release(listeners);
         listeners = null;
+      }
+      foreach (var act in afterInitialization) {
+        act(a);
       }
     }
     #endregion

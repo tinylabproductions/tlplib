@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
    **/
   public struct Future<A> : IEquatable<Future<A>> {
     /* Future with a known value|unfulfilled future|async future. */
-    readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
+    readonly OneOf<A, UnfulfilledFuture, IHeapValueFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);
     public Option<A> value => implementation.fold(F.some, _ => F.none<A>(), f => f.value);
 
@@ -36,11 +36,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       _ => FutureType.ASync
     );
 
-    Future(OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation) {
+    Future(OneOf<A, UnfulfilledFuture, IHeapValueFuture<A>> implementation) {
       this.implementation = implementation;
     }
 
-    public Future(IHeapFuture<A> future) : this(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(future)) {}
+    public Future(IHeapValueFuture<A> future) : this(new OneOf<A, UnfulfilledFuture, IHeapValueFuture<A>>(future)) {}
 
     #region Equality
     
@@ -58,18 +58,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     #endregion
 
-    /* Lift an ordinary value into a future. */
-    public static Future<A> successful(A value) => 
-      new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(value));
+    /// <summary>Lift an ordinary value into a future.</summary>
+    public static Future<A> successful(A value) => new Future<A>(value);
 
-    /* Future that will never be completed. */
-    public static readonly Future<A> unfulfilled = 
-      new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(new UnfulfilledFuture()));
+    /// <summary>Future that will never be completed.</summary>
+    public static readonly Future<A> unfulfilled = new Future<A>(new UnfulfilledFuture());
 
-    /* Asynchronous heap based future which can be completed later. */
+    /// <summary>Asynchronous heap based future which can be completed later.</summary>
     public static Future<A> async(Act<Promise<A>> body) => async((p, _) => body(p));
 
-    /* Asynchronous heap based future which can be completed later. */
+    /// <summary>Asynchronous heap based future which can be completed later.</summary>
     public static Future<A> async(Act<Promise<A>, Future<A>> body) {
       Promise<A> promise;
       var future = @async(out promise);
@@ -80,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> async(out Promise<A> promise) {
       var impl = new FutureImpl<A>();
       promise = impl;
-      return new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(impl));
+      return new Future<A>(new OneOf<A, UnfulfilledFuture, IHeapValueFuture<A>>(impl));
     }
 
     public override string ToString() {
