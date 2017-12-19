@@ -5,21 +5,19 @@ using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  /// <summary>Covariant version of heap future.</summary>
-  public interface IHeapFuture<out A> {
+  // Can't split into two interfaces and use variance because mono runtime
+  // often crashes with variance.
+  public interface IHeapFuture<A> {
     bool isCompleted { get; }
     void onComplete(Act<A> action);
-  }
-
-  public interface IHeapValueFuture<A> : IHeapFuture<A> {
     Option<A> value { get; }
   }
 
   public static class IHeapFutureExts {
-    public static Future<A> asFuture<A>(this IHeapValueFuture<A> f) => Future.a(f);
+    public static Future<A> asFuture<A>(this IHeapFuture<A> f) => Future.a(f);
   }
 
-  class FutureImpl<A> : IHeapValueFuture<A>, Promise<A> {
+  class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
     static readonly Pool<IList<Act<A>>> pool = new Pool<IList<Act<A>>>(
       () => new List<Act<A>>(), list => list.Clear()
     );
@@ -60,7 +58,36 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       listeners = null;
     }
   }
-  
+
+  public static class SingletonActionRegistry {
+    /// <summary>
+    /// Create a registry for type inferred from given parameter. 
+    /// </summary>
+    public static SingletonActionRegistry<A> forTypeOf<A>(IHeapFuture<A> a) =>
+      new SingletonActionRegistry<A>();
+  }
+  /// <summary>
+  /// Allows registering multiple callbacks to future completion, but differs from
+  /// <see cref="Future{A}.onComplete"/> that this registry will only evaluate
+  /// the last callback registered to it when the future completes.
+  /// 
+  /// This is very handy to register state that needs to be applied when <see cref="LazyVal{A}"/>
+  /// is computed.
+  /// 
+  /// For example:
+  /// <code><![CDATA[
+  ///   readonly SingletonActionRegistry<IHasBuyWholeGameButton> singletonActionRegistry = 
+  ///     new SingletonActionRegistry<IHasBuyWholeGameButton>();
+  ///   
+  ///   public void buyAllSetActive(
+  ///     bool active, bool worldSelectActive
+  ///   ) {
+  ///     foreach (var s in screens.buyWholeGameScreens)
+  ///       singletonActionRegistry.singletonAction(s, _ => _.buyAllContentActive = active);
+  ///     singletonActionRegistry.singletonAction(screens.worldSelect, _ => _.buyAllContentActive = worldSelectActive);
+  ///   }
+  /// ]]></code> 
+  /// </summary>
   public sealed class SingletonActionRegistry<A> {
     readonly Dictionary<IHeapFuture<A>, Act<A>> callbacks = new Dictionary<IHeapFuture<A>, Act<A>>();
 
@@ -69,10 +96,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
     
     public void singletonAction(IHeapFuture<A> ftr, Act<A> action) {
-      if (!callbacks.Remove(ftr)) {
-        ftr.onComplete(a => futureCompleted(ftr, a));
+      if (ftr.isCompleted) {
+        ftr.onComplete(action);
       }
-      callbacks.Add(ftr, action);
+      else {
+        if (!callbacks.Remove(ftr)) {
+          ftr.onComplete(a => futureCompleted(ftr, a));
+        }
+        callbacks.Add(ftr, action); 
+      }
     }
 
     void futureCompleted(IHeapFuture<A> ftr, A a) => callbacks.a(ftr)(a);

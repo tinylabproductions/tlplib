@@ -9,7 +9,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
     public static Future<A> a<A>(Act<Promise<A>> action) => Future<A>.async(action);
-    public static Future<A> a<A>(IHeapValueFuture<A> future) => new Future<A>(future);
+    public static Future<A> a<A>(IHeapFuture<A> future) => new Future<A>(future);
     public static Future<A> async<A>(out Promise<A> promise) => Future<A>.async(out promise);
 
     public static Future<A> successful<A>(A value) => Future<A>.successful(value);

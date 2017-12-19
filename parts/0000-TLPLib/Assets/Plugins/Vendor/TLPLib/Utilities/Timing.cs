@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Text;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Pools;
 using UnityEngine;
@@ -37,45 +41,54 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
   public struct FrameTimingScope : IDisposable {
     readonly ITiming timing;
+//    readonly ProfiledScope profiledScope;
 
     public FrameTimingScope(string name, ITiming timing) {
       this.timing = timing;
-      Profiler.BeginSample(name);
+//      profiledScope = new ProfiledScope(name);
       timing.openScope(name);
     }
 
     public void Dispose() {
       timing.closeScope();
-      Profiler.EndSample();
+//      profiledScope.Dispose();
     }
   } 
 
   public struct TimingData {
     public readonly string scope;
-    public readonly float startTime, endTime;
-    public readonly uint iterations, innerScopes;
+    public readonly DateTime startTime, endTime;
+    public readonly uint iterations;
+    public readonly Duration duration;
+    public readonly ImmutableArray<KeyValuePair<string, Duration>> childDurations;
 
-    public TimingData(string scope, float startTime, float endTime, uint iterations, uint innerScopes) {
+    public TimingData(
+      string scope, DateTime startTime, DateTime endTime, uint iterations, 
+      ImmutableArray<KeyValuePair<string, Duration>> childDurations
+    ) {
       this.scope = scope;
       this.startTime = startTime;
       this.endTime = endTime;
       this.iterations = iterations;
-      this.innerScopes = innerScopes;
+      this.childDurations = childDurations;
+      duration = (endTime - startTime).toDuration();
     }
 
-    public Duration duration => Duration.fromSeconds(endTime - startTime);
-
     public string durationStr { get {
-      var durationS = $"{duration.millis}ms";
+      var durationS = new StringBuilder($"{duration.millis}ms");
       if (iterations != 0) {
         var avg = Duration.fromSeconds(duration.seconds / iterations);
-        durationS += $", iters={iterations}, avg iter={avg.millis}ms";
+        durationS.Append($", iters={iterations}, avg iter={avg.millis}ms");
       }
-      if (innerScopes != 0) {
-        var avg = Duration.fromSeconds(duration.seconds / innerScopes);
-        durationS += $", iscopes={innerScopes}, avg iscope={avg.millis}ms";
+      if (childDurations.Length != 0) {
+        durationS.Append($", iscopes=[\n");
+        foreach (var kv in childDurations) {
+          var percentage = (float) kv.Value.millis / duration.millis * 100;
+          durationS.AppendLine($"{kv.Key} = {kv.Value.millis}ms ({percentage:F}%)");
+        }
+        durationS.Append("]");
       }
-      return durationS;
+      return durationS.ToString();
     } }
 
     public override string ToString() => $"{nameof(TimingData)}[{scope}, {durationStr}]";
@@ -132,9 +145,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
   public class Timing : ITiming {
     class Data {
-      public string scope;
-      public float startTime;
-      public uint iterations, innerScopes;
+      public string name, fullScopeName;
+      public DateTime startTime;
+      public uint iterations;
+      public readonly Dictionary<string, Duration> innerScopeDurations = 
+        new Dictionary<string, Duration>();
+      public Option<Data> parent = Option<Data>.None;
     }
 
     static readonly Pool<Data> dataPool = new Pool<Data>(() => new Data(), _ => { });
@@ -147,11 +163,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public void openScope(string name) {
       var hasParentScope = scopes.Count != 0;
-      if (hasParentScope) scopes.Peek().innerScopes += 1;
+      var parent = hasParentScope ? scopes.Peek().some() : Option<Data>.None;
       var data = dataPool.Borrow();
-      data.scope = hasParentScope ? $"{scopes.Peek().scope}.{name}" : name;
-      data.startTime = Time.realtimeSinceStartup;
-      data.iterations = data.innerScopes = 0;
+      data.name = name;
+      data.fullScopeName = hasParentScope ? $"{scopes.Peek().fullScopeName}.{name}" : name;
+      data.startTime = DateTime.Now;
+      data.iterations = 0;
+      data.innerScopeDurations.Clear();
+      data.parent = parent;
       scopes.Push(data);
     }
 
@@ -163,9 +182,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public void closeScope() {
       checkForScope();
       var data = scopes.Pop();
-      onData(new TimingData(
-        data.scope, data.startTime, Time.realtimeSinceStartup, data.iterations, data.innerScopes
-      ));
+      var timingData = new TimingData(
+        data.fullScopeName, data.startTime, DateTime.Now, data.iterations, 
+        data.innerScopeDurations.ToImmutableArray()
+      );
+      foreach (var parent in data.parent) {
+        parent.innerScopeDurations[data.name] = timingData.duration;
+      }
+      onData(timingData);
       dataPool.Release(data);
     }
 

@@ -117,6 +117,15 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static LazyVal<A> lazy<A>(Fn<A> func, Act<A> afterInitialization = null) => 
       new LazyValImpl<A>(func, afterInitialization);
+
+    public static LazyVal<A> loggedLazy<A>(
+      string name, Fn<A> func, ILog log = null, Log.Level level = Log.Level.DEBUG
+    ) => lazy(() => {
+      var _log = log ?? Log.d;
+      if (_log.willLog(level)) _log.log(level, $"Initiliazing lazy value: {name}");
+      return func();
+    });
+    
     /// <summary>Lift a value into lazy type.</summary>
     public static LazyVal<A> lazyLift<A>(A a) => new NotReallyLazyVal<A>(a);
 
