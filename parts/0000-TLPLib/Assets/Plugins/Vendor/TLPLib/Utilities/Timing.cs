@@ -41,17 +41,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
   public struct FrameTimingScope : IDisposable {
     readonly ITiming timing;
-//    readonly ProfiledScope profiledScope;
 
     public FrameTimingScope(string name, ITiming timing) {
       this.timing = timing;
-//      profiledScope = new ProfiledScope(name);
       timing.openScope(name);
     }
 
     public void Dispose() {
       timing.closeScope();
-//      profiledScope.Dispose();
     }
   } 
 
