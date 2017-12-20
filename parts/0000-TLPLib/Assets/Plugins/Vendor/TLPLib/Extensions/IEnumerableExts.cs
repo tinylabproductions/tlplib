@@ -215,6 +215,24 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) => 
       enumerable.SelectMany(_ => _);
 
+    /// <summary>
+    /// Maps enumerable invoking mapper once per distinct A. 
+    /// </summary>
+    public static IEnumerable<B> mapDistinct<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, B> mapper
+    ) {
+      var cache = new Dictionary<A, B>();
+      foreach (var a in enumerable) {
+        B b;
+        if (!cache.TryGetValue(a, out b)) {
+          b = mapper(a);
+          cache.Add(a, b);
+        }
+
+        yield return b;
+      }
+    }
+    
     public static IEnumerable<B> collect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
