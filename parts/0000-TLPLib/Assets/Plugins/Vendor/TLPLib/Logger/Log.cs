@@ -27,6 +27,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
    **/
   public static class Log {
     public enum Level : byte { VERBOSE = 10, DEBUG = 20, INFO = 30, WARN = 40, ERROR = 50 }
+    public static class Level_ {
+      public static readonly ISerializedRW<Level> rw = SerializedRW.byte_.map(
+        b => ((Level) b).some(),
+        l => (byte) l
+      );
+
+      public static readonly ISerializedRW<Option<Level>> optRw = SerializedRW.opt(rw);
+    }
 
     public static readonly Level defaultLogLevel =
       Application.isEditor || Debug.isDebugBuild

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
@@ -24,6 +26,24 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
         it["should collect nones"] = () => result._1.shouldEqualEnum(1, 3, 5);
         it["should collect somes"] = () => result._2.shouldEqualEnum("2", "4", "6");
+      };
+    });
+
+    class TestObj {}
+    
+    [Test] public void mapDistinct() => describe(() => {
+      it["should map multiple entries to same element"] = () => {
+        var obj = new TestObj();
+        new[] {1, 1, 1}.mapDistinct(a => obj).shouldEqualEnum(new [] {obj, obj, obj});
+      };
+      
+      it["should only invoke mapper once for a unique element"] = () => {
+        var invocations = new Dictionary<int, int>();
+        new[] {1, 2, 3, 4, 1, 2, 3, 4}.mapDistinct(a => {
+          invocations[a] = invocations.getOrElse(a, 0) + 1;
+          return a;
+        }).ToList().forSideEffects();
+        invocations.shouldNotContain(kv => kv.Value != 1);
       };
     });
   }
