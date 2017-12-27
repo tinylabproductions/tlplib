@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -8,8 +9,8 @@ namespace com.tinylabproductions.TLPLib.Components.Forwarders {
   public class SlideTickerForwarder : MonoBehaviour, IBeginDragHandler, IDragHandler {
     public float tickDistance;
 
-    readonly Subject<Tpl<int, int>> _onSlideTick = new Subject<Tpl<int, int>>();
-    public IObservable<Tpl<int, int>> onSlideTick => _onSlideTick;
+    readonly Subject<Point2D> _onSlideTick = new Subject<Point2D>();
+    public IObservable<Point2D> onSlideTick => _onSlideTick;
     Vector2 dragBeginPos;
 
     public void OnBeginDrag(PointerEventData eventData) {
@@ -24,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components.Forwarders {
       var tickY = calcAxisTicks(delta.y, tickDistance);
       if (tickX != 0 || tickY != 0) {
         dragBeginPos += new Vector2(tickX * tickDistance, tickY * tickDistance);
-        _onSlideTick.push(F.t(tickX, tickY));
+        _onSlideTick.push(new Point2D(tickX, tickY));
       }
     }
 
