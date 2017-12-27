@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Code.UI {
+namespace com.tinylabproductions.TLPLib.Components.Forwarders {
   public class SlideTickerForwarder : MonoBehaviour, IBeginDragHandler, IDragHandler {
     public float tickDistance;
 
