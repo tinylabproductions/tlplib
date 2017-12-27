@@ -1,5 +1,7 @@
-﻿using com.tinylabproductions.TLPLib.Extensions;
+﻿using System.Diagnostics;
+using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Components {
   /// <summary>
@@ -8,16 +10,36 @@ namespace com.tinylabproductions.TLPLib.Components {
   /// in the editor when inspecting an object.
   /// </summary>
   public class CommentComponent : MonoBehaviour {
-    [TextArea]
-    public string comment;
+#if UNITY_EDITOR
+
+    #region Unity Serialized Fields
+
+#pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
+    [TextArea, SerializeField, FormerlySerializedAs("comment")] string _comment;
+    // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
+#pragma warning restore 649
+
+    #endregion
+
+    public string comment__onlyInEditor {
+      get { return _comment; }
+      set { _comment = value; }
+    }
+#endif
   }
 
   public static class CommentComponentExts {
+    [Conditional("UNITY_EDITOR")]
     public static void addCommentComponent(this GameObject go, string comment) {
       var c = go.EnsureComponent<CommentComponent>();
-      c.comment = string.IsNullOrEmpty(c.comment) ? comment : $"{c.comment}\n\n${comment}";
+      c.comment__onlyInEditor = 
+        string.IsNullOrEmpty(c.comment__onlyInEditor) 
+        ? comment 
+        : $"{c.comment__onlyInEditor}\n\n${comment}";
     }
 
+    [Conditional("UNITY_EDITOR")]
     public static void addCommentComponent(this MonoBehaviour bh, string comment) => 
       bh.gameObject.addCommentComponent(comment);
   }
