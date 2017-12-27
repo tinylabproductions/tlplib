@@ -48,6 +48,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this IObservable<A> o, Fn<A, Future<B>> mapper
     ) => Observable.a(ObservableOpImpls.flatMap(o, mapper));
 
+    /// <summary>
+    /// Wait until future completes and start emmiting events from the created
+    /// observable then. 
+    /// </summary>
+    public static IObservable<B> flatMap<A, B>(
+      this Future<A> future, Fn<A, IObservable<B>> mapper
+    ) {
+      var s = new Subject<B>();
+      future.onComplete(a => mapper(a).subscribe(s.push));
+      return s;
+    }
+
     #endregion
 
     /** Only emits events that pass the predicate. **/
