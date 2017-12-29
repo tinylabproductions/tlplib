@@ -32,11 +32,13 @@ namespace com.tinylabproductions.TLPLib.Components {
   public static class CommentComponentExts {
     [Conditional("UNITY_EDITOR")]
     public static void addCommentComponent(this GameObject go, string comment) {
+#if UNITY_EDITOR
       var c = go.EnsureComponent<CommentComponent>();
       c.comment__onlyInEditor = 
         string.IsNullOrEmpty(c.comment__onlyInEditor) 
         ? comment 
         : $"{c.comment__onlyInEditor}\n\n${comment}";
+#endif
     }
 
     [Conditional("UNITY_EDITOR")]
