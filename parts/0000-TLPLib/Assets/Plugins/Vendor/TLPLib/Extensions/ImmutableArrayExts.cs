@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -18,6 +19,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static bool isEmpty<A>(this ImmutableArray<A> list) => list.Length == 0;
     public static bool nonEmpty<A>(this ImmutableArray<A> list) => list.Length != 0;
+
+    public static Range indexRange<A>(this ImmutableArray<A> coll) =>
+      new Range(0, coll.Length - 1);
   }
 
   public static class ImmutableArrayBuilderExts {

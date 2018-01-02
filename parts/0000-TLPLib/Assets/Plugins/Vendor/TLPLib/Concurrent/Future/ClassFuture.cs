@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
+  // Can't split into two interfaces and use variance because mono runtime
+  // often crashes with variance.
   public interface IHeapFuture<A> {
     bool isCompleted { get; }
-    Option<A> value { get; }
     void onComplete(Act<A> action);
+    Option<A> value { get; }
   }
 
   public static class IHeapFutureExts {

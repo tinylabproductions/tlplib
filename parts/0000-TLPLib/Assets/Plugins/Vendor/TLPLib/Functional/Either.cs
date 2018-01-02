@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class EitherExts {
@@ -51,6 +52,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Either<Left, ImmutableList<To>> mapRightC<From, To, Left>(
       this Either<Left, ImmutableList<From>> e, Fn<From, To> mapper
     ) => mapRightC(e, mapper, _ => _.ToImmutableList());
+
+    public static Either<A, ImmutableList<B>> sequence<A, B>(
+      this IEnumerable<Either<A, B>> enumerable
+    ) {
+      // mutable for performance
+      var builder = ImmutableList.CreateBuilder<B>();
+      foreach (var either in enumerable) {
+        if (either.isLeft) return either.__unsafeGetLeft;
+        builder.Add(either.__unsafeGetRight);
+      }
+      return builder.ToImmutable();
+    }
   }
 
   public static class Either {
@@ -208,6 +221,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Either<A, BB>(_leftValue);
     }
 
+    public Option<B> getOrLog(
+      string errorMessage, UnityEngine.Object context = null, ILog log = null
+    ) {
+      if (isLeft) {
+        log = log ?? Log.@default;
+        log.error($"{errorMessage}: {__unsafeGetLeft}", context);
+      }
+      return rightValue;
+    }
+
     public EitherEnumerator<A, B> GetEnumerator() => new EitherEnumerator<A, B>(this);
 
     // Converstions from values.
@@ -250,16 +273,5 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public readonly B rightValue;
     public RightEitherBuilder(B rightValue) { this.rightValue = rightValue; }
     public Either<A, B> l<A>() => new Either<A, B>(rightValue);
-  }
-
-
-  public static class EitherLinqExts {
-    public static Either<L, R1> Select<L, R, R1>(this Either<L, R> e, Fn<R, R1> f) => 
-      e.mapRight(f);
-    public static Either<L, R1> SelectMany<L, R, R1>(this Either<L, R> e, Fn<R, Either<L, R1>> f) => 
-      e.flatMapRight(f);
-    public static Either<L, R2> SelectMany<L, R, R1, R2>(
-      this Either<L, R> opt, Fn<R, Either<L, R1>> f, Fn<R, R1, R2> g
-    ) => opt.flatMapRight(f, g);
   }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.Swiping;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.unity_serialization;
@@ -10,8 +12,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
-  public class Carousel : UIBehaviour, IMB_Update {
+  public class Carousel : Carousel<CarouselGameObject> {
     public enum Direction : byte { Horizontal = 0, Vertical = 1 }
+  }
+
+  public interface ICarouselItem {
+    GameObject gameObject { get; }
+  }
+
+  public class Carousel<A> : UIBehaviour, IMB_Update where A : ICarouselItem {
 
     #region Unity Serialized Fields
 
@@ -27,32 +36,34 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
-    [SerializeField] Direction _direction = Direction.Horizontal;
+    [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
 #pragma warning restore 649
 
     #endregion
 
-    List<GameObject> _elements = new List<GameObject>();
-    public List<GameObject> elements {
-      get { return _elements; }
-      set {
-        _elements = value;
-        initPositions();
-      }
-    }
+    public Option<int> maxElementsFromCenterOpt => maxElementsFromCenter.value;
+
+    public readonly List<A> elements = new List<A>();
+
 
     // disables elements for which position from center exceeds this value
-    public Option<float> disableDistantElements = F.none<float>();
+    [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
     public bool loopable => wrapCarouselAround && elements.Count > 4;
+
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
+
+    IRxVal<A> __currentElement;
+    public IRxVal<A> currentElement =>
+      __currentElement ?? (__currentElement = page.map(idx => elements.a(idx)));
+
     float currentPosition;
 
     int targetPageValue;
     public bool isMoving { get; private set; }
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
     public IObservable<Unit> movementComplete => _movementComplete;
-    public Direction direction => _direction;
+    public Carousel.Direction direction => _direction;
 
     public void nextPage() => setPageAnimated(targetPageValue + 1);
     public void prevPage() => setPageAnimated(targetPageValue - 1);
@@ -105,7 +116,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
       var isMovingLeft = targetPageValue < currentPosition;
-      var elementsOnTheLeft = _elements.Count / 2 + (isMovingLeft ? -1 : 0);
+      var elementsOnTheLeft = elements.Count / 2 + (isMovingLeft ? -1 : 0);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
@@ -125,10 +136,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           * sign;
 
         foreach (var distance in disableDistantElements) {
-          elements[idx].SetActive(Mathf.Abs(delta) < distance);
+          elements[idx].gameObject.SetActive(Mathf.Abs(delta) < distance);
         }
 
-        var t = elements[idx].transform;
+        var t = elements[idx].gameObject.transform;
         t.localPosition = getPosition(_direction, delta, absDiff, selectedPageOffset);
 
         t.localScale = Vector3.one * (absDiff < 1
@@ -145,10 +156,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     static Vector3 getPosition(
-      Direction carouselDirection, float positionChange, float absDiff, 
+      Carousel.Direction carouselDirection, float positionChange, float absDiff, 
       Option<Vector3> centralItemOffset 
     ) {
-      var newPos = carouselDirection == Direction.Horizontal 
+      var newPos = carouselDirection == Carousel.Direction.Horizontal 
         ? new Vector3(positionChange, 0, 0)
         : new Vector3(0, -positionChange, 0);
 
@@ -160,11 +171,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       return newPos;
     }
 
-    void initPositions() => lerpPosition(1);
+    /// <summary>
+    /// Immediately refresh carousel content. Call after modifying <see cref="elements"/> to prevent 
+    /// visual flicker.
+    /// </summary>
+    public void forceUpdate() => lerpPosition(1);
 
     public void handleCarouselSwipe(SwipeDirection swipeDirection) {
       switch (direction) {
-        case Direction.Horizontal:
+        case Carousel.Direction.Horizontal:
           switch (swipeDirection) {
             case SwipeDirection.Left:
               nextPage();
@@ -179,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
               throw new ArgumentOutOfRangeException(nameof(swipeDirection), swipeDirection, null);
           }
           break;
-        case Direction.Vertical:
+        case Carousel.Direction.Vertical:
           switch (swipeDirection) {
             case SwipeDirection.Left:
             case SwipeDirection.Right:
@@ -198,5 +213,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
       }
     }
+  }
+
+  public struct CarouselGameObject : ICarouselItem {
+    public GameObject gameObject { get; }
+
+    public CarouselGameObject(GameObject gameObject) {
+      this.gameObject = gameObject;
+    }
+
+    public static implicit operator CarouselGameObject(GameObject o) => new CarouselGameObject(o);
   }
 }

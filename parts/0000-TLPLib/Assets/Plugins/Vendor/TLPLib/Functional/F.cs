@@ -6,14 +6,15 @@ using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
-    public static Option<A> opt<A>(A value) where A : class {
+    public static bool isNull<A>(A value) where A : class =>
       // This might seem to be overkill, but on the case of Transforms that
       // have been destroyed, target == null will return false, whereas
       // target.Equals(null) will return true.  Otherwise we don't really
       // get the benefits of the nanny.
-      return value == null || value.Equals(null)
-        ? Option<A>.None : new Option<A>(value);
-    }
+      value == null || value.Equals(null);
+
+    public static Option<A> opt<A>(A value) where A : class => 
+      isNull(value) ? Option<A>.None : new Option<A>(value);
 
     public static Option<A> opt<A>(A? value) where A : struct => 
       value == null ? Option<A>.None : some((A) value);
@@ -114,8 +115,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Unit unit => Unit.instance;
 
-    public static LazyVal<A> lazy<A>(Fn<A> func) => new LazyValImpl<A>(func);
-    public static LazyVal<A> lazy<A>(A a) => new NotReallyLazyVal<A>(a);
+    public static LazyVal<A> lazy<A>(Fn<A> func, Act<A> afterInitialization = null) => 
+      new LazyValImpl<A>(func, afterInitialization);
+
+    public static LazyVal<A> loggedLazy<A>(
+      string name, Fn<A> func, ILog log = null, Log.Level level = Log.Level.DEBUG
+    ) => lazy(() => {
+      var _log = log ?? Log.d;
+      if (_log.willLog(level)) _log.log(level, $"Initiliazing lazy value: {name}");
+      return func();
+    });
+    
+    /// <summary>Lift a value into lazy type.</summary>
+    public static LazyVal<A> lazyLift<A>(A a) => new NotReallyLazyVal<A>(a);
 
     public static Fn<Unit> actToFn(Action action) =>
       () => { action(); return unit; };
@@ -128,5 +140,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) => 
       () => second(first());
+
+    static class EmptyArray<T> {
+      public static readonly T[] value = new T[0];
+    }
+
+    public static T[] emptyArray<T>() => EmptyArray<T>.value;
+
+    class EmptyDisposable : IDisposable {
+      public void Dispose() { }
+    }
+
+    public static readonly IDisposable emptyDisposable = new EmptyDisposable();
   }
 }

@@ -26,7 +26,15 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * need processing, you should use `if (Log.d.isDebug()) Log.d.debug("foo=" + foo);` style.
    **/
   public static class Log {
-    public enum Level : byte { ERROR, WARN, INFO, DEBUG, VERBOSE }
+    public enum Level : byte { VERBOSE = 10, DEBUG = 20, INFO = 30, WARN = 40, ERROR = 50 }
+    public static class Level_ {
+      public static readonly ISerializedRW<Level> rw = SerializedRW.byte_.map(
+        b => ((Level) b).some(),
+        l => (byte) l
+      );
+
+      public static readonly ISerializedRW<Option<Level>> optRw = SerializedRW.opt(rw);
+    }
 
     public static readonly Level defaultLogLevel =
       Application.isEditor || Debug.isDebugBuild
@@ -205,7 +213,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public IObservable<LogEvent> messageLogged => _messageLogged;
 
     public Log.Level level { get; set; } = Log.defaultLogLevel;
-    public bool willLog(Log.Level l) => level >= l;
+    public bool willLog(Log.Level l) => l >= level;
 
     public void log(Log.Level l, LogEntry entry) {
       logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
@@ -266,6 +274,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     ) {
       try {
         var level = convertLevel(type);
+
         // We want to collect backtrace on the current thread
         var backtrace =
           level >= Log.Level.WARN
@@ -293,7 +302,6 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         // Ignore messages that we ourselves sent to Unity.
         if (message.StartsWithFast(MESSAGE_PREFIX)) return;
-
         var logEventTry = convertUnityMessageToLogEvent(
           message, backtrace, type, 
           stackFramesToSkipWhenGenerating: 1 /* This stack frame */

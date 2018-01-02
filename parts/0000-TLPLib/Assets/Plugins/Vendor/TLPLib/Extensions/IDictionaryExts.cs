@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -27,11 +26,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static V getOrUpdate<K, V>(
       this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
     ) {
-      return dict.getOrElse(key, () => {
+      V outVal;
+      if (dict.TryGetValue(key, out outVal)) {
+        return outVal;
+      }
+      else {
         var v = ifNotFound();
         dict.Add(key, v);
         return v;
-      });
+      }
     }
 
     public static V getOrElse<K, V>(

@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static A random<C, A>(this NonEmpty<C> list, ref Rng rng) 
       where C : IReadOnlyList<A> 
     => 
-      list.a[rng.nextIntInRange(new Range(0, list.a.Count), out rng)];
+      list.a[rng.nextIntInRange(new Range(0, list.a.Count - 1), out rng)];
 
     public static A random<A>(this NonEmpty<ImmutableList<A>> list, ref Rng rng) => 
       random<ImmutableList<A>, A>(list, ref rng);

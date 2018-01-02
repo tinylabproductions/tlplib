@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
@@ -197,5 +198,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// <summary>obfuscates the string by shifting every char code in it by given amount</summary>
     public static string shiftCharValues(this string s, int shiftBy) =>
       new string(s.ToCharArray().map(c => (char) (c + shiftBy)));
+
+    public static string indentLines(
+      this string s, string indentWith, int indents = 1, bool indentFirst = true
+    ) => s.Split('\n').indentLines(indentWith, indents, indentFirst).mkString("\n");
+
+    public static IEnumerable<string> indentLines(
+      this IEnumerable<string> lines, string indentWith, int indents = 1, bool indentFirst = true
+    ) => lines.Select((line, idx) => {
+      var indent = idx == 0 && indentFirst || idx != 0 ? indentWith.repeat(indents) : "";
+      return $"{indent}{line}";
+    });
   }
 }

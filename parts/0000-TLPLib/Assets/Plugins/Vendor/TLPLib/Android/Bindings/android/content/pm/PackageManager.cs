@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.java.util;
+using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
@@ -34,15 +36,27 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       Application.platform != RuntimePlatform.Android || java.Call<bool>("hasSystemFeature", feature);
 
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPackageInfo(java.lang.String,%20int)
-    public Option<PackageInfo> getPackageInfo(string bundleIdentifier, GetPackageInfoFlags flags) {
-      if (Application.platform != RuntimePlatform.Android) return Option<PackageInfo>.None;
+    public Try<PackageInfo> getPackageInfo(
+      string bundleIdentifier, GetPackageInfoFlags flags
+    ) => F.doTry(
+      () => new PackageInfo(java.cjo("getPackageInfo", bundleIdentifier, (int) flags))
+    );
+
+    // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPermissionInfo(java.lang.String,%20int)
+    public Option<PermissionInfo> getPermissionInfo(
+      string permission, bool getMetaData = false
+    ) {
+      var flags = getMetaData ? (int) GetPackageInfoFlags.GET_META_DATA : 0;
       try {
-        return F.some(new PackageInfo(
-          java.cjo("getPackageInfo", bundleIdentifier, (int) flags)
-        ));
+        return new PermissionInfo(
+          permission, java.cjo("getPermissionInfo", permission, flags)
+        ).some();
       }
-      catch (AndroidJavaException) {
-        return Option<PackageInfo>.None;
+      catch (AndroidJavaException e) {
+        if (e.Message.StartsWithFast("android.content.pm.PackageManager$NameNotFoundException:"))
+          return Option<PermissionInfo>.None;
+        else
+          throw;
       }
     }
 
@@ -52,16 +66,22 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       var jList = new List(java.cjo("getInstalledPackages", (int) flags));
       return jList.Select(jo => new PackageInfo(jo)).ToImmutableList();
     }
+    
+    // https://developer.android.com/reference/android/content/pm/PackageManager.html#getLaunchIntentForPackage(java.lang.String)
+    public Option<Intent> getLaunchIntentForPackage(string bundleIdentifier) =>
+      F.opt(java.cjo("getLaunchIntentForPackage", bundleIdentifier)).map(_ => new Intent(_));
 
-    public Option<Exception> openApp(Activity activity, string bundleIdentifier) {
-      var launchIntent = F.scs(
-        java.cjo("getLaunchIntentForPackage", bundleIdentifier)
+    /// <summary>
+    /// Convenience method for launching an app by bundle identifier.
+    /// </summary>
+    public Option<ErrorMsg> openApp(string bundleIdentifier, Context context = null) => 
+      getLaunchIntentForPackage(bundleIdentifier).fold(
+        () => F.some(new ErrorMsg($"Unknown bundle identifier '{bundleIdentifier}'")),
+        intent => (context ?? AndroidActivity.current).startActivity(intent).fold(
+          Option<ErrorMsg>.None,
+          ex => F.some(new ErrorMsg($"Error while launching app '{bundleIdentifier}': {ex}"))
+        )
       );
-      foreach (var intent in launchIntent.value) {
-        activity.java.Call("startActivity", intent);
-      }
-      return launchIntent.exception;
-    }
   }
 }
 #endif

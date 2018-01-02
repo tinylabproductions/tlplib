@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -45,7 +46,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Conditional("UNITY_EDITOR")]
     public void prepareForRuntime() {
 #if UNITY_EDITOR
-      var previousPath = _scenePath;
       if (!AssetDatabase.GetAssetPath(scene).EndsWithFast(".unity")) {
         // ReSharper disable once AssignNullToNotNullAttribute
         scene = null;
@@ -55,7 +55,6 @@ namespace com.tinylabproductions.TLPLib.Data {
         _sceneName = scene.name;
         _scenePath = AssetDatabase.GetAssetPath(scene);
       }
-      if (previousPath != _scenePath) Log.d.warn($"Scene name : {_sceneName}");
 #endif
     }
 
@@ -64,10 +63,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       return true;
     }
 
-    public void onObjectValidate(Object containingComponent) {
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(onObjectValidate)}");
       prepareForRuntime();
+      return Enumerable.Empty<ErrorMsg>();
     }
+
+    public override string ToString() => $"{nameof(RuntimeSceneRef)}({_scenePath})";
   }
 
   /// <summary>
@@ -81,5 +83,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
       SceneWithObjectLoader.load<A>(scenePath, loadSceneMode).map(e => e.rightOrThrow);
+
+    public override string ToString() => 
+      $"{nameof(RuntimeSceneRefWithComponent<A>)}({typeof(A)} @ {scenePath.path})";
   }
 }

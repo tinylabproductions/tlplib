@@ -1,4 +1,8 @@
-﻿namespace com.tinylabproductions.TLPLib.Utilities {
+﻿using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Data;
+using UnityEngine;
+
+namespace com.tinylabproductions.TLPLib.Utilities {
   public interface OnObjectValidate {
     /// <summary>
     /// onObjectValidate is called when ObjectValidator
@@ -8,6 +12,6 @@
     /// during build time using .recordEditorChanges
     /// </param>
     /// </summary>
-    void onObjectValidate(UnityEngine.Object containingComponent);
+    IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent);
   }
 }

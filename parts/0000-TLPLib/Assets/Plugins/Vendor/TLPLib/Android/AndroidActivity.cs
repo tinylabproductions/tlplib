@@ -32,6 +32,7 @@ namespace com.tinylabproductions.TLPLib.Android {
 
     static AndroidActivity() {
       if (Application.isEditor) return;
+
       using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
         bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
         current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));

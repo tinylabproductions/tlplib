@@ -1,11 +1,53 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  public class IEnumerableSpec : ImplicitSpecification {
+    [Test] public void partitionCollect() => describe(() => {
+      Fn<int, Option<string>> collector = i => (i % 2 == 0).opt(i.ToString);
+
+      when["empty"] = () => {
+        var empty = ImmutableList<int>.Empty;
+        var result = empty.partitionCollect(collector);
+
+        it["should have nones empty"] = () => result._1.shouldBeEmpty();
+        it["should have somes empty"] = () => result._2.shouldBeEmpty();
+      };
+
+      when["with elements"] = () => {
+        var source = ImmutableList.Create(1, 2, 3, 4, 5, 6);
+        var result = source.partitionCollect(collector);
+
+        it["should collect nones"] = () => result._1.shouldEqualEnum(1, 3, 5);
+        it["should collect somes"] = () => result._2.shouldEqualEnum("2", "4", "6");
+      };
+    });
+
+    class TestObj {}
+    
+    [Test] public void mapDistinct() => describe(() => {
+      it["should map multiple entries to same element"] = () => {
+        var obj = new TestObj();
+        new[] {1, 1, 1}.mapDistinct(a => obj).shouldEqualEnum(new [] {obj, obj, obj});
+      };
+      
+      it["should only invoke mapper once for a unique element"] = () => {
+        var invocations = new Dictionary<int, int>();
+        new[] {1, 2, 3, 4, 1, 2, 3, 4}.mapDistinct(a => {
+          invocations[a] = invocations.getOrElse(a, 0) + 1;
+          return a;
+        }).ToList().forSideEffects();
+        invocations.shouldNotContain(kv => kv.Value != 1);
+      };
+    });
+  }
+
   public class IEnumerableTestAsString {
     [Test]
     public void TestNull() => 
@@ -74,18 +116,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public class IEnumerableTestPartition {
     [Test]
     public void TestEquals() {
-      Assert.Throws<InvalidOperationException>(() => {
-        var s = F.list(1, 2);
-        var p1 = s.partition(_ => true);
-        var p2 = s.partition(_ => false);
-        p1.Equals(p2).forSideEffects();
-      });
+      var s = F.list(1, 2);
+      var p1 = s.partition(_ => true);
+      var p2 = s.partition(_ => false);
+      var p3 = s.partition(_ => true);
+      p1.Equals(p2).shouldBeFalse();
+      p1.Equals(p3).shouldBeTrue();
     }
 
     [Test]
     public void Test() {
-      var source = F.list(1, 2, 3, 4, 5);
-      var empty = F.emptyList<int>();
+      var source = ImmutableList.Create(1, 2, 3, 4, 5);
+      var empty = ImmutableList<int>.Empty;
 
       var emptyPartition = new int[] {}.partition(_ => true);
       emptyPartition.trues.shouldEqual(empty);
@@ -100,8 +142,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       alwaysTrue.falses.shouldEqual(empty);
 
       var normal = source.partition(_ => _ <= 3);
-      normal.trues.shouldEqual(F.list(1, 2, 3));
-      normal.falses.shouldEqual(F.list(4, 5));
+      normal.trues.shouldEqual(ImmutableList.Create(1, 2, 3));
+      normal.falses.shouldEqual(ImmutableList.Create(4, 5));
     }
   }
 

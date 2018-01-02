@@ -1,4 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Logger;
+﻿using System.Linq;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -33,6 +35,9 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         )
       );
 #if UNITY_EDITOR
+      const int lineCount = 50;
+      var lines = body.Split('\n');
+      if (lines.Length > lineCount) body = $"{lines.Take(lineCount).mkString('\n')}\n... [Full message in logs]";
       if (!InternalEditorUtility.inBatchMode) EditorUtility.DisplayDialog(title, body, "OK");
 #endif
     }

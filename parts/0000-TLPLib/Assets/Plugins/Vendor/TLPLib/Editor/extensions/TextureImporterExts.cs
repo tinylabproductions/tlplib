@@ -1,4 +1,5 @@
 ﻿#if UNITY_5_5_OR_NEWER
+using System.Linq;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.extensions {
@@ -49,6 +50,9 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
          && a.format == b.format
          && a.maxTextureSize == b.maxTextureSize
          && a.textureCompression == b.textureCompression;
+
+    public static bool hasLabel(this TextureImporter ti, string label) =>
+      AssetDatabase.GetLabels(ti).Contains(label);
 
     public static string toString(this TextureImporterPlatformSettings ps) =>
       $"{nameof(ps.textureCompression)}:{ps.textureCompression}, " +

@@ -168,19 +168,19 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public static Future<Either<string, UnityWebRequest>> toFuture(this UnityWebRequest req) {
-      Promise<Either<string, UnityWebRequest>> promise;
-      var f = Future<Either<string, UnityWebRequest>>.async(out promise);
+    public static Future<Either<ErrorMsg, UnityWebRequest>> toFuture(this UnityWebRequest req) {
+      Promise<Either<ErrorMsg, UnityWebRequest>> promise;
+      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out promise);
       StartCoroutine(webRequestEnumerator(req, promise));
       return f;
     }
 
     public static IEnumerator webRequestEnumerator(
-      UnityWebRequest req, Promise<Either<string, UnityWebRequest>> p
+      UnityWebRequest req, Promise<Either<ErrorMsg, UnityWebRequest>> p
     ) {
       yield return req.Send();
       if (req.isError) {
-        p.complete(req.error);
+        p.complete(new ErrorMsg(req.error));
         req.Dispose();
       }
       else p.complete(req);

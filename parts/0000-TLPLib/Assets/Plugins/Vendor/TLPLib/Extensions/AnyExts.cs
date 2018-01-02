@@ -24,10 +24,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return any;
     }
 
-    public static Option<A> opt<A>(this A a) where A : class { return F.opt(a); }
-    public static Option<A> some<A>(this A a) { return F.some(a); }
+    public static Option<A> opt<A>(this A a) where A : class => F.opt(a);
+    public static Option<A> some<A>(this A a) => F.some(a);
 
-    public static CastBuilder<A> cast<A>(this A a) where A : class { return new CastBuilder<A>(a); }
+    public static A orElseIfNull<A>(this A a, Fn<A> ifNull) where A : class =>
+      F.isNull(a) ? ifNull() : a;
+
+    public static A orElseIfNull<A>(this A a, A ifNull) where A : class =>
+      F.isNull(a) ? ifNull : a;
+
+    public static CastBuilder<A> cast<A>(this A a) where A : class => new CastBuilder<A>(a);
 
     public static string asDebugString<A>(this A a) {
       // strings are enumrables, but we don't want to look at them like that...

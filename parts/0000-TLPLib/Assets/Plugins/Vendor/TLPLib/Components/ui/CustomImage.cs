@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
   // Copied from unity bitbucket and added spritePixelsPerUnit
+  // https://bitbucket.org/Unity-Technologies/ui/src/f0c70f707cf09f959ad417049cb070f8e296ffe2/UnityEngine.UI/UI/Core/Image.cs?at=5.5&fileviewer=file-view-default
   [AddComponentMenu("UI/CustomImage", 11)]
   public class CustomImage : MaskableGraphic, ISerializationCallbackReceiver, ILayoutElement, ICanvasRaycastFilter {
     public enum Type {
@@ -176,17 +177,23 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    [SerializeField] float spritePixelsPerUnit = 100;
+    const float referencePPU = 100;
+    [SerializeField] float spritePixelsPerUnit = referencePPU;
 
     public float pixelsPerUnit
     {
       get
       {
+        float originalSpritePixelsPerUnit = 100;
+        if (activeSprite)
+          originalSpritePixelsPerUnit = activeSprite.pixelsPerUnit;
+
         float referencePixelsPerUnit = 100;
         if (canvas)
           referencePixelsPerUnit = canvas.referencePixelsPerUnit;
 
-        return spritePixelsPerUnit / referencePixelsPerUnit;
+        var ppuScale = spritePixelsPerUnit / referencePPU;
+        return originalSpritePixelsPerUnit / referencePixelsPerUnit * ppuScale;
       }
     }
 

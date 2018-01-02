@@ -1,25 +1,19 @@
-﻿#if UNITY_ANDROID
-using System;
-using System.Collections.Immutable;
-using System.Linq;
-using com.tinylabproductions.TLPLib.Android;
-using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
-using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
+﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
-#endif
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Platform {
   public interface IPlatformPackageManager {
     bool hasAppInstalled(string bundleIdentifier);
-    Option<Exception> openApp(string bundleIdentifier);
+    Try<Unit> openApp(string bundleIdentifier);
   }
 
   public static class PlatformPackageManager {
     public static readonly IPlatformPackageManager packageManager =
-#if UNITY_EDITOR
-      new NoOpPlatformPackageManager();
-#elif UNITY_ANDROID
-      new AndroidPlatformPackageManager();
+#if UNITY_ANDROID
+      Application.isEditor 
+        ? (IPlatformPackageManager) new NoOpPlatformPackageManager() 
+        : new AndroidPlatformPackageManager();
 #else
       new NoOpPlatformPackageManager();
 #endif
@@ -27,28 +21,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
 
   class NoOpPlatformPackageManager : IPlatformPackageManager {
     public bool hasAppInstalled(string bundleIdentifier) => false;
-    public Option<Exception> openApp(string bundleIdentifier) => F.none<Exception>();
+    public Try<Unit> openApp(string bundleIdentifier) => F.scs(F.unit);
   }
-
-#if UNITY_ANDROID
-  class AndroidPlatformPackageManager : IPlatformPackageManager {
-    readonly PackageManager androidPackageManager;
-    readonly ImmutableList<string> packageNames;
-    readonly Activity activity;
-
-    public AndroidPlatformPackageManager() {
-      androidPackageManager = AndroidActivity.packageManager;
-      activity = AndroidActivity.current;
-      //Cache all of the packet names for better performance
-      packageNames = 
-        androidPackageManager
-          .getInstalledPackages(PackageManager.GetPackageInfoFlags.GET_ACTIVITIES)
-          .Select(package => package.packageName)
-          .ToImmutableList();
-    }
-
-    public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
-    public Option<Exception> openApp(string bundleIdentifier) => androidPackageManager.openApp(activity, bundleIdentifier);
-  }
-#endif
 }

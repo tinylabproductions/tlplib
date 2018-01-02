@@ -1,16 +1,30 @@
 ﻿using System;
+using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public struct ErrorMsg : IEquatable<ErrorMsg> {
     public readonly string s;
+    public readonly Option<Object> context;
 
-    public ErrorMsg(string s) { this.s = s; }
+    public ErrorMsg(string s, Object context = null) {
+      this.s = s;
+      this.context = context.opt();
+    }
+
+    public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
+      message: errorMsg.s, 
+      tags: ImmutableArray<Tpl<string, string>>.Empty, 
+      extras: ImmutableArray<Tpl<string, string>>.Empty, 
+      context: errorMsg.context
+    );
 
     #region Equality
 
-    public bool Equals(ErrorMsg other) {
-      return string.Equals(s, other.s);
-    }
+    public bool Equals(ErrorMsg other) => string.Equals(s, other.s) && context.Equals(other.context);
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
@@ -18,11 +32,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public override int GetHashCode() {
-      return (s != null ? s.GetHashCode() : 0);
+      unchecked {
+        return ((s != null ? s.GetHashCode() : 0) * 397) ^ context.GetHashCode();
+      }
     }
 
-    public static bool operator ==(ErrorMsg left, ErrorMsg right) { return left.Equals(right); }
-    public static bool operator !=(ErrorMsg left, ErrorMsg right) { return !left.Equals(right); }
+    public static bool operator ==(ErrorMsg left, ErrorMsg right) => left.Equals(right);
+    public static bool operator !=(ErrorMsg left, ErrorMsg right) => !left.Equals(right);
 
     #endregion
 

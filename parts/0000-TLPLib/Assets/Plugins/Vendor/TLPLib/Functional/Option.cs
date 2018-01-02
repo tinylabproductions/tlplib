@@ -121,10 +121,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       voidFold(ifEmpty, ifNonEmpty);
 
     public Option<A> filter(bool keepValue) =>
-      isSome ? (keepValue ? this : F.none<A>()) : this;
+      keepValue ? this : F.none<A>();
 
     public Option<A> filter(Fn<A, bool> predicate) => 
-      isSome ? (predicate(__unsafeGetValue) ? this : F.none<A>()) : this;
+      isSome && predicate(__unsafeGetValue) ? this : F.none<A>();
 
     public bool exists(Fn<A, bool> predicate) => 
       isSome && predicate(__unsafeGetValue);
@@ -276,6 +276,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
       ? F.some(mapper(get, opt2.get))
       : F.none<C>();
 
+    /// <summary>
+    /// If both options are Some, join them together and return Some(result).
+    /// 
+    /// Otherwise return that option which is Some, or None if both are None.
+    /// </summary>
+    public Option<A> join(Option<A> opt, Fn<A, A, A> joiner) =>
+      isSome
+        ? opt.isSome
+          ? joiner(__unsafeGetValue, opt.__unsafeGetValue).some()
+          : this
+        : opt;
+
     /**
      * If Some() returns None. If None returns b.
      **/
@@ -320,14 +332,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       opt.isSome
       ? ImmutableList.Create(opt.__unsafeGetValue)
       : ImmutableList<A>.Empty;
-  }
 
-  public static class OptionLinqExts {
-    public static Option<B> Select<A, B>(this Option<A> opt, Fn<A, B> f) => opt.map(f);
-    public static Option<B> SelectMany<A, B>(this Option<A> opt, Fn<A, Option<B>> f) => opt.flatMap(f);
-    public static Option<C> SelectMany<A, B, C>(
-      this Option<A> opt, Fn<A, Option<B>> f, Fn<A, B, C> g
-    ) => opt.flatMap(f, g);
-    public static Option<A> Where<A>(this Option<A> opt, Fn<A, bool> f) => opt.filter(f);
+    public static IEnumerable<A> getOrEmpty<A>(this Option<IEnumerable<A>> enumerableOpt) =>
+      enumerableOpt.isSome
+      ? enumerableOpt.__unsafeGetValue
+      : Enumerable.Empty<A>();
   }
 }

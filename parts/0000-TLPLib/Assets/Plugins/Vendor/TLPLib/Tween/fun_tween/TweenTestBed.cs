@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public Transform obj1, obj2, obj3, obj4;
     public float duration = 5;
 
-    TweenManager manager;
+//    TweenManager manager;
 
     public void Start() {
 //      var obj3T = TweenLerp.vector3.tween(
@@ -63,24 +63,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public void Update() {
-      if (Input.GetKeyDown(KeyCode.P)) manager.play();
-      if (Input.GetKeyDown(KeyCode.LeftBracket)) manager.play(forwards: true);
-      if (Input.GetKeyDown(KeyCode.RightBracket)) manager.play(forwards: false);
-      if (Input.GetKeyDown(KeyCode.R)) manager.rewind();
-      if (Input.GetKeyDown(KeyCode.T)) manager.resume();
-      if (Input.GetKeyDown(KeyCode.Y)) manager.resume(true);
-      if (Input.GetKeyDown(KeyCode.U)) manager.resume(false);
-      if (Input.GetKeyDown(KeyCode.S)) manager.stop();
-      if (Input.GetKeyDown(KeyCode.G)) manager.reverse();
-      if (Input.GetKeyDown(KeyCode.Alpha1)) manager.timescale = -2f;
-      if (Input.GetKeyDown(KeyCode.Alpha2)) manager.timescale = -1.5f;
-      if (Input.GetKeyDown(KeyCode.Alpha3)) manager.timescale = -1f;
-      if (Input.GetKeyDown(KeyCode.Alpha4)) manager.timescale = -0.5f;
-      if (Input.GetKeyDown(KeyCode.Alpha5)) manager.timescale = 0f;
-      if (Input.GetKeyDown(KeyCode.Alpha6)) manager.timescale = 0.5f;
-      if (Input.GetKeyDown(KeyCode.Alpha7)) manager.timescale = 1f;
-      if (Input.GetKeyDown(KeyCode.Alpha8)) manager.timescale = 1.5f;
-      if (Input.GetKeyDown(KeyCode.Alpha9)) manager.timescale = 2f;
+//      if (Input.GetKeyDown(KeyCode.P)) manager.play();
+//      if (Input.GetKeyDown(KeyCode.LeftBracket)) manager.play(forwards: true);
+//      if (Input.GetKeyDown(KeyCode.RightBracket)) manager.play(forwards: false);
+//      if (Input.GetKeyDown(KeyCode.R)) manager.rewind();
+//      if (Input.GetKeyDown(KeyCode.T)) manager.resume();
+//      if (Input.GetKeyDown(KeyCode.Y)) manager.resume(true);
+//      if (Input.GetKeyDown(KeyCode.U)) manager.resume(false);
+//      if (Input.GetKeyDown(KeyCode.S)) manager.stop();
+//      if (Input.GetKeyDown(KeyCode.G)) manager.reverse();
+//      if (Input.GetKeyDown(KeyCode.Alpha1)) manager.timescale = -2f;
+//      if (Input.GetKeyDown(KeyCode.Alpha2)) manager.timescale = -1.5f;
+//      if (Input.GetKeyDown(KeyCode.Alpha3)) manager.timescale = -1f;
+//      if (Input.GetKeyDown(KeyCode.Alpha4)) manager.timescale = -0.5f;
+//      if (Input.GetKeyDown(KeyCode.Alpha5)) manager.timescale = 0f;
+//      if (Input.GetKeyDown(KeyCode.Alpha6)) manager.timescale = 0.5f;
+//      if (Input.GetKeyDown(KeyCode.Alpha7)) manager.timescale = 1f;
+//      if (Input.GetKeyDown(KeyCode.Alpha8)) manager.timescale = 1.5f;
+//      if (Input.GetKeyDown(KeyCode.Alpha9)) manager.timescale = 2f;
     }
   }
 }
