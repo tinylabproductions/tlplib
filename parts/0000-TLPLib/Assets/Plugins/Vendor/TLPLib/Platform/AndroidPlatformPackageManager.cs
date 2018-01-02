@@ -2,7 +2,9 @@
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android;
+using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Platform {
@@ -19,8 +21,8 @@ namespace com.tinylabproductions.TLPLib.Platform {
     }
 
     public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
-    public Try<Unit> openApp(string bundleIdentifier) => 
-      AndroidActivity.packageManager.openApp(AndroidActivity.current, bundleIdentifier);
+    public Option<ErrorMsg> openApp(string bundleIdentifier) => 
+      AndroidActivity.packageManager.openApp(bundleIdentifier);
   }
 }
 #endif

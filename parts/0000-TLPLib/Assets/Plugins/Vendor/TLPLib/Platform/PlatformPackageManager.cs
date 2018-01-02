@@ -1,11 +1,11 @@
-﻿using System;
+﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Platform {
   public interface IPlatformPackageManager {
     bool hasAppInstalled(string bundleIdentifier);
-    Try<Unit> openApp(string bundleIdentifier);
+    Option<ErrorMsg> openApp(string bundleIdentifier);
   }
 
   public static class PlatformPackageManager {
@@ -21,6 +21,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
 
   class NoOpPlatformPackageManager : IPlatformPackageManager {
     public bool hasAppInstalled(string bundleIdentifier) => false;
-    public Try<Unit> openApp(string bundleIdentifier) => F.scs(F.unit);
+    public Option<ErrorMsg> openApp(string bundleIdentifier) => Option<ErrorMsg>.None;
   }
 }
