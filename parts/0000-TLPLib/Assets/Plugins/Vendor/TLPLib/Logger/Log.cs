@@ -131,6 +131,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public LogEntry withMessage(string message) => 
       new LogEntry(message, tags, extras, backtrace, context);
 
+    public LogEntry withMessage(Fn<string, string> message) => 
+      new LogEntry(message(this.message), tags, extras, backtrace, context);
+    
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.and(SerializedRW.str));
   }
