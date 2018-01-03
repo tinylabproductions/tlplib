@@ -43,5 +43,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     #endregion
 
     public override string ToString() => $"{nameof(ErrorMsg)}({s})";
+
+    public LogEntry toLogEntry() => new LogEntry(
+      s,
+      ImmutableArray<Tpl<string, string>>.Empty, 
+      ImmutableArray<Tpl<string, string>>.Empty,
+      context: context
+    );
   }
 }
