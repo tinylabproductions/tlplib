@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using static com.tinylabproductions.TLPLib.Configuration.Config;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
@@ -155,7 +156,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   }
 
   public struct ConfigLookupError {
-    public enum Kind { KEY_NOT_FOUND, WRONG_TYPE }
+    public enum Kind : byte { KEY_NOT_FOUND, WRONG_TYPE }
 
     public readonly Kind kind;
     public readonly LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras;
@@ -173,6 +174,27 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       new ConfigLookupError(Kind.WRONG_TYPE, extras);
 
     public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {extras.mkStringEnum()}]";
+
+    public LogEntry toLogEntry(
+      string message, ICollection<Tpl<string, string>> extraExtras = null
+    ) {
+      ImmutableArray<Tpl<string, string>> extras;
+      if (extraExtras == null) {
+        extras = this.extras;
+      }
+      else {
+        var builder = ImmutableArray.CreateBuilder<Tpl<string, string>>(extraExtras.Count + this.extras.Length);
+        builder.AddRange(this.extras);
+        builder.AddRange(extraExtras);
+        extras = builder.MoveToImmutable();
+      }
+      
+      return new LogEntry(
+        $"{message}: {kind}",
+        tags: ImmutableArray<Tpl<string, string>>.Empty,
+        extras: extras
+      );
+    }
   }
 
   public class ConfigFetchException : Exception {
