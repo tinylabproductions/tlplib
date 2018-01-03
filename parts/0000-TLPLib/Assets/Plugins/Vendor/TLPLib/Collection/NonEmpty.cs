@@ -17,6 +17,25 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static Option<NonEmpty<ImmutableSortedSet<A>>> toNonEmpty<A>(this ImmutableSortedSet<A> c) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeApply(c, _ => _.IsEmpty);
+
+    public static NonEmpty<ImmutableArray<A>> array<A>(A a1) =>
+      NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1));
+
+    public static NonEmpty<ImmutableArray<A>> array<A>(A a1, A a2) =>
+      NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1, a2));
+
+    public static NonEmpty<ImmutableArray<A>> array<A>(A a1, A a2, A a3) =>
+      NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1, a2, a3));
+
+    public static NonEmpty<ImmutableArray<A>> array<A>(A a1, A a2, A a3, A a4) =>
+      NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1, a2, a3, a4));
+
+    public static NonEmpty<ImmutableArray<A>> array<A>(A first, params A[] rest) {
+      var b = ImmutableArray.CreateBuilder<A>(rest.Length + 1);
+      b.Add(first);
+      b.AddRange(rest);
+      return NonEmpty<ImmutableArray<A>>.__unsafeNew(b.MoveToImmutable());
+    }
   }
 
   public static class NonEmptyExts {
