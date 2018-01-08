@@ -129,9 +129,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Try
 
-    public static LazyVal<Try<B>> mapT<A, B>(
+    public static LazyVal<Try<B>> lazyMapT<A, B>(
       this LazyVal<Try<A>> m, Fn<A, B> mapper
-    ) => m.map(_ => _.map(mapper));
+    ) => m.lazyMap(_ => _.map(mapper));
 
     #endregion
 
