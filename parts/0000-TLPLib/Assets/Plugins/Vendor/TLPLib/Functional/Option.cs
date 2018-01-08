@@ -34,26 +34,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return opt.__unsafeGetValue;
     }
 
-    public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt)
-    where Child : Base {
-      return opt.isSome ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
-    }
+    public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt) where Child : Base => 
+      opt.isSome ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
 
-    public static A getOrNull<A>(this Option<A> opt) where A : class {
-      return opt.isSome ? opt.get : null;
-    }
+    public static A getOrNull<A>(this Option<A> opt) where A : class => 
+      opt.isSome ? opt.get : null;
 
-    public static A orNull<A>(this Option<A> opt) where A : class { return opt.getOrNull(); }
+    public static A orNull<A>(this Option<A> opt) where A : class => 
+      opt.getOrNull();
 
-    public static Option<A> flatten<A>(this Option<Option<A>> opt) {
-      return opt.isSome ? opt.get : F.none<A>();
-    }
-
-    public static Either<A, Option<B>> extract<A, B>(this Option<Either<A, B>> o) {
-      foreach (var e in o)
-        return e.fold(Either<A, Option<B>>.Left, b => Either<A, Option<B>>.Right(b.some()));
-      return Either<A, Option<B>>.Right(F.none<B>());
-    }
+    public static Option<A> flatten<A>(this Option<Option<A>> opt) => 
+      opt.isSome ? opt.__unsafeGetValue : F.none<A>();
 
     public static Option<Base> cast<Child, Base>(this Option<Child> o) where Child : Base
       { return o.isSome ? F.some((Base) o.get) : F.none<Base>(); }
