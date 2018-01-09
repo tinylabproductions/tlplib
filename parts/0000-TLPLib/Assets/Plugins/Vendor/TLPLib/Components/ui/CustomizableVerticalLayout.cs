@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -11,7 +12,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
-  public class CustomizableVerticalLayout : MonoBehaviour{
+  public class CustomizableVerticalLayout : MonoBehaviour {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -36,12 +37,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       ILayoutItem createItem(Transform parent);
     }
 
-    public class Init {
+    public class Init : IDisposable {
       const float EPS = 1e-9f;
 
+      readonly DisposableTracker dt = new DisposableTracker();
       readonly CustomizableVerticalLayout backing;
       readonly ImmutableArray<IData> listData;
       readonly IRxVal<Rect> maskSize;
+      readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly Dictionary<IData, ILayoutItem> items = new Dictionary<IData, ILayoutItem>();
       readonly OnRectTransformDimensionsChangeForwarder container;
 
@@ -54,18 +57,20 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         container = backing.container;
 
-        // We need oncePerFrame() because Unity doesn't allow doing opperations like gameObject.SetActive() 
+        // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive() 
         // from OnRectTransformDimensionsChange()
         var mask = backing.mask;
         maskSize = 
           mask.rectDimensionsChanged.oncePerFrame().map(_ => mask.rectTransform.rect).toRxVal(mask.rectTransform.rect);
 
-        maskSize.subscribe(_ => {
+        dt.track(maskSize.zip(containerHeight).subscribe(tpl => {
+          var height = tpl._2;
+          container.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
           clearLayout();
           updateLayout();
-        });
+        }));
         
-        backing._scrollRect.onValueChanged.AddListener(_ => updateLayout());
+        dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
       }
 
       void clearLayout() {
@@ -97,7 +102,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
           var x = itemLeftPerc * maskSize.value.width;
           var cellRect = Rect.MinMaxRect(x, -height, x + maskSize.value.width * itemWidthPerc, -height + data.height) ;
-
           var placementVisible = visibleRect.Overlaps(cellRect, true);
 
           if (placementVisible && !items.ContainsKey(data)) {
@@ -115,11 +119,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             item.Dispose();
           }
         }
-
-        if (!Mathf.Approximately(container.rectTransform.rect.height, height)) {
-          container.rectTransform.sizeDelta = new Vector2(container.rectTransform.rect.width, height);
-        }
+        containerHeight.value = height;
       }
+
+      public void Dispose() { clearLayout(); }
     }
   }
 }
