@@ -46,7 +46,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly IRxVal<Rect> maskSize;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly Dictionary<IData, ILayoutItem> items = new Dictionary<IData, ILayoutItem>();
-      readonly OnRectTransformDimensionsChangeForwarder container;
 
       public Init(
         CustomizableVerticalLayout backing, 
@@ -54,8 +53,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       ) {
         this.backing = backing;
         this.listData = listData;
-
-        container = backing.container;
 
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive() 
         // from OnRectTransformDimensionsChange()
@@ -65,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         dt.track(maskSize.zip(containerHeight).subscribe(tpl => {
           var height = tpl._2;
-          container.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+          backing.container.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
           clearLayout();
           updateLayout();
         }));
@@ -122,7 +119,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         containerHeight.value = height;
       }
 
-      public void Dispose() { clearLayout(); }
+      public void Dispose() {
+        clearLayout();
+        dt.Dispose();
+      }
     }
   }
 }
