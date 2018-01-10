@@ -80,9 +80,9 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
                 finalHeight = FrameLayout.LayoutParams.WRAP_CONTENT;
             } else if (mode instanceof BannerMode.FixedSize) {
                 BannerMode.FixedSize _mode = (BannerMode.FixedSize) mode;
-                float density = activity.getResources().getDisplayMetrics().density;
-                finalWidth = (int) (_mode.width * density);
-                finalHeight = (int) (_mode.height * density);
+                final float density = activity.getResources().getDisplayMetrics().density;
+                finalWidth = applyDensity(_mode.width, density);
+                finalHeight = applyDensity(_mode.height, density);
             } else {
                 throw new RuntimeException("Unknown banner mode: " + mode);
             }
@@ -104,6 +104,16 @@ public abstract class BannerBase<Banner extends View> implements IStandardBanner
 
         Log.d(TAG(), "Banner added to UI.");
         if (hideAfterCreation) setVisibilityRunsOnUiThread(false);
+    }
+
+    private final int applyDensity(final int value, final float density) {
+        switch (value) {
+            case FrameLayout.LayoutParams.MATCH_PARENT:
+            case FrameLayout.LayoutParams.WRAP_CONTENT:
+                return value;
+            default:
+                return (int) (value * density);
+        }
     }
 
     @Override
