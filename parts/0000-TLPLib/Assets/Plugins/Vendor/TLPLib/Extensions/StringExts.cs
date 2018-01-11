@@ -90,9 +90,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return sb.ToString();
     }
 
-    public static bool isEmpty(this string s) { return s.Length == 0; }
-    public static bool nonEmpty(this string s) { return s.Length != 0; }
-    
+    public static bool isTrimmable(this string s) =>
+      s.StartsWithFast(" ") || s.EndsWithFast(" ");
+
+    public static bool isEmpty(this string s, bool trim = false) => 
+      (trim ? s.Trim() : s).Length == 0;
+    public static bool isNullOrEmpty(this string s, bool trim = false) =>
+      s == null || s.isEmpty(trim);
+    public static bool nonEmpty(this string s) => s.Length != 0;
+
     public static Option<string> nonEmptyOpt(this string s, bool trim = false) {
       if (s == null) return F.none<string>();
       if (trim) s = s.Trim();
