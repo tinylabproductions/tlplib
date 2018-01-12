@@ -12,6 +12,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
+  /// <summary>
+  /// Scrollable vertical layout, which creates and places <see cref="ILayoutItem"/> elements when they 
+  /// overlap with <see cref="_maskRect"/> and disposes them when they become out of bounds.
+  /// </summary>
   public class DynamicVerticalLayout : MonoBehaviour {
     #region Unity Serialized Fields
 
@@ -24,8 +28,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     #endregion
 
-    public OnRectTransformDimensionsChangeForwarder container => _container.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>();
-    public OnRectTransformDimensionsChangeForwarder mask => _maskRect.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>();
+    public OnRectTransformDimensionsChangeForwarder container => 
+      _container.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>();
+
+    public OnRectTransformDimensionsChangeForwarder mask => 
+      _maskRect.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>();
 
     public interface ILayoutItem : IDisposable {
       RectTransform rectTransform { get; }
@@ -58,7 +65,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         // from OnRectTransformDimensionsChange()
         var mask = backing.mask;
         maskSize = 
-          mask.rectDimensionsChanged.oncePerFrame().map(_ => mask.rectTransform.rect).toRxVal(mask.rectTransform.rect);
+          mask.rectDimensionsChanged.oncePerFrame()
+          .map(_ => mask.rectTransform.rect)
+          .toRxVal(mask.rectTransform.rect);
 
         dt.track(maskSize.zip(containerHeight).subscribe(tpl => {
           var height = tpl._2;
@@ -95,10 +104,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             currentWidthPerc += itemWidthPerc;
           }
 
-          if (Mathf.Approximately(itemLeftPerc, 0f)) height += data.height;
+          if (Mathf.Approximately(itemLeftPerc, 0f)) height += data.height; 
 
           var x = itemLeftPerc * maskSize.value.width;
-          var cellRect = Rect.MinMaxRect(x, -height, x + maskSize.value.width * itemWidthPerc, -height + data.height) ;
+          var cellRect = Rect.MinMaxRect(x, -height, x + maskSize.value.width * itemWidthPerc, -height + data.height);
           var placementVisible = visibleRect.Overlaps(cellRect, true);
 
           if (placementVisible && !items.ContainsKey(data)) {
