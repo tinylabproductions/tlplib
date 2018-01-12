@@ -43,8 +43,23 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public Option<int> maxElementsFromCenterOpt => maxElementsFromCenter.value;
 
-    public readonly List<A> elements = new List<A>();
+    readonly List<A> elements = new List<A>();
 
+    /// <summary>
+    /// Updates visual if we mutate elements.
+    /// Done this way because it's more performant than immutable version
+    /// </summary>
+    public void editElements(Act<List<A>> f, bool animate = false) {
+      f(elements);
+      var pageValue = Mathf.Clamp(_page.value, 0, elements.Count - 1);
+      if (animate && elements.nonEmpty())
+        setPageAnimated(pageValue);
+      else
+        setPageInstantly(pageValue);
+      updateCurrentElement();
+    }
+
+    public int elementsCount => elements.Count;
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
@@ -53,9 +68,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
 
-    IRxVal<A> __currentElement;
-    public IRxVal<A> currentElement =>
-      __currentElement ?? (__currentElement = page.map(idx => elements.a(idx)));
+    readonly LazyVal<IRxRef<Option<A>>> __currentElement;
+    public IRxVal<Option<A>> currentElement => __currentElement.get;
+
+    void updateCurrentElement() {
+      if (__currentElement.isCompleted) {
+        __currentElement.get.value = elements.get(_page.value);
+      }
+    }
 
     float currentPosition;
 
@@ -67,6 +87,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public void nextPage() => setPageAnimated(targetPageValue + 1);
     public void prevPage() => setPageAnimated(targetPageValue - 1);
+
+    protected Carousel() {
+      __currentElement = F.lazy(() => {
+        var res = RxRef.a(elements.get(page.value));
+        _page.subscribeWhileAlive(gameObject, p => res.value = elements.get(p));
+        return res;
+      });
+    }
 
     /// <summary>Set page without any animations.</summary>
     public void setPageInstantly(int index) {
