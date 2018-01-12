@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
-  public class DinamicVerticalLayout : MonoBehaviour {
+  public class DynamicVerticalLayout : MonoBehaviour {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -41,14 +41,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       const float EPS = 1e-9f;
 
       readonly DisposableTracker dt = new DisposableTracker();
-      readonly DinamicVerticalLayout backing;
+      readonly DynamicVerticalLayout backing;
       readonly ImmutableArray<IData> layoutData;
       readonly IRxVal<Rect> maskSize;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly Dictionary<IData, ILayoutItem> items = new Dictionary<IData, ILayoutItem>();
 
       public Init(
-        DinamicVerticalLayout backing, 
+        DynamicVerticalLayout backing, 
         ImmutableArray<IData> layoutData
       ) {
         this.backing = backing;
