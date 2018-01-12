@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public void editElements(Act<List<A>> f, bool animate = false) {
       f(elements);
       var pageValue = Mathf.Clamp(_page.value, 0, elements.Count - 1);
-      if (animate && elements.nonEmpty())
+      if (animate)
         setPageAnimated(pageValue);
       else
         setPageInstantly(pageValue);
@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
-    public bool loopable => wrapCarouselAround && elements.Count > 4;
+    bool loopable => wrapCarouselAround && elements.Count > 4;
 
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
@@ -83,7 +83,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public bool isMoving { get; private set; }
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
     public IObservable<Unit> movementComplete => _movementComplete;
-    public Carousel.Direction direction => _direction;
 
     public void nextPage() => setPageAnimated(targetPageValue + 1);
     public void prevPage() => setPageAnimated(targetPageValue - 1);
@@ -105,6 +104,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     /// <summary>Set page with smooth animations.</summary>
     public void setPageAnimated(int index) {
+      if (elements.isEmpty()) return;
+      
       if (!loopable) {
         // when we increase past last page go to page 0 if wrapCarouselAround == true
         targetPageValue = wrapCarouselAround 
@@ -117,10 +118,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         if (diff < 2) {
           targetPageValue = Mathf.Clamp(index, -1, elements.Count);
           if (index != targetPageValue) {
-            currentPosition = (elements.Count + targetPageValue) %elements.Count;
-            targetPageValue = (elements.Count + index)%elements.Count;
+            currentPosition = (elements.Count + targetPageValue) % elements.Count;
+            targetPageValue = (elements.Count + index) % elements.Count;
           }
-          _page.value = (elements.Count + targetPageValue)%elements.Count;
+          _page.value = (elements.Count + targetPageValue) % elements.Count;
         }
         else {
           if (diff > elements.Count/2f) {
@@ -206,7 +207,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public void forceUpdate() => lerpPosition(1);
 
     public void handleCarouselSwipe(SwipeDirection swipeDirection) {
-      switch (direction) {
+      switch (_direction) {
         case Carousel.Direction.Horizontal:
           switch (swipeDirection) {
             case SwipeDirection.Left:
@@ -238,7 +239,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           }
           break;
         default:
-          throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+          throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
       }
     }
   }
