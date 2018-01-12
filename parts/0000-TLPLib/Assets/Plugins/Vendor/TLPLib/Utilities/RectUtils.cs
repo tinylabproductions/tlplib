@@ -45,14 +45,22 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static Rect withMargin(this Rect rect, Vector2 margin)
       => new Rect(rect.min - margin, rect.size + margin * 2);
 
-    public static Rect convertCoordinateSystem(this Rect rect, Transform from, Transform to) {
+
+    /// <summary>
+    /// If Option.none is passed Rect is considered to be in world space.
+    /// </summary>
+    /// <param name="rect"></param>
+    /// <param name="from"></param>
+    /// <param name="to"></param>
+    /// <returns></returns>
+    public static Rect convertCoordinateSystem(this Rect rect, Option<Transform> from, Transform to) {
       var min = convertPoint(rect.min, from, to);
       var max = convertPoint(rect.max, from, to);
       return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
     }
 
-    static Vector3 convertPoint(Vector2 localPos, Transform from, Transform to) {
-      var worldPos = from.TransformPoint(localPos);
+    static Vector3 convertPoint(Vector3 localPos, Option<Transform> from, Transform to) {
+      var worldPos = from.isSome ? from.__unsafeGetValue.TransformPoint(localPos) : localPos;
       return to.InverseTransformPoint(worldPos);
     }
   }
