@@ -42,17 +42,17 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       readonly DisposableTracker dt = new DisposableTracker();
       readonly CustomizableVerticalLayout backing;
-      readonly ImmutableArray<IData> listData;
+      readonly ImmutableArray<IData> layoutData;
       readonly IRxVal<Rect> maskSize;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly Dictionary<IData, ILayoutItem> items = new Dictionary<IData, ILayoutItem>();
 
       public Init(
         CustomizableVerticalLayout backing, 
-        ImmutableArray<IData> listData
+        ImmutableArray<IData> layoutData
       ) {
         this.backing = backing;
-        this.listData = listData;
+        this.layoutData = layoutData;
 
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive() 
         // from OnRectTransformDimensionsChange()
@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         var height = 0f;
         var currentWidthPerc = 0f;
-        foreach (var data in listData) {
+        foreach (var data in layoutData) {
           var itemWidthPerc = data.width.value;
           var itemLeftPerc = 0f;
           if (currentWidthPerc + itemWidthPerc > 1f + EPS) {
