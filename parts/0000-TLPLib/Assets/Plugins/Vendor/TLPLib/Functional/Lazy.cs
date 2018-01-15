@@ -6,26 +6,27 @@ using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class LazyValExts {
-    public static LazyVal<B> map<A, B>(this LazyVal<A> lazy, Fn<A, B> mapper) => 
-      F.lazy(() => mapper(lazy.get));
-
     /// <summary>
-    /// Allows to use lazy value of more specific type where a lazy value of less specific type
-    /// is required.
+    /// Create a new lazy value B, based on lazy value A.
     /// 
-    /// You would think that this should work:
-    /// <code><![CDATA[
-    /// worldSelect.map(_ => _.upcast<WorldSelectScreen.Init, IScreen>())
-    /// ]]></code>
-    /// 
-    /// However, because <see cref="map{A,B}"/> creates a new lazy value, it does not propogate
-    /// the initialization status. That means an underlying lazy value might be initialized, but 
-    /// a mapped value would not be.
+    /// Evaluating B will evaluate A, but evaluating A will not evaluate B. 
     /// </summary>
-    /// <typeparam name="MST">More specific type (like Cat)</typeparam>
-    /// <typeparam name="LST">Less specific type (like Animal)</typeparam>
-    public static LazyVal<LST> upcast<MST, LST>(this LazyVal<MST> lazy) where MST : LST => 
-      new UpcastLazyVal<MST, LST>(lazy);
+    public static LazyVal<B> lazyMap<A, B>(this LazyVal<A> lazy, Fn<A, B> mapper) => 
+      F.lazy(() => mapper(lazy.get));
+    
+    /// <summary>
+    /// Create a new lazy value B, based on lazy value A.
+    /// 
+    /// Evaluating B will evaluate A and evaluating A will evaluate B.
+    /// 
+    /// Projector function is called on every access, so make sure it is something lite,
+    /// like a cast or field access. 
+    /// </summary>
+    public static LazyVal<B> project<A, B>(this LazyVal<A> lazy, Fn<A, B> projector) =>
+      new ProjectedLazyVal<A, B>(lazy, projector);
+
+    public static LazyVal<LST> upcast<MST, LST>(this LazyVal<MST> lazy) where MST : LST =>
+      project(lazy, mst => (LST) mst);
 
     public static A getOrElse<A>(this LazyVal<A> lazy, Fn<A> orElse) =>
       lazy.isCompleted ? lazy.get : orElse();
@@ -104,21 +105,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  /// <summary>
-  /// Helps to use <see cref="LazyVal{A}"/> where variance is needed.
-  /// 
-  /// <see cref="LazyValExts.upcast{MST,LST}"/>
-  /// </summary>
-  /// <typeparam name="MST">More specific type (like Cat)</typeparam>
-  /// <typeparam name="LST">Less specific type (like Animal)</typeparam>
-  class UpcastLazyVal<MST, LST> : LazyVal<LST> where MST : LST {
-    readonly LazyVal<MST> backing;
+  class ProjectedLazyVal<A, B> : LazyVal<B> {
+    readonly LazyVal<A> backing;
+    readonly Fn<A, B> projector;
 
-    public UpcastLazyVal(LazyVal<MST> backing) { this.backing = backing; }
+    public ProjectedLazyVal(LazyVal<A> backing, Fn<A, B> projector) {
+      this.backing = backing;
+      this.projector = projector;
+    }
 
-    public void onComplete(Act<LST> action) => backing.onComplete(a => action(a));
-    public Option<LST> value => backing.value.map(_ => _.upcast<MST, LST>());
+    public void onComplete(Act<B> action) => backing.onComplete(a => action(projector(a)));
+    public Option<B> value => backing.value.map(projector);
     public bool isCompleted => backing.isCompleted;
-    public LST get => backing.get;
+    public B get => projector(backing.get);
   }
 }

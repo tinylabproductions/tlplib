@@ -108,6 +108,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     static float ulongToFloat(ulong v) => (float)v / ulong.MaxValue;
     public Tpl<Rng, float> nextFloatT => nextULongT.map2(ulongToFloat);
     public static readonly Fn<Rng, Tpl<Rng, float>> nextFloatS = rng => rng.nextFloatT;
+    /// <returns>0f to 1f</returns>
     public float nextFloat(out Rng newState) => ulongToFloat(nextULong(out newState));
 
     static float floatToFloatInRange(FRange range, float v) => 

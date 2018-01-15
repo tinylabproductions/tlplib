@@ -74,8 +74,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<A> random<A>(this IList<A> list) => 
       list.randomIndex().map(idx => list[idx]);
 
-    public static Option<Tpl<Rng, A>> random<A>(this IList<A> list, Rng rng) =>
-      list.randomIndex(rng).map(t => t.map2(idx => list[idx]));
+    public static Option<A> random<A>(this IList<A> list, ref Rng rng) =>
+      list.randomIndex(ref rng).map(idx => list[idx]);
+
+    public static Option<Tpl<Rng, A>> randomT<A>(this IList<A> list, Rng rng) =>
+      list.randomIndexT(rng).map(t => t.map2(idx => list[idx]));
 
     public static A random<C, A>(this NonEmpty<C> list, ref Rng rng) 
       where C : IReadOnlyList<A> 
@@ -91,7 +94,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<int> randomIndex<A>(this IList<A> list) => 
       list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
 
-    public static Option<Tpl<Rng, int>> randomIndex<A>(this IList<A> list, Rng rng) => 
+    public static Option<int> randomIndex<A>(this IList<A> list, ref Rng rng) => 
+      list.Count == 0 
+      ? F.none<int>() 
+      : F.some(rng.nextIntInRange(new Range(0, list.Count - 1), out rng));
+
+    public static Option<Tpl<Rng, int>> randomIndexT<A>(this IList<A> list, Rng rng) => 
       list.Count == 0 
       ? F.none<Tpl<Rng, int>>() 
       : F.some(rng.nextIntInRangeT(new Range(0, list.Count - 1)));

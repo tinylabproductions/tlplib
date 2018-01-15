@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   /// <summary>
@@ -18,6 +21,28 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Option<Either<A, BB>> flatMapT<A, B, BB>(
       this Option<Either<A, B>> m, Fn<B, Either<A, BB>> mapper
     ) => m.map(_ => _.flatMapRight(mapper));
+
+    public static Either<A, Option<B>> extract<A, B>(this Option<Either<A, B>> o) {
+      if (o.isSome) {
+        var e = o.__unsafeGetValue;
+        return 
+          e.isLeft 
+            ? Either<A, Option<B>>.Left(e.__unsafeGetLeft) 
+            : Either<A, Option<B>>.Right(e.__unsafeGetRight.some());
+      }
+      return F.none<B>();
+    }
+
+    #endregion
+
+    #region of IEnumerable
+
+    public static IEnumerable<Option<A>> extract<A>(
+      this Option<IEnumerable<A>> opt
+    ) => 
+      opt.isNone 
+        ? Enumerable.Empty<Option<A>>() 
+        : opt.__unsafeGetValue.Select(a => a.some());
 
     #endregion
 
@@ -104,9 +129,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Try
 
-    public static LazyVal<Try<B>> mapT<A, B>(
+    public static LazyVal<Try<B>> lazyMapT<A, B>(
       this LazyVal<Try<A>> m, Fn<A, B> mapper
-    ) => m.map(_ => _.map(mapper));
+    ) => m.lazyMap(_ => _.map(mapper));
 
     #endregion
 
