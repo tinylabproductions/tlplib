@@ -36,6 +36,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public override bool keepWaiting => 
-      future.value.isEmpty && maxWait.fold(true, _ => _.keepWaiting);
+      future.value.isNone && maxWait.fold(true, _ => _.keepWaiting);
   }
 }

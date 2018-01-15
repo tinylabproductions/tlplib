@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
-  public struct PathStr : IEquatable<PathStr> {
+  public struct PathStr : IEquatable<PathStr>, IComparable<PathStr> {
     public readonly string path;
 
     public PathStr(string path) {
@@ -41,7 +42,21 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       }
     }
 
-    public static IEqualityComparer<PathStr> pathComparer { get; } = new PathEqualityComparer();
+    public static IEqualityComparer<PathStr> pathEqualityComparer { get; } = new PathEqualityComparer();
+
+    #endregion
+
+    #region Comparable
+
+    public int CompareTo(PathStr other) => string.Compare(path, other.path, StringComparison.Ordinal);
+
+    sealed class PathRelationalComparer : Comparer<PathStr> {
+      public override int Compare(PathStr x, PathStr y) {
+        return string.Compare(x.path, y.path, StringComparison.Ordinal);
+      }
+    }
+
+    public static Comparer<PathStr> pathComparer { get; } = new PathRelationalComparer();
 
     #endregion
 
@@ -63,10 +78,11 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public string unixString => ToString().Replace('\\', '/');
 
     // Use this with Unity Resources, AssetDatabase and PrefabUtility methods
-    public string toUnityPath() {
-      if (Path.DirectorySeparatorChar == '/') return path;
-      return path.Replace('\\' , '/');
-    }
+    public string unityPath => 
+      Path.DirectorySeparatorChar == '/' ? path : path.Replace('\\' , '/');
+
+    public static readonly ISerializedRW<PathStr> serializedRW = 
+      SerializedRW.str.map(s => new PathStr(s).some(), path => path.path);
   }
 
   public static class PathStrExts {

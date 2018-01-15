@@ -20,7 +20,6 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.util {
 
     public static Level fromLoggerLevel(ULog.Level level) {
       switch (level) {
-        case ULog.Level.NONE: return Level.ASSERT;
         case ULog.Level.ERROR: return Level.ERROR;
         case ULog.Level.WARN: return Level.WARN;
         case ULog.Level.INFO: return Level.INFO;

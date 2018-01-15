@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [Test]
     public void Test2() {
-      var actual = BacktraceElem.parseUnityBacktrace(
+      var actual = Backtrace.parseUnityBacktrace(
 @"com.tinylabproductions.TLPGame.TLPGame+<>c.<.ctor>b__13_16 ()
 com.tinylabproductions.TLPLib.Components.DebugConsole.DConsoleRegistrar+<>c__DisplayClass4_0.<register>b__0 ()
 com.tinylabproductions.TLPLib.Components.DebugConsole.DConsoleRegistrar+<>c__DisplayClass5_0`1[com.tinylabproductions.TLPLib.Functional.Unit].<register>b__0 (Unit _)
@@ -50,7 +50,7 @@ com.tinylabproductions.TLPLib.Components.DebugConsole.DConsoleRegistrar+<>c__Dis
 com.tinylabproductions.TLPLib.Components.DebugConsole.DConsoleRegistrar+<>c__DisplayClass9_0`2[com.tinylabproductions.TLPLib.Functional.Unit,com.tinylabproductions.TLPLib.Functional.Unit].<register>b__0 ()
 com.tinylabproductions.TLPLib.Components.DebugConsole.DConsole+<>c__DisplayClass18_0.<showGroup>b__0 ()
 UnityEngine.Events.InvokableCall.Invoke (System.Object[] args)"
-      );
+      ).get.elements.a;
       var expected = ImmutableList.Create(
         elem("com.tinylabproductions.TLPGame.TLPGame+<>c.<.ctor>b__13_16 ()"),
         elem("com.tinylabproductions.TLPLib.Components.DebugConsole.DConsoleRegistrar+<>c__DisplayClass4_0.<register>b__0 ()"),

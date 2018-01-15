@@ -20,6 +20,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
     }
 
+    public object valueUntyped {
+      get { return value; }
+      set { this.trySetUntyped(value); }
+    }
+
     A persist(A value) {
       writer.write(backend, key, value);
       if (saveOnEveryWrite) backend.save();

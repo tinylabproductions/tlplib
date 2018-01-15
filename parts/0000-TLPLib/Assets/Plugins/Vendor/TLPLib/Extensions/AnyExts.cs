@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Functional;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
@@ -12,25 +14,34 @@ namespace com.tinylabproductions.TLPLib.Extensions {
      **/
     public static void forSideEffects<A>(this A a) {}
 
-    public static void locally(this object any, Action local) => local();
-    public static T locally<T>(this object any, Fn<T> local) => local();
     public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
+    public static To upcast<From, To>(this From any) where From : To => any;
+    public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To 
+      => any.Select(_ => _.upcast<From, To>());
 
     public static A tap<A>(this A any, Act<A> tapper) {
       tapper(any);
       return any;
     }
 
-    public static Option<A> opt<A>(this A a) where A : class { return F.opt(a); }
-    public static Option<A> some<A>(this A a) { return F.some(a); }
+    public static Option<A> opt<A>(this A a) where A : class => F.opt(a);
+    public static Option<A> some<A>(this A a) => F.some(a);
 
-    public static CastBuilder<A> cast<A>(this A a) where A : class { return new CastBuilder<A>(a); }
+    public static A orElseIfNull<A>(this A a, Fn<A> ifNull) where A : class =>
+      F.isNull(a) ? ifNull() : a;
 
-    public static string asString<A>(this A a) {
+    public static A orElseIfNull<A>(this A a, A ifNull) where A : class =>
+      F.isNull(a) ? ifNull : a;
+
+    public static CastBuilder<A> cast<A>(this A a) where A : class => new CastBuilder<A>(a);
+
+    public static string asDebugString<A>(this A a) {
+      // strings are enumrables, but we don't want to look at them like that...
+      if (a is string) return $"'{a}'";
       var enumerable = a as IEnumerable;
       // ReSharper disable once InvokeAsExtensionMethod
       return enumerable != null 
-        ? IEnumerableExts.asString(enumerable) 
+        ? IEnumerableExts.asDebugString(enumerable) 
         : a == null ? "null" : a.ToString();
     }
   }

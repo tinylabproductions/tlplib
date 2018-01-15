@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
+  // Can't split into two interfaces and use variance because mono runtime
+  // often crashes with variance.
   public interface IHeapFuture<A> {
     bool isCompleted { get; }
-    Option<A> value { get; }
     void onComplete(Act<A> action);
+    Option<A> value { get; }
   }
 
   public static class IHeapFutureExts {
@@ -19,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     List<Act<A>> listeners = pool.Borrow();
 
-    public bool isCompleted => value.isDefined;
+    public bool isCompleted => value.isSome;
     public Option<A> value { get; private set; } = F.none<A>();
 
     public override string ToString() => $"{nameof(FutureImpl<A>)}({value})";
@@ -32,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public bool tryComplete(A v) {
       // Cannot use fold here because of iOS AOT.
-      var ret = value.isEmpty;
+      var ret = value.isNone;
       if (ret) {
         value = F.some(v);
         // completed should be called only once
@@ -42,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public void onComplete(Act<A> action) {
-      if (value.isDefined) action(value.get);
+      if (value.isSome) action(value.get);
       else listeners.Add(action);
     }
 

@@ -37,13 +37,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     [Test]
     public void WhenEmptyDir() {
       var actual = CodePreprocessorMenuItems.getFilePaths(p_emptyDir, "*.cs");
-      actual.leftValue.isDefined.shouldBeTrue();
+      actual.leftValue.isSome.shouldBeTrue();
     }
 
     [Test]
     public void WhenDirWithNoCsFiles() {
       var actual = CodePreprocessorMenuItems.getFilePaths(p_noCsFilesDir, "*.cs");
-      actual.leftValue.isDefined.shouldBeTrue();
+      actual.leftValue.isSome.shouldBeTrue();
     }
 
     [Test]
@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     [Test]
     public void WhenNoneCsFile() {
       var actual = CodePreprocessorMenuItems.getFilePaths(p_noneCsFile, "*.cs");
-      actual.leftValue.isDefined.shouldBeTrue();
+      actual.leftValue.isSome.shouldBeTrue();
     }
   }
 }

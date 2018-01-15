@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
@@ -126,80 +127,85 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Missing References
 
+    static readonly LazyVal<PathStr> testPrefabsDirectory =
+      new LazyValImpl<PathStr>(() =>
+        // There is no such thing as editor resources folder, so we have to resort to this hack
+        AssetDatabase.GetAllAssetPaths().find(s =>
+          s.EndsWithFast($"TLPLib/Editor/Test/Utilities/{nameof(ObjectValidatorTest)}.cs")
+        ).map(p => PathStr.a(p).dirname).get
+      );
+
+    static Object getPrefab(string prefabName) =>
+      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.get}/{prefabName}");
+
     [Test] public void WhenMissingComponent() {
-      var go = AssetDatabase.GetAllAssetPaths().find(s => 
-        s.EndsWithFast("TLPLib/Editor/Test/Utilities/ObjectValidatorTestGameObject.prefab")
-      ).map(AssetDatabase.LoadMainAssetAtPath).get;
+      var go = getPrefab("TestMissingComponent.prefab");
       var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new [] { go });
-      noErrorsOrExistsErrorOfType(errors, ErrorType.MissingComponent.some());
+      errors.shouldHave(ErrorType.MissingComponent);
     }
 
-    [Test] public void WhenMissingReference() => test<PublicField>(
-      a => {
-        a.field = new GameObject();
-        Object.DestroyImmediate(a.field);
-      },
-      ErrorType.MissingReference.some()
-    );
+    [Test] public void WhenMissingReference() => 
+      shouldFindErrors<PublicField>(
+        ErrorType.MissingReference,
+        a => {
+          a.field = new GameObject();
+          Object.DestroyImmediate(a.field);
+        }
+      );
 
     [Test] public void WhenReferenceNotMissing() => 
-      test<PublicField>(a => {
+      shouldNotFindErrors<PublicField>(a => {
         a.field = new GameObject();
       });
 
-    [Test] public void WhenMissingReferenceInner() => test<NullReferencePublicField>(
-      a => {
-        a.field.field = new GameObject();
-        Object.DestroyImmediate(a.field.field);
-      },
-      ErrorType.MissingReference.some()
-    );
+    [Test] public void WhenMissingReferenceInner() => 
+      shouldFindErrors<NullReferencePublicField>(
+        ErrorType.MissingReference,
+        a => {
+          a.field.field = new GameObject();
+          Object.DestroyImmediate(a.field.field);
+        }
+      );
 
-    [Test] public void WhenReferenceNotMissingInner() => test<NullReferencePublicField>(
-      a => {
+    [Test] public void WhenReferenceNotMissingInner() => 
+      shouldNotFindErrors<NullReferencePublicField>(a => {
         a.field.field = new GameObject();
-      }
-    );
+      });
 
     #endregion
 
     #region Public/Serialized Field
 
-    [Test] public void WhenNotNullPublicField() => test<NotNullPublicField>(
-      errorType: ErrorType.NullReference.some()
-    );
+    [Test] public void WhenNotNullPublicField() 
+      => shouldFindErrors<NotNullPublicField>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullPublicFieldSet() => 
-      test<NotNullPublicField>(a => {
+      shouldNotFindErrors<NotNullPublicField>(a => {
         a.field = new GameObject();
       });
 
-    [Test] public void WhenNotNullSerializedField() => test<NotNullSerializedField>(
-      errorType: ErrorType.NullReference.some()
-    );
+    [Test] public void WhenNotNullSerializedField() 
+      => shouldFindErrors<NotNullSerializedField>(ErrorType.NullReference);
 
-    [Test] public void WhenPublicFieldExtended() => test<PublicFieldExtended>(
-      errorType: ErrorType.NullReference.some()
-    );
+    [Test] public void WhenPublicFieldExtended() 
+      => shouldFindErrors<PublicFieldExtended>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullPublicFieldExtended() => test<NotNullPublicFieldExtended>(
-      errorType: ErrorType.NullReference.some()
-    );
+    [Test] public void WhenNotNullPublicFieldExtended() 
+      => shouldFindErrors<NotNullPublicFieldExtended>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullSerializedFieldExtended() => test<NotNullSerializedFieldExtended>(
-      errorType: ErrorType.NullReference.some()
-    );
+    [Test] public void WhenNotNullSerializedFieldExtended() 
+      => shouldFindErrors<NotNullSerializedFieldExtended>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullPublicFieldObjectSet() => 
-      test<NotNullPublicFieldObject>(
+      shouldFindErrors<NotNullPublicFieldObject>(
+        ErrorType.NullReference,
         a => {
           a.field = new Object();
-        },
-        ErrorType.NullReference.some()
+        }
       );
 
     [Test] public void WhenNotNullSerializedFieldSet() => 
-      test<NotNullSerializedField>(a => {
+      shouldNotFindErrors<NotNullSerializedField>(a => {
         a.setField(new GameObject());
       });
 
@@ -207,181 +213,211 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Array/List
 
-    [Test] public void WhenArrayWithNulls() => test<ArrayWithNulls>(
-      a => {
-        a.field = new [] { new GameObject(), null, new GameObject() };
-      }
-    );
+    [Test] public void WhenArrayWithNulls() => 
+      shouldNotFindErrors<ArrayWithNulls>(
+        a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
+      );
 
-    [Test] public void WhenNotNullArray() => test<NotNullArray>(
-      a => {
-        a.field = new [] { new GameObject(), null, new GameObject() };
-      },
-      ErrorType.NullReference.some()
-    );
+    [Test] public void WhenNotNullArray() => 
+      shouldFindErrors<NotNullArray>(
+        ErrorType.NullReference,
+        a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
+      );
 
-    [Test] public void WhenReferenceListEmpty() => test<ListNotEmpty>(
-      a => {
-        a.field = new List<InnerNotNull>();
-      },
-      ErrorType.EmptyCollection.some()
-    );
+    [Test] public void WhenReferenceListEmpty() => 
+      shouldFindErrors<ListNotEmpty>(
+        ErrorType.EmptyCollection,
+        a => {
+          a.field = new List<InnerNotNull>();
+        }
+      );
 
-    [Test] public void WhenReferenceListNotEmpty() => test<ListNotEmpty>(
-      a => {
-        var inner = new InnerNotNull { field = new GameObject() };
-        a.field = new List<InnerNotNull> { inner };
-      }
-    );
+    [Test] public void WhenReferenceListNotEmpty() => 
+      shouldNotFindErrors<ListNotEmpty>(
+        a => {
+          var inner = new InnerNotNull { field = new GameObject() };
+          a.field = new List<InnerNotNull> { inner };
+        }
+      );
 
-    [Test] public void WhenNullReferenceList() => test<NullReferenceList>(
-      a => {
-        a.field = new List<InnerNotNull> { new InnerNotNull() };
-      },
-      ErrorType.NullReference.some()
-    );
+    [Test] public void WhenNullReferenceList() => 
+      shouldFindErrors<NullReferenceList>(
+        ErrorType.NullReference,
+        a => {
+          a.field = new List<InnerNotNull> { new InnerNotNull() };
+        }
+      );
 
-    [Test] public void WhenNullReferenceListSet() => test<NullReferenceList>(
-      a => {
-        var inner = new InnerNotNull { field = new GameObject() };
-        a.field = new List<InnerNotNull> { inner };
-      }
-    );
+    [Test] public void WhenNullReferenceListSet() => 
+      shouldNotFindErrors<NullReferenceList>(
+        a => {
+          var inner = new InnerNotNull {field = new GameObject()};
+          a.field = new List<InnerNotNull> {inner};
+        }
+      );
 
     #endregion
 
-    [Test] public void WhenNonSerializedFieldIsNotSet() => test<NonSerializedField>();
+    [Test] public void WhenNonSerializedFieldIsNotSet() => shouldNotFindErrors<NonSerializedField>();
 
     [Test] public void WhenNonSerializedFieldIsSet() => 
-      test<NonSerializedField>(a => {
+      shouldNotFindErrors<NonSerializedField>(a => {
         a.setField(new GameObject());
       });
 
     [Test] public void WhenNullInsideMonoBehaviorPublicField() => 
-      test<NullReferencePublicField>(
-        errorType: ErrorType.NullReference.some()
+      shouldFindErrors<NullReferencePublicField>(
+        errorType: ErrorType.NullReference
       );
 
     [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => 
-      test<NullReferencePublicField>(a => {
+      shouldNotFindErrors<NullReferencePublicField>(a => {
         a.field = new InnerNotNull {field = new GameObject()};
       });
 
     [Test] public void WhenNullInsideMonoBehaviorSerializedField() => 
-      test<NullReferenceSerializedField>(
-        errorType: ErrorType.NullReference.some()
+      shouldFindErrors<NullReferenceSerializedField>(
+        ErrorType.NullReference
       );
 
     [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => 
-      test<NullReferenceSerializedField>(a => {
+      shouldNotFindErrors<NullReferenceSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
 
-    [Test] public void WhenNotNullProtectedSerializedField() => 
-      test<NotNullProtectedSerializedField>(
-        errorType: ErrorType.NullReference.some()
-      );
+    [Test] public void WhenNotNullProtectedSerializedField() 
+      => shouldFindErrors<NotNullProtectedSerializedField>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullProtectedSerializedFieldSet() => 
-      test<NotNullProtectedSerializedField>(a => {
+      shouldNotFindErrors<NotNullProtectedSerializedField>(a => {
         a.setField(new GameObject());
       });
 
     [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedField() => 
-      test<NullReferenceProtectedSerializedField>(
-        errorType: ErrorType.NullReference.some()
+      shouldFindErrors<NullReferenceProtectedSerializedField>(
+        ErrorType.NullReference
       );
 
     [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedFieldSet() => 
-      test<NullReferenceProtectedSerializedField>(a => {
+      shouldNotFindErrors<NullReferenceProtectedSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
 
     #region [TextField(TextFieldType.Tag)]
 
-    [Test] public void WhenTextFieldTypeNotTag() => test<TextFieldTypeNotTag>();
+    [Test] public void WhenTextFieldTypeNotTag() => shouldNotFindErrors<TextFieldTypeNotTag>();
 
     [Test] public void WhenBadTextFieldValue() =>
-      test<TextFieldTypeTag>(a => {
-          a.field = "";
-        },
-        ErrorType.TextFieldBadTag.some()
+      shouldFindErrors<TextFieldTypeTag>(
+        ErrorType.TextFieldBadTag,
+        a => { a.field = ""; }
       );
 
-    [Test] public void WhenGoodTextFieldValue() => test<TextFieldTypeTag>(a => {
-      a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
-    });
+    [Test] public void WhenGoodTextFieldValue() => 
+      shouldNotFindErrors<TextFieldTypeTag>(a => {
+        a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
+      });
 
     #endregion
 
     #region RequireComponent
 
     [Test] public void WhenRequireComponentComponentsAreThere() =>
-      test<RequireComponentBehaviour>(a => a.setup());
+       shouldNotFindErrors<RequireComponentBehaviour>(a => a.setup());
 
     [Test] public void WhenRequireComponentFirstComponentIsNotThere() =>
-      test<RequireComponentBehaviour>(
-        a => a.setup(first: false), 
-        F.some(ErrorType.MissingRequiredComponent)
+      shouldFindErrors<RequireComponentBehaviour>(
+        ErrorType.MissingRequiredComponent,
+        a => a.setup(first: false)
       );
 
     [Test] public void WhenRequireComponentSecondComponentIsNotThere() =>
-      test<RequireComponentBehaviour>(
-        a => a.setup(second: false), 
-        F.some(ErrorType.MissingRequiredComponent)
+      shouldFindErrors<RequireComponentBehaviour>(
+        ErrorType.MissingRequiredComponent,
+        a => a.setup(second: false)
       );
 
     [Test] public void WhenRequireComponentThirdComponentIsNotThere() =>
-      test<RequireComponentBehaviour>(
-        a => a.setup(third: false), 
-        F.some(ErrorType.MissingRequiredComponent)
+      shouldFindErrors<RequireComponentBehaviour>(
+        ErrorType.MissingRequiredComponent,
+        a => a.setup(third: false)
       );
 
     [Test] public void WhenInheritingRequireComponentComponentsAreThere() =>
-      test<InheritingRequireComponentBehaviour>(a => a.setup());
+      shouldNotFindErrors<InheritingRequireComponentBehaviour>(a => a.setup());
 
     [Test] public void WhenInheritingRequireComponentFirstComponentIsNotThere() =>
-      test<InheritingRequireComponentBehaviour>(
-        a => a.setup(first: false), 
-        F.some(ErrorType.MissingRequiredComponent)
+      shouldFindErrors<InheritingRequireComponentBehaviour>(
+        ErrorType.MissingRequiredComponent,
+        a => a.setup(first: false)
       );
 
     [Test] public void WhenInheritingRequireComponentSecondComponentIsNotThere() =>
-      test<InheritingRequireComponentBehaviour>(
-        a => a.setup(second: false), 
-        F.some(ErrorType.MissingRequiredComponent)
+      shouldFindErrors<InheritingRequireComponentBehaviour>(
+        ErrorType.MissingRequiredComponent,
+        a => a.setup(second: false)
       );
 
     [Test] public void WhenInheritingRequireComponentThirdComponentIsNotThere() =>
-      test<InheritingRequireComponentBehaviour>(
-        a => a.setup(third: false), 
-        F.some(ErrorType.MissingRequiredComponent)
+      shouldFindErrors<InheritingRequireComponentBehaviour>(
+        ErrorType.MissingRequiredComponent,
+        a => a.setup(third: false)
       );
 
     #endregion
 
-    public static void test<A>(
-      Act<A> setupA = null,
-      Option<ErrorType> errorType = default(Option<ErrorType>)
-    ) where A : Component {
-      Option.ensureValue(ref errorType);
+    #region UnityEvent
 
+    void testPrefab(string prefabName, ErrorType errorType) {
+      var go = getPrefab(prefabName);
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] { go });
+      errors.shouldHave(errorType);
+    }
+
+    [Test] public void WhenUnityEventInvalid() => 
+      testPrefab("TestUnityEventInvalid.asset", ErrorType.UnityEventInvalid);
+
+    [Test] public void WhenUnityEventInvalidMethod() =>
+      testPrefab("TestUnityEventInvalidMethod.asset", ErrorType.UnityEventInvalidMethod);
+
+    [Test] public void WhenUnityEventInvalidNested() =>
+      testPrefab("TestUnityEventInvalidNested.asset", ErrorType.UnityEventInvalid);
+
+    [Test] public void WhenUnityEventInvalidNestedInArray() =>
+      testPrefab("TestUnityEventInvalidNestedInArray.asset", ErrorType.UnityEventInvalid);
+
+    #endregion
+
+    static A setupComponent<A>(Act<A> setupA = null) where A : Component {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
-      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
-      noErrorsOrExistsErrorOfType(errors, errorType);
+      return a;
     }
 
-    static void noErrorsOrExistsErrorOfType(
-      ImmutableList<ObjectValidator.Error> errors, Option<ErrorType> errorType
-    ) => 
-      errorType.voidFold(
-        () => errors.shouldBeEmpty(),
-        type => errors.shouldMatch(
-          t => t.Exists(x => x.type == type),
-          $"{type} does not exist in errors {errors.asString()}"
-        )
+    public static void shouldNotFindErrors<A>(
+      Act<A> setupA = null
+    ) where A : Component {
+      var go = setupComponent(setupA).gameObject;
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
+      errors.shouldBeEmpty();
+    }
+
+    public static void shouldFindErrors<A>(
+      ErrorType errorType, Act<A> setupA = null
+    ) where A : Component {
+      var go = setupComponent(setupA).gameObject;
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
+      errors.shouldHave(errorType);
+    }
+  }
+
+  public static class ErrorValidationExts {
+    public static void shouldHave(this ImmutableList<ObjectValidator.Error> errors, ErrorType type) =>
+      errors.shouldMatch(
+        t => t.Exists(x => x.type == type),
+        $"{type} does not exist in errors {errors.asDebugString()}"
       );
   }
 }
+

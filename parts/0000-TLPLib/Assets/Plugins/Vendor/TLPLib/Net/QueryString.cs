@@ -29,10 +29,12 @@ namespace com.tinylabproductions.TLPLib.Net {
 
     public static QueryString build<A>(
       IEnumerable<A> qsParams, Fn<A, string> extractKey, Fn<A, string> extractValue
-    ) => qsParams.Aggregate(new QueryString(), (qs, a) => {
-      qs.append(extractKey(a), extractValue(a));
+    ) {
+      var qs = new QueryString();
+      foreach (var a in qsParams)
+        qs.append(extractKey(a), extractValue(a));
       return qs;
-    });
+    }
 
     public static QueryString build(IEnumerable<KeyValuePair<string, string>> qsParams) =>
       build(qsParams, _ => _.Key, _ => _.Value);

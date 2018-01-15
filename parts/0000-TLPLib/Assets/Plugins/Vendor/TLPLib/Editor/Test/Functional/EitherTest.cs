@@ -34,14 +34,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public class EitherTestSequence {
+  public class EitherTestSequenceValidations {
     [Test]
     public void WhenHasOneError() {
       var l = ImmutableList.Create("error");
       new[] {
         Either<ImmutableList<string>, int>.Left(l),
         Either<ImmutableList<string>, int>.Right(4)
-      }.sequence().shouldBeLeftEnum(l);
+      }.sequenceValidations().shouldBeLeftEnum(l);
     }
 
     [Test]
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       new[] {
         Either<ImmutableList<string>, int>.Left(ImmutableList.Create("error")),
         Either<ImmutableList<string>, int>.Left(ImmutableList.Create("error2"))
-      }.sequence().shouldBeLeftEnum(ImmutableList.Create("error", "error2"));
+      }.sequenceValidations().shouldBeLeftEnum(ImmutableList.Create("error", "error2"));
     }
 
     [Test]
@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       new[] {
         Either<ImmutableList<string>, int>.Right(3),
         Either<ImmutableList<string>, int>.Right(4)
-      }.sequence().shouldBeRightEnum(ImmutableList.Create(3, 4));
+      }.sequenceValidations().shouldBeRightEnum(ImmutableList.Create(3, 4));
     }
   }
   

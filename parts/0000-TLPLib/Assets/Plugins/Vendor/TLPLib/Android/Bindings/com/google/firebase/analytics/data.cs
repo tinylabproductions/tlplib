@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       MAX_PARAM_KEY_LENGTH = 24,
       MAX_PARAM_VALUE_LENGTH = 36;
 
-    public enum Trim { Left, Right, None }
+    public enum Trim : byte { KeepLeftSide, KeepRightSide, None }
 
     static readonly ImmutableHashSet<string> reservedEventNames = ImmutableHashSet.Create(
       "app_clear_data",
@@ -76,6 +76,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       "notification_foreground",
       "notification_open",
       "notification_receive",
+      "screen_view",
       "os_update",
       "session_start",
       "user_engagement"
@@ -92,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
     }
 
     public override string ToString() =>
-      $"{nameof(FirebaseEvent)}[{name}, {parameters.asString(newlines: false)}]";
+      $"{nameof(FirebaseEvent)}[{name}, {parameters.asDebugString(newlines: false)}]";
 
     static ImmutableList<string> validateName(string errorPrefix, int maxLength, string name) {
       var errors = ImmutableList<string>.Empty;
@@ -124,7 +125,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       new OneOf<string, long, double>(
         trim == Trim.None 
         ? value 
-        : value.trimTo(MAX_PARAM_VALUE_LENGTH, fromRight: trim == Trim.Right)
+        : value.trimTo(MAX_PARAM_VALUE_LENGTH, fromRight: trim == Trim.KeepRightSide)
       );
 
     public static OneOf<string, long, double> param(long value) =>

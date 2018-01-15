@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using static com.tinylabproductions.TLPLib.Configuration.Config;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
@@ -55,8 +58,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static float getFloat(this IConfig cfg, string key) => cfg.get(key, floatParser);
     public static double getDouble(this IConfig cfg, string key) => cfg.get(key, doubleParser);
     public static bool getBool(this IConfig cfg, string key) => cfg.get(key, boolParser);
+    public static Range getIRange(this IConfig cfg, string key) => cfg.get(key, iRangeParser);
     public static FRange getFRange(this IConfig cfg, string key) => cfg.get(key, fRangeParser);
+    public static URange getURange(this IConfig cfg, string key) => cfg.get(key, uRangeParser);
     public static DateTime getDateTime(this IConfig cfg, string key) => cfg.get(key, dateTimeParser);
+    public static Duration getDuration(this IConfig cfg, string key) => cfg.get(key, Duration.configParser);
     public static IConfig getSubConfig(this IConfig cfg, string key) => cfg.get(key, configParser);
     public static IList<IConfig> getSubConfigList(this IConfig cfg, string key) => cfg.getList(key, configParser);
 
@@ -82,7 +88,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Option<float> optFloat(this IConfig cfg, string key) => cfg.optGet(key, floatParser);
     public static Option<double> optDouble(this IConfig cfg, string key) => cfg.optGet(key, doubleParser);
     public static Option<bool> optBool(this IConfig cfg, string key) => cfg.optGet(key, boolParser);
+    public static Option<Range> optIRange(this IConfig cfg, string key) => cfg.optGet(key, iRangeParser);
     public static Option<FRange> optFRange(this IConfig cfg, string key) => cfg.optGet(key, fRangeParser);
+    public static Option<URange> optURange(this IConfig cfg, string key) => cfg.optGet(key, uRangeParser);
     public static Option<DateTime> optDateTime(this IConfig cfg, string key) => cfg.optGet(key, dateTimeParser);
     public static Option<IConfig> optSubConfig(this IConfig cfg, string key) => cfg.optGet(key, configParser);
     public static Option<List<IConfig>> optSubConfigList(this IConfig cfg, string key) => cfg.optList(key, configParser);
@@ -108,7 +116,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Either<ConfigLookupError, float> eitherFloat(this IConfig cfg, string key) => cfg.eitherGet(key, floatParser);
     public static Either<ConfigLookupError, double> eitherDouble(this IConfig cfg, string key) => cfg.eitherGet(key, doubleParser);
     public static Either<ConfigLookupError, bool> eitherBool(this IConfig cfg, string key) => cfg.eitherGet(key, boolParser);
+    public static Either<ConfigLookupError, Range> eitherIRange(this IConfig cfg, string key) => cfg.eitherGet(key, iRangeParser);
     public static Either<ConfigLookupError, FRange> eitherFRange(this IConfig cfg, string key) => cfg.eitherGet(key, fRangeParser);
+    public static Either<ConfigLookupError, URange> eitherURange(this IConfig cfg, string key) => cfg.eitherGet(key, uRangeParser);
     public static Either<ConfigLookupError, DateTime> eitherDateTime(this IConfig cfg, string key) => cfg.eitherGet(key, dateTimeParser);
     public static Either<ConfigLookupError, IConfig> eitherSubConfig(this IConfig cfg, string key) => cfg.eitherGet(key, configParser);
     public static Either<ConfigLookupError, List<IConfig>> eitherSubConfigList(this IConfig cfg, string key) => cfg.eitherList(key, configParser);
@@ -135,7 +145,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Try<float> tryFloat(this IConfig cfg, string key) => cfg.tryGet(key, floatParser);
     public static Try<double> tryDouble(this IConfig cfg, string key) => cfg.tryGet(key, doubleParser);
     public static Try<bool> tryBool(this IConfig cfg, string key) => cfg.tryGet(key, boolParser);
+    public static Try<Range> tryIRange(this IConfig cfg, string key) => cfg.tryGet(key, iRangeParser);
     public static Try<FRange> tryFRange(this IConfig cfg, string key) => cfg.tryGet(key, fRangeParser);
+    public static Try<URange> tryURange(this IConfig cfg, string key) => cfg.tryGet(key, uRangeParser);
     public static Try<DateTime> tryDateTime(this IConfig cfg, string key) => cfg.tryGet(key, dateTimeParser);
     public static Try<IConfig> trySubConfig(this IConfig cfg, string key) => cfg.tryGet(key, configParser);
     public static Try<List<IConfig>> trySubConfigList(this IConfig cfg, string key) => cfg.tryList(key, configParser);
@@ -144,24 +156,45 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   }
 
   public struct ConfigLookupError {
-    public enum Kind { KEY_NOT_FOUND, WRONG_TYPE }
+    public enum Kind : byte { KEY_NOT_FOUND, WRONG_TYPE }
 
     public readonly Kind kind;
-    public readonly LazyVal<string> messageLazy;
-    public string message => messageLazy.get;
+    public readonly LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras;
+    public ImmutableArray<Tpl<string, string>> extras => lazyExtras.get;
 
-    public ConfigLookupError(Kind kind, LazyVal<string> messageLazy) {
+    public ConfigLookupError(Kind kind, LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras) {
       this.kind = kind;
-      this.messageLazy = messageLazy;
+      this.lazyExtras = lazyExtras;
     }
 
-    public static ConfigLookupError keyNotFound(LazyVal<string> message) => 
-      new ConfigLookupError(Kind.KEY_NOT_FOUND, message);
+    public static ConfigLookupError keyNotFound(LazyVal<ImmutableArray<Tpl<string, string>>> extras) => 
+      new ConfigLookupError(Kind.KEY_NOT_FOUND, extras);
 
-    public static ConfigLookupError wrongType(LazyVal<string> message) => 
-      new ConfigLookupError(Kind.WRONG_TYPE, message);
+    public static ConfigLookupError wrongType(LazyVal<ImmutableArray<Tpl<string, string>>> extras) => 
+      new ConfigLookupError(Kind.WRONG_TYPE, extras);
 
-    public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {message}]";
+    public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {extras.mkStringEnum()}]";
+
+    public LogEntry toLogEntry(
+      string message, ICollection<Tpl<string, string>> extraExtras = null
+    ) {
+      ImmutableArray<Tpl<string, string>> extras;
+      if (extraExtras == null) {
+        extras = this.extras;
+      }
+      else {
+        var builder = ImmutableArray.CreateBuilder<Tpl<string, string>>(extraExtras.Count + this.extras.Length);
+        builder.AddRange(this.extras);
+        builder.AddRange(extraExtras);
+        extras = builder.MoveToImmutable();
+      }
+      
+      return new LogEntry(
+        $"{message}: {kind}",
+        tags: ImmutableArray<Tpl<string, string>>.Empty,
+        extras: extras
+      );
+    }
   }
 
   public class ConfigFetchException : Exception {

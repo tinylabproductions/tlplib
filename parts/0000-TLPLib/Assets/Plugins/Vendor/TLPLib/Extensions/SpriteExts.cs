@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Sprite sprite;
       var rect = new Rect(0, 0, texture.width, texture.height);
 
-      if (origOpt.isDefined) {
+      if (origOpt.isSome) {
         var orig = origOpt.get;
         var pivot = new Vector2(
           orig.pivot.x / orig.rect.width, orig.pivot.y / orig.rect.height

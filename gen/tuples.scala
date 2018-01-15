@@ -25,7 +25,8 @@ class TupleData(
   }
   val paramArgsS = paramArgs.mkString(", ")
   val propNames = paramsRange.map(n => s"_$n")
-  val propArgsS = propNames.mkString(", ")
+  def propArgsFor(prefix: String) = propNames.map(s => s"$prefix$s").mkString(", ")
+  val propArgsS = propArgsFor("")
   val props = genericParameterNames.zip(propNames).map {
     case (type_, prop) => s"public readonly $type_ $prop;"
   }
@@ -49,15 +50,19 @@ class TupleData(
   }
   val hashS = hash.mkString("\n")
 
-  val compareTo = genericParameterNames.zip(propNames).map {
-    case (type_, prop) =>
-      s"c = Smooth.Collections.Comparer<${type_}>.Default.Compare($prop, other.$prop);"
+  val compareTo = genericParameterNames.zip(propNames).zipWithIndex.map {
+    case ((type_, prop), idx) =>
+      val prefix = if (idx == 0) "var " else ""
+      s"${prefix}c = Smooth.Collections.Comparer<${type_}>.Default.Compare($prop, other.$prop);"
   }
   val compareToS = compareTo.mkString(" if (c != 0) { return c; }\n")
 
   lazy val adder = nextTuple.map { nextT =>
     val lastP = nextT.genericParameterNames.last
-    s"public ${nextT.fullType} add<$lastP>($lastP a) => new ${nextT.fullType}($propArgsS, a);"
+    s"public static ${nextT.fullType} add<${nextT.typeSigGenerics}>(" +
+      s"this $fullType t, $lastP a" +
+    s") => \n" +
+      s"new ${nextT.fullType}(${propArgsFor("t.")}, a);"
   }
   lazy val adderS = adder.getOrElse("")
 
@@ -68,7 +73,10 @@ class TupleData(
       types.last +: types.dropRight(1)
     })
     val nextTFullType = TupleData.fullType(typename, nextTTypeSigGenerics)
-    s"public $nextTFullType unshift<$firstP>($firstP a) => new $nextTFullType(a, $propArgsS);"
+    s"public static $nextTFullType unshift<${nextT.typeSigGenerics}>(" +
+      s"this $fullType t, $firstP a" +
+    s") => \n" +
+    s"  new $nextTFullType(a, ${propArgsFor("t.")});"
   }
   lazy val unshifterS = unshifter.getOrElse("")
 
@@ -99,22 +107,11 @@ IComparable<$fullType>, IEquatable<$fullType> {
   public $typename($paramArgsS)
     { $constructorSettersS; }
 
-  // Unapply.
-  public void ua(Act<$typeSigGenerics> f) => f($propArgsS);
-
-  // Unapply with function.
-  public R ua<R>(Fn<$typeSigGenerics, R> f) => f($propArgsS);
-
-  $adderS
-
-  $unshifterS
-
   $deconstructor
 
   public override string ToString() => $$"($toStringFmtS)";
 
   public override bool Equals(object o) => o is $fullType && Equals(($fullType) o);
-
   public bool Equals($fullType t) => $equalsS;
 
   public override int GetHashCode() {
@@ -126,7 +123,6 @@ IComparable<$fullType>, IEquatable<$fullType> {
   }
 
   public int CompareTo($fullType other) {
-    int c;
     $compareToS
     return c;
   }
@@ -138,6 +134,18 @@ IComparable<$fullType>, IEquatable<$fullType> {
   public static bool operator >= ($fullType lhs, $fullType rhs) => lhs.CompareTo(rhs) >= 0;
   public static bool operator <= ($fullType lhs, $fullType rhs) => lhs.CompareTo(rhs) <= 0;
 }"""
+
+  def tupleCsStaticStr =
+    s"""
+  $adderS
+  $unshifterS
+
+  /// <summary>Unapply.</summary>
+  public static void ua<$typeSigGenerics>(this $fullType t, Act<$typeSigGenerics> f) => f(${propArgsFor("t.")});
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<$typeSigGenerics, R>(this $fullType t, Fn<$typeSigGenerics, R> f) => f(${propArgsFor("t.")});
+     """.stripMargin
 
   def eitherCsStr: String = {
     val tupledReturnType = s"Either<ImmutableList<A>, Tpl<$typeSigGenerics>>"
@@ -252,12 +260,17 @@ def file(w: PrintWriter, header: String, f: TupleData => String, footer: String)
   w.println(footer)
 }
 
-file(
-  tupleCs,
+tupleCs.println(
   s"""$AutogenHeader
-     |namespace System {""".stripMargin,
-  _.tupleCsStr,
-  "}"
+     |namespace System {
+     |${tuples.map(_.tupleCsStr).mkString("\n")}
+     |
+     |// We want to have as little methods on objects as possible due to how IL2CPP expands things.
+     |public static class TupleGeneratedExts {
+     |${tuples.map(_.tupleCsStaticStr).mkString("\n")}
+     |}
+     |}
+   """.stripMargin
 )
 
 file(

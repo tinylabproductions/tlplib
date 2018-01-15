@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
@@ -67,6 +68,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return encoding.GetString(Convert.FromBase64String(source));
     }
 
+    public static Either<Exception, string> fromBase64Safe(this string source, Encoding encoding = null) => 
+      F.doTry(() => fromBase64(source, encoding)).toEither;
+
     public static string trimTo(this string s, int length, bool fromRight=false) => 
       s.Length > length ? s.Substring(
         fromRight ? s.Length - length : 0, 
@@ -86,9 +90,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return sb.ToString();
     }
 
-    public static bool isEmpty(this string s) { return s.Length == 0; }
-    public static bool nonEmpty(this string s) { return s.Length != 0; }
-    
+    public static bool isTrimmable(this string s) =>
+      s.StartsWithFast(" ") || s.EndsWithFast(" ");
+
+    public static bool isEmpty(this string s, bool trim = false) => 
+      (trim ? s.Trim() : s).Length == 0;
+    public static bool isNullOrEmpty(this string s, bool trim = false) =>
+      s == null || s.isEmpty(trim);
+    public static bool nonEmpty(this string s) => s.Length != 0;
+
     public static Option<string> nonEmptyOpt(this string s, bool trim = false) {
       if (s == null) return F.none<string>();
       if (trim) s = s.Trim();
@@ -190,5 +200,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Option<char> lastChar(this string s) =>
       s.isEmpty() ? Option<char>.None : s[s.Length - 1].some();
+
+    /// <summary>obfuscates the string by shifting every char code in it by given amount</summary>
+    public static string shiftCharValues(this string s, int shiftBy) =>
+      new string(s.ToCharArray().map(c => (char) (c + shiftBy)));
+
+    public static string indentLines(
+      this string s, string indentWith, int indents = 1, bool indentFirst = true
+    ) => s.Split('\n').indentLines(indentWith, indents, indentFirst).mkString("\n");
+
+    public static IEnumerable<string> indentLines(
+      this IEnumerable<string> lines, string indentWith, int indents = 1, bool indentFirst = true
+    ) => lines.Select((line, idx) => {
+      var indent = idx == 0 && indentFirst || idx != 0 ? indentWith.repeat(indents) : "";
+      return $"{indent}{line}";
+    });
   }
 }

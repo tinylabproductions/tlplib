@@ -3,6 +3,30 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  public class StringTest : ImplicitSpecification {
+    [Test] public void indentLines() => describe(() => {
+      const string source = @"foo
+bar
+baz";
+
+      when["first line should be indented"] = () => {
+        it["should work"] = () => 
+          source.indentLines(">.", indents: 3, indentFirst: true)
+          .shouldEqual(@">.>.>.foo
+>.>.>.bar
+>.>.>.baz");
+      };
+
+      when["first line should not be indented"] = () => {
+        it["should work"] = () =>
+          source.indentLines(">.", indents: 3, indentFirst: false)
+            .shouldEqual(@"foo
+>.>.>.bar
+>.>.>.baz");
+      };
+    });
+  }
+
   public class StringTestNonEmptyOpt {
     [Test]
     public void WhenStringNull() {

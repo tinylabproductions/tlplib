@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
@@ -10,6 +9,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -35,9 +35,13 @@ namespace com.tinylabproductions.TLPLib.Test {
   }
 
   public static class TestExts {
-    public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) {
+    public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) => 
       Assert.IsEmpty(enumerable, message);
-    }
+
+    public static void shouldBeEmpty<A>(
+      this ICollection<A> enumerable, Fn<ICollection<A>, string> message = null
+    ) => 
+      Assert.IsEmpty(enumerable, message?.Invoke(enumerable));
 
     public static void shouldNotBeEmpty(this IEnumerable enumerable, string message = null) {
       Assert.IsNotEmpty(enumerable, message);
@@ -94,11 +98,21 @@ namespace com.tinylabproductions.TLPLib.Test {
     ) where C : ICollection, ICollection<A> =>
       Assert.Contains(a, collection, message);
 
-    public static void shouldNotContain<A>(
+    public static void shouldContain<A>(
       this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
     ) {
-      foreach (var a in enumerable.find(predicate)) Assert.Fail(
+      if (enumerable.find(predicate).isNone) Assert.Fail(
         message ??
+        $"Expected enumerable to contain {typeof(A)} which matches predicate, but nothing was found."
+      );
+    }
+
+    public static void shouldNotContain<A>(
+      this IEnumerable<A> enumerable, Fn<A, bool> predicate, 
+      Fn<A, string> message = null
+    ) {
+      foreach (var a in enumerable.find(predicate)) Assert.Fail(
+        message?.Invoke(a) ??
         $"Expected enumerable not to contain {typeof(A)} which matches predicate, but {a} was found."
       );
     }
@@ -137,7 +151,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldBeAnySome<A>(this Option<A> a, string message = null) {
-      if (a.isEmpty) Assert.Fail(message ?? $"Expected {a} to be Some!");
+      if (a.isNone) Assert.Fail(message ?? $"Expected {a} to be Some!");
     }
 
     public static void shouldBeSomeEnum<E>(this Option<E> aOpt, E expected, string message = null)
@@ -271,6 +285,10 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldNotChange<R>(this Fn<R> fn, Val<int> measure) => 
       fn.shouldChange(measure).by(0);
+    
+    public static StreamMatcher<A> shouldPushTo<A>(
+      this Action act, IObservable<A> obs
+    ) => new StreamMatcher<A>(act, obs);
   }
 
   public class SetEquals<A> : Constraint {
@@ -288,18 +306,18 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
   }
 
-  public class ChangeMatcher<A, R> {
-    readonly Fn<R> run;
-    readonly Fn<A> measure;
-    readonly Numeric<A> num;
+  public class ChangeMatcher<MeasurementType, ReturnedType> {
+    readonly Fn<ReturnedType> run;
+    readonly Fn<MeasurementType> measure;
+    readonly Numeric<MeasurementType> num;
 
-    public ChangeMatcher(Fn<R> run, Fn<A> measure, Numeric<A> num) {
+    public ChangeMatcher(Fn<ReturnedType> run, Fn<MeasurementType> measure, Numeric<MeasurementType> num) {
       this.run = run;
       this.measure = measure;
       this.num = num;
     }
 
-    public R by(int i, string message = null) {
+    public ReturnedType by(int i, string message = null) {
       var change = num.fromInt(i);
       var initial = measure();
       var ret = run();
@@ -317,6 +335,40 @@ namespace com.tinylabproductions.TLPLib.Test {
 
       num.subtract(after, initial).shouldEqual(change, message);
       return ret;
+    }
+  }
+
+  /// <summary>
+  /// More specialized ChangeMatcher
+  /// For use when we are not only interested in the amount of callback calls
+  /// But also in the results of those calls
+  /// </summary>
+  /// <typeparam name="A"></typeparam>
+  public class StreamMatcher<A> {
+    readonly Action act;
+    readonly IObservable<A> obs;
+
+    public StreamMatcher(Action act, IObservable<A> obs) {
+      this.act = act;
+      this.obs = obs;
+    }
+
+    public void resultIn(params A[] vals) => resultIn(vals, message: null);
+
+    public void resultIn(ICollection<A> match, string message = null) {
+      var streamValues = new List<A>();
+      var sub = obs.subscribe(streamValues.Add);
+      act();
+      sub.unsubscribe();
+
+      if (message == null) {
+        message = match.Any()
+          ? $"call results do not match expected results "
+          : $"there should have been no calls, but they still occured ";
+        message += $"expected {match} received {streamValues}";
+      }
+
+      streamValues.shouldEqualEnum(match, message);
     }
   }
 }

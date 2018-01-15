@@ -1,7 +1,7 @@
 ﻿using System;
-using Assets.Vendor.TLPLib.Components.Forwarders;
-using com.tinylabproductions.TLPLib.Components;
+using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -35,26 +35,32 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Object.Destroy(go);
     }
 
-    public static Coroutine everyFrame(this GameObject go, Fn<bool> f) {
-      var behaviour =
-        go.GetComponent<ASyncHelperBehaviour>() ??
-        go.AddComponent<ASyncHelperBehaviour>();
-      return ASync.EveryFrame(behaviour, f);
-    }
+    public static Coroutine everyFrame(this GameObject go, Fn<bool> f) => ASync.EveryFrame(go, f);
 
-    public static Coroutine everyFrame(this GameObject go, Action a) {
-      return go.everyFrame(() => { a(); return true; });
-    }
+    public static Coroutine everyFrame(this GameObject go, Action a) => 
+      go.everyFrame(() => { a(); return true; });
 
-    public static IObservable<Unit> onMouseDown(this GameObject go) {
-      return (
-        go.GetComponent<OnMouseDownForwarder>() ?? 
-        go.AddComponent<OnMouseDownForwarder>()
-      ).onMouseDown;
-    }
+    public static IObservable<Unit> onMouseDown(this GameObject go) =>
+      go.onEvent<Unit, OnMouseDownForwarder>();
 
-    public static A EnsureComponent<A>(this GameObject go) where A : Component {
-      return go.GetComponent<A>() ?? go.AddComponent<A>();
+    public static IObservable<Unit> onMouseUp(this GameObject go) =>
+      go.onEvent<Unit, OnMouseUpForwarder>();
+
+    public static IObservable<A> onEvent<A, Forwarder>(this GameObject go) where Forwarder : EventForwarder<A> =>
+      go.EnsureComponent<Forwarder>().onEvent;
+
+    public static A EnsureComponent<A>(this GameObject go) where A : Component => 
+      go.GetComponent<A>() ?? go.AddComponent<A>();
+    
+    public static Option<A> GetComponentSafe<A>(this GameObject go) where A : Component =>
+      go.GetComponent<A>().opt();
+
+    public static Either<ErrorMsg, A> GetComponentSafeE<A>(this GameObject go) where A : Component {
+      var res = go.GetComponentSafe<A>();
+      return 
+        res.isNone 
+        ? (Either<ErrorMsg, A>) new ErrorMsg($"Can't find component {typeof(A)} on '{go}'") 
+        : res.__unsafeGetValue;
     }
 
     // Modified from unity decompiled dll.

@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.defaultLogger);
+    ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.@default);
 
     public static IPrefValueRW<A> custom<A>(
       ISerializedRW<A> aRW,
@@ -140,7 +140,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
         var serializedWithoutDiscriminator = serialized.Substring(1);
         var opt = deserialize(serializedWithoutDiscriminator);
-        return opt.isDefined ? opt.get : deserializationFailed(key, defaultVal, serialized);
+        return opt.isSome ? opt.get : deserializationFailed(key, defaultVal, serialized);
       }
 
       A deserializationFailed(string key, A defaultVal, string serialized) {

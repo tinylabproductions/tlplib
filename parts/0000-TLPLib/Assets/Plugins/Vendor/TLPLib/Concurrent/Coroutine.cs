@@ -3,20 +3,29 @@ using System.Collections;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public class Coroutine : IDisposable {
+  public interface Coroutine : IDisposable {
     /** 
      * We could use Future here, but future is a heap allocated object and
      * we don't want each coroutine to allocate 2 extra heap objects.
      * 
      * So instead we use event + property.
      */
-    public event Action onFinish;
+    event Action onFinish;
     /* false if coroutine is running, true if it completed or was stopped. */
+    bool finished { get; }
+  }
+
+  public static class CoroutineExts {
+    public static void stop(this Coroutine c) => c.Dispose();
+  }
+
+  public class UnityCoroutine : Coroutine {
+    public event Action onFinish;
     public bool finished { get; private set; }
 
     bool shouldStop;
 
-    public Coroutine(MonoBehaviour behaviour, IEnumerator enumerator) {
+    public UnityCoroutine(MonoBehaviour behaviour, IEnumerator enumerator) {
       behaviour.StartCoroutine(fixUnityBugs(enumerator));
     }
 

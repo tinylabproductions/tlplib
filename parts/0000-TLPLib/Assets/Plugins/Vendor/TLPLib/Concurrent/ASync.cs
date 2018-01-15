@@ -6,14 +6,13 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    static ASyncHelperBehaviour coroutineHelper(GameObject go) {
-      return
-        go.GetComponent<ASyncHelperBehaviour>() ??
-        go.AddComponent<ASyncHelperBehaviour>();
-    }
+    static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) => 
+      go.GetComponent<ASyncHelperBehaviourEmpty>()
+      ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
 
     static ASyncHelperBehaviour _behaviour;
 
@@ -42,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
         // be part of an editor script.
         if (Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(go);
-        _behaviour = coroutineHelper(go);
+        _behaviour = go.EnsureComponent<ASyncHelperBehaviour>();
       }
       return _behaviour;
     } }
@@ -51,13 +50,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
-    ) {
-      return Future<A>.async(p => behaviour.StartCoroutine(coroutine(p)));
-    }
+    ) => Future<A>.async(p => behaviour.StartCoroutine(coroutine(p)));
 
-    public static Coroutine StartCoroutine(IEnumerator coroutine) {
-      return new Coroutine(behaviour, coroutine);
-    }
+    public static Coroutine StartCoroutine(IEnumerator coroutine) =>
+      new UnityCoroutine(behaviour, coroutine);
 
     public static Coroutine WithDelay(
       float seconds, Action action, 
@@ -70,28 +66,25 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) {
       behaviour = behaviour ?? ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeScale);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
       Threads.OnMainThread.run(action, runNowIfOnMainThread);
 
-    public static Coroutine NextFrame(Action action) {
-      return NextFrame(behaviour, action);
-    }
+    public static Coroutine NextFrame(Action action) => NextFrame(behaviour, action);
 
-    public static Coroutine NextFrame(GameObject gameObject, Action action) {
-      return NextFrame(coroutineHelper(gameObject), action);
-    }
+    public static Coroutine NextFrame(GameObject gameObject, Action action) => 
+      NextFrame(coroutineHelper(gameObject), action);
 
     public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
       var enumerator = NextFrameEnumerator(action);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     public static Coroutine AfterXFrames(
       int framesToSkip, Action action
-    ) { return AfterXFrames(behaviour, framesToSkip, action); }
+    ) => AfterXFrames(behaviour, framesToSkip, action);
 
     public static Coroutine AfterXFrames(
       MonoBehaviour behaviour, int framesToSkip, Action action
@@ -108,9 +101,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public static void NextPostRender(Camera camera, Action action) {
-      NextPostRender(camera, 1, action);
-    }
+    public static void NextPostRender(Camera camera, Action action) => NextPostRender(camera, 1, action);
 
     public static void NextPostRender(Camera camera, int afterFrames, Action action) {
       var pr = camera.gameObject.AddComponent<NextPostRenderBehaviour>();
@@ -118,35 +109,28 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(Fn<bool> f) {
-      return EveryFrame(behaviour, f);
-    }
+    public static Coroutine EveryFrame(Fn<bool> f) => EveryFrame(behaviour, f);
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(GameObject go, Fn<bool> f) {
-      return EveryFrame(coroutineHelper(go), f);
-    }
+    public static Coroutine EveryFrame(GameObject go, Fn<bool> f) => EveryFrame(coroutineHelper(go), f);
 
     /* Do thing every frame until f returns false. */
     public static Coroutine EveryFrame(MonoBehaviour behaviour, Fn<bool> f) {
       var enumerator = EveryWaitEnumerator(null, f);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) {
-      return EveryXSeconds(seconds, behaviour, f);
-    }
+    public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) => EveryXSeconds(seconds, behaviour, f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) {
-      return EveryXSeconds(seconds, coroutineHelper(go), f);
-    }
+    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) => 
+      EveryXSeconds(seconds, coroutineHelper(go), f);
 
     /* Do thing every X seconds until f returns false. */
     public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
       var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtimeReusable(seconds), f);
-      return new Coroutine(behaviour, enumerator);
+      return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Returns action that cancels our delayed call. */
@@ -168,7 +152,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do async cancellable WWW request. */
-    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> wwwFuture(this WWW www) {
+    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
       Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
       var f = Future<Either<Cancelled, Either<WWWError, WWW>>>.async(out promise);
 
@@ -182,6 +166,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         promise.complete(new Either<Cancelled, Either<WWWError, WWW>>(Cancelled.instance));
         return true;
       });
+    }
+
+    public static Future<Either<ErrorMsg, UnityWebRequest>> toFuture(this UnityWebRequest req) {
+      Promise<Either<ErrorMsg, UnityWebRequest>> promise;
+      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out promise);
+      StartCoroutine(webRequestEnumerator(req, promise));
+      return f;
+    }
+
+    public static IEnumerator webRequestEnumerator(
+      UnityWebRequest req, Promise<Either<ErrorMsg, UnityWebRequest>> p
+    ) {
+      yield return req.Send();
+      if (req.isError) {
+        p.complete(new ErrorMsg(req.error));
+        req.Dispose();
+      }
+      else p.complete(req);
     }
 
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
@@ -205,10 +207,30 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Duration duration, Action action, TimeScale timeScale=TimeScale.Unity
     ) {
       var seconds = duration.seconds;
-      if (timeScale == TimeScale.Unity) yield return new WaitForSeconds(seconds);
+      Option<object> yieldInstruction;
+      switch (timeScale) {
+        case TimeScale.Unity:
+          yieldInstruction = F.some<object>(new WaitForSeconds(seconds));
+          break;
+        case TimeScale.Realtime:
+          yieldInstruction = F.some<object>(new WaitForSecondsRealtime(seconds));
+          break;
+        case TimeScale.FixedTime:
+          yieldInstruction = Option<object>.None;
+          break;
+        case TimeScale.UnscaledTime:
+          yieldInstruction = F.some<object>(new WaitForSecondsUnscaled(seconds));
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(timeScale), timeScale, null);
+      }
+
+      if (yieldInstruction.isSome)
+        yield return yieldInstruction.get;
       else {
+        var waiter = timeScale == TimeScale.FixedTime ? new WaitForFixedUpdate() : null;
         var waitTime = timeScale.now() + seconds;
-        while (waitTime > timeScale.now()) yield return null;
+        while (waitTime > timeScale.now()) yield return waiter;
       }
       action();
     }
@@ -266,9 +288,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public WaitForSecondsUnscaled(float time) { this.time = time; }
 
-    protected override void init() {
-      waitTime = Time.unscaledTime + time;
-    }
+    protected override void init() => waitTime = Time.unscaledTime + time;
 
     public override bool keepWaiting => Time.unscaledTime < waitTime;
   }
@@ -280,9 +300,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public WaitForSecondsRealtimeReusable(float time) { this.time = time; }
 
-    protected override void init() {
-      finishTime = Time.realtimeSinceStartup + time;
-    }
+    protected override void init() => finishTime = Time.realtimeSinceStartup + time;
 
     public override bool keepWaiting => Time.realtimeSinceStartup < finishTime;
   }

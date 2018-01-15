@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.system;
 using UnityEngine;
+using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -19,9 +21,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * <code>
    * void example(IObservable<A> observable) {
    *   observable.subscribe(a => {
-   *     Log.info("A " + a);
+   *     Log.d.info("A " + a);
    *     observable.subscribe(a1 => {
-   *       Log.info("A1 " + a);
+   *       Log.d.info("A1 " + a);
    *     });
    *   });
    * }
@@ -35,11 +37,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * <code>
    * void example(Subject<int> observable) {
    *   observable.subscribe(a => {
-   *     Log.info("A1=" + a);
+   *     Log.d.info("A1=" + a);
    *     if (a == 0) observable.push(a + 1);
    *   });
    *   observable.subscribe(a => {
-   *     Log.info("A2=" + a);
+   *     Log.d.info("A2=" + a);
    *   });
    *   observable.push(0);
    * }
@@ -52,7 +54,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public interface IObservable<out A> : IObservable {
-    ISubscription subscribe(IObserver<A> observer);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="tracker">Tracker</param>
+    /// <param name="onEvent"></param>
+    ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent);
   }
 
   public static class Observable {
@@ -66,9 +73,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       addLast, removeFirst, count, collection, first, last
     );
 
-    public static Tpl<A, IObservable<Evt>> a<A, Evt>
-    (Fn<IObserver<Evt>, Tpl<A, ISubscription>> creator) {
-      IObserver<Evt> observer = null;
+    public static Tpl<A, IObservable<Evt>> a<A, Evt>(
+      Fn<Act<Evt>, Tpl<A, ISubscription>> creator
+    ) {
+      Act<Evt> observer = null;
       ISubscription subscription = null;
       var observable = new Observable<Evt>(obs => {
         observer = obs;
@@ -86,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       Act<Act<A>> registerCallback, Action unregisterCallback
     ) {
       return new Observable<A>(obs => {
-        registerCallback(obs.push);
+        registerCallback(obs);
         return new Subscription(unregisterCallback);
       });
     }
@@ -176,36 +184,32 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    static IEnumerator everyFrameCR(IObserver<Unit> observer) {
+    static IEnumerator everyFrameCR(Act<Unit> onEvent) {
       while (true) {
-        observer.push(Unit.instance);
+        onEvent(Unit.instance);
         yield return null;
       }
       // ReSharper disable once IteratorNeverReturns
     }
 
     static IEnumerator intervalEnum(
-      IObserver<DateTime> observer, Duration interval, Option<Duration> delay
+      Act<DateTime> pushEvent, Duration interval, Option<Duration> delay
     ) {
       foreach (var d in delay) yield return new WaitForSeconds(d.seconds);
       var wait = new WaitForSeconds(interval.seconds);
       while (true) {
-        observer.push(DateTime.Now);
+        pushEvent(DateTime.Now);
         yield return wait;
       }
       // ReSharper disable once IteratorNeverReturns
     }
   }
 
-  public delegate ISubscription SubscribeToSource<out A>(IObserver<A> observer);
+  public delegate ISubscription SubscribeToSource<out A>(Act<A> onEvent);
 
   public delegate ObservableImplementation ObserverBuilder<
     in Elem, out ObservableImplementation
   >(SubscribeToSource<Elem> subscriptionFn);
-
-  public class ObservableFinishedException : Exception {
-    public ObservableFinishedException(string message) : base(message) {}
-  }
 
   public class Observable<A> : IObservable<A> {
     public static readonly Observable<A> empty =
@@ -213,21 +217,21 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
-      readonly IObserver<A> observer;
+      readonly Act<A> onEvent;
       readonly SubscribeToSource<A> subscribeFn;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        IObserver<A> observer, SubscribeToSource<A> subscribeFn
+        Act<A> onEvent, SubscribeToSource<A> subscribeFn
       ) {
-        this.observer = observer;
+        this.onEvent = onEvent;
         this.subscribeFn = subscribeFn;
       }
 
       public bool trySubscribe() {
-        if (subscription.isEmpty) {
-          subscription = F.some(subscribeFn(observer));
+        if (subscription.isNone) {
+          subscription = F.some(subscribeFn(onEvent));
           return true;
         }
         return false;
@@ -244,26 +248,26 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     struct Sub {
       public readonly Subscription subscription;
-      public readonly IObserver<A> observer;
+      public readonly WeakReference<Act<A>> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
       public readonly bool active;
 
-      public Sub(Subscription subscription, IObserver<A> observer, bool active) {
+      public Sub(Subscription subscription, WeakReference<Act<A>> onEvent, bool active) {
         this.subscription = subscription;
-        this.observer = observer;
+        this.onEvent = onEvent;
         this.active = active;
       }
 
       public override string ToString() => 
         $"{nameof(Sub)}[" +
         $"{nameof(subscription)}: {subscription}, " +
-        $"{nameof(observer)}: {observer}, " +
+        $"{nameof(onEvent)}: {onEvent}, " +
         $"{nameof(active)}: {active}" +
         $"]";
 
       public Sub withActive(bool active) =>
-        new Sub(subscription, observer, active);
+        new Sub(subscription, onEvent, active);
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
@@ -278,20 +282,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     readonly Option<SourceProperties> sourceProps;
 
-    bool doLogging;
-
     protected Observable() {
       sourceProps = F.none<SourceProperties>();
     }
 
     public Observable(SubscribeToSource<A> subscribeFn) {
-      sourceProps = new SourceProperties(new Observer<A>(submit), subscribeFn).some();
+      sourceProps = new SourceProperties(submit, subscribeFn).some();
     }
 
     protected virtual void submit(A a) {
-      if (doLogging) {
-        if (Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] submit: {a}");
-      }
 
       if (iterating) {
         // Do not submit if iterating.
@@ -306,7 +305,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
           if (sub.active && sub.subscription.isSubscribed)
-            sub.observer.push(a);
+            foreach (var onEvent in sub.onEvent.Target)
+              onEvent(a);
         }
       }
       finally {
@@ -316,34 +316,41 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
       }
     }
-
+    
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
-    public virtual ISubscription subscribe(IObserver<A> observer) {
-      if (doLogging && Log.isVerbose)
-        Log.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
-
+    public virtual ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
+      // Create a hard reference from subscription to observable, so it would
+      // keep the observable alive as long as we have a reference to subscription.
+      // 
+      //                 hard reference
+      //              /-------------------\
+      //             \/                   |
+      //    /------------------\      +-------+
+      //    |    Observable    |      |  Sub  | 
+      //    \------------------/      +-------+
+      //
       var subscription = new Subscription(onUnsubscribed);
       var active = !iterating;
-      subscriptions.Add(new Sub(subscription, observer, active));
+      // Create a weak reference from observable to an action.
+      //
+      // We do not want to keep performing side-effects on an object if we are only ones
+      // that have the reference to that object.
+      // 
+      //    /------------------\ weak   +-------------+ hard   +------------------------------+
+      //    |    Observable    |- - - ->| Action Code |------->| Object to perform effects on | 
+      //    \------------------/ ref    +-------------+ ref    +------------------------------+
+      //
+      subscriptions.Add(new Sub(subscription, WeakReference.a(onEvent), active));
       if (!active) pendingSubscriptionActivations++;
       
       // Subscribe to source if we have a first subscriber.
       foreach (var source in sourceProps)
-        subscribeToSource(source);
+        source.trySubscribe();
       return subscription;
     }
 
-    public IObservable<A> setLogging(bool value) {
-      doLogging = value;
-      return this;
-    }
-
     #region private methods
-
-    void subscribeToSource(SourceProperties source) {
-      if (source.trySubscribe()) log("subscribed to source");
-    }
 
     void onUnsubscribed() {
       pendingRemovals++;
@@ -353,13 +360,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // Unsubscribe from source if we don't have any subscribers that are
       // subscribed to us.
       foreach (var source in sourceProps) {
-        if (subscribers == 0 && source.tryUnsubscribe())
-          log("unsubscribed from source");
+        if (subscribers == 0)
+          source.tryUnsubscribe();
       }
-    }
-
-    void log(string s) {
-      if (doLogging && Log.isVerbose) Log.verbose($"[{nameof(Observable<A>)}] {s}");
     }
 
     void afterIteration() {

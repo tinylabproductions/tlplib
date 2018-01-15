@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   /** Representation of configuration path. */
@@ -32,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public string pathStr => path.mkString(SEPARATOR);
 
     public string pathStrWithBase { get {
-      var basedS = basedFrom.isDefined ? $"({basedFrom.get})." : "";
+      var basedS = basedFrom.isSome ? $"({basedFrom.get})." : "";
       return $"{basedS}{pathStr}";
     } }
 
@@ -51,9 +49,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public struct ParsingError {
       public readonly string jsonString;
 
-      public ParsingError(string jsonString) {
-        this.jsonString = jsonString;
-      }
+      public ParsingError(string jsonString) { this.jsonString = jsonString; }
     }
 
     public static Either<ParsingError, IConfig> parseJson(string json) {
@@ -74,12 +70,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static ConfigLookupError parseErrorFor<A>(
       ConfigPath path, object node, string extraInfo = null
-    ) {
-      var extraS = extraInfo == null ? "" : $", {extraInfo}";
-      return ConfigLookupError.wrongType(F.lazy(() =>
-        $"Can't parse {path} as {typeof(A)}{extraS}, node contents: {node.asString()}"
-      ));
-    }
+    ) => 
+      ConfigLookupError.wrongType(F.lazy(() => ImmutableArray.Create(
+        F.t("path", path.pathStrWithBase),
+        F.t("type", typeof(A).FullName),
+        F.t("extraInfo", extraInfo ?? ""),
+        F.t("node-contents", node.asDebugString())
+      )));
 
     public static Either<ConfigLookupError, A> parseErrorEFor<A>(
       ConfigPath path, object node, string extraInfo = null
@@ -98,6 +95,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       Either<ConfigLookupError, object>.Right(n);
 
     public static readonly Parser<List<object>> objectListParser = createCastParser<List<object>>();
+
+    public static Parser<Option<A>> opt<A>(Parser<A> parser) => 
+      (path, o) => 
+        o == null 
+        ? Either<ConfigLookupError, Option<A>>.Right(Option<A>.None) 
+        : parser(path, o).mapRight(_ => _.some());
 
     public static Parser<CB> collectionParser<CB, A>(
       Parser<A> parser,
@@ -288,11 +291,20 @@ namespace com.tinylabproductions.TLPLib.Configuration {
           ? Either<ConfigLookupError, DateTime>.Right(t.__unsafeGet) 
           : parseErrorEFor<DateTime>(path, s, t.__unsafeException.Message);
       }));
-    
+
+    public static Parser<R> rangeParser<A, R>(Parser<A> aParser, Fn<A, A, R> lowerUpperToRange) =>
+      configPathedParser("lower", aParser)
+      .and(configPathedParser("upper", aParser))
+      .map((path, t) => lowerUpperToRange(t._1, t._2));
+
+    public static readonly Parser<Range> iRangeParser =
+      rangeParser(intParser, (l, u) => new Range(l, u));
+
     public static readonly Parser<FRange> fRangeParser =
-      configPathedParser("lower", floatParser)
-      .and(configPathedParser("upper", floatParser))
-      .map((path, t) => new FRange(t._1, t._2));
+      rangeParser(floatParser, (l, u) => new FRange(l, u));
+    
+    public static readonly Parser<URange> uRangeParser =
+      rangeParser(uintParser, (l, u) => new URange(l, u));
 
     public static readonly Parser<Url> 
       urlParser = stringParser.map(s => new Url(s)),
@@ -379,10 +391,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       IDictionary<string, object> current, ConfigPath path, string part, Parser<A> parser
     ) {
       if (!current.ContainsKey(part))
-        return F.left<ConfigLookupError, A>(ConfigLookupError.keyNotFound(F.lazy(() =>
-          $"Cannot find part '{part}' from path '{path}' in {current.asString()} " +
-          $"[{nameof(scope)}='{scope}']"
-        )));
+        return F.left<ConfigLookupError, A>(ConfigLookupError.keyNotFound(F.lazy(() => ImmutableArray.Create(
+          F.t(nameof(part), part),
+          F.t(nameof(path), path.pathStrWithBase),
+          F.t(nameof(current), current.asDebugString()),
+          F.t(nameof(scope), scope.pathStrWithBase)
+        ))));
 
       var node = current[part];
       return parser(path, node);
@@ -403,7 +417,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       this Config.Parser<A> aParser, Fn<ConfigPath, A, Option<B>> f
     ) => aParser.flatMap((path, a) => {
       var bOpt = f(path, a);
-      return bOpt.isDefined
+      return bOpt.isSome
         ? Either<ConfigLookupError, B>.Right(bOpt.get) 
         : Config.parseErrorEFor<B>(path, a);
     });
@@ -439,7 +453,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) =>
       (path, o) => parser(path, o).flatMapRight(a => {
         var bOpt = collector(a);
-        return bOpt.isDefined
+        return bOpt.isSome
           ? new Either<ConfigLookupError, B>(bOpt.get)
           : Config.parseErrorEFor<B>(path, a, "didn't pass collector");
       });

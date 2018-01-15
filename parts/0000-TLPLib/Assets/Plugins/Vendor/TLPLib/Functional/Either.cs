@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class EitherExts {
@@ -51,6 +52,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Either<Left, ImmutableList<To>> mapRightC<From, To, Left>(
       this Either<Left, ImmutableList<From>> e, Fn<From, To> mapper
     ) => mapRightC(e, mapper, _ => _.ToImmutableList());
+
+    public static Either<A, ImmutableList<B>> sequence<A, B>(
+      this IEnumerable<Either<A, B>> enumerable
+    ) {
+      // mutable for performance
+      var builder = ImmutableList.CreateBuilder<B>();
+      foreach (var either in enumerable) {
+        if (either.isLeft) return either.__unsafeGetLeft;
+        builder.Add(either.__unsafeGetRight);
+      }
+      return builder.ToImmutable();
+    }
   }
 
   public static class Either {
@@ -153,6 +166,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<A, C> flatMapRight<C>(Fn<B, Either<A, C>> mapper) =>
       isLeft ? new Either<A, C>(_leftValue) : mapper(_rightValue);
 
+    public Either<A, C1> flatMapRight<C, C1>(Fn<B, Either<A, C>> f, Fn<B, C, C1> g) {
+      var self = this;
+      return isLeft 
+        ? new Either<A, C1>(_leftValue) 
+        : f(_rightValue).mapRight(c => g(self._rightValue, c));
+    }
+
     public Either<AA, BB> map<AA, BB>(Fn<A, AA> leftMapper, Fn<B, BB> rightMapper) =>
       isLeft
         ? new Either<AA, BB>(leftMapper(_leftValue))
@@ -163,6 +183,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Either<A, C> mapRight<C>(Fn<B, C> mapper) =>
       isLeft ? new Either<A, C>(_leftValue) : new Either<A, C>(mapper(_rightValue));
+
+    public B getOrElse(B onLeft) =>
+      isLeft ? onLeft : __unsafeGetRight;
+
+    public B getOrElse(Fn<B> onLeft) =>
+      isLeft ? onLeft() : __unsafeGetRight;
 
     public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight) => 
       isLeft ? onLeft(_leftValue) : onRight(_rightValue);
@@ -193,6 +219,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
         $"Can't {nameof(__unsafeCastRight)}, because this is {this}"
       );
       return new Either<A, BB>(_leftValue);
+    }
+
+    public Option<B> getOrLog(
+      string errorMessage, UnityEngine.Object context = null, ILog log = null
+    ) {
+      if (isLeft) {
+        log = log ?? Log.@default;
+        log.error($"{errorMessage}: {__unsafeGetLeft}", context);
+      }
+      return rightValue;
     }
 
     public EitherEnumerator<A, B> GetEnumerator() => new EitherEnumerator<A, B>(this);

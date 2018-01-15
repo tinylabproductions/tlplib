@@ -18,10 +18,9 @@ namespace com.tinylabproductions.TLPLib.system {
 
     public bool IsAlive => reference.IsAlive;
     public bool TrackResurrection => reference.TrackResurrection;
+    public Option<A> Target => F.opt(reference.Target as A);
 
-    public Option<A> Target { get {
-      var o = reference.Target;
-      return o != null ? F.some((A) o) : Option<A>.None;
-    } }
+    public override string ToString() =>
+      $"{nameof(WeakReference<A>)}({Target})";
   }
 }

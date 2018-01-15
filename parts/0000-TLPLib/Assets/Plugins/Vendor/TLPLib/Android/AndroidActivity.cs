@@ -32,6 +32,7 @@ namespace com.tinylabproductions.TLPLib.Android {
 
     static AndroidActivity() {
       if (Application.isEditor) return;
+
       using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
         bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
         current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));
@@ -49,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Android {
           Get<int>("versionCode");
       }
       catch (Exception e) {
-        Log.error(e);
+        Log.d.error(e);
         return 0;
       }
     } }
@@ -61,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Android {
           Get<string>("versionName");
       }
       catch (Exception e) {
-        Log.error(e);
+        Log.d.error(e);
         return "";
       }
     } }
@@ -71,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     static Option<bool> _isTablet = F.none<bool>();
 
     public static bool isTablet { get {
-      if (_isTablet.isEmpty) {
+      if (_isTablet.isNone) {
         // cache result
         _isTablet = F.some(bridge.CallStatic<bool>("isTablet"));
       }

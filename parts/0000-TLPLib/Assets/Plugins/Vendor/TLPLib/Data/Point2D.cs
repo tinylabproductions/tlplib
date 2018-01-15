@@ -15,6 +15,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       return new Point2D(x ?? this.x, y ?? this.y);
     }
 
+    public Point2D up => new Point2D(x, y+1);
+    public Point2D down => new Point2D(x, y-1);
+    public Point2D left => new Point2D(x-1, y);
+    public Point2D right => new Point2D(x+1, y);
+
     public Vector2 ToVector2() { return new Vector2(x, y); }
     public Vector3 ToVector3() { return new Vector3(x, y); }
 

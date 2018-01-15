@@ -103,34 +103,42 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static IObservable<Unit> registerDebugSequence(
-      DebugSequenceMouseData mouseData=null, DebugSequenceDirectionData directionData=null,
+      DebugSequenceMouseData mouseData=null, 
+      Option<DebugSequenceDirectionData> directionDataOpt=default(Option<DebugSequenceDirectionData>),
       DebugConsoleBinding binding=null
     ) {
+      Option.ensureValue(ref directionDataOpt);
+
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
-      directionData = directionData ?? DEFAULT_DIRECTION_DATA;
 
       var mouseObs = 
         new RegionClickObservable(mouseData.width, mouseData.height)
         .sequenceWithinTimeframe(mouseData.sequence, 3);
 
-      var directions = Observable.everyFrame.collect(_ => {
-        var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
-        var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
-        // Both are equal, can't decide.
-        if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
-        return 
-          Math.Abs(horizontal) > Math.Abs(vertical) 
-          ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
-          : F.some(vertical > 0 ? Direction.Up : Direction.Down);
-      }).changedValues();
+      var directionObs = directionDataOpt.fold(
+        Observable<Unit>.empty,
+        directionData => {
+          var directions = Observable.everyFrame.collect(_ => {
+            var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
+            var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
+            // Both are equal, can't decide.
+            if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
+            return 
+              Math.Abs(horizontal) > Math.Abs(vertical) 
+              ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
+              : F.some(vertical > 0 ? Direction.Up : Direction.Down);
+          }).changedValues();
 
-      var directionObs = 
-        directions
-        .withinTimeframe(directionData.sequence.Count, directionData.timeframe)
-        .filter(l => l.Select(t => t._1).SequenceEqual(directionData.sequence));
+          return
+            directions
+            .withinTimeframe(directionData.sequence.Count, directionData.timeframe)
+            .filter(l => l.Select(t => t._1).SequenceEqual(directionData.sequence))
+            .discardValue();
+        }
+      );
 
-      var obs = mouseObs.joinDiscard(directionObs);
+      var obs = mouseObs.join(directionObs);
       obs.subscribe(_ => instance.show(binding));
       return obs;
     }
@@ -152,10 +160,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       string name, Ref<ImmutableHashSet<A>> pv, IEnumerable<A> options
     ) {
       var r = registrarFor(name);
-      r.register("List", () => pv.value.asString());
+      r.register("List", () => pv.value.asDebugString());
       r.register("Clear", () => {
         pv.value = ImmutableHashSet<A>.Empty;
-        return pv.value.asString();
+        return pv.value.asDebugString();
       });
       foreach (var f in options) {
         r.register($"{f}?", () => pv.value.Contains(f));
@@ -173,11 +181,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var view = binding.clone();
       Object.DontDestroyOnLoad(view);
-      foreach (var commandGroup in commands) {
-        var button = addButton(view.buttonPrefab, view.commandGroupsHolder.transform);
+
+      var currentGroupButtons = ImmutableList<ButtonBinding>.Empty;
+      setupList(view.commands, () => currentGroupButtons);
+
+      var commandGroups = commands.Select(commandGroup => {
+        var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
         button.text.text = commandGroup.Key;
-        button.button.onClick.AddListener(() => showGroup(view, commandGroup.Key, commandGroup.Value));
-      }
+        button.button.onClick.AddListener(() =>
+          currentGroupButtons = showGroup(view, commandGroup.Key, commandGroup.Value)
+        );
+        return button;
+      }).ToImmutableList();
+      setupList(view.commandGroups, () => commandGroups);
 
       Application.logMessageReceivedThreaded += onLogMessageReceived;
       view.closeButton.onClick.AddListener(destroy);
@@ -185,14 +201,28 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       current = new Instance(view).some();
     }
 
-    static void showGroup(DebugConsoleBinding view, string groupName, IEnumerable<Command> commands) {
+    static void setupList(DebugConsoleListBinding listBinding, Fn<ImmutableList<ButtonBinding>> contents) {
+      listBinding.clearFilterButton.onClick.AddListener(() => listBinding.filterInput.text = "");
+      listBinding.filterInput.onValueChanged.AddListener(value => {
+        foreach (var button in contents()) {
+          var active = button.text.text.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+          button.gameObject.SetActive(active);
+        }
+      });
+    }
+    
+    static ImmutableList<ButtonBinding> showGroup(
+      DebugConsoleBinding view, string groupName, IEnumerable<Command> commands
+    ) {
       view.commandGroupLabel.text = groupName;
-      foreach (var t in view.commandsHolder.transform.children()) Object.Destroy(t.gameObject);
-      foreach (var command in commands) {
-        var button = addButton(view.buttonPrefab, view.commandsHolder.transform);
+      var commandsHolder = view.commands.holder;
+      foreach (var t in commandsHolder.transform.children()) Object.Destroy(t.gameObject);
+      return commands.Select(command => {
+        var button = addButton(view.buttonPrefab, commandsHolder.transform);
         button.text.text = command.name;
         button.button.onClick.AddListener(() => command.run());
-      }
+        return button;
+      }).ToImmutableList();
     }
 
     static ButtonBinding addButton(ButtonBinding prefab, Transform target) {
@@ -256,7 +286,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
       return console.register(new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
-        if (opt.isDefined) {
+        if (opt.isSome) {
           var returnFuture = run(opt.get);
           Act<A> onComplete = t => Debug.Log($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.
@@ -342,5 +372,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           return comment == null ? a.ToString() : $"{comment}: value={a}";
         });
     }
+
+    static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
+    public void registerBools(string name, Ref<Option<bool>> reference, string comment = null) =>
+      registerEnum(name, reference, OPT_BOOLS, comment);
   }
 }

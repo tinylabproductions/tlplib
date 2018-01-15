@@ -92,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       return list.bind(max, maxName, (i, observable) => {
         var control = getControl(i);
         return observable.subscribe(opt => {
-          control.SetIsActive(opt.isDefined);
+          control.SetIsActive(opt.isSome);
           opt.each(v => onChange(control, v));
         });
       });

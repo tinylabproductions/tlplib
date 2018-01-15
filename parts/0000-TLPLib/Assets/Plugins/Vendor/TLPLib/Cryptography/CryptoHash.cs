@@ -5,15 +5,15 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.Cryptography {
   public struct CryptoHash : IStr, IEquatable<CryptoHash> {
     // http://stackoverflow.com/a/33568064/935259
     static readonly MD5 md5 = new MD5CryptoServiceProvider();
     static readonly SHA1 sha1 = new SHA1CryptoServiceProvider();
+    static readonly SHA256 sha256 = new SHA256CryptoServiceProvider();
 
-    public enum Kind : byte { MD5, SHA1 }
+    public enum Kind : byte { MD5, SHA1, SHA256 }
 
     public readonly ImmutableArray<byte> bytes;
     public readonly Kind kind;
@@ -49,8 +49,9 @@ namespace com.tinylabproductions.Cryptography {
       switch (kind) {
         case Kind.MD5: return 32;
         case Kind.SHA1: return 40;
+        case Kind.SHA256: return 64;
+        default: throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
       }
-      return F.matchErr<int>(nameof(Kind), kind.ToString());
     }
 
     public int stringLength => stringLength_(kind);
@@ -76,8 +77,9 @@ namespace com.tinylabproductions.Cryptography {
       switch (kind) {
         case Kind.MD5: return md5.ComputeHash(bytes);
         case Kind.SHA1: return sha1.ComputeHash(bytes);
+        case Kind.SHA256: return sha256.ComputeHash(bytes);
+        default: throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
       }
-      return F.matchErr<byte[]>(nameof(Kind), kind.ToString());
     }
   }
 }

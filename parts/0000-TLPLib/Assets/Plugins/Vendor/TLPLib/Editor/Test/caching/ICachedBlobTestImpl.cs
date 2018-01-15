@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.caching {
 
     public Option<A> blob = Option<A>.None;
 
-    public bool cached => blob.isDefined;
+    public bool cached => blob.isSome;
 
     public Option<Try<A>> read() => blob.map(F.scs);
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using com.tinylabproductions.TLPLib.Logger;
 using UnityEditor;
 using Object = UnityEngine.Object;
 

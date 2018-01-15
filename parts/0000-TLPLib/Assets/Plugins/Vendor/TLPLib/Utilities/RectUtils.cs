@@ -41,5 +41,19 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       var hDiff = newH - rect.height;
       return new Rect(rect.xMin - wDiff / 2, rect.yMin - hDiff / 2, newW, newH);
     }
+
+    public static Rect withMargin(this Rect rect, Vector2 margin)
+      => new Rect(rect.min - margin, rect.size + margin * 2);
+
+    public static Rect convertCoordinateSystem(this Rect rect, Transform from, Transform to) {
+      var min = convertPoint(rect.min, from, to);
+      var max = convertPoint(rect.max, from, to);
+      return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+    }
+
+    static Vector3 convertPoint(Vector2 localPos, Transform from, Transform to) {
+      var worldPos = from.TransformPoint(localPos);
+      return to.InverseTransformPoint(worldPos);
+    }
   }
 }

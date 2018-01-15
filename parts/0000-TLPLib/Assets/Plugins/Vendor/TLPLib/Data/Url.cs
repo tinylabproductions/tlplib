@@ -1,13 +1,24 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /** Stupid tag on string. Because System.Uri is heavy. */
+  [Serializable]
   public struct Url : IStr, IEquatable<Url> {
-    public readonly string url;
+    #region Unity Serialized Fields
 
-    public Url(string url) { this.url = url; }
+#pragma warning disable 649
+    [SerializeField, NotNull] string _url;
+#pragma warning restore 649
+
+    #endregion
+
+    public string url => _url;
+
+    public Url(string url) { _url = url; }
     public static Url a(string url) => new Url(url);
 
     public override string ToString() => $"{nameof(Url)}({url})";

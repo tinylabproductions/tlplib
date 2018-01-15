@@ -1,11 +1,13 @@
-﻿using UnityEngine;
+﻿using JetBrains.Annotations;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public class DebugConsoleBinding : MonoBehaviour {
-    public GameObject commandGroupsHolder, commandsHolder, logEntriesHolder;
-    public Text commandGroupLabel, logEntryPrefab;
-    public ButtonBinding buttonPrefab;
-    public Button closeButton;
+    [NotNull] public DebugConsoleListBinding commandGroups, commands;
+    [NotNull] public GameObject logEntriesHolder;
+    [NotNull] public Text commandGroupLabel, logEntryPrefab;
+    [NotNull] public ButtonBinding buttonPrefab;
+    [NotNull] public Button closeButton;
   }
 }

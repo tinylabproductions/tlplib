@@ -25,7 +25,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
       ? Either<ImmutableList<A>, B>.Right(b()) 
       : Either<ImmutableList<A>, B>.Left(errors);
 
-    public static Either<ImmutableList<A>, ImmutableList<B>> sequence<A, B>(
+    /// <summary>
+    /// If any of the eithers are left, collects all left sides. Otherwise returns a right
+    /// from all the right sides.
+    /// </summary>
+    public static Either<ImmutableList<A>, ImmutableList<B>> sequenceValidations<A, B>(
       this IEnumerable<Either<ImmutableList<A>, B>> eithers
     ) {
       var errors = ImmutableList<A>.Empty;

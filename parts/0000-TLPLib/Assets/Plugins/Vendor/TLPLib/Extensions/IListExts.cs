@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
+using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using Random = UnityEngine.Random;
 
@@ -14,10 +17,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return list[index];
     }
 
-    public static Option<T> get<T>(this IList<T> list, int index) {
-      return (index >= 0 && index < list.Count)
-        ? F.some(list[index]) : F.none<T>();
-    }
+    public static Option<T> get<T>(this IList<T> list, int index) => 
+      index >= 0 && index < list.Count ? F.some(list[index]) : F.none<T>();
+
+    public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) => 
+      index >= 0 && index < list.Count ? list[index] : defaultValue;
 
     public static List<A> reversed<A>(this List<A> list) {
       var reversed = new List<A>(list);
@@ -29,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IList<T> list, Fn<T, bool> finder, Fn<T> ifNotFound, Fn<T, T> ifFound
     ) {
       var idxOpt = list.indexWhere(finder);
-      if (idxOpt.isEmpty) {
+      if (idxOpt.isNone) {
         var item = ifNotFound();
         list.Add(item);
         return item;
@@ -46,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IList<T> list, Fn<T, bool> finder, Fn<T, T> ifFound
     ) {
       var idxOpt = list.indexWhere(finder);
-      if (idxOpt.isEmpty) return;
+      if (idxOpt.isNone) return;
 
       var idx = idxOpt.get;
       list[idx] = ifFound(list[idx]);
@@ -65,16 +69,40 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static bool isEmpty<A>(this IList<A> list) => list.Count == 0;
-
     public static bool nonEmpty<A>(this IList<A> list) => list.Count != 0;
 
-    public static Option<A> random<A>(this IList<A> list)
-      { return list.randomIndex().map(idx => list[idx]); }
+    public static Option<A> random<A>(this IList<A> list) => 
+      list.randomIndex().map(idx => list[idx]);
 
-    public static Option<int> randomIndex<A>(this IList<A> list) {
-      return list.Count == 0
-        ? F.none<int>() : F.some(Random.Range(0, list.Count));
-    }
+    public static Option<A> random<A>(this IList<A> list, ref Rng rng) =>
+      list.randomIndex(ref rng).map(idx => list[idx]);
+
+    public static Option<Tpl<Rng, A>> randomT<A>(this IList<A> list, Rng rng) =>
+      list.randomIndexT(rng).map(t => t.map2(idx => list[idx]));
+
+    public static A random<C, A>(this NonEmpty<C> list, ref Rng rng) 
+      where C : IReadOnlyList<A> 
+    => 
+      list.a[rng.nextIntInRange(new Range(0, list.a.Count - 1), out rng)];
+
+    public static A random<A>(this NonEmpty<ImmutableList<A>> list, ref Rng rng) => 
+      random<ImmutableList<A>, A>(list, ref rng);
+
+    public static A random<A>(this NonEmpty<ImmutableArray<A>> list, ref Rng rng) => 
+      random<ImmutableArray<A>, A>(list, ref rng);
+
+    public static Option<int> randomIndex<A>(this IList<A> list) => 
+      list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
+
+    public static Option<int> randomIndex<A>(this IList<A> list, ref Rng rng) => 
+      list.Count == 0 
+      ? F.none<int>() 
+      : F.some(rng.nextIntInRange(new Range(0, list.Count - 1), out rng));
+
+    public static Option<Tpl<Rng, int>> randomIndexT<A>(this IList<A> list, Rng rng) => 
+      list.Count == 0 
+      ? F.none<Tpl<Rng, int>>() 
+      : F.some(rng.nextIntInRangeT(new Range(0, list.Count - 1)));
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {
       var temp = list[aIndex];
@@ -110,6 +138,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (end != null) b.Append(end);
 
       return b.ToString();
+    }
+
+    /// <summary>Any that is garbage free.</summary>
+    public static bool anyGCFree<A>(this IList<A> coll, Fn<A, bool> predicate) {
+      // ReSharper disable once ForCanBeConvertedToForeach, LoopCanBeConvertedToQuery
+      for (var idx = 0; idx < coll.Count; idx++)
+        if (predicate(coll[idx])) return true;
+      return false;
     }
 
     public static Option<int> indexWhere<A>(this IList<A> list, Fn<A, bool> predicate) {

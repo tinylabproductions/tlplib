@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
     /* This should really be used only for debugging. It is pretty slow. */
-    public static string asString(
+
+    public static string asDebugString(
       this IEnumerable enumerable,
-      bool newlines=true, bool fullClasses=false
+      bool newlines = true, bool fullClasses = false
     ) {
       if (enumerable == null) return "null";
       var sb = new StringBuilder();
@@ -53,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static string mkString<A>(
-      this IEnumerable<A> e, Act<StringBuilder> appendSeparator, 
+      this IEnumerable<A> e, Act<StringBuilder> appendSeparator,
       string start = null, string end = null
     ) {
       var sb = new StringBuilder();
@@ -84,6 +87,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IEnumerable<A> e, string separator = ", ", string start = "[", string end = "]"
     ) => e.mkString(separator, start, end);
 
+    public static string mkStringEnumNewLines<A>(
+      this IEnumerable<A> e, string separator = ",\n  ", string start = "[\n  ", string end = "\n]"
+    ) => e.mkString(separator, start, end);
+
     public static string mkString<A>(
       this IEnumerable<A> e, char separator, string start = null, string end = null
     ) {
@@ -96,7 +103,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       if (separator.Contains("\0")) throwNullStringBuilderException();
       return e.mkString(sb => sb.Append(separator), start, end);
-    } 
+    }
+
+    public static Dictionary<K, A> toDict<A, K>(
+      this IEnumerable<KeyValuePair<K, A>> list
+    ) => list.toDict(p => p.Key, p => p.Value);
+
+    public static Dictionary<K, A> toDict<A, K>(
+      this IEnumerable<A> list, Fn<A, K> keyGetter
+    ) => list.toDict(keyGetter, _ => _);
 
     // AOT safe version of ToDictionary.
     public static Dictionary<K, V> toDict<A, K, V>(
@@ -105,12 +120,22 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var dict = new Dictionary<K, V>();
       // ReSharper disable once LoopCanBeConvertedToQuery
       // We're trying to avoid LINQ to avoid iOS AOT related issues.
-      foreach (var item in list)
-        dict.Add(keyGetter(item), valueGetter(item));
+      foreach (var item in list) {
+        var key = keyGetter(item);
+        var value = valueGetter(item);
+        if (dict.ContainsKey(key)) {
+          throw new ArgumentException(
+            $"Can't add duplicate key '{key}', current value={dict[key]}, new value={value}"
+          );
+        }
+        dict.Add(key, value);
+      }
       return dict;
     }
 
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.Yield());
+    public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, Option<A> aOpt) =>
+      aOpt.isSome ? e.Concat(aOpt.__unsafeGetValue) : e;
 
     public static IEnumerable<Base> Concat2<Child, Base>(
       this IEnumerable<Child> e1, IEnumerable<Base> e2
@@ -126,12 +151,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var _child in e2) yield return _child;
     }
 
-    public static IEnumerable<A> Yield<A>(this A any) {
-      yield return any;
-    }
+    public static IEnumerable<A> Yield<A>(this A any) { yield return any; }
 
-    [Obsolete("Use foreach instead.")]
-    public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
+    [Obsolete("Use foreach instead.")] public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
       foreach (var el in enumerable) f(el);
     }
 
@@ -146,7 +168,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
 
-      while (aEnum.MoveNext() && bEnum.MoveNext()) 
+      while (aEnum.MoveNext() && bEnum.MoveNext())
         yield return f(aEnum.Current, bEnum.Current);
 
       aEnum.Dispose();
@@ -185,18 +207,38 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable)
-      { return enumerable.SelectMany(_ => _.asEnum()); }
+    public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable) => 
+      from aOpt in enumerable
+      where aOpt.isSome
+      select aOpt.__unsafeGetValue;
 
-    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable)
-      { return enumerable.SelectMany(_ => _); }
+    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) => 
+      enumerable.SelectMany(_ => _);
 
+    /// <summary>
+    /// Maps enumerable invoking mapper once per distinct A. 
+    /// </summary>
+    public static IEnumerable<B> mapDistinct<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, B> mapper
+    ) {
+      var cache = new Dictionary<A, B>();
+      foreach (var a in enumerable) {
+        B b;
+        if (!cache.TryGetValue(a, out b)) {
+          b = mapper(a);
+          cache.Add(a, b);
+        }
+
+        yield return b;
+      }
+    }
+    
     public static IEnumerable<B> collect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
-        if (bOpt.isDefined) yield return bOpt.get;
+        if (bOpt.isSome) yield return bOpt.__unsafeGetValue;
       }
     }
 
@@ -205,36 +247,68 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
-        if (bOpt.isDefined) return bOpt;
+        if (bOpt.isSome) return bOpt;
       }
       return F.none<B>();
     }
 
-    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) {
-      return new HashSet<A>(enumerable);
+    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) => 
+      new HashSet<A>(enumerable);
+
+    /// <summary>Partitions enumerable into two lists using a predicate.</summary>
+    public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
+      var trues = ImmutableList.CreateBuilder<A>();
+      var falses = ImmutableList.CreateBuilder<A>();
+      foreach (var a in enumerable) (predicate(a) ? trues : falses).Add(a);
+      return Partitioned.a(trues.ToImmutable(), falses.ToImmutable());
     }
 
-    /** Partitions enumerable into two lists using a predicate: (all false elements, all true elements) **/
-    public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
-      var trues = new List<A>();
-      var falses = new List<A>();
-      foreach (var a in enumerable) (predicate(a) ? trues : falses).Add(a);
-      return Partitioned.a(trues, falses);
+    public static Tpl<ImmutableList<A>, ImmutableList<B>> partitionCollect<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+    ) {
+      var nones = ImmutableList.CreateBuilder<A>();
+      var somes = ImmutableList.CreateBuilder<B>();
+      foreach (var a in enumerable) {
+        var bOpt = collector(a);
+        if (bOpt.isSome)
+          somes.Add(bOpt.__unsafeGetValue);
+        else
+          nones.Add(a);
+      }
+      return F.t(nones.ToImmutable(), somes.ToImmutable());
     }
+
+    public static IOrderedEnumerable<A> OrderBySafe<A, B>(
+      this IEnumerable<A> source, Func<A, B> keySelector
+    ) where B : IComparable<B> => source.OrderBy(keySelector);
+
+    /// <summary>Take <see cref="count"/> random unique elements from a finite enumerable.</summary>
+    public static ImmutableList<A> takeRandomly<A>(
+      this IEnumerable<A> enumerable, int count, ref Rng rng
+    ) {
+      var r = rng;
+      // Need to force the evaluation to update rng state.
+      var result = enumerable.OrderBySafe(_ => r.nextInt(out r)).Take(count).ToImmutableList();
+      rng = r;
+      return result;
+    }
+
+    public static bool isEmpty<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
+    public static bool nonEmpty<A>(this IEnumerable<A> enumerable) => enumerable.Any();
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
-    public readonly List<A> trues, falses;
+    public readonly ImmutableList<A> trues, falses;
 
-    public Partitioned(List<A> trues, List<A> falses) {
+    public Partitioned(ImmutableList<A> trues, ImmutableList<A> falses) {
       this.trues = trues;
       this.falses = falses;
     }
 
+    #region Equality
+
     public bool Equals(Partitioned<A> other) {
-      throw new InvalidOperationException(
-        "Can't compare two partitioned datasets, because their lists are mutable!"
-      );
+      return trues.SequenceEqual(other.trues) && falses.SequenceEqual(other.falses);
     }
 
     public override bool Equals(object obj) {
@@ -242,18 +316,26 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return obj is Partitioned<A> && Equals((Partitioned<A>) obj);
     }
 
-    public override int GetHashCode() { return base.GetHashCode(); }
+    public override int GetHashCode() {
+      unchecked {
+        return ((trues != null ? trues.GetHashCode() : 0) * 397) ^ (falses != null ? falses.GetHashCode() : 0);
+      }
+    }
 
-    public override string ToString() {
-      return $"{nameof(Partitioned)}[" +
-             $"{nameof(trues)}: {trues.asString()}, " +
-             $"{nameof(falses)}: {falses.asString()}" +
-             $"]";
-    }
+    public static bool operator ==(Partitioned<A> left, Partitioned<A> right) { return left.Equals(right); }
+    public static bool operator !=(Partitioned<A> left, Partitioned<A> right) { return !left.Equals(right); }
+
+    #endregion
+
+    public override string ToString() => 
+      $"{nameof(Partitioned)}[" +
+      $"{nameof(trues)}: {trues.asDebugString()}, " +
+      $"{nameof(falses)}: {falses.asDebugString()}" +
+      $"]";
   }
+
   public static class Partitioned {
-    public static Partitioned<A> a<A>(List<A> trues, List<A> falses) {
-      return new Partitioned<A>(trues, falses);
-    }
+    public static Partitioned<A> a<A>(ImmutableList<A> trues, ImmutableList<A> falses) => 
+      new Partitioned<A>(trues, falses);
   }
 }

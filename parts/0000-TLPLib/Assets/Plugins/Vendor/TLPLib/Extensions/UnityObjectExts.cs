@@ -21,5 +21,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       where A : Object 
       where B : Object 
     => a ? f(a) : null;
+
+    public static A assertIsSet<A>(this A obj, string name) where A : Object {
+      if (!obj) throw new IllegalStateException($"{name} is not set to an object!");
+      return obj;
+    }
   }
 }

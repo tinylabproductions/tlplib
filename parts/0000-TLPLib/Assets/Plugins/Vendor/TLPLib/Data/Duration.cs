@@ -5,16 +5,27 @@ using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  // I discovered TimeSpan after this was written...
+  [Serializable]
   public struct Duration : IStr, IEquatable<Duration> {
+    [NonSerialized]
     public static readonly Duration zero = new Duration(0);
 
-    public readonly int millis;
+    #region Unity Serialized Fields
+
+#pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
+    [SerializeField] int _millis;
+    // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
+#pragma warning restore 649
+
+    #endregion
+
+    public int millis => _millis;
 
     public static Duration fromSeconds(int seconds) => new Duration(seconds * 1000);
     public static Duration fromSeconds(float seconds) => new Duration(Mathf.RoundToInt(seconds * 1000));
 
-    public Duration(int millis) { this.millis = millis; }
+    public Duration(int millis) { _millis = millis; }
     public Duration(TimeSpan timeSpan) : this((int) timeSpan.TotalMilliseconds) {}
 
     #region Equality
@@ -56,9 +67,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     public TimeSpan toTimeSpan => new TimeSpan(millis * TimeSpan.TicksPerMillisecond);
     public static implicit operator TimeSpan(Duration d) => d.toTimeSpan;
 
+    public string toMinSecString() => ((int)seconds).toMinSecString();
+
     public override string ToString() => $"{nameof(Duration)}({millis}ms)";
     public string asString() => $"{millis}ms";
 
+    [NonSerialized]
     public static readonly Numeric<Duration> numeric = new Numeric();
     class Numeric : Numeric<Duration> {
       public Duration add(Duration a1, Duration a2) => a1 + a2;
@@ -68,12 +82,15 @@ namespace com.tinylabproductions.TLPLib.Data {
       public CompareResult compare(Duration a1, Duration a2) => comparable.compare(a1, a2);
     }
 
+    [NonSerialized]
     public static readonly Comparable<Duration> comparable = 
       Comparable.long_.comap((Duration d) => d.millis);
 
+    [NonSerialized]
     public static readonly ISerializedRW<Duration> serializedRW =
       SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
 
+    [NonSerialized]
     public static readonly Config.Parser<Duration> configParser =
       Config.intParser.map(ms => new Duration(ms));
   }

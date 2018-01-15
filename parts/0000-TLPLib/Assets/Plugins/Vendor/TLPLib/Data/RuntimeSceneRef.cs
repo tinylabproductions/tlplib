@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,7 +18,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
   [AdvancedInspector(true)]
-  public class RuntimeSceneRef {
+  public class RuntimeSceneRef : OnObjectValidate {
     [SerializeField, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))]
     public Object scene;
 
@@ -20,21 +26,21 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     // Required for AI
     // ReSharper disable once NotNullMemberIsNotInitialized
-    RuntimeSceneRef() {}
+    protected RuntimeSceneRef() {}
 
     public RuntimeSceneRef(Object scene) {
       this.scene = scene;
       prepareForRuntime();
     }
 
-    public string sceneName { get {
+    public SceneName sceneName { get {
       prepareForRuntime();
-      return _sceneName;
+      return new SceneName(_sceneName);
     } }
 
-    public string scenePath { get {
+    public ScenePath scenePath { get {
       prepareForRuntime();
-      return _scenePath;
+      return new ScenePath(_scenePath);
     } }
 
     [Conditional("UNITY_EDITOR")]
@@ -56,5 +62,29 @@ namespace com.tinylabproductions.TLPLib.Data {
       prepareForRuntime();
       return true;
     }
+
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+      containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(onObjectValidate)}");
+      prepareForRuntime();
+      return Enumerable.Empty<ErrorMsg>();
+    }
+
+    public override string ToString() => $"{nameof(RuntimeSceneRef)}({_scenePath})";
+  }
+
+  /// <summary>
+  /// Reference to a <see cref="Scene"/> which has a <see cref="Component"/> of type <see cref="A"/> on
+  /// a root <see cref="GameObject"/> in it.
+  /// </summary>
+  [Serializable]
+  public abstract class RuntimeSceneRefWithComponent<A> : RuntimeSceneRef where A : Component {
+    protected RuntimeSceneRefWithComponent() { }
+    protected RuntimeSceneRefWithComponent(Object scene) : base(scene) { }
+
+    public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
+      SceneWithObjectLoader.load<A>(scenePath, loadSceneMode).map(e => e.rightOrThrow);
+
+    public override string ToString() => 
+      $"{nameof(RuntimeSceneRefWithComponent<A>)}({typeof(A)} @ {scenePath.path})";
   }
 }

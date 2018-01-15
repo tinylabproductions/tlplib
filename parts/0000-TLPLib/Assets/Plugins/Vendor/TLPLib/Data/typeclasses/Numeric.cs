@@ -22,7 +22,8 @@
       public int subtract(int a1, int a2) => a1 - a2;
       public int fromInt(int i) => i;
       public bool eql(int a1, int a2) => a1 == a2;
-      public CompareResult compare(int a1, int a2) => a1.CompareTo(a2).asCmpRes();
+      public CompareResult compare(int a1, int a2) => Compare(a1, a2).asCmpRes();
+      public int Compare(int a1, int a2) => a1.CompareTo(a2);
     }
 
     class UInt : Numeric<uint> {
@@ -30,7 +31,8 @@
       public uint subtract(uint a1, uint a2) => a1 - a2;
       public uint fromInt(int i) => (uint) i;
       public bool eql(uint a1, uint a2) => a1 == a2;
-      public CompareResult compare(uint a1, uint a2) => a1.CompareTo(a2).asCmpRes();
+      public CompareResult compare(uint a1, uint a2) => Compare(a1, a2).asCmpRes();
+      public int Compare(uint a1, uint a2) => a1.CompareTo(a2);
     }
 
     class Float : Numeric<float> {
@@ -38,7 +40,8 @@
       public float subtract(float a1, float a2) => a1 - a2;
       public float fromInt(int i) => i;
       public bool eql(float a1, float a2) => a1 == a2;
-      public CompareResult compare(float a1, float a2) => a1.CompareTo(a2).asCmpRes();
+      public CompareResult compare(float a1, float a2) => Compare(a1, a2).asCmpRes();
+      public int Compare(float a1, float a2) => a1.CompareTo(a2);
     }
 
     class Double : Numeric<double> {
@@ -46,7 +49,8 @@
       public double subtract(double a1, double a2) => a1 - a2;
       public double fromInt(int i) => i;
       public bool eql(double a1, double a2) => a1 == a2;
-      public CompareResult compare(double a1, double a2) => a1.CompareTo(a2).asCmpRes();
+      public CompareResult compare(double a1, double a2) => Compare(a1, a2).asCmpRes();
+      public int Compare(double a1, double a2) => a1.CompareTo(a2);
     }
   }
 }

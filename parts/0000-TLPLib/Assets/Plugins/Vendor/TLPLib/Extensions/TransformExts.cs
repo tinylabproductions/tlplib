@@ -19,30 +19,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void setPosition(
       this Transform t,
-#if ENABLE_IL2CPP
-      Option<float> x=null, 
-      Option<float> y=null, 
-      Option<float> z=null
-#else
-      Option<float> x=new Option<float>(), 
-      Option<float> y=new Option<float>(), 
-      Option<float> z=new Option<float>()
-#endif
-) {
+      Option<float> x = default(Option<float>), 
+      Option<float> y = default(Option<float>), 
+      Option<float> z = default(Option<float>)
+    ) {
       t.position = t.position.with3(x, y, z);
     }
 
     public static void setScale(
       this Transform t,
-#if ENABLE_IL2CPP
-      Option<float> x = null,
-      Option<float> y = null,
-      Option<float> z = null
-#else
-      Option<float> x=new Option<float>(), 
-      Option<float> y=new Option<float>(), 
-      Option<float> z=new Option<float>()
-#endif
+      Option<float> x = default(Option<float>), 
+      Option<float> y = default(Option<float>), 
+      Option<float> z = default(Option<float>)
     ) {
       t.localScale = t.localScale.with3(x, y, z);
     }

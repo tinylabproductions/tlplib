@@ -15,15 +15,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public Option<V> adding { get {
-      return (oldValue.isEmpty && newValue.isDefined) ? newValue : F.none<V>();
+      return (oldValue.isNone && newValue.isSome) ? newValue : F.none<V>();
     } }
 
     public Option<V> removal { get {
-      return (oldValue.isDefined && newValue.isEmpty) ? oldValue : F.none<V>();
+      return (oldValue.isSome && newValue.isNone) ? oldValue : F.none<V>();
     } }
 
     public Option<Tpl<V, V>> updating { get {
-      return (oldValue.isDefined && newValue.isDefined) 
+      return (oldValue.isSome && newValue.isSome) 
         ? oldValue.zip(newValue) : F.none<Tpl<V, V>>();
     } }
 

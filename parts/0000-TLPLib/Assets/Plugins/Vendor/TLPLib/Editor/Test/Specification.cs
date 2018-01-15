@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -16,28 +17,65 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
   }
 
+  public class ImplicitSpecification : Specification {
+    SpecificationBuilder _currentBuilder;
+    SpecificationBuilder currentBuilder {
+      get {
+        if (_currentBuilder == null) throw new IllegalStateException(
+          "Implicit specification builder is not set! " +
+          "You should be in a describe() block before calling this method."
+        );
+        return _currentBuilder;
+      }
+      set { _currentBuilder = value; }
+    }
+
+    protected SpecificationBuilder.When when => currentBuilder.when;
+    protected SpecificationBuilder.It it => currentBuilder.it;
+
+    protected event Action beforeEach {
+      add { currentBuilder.beforeEach += value; }
+      remove { currentBuilder.beforeEach -= value; }
+    }
+
+    protected event Action afterEach {
+      add { currentBuilder.afterEach += value; }
+      remove { currentBuilder.afterEach -= value; }
+    }
+
+    protected SimpleRef<A> let<A>(A initialValue) => currentBuilder.let(initialValue);
+    protected SimpleRef<A> let<A>(Fn<A> initialValue) => currentBuilder.let(initialValue);
+
+    protected void describe(Action buildTests) {
+      describe(builder => {
+        currentBuilder = builder;
+        buildTests();
+        currentBuilder = null;
+      });
+    }
+  }
+
   public class SpecTestFailedException : Exception {
     public SpecTestFailedException(
       ImmutableList<SpecificationBuilder.Test<Exception>> failures
     ) : base(
       "Following tests failed:\n\n" + failures.Select(f => {
-        var err =
-          F.opt(f.a as AssertionException).map(e => e.Message)
-          .getOrElse(f.a.ToString);
-
-        return $"### {f.name} ###\n{err}";
+        var err = F.opt(f.a as AssertionException).fold(f.a.ToString, e => e.Message);
+        return $"### {f.name}\n{err.Trim()}\n@ {f.stackFrame.fileAndLine()}\n";
       }).mkString("\n")
-    ) {}
+    ) { }
   }
 
   public sealed class SpecificationBuilder {
     public struct Test<A> {
       public readonly string name;
       public readonly A a;
+      public readonly StackFrame stackFrame;
 
-      public Test(string name, A a) {
+      public Test(string name, A a, StackFrame stackFrame) {
         this.name = name;
         this.a = a;
+        this.stackFrame = stackFrame;
       }
 
       public override string ToString() => $"{nameof(Test)}: {name} ({a})";
@@ -48,10 +86,10 @@ namespace com.tinylabproductions.TLPLib.Test {
         "", ImmutableList<Action>.Empty, ImmutableList<Action>.Empty
       );
 
-      public readonly string name;
-      public readonly ImmutableList<Action> beforeEach, afterEach;
+      readonly string name;
+      readonly ImmutableList<Action> beforeEach, afterEach;
 
-      public Context(string name, ImmutableList<Action> beforeEach, ImmutableList<Action> afterEach) {
+      Context(string name, ImmutableList<Action> beforeEach, ImmutableList<Action> afterEach) {
         this.name = name;
         this.beforeEach = beforeEach;
         this.afterEach = afterEach;
@@ -65,53 +103,84 @@ namespace com.tinylabproductions.TLPLib.Test {
       public Context addAfterEach(Action action) =>
         new Context(name, beforeEach, afterEach.Add(action));
 
-      public Context child(string childName) => 
+      public Context child(string childName) =>
         new Context(concatName(name, childName, " and "), beforeEach, afterEach);
 
-      public Test<Action> test(string testName, Action testAction) =>
+      public Test<Action> test(string testName, Action testAction, StackFrame stackFrame) =>
         new Test<Action>(
           concatName(name, testName),
           () => {
             foreach (var a in beforeEach) a();
             testAction();
             foreach (var a in afterEach) a();
-          }
+          },
+          stackFrame
         );
 
       static string concatName(string context, string name, string joiner = " ") =>
         context.nonEmptyOpt(true).fold(name, s => $"{s}{joiner}{name}");
     }
 
+    public class When {
+      readonly SpecificationBuilder self;
+      public When(SpecificationBuilder self) { this.self = self; }
+
+      public Action this[string name] {
+        set {
+          var prevContext = self.currentContext;
+          self.currentContext = self.currentContext.child(
+            self.currentContext.isRoot ? $"when {name}" : name
+          );
+          value();
+          self.currentContext = prevContext;
+        }
+      }
+    }
+
+    public class It {
+      readonly SpecificationBuilder self;
+      public It(SpecificationBuilder self) { this.self = self; }
+
+      public Action this[string name] {
+        set {
+          var stack = new StackFrame(1, true);
+          self.tests.Add(self.currentContext.test($"it {name}", value, stack));
+        }
+      }
+    }
+
     readonly List<Test<Action>> tests = new List<Test<Action>>();
+
+    public readonly When when;
+    public readonly It it;
+
+    public SpecificationBuilder() {
+      when = new When(this);
+      it = new It(this);
+    }
 
     Context currentContext = Context.root;
 
-    public void when(string name, Action buildContext) {
-      var prevContext = currentContext;
-      currentContext = currentContext.child(currentContext.isRoot ? $"when {name}" : name);
-      buildContext();
-      currentContext = prevContext;
-    }
+    public SimpleRef<A> let<A>(A initialValue) => let(() => initialValue);
 
-    public void it(string name, Action testAction) {
-      tests.Add(currentContext.test($"it {name}", testAction));
-    }
-
-    public SimpleRef<A> beforeEach<A>(A initialValue) => beforeEach(() => initialValue);
-
-    public SimpleRef<A> beforeEach<A>(Fn<A> createInitialValue) {
-      var r = new SimpleRef<A>(default(A));
+    /// <summary>A reference which gets set to provided value before each test.</summary>
+    public SimpleRef<A> let<A>(Fn<A> createInitialValue) {
+      var r = new SimpleRef<A>(createInitialValue());
       Action reinit = () => r.value = createInitialValue();
       currentContext = currentContext.addBeforeEach(reinit);
       return r;
     }
 
-    public void beforeEach(Action action) {
-      currentContext = currentContext.addBeforeEach(action);
+    /// <summary>Code that is ran before each test.</summary>
+    public event Action beforeEach {
+      add { currentContext = currentContext.addBeforeEach(value); }
+      remove { throw new NotImplementedException(); }
     }
 
-    public void afterEach(Action action) {
-      currentContext = currentContext.addAfterEach(action);
+    /// <summary>Code that is ran after each test.</summary>
+    public event Action afterEach {
+      add { currentContext = currentContext.addAfterEach(value); }
+      remove { throw new NotImplementedException(); }
     }
 
     public void execute() {
@@ -121,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Test {
           return Enumerable.Empty<Test<Exception>>();
         }
         catch (Exception e) {
-          return new Test<Exception>(test.name, e).Yield();
+          return new Test<Exception>(test.name, e, test.stackFrame).Yield();
         }
       }).ToImmutableList();
       if (failures.nonEmpty()) throw new SpecTestFailedException(failures);

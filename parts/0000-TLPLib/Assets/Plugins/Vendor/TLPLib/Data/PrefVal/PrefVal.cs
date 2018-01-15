@@ -1,10 +1,15 @@
-﻿using com.tinylabproductions.TLPLib.caching;
+﻿using System;
+using com.tinylabproductions.TLPLib.caching;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  /* PlayerPrefs backed reactive value. */
-  public interface PrefVal<A> : Ref<A>, ICachedBlob<A> {
+  /// <summary><see cref="PrefVal{A}"/> that can be inspected in editor.</summary>
+  public interface InspectablePrefVal {
+    object valueUntyped { get; set; }
     void forceSave();
   }
+
+  /// <summary>PlayerPrefs backed value.</summary>
+  public interface PrefVal<A> : Ref<A>, ICachedBlob<A>, InspectablePrefVal {}
   
   public static class PrefVal {
     public delegate void Base64StorePart(byte[] partData);
@@ -16,5 +21,14 @@ namespace com.tinylabproductions.TLPLib.Data {
 #if UNITY_EDITOR
     public static readonly PrefValStorage editor = new PrefValStorage(EditorPrefsBackend.instance);
 #endif
+
+    public static void trySetUntyped<A>(this PrefVal<A> val, object value) {
+      if (value is A)
+        val.value = (A) value;
+      else
+        throw new ArgumentException(
+          $"Can't assign {value} (of type {value.GetType()}) to {val} (of type {typeof(A)}!"
+        );
+    }
   }
 }

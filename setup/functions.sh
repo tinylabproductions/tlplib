@@ -14,12 +14,17 @@ junction() {
 
 notif() {
   echo $@
-  echo "Press any key to continue or ctrl+c to abort."
-  read
+  if [[ "$CI" != "" ]]; then
+    echo "Running on CI, not asking for permission."
+  else
+    echo "Press any key to continue or ctrl+c to abort."
+    read
+  fi
 }
 
-ctx() {
-  echo $(dirname $1) | sed -E -e "s|[^/]+|..|g"
+realpath() {
+  # osx does not have readlink -f, so we have this abomination
+  echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
 }
 
 # : separated list of files/dirs that were added using *link functions.
@@ -99,15 +104,16 @@ dirlink() {
       done
     fi
   else
-    if [ -e "$name" -o -h "$name" ]; then
+    if [ -L "$name" ]; then
+      rm "$name"
+    elif [ -e "$name" ]; then
       ls -la "$name"
       notif "Going to remove '$name'"
       rm -rfv "$name"
     fi
 
     if [ "$opt_clean" != "1" ]; then
-      ctx=$(ctx "$name")
-      ln -s "$ctx/$libsrc/$name" "$name"
+      ln -sv "$(realpath "$libsrc/$name")" "$name"
     fi
   fi
 

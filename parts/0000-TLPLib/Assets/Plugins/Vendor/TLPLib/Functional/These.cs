@@ -132,10 +132,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
   public static class These {
     public static Option<These<A, B>> a<A, B>(Option<A> aOpt, Option<B> bOpt) {
-      if (aOpt.isEmpty && bOpt.isEmpty) return F.none<These<A, B>>();
-      if (aOpt.isDefined && bOpt.isDefined) return F.these(aOpt.get, bOpt.get).some();
-      if (aOpt.isDefined) return F.thiz<A, B>(aOpt.get).some();
-      if (bOpt.isDefined) return F.that<A, B>(bOpt.get).some();
+      if (aOpt.isNone && bOpt.isNone) return F.none<These<A, B>>();
+      if (aOpt.isSome && bOpt.isSome) return F.these(aOpt.get, bOpt.get).some();
+      if (aOpt.isSome) return F.thiz<A, B>(aOpt.get).some();
+      if (bOpt.isSome) return F.that<A, B>(bOpt.get).some();
       throw new IllegalStateException();
     }
 

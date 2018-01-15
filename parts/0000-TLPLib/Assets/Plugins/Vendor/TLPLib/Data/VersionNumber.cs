@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct VersionNumber : IEquatable<VersionNumber>, IStr {
+  public struct VersionNumber : IEquatable<VersionNumber>, IStr, IComparable<VersionNumber> {
     public const char DEFAULT_SEPARATOR = '.';
     public readonly uint major, minor, bugfix;
     public readonly char separator;
@@ -42,6 +43,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static bool operator !=(VersionNumber left, VersionNumber right) { return !left.Equals(right); }
 
     #endregion
+
+    public int CompareTo(VersionNumber other) {
+      var majorComparison = major.CompareTo(other.major);
+      if (majorComparison != 0) return majorComparison;
+      var minorComparison = minor.CompareTo(other.minor);
+      if (minorComparison != 0) return minorComparison;
+      return bugfix.CompareTo(other.bugfix);
+    }
 
     public VersionNumber withSeparator(char separator) => 
       new VersionNumber(major, minor, bugfix, separator);
@@ -86,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       )));
     }
 
-    static Either<string, uint> getIdx(string[] parts, int idx)
-      { return parts.get(idx).fold(0u.right().l<string>(), _ => _.parseUInt()); }
+    static Either<string, uint> getIdx(IList<string> parts, int idx) => 
+      parts.get(idx).fold(0u.right().l<string>(), _ => _.parseUInt());
   }
 }

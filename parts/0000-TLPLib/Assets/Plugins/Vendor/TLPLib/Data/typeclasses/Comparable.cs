@@ -4,7 +4,18 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
-  public interface Comparable<in A> : Eql<A> {
+  public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
+
+  public static class CompareResultExts {
+    public static int asInt(this CompareResult res) => (int) res;
+    
+    public static CompareResult asCmpRes(this int result) =>
+        result < 0 ? CompareResult.LT 
+      : result == 0 ? CompareResult.EQ 
+      : CompareResult.GT;
+  }
+
+  public interface Comparable<A> : IComparer<A>, Eql<A> {
     CompareResult compare(A a1, A a2);
   }
 
@@ -15,6 +26,9 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<bool> bool_ = lambda<bool>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<string> string_ = 
+      lambda<string>((a1, a2) => string.CompareOrdinal(a1, a2));
 
     public static Comparable<A> lambda<A>(Fn<A, A, CompareResult> compare) =>
       new Lambda<A>(compare);
@@ -28,6 +42,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
 
       public CompareResult compare(A a1, A a2) => _compare(a1, a2);
       public bool eql(A a1, A a2) => _compare(a1, a2) == CompareResult.EQ;
+      public int Compare(A x, A y) => (int) _compare(x, y);
     }
   }
 
@@ -57,6 +72,10 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       this IEnumerable<A> c, Comparable<B> comparable, Fn<A, B> extract
     ) => maxBy<A, B, IEnumerable<A>>(c, comparable, extract);
 
+    public static Option<A> maxBy<A>(
+      this IEnumerable<A> c, Comparable<A> comparable
+    ) => c.maxBy(comparable, _ => _);
+
     public static Option<A> min<A, Coll>(
       this Coll c, Comparable<A> comparable
     ) where Coll : IEnumerable<A> => minBy<A, A, Coll>(c, comparable, _ => _);
@@ -69,12 +88,16 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       this IEnumerable<A> c, Comparable<B> comparable, Fn<A, B> extract
     ) => minBy<A, B, IEnumerable<A>>(c, comparable, extract);
 
+    public static Option<A> minBy<A>(
+      this IEnumerable<A> c, Comparable<A> comparable
+    ) => c.minBy(comparable, _ => _);
+
     static Option<A> minMax<A, B, Coll>(
       this Coll c, Fn<A, B> extract, Comparable<B> comparable, CompareResult lookFor
     ) where Coll : IEnumerable<A> {
       var current = Option<A>.None;
       foreach (var a in c) {
-        if (current.isEmpty) current = a.some();
+        if (current.isNone) current = a.some();
         else {
           if (comparable.compare(extract(a), extract(current.get)) == lookFor)
             current = a.some();

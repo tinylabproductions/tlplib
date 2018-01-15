@@ -14,22 +14,11 @@ IComparable<Tpl<P1>>, IEquatable<Tpl<P1>> {
   public Tpl(P1 p1)
     { _1 = p1; }
 
-  // Unapply.
-  public void ua(Act<P1> f) => f(_1);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, R> f) => f(_1);
-
-  public Tpl<P1, P2> add<P2>(P2 a) => new Tpl<P1, P2>(_1, a);
-
-  public Tpl<P2, P1> unshift<P2>(P2 a) => new Tpl<P2, P1>(a, _1);
-
   public void Deconstruct(out P1 _1) { _1 = this._1; }
 
   public override string ToString() => $"({_1})";
 
   public override bool Equals(object o) => o is Tpl<P1> && Equals((Tpl<P1>) o);
-
   public bool Equals(Tpl<P1> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1);
 
   public override int GetHashCode() {
@@ -41,8 +30,7 @@ IComparable<Tpl<P1>>, IEquatable<Tpl<P1>> {
   }
 
   public int CompareTo(Tpl<P1> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1);
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1);
     return c;
   }
 
@@ -67,22 +55,11 @@ IComparable<Tpl<P1, P2>>, IEquatable<Tpl<P1, P2>> {
   public Tpl(P1 p1, P2 p2)
     { _1 = p1; _2 = p2; }
 
-  // Unapply.
-  public void ua(Act<P1, P2> f) => f(_1, _2);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, R> f) => f(_1, _2);
-
-  public Tpl<P1, P2, P3> add<P3>(P3 a) => new Tpl<P1, P2, P3>(_1, _2, a);
-
-  public Tpl<P3, P1, P2> unshift<P3>(P3 a) => new Tpl<P3, P1, P2>(a, _1, _2);
-
   public void Deconstruct(out P1 _1, out P2 _2) { _1 = this._1; _2 = this._2; }
 
-    public override string ToString() => $"({_1},{_2})";
+  public override string ToString() => $"({_1},{_2})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2> && Equals((Tpl<P1, P2>) o);
-
   public bool Equals(Tpl<P1, P2> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2);
 
@@ -96,8 +73,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P2>.Default.GetHashCode(_2);
   }
 
   public int CompareTo(Tpl<P1, P2> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2);
     return c;
   }
@@ -123,22 +99,11 @@ IComparable<Tpl<P1, P2, P3>>, IEquatable<Tpl<P1, P2, P3>> {
   public Tpl(P1 p1, P2 p2, P3 p3)
     { _1 = p1; _2 = p2; _3 = p3; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3> f) => f(_1, _2, _3);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, R> f) => f(_1, _2, _3);
-
-  public Tpl<P1, P2, P3, P4> add<P4>(P4 a) => new Tpl<P1, P2, P3, P4>(_1, _2, _3, a);
-
-  public Tpl<P4, P1, P2, P3> unshift<P4>(P4 a) => new Tpl<P4, P1, P2, P3>(a, _1, _2, _3);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3) { _1 = this._1; _2 = this._2; _3 = this._3; }
 
   public override string ToString() => $"({_1},{_2},{_3})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3> && Equals((Tpl<P1, P2, P3>) o);
-
   public bool Equals(Tpl<P1, P2, P3> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3);
@@ -154,8 +119,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P3>.Default.GetHashCode(_3);
   }
 
   public int CompareTo(Tpl<P1, P2, P3> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3);
     return c;
@@ -182,22 +146,11 @@ IComparable<Tpl<P1, P2, P3, P4>>, IEquatable<Tpl<P1, P2, P3, P4>> {
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4> f) => f(_1, _2, _3, _4);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, R> f) => f(_1, _2, _3, _4);
-
-  public Tpl<P1, P2, P3, P4, P5> add<P5>(P5 a) => new Tpl<P1, P2, P3, P4, P5>(_1, _2, _3, _4, a);
-
-  public Tpl<P5, P1, P2, P3, P4> unshift<P5>(P5 a) => new Tpl<P5, P1, P2, P3, P4>(a, _1, _2, _3, _4);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4> && Equals((Tpl<P1, P2, P3, P4>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -215,8 +168,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P4>.Default.GetHashCode(_4);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4);
@@ -244,22 +196,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5>>, IEquatable<Tpl<P1, P2, P3, P4, P5>> {
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5> f) => f(_1, _2, _3, _4, _5);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, R> f) => f(_1, _2, _3, _4, _5);
-
-  public Tpl<P1, P2, P3, P4, P5, P6> add<P6>(P6 a) => new Tpl<P1, P2, P3, P4, P5, P6>(_1, _2, _3, _4, _5, a);
-
-  public Tpl<P6, P1, P2, P3, P4, P5> unshift<P6>(P6 a) => new Tpl<P6, P1, P2, P3, P4, P5>(a, _1, _2, _3, _4, _5);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5> && Equals((Tpl<P1, P2, P3, P4, P5>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -279,8 +220,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P5>.Default.GetHashCode(_5);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -309,22 +249,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6>>, IEquatable<Tpl<P1, P2, P3, P4, P5, P6>
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6> f) => f(_1, _2, _3, _4, _5, _6);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, R> f) => f(_1, _2, _3, _4, _5, _6);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7> add<P7>(P7 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7>(_1, _2, _3, _4, _5, _6, a);
-
-  public Tpl<P7, P1, P2, P3, P4, P5, P6> unshift<P7>(P7 a) => new Tpl<P7, P1, P2, P3, P4, P5, P6>(a, _1, _2, _3, _4, _5, _6);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6> && Equals((Tpl<P1, P2, P3, P4, P5, P6>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -346,8 +275,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P6>.Default.GetHashCode(_6);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -377,22 +305,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7>>, IEquatable<Tpl<P1, P2, P3, P4, P5,
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7> f) => f(_1, _2, _3, _4, _5, _6, _7);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, R> f) => f(_1, _2, _3, _4, _5, _6, _7);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8> add<P8>(P8 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8>(_1, _2, _3, _4, _5, _6, _7, a);
-
-  public Tpl<P8, P1, P2, P3, P4, P5, P6, P7> unshift<P8>(P8 a) => new Tpl<P8, P1, P2, P3, P4, P5, P6, P7>(a, _1, _2, _3, _4, _5, _6, _7);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -416,8 +333,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P7>.Default.GetHashCode(_7);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -448,22 +364,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8>>, IEquatable<Tpl<P1, P2, P3, P4,
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8> f) => f(_1, _2, _3, _4, _5, _6, _7, _8);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> add<P9>(P9 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>(_1, _2, _3, _4, _5, _6, _7, _8, a);
-
-  public Tpl<P9, P1, P2, P3, P4, P5, P6, P7, P8> unshift<P9>(P9 a) => new Tpl<P9, P1, P2, P3, P4, P5, P6, P7, P8>(a, _1, _2, _3, _4, _5, _6, _7, _8);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -489,8 +394,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P8>.Default.GetHashCode(_8);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -522,22 +426,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>>, IEquatable<Tpl<P1, P2, P3,
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> add<P10>(P10 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(_1, _2, _3, _4, _5, _6, _7, _8, _9, a);
-
-  public Tpl<P10, P1, P2, P3, P4, P5, P6, P7, P8, P9> unshift<P10>(P10 a) => new Tpl<P10, P1, P2, P3, P4, P5, P6, P7, P8, P9>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -565,8 +458,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P9>.Default.GetHashCode(_9);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -599,22 +491,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>>, IEquatable<Tpl<P1, P2
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> add<P11>(P11 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, a);
-
-  public Tpl<P11, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> unshift<P11>(P11 a) => new Tpl<P11, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -644,8 +525,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P10>.Default.GetHashCode(_10);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -679,22 +559,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>>, IEquatable<Tpl<P
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> add<P12>(P12 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, a);
-
-  public Tpl<P12, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> unshift<P12>(P12 a) => new Tpl<P12, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -726,8 +595,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P11>.Default.GetHashCode(_11);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -762,22 +630,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>>, IEquatable<
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> add<P13>(P13 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, a);
-
-  public Tpl<P13, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> unshift<P13>(P13 a) => new Tpl<P13, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -811,8 +668,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P12>.Default.GetHashCode(_12);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -848,22 +704,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>>, IEquat
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> add<P14>(P14 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, a);
-
-  public Tpl<P14, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> unshift<P14>(P14 a) => new Tpl<P14, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -899,8 +744,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P13>.Default.GetHashCode(_13);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -937,22 +781,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>>, I
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> add<P15>(P15 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, a);
-
-  public Tpl<P15, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> unshift<P15>(P15 a) => new Tpl<P15, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -990,8 +823,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P14>.Default.GetHashCode(_14);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1029,22 +861,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> add<P16>(P16 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, a);
-
-  public Tpl<P16, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> unshift<P16>(P16 a) => new Tpl<P16, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1084,8 +905,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P15>.Default.GetHashCode(_15);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1124,22 +944,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> add<P17>(P17 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, a);
-
-  public Tpl<P17, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> unshift<P17>(P17 a) => new Tpl<P17, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1181,8 +990,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P16>.Default.GetHashCode(_16);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1222,22 +1030,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> add<P18>(P18 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, a);
-
-  public Tpl<P18, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> unshift<P18>(P18 a) => new Tpl<P18, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16, out P17 _17) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; _17 = this._17; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1281,8 +1078,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P17>.Default.GetHashCode(_17);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1323,22 +1119,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> add<P19>(P19 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, a);
-
-  public Tpl<P19, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> unshift<P19>(P19 a) => new Tpl<P19, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16, out P17 _17, out P18 _18) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; _17 = this._17; _18 = this._18; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17},{_18})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1384,8 +1169,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P18>.Default.GetHashCode(_18);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1427,22 +1211,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> add<P20>(P20 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, a);
-
-  public Tpl<P20, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> unshift<P20>(P20 a) => new Tpl<P20, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16, out P17 _17, out P18 _18, out P19 _19) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; _17 = this._17; _18 = this._18; _19 = this._19; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17},{_18},{_19})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1490,8 +1263,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P19>.Default.GetHashCode(_19);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1534,22 +1306,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> add<P21>(P21 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, a);
-
-  public Tpl<P21, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> unshift<P21>(P21 a) => new Tpl<P21, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16, out P17 _17, out P18 _18, out P19 _19, out P20 _20) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; _17 = this._17; _18 = this._18; _19 = this._19; _20 = this._20; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17},{_18},{_19},{_20})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1599,8 +1360,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P20>.Default.GetHashCode(_20);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1644,22 +1404,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21);
-
-  public Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> add<P22>(P22 a) => new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, a);
-
-  public Tpl<P22, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> unshift<P22>(P22 a) => new Tpl<P22, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(a, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21);
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16, out P17 _17, out P18 _18, out P19 _19, out P20 _20, out P21 _21) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; _17 = this._17; _18 = this._18; _19 = this._19; _20 = this._20; _21 = this._21; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17},{_18},{_19},{_20},{_21})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1711,8 +1460,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P21>.Default.GetHashCode(_21);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1757,22 +1505,11 @@ IComparable<Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15
   public Tpl(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11, P12 p12, P13 p13, P14 p14, P15 p15, P16 p16, P17 p17, P18 p18, P19 p19, P20 p20, P21 p21, P22 p22)
     { _1 = p1; _2 = p2; _3 = p3; _4 = p4; _5 = p5; _6 = p6; _7 = p7; _8 = p8; _9 = p9; _10 = p10; _11 = p11; _12 = p12; _13 = p13; _14 = p14; _15 = p15; _16 = p16; _17 = p17; _18 = p18; _19 = p19; _20 = p20; _21 = p21; _22 = p22; }
 
-  // Unapply.
-  public void ua(Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22);
-
-  // Unapply with function.
-  public R ua<R>(Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, R> f) => f(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22);
-
-  
-
-  
-
   public void Deconstruct(out P1 _1, out P2 _2, out P3 _3, out P4 _4, out P5 _5, out P6 _6, out P7 _7, out P8 _8, out P9 _9, out P10 _10, out P11 _11, out P12 _12, out P13 _13, out P14 _14, out P15 _15, out P16 _16, out P17 _17, out P18 _18, out P19 _19, out P20 _20, out P21 _21, out P22 _22) { _1 = this._1; _2 = this._2; _3 = this._3; _4 = this._4; _5 = this._5; _6 = this._6; _7 = this._7; _8 = this._8; _9 = this._9; _10 = this._10; _11 = this._11; _12 = this._12; _13 = this._13; _14 = this._14; _15 = this._15; _16 = this._16; _17 = this._17; _18 = this._18; _19 = this._19; _20 = this._20; _21 = this._21; _22 = this._22; }
 
   public override string ToString() => $"({_1},{_2},{_3},{_4},{_5},{_6},{_7},{_8},{_9},{_10},{_11},{_12},{_13},{_14},{_15},{_16},{_17},{_18},{_19},{_20},{_21},{_22})";
 
   public override bool Equals(object o) => o is Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> && Equals((Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>) o);
-
   public bool Equals(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> t) => Smooth.Collections.EqComparer<P1>.Default.Equals(_1, t._1) &&
 Smooth.Collections.EqComparer<P2>.Default.Equals(_2, t._2) &&
 Smooth.Collections.EqComparer<P3>.Default.Equals(_3, t._3) &&
@@ -1826,8 +1563,7 @@ hash = 29 * hash + Smooth.Collections.EqComparer<P22>.Default.GetHashCode(_22);
   }
 
   public int CompareTo(Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> other) {
-    int c;
-    c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
+    var c = Smooth.Collections.Comparer<P1>.Default.Compare(_1, other._1); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P2>.Default.Compare(_2, other._2); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P3>.Default.Compare(_3, other._3); if (c != 0) { return c; }
 c = Smooth.Collections.Comparer<P4>.Default.Compare(_4, other._4); if (c != 0) { return c; }
@@ -1859,4 +1595,271 @@ c = Smooth.Collections.Comparer<P22>.Default.Compare(_22, other._22);
   public static bool operator >= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) => lhs.CompareTo(rhs) >= 0;
   public static bool operator <= (Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> lhs, Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> rhs) => lhs.CompareTo(rhs) <= 0;
 }
+
+// We want to have as little methods on objects as possible due to how IL2CPP expands things.
+public static class TupleGeneratedExts {
+
+  public static Tpl<P1, P2> add<P1, P2>(this Tpl<P1> t, P2 a) => 
+new Tpl<P1, P2>(t._1, a);
+  public static Tpl<P2, P1> unshift<P1, P2>(this Tpl<P1> t, P2 a) => 
+  new Tpl<P2, P1>(a, t._1);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1>(this Tpl<P1> t, Act<P1> f) => f(t._1);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, R>(this Tpl<P1> t, Fn<P1, R> f) => f(t._1);
+     
+
+  public static Tpl<P1, P2, P3> add<P1, P2, P3>(this Tpl<P1, P2> t, P3 a) => 
+new Tpl<P1, P2, P3>(t._1, t._2, a);
+  public static Tpl<P3, P1, P2> unshift<P1, P2, P3>(this Tpl<P1, P2> t, P3 a) => 
+  new Tpl<P3, P1, P2>(a, t._1, t._2);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2>(this Tpl<P1, P2> t, Act<P1, P2> f) => f(t._1, t._2);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, R>(this Tpl<P1, P2> t, Fn<P1, P2, R> f) => f(t._1, t._2);
+     
+
+  public static Tpl<P1, P2, P3, P4> add<P1, P2, P3, P4>(this Tpl<P1, P2, P3> t, P4 a) => 
+new Tpl<P1, P2, P3, P4>(t._1, t._2, t._3, a);
+  public static Tpl<P4, P1, P2, P3> unshift<P1, P2, P3, P4>(this Tpl<P1, P2, P3> t, P4 a) => 
+  new Tpl<P4, P1, P2, P3>(a, t._1, t._2, t._3);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3>(this Tpl<P1, P2, P3> t, Act<P1, P2, P3> f) => f(t._1, t._2, t._3);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, R>(this Tpl<P1, P2, P3> t, Fn<P1, P2, P3, R> f) => f(t._1, t._2, t._3);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5> add<P1, P2, P3, P4, P5>(this Tpl<P1, P2, P3, P4> t, P5 a) => 
+new Tpl<P1, P2, P3, P4, P5>(t._1, t._2, t._3, t._4, a);
+  public static Tpl<P5, P1, P2, P3, P4> unshift<P1, P2, P3, P4, P5>(this Tpl<P1, P2, P3, P4> t, P5 a) => 
+  new Tpl<P5, P1, P2, P3, P4>(a, t._1, t._2, t._3, t._4);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4>(this Tpl<P1, P2, P3, P4> t, Act<P1, P2, P3, P4> f) => f(t._1, t._2, t._3, t._4);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, R>(this Tpl<P1, P2, P3, P4> t, Fn<P1, P2, P3, P4, R> f) => f(t._1, t._2, t._3, t._4);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6> add<P1, P2, P3, P4, P5, P6>(this Tpl<P1, P2, P3, P4, P5> t, P6 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6>(t._1, t._2, t._3, t._4, t._5, a);
+  public static Tpl<P6, P1, P2, P3, P4, P5> unshift<P1, P2, P3, P4, P5, P6>(this Tpl<P1, P2, P3, P4, P5> t, P6 a) => 
+  new Tpl<P6, P1, P2, P3, P4, P5>(a, t._1, t._2, t._3, t._4, t._5);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5>(this Tpl<P1, P2, P3, P4, P5> t, Act<P1, P2, P3, P4, P5> f) => f(t._1, t._2, t._3, t._4, t._5);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, R>(this Tpl<P1, P2, P3, P4, P5> t, Fn<P1, P2, P3, P4, P5, R> f) => f(t._1, t._2, t._3, t._4, t._5);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7> add<P1, P2, P3, P4, P5, P6, P7>(this Tpl<P1, P2, P3, P4, P5, P6> t, P7 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7>(t._1, t._2, t._3, t._4, t._5, t._6, a);
+  public static Tpl<P7, P1, P2, P3, P4, P5, P6> unshift<P1, P2, P3, P4, P5, P6, P7>(this Tpl<P1, P2, P3, P4, P5, P6> t, P7 a) => 
+  new Tpl<P7, P1, P2, P3, P4, P5, P6>(a, t._1, t._2, t._3, t._4, t._5, t._6);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6>(this Tpl<P1, P2, P3, P4, P5, P6> t, Act<P1, P2, P3, P4, P5, P6> f) => f(t._1, t._2, t._3, t._4, t._5, t._6);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, R>(this Tpl<P1, P2, P3, P4, P5, P6> t, Fn<P1, P2, P3, P4, P5, P6, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8> add<P1, P2, P3, P4, P5, P6, P7, P8>(this Tpl<P1, P2, P3, P4, P5, P6, P7> t, P8 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, a);
+  public static Tpl<P8, P1, P2, P3, P4, P5, P6, P7> unshift<P1, P2, P3, P4, P5, P6, P7, P8>(this Tpl<P1, P2, P3, P4, P5, P6, P7> t, P8 a) => 
+  new Tpl<P8, P1, P2, P3, P4, P5, P6, P7>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7>(this Tpl<P1, P2, P3, P4, P5, P6, P7> t, Act<P1, P2, P3, P4, P5, P6, P7> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7> t, Fn<P1, P2, P3, P4, P5, P6, P7, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> add<P1, P2, P3, P4, P5, P6, P7, P8, P9>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t, P9 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, a);
+  public static Tpl<P9, P1, P2, P3, P4, P5, P6, P7, P8> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t, P9 a) => 
+  new Tpl<P9, P1, P2, P3, P4, P5, P6, P7, P8>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t, Act<P1, P2, P3, P4, P5, P6, P7, P8> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t, P10 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, a);
+  public static Tpl<P10, P1, P2, P3, P4, P5, P6, P7, P8, P9> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t, P10 a) => 
+  new Tpl<P10, P1, P2, P3, P4, P5, P6, P7, P8, P9>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t, P11 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, a);
+  public static Tpl<P11, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t, P11 a) => 
+  new Tpl<P11, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t, P12 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, a);
+  public static Tpl<P12, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t, P12 a) => 
+  new Tpl<P12, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t, P13 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, a);
+  public static Tpl<P13, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t, P13 a) => 
+  new Tpl<P13, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t, P14 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, a);
+  public static Tpl<P14, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t, P14 a) => 
+  new Tpl<P14, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t, P15 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, a);
+  public static Tpl<P15, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t, P15 a) => 
+  new Tpl<P15, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t, P16 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, a);
+  public static Tpl<P16, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t, P16 a) => 
+  new Tpl<P16, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t, P17 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, a);
+  public static Tpl<P17, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t, P17 a) => 
+  new Tpl<P17, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t, P18 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, a);
+  public static Tpl<P18, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t, P18 a) => 
+  new Tpl<P18, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t, P19 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, a);
+  public static Tpl<P19, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t, P19 a) => 
+  new Tpl<P19, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t, P20 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, a);
+  public static Tpl<P20, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t, P20 a) => 
+  new Tpl<P20, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t, P21 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, a);
+  public static Tpl<P21, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t, P21 a) => 
+  new Tpl<P21, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20);
+     
+
+  public static Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> add<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t, P22 a) => 
+new Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, t._21, a);
+  public static Tpl<P22, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> unshift<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t, P22 a) => 
+  new Tpl<P22, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(a, t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, t._21);
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, t._21);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, t._21);
+     
+
+  
+  
+
+  /// <summary>Unapply.</summary>
+  public static void ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> t, Act<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, t._21, t._22);
+
+  /// <summary>Unapply with function.</summary>
+  public static R ua<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, R>(this Tpl<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22> t, Fn<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, R> f) => f(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10, t._11, t._12, t._13, t._14, t._15, t._16, t._17, t._18, t._19, t._20, t._21, t._22);
+     
 }
+}
+   

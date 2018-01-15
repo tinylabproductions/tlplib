@@ -1,6 +1,7 @@
 ﻿#if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.telephony;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
@@ -35,6 +36,20 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
       // There are 3 modes, but 2 of them are deprecated:
       // https://developer.android.com/reference/android/content/Context.html#MODE_WORLD_READABLE
       new SharedPreferences(java.c<AndroidJavaObject>("getSharedPreferences", name, 0));
+
+    /// <summary>
+    /// https://developer.android.com/reference/android/content/Context.html#startActivity(android.content.Intent)
+    /// </summary>
+    public Try<Unit> startActivity(Intent intent) {
+      try {
+        java.Call("startActivity", intent.java);
+        return F.scs(F.unit);
+      }
+      catch (AndroidJavaException e) {
+        // might throw ActivityNotFoundException
+        return F.err<Unit>(e);
+      }
+    }
   }
 }
 #endif
