@@ -48,19 +48,23 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lastProgressUIUpdate = lastProgressLogUpdate = DateTime.MinValue;
     }
 
-    public void progress(int idx, int total) {
+    bool _progress(int idx, int total, bool cancellable) {
       var now = DateTime.Now;
       var needsUpdate = idx == 0 || idx == total - 1;
       // Updating progress for every call is expensive, only show every X ms.
       var updateUI = needsUpdate || (now - lastProgressUIUpdate).TotalSeconds >= 0.2;
       var updateLog = log.isInfo() && (needsUpdate || (now - lastProgressLogUpdate).TotalSeconds >= 5);
 
+      var canceled = false;
       if (updateUI || updateLog) {
         var item = idx + 1;
         var msg = $"{s(current)} ({s(item)}/{s(total)})...";
 
         if (updateUI) {
-          EditorUtility.DisplayProgressBar(title, msg, (float) item / total);
+          if(cancellable)
+            canceled = EditorUtility.DisplayCancelableProgressBar(title, msg, (float) item / total);
+          else
+            EditorUtility.DisplayProgressBar(title, msg, (float) item / total);
           lastProgressUIUpdate = now;
         }
         if (updateLog) {
@@ -68,7 +72,14 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
           lastProgressLogUpdate = now;
         }
       }
+      return canceled;
     }
+    
+    public void progress(int idx, int total) => _progress(idx, total, false);
+
+    /// <summary> Wrapper for Unity CancelableProgressBar </summary>
+    /// <returns> True if task was canceled </returns>
+    public bool progressCancellable(int idx, int total) => _progress(idx, total, true);
 
     /** A simple method to measure execution times between calls **/
     public void done() {
