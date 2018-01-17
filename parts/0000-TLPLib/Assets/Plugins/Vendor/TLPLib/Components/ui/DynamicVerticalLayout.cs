@@ -13,7 +13,8 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
   /// <summary>
-  /// Scrollable vertical layout, which makes sure that only visible ele
+  /// Scrollable vertical layout, which makes sure that only visible elements are created.
+  /// Element is considered visible if it intersects with <see cref="_maskRect"/> bounds.
   /// 
   /// Sample layout:
   /// 
