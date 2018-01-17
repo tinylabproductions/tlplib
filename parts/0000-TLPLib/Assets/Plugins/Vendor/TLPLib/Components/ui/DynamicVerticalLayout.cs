@@ -114,10 +114,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             currentWidthPerc += itemWidthPerc;
           }
 
-          if (Mathf.Approximately(itemLeftPerc, 0f)) height += data.height; 
-
-          var x = itemLeftPerc * maskSize.value.width;
-          var cellRect = Rect.MinMaxRect(x, -height, x + maskSize.value.width * itemWidthPerc, -height + data.height);
+          if (Mathf.Approximately(itemLeftPerc, 0f)) height += data.height;
+          var width = backing.container.rectTransform.rect.width;
+          var x = itemLeftPerc * width;
+          var cellRect = Rect.MinMaxRect(x, -height, x + width * itemWidthPerc, -height + data.height);
           var placementVisible = visibleRect.Overlaps(cellRect, true);
 
           if (placementVisible && !items.ContainsKey(data)) {
