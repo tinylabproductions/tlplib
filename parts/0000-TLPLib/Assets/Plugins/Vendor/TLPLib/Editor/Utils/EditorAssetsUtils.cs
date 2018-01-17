@@ -2,10 +2,10 @@
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
-  class EditorAssetsUtils : EditorWindow {
+  class EditorAssetsUtils {
     [UsedImplicitly, MenuItem("TLP/Tools/Reserialize all assets")]
     static void reserializeAllAssets() {
-      using (var editorProgress = new EditorProgress("Reserializing All Asets")) { 
+      using (var editorProgress = new EditorProgress("Reserializing All Assets")) { 
         var assetsPaths = editorProgress.execute("Loading all assets", AssetDatabase.GetAllAssetPaths);
         
         editorProgress.execute("Setting assets dirty", () => {
