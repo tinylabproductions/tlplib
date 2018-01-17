@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public delegate void OnError(LogEvent data);
 
     public static readonly LazyVal<IObservable<LogEvent>> defaultStream =
-      UnityLog.fromUnityLogMessages.map(o => o.join(Log.@default.messageLogged));
+      UnityLog.fromUnityLogMessages.lazyMap(o => o.join(Log.@default.messageLogged));
 
     /// <summary>
     /// Report warnings and errors from default logger and unity log messages.

@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public class EitherTestSequence {
+  public class EitherTestSequenceValidations {
     [Test]
     public void WhenHasOneError() {
       var l = ImmutableList.Create("error");

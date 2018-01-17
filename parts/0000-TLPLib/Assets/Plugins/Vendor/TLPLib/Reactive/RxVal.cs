@@ -184,9 +184,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return source.map(aOpt => aOpt.map(mapper));
     }
 
-    public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) {
-      return rxOpt.fold(cached(F.none<A>()), val => val.map(a => a.some()));
-    }
+    public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) => 
+      rxOpt.fold(cached(F.none<A>()), val => val.map(a => a.some()));
 
     public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, Fn<A> onFiltered) {
       return a => predicate(a) ? a : onFiltered();
