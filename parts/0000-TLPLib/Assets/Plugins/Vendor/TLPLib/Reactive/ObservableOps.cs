@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
@@ -11,22 +12,21 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #subscribe
 
     public static ISubscription subscribe<A>(
-      this IObservable<A> observable, Act<A> onChange
-    ) => observable.subscribe(new Observer<A>(onChange));
-
-    public static ISubscription subscribe<A>(
       this IObservable<A> observable, 
+      IDisposableTracker tracker,
       Act<A, ISubscription> onChange
     ) {
       ISubscription subscription = null;
       // ReSharper disable once AccessToModifiedClosure
-      subscription = observable.subscribe(a => onChange(a, subscription));
+      subscription = observable.subscribe(tracker, a => onChange(a, subscription));
       return subscription;
     }
 
     public static ISubscription subscribeForOneEvent<A>(
-      this IObservable<A> observable, Act<A> onEvent
-    ) => observable.subscribe((a, sub) => {
+      this IObservable<A> observable, 
+      IDisposableTracker tracker,
+      Act<A> onEvent
+    ) => observable.subscribe(tracker, (a, sub) => {
       sub.unsubscribe();
       onEvent(a);
     });
@@ -39,25 +39,41 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /** Maps events coming from this observable. **/
     public static IObservable<B> map<A, B>(
       this IObservable<A> o, Fn<A, B> mapper
-    ) => Observable.a(ObservableOpImpls.map(o.subscribe, mapper));
+    ) => new Observable<B>(onEvent => 
+      o.subscribe(NoOpDisposableTracker.instance, val => onEvent(mapper(val)))
+    );
 
     #region #flatMap
 
-    /** 
-     * Maps events coming from this observable and emits all events contained 
-     * in returned enumerable.
-     **/
+    /// <summary>
+    /// Maps events coming from this observable and emits all events contained
+    /// in returned enumerable.
+    /// </summary>
     public static IObservable<B> flatMap<A, B>(
       this IObservable<A> o, Fn<A, IEnumerable<B>> mapper
-    ) => Observable.a(ObservableOpImpls.flatMap(o, mapper));
+    ) => new Observable<B>(onEvent => o.subscribe(NoOpDisposableTracker.instance, val => {
+      foreach (var b in mapper(val)) onEvent(b);
+    }));
 
-    /** 
-     * Maps events coming from this observable and emits all events contained 
-     * in returned observable.
-     **/
+    /// <summary>
+    /// Maps events coming from this observable and emits all events that are emitted
+    /// by returned observable.
+    /// </summary>
     public static IObservable<B> flatMap<A, B>(
       this IObservable<A> o, Fn<A, IObservable<B>> mapper
-    ) => Observable.a(ObservableOpImpls.flatMap(o.subscribe, mapper));
+    ) => new Observable<B>(onBEvent => {
+      var bSub = Subscription.empty;
+      void unsubscribeFromB() => bSub.unsubscribe();
+
+      void onAEvent(A val) {
+        unsubscribeFromB();
+        var bObs = mapper(val);
+        bSub = bObs.subscribe(NoOpDisposableTracker.instance, onBEvent);
+      }
+
+      var aSub = o.subscribe(NoOpDisposableTracker.instance, onAEvent);
+      return aSub.andThen(unsubscribeFromB);
+    });
 
     /** 
      * Maps events coming from this observable and emits events from returned futures.
@@ -76,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this Future<A> future, Fn<A, IObservable<B>> mapper
     ) {
       var s = new Subject<B>();
-      future.onComplete(a => mapper(a).subscribe(s.push));
+      future.onComplete(a => mapper(a).subscribe(NoOpDisposableTracker.instance, s.push));
       return s;
     }
 
@@ -90,7 +106,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /** Emits first value to the future and unsubscribes. **/
     public static Future<A> toFuture<A>(this IObservable<A> o) =>
       Future<A>.async((p, f) => {
-        var subscription = o.subscribe(p.complete);
+        var subscription = o.subscribe(NoOpDisposableTracker.instance, p.complete);
         f.onComplete(_ => subscription.unsubscribe());
       });
 
@@ -246,12 +262,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #endregion
 
-    // Convert this observable to reactive value with given initial value.
+    /// <summary>
+    /// Convert this observable to reactive value with given initial value.
+    /// </summary>
     public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) => new RxVal<A>(
       initial,
-      setValue => o.subscribe((a, sub) => {
-        if (!setValue(a)) sub.unsubscribe();
-      })
+      setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(a))
     );
   }
 }

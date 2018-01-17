@@ -124,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj = new Subject<int>();
       var obs = subj.map(i => i * 2);
       obs.pipeToList().ua((list, sub) => {
-        subj.pushMany(1, 2, 3, 4, 5);
+        foreach (var a in new[] {1, 2, 3, 4, 5}) subj.push(a);;
         list.shouldEqual(F.list(2, 4, 6, 8, 10));
         sub.testUnsubscription(subj);
       });
@@ -138,7 +138,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var obs = subj.discardValue();
       obs.countEvents().ua((evts, sub) => {
         evts.value.shouldEqual(0u);
-        subj.pushMany(1, 2, 3, 4);
+        foreach (var a in new[] {1, 2, 3, 4}) subj.push(a);;
         evts.value.shouldEqual(4u);
         sub.testUnsubscription(subj);
       });
@@ -151,7 +151,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj = new Subject<int>();
       var obs = subj.flatMap(i => Enumerable.Range(0, i));
       obs.pipeToList().ua((list, sub) => {
-        subj.pushMany(1, 2, 3);
+        foreach (var a in new[] {1, 2, 3}) subj.push(a);;
         list.shouldEqual(F.list(
           0,
           0, 1,
@@ -216,7 +216,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = obs.pipeToList();
       var list = t._1;
       var sub = t._2;
-      subj.pushMany(1, 2, 3);
+      foreach (var a in new[] {1, 2, 3}) subj.push(a);;
       list.shouldBeEmpty();
       gateP.complete(F.unit);
       list.shouldEqual(F.list(1, 2, 3));
@@ -231,7 +231,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var obs = subj.flatMap(i => gateF.map(_ => i));
       var t = obs.pipeToList();
       var list = t._1;
-      subj.pushMany(1, 2, 3);
+      foreach (var a in new[] {1, 2, 3}) subj.push(a);;
       list.shouldBeEmpty();
       gateP.complete(F.unit);
       list.shouldBeEmpty();
@@ -260,7 +260,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = obs.pipeToList();
       var list = t._1;
       var sub = t._2;
-      subj.pushMany(0, 1, 2, 3, 4, 5, 6);
+      foreach (var a in new[] {0, 1, 2, 3, 4, 5, 6}) subj.push(a);;
       list.shouldEqual(F.list(0, 4, 8, 12));
       sub.testUnsubscription(subj);
     }
@@ -390,8 +390,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var obs = subj1.joinDiscard(subj2);
       var t = obs.countEvents();
       var evts = t._1;
-      subj1.pushMany(1, 2, 3);
-      subj2.pushMany(1, 2, 3);
+      foreach (var a in new[] {1, 2, 3}) subj1.push(a);;
+      foreach (var a in new[] {1, 2, 3}) subj2.push(a);;
       evts.value.shouldEqual(6u);
       
       IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2);
@@ -552,7 +552,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var obs = subj.changesOpt();
       var t = obs.pipeToList();
       var list = t._1;
-      subj.pushMany(1, 1, 2, 2, 3, 3);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3}) subj.push(a);;
       list.shouldEqual(F.list(
         F.t(Option<int>.None, 1),
         F.t(1.some(), 2),
@@ -568,7 +568,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var obs = subj.changesOpt((a, b) => false);
       var t = obs.pipeToList();
       var list = t._1;
-      subj.pushMany(1, 1, 3, 3, 2, 2, 4, 4, 5, 5);
+      foreach (var a in new[] {1, 1, 3, 3, 2, 2, 4, 4, 5, 5}) subj.push(a);;
       list.shouldEqual(F.list(
         F.t(Option<int>.None, 1),
         F.t(1.some(), 1),
@@ -592,7 +592,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj = new Subject<int>();
       var obs = subj.changes();
       var t = obs.pipeToList();
-      subj.pushMany(1, 1, 2, 2, 3, 3, 4, 4);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);;
       t._1.shouldEqual(F.list(
         F.t(1, 2), F.t(2, 3), F.t(3, 4)
       ));
@@ -605,7 +605,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj = new Subject<int>();
       var obs = subj.changes((a, b) => false);
       var t = obs.pipeToList();
-      subj.pushMany(1, 1, 2, 2, 3, 3, 4, 4);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);;
       t._1.shouldEqual(F.list(
         F.t(1, 1), F.t(1, 2), F.t(2, 2), F.t(2, 3), F.t(3, 3), 
         F.t(3, 4), F.t(4, 4)
@@ -624,7 +624,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var list = t._1;
       subj.push(1);
       list.shouldEqual(F.list(1));
-      subj.pushMany(1, 1, 2, 2, 3, 3, 4, 4);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);;
       list.shouldEqual(F.list(1, 2, 3, 4));
 
       IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
@@ -636,7 +636,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var elems = new[] {1, 1, 2, 2, 3, 3, 4, 4};
       var obs = subj.changedValues((a, b) => false);
       var t = obs.pipeToList();
-      subj.pushMany(elems);
+      foreach (var a in new[] {elems}) subj.push(a);;
       t._1.shouldEqual(elems.ToList());
 
       IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);

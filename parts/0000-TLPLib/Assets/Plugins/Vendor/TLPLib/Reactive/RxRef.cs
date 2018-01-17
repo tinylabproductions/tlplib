@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using Smooth.Collections;
 
@@ -11,18 +13,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     IRxVal<A> asVal { get; }
   }
 
-  /**
-   * Mutable reference which is also an observable.
-   **/
+  /// <summary>
+  /// Mutable reference which is also an observable.
+  /// </summary>
   public class RxRef<A> : IRxRef<A> {
     public readonly IEqualityComparer<A> comparer;
-    protected readonly Subject<A> subject = new Subject<A>();
+    
+    readonly Subject<A> subject = new Subject<A>();
     public int subscribers => subject.subscribers;
 
     A _value;
     public A value {
       get { return _value; }
-      set { RxBase.set(comparer, ref _value, value, subject); }
+      set {
+        if (!comparer.Equals(_value, value)) {
+          _value = value;
+          subject.push(value);
+        }
+      }
     }
 
     public RxRef(A value, IEqualityComparer<A> comparer = null) {
@@ -30,14 +38,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       _value = value;
     }
 
-    public ISubscription subscribe(IObserver<A> observer) => 
-      subscribe(observer, RxSubscriptionMode.ForSideEffects);
-
-    public ISubscription subscribe(IObserver<A> observer, RxSubscriptionMode mode) {
-      var subscription = subject.subscribe(observer);
-      if (mode == RxSubscriptionMode.ForSideEffects) observer.push(value);
+    public ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
+      var subscription = subject.subscribe(tracker, onEvent);
+      onEvent(value);
       return subscription;
     }
+
+    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent) =>
+      subject.subscribe(tracker, onEvent);
 
     public override string ToString() => $"{nameof(RxRef)}({value})";
     public IRxVal<A> asVal => this;

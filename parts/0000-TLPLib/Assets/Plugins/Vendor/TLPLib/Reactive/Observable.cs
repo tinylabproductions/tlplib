@@ -7,9 +7,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.system;
 using UnityEngine;
-using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -55,17 +53,155 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   public interface IObservable<out A> : IObservable {
     /// <summary>
+    /// Subscribe to this observable to get a value every time an event happens.
     /// 
+    /// Before using this you need to understand how lifetime of subscriptions and observables
+    /// work.
+    /// 
+    /// This diagram shows types of references that exist between various objects in observables.
+    /// 
+    /// <code><![CDATA[
+    ///       +--------------+
+    ///       | Subscription |
+    ///       +--------------+
+    ///         /|\       |
+    ///          |        |
+    ///          |        |
+    ///          |       \|/
+    ///    +------------------+        +-------------+        +------------------------------+
+    ///    |    Observable    |------->| Action Code |------->| Object to perform effects on | 
+    ///    +------------------+        +-------------+        +------------------------------+
+    /// ]]></code>
+    /// 
+    /// Observables are divided into two major groups: sources and transformations.
+    /// 
+    /// ### Sources
+    /// 
+    /// Sources are things, where events originate (for example <see cref="Subject{A}"/>). They
+    /// are usually referenced with a hard reference in some other object and emit events when
+    /// things happen in Unity, for example:
+    /// 
+    /// <code><![CDATA[
+    /// public class OnUpdateForwarder : MonoBehaviour, IMB_Update {
+    ///   readonly Subject<Unit> _onUpdate = new Subject<Unit>();
+    ///   public IObservable<Unit> onUpdate => _onUpdate;
+    /// 
+    ///   public void Update() => _onUpdate.push(F.unit);
+    /// }
+    /// ]]></code>
+    /// 
+    /// They are garbage collected when the underlying MonoBehaviour is collected.
+    /// 
+    /// ### Transformations
+    /// 
+    /// Transformations are observables that emit events based on one or more source observables.
+    /// 
+    /// For example <see cref="ObservableOps.zip{A,B}"/> takes two observables and produces an observable
+    /// that emits tupled values.
+    /// 
+    /// Transformations have a nice property, that if nobody is listening to them, they do not have to listen
+    /// to their source as well.
+    /// 
+    /// This allows them to only run the transformation code in case they have listeners subscribed.
+    /// 
+    /// However this also implies that they hold a hard reference to their source, because they need to be
+    /// able to subscribe or unsubscribe to their source at any time.
+    /// 
+    /// Lets look into how memory layout looks for them.
+    /// 
+    /// These observables are often not explicitly referenced, for example:
+    /// 
+    /// <code><![CDATA[
+    /// this.someEventSource =
+    ///   observableA.zip(observableB)
+    ///   .map(t => Mathf.max(t._1, t._2))
+    ///   .filter(_ => _ > 10);
+    /// ]]></code>
+    /// 
+    /// Here zip and map are not explicitly referenced, however each operation creates an intermediate
+    /// observable. The memory layout looks like this.
+    /// 
+    /// <code><![CDATA[
+    ///                   source hard ref
+    ///                 /-----------------
+    ///                |/                 \
+    ///   +-------------+              +----------------+ source   +----------------+
+    ///   | observableA |              | zip observable |<---------| map observable |
+    ///   +-------------+              +----------------+ hard ref +----------------+
+    ///                                   /                                /|\
+    ///                 /-----------------                           source | hard ref
+    ///                |/ source hard ref                                   |
+    ///   +-------------+                                          +-------------------+
+    ///   | observableB |                                          | filter observable | 
+    ///   +-------------+                                          +-------------------+
+    ///                                                                    /|\
+    ///                                                            hard ref | this.someEventSource
+    ///                                                                     |
+    ///                                                                 +-------+
+    ///                                                                 | this  |
+    /// ]]></code>                                                      +-------+
+    /// 
+    /// As you can see, all the references point backwards and the only thing that is keeping the whole
+    /// thing from being garbage collected is a hard reference from this. If this were to be collected, so would
+    /// be the whole observable chain.
+    /// 
+    /// On the other hand if observableA and observableB are sources and no one has references to them, new
+    /// events can not be emmited and the whole thing is kept in memory for no reason.
+    /// 
+    /// Unfortunately this is a design limitation.
+    /// 
+    /// You can either:
+    /// 1. have references pointing backwards. You do not perform calculations when no one is listening, however
+    ///    you cannot garbage collect when no one can emit an event (references to sources are lost).
+    /// 2. have references pointing forwards. You do perform calculations even if no one is listening, however
+    ///    you can garbage collect if all references to sources are lost.
+    /// 
+    /// We feel that option 1 is more likely in day to day code. 
+    /// 
+    /// If you subscribe to this.someEventSource, it subscribes to map observable, which subscribes
+    /// to zip, which then in turn subscribes to observableA and observableB, which are source, not transformation
+    /// observables.
+    /// 
+    /// The memory layout then looks like this (action objects between observables ommited for brevity). 
+    /// 
+    /// <code><![CDATA[
+    ///                   source hard ref              act hard ref
+    ///                 /-----------------            -----------------\ 
+    ///                |/                 \          /                 \|
+    ///   +-------------+ act hard ref +----------------+ source   +----------------+
+    ///   | observableA |------------->| zip observable |<---------| map observable |-------\
+    ///   +-------------+              +----------------+ hard ref +----------------+       | act
+    ///                                   /  /|\                           /|\              | hard
+    ///                 /-----------------    |                      source | hard ref      | ref
+    ///                |/ source hard ref     |                             |               |
+    ///   +-------------+                     |    act hard ref    +-------------------+    |
+    ///   | observableB |--------------------/   /-----------------| filter observable |<---/ 
+    ///   +-------------+  act hard ref          |           _____ +-------------------+
+    ///                                          |          |     /|\      /|\ 
+    ///                                          |          |      |        |  hard ref
+    ///                                         \|/         |      |        |  this.someEventSource
+    ///                               +--------------+      |      |    +-------+
+    ///                               | Subscription |      |      |    | this  |
+    ///                               | action code  |      |      |    +-------+
+    ///                               +--------------+     \|/     |
+    ///                                                 +--------------+
+    ///                                                 | Subscription |
+    ///                                                 +--------------+
+    /// ]]></code>
+    /// 
+    /// ### Closing points
+    /// 
+    /// When using observables we need to ensure we do not leak memory.
+    /// 
+    /// The easiest way to do that is to force a user to give an <see cref="IDisposableTracker"/> that is
+    /// responsible for cleaning up the subscription when the object on which the subscription action works
+    /// is destroyed. 
+    ///  
     /// </summary>
-    /// <param name="tracker">Tracker</param>
-    /// <param name="onEvent"></param>
     ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent);
   }
 
   public static class Observable {
-    public static IObservable<A> a<A>(SubscribeToSource<A> subscribeFn) => 
-      new Observable<A>(subscribeFn);
-
     public static IObservableQueue<A, C> createQueue<A, C>(
       Act<A> addLast, Action removeFirst,
       Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last
@@ -205,25 +341,25 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
   }
 
-  public delegate ISubscription SubscribeToSource<out A>(Act<A> onEvent);
-
   public delegate ObservableImplementation ObserverBuilder<
-    in Elem, out ObservableImplementation
-  >(SubscribeToSource<Elem> subscriptionFn);
+    Elem, out ObservableImplementation
+  >(Observable<Elem>.SubscribeToSource subscriptionFn);
 
   public class Observable<A> : IObservable<A> {
+    public delegate ISubscription SubscribeToSource(Act<A> onEvent);
+    
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
       readonly Act<A> onEvent;
-      readonly SubscribeToSource<A> subscribeFn;
+      readonly SubscribeToSource subscribeFn;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        Act<A> onEvent, SubscribeToSource<A> subscribeFn
+        Act<A> onEvent, SubscribeToSource subscribeFn
       ) {
         this.onEvent = onEvent;
         this.subscribeFn = subscribeFn;
@@ -248,12 +384,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     struct Sub {
       public readonly Subscription subscription;
-      public readonly WeakReference<Act<A>> onEvent;
+      public readonly Act<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
       public readonly bool active;
 
-      public Sub(Subscription subscription, WeakReference<Act<A>> onEvent, bool active) {
+      public Sub(Subscription subscription, Act<A> onEvent, bool active) {
         this.subscription = subscription;
         this.onEvent = onEvent;
         this.active = active;
@@ -286,12 +422,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sourceProps = F.none<SourceProperties>();
     }
 
-    public Observable(SubscribeToSource<A> subscribeFn) {
+    public Observable(SubscribeToSource subscribeFn) {
       sourceProps = new SourceProperties(submit, subscribeFn).some();
     }
 
     protected virtual void submit(A a) {
-
       if (iterating) {
         // Do not submit if iterating.
         pendingSubmits.add(a);
@@ -304,9 +439,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (sub.active && sub.subscription.isSubscribed)
-            foreach (var onEvent in sub.onEvent.Target)
-              onEvent(a);
+          if (sub.active && sub.subscription.isSubscribed) {
+            sub.onEvent(a);
+          }
         }
       }
       finally {
@@ -320,28 +455,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
     public virtual ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
-      // Create a hard reference from subscription to observable, so it would
-      // keep the observable alive as long as we have a reference to subscription.
-      // 
-      //                 hard reference
-      //              /-------------------\
-      //             \/                   |
-      //    /------------------\      +-------+
-      //    |    Observable    |      |  Sub  | 
-      //    \------------------/      +-------+
-      //
+      // Hard ref from subscription to this
       var subscription = new Subscription(onUnsubscribed);
+      tracker.track(subscription);
+      
       var active = !iterating;
-      // Create a weak reference from observable to an action.
-      //
-      // We do not want to keep performing side-effects on an object if we are only ones
-      // that have the reference to that object.
-      // 
-      //    /------------------\ weak   +-------------+ hard   +------------------------------+
-      //    |    Observable    |- - - ->| Action Code |------->| Object to perform effects on | 
-      //    \------------------/ ref    +-------------+ ref    +------------------------------+
-      //
-      subscriptions.Add(new Sub(subscription, WeakReference.a(onEvent), active));
+      // Weak reference from this to action.
+      subscriptions.Add(new Sub(subscription, onEvent, active));
       if (!active) pendingSubscriptionActivations++;
       
       // Subscribe to source if we have a first subscriber.

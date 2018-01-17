@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubject : IObservable {}
   public interface ISubject<A> : ISubject, IObservable<A>, IObserver<A> {}
 
-  /** 
-   * A subject is something that is Observable and Observer at the same
-   * time.
-   **/
+  /// <summary>
+  /// A subject is something that is <see cref="Observable{A}"/> and <see cref="IObserver{A}"/>
+  /// at the same time.
+  /// </summary>
   public class Subject<A> : Observable<A>, ISubject<A> {
     public void push(A value) => submit(value);
   }
@@ -16,19 +18,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// Replay subject stores all the events that comes into it and resubmits them upon subscription.
   /// </summary>
   public class ReplaySubject<A> : Observable<A>, ISubject<A> {
-    // Some(value) - submited;
     readonly List<A> events = new List<A>();
 
-    public override ISubscription subscribe(IObserver<A> observer) {
-<<<<<<< HEAD
-      foreach (var evt in events) observer.push(evt);
-=======
-      foreach (var opt in events) {
-        if (opt.isSome) observer.push(opt.get);
-        else observer.finish();
-      }
->>>>>>> master
-      return base.subscribe(observer);
+    public override ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
+      var subscription = base.subscribe(tracker, onEvent);
+      foreach (var evt in events) onEvent(evt);
+      return subscription;
     }
 
     public void push(A value) {
@@ -44,13 +39,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public class SingleSubscriberSubject<A> : Observable<A>, ISubject<A> {
     ISubscription lastSubscription = Subscription.empty;
 
-    public override ISubscription subscribe(IObserver<A> observer) {
+    public override ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
       lastSubscription.unsubscribe();
-      lastSubscription = base.subscribe(observer);
+      lastSubscription = base.subscribe(tracker, onEvent);
       return lastSubscription;
     }
 
     public void push(A value) => submit(value);
-    public void finish() => finishObservable();
   }
 }

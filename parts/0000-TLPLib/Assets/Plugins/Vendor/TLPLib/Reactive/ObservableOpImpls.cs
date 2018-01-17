@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -13,43 +14,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * may be reused (for example: IObservable<A> -> IObservable<B> & IRxVal<A> -> IRxVal<B>)
    */
   public static class ObservableOpImpls {
-    #region #map
-
-    public static SubscribeToSource<B> map<A, B>(
-      SubscribeToSource<A> subscribe, Fn<A, B> mapper
-    ) =>
-      obs => subscribe(new Observer<A>(val => obs.push(mapper(val))));
-
-    #endregion
-
     #region #flatMap
-
-    public static SubscribeToSource<B> flatMap<A, B>(
-      IObservable<A> observable, Fn<A, IEnumerable<B>> mapper
-    ) => 
-      obs => observable.subscribe(val => {
-        foreach (var b in mapper(val)) obs.push(b);
-      });
     
-    public static SubscribeToSource<B> flatMap<A, B>(
-      SubscribeToSource<A> subscribe, Fn<A, IObservable<B>> mapper
-    ) => 
-      obs => {
-        ISubscription innerSub = null;
-        void innerUnsub() => innerSub?.unsubscribe();
-        var observer = new Observer<A>(val => {
-          innerUnsub();
-          var newObs = mapper(val);
-          innerSub = newObs.subscribe(obs);
-        });
-        var thisSub = subscribe(observer);
-        return thisSub.andThen(innerUnsub);
-      };
-
     public static SubscribeToSource<B> flatMap<A, B>(
       IObservable<A> o, Fn<A, Future<B>> mapper
     ) => 
-      obs => o.subscribe(a => mapper(a).onComplete(obs.push));
+      onEvent => o.subscribe(NoOpDisposableTracker.instance, a => mapper(a).onComplete(onEvent));
 
     #endregion
 
@@ -58,18 +28,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static SubscribeToSource<A> filter<A>(
       IObservable<A> o, Fn<A, bool> predicate
     ) =>
-      obs => o.subscribe(val => { if (predicate(val)) obs.push(val); });
+      onEvent => o.subscribe(NoOpDisposableTracker.instance, val => { if (predicate(val)) onEvent(val); });
 
     #endregion
 
     #region #skip
 
     public static SubscribeToSource<A> skip<A>(IObservable<A> o, uint count) => 
-      obs => {
+      onEvent => {
         var skipped = 0u;
-        return o.subscribe(a => {
+        return o.subscribe(NoOpDisposableTracker.instance, a => {
           if (skipped < count) skipped++;
-          else obs.push(a);
+          else onEvent(a);
         });
       };
 
@@ -85,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           foreach (var val in last) { 
             // Clear last before pushing, because exception makes it loop forever.
             last = Option<A>.None;
-            obs.push(val);
+            obs(val);
           }
         });
         return mySub.join(luSub);
@@ -105,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         void notify() {
           foreach (var aVal in lastSelf)
           foreach (var bVal in lastOther)
-            obs.push(F.t(aVal, bVal));
+            obs(F.t(aVal, bVal));
         }
 
         var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
@@ -125,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           foreach (var aVal in lastSelf)
           foreach (var bVal in lastO1)
           foreach (var cVal in lastO2)
-            obs.push(F.t(aVal, bVal, cVal));
+            obs(F.t(aVal, bVal, cVal));
         }
 
         var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
@@ -148,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           foreach (var bVal in lastO1)
           foreach (var cVal in lastO2)
           foreach (var dVal in lastO3)
-            obs.push(F.t(aVal, bVal, cVal, dVal));
+            obs(F.t(aVal, bVal, cVal, dVal));
         }
 
         var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
@@ -174,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           foreach (var cVal in lastO2)
           foreach (var dVal in lastO3)
           foreach (var eVal in lastO4)
-            obs.push(F.t(aVal, bVal, cVal, dVal, eVal));
+            obs(F.t(aVal, bVal, cVal, dVal, eVal));
         }
 
         var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
@@ -204,7 +174,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           foreach (var a3Val in lastO3)
           foreach (var a4Val in lastO4)
           foreach (var a5Val in lastO5)
-            obs.push(F.t(aVal, a1Val, a2Val, a3Val, a4Val, a5Val));
+            obs(F.t(aVal, a1Val, a2Val, a3Val, a4Val, a5Val));
         }
 
         var s1 = o.subscribe(val => { lastSelf = F.some(val); notify(); });
@@ -221,7 +191,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #discardValue
 
     public static SubscribeToSource<Unit> discardValue<A>(IObservable<A> o) =>
-      obs => o.subscribe(_ => obs.push(F.unit));
+      obs => o.subscribe(_ => obs(F.unit));
 
     #endregion
 
@@ -231,7 +201,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IObservable<A> o, Fn<A, Option<B>> collector
     ) =>
       obs => o.subscribe(
-        val => { foreach (var b in collector(val)) obs.push(b); }
+        val => { foreach (var b in collector(val)) obs(b); }
       );
 
     #endregion
@@ -244,7 +214,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       obs => o.subscribe(val => {
         queue.addLast(val);
         if (queue.count > size) queue.removeFirst();
-        obs.push(queue.collection);
+        obs(queue.collection);
       });
 
     #endregion
@@ -264,7 +234,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           // Remove items which are too old.
           while (queue.first._2 + duration.seconds < lastTime)
             queue.removeFirst();
-          obs.push(queue.collection);
+          obs(queue.collection);
         }
       });
     }
@@ -277,8 +247,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IObservable<A> o, IObservable<B> other
     ) where B : A =>
       obs => 
-        o.subscribe(obs.push)
-        .join(other.subscribe(v => obs.push(v)));
+        o.subscribe(obs)
+        .join(other.subscribe(v => obs(v)));
 
     #endregion
 
@@ -292,7 +262,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IEnumerable<IObservable<A>> observables
     ) =>
       obs =>
-        observables.Select(aObs => aObs.subscribe(obs.push)).ToArray().joinSubscriptions();
+        observables.Select(aObs => aObs.subscribe(obs)).ToArray().joinSubscriptions();
 
     #endregion
 
@@ -302,8 +272,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IObservable<A> o, IObservable<X> other
     ) =>
       obs => 
-        o.subscribe(_ => obs.push(F.unit))
-        .join(other.subscribe(_ => obs.push(F.unit)));
+        o.subscribe(_ => obs(F.unit))
+        .join(other.subscribe(_ => obs(F.unit)));
 
     #endregion
 
@@ -319,7 +289,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           var now = timeContext.passedSinceStartup;
           if (lastEmit + duration > now) return;
           lastEmit = now;
-          obs.push(value);
+          obs(value);
         });
       };
     }
@@ -352,7 +322,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IObservable<A> o, Duration delay, ITimeContext timeContext = null
     ) {
       timeContext = timeContext.orDefault();  
-      return obs => o.subscribe(v => timeContext.after(delay, () => obs.push(v)));
+      return obs => o.subscribe(v => timeContext.after(delay, () => obs(v)));
     }
 
     #endregion
@@ -377,7 +347,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           () => true,
           lastVal => !areEqual(lastVal, val)
         );
-        if (valueChanged) obs.push(F.t(lastValue, val));
+        if (valueChanged) obs(F.t(lastValue, val));
       });
 
     public static SubscribeToSource<Tpl<A, A>> changes<A>(
@@ -386,15 +356,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       changesBase<A, Tpl<A, A>>(o, (obs, lastValue, val) => {
         foreach (var lastVal in lastValue)
           if (!areEqual(lastVal, val))
-            obs.push(F.t(lastVal, val));
+            obs(F.t(lastVal, val));
       });
 
     public static SubscribeToSource<A> changedValues<A>(
       IObservable<A> o, Fn<A, A, bool> areEqual
     ) => changesBase<A, A>(o, (obs, lastValue, val) => {
-      if (lastValue.isNone) obs.push(val);
+      if (lastValue.isNone) obs(val);
       else if (! areEqual(lastValue.get, val))
-        obs.push(val);
+        obs(val);
     });
 
     #endregion

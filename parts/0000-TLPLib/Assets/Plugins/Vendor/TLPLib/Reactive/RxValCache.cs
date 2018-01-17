@@ -2,11 +2,16 @@
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  static class RxValCache<A> {
-    static readonly Dictionary<A, RxValStatic<A>> staticCache = 
-      new Dictionary<A, RxValStatic<A>>();
+  public static class RxValCache<A> {
+    static readonly Dictionary<A, IRxVal<A>> staticCache = new Dictionary<A, IRxVal<A>>();
 
-    public static IRxVal<A> get(A value) => 
-      staticCache.getOrUpdate(value, () => RxValStatic.a(value));
+    public static IRxVal<A> get(A value) {
+      IRxVal<A> rxVal;
+      if (!staticCache.TryGetValue(value, out rxVal)) {
+        rxVal = RxValStatic.a(value);
+        staticCache.Add(value, rxVal);
+      }
+      return rxVal;
+    }
   }
 }

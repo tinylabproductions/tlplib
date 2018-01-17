@@ -1,31 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
-    public static ISubscription subscribe<A>(
-      this IRxVal<A> src, Act<A> onValue, RxSubscriptionMode mode
-    ) =>
-      src.subscribe(new Observer<A>(onValue), mode);
-
-    public static ISubscription subscribe<A>(
-      this IRxVal<A> src, Act<A, ISubscription> onValue, RxSubscriptionMode mode
-    ) {
-      ISubscription sub = null;
-      // ReSharper disable once AccessToModifiedClosure
-      sub = src.subscribe(a => onValue(a, sub), mode);
-      return sub;
-    }
-
-    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Fn<A, B> mapper) =>
+    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Fn<A, B> mapper) => 
       new RxVal<B>(
         mapper(src.value),
-        setValue => src.subscribe(
-          (a, sub) => { if (!setValue(mapper(a))) sub.unsubscribe(); },
-          RxSubscriptionMode.ForRxMapping
+        setValue => src.subscribeWithoutEmit(
+          NoOpDisposableTracker.instance, a => setValue(mapper(a))
         )
       );
 
@@ -45,16 +31,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return new RxVal<B>(
         bRx.value,
         setValue => {
-          var subToBRx = bRx.subscribe(b => setValue(b), RxSubscriptionMode.ForRxMapping);
+          var subToBRx = bRx.subscribeWithoutEmit(NoOpDisposableTracker.instance, b => setValue(b));
 
-          var aSub = src.subscribe(
+          var aSub = src.subscribeWithoutEmit(
+            NoOpDisposableTracker.instance,
             a => {
               subToBRx.unsubscribe();
               bRx = mapper(a);
               setValue(bRx.value);
-              subToBRx = bRx.subscribe(b => setValue(b), RxSubscriptionMode.ForRxMapping);
-            },
-            RxSubscriptionMode.ForRxMapping
+              subToBRx = bRx.subscribeWithoutEmit(NoOpDisposableTracker.instance, b => setValue(b));
+            }
           );
           return aSub.andThen(() => subToBRx.unsubscribe());
         }
@@ -63,13 +49,21 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #zip
 
-    public static IRxVal<Tpl<A, B>> zip<A, B>(this IRxVal<A> aSrc, IRxVal<B> bSrc) => 
-      new RxVal<Tpl<A, B>>(
-        F.t(aSrc.value, bSrc.value),
-        setValue =>
-          aSrc.subscribe(a => setValue(F.t(a, bSrc.value)), RxSubscriptionMode.ForRxMapping)
-          .join(bSrc.subscribe(b => setValue(F.t(aSrc.value, b)), RxSubscriptionMode.ForRxMapping))
+    public static IRxVal<C> zip<A, B, C>(
+      this IRxVal<A> aSrc, IRxVal<B> bSrc, Fn<A, B, C> joiner
+    ) =>
+      new RxVal<C>(
+        joiner(aSrc.value, bSrc.value),
+        setValue => {
+          var tracker = NoOpDisposableTracker.instance;
+          var aSub = aSrc.subscribeWithoutEmit(tracker, a => setValue(joiner(a, bSrc.value)));
+          var bSub = bSrc.subscribeWithoutEmit(tracker, b => setValue(joiner(aSrc.value, b)));
+          return aSub.join(bSub);
+        }
       );
+
+    public static IRxVal<Tpl<A, B>> zip<A, B>(this IRxVal<A> aSrc, IRxVal<B> bSrc) => 
+      aSrc.zip(bSrc, F.t);
 
     public static IRxVal<Tpl<A, B, C>> zip<A, B, C>(
       this IRxVal<A> rx, IRxVal<B> rx2, IRxVal<C> rx3
@@ -106,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         getValue(),
         setValue =>
           vals
-            .Select(v => v.subscribe(_ => setValue(getValue()), RxSubscriptionMode.ForRxMapping))
+            .Select(v => v.subscribeWithoutEmit(TODO, _ => setValue(getValue())))
             .ToArray() // strict evaluation
             .joinSubscriptions()
       );
