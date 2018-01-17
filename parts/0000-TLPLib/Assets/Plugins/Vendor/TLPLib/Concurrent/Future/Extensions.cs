@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 
@@ -27,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this Future<IRxVal<A>> future, A whileNotCompleted
     ) {
       var rx = RxRef.a(whileNotCompleted);
-      future.onComplete(rx2 => rx2.subscribe(v => rx.value = v));
+      future.onComplete(rx2 => rx2.subscribe(NoOpDisposableTracker.instance, v => rx.value = v));
       return rx;
     }
 

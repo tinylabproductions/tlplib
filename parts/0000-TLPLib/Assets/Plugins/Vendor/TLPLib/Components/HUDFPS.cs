@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
@@ -29,7 +30,7 @@ public class HUDFPS : MonoBehaviour, IMB_Start, IMB_OnGUI {
     // Initialize the string
     sFPS.Append("000.0 FPS");
 
-    FPS.fps.subscribe(fps => {
+    FPS.fps.subscribe(gameObject.asDisposableTracker(), fps => {
       if (fps > 999) {
         sFPS[0] = '>';
         sFPS[1] = sFPS[2] = sFPS[3] = '9';

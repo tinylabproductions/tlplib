@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -103,6 +104,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static IObservable<Unit> registerDebugSequence(
+      IDisposableTracker tracker,
       DebugSequenceMouseData mouseData=null, 
       Option<DebugSequenceDirectionData> directionDataOpt=default(Option<DebugSequenceDirectionData>),
       DebugConsoleBinding binding=null
@@ -139,7 +141,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       );
 
       var obs = mouseObs.join(directionObs);
-      obs.subscribe(_ => instance.show(binding));
+      obs.subscribe(tracker, _ => instance.show(binding));
       return obs;
     }
 

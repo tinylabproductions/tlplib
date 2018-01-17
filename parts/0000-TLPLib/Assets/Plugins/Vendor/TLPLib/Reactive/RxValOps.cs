@@ -90,7 +90,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this IEnumerable<IRxVal<A>> valsEnum, Fn<IEnumerable<A>, B> traverseFn
     ) => traverse(valsEnum.ToArray(), traverseFn);
 
-    /** Convert an enum of rx values into one rx value using a traversal function. **/
+    /// <summary>
+    /// Convert an enum of rx values into one rx value using a traversal function.
+    /// </summary>
     public static IRxVal<B> traverse<A, B>(
       this ICollection<IRxVal<A>> vals, Fn<IEnumerable<A>, B> traverseFn
     ) {
@@ -100,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         getValue(),
         setValue =>
           vals
-            .Select(v => v.subscribeWithoutEmit(TODO, _ => setValue(getValue())))
+            .Select(v => v.subscribeWithoutEmit(NoOpDisposableTracker.instance, _ => setValue(getValue())))
             .ToArray() // strict evaluation
             .joinSubscriptions()
       );
@@ -114,20 +116,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var dict = new Dictionary<IRxVal<A>, A>();
 
       foreach (var rx in vals)
-        rx.subscribe(a => {
-          var matched = predicate(a);
-
-          if (matched) {
-            dict[rx] = a;
-            if (val.value.isEmpty) val.value = a.some();
-          }
-          else {
-            dict.Remove(rx);
-            if (val.value.isDefined) {
-              val.value = dict.isEmpty() ? Option<A>.None : dict.First().Value.some();
+        rx.subscribe(
+          NoOpDisposableTracker.instance,
+          a => {
+            var matched = predicate(a);
+  
+            if (matched) {
+              dict[rx] = a;
+              if (val.value.isNone) val.value = a.some();
+            }
+            else {
+              dict.Remove(rx);
+              if (val.value.isSome) {
+                val.value = dict.isEmpty() ? Option<A>.None : dict.First().Value.some();
+              }
             }
           }
-        });
+        );
       return val;
     }
 
@@ -138,28 +143,38 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
       where C : IEnumerable<IRxVal<bool>> 
     => 
-      vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isDefined);
+      vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isSome);
 
     public static IRxVal<Option<A>> anyDefined<A>(
       this IEnumerable<IRxVal<Option<A>>> vals
     ) => 
       vals
-      .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isDefined)
+      .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isSome)
       .map(_ => _.flatten());
 
     // TODO: test
-    /**
-     * Convert IRxVal<A> to IObservable<B>.
-     *
-     * Useful for converting from RxVal to event source. For example
-     * ```someRxVal.map(_ => F.unit)``` would only emit one event, because
-     * the backing value would still be IValueObservable.
-     *
-     * Thus we'd need to use ```someRxVal.toEventSource(_ => F.unit)```.
-     **/
+    /// <summary>
+    /// Convert <see cref="IRxVal{A}"/> to <see cref="IObservable{B}"/>.
+    ///
+    /// Useful for converting from <see cref="IRxVal{A}"/> to event source. For example:
+    /// 
+    /// <code><![CDATA[
+    ///   someRxVal.map(_ => F.unit)
+    /// ]]></code>
+    /// 
+    /// would only emit one event, because the result of a map would be a <see cref="IRxVal{A}"/>
+    /// that has a <see cref="Unit"/> type, which by it's definition only has one value.
+    ///
+    /// Thus we'd need to use
+    /// <code><![CDATA[
+    ///   someRxVal.toEventSource(_ => F.unit)
+    /// ]]></code>
+    /// </summary>
     public static IObservable<B> toEventSource<A, B>(
       this IRxVal<A> rxVal, Fn<A, B> mapper
-    ) => new Observable<B>(obs => rxVal.subscribe(v => obs.push(mapper(v))));
+    ) => new Observable<B>(onEvent => 
+      rxVal.subscribe(NoOpDisposableTracker.instance, v => onEvent(mapper(v)))
+    );
 
     public static IObservable<Unit> toEventSource<A>(this IRxVal<A> o) => 
       o.toEventSource(_ => F.unit);

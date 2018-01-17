@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -49,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
     [InitializeOnLoadMethod, UsedImplicitly]
     static void initTasks() {
-      enabled.subscribe(b => {
+      enabled.subscribe(NoOpDisposableTracker.instance, b => {
         if (b) {
           refsOpt = Option<AssetReferences>.None;
           processFiles(AssetUpdate.fromAllAssets(AssetDatabase.GetAllAssetPaths().ToImmutableList()));
@@ -190,7 +191,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
     public void OnEnable() {
       wantsMouseMove = true;
-      locked.subscribe(v => {
+      locked.subscribe(NoOpDisposableTracker.instance, v => {
         if (v) lockedObj = Selection.activeObject;
       });
     }

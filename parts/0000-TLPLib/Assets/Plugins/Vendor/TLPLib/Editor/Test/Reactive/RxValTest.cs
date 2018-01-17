@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -44,19 +43,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public class RxValTestAnyOf : Specification {
     [Test]
     public void anyOf() => describe(_ => {
-      _.when("empty", () => {
+      _.when["empty"] = () => {
         var e = Enumerable.Empty<IRxVal<bool>>();
 
-        _.it(
-          "should return false when searching for true", 
-          () => e.anyOf(searchFor: true).value.shouldBeFalse()
-        );
+        _.it["should return false when searching for true"] = () => 
+          e.anyOf(searchFor: true).value.shouldBeFalse();
 
-        _.it(
-          "should return false when searching for false",
-          () => e.anyOf(searchFor: false).value.shouldBeFalse()
-        );
-      });
+        _.it["should return false when searching for false"] = () => 
+          e.anyOf(searchFor: false).value.shouldBeFalse();
+      };
     });
 
     [Test]
@@ -149,103 +144,95 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IRxRef<int> src = null;
       IRxVal<int> rx = null;
 
-      _.beforeEach(() => {
+      _.beforeEach += () => {
         mapperInvocations = 0;
         src = RxRef.a(10);
         rx = src.map(i => {
           mapperInvocations++;
           return i + 1;
         });
-      });
+      };
 
-      _.when("not subscribed", () => {
-        _.it("should not invoke mapper on creation", () => {
+      _.when["not subscribed"] = () => {
+        _.it["should not invoke mapper on creation"] = () => {
           mapperInvocations.shouldEqual(0);
-        });
+        };
 
-        _.it("should not invoke mapper on source changes", () => {
+        _.it["should not invoke mapper on source changes"] = () => {
           src.value++;
           mapperInvocations.shouldEqual(0);
-        });
+        };
 
-        _.it("should invoke mapper upon requesting the value", () => {
+        _.it["should invoke mapper upon requesting the value"] = () => {
           rx.value.forSideEffects();
           mapperInvocations.shouldEqual(1);
-        });
+        };
 
-        _.it(
-          "should invoke mapper only once upon value request even if source changed multiple times",
+        _.it["should invoke mapper only once upon value request even if source changed multiple times"] =
           () => {
             src.value++;
             src.value++;
             rx.value.forSideEffects();
             mapperInvocations.shouldEqual(1);
-          }
-        );
+          };
 
-        _.it(
-          "should invoke mapper again if a change happened after last value request",
+        _.it["should invoke mapper again if a change happened after last value request"] =
           () => {
             rx.value.forSideEffects();
             src.value++;
             rx.value.forSideEffects();
             mapperInvocations.shouldEqual(2);
-          }
-        );
+          };
 
-        _.it("should map the value correctly", () => {
+        _.it["should map the value correctly"] = () => {
           rx.value.shouldEqual(11);
-        });
+        };
 
-        _.it("should map the value after change correctly", () => {
+        _.it["should map the value after change correctly"] = () => {
           src.value = 20;
           rx.value.shouldEqual(21);
-        });
-      });
+        };
+      };
 
       void subscribedSpec(int initialValue) {
         List<int> list = null;
-        _.beforeEach(() => list = rx.pipeToList()._1);
+        _.beforeEach += () => list = rx.pipeToList(tracker)._1;
 
         void createSpec(int current, int[] values) {
-          _.it("should have the mapped value", () => rx.value.shouldEqual(current));
-          _.it("should push the mapped value", () => list.shouldEqualEnum(values));
-          _.it(
-            "should not invoke mapper again upon requesting value",
-            () => code(() =>
-              rx.value
-            ).shouldNotChange(() => mapperInvocations)
-          );
+          _.it["should have the mapped value"] = () => rx.value.shouldEqual(current);
+          _.it["should push the mapped value"] = () => list.shouldEqualEnum(values);
+          _.it["should not invoke mapper again upon requesting value"] =
+            () => code(() => rx.value).shouldNotChange(() => mapperInvocations);
         }
 
         createSpec(initialValue + 1, new[] { initialValue + 1 });
 
-        _.when("source has been updated", () => {
-          _.beforeEach(() => src.value++);
+        _.when["source has been updated"] = () => {
+          _.beforeEach += () => src.value++;
           createSpec(initialValue + 2, new[] { initialValue + 1, initialValue + 2 });
 
-          _.when("source has been updated again", () => {
-            _.beforeEach(() => src.value++);
+          _.when["source has been updated again"] = () => {
+            _.beforeEach += () => src.value++;
             createSpec(initialValue + 3, new[] { initialValue + 1, initialValue + 2, initialValue + 3 });
-          });
-        });
+          };
+        };
       }
 
-      _.when("subscribed", () => subscribedSpec(10));
+      _.when["subscribed"] = () => subscribedSpec(10);
 
-      _.when("subscribed, changed and unsubscribed", () => {
-        _.beforeEach(() => {
-          var (list, subscription) = rx.pipeToList();
+      _.when["subscribed, changed and unsubscribed"] = () => {
+        _.beforeEach += () => {
+          var (list, subscription) = rx.pipeToList(tracker);
           src.value++;
           subscription.unsubscribe();
           src.value++;
 
           list.shouldEqualEnum(11, 12);
           rx.value.shouldEqual(13);
-        });
+        };
 
         subscribedSpec(12);
-      });
+      };
     });
 
 //    [Test]

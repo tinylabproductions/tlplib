@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -15,6 +16,27 @@ using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestBase {
+    protected readonly IDisposableTracker tracker = new DisposableTracker();
+    
+    [TearDown]
+    public void CleanupIDisposableTracker() => tracker.Dispose();
+
+    public static void testCollection() {
+      WeakReference reference = null;
+      new Action(() => {
+        var service = new object();
+        reference = new WeakReference(service, true);
+      })();
+
+      // Service should have gone out of scope about now, 
+      // so the garbage collector can clean it up
+      new object().forSideEffects();
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+
+      Assert.IsNull(reference.Target);
+    }
+    
     public static void shouldBeIdentical<A>(A a1, A a2) {
       a1.shouldEqual(a2);
       a2.shouldEqual(a1);
@@ -357,7 +379,7 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public void resultIn(ICollection<A> match, string message = null) {
       var streamValues = new List<A>();
-      var sub = obs.subscribe(streamValues.Add);
+      var sub = obs.subscribe(NoOpDisposableTracker.instance, streamValues.Add);
       act();
       sub.unsubscribe();
 

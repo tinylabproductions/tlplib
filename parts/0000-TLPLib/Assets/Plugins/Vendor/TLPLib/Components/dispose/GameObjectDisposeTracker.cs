@@ -9,15 +9,17 @@ namespace com.tinylabproductions.TLPLib.Components.dispose {
   public class GameObjectDisposeTracker : MonoBehaviour, IMB_OnDestroy, IDisposableTracker {
     readonly List<IDisposable> disposables = new List<IDisposable>();
 
-    public void OnDestroy() {
+    public void OnDestroy() => Dispose();
+
+    public void track(IDisposable a) => disposables.Add(a);
+    
+    public void Dispose() { 
       foreach (var disposable in disposables) {
         disposable.Dispose();
       }
       disposables.Clear();
       disposables.Capacity = 0;
     }
-
-    public void track(IDisposable a) => disposables.Add(a);
   }
 
   public static class GameObjectDisposeTrackerOps {
