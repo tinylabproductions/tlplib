@@ -34,10 +34,20 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public OnRectTransformDimensionsChangeForwarder mask => 
       _maskRect.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>();
 
+    /// <summary>
+    /// Visual part of layout item.
+    /// </summary>
     public interface ILayoutItem : IDisposable {
       RectTransform rectTransform { get; }
     }
 
+    /// <summary>
+    /// Logical part of layout item.
+    /// </summary>
+    /// <param name="height">Height of an element in a layout.</param>
+    /// <param name="width">Item width portion of layout width.</param>
+    /// <param name="createItem">Function to create a layout item</param>
+    // Used to determine layout height and item positions
     public interface IData {
       float height { get; }
       Percentage width { get; }
