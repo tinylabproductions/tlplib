@@ -77,8 +77,8 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     
     public void progress(int idx, int total) => _progress(idx, total, false);
 
-    /// <summary> Wrapper for Unity CancelableProgressBar </summary>
-    /// <returns> True if task was canceled </returns>
+    /// <summary>Wrapper for Unity CancelableProgressBar</summary>
+    /// <returns>True if task was canceled</returns>
     public bool progressCancellable(int idx, int total) => _progress(idx, total, true);
 
     /** A simple method to measure execution times between calls **/
