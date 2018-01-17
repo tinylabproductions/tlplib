@@ -13,8 +13,8 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
   /// <summary>
-  /// Scrollable vertical layout, which creates and places <see cref="ILayoutItem"/> elements when they 
-  /// overlap with <see cref="_maskRect"/> and disposes them when they become out of bounds.
+  /// Scrollable vertical layout, which creates and places <see cref="IElementView"/> elements when they are visible
+  /// (overlap with <see cref="_maskRect"/>) and disposes them when they scroll out of <see cref="_maskRect"/>.
   /// </summary>
   public class DynamicVerticalLayout : MonoBehaviour {
     #region Unity Serialized Fields
@@ -37,21 +37,21 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// <summary>
     /// Visual part of layout item.
     /// </summary>
-    public interface ILayoutItem : IDisposable {
+    public interface IElementView : IDisposable {
       RectTransform rectTransform { get; }
     }
 
     /// <summary>
     /// Logical part of layout item.
+    /// Used to determine layout height and item positions
     /// </summary>
     /// <param name="height">Height of an element in a layout.</param>
     /// <param name="width">Item width portion of layout width.</param>
-    /// <param name="createItem">Function to create a layout item</param>
-    // Used to determine layout height and item positions
-    public interface IData {
+    /// <param name="createItem">Function to create a layout item. It is expected that you use a pool </param>
+    public interface IElementData {
       float height { get; }
       Percentage width { get; }
-      ILayoutItem createItem(Transform parent);
+      IElementView createItem(Transform parent);
     }
 
     public class Init : IDisposable {
@@ -59,14 +59,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       readonly DisposableTracker dt = new DisposableTracker();
       readonly DynamicVerticalLayout backing;
-      readonly ImmutableArray<IData> layoutData;
+      readonly ImmutableArray<IElementData> layoutData;
       readonly IRxVal<Rect> maskSize;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
-      readonly Dictionary<IData, ILayoutItem> items = new Dictionary<IData, ILayoutItem>();
+      readonly Dictionary<IElementData, IElementView> items = new Dictionary<IElementData, IElementView>();
 
       public Init(
         DynamicVerticalLayout backing, 
-        ImmutableArray<IData> layoutData
+        ImmutableArray<IElementData> layoutData
       ) {
         this.backing = backing;
         this.layoutData = layoutData;
