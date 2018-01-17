@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class RectUtils {
