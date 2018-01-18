@@ -5,14 +5,21 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
+  public class TestDisposableTracker : IDisposableTracker {
+    public readonly List<IDisposable> disposables = new List<IDisposable>();
+    
+    public bool disposed { get; private set; }
+
+    public void Dispose() => disposed = true;
+    public void track(IDisposable a) => disposables.Add(a);
+  }
+  
   public class IObservableTest : ImplicitSpecification {
     [Test]
     public void subscriptionCounting() => describe(() => {
@@ -50,73 +57,95 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
       };
     });
-  }
-
-  public class IObservableSubscriptionTest : TestBase {
-    [Test]
-    public void SubscribeFromInsideEvent() {
-      var subject = new Subject<Unit>();
-      var pushedOuter = 0;
-      var pushedInner = 0;
-      subject.subscribe(tracker, _ => {
-        pushedOuter++;
-        subject.subscribe(tracker, __ => pushedInner++);
-        subject.subscribers.shouldEqual(
-          pushedOuter, 
-          "it wait until event dispatching is completed until subscribing the observable"
-        );
-      });
-      subject.push(F.unit);
-      subject.subscribers.shouldEqual(2, "it should subscribe after the event has been dispatched");
-      pushedOuter.shouldEqual(1, "it should get the simple event");
-      pushedInner.shouldEqual(0, "it should not get the event which caused subscribe to happen");
-
-      subject.push(F.unit);
-      subject.subscribers.shouldEqual(3, "inner subscription should work for subsequent events");
-      pushedOuter.shouldEqual(2, "it should work for simple events");
-      pushedInner.shouldEqual(1, "it should not get the event which caused subscribe to happen");
-    }
 
     [Test]
-    public void PushFromInsideEvent() {
-      var subj = new Subject<int>();
-      var list = F.emptyList<Tpl<int, char>>();
-      subj.subscribe(tracker, a => {
-        list.Add(F.t(a, 'a'));
-        if (a == 0) {
-          subj.push(1);
-          subj.push(2);
-        }
-      });
-      subj.subscribe(tracker, a => {
-        list.Add(F.t(a, 'b'));
-      });
-      list.shouldBeEmpty();
-      subj.push(0);
-      list.shouldEqual(F.list(
-        F.t(0, 'a'), F.t(0, 'b'),
-        F.t(1, 'a'), F.t(1, 'b'),
-        F.t(2, 'a'), F.t(2, 'b')
-      ));
-    }
+    public void subscribe() => describe(() => {
+      it["should add created subscription to the given tracker"] = () => {
+        var s = new Subject<Unit>();
+        var t = new TestDisposableTracker();
+        var sub = s.subscribe(t, _ => { });
+        t.disposables.shouldContain((IDisposable) sub);
+      };
+
+      it["should not invoke the subscription function upon subscribing"] = () => {
+        var s = new Subject<Unit>();
+        var counter = 0;
+        s.subscribe(tracker, _ => counter++);
+        counter.shouldEqual(0);
+      };
+
+      it["should invoke the subscription function upon event"] = () => {
+        var s = new Subject<Unit>();
+        var counter = 0;
+        s.subscribe(tracker, _ => counter++);
+        s.push(F.unit);
+        counter.shouldEqual(1);
+      };
+
+      when["subscribing from inside of other event"] = () => {
+        it["should work"] = () => {
+          var subject = new Subject<Unit>();
+          var pushedOuter = 0;
+          var pushedInner = 0;
+          subject.subscribe(tracker, _ => {
+            pushedOuter++;
+            subject.subscribe(tracker, __ => pushedInner++);
+            subject.subscribers.shouldEqual(
+              pushedOuter,
+              "it wait until event dispatching is completed until subscribing the observable"
+            );
+          });
+          subject.push(F.unit);
+          subject.subscribers.shouldEqual(2, "it should subscribe after the event has been dispatched");
+          pushedOuter.shouldEqual(1, "it should get the simple event");
+          pushedInner.shouldEqual(0, "it should not get the event which caused subscribe to happen");
+
+          subject.push(F.unit);
+          subject.subscribers.shouldEqual(3, "inner subscription should work for subsequent events");
+          pushedOuter.shouldEqual(2, "it should work for simple events");
+          pushedInner.shouldEqual(1, "it should not get the event which caused subscribe to happen");
+        };
+      };
+
+      when["pushing from inside of other event"] = () => {
+        it["should work"] = () => {
+          var subj = new Subject<int>();
+          var list = F.emptyList<Tpl<int, char>>();
+          subj.subscribe(tracker, a => {
+            list.Add(F.t(a, 'a'));
+            if (a == 0) {
+              subj.push(1);
+              subj.push(2);
+            }
+          });
+          subj.subscribe(tracker, a => { list.Add(F.t(a, 'b')); });
+          list.shouldBeEmpty();
+          subj.push(0);
+          list.shouldEqual(F.list(
+            F.t(0, 'a'), F.t(0, 'b'),
+            F.t(1, 'a'), F.t(1, 'b'),
+            F.t(2, 'a'), F.t(2, 'b')
+          ));
+        };
+      };
+
+      when["unsubscribing after receiving an event"] = () => {
+        it["should successfully unsubscribe"] = () => {
+          var subject = new Subject<Unit>();
+          var called = 0;
+          subject.subscribe(tracker, (_, subscription) => {
+            called += 1;
+            subscription.unsubscribe();
+          });
+          subject.push(F.unit);
+          subject.push(F.unit);
+          Assert.AreEqual(1, called);
+        };
+      };
+    });
 
     [Test]
-    public void UnsubscribeAfterEvent() {
-      var subject = new Subject<Unit>();
-      var called = 0;
-      subject.subscribe(tracker, (_, subscription) => {
-        called += 1;
-        subscription.unsubscribe();
-      });
-      subject.push(F.unit);
-      subject.push(F.unit);
-      Assert.AreEqual(1, called);
-    }
-  }
-
-  public class IObservableTestToFuture {
-    [Test]
-    public void Test() {
+    public void toFuture() {
       var subj = new Subject<int>();
       var f = subj.toFuture();
       f.value.shouldBeNone();
@@ -125,7 +154,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj.subscribers.shouldEqual(0, "it should unsubscribe after completing the future");
     }
   }
-
+  
   public class IObservableTestMap : TestBase {
     [Test]
     public void Test() {

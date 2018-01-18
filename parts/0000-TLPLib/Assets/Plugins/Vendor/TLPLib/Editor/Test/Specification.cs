@@ -30,7 +30,8 @@ namespace com.tinylabproductions.TLPLib.Test {
       set { _currentBuilder = value; }
     }
 
-    protected SpecificationBuilder.When when => currentBuilder.when;
+    protected SpecificationBuilder.Scope when => currentBuilder.when;
+    protected SpecificationBuilder.Scope on => currentBuilder.on;
     protected SpecificationBuilder.It it => currentBuilder.it;
 
     protected event Action beforeEach {
@@ -121,15 +122,20 @@ namespace com.tinylabproductions.TLPLib.Test {
         context.nonEmptyOpt(true).fold(name, s => $"{s}{joiner}{name}");
     }
 
-    public class When {
+    public class Scope {
       readonly SpecificationBuilder self;
-      public When(SpecificationBuilder self) { this.self = self; }
+      readonly string word;
+
+      public Scope(SpecificationBuilder self, string word) {
+        this.self = self;
+        this.word = word;
+      }
 
       public Action this[string name] {
         set {
           var prevContext = self.currentContext;
           self.currentContext = self.currentContext.child(
-            self.currentContext.isRoot ? $"when {name}" : name
+            self.currentContext.isRoot ? $"{word} {name}" : name
           );
           value();
           self.currentContext = prevContext;
@@ -151,11 +157,12 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     readonly List<Test<Action>> tests = new List<Test<Action>>();
 
-    public readonly When when;
+    public readonly Scope when, on;
     public readonly It it;
 
     public SpecificationBuilder() {
-      when = new When(this);
+      when = new Scope(this, "when");
+      on = new Scope(this, "on");
       it = new It(this);
     }
 

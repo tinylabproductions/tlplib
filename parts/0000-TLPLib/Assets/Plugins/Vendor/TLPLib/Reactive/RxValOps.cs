@@ -49,38 +49,48 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #zip
 
-    public static IRxVal<C> zip<A, B, C>(
-      this IRxVal<A> aSrc, IRxVal<B> bSrc, Fn<A, B, C> joiner
+    public static IRxVal<R> zip<A1, A2, R>(
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, Fn<A1, A2, R> zipper
     ) =>
-      new RxVal<C>(
-        joiner(aSrc.value, bSrc.value),
+      new RxVal<R>(
+        zipper(a1Src.value, a2Src.value),
         setValue => {
           var tracker = NoOpDisposableTracker.instance;
-          var aSub = aSrc.subscribeWithoutEmit(tracker, a => setValue(joiner(a, bSrc.value)));
-          var bSub = bSrc.subscribeWithoutEmit(tracker, b => setValue(joiner(aSrc.value, b)));
-          return aSub.join(bSub);
+          var a1Sub = a1Src.subscribeWithoutEmit(tracker, a1 => setValue(zipper(a1, a2Src.value)));
+          var a2Sub = a2Src.subscribeWithoutEmit(tracker, a2 => setValue(zipper(a1Src.value, a2)));
+          return a1Sub.join(a2Sub);
         }
       );
 
-    public static IRxVal<Tpl<A, B>> zip<A, B>(this IRxVal<A> aSrc, IRxVal<B> bSrc) => 
-      aSrc.zip(bSrc, F.t);
+    public static IRxVal<R> zip<A1, A2, A3, R>(
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, Fn<A1, A2, A3, R> zipper
+    ) =>
+      new RxVal<R>(
+        zipper(a1Src.value, a2Src.value, a3Src.value),
+        setValue => {
+          var tracker = NoOpDisposableTracker.instance;
+          var a1Sub = a1Src.subscribeWithoutEmit(tracker, a1 => setValue(zipper(a1, a2Src.value, a3Src.value)));
+          var a2Sub = a2Src.subscribeWithoutEmit(tracker, a2 => setValue(zipper(a1Src.value, a2, a3Src.value)));
+          var a3Sub = a3Src.subscribeWithoutEmit(tracker, a3 => setValue(zipper(a1Src.value, a2Src.value, a3)));
+          return a1Sub.join(a2Sub, a3Sub);
+        }
+      );
 
-    public static IRxVal<Tpl<A, B, C>> zip<A, B, C>(
-      this IRxVal<A> rx, IRxVal<B> rx2, IRxVal<C> rx3
-    ) => rx.zip(rx2).zip(rx3).map(t => t.flatten());
-
-    public static IRxVal<Tpl<A, B, C, D>> zip<A, B, C, D>(
-      this IRxVal<A> ref1, IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4
-    ) => ref1.zip(ref2).zip(ref3).zip(ref4).map(t => t.flatten());
-
-    public static IRxVal<Tpl<A, B, C, D, E>> zip<A, B, C, D, E>(
-      this IRxVal<A> ref1, IRxVal<B> ref2, IRxVal<C> ref3, IRxVal<D> ref4, IRxVal<E> ref5
-    ) => ref1.zip(ref2).zip(ref3).zip(ref4).zip(ref5).map(t => t.flatten());
-
-    public static IRxVal<Tpl<A, A1, A2, A3, A4, A5>> zip<A, A1, A2, A3, A4, A5>(
-      this IRxVal<A> ref1, IRxVal<A1> ref2, IRxVal<A2> ref3, IRxVal<A3> ref4, IRxVal<A4> ref5,
-      IRxVal<A5> ref6
-    ) => ref1.zip(ref2).zip(ref3).zip(ref4).zip(ref5).zip(ref6).map(t => t.flatten());
+    public static IRxVal<R> zip<A1, A2, A3, A4, R>(
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, IRxVal<A4> a4Src, 
+      Fn<A1, A2, A3, A4, R> zipper
+    ) =>
+      new RxVal<R>(
+        zipper(a1Src.value, a2Src.value, a3Src.value, a4Src.value),
+        setValue => {
+          var tracker = NoOpDisposableTracker.instance;
+          var a1Sub = a1Src.subscribeWithoutEmit(tracker, a1 => setValue(zipper(a1, a2Src.value, a3Src.value, a4Src.value)));
+          var a2Sub = a2Src.subscribeWithoutEmit(tracker, a2 => setValue(zipper(a1Src.value, a2, a3Src.value, a4Src.value)));
+          var a3Sub = a3Src.subscribeWithoutEmit(tracker, a3 => setValue(zipper(a1Src.value, a2Src.value, a3, a4Src.value)));
+          var a4Sub = a4Src.subscribeWithoutEmit(tracker, a4 => setValue(zipper(a1Src.value, a2Src.value, a3Src.value, a4)));
+          return a1Sub.join(a2Sub, a3Sub, a4Sub);
+        }
+      );
 
     #endregion
 
