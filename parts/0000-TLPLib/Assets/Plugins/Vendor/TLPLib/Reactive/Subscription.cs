@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubscription : IDisposable {
@@ -35,29 +36,27 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
 
   public class Subscription : ISubscription {
-    /** Already unsubscribed subscription. */
-    public static readonly ISubscription empty;
+    /// <summary>Already unsubscribed subscription.</summary>
+    public static readonly ISubscription empty = new Subscription(null);
 
-    static Subscription() {
-      empty = new Subscription(() => {});
-      empty.unsubscribe();
-    }
+    [CanBeNull] Action onUnsubscribe;
 
-    public static ISubscription a(Action onUnsubscribe) => new Subscription(onUnsubscribe);
-
-    readonly Action onUnsubscribe;
-
-    public bool isSubscribed { get; private set; } = true;
+    public bool isSubscribed => onUnsubscribe != null;
 
     public Subscription(Action onUnsubscribe) {
       this.onUnsubscribe = onUnsubscribe;
     }
 
     public bool unsubscribe() {
-      if (!isSubscribed) return false;
-      isSubscribed = false;
-      onUnsubscribe();
-      return true;
+      if (onUnsubscribe != null) {
+        onUnsubscribe();
+        // Nulling this allows garbage collector to collect whatever is referenced
+        // by given action even if someone still has a reference to the subscription
+        // itself.
+        onUnsubscribe = null;
+        return true;
+      }
+      return false;
     }
 
     public void Dispose() => unsubscribe();

@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Conditional("ENABLE_IL2CPP")]
     public static void ensureValue<A>(ref Option<A> opt) {
 #if ENABLE_IL2CPP
-      if (opt == null) opt = Option<A>.None;
+      if ((object) opt == null) opt = Option<A>.None;
 #endif
     }
 
@@ -136,67 +136,25 @@ namespace com.tinylabproductions.TLPLib.Functional {
     /* A quick way to get None instance for this options type. */
     public Option<A> none => None;
 
-  #region Equality
+    #region Equality
 
+    public override bool Equals(object o) => o is Option<A> option && Equals(option);
+
+    public bool Equals(Option<A> other) => isSome ? other.exists(__unsafeGetValue) : other.isNone;
+
+    public override int GetHashCode() => Smooth.Collections.EqComparer<A>.Default.GetHashCode(__unsafeGetValue);
+
+    public static bool operator ==(Option<A> lhs, Option<A> rhs) {
 #if ENABLE_IL2CPP
-    public bool Equals(Option<A> other) {
-      return isSome == other.isSome && EqualityComparer<A>.Default.Equals(__unsafeGetValue, other.__unsafeGetValue);
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) return false;
-      if (ReferenceEquals(this, obj)) return true;
-      if (obj.GetType() != this.GetType()) return false;
-      return Equals((Option<A>) obj);
-    }
-
-    public override int GetHashCode() {
-      unchecked {
-        return (EqualityComparer<A>.Default.GetHashCode(__unsafeGetValue) * 397) ^ isSome.GetHashCode();
-      }
-    }
-
-    sealed class ValueIsSomeEqualityComparer : IEqualityComparer<Option<A>> {
-      public bool Equals(Option<A> x, Option<A> y) {
-        if (ReferenceEquals(x, y)) return true;
-        if (ReferenceEquals(x, null)) return false;
-        if (ReferenceEquals(y, null)) return false;
-        if (x.GetType() != y.GetType()) return false;
-        return x.isSome == y.isSome && EqualityComparer<A>.Default.Equals(x.__unsafeGetValue, y.__unsafeGetValue);
-      }
-
-      public int GetHashCode(Option<A> obj) {
-        unchecked {
-          return (EqualityComparer<A>.Default.GetHashCode(obj.__unsafeGetValue) * 397) ^ obj.isSome.GetHashCode();
-        }
-      }
-    }
-
-    public static readonly IEqualityComparer<Option<A>> valueIsSomeComparer = new ValueIsSomeEqualityComparer();
-
-#else
-    public override bool Equals(object o) {
-      return o is Option<A> && Equals((Option<A>)o);
-    }
-
-    public bool Equals(Option<A> other) {
-      return isSome ? other.exists(__unsafeGetValue) : other.isNone;
-    }
-
-    public override int GetHashCode() {
-      return Smooth.Collections.EqComparer<A>.Default.GetHashCode(__unsafeGetValue);
-    }
-
-    public static bool operator == (Option<A> lhs, Option<A> rhs) {
+      if (lhs == null && rhs != null || lhs != null && rhs == null) return false;
+      if (lhs == null) return true;
+#endif
       return lhs.Equals(rhs);
     }
+    
+    public static bool operator !=(Option<A> lhs, Option<A> rhs) => !(lhs == rhs);
 
-    public static bool operator != (Option<A> lhs, Option<A> rhs) {
-      return !lhs.Equals(rhs);
-    }
-  #endif
-
-  #endregion
+    #endregion
 
     public OptionEnumerator<A> GetEnumerator() => new OptionEnumerator<A>(this);
 

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class ObservableOps {
@@ -23,6 +25,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subscription = observable.subscribe(tracker, a => onChange(a, subscription));
       return subscription;
     }
+
+    public static ISubscription subscribe<A>(
+      this IObservable<A> observable, GameObject tracker, Act<A> onChange
+    ) => observable.subscribe(tracker.asDisposableTracker(), onChange);
 
     public static ISubscription subscribeForOneEvent<A>(
       this IObservable<A> observable, 
@@ -164,6 +170,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return s1.join(s2);
       });
 
+    [Obsolete("Use zip with custom mapper")]
+    public static IObservable<Tpl<A1, A2>> zip<A1, A2>(
+      this IObservable<A1> o1, IObservable<A2> o2
+    ) => o1.zip(o2, F.t);
+
     public static IObservable<R> zip<A1, A2, A3, R>(
       this IObservable<A1> o, IObservable<A2> o1, IObservable<A3> o2, Fn<A1, A2, A3, R> zipper
     ) => new Observable<R>(onEvent => {
@@ -183,6 +194,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var s3 = o2.subscribe(NoOpDisposableTracker.instance, val => { lastO2 = F.some(val); notify(); });
       return s1.join(s2, s3);
     });
+
+    [Obsolete("Use zip with custom mapper")]
+    public static IObservable<Tpl<A1, A2, A3>> zip<A1, A2, A3>(
+      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3
+    ) => o1.zip(o2, o3, F.t);
 
     public static IObservable<R> zip<A1, A2, A3, A4, R>(
       this IObservable<A1> o, IObservable<A2> o1, IObservable<A3> o2, IObservable<A4> o3,
@@ -207,6 +223,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var s4 = o3.subscribe(NoOpDisposableTracker.instance, val => { lastO3 = F.some(val); notify(); });
       return s1.join(s2, s3, s4);
     });
+
+    [Obsolete("Use zip with custom mapper")]
+    public static IObservable<Tpl<A1, A2, A3, A4>> zip<A1, A2, A3, A4>(
+      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4
+    ) => o1.zip(o2, o3, o4, F.t);
 
     public static IObservable<R> zip<A1, A2, A3, A4, A5, R>(
       this IObservable<A1> o, IObservable<A2> o1, IObservable<A3> o2, IObservable<A4> o3, IObservable<A5> o4,
@@ -234,6 +255,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var s5 = o4.subscribe(NoOpDisposableTracker.instance, val => { lastO4 = F.some(val); notify(); });
       return s1.join(s2, s3, s4, s5);
     });
+
+    [Obsolete("Use zip with custom mapper")]
+    public static IObservable<Tpl<A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5
+    ) => o1.zip(o2, o3, o4, o5, F.t);
 
     public static IObservable<R> zip<A, A1, A2, A3, A4, A5, R>(
       this IObservable<A> o, IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, 
@@ -264,6 +290,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var s6 = o5.subscribe(NoOpDisposableTracker.instance, val => { lastO5 = F.some(val); notify(); });
       return s1.join(s2, s3, s4, s5, s6);
     });
+
+    [Obsolete("Use zip with custom mapper")]
+    public static IObservable<Tpl<A1, A2, A3, A4, A5, A6>> zip<A1, A2, A3, A4, A5, A6>(
+      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5,
+      IObservable<A6> o6
+    ) => o1.zip(o2, o3, o4, o5, o6, F.t);
 
     #endregion
 

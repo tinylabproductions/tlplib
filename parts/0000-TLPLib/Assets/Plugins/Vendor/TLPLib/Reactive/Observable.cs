@@ -7,7 +7,10 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.system;
 using UnityEngine;
+using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -96,8 +99,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// 
     /// Transformations are observables that emit events based on one or more source observables.
     /// 
-    /// For example <see cref="ObservableOps.zip{A,B}"/> takes two observables and produces an observable
-    /// that emits tupled values.
+    /// For example <see cref="ObservableOps.zip{A1,A2,R}(com.tinylabproductions.TLPLib.Reactive.IObservable{A1},com.tinylabproductions.TLPLib.Reactive.IObservable{A2},System.Fn{A1,A2,R})"/>
+    /// takes two observables and produces an observable that emits tupled values.
     /// 
     /// Transformations have a nice property, that if nobody is listening to them, they do not have to listen
     /// to their source as well.
@@ -383,17 +386,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     struct Sub {
-      public readonly Subscription subscription;
+      public readonly WeakReference<Subscription> subscription;
       public readonly Act<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
       public readonly bool active;
 
-      public Sub(Subscription subscription, Act<A> onEvent, bool active) {
+      public Sub(WeakReference<Subscription> subscription, Act<A> onEvent, bool active) {
         this.subscription = subscription;
         this.onEvent = onEvent;
         this.active = active;
       }
+
+      public bool isSubscribed { get {
+        foreach (var sub in subscription.Target) return sub.isSubscribed;
+        if (Log.d.isWarn()) Log.d.warn("Subscription reference lost, but it was not unsubscribed before!");
+        return false;
+      } }
 
       public override string ToString() => 
         $"{nameof(Sub)}[" +
@@ -439,7 +448,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (sub.active && sub.subscription.isSubscribed) {
+          if (sub.active && sub.isSubscribed) {
             sub.onEvent(a);
           }
         }
@@ -461,7 +470,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       
       var active = !iterating;
       // Weak reference from this to action.
-      subscriptions.Add(new Sub(subscription, onEvent, active));
+      subscriptions.Add(new Sub(WeakReference.a(subscription), onEvent, active));
       if (!active) pendingSubscriptionActivations++;
       
       // Subscribe to source if we have a first subscriber.
@@ -494,7 +503,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         pendingSubscriptionActivations = 0;
       }
       if (pendingRemovals != 0) {
-        subscriptions.RemoveWhere(sub => !sub.subscription.isSubscribed);
+        subscriptions.RemoveWhere(sub => !sub.isSubscribed);
         pendingRemovals = 0;
       }
     }

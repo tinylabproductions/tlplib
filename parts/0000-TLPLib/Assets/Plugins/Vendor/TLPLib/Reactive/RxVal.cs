@@ -147,7 +147,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxVal {
     #region Constructors
 
-    /* Never changing RxVal. Useful for lifting values into reactive values. */
+    /// <summary>
+    /// Never changing RxVal. Useful for lifting values into reactive values.
+    /// </summary>
     public static IRxVal<A> a<A>(A value) => RxValStatic.a(value);
     public static IRxVal<A> cached<A>(A value) => RxValCache<A>.get(value);
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
@@ -46,8 +45,12 @@ namespace com.tinylabproductions.TLPLib.Components {
       }
     }
 
-    /* Emits event when a particular region index sequence is executed within X seconds */
-    public IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float timeS) {
+    /// <summary>
+    /// Emits event when a particular region index sequence is executed within X seconds.
+    /// </summary>
+    public IObservable<Unit> sequenceWithinTimeframe(
+      IDisposableTracker tracker, IList<int> sequence, float timeS
+    ) {
       // Specific implementation to reduce garbage.
       var s = new Subject<Unit>();
       var regions = new Queue<SeqEntry>(sequence.Count);
@@ -59,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Components {
         }
         return true;
       }
-      regionIndex.subscribe(NoOpDisposableTracker.instance, region => {
+      regionIndex.subscribe(tracker, region => {
         // Clear up one item if the queue is full.
         if (regions.Count == sequence.Count) regions.Dequeue();
         regions.Enqueue(new SeqEntry(Time.realtimeSinceStartup, region));

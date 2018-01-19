@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     A _value;
     public A value {
-      get { return _value; }
+      get => _value;
       set {
         if (!comparer.Equals(_value, value)) {
           _value = value;

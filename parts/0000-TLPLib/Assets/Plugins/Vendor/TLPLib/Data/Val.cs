@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public static class ValExts {
-    public static Val<B> map<A, B>(this Val<A> v, Fn<A, B> mapper) =>
+    public static Val<B> mapVal<A, B>(this Val<A> v, Fn<A, B> mapper) =>
       new LambdaVal<B>(() => mapper(v.value));
   }
 

@@ -304,7 +304,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects, 
-      Option<CustomObjectValidator> customValidatorOpt = default(Option<CustomObjectValidator>),
+      Option<CustomObjectValidator> customValidatorOpt = default,
       Act<float> onProgress = null, Action onFinish = null
     ) {
       Option.ensureValue(ref customValidatorOpt);

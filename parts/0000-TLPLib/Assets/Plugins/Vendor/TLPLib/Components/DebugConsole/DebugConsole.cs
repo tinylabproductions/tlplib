@@ -106,7 +106,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static IObservable<Unit> registerDebugSequence(
       IDisposableTracker tracker,
       DebugSequenceMouseData mouseData=null, 
-      Option<DebugSequenceDirectionData> directionDataOpt=default(Option<DebugSequenceDirectionData>),
+      Option<DebugSequenceDirectionData> directionDataOpt=default,
       DebugConsoleBinding binding=null
     ) {
       Option.ensureValue(ref directionDataOpt);
@@ -116,7 +116,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var mouseObs = 
         new RegionClickObservable(mouseData.width, mouseData.height)
-        .sequenceWithinTimeframe(mouseData.sequence, 3);
+        .sequenceWithinTimeframe(tracker, mouseData.sequence, 3);
 
       var directionObs = directionDataOpt.fold(
         Observable<Unit>.empty,
