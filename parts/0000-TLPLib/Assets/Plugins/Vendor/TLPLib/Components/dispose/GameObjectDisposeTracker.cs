@@ -1,25 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.dispose {
   public class GameObjectDisposeTracker : MonoBehaviour, IMB_OnDestroy, IDisposableTracker {
-    readonly List<IDisposable> disposables = new List<IDisposable>();
+    readonly DisposableTracker tracker = new DisposableTracker();
+    [Inspect] public int count => tracker.count;
 
     public void OnDestroy() => Dispose();
-
-    public void track(IDisposable a) => disposables.Add(a);
-    
-    public void Dispose() { 
-      foreach (var disposable in disposables) {
-        disposable.Dispose();
-      }
-      disposables.Clear();
-      disposables.Capacity = 0;
-    }
+    public void track(IDisposable a) => tracker.track(a);
+    public void Dispose() => tracker.Dispose();
   }
 
   public static class GameObjectDisposeTrackerOps {

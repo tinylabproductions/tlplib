@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.caching;
+using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary><see cref="PrefVal{A}"/> that can be inspected in editor.</summary>
@@ -9,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   /// <summary>PlayerPrefs backed value.</summary>
-  public interface PrefVal<A> : Ref<A>, ICachedBlob<A>, InspectablePrefVal {}
+  public interface PrefVal<A> : IRxRef<A>, ICachedBlob<A>, InspectablePrefVal {}
   
   public static class PrefVal {
     public delegate void Base64StorePart(byte[] partData);
@@ -23,8 +24,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 #endif
 
     public static void trySetUntyped<A>(this PrefVal<A> val, object value) {
-      if (value is A)
-        val.value = (A) value;
+      if (value is A a)
+        val.value = a;
       else
         throw new ArgumentException(
           $"Can't assign {value} (of type {value.GetType()}) to {val} (of type {typeof(A)}!"

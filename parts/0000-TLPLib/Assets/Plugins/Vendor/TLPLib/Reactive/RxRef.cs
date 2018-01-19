@@ -2,34 +2,29 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  /**
-   * RxRef is a reactive reference, which stores a value and also acts as a IObservable.
-   **/
+  /// <summary>
+  /// RxRef is a reactive reference, which stores a value and also acts as a IObservable.
+  /// </summary>
   public interface IRxRef<A> : Ref<A>, IRxVal<A> {
     new A value { get; set; }
-    IRxVal<A> asVal { get; }
   }
 
   /// <summary>
   /// Mutable reference which is also an observable.
   /// </summary>
-  public class RxRef<A> : IRxRef<A> {
-    public readonly IEqualityComparer<A> comparer;
+  public class RxRef<A> : Observable<A>, IRxRef<A> {
+    readonly IEqualityComparer<A> comparer;
     
-    readonly Subject<A> subject = new Subject<A>();
-    public int subscribers => subject.subscribers;
-
     A _value;
     public A value {
       get => _value;
       set {
-        if (!comparer.Equals(_value, value)) {
-          _value = value;
-          subject.push(value);
-        }
+        if (RxBase.compareAndSet(comparer, ref _value, value))
+          submit(value);
       }
     }
 
@@ -38,17 +33,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       _value = value;
     }
 
-    public ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
-      var subscription = subject.subscribe(tracker, onEvent);
+    public override ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+    ) {
+      var subscription = base.subscribe(tracker, onEvent, debugInfo);
       onEvent(value);
       return subscription;
     }
 
-    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent) =>
-      subject.subscribe(tracker, onEvent);
+    public ISubscription subscribeWithoutEmit(
+      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default 
+    ) =>
+      base.subscribe(tracker, onEvent, debugInfo);
 
     public override string ToString() => $"{nameof(RxRef)}({value})";
-    public IRxVal<A> asVal => this;
   }
 
   public static class RxRef {

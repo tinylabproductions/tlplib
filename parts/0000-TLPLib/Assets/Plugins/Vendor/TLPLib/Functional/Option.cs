@@ -146,8 +146,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static bool operator ==(Option<A> lhs, Option<A> rhs) {
 #if ENABLE_IL2CPP
-      if (lhs == null && rhs != null || lhs != null && rhs == null) return false;
-      if (lhs == null) return true;
+      var leftNull = ReferenceEquals(lhs, null);
+      var rightNull = ReferenceEquals(rhs, null);
+      if (leftNull && rightNull) return true;
+      if (leftNull || rightNull) return false;
 #endif
       return lhs.Equals(rhs);
     }

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Functional;
+using Smooth.Collections;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -11,7 +14,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// <typeparam name="A"></typeparam>
   public interface IRxVal<out A> : IObservable<A> {
     A value { get; }
-    ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent);
+    ISubscription subscribeWithoutEmit(
+      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+    );
   }
   
   /// <summary>
@@ -95,21 +100,37 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// them only in subscription functions, where the subscription lifetimes are explicitly handled
   /// by you.
   /// </para>
+  /// 
+  /// <para>### Implementation details ###</para>
+  /// 
+  /// <para>
+  /// TODO
+  /// </para>
   /// </summary>
-  public class RxVal<A> : IRxVal<A> {
+  public sealed class RxVal<A> : Observable<A>, IRxVal<A> {
+    readonly IEqualityComparer<A> comparer;
     public delegate void SetValue(A a);
     
-    public int subscribers => rxRef.subscribers;
-    public A value => rxRef.value;
-    
-    readonly IRxRef<A> rxRef;
+    A _value;
+    public A value {
+      get => _value;
+      private set {
+        if (RxBase.compareAndSet(comparer, ref _value, value))
+          submit(value);
+      }
+    }
     
     // ReSharper disable once NotAccessedField.Local
     // This subscription is kept here to have a hard reference to the source.
     readonly ISubscription baseObservableSubscription;
 
-    public RxVal(A initialValue, Fn<SetValue, ISubscription> subscribeToSource) {
-      rxRef = RxRef.a(initialValue);
+    public RxVal(
+      A initialValue, Fn<SetValue, ISubscription> subscribeToSource, 
+      IEqualityComparer<A> comparer = null
+    ) {
+      _value = initialValue;
+      this.comparer = comparer ?? EqComparer<A>.Default;
+      
       var wr = WeakReference.a(this);
       var sub = Subscription.empty;
       sub = subscribeToSource(
@@ -130,18 +151,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         a => {
           // Make sure to not capture `this`!
           var thizOpt = wr.Target;
-          if (thizOpt.isSome) thizOpt.__unsafeGetValue.rxRef.value = a;
+          if (thizOpt.isSome) thizOpt.__unsafeGetValue.value = a;
           else sub.unsubscribe();
         }
       );
       baseObservableSubscription = sub;
     }
 
-    public ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) =>
-      rxRef.subscribe(tracker, onEvent);
+    public override ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) {
+      var subscription = base.subscribe(tracker, onEvent, debugInfo);
+      onEvent(value);
+      return subscription;
+    }
 
-    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent) =>
-      rxRef.subscribeWithoutEmit(tracker, onEvent);
+    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) =>
+      base.subscribe(tracker, onEvent, debugInfo);
+
+    public override string ToString() => $"RxVal({value})";
   }
 
   public static class RxVal {

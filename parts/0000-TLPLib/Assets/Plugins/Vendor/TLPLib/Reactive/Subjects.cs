@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubject : IObservable {}
@@ -20,8 +21,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public class ReplaySubject<A> : Observable<A>, ISubject<A> {
     readonly List<A> events = new List<A>();
 
-    public override ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
-      var subscription = base.subscribe(tracker, onEvent);
+    public override ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+    ) {
+      var subscription = base.subscribe(tracker, onEvent, debugInfo);
       foreach (var evt in events) onEvent(evt);
       return subscription;
     }
@@ -39,9 +42,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public class SingleSubscriberSubject<A> : Observable<A>, ISubject<A> {
     ISubscription lastSubscription = Subscription.empty;
 
-    public override ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
+    public override ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+    ) {
       lastSubscription.unsubscribe();
-      lastSubscription = base.subscribe(tracker, onEvent);
+      lastSubscription = base.subscribe(tracker, onEvent, debugInfo);
       return lastSubscription;
     }
 

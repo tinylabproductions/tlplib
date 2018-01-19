@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
@@ -9,6 +10,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.system;
+using GenerationAttributes;
 using UnityEngine;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
@@ -201,7 +203,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// is destroyed. 
     ///  
     /// </summary>
-    ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent);
+    ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default);
   }
 
   public static class Observable {
@@ -348,7 +350,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     Elem, out ObservableImplementation
   >(Observable<Elem>.SubscribeToSource subscriptionFn);
 
-  public class Observable<A> : IObservable<A> {
+  public partial class Observable<A> : IObservable<A> {
     public delegate ISubscription SubscribeToSource(Act<A> onEvent);
     
     public static readonly Observable<A> empty =
@@ -385,34 +387,32 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    struct Sub {
-      public readonly WeakReference<Subscription> subscription;
+    [Case]
+    partial struct Sub {
       public readonly Act<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
-      public readonly bool active;
-
-      public Sub(WeakReference<Subscription> subscription, Act<A> onEvent, bool active) {
-        this.subscription = subscription;
-        this.onEvent = onEvent;
-        this.active = active;
-      }
+      public readonly bool active, haveUnsubscribed;
+      
+      readonly WeakReference<Subscription> subscription;
+      readonly Option<string> debugInfo;
 
       public bool isSubscribed { get {
+        if (haveUnsubscribed) return false;
         foreach (var sub in subscription.Target) return sub.isSubscribed;
-        if (Log.d.isWarn()) Log.d.warn("Subscription reference lost, but it was not unsubscribed before!");
+        if (Log.d.isWarn()) Log.d.warn(
+          $"Subscription reference lost, but it was not unsubscribed before!\n\n" +
+          $"Debug Info:\n" +
+          $"{debugInfo.getOrElse("none")}"
+        );
         return false;
       } }
 
-      public override string ToString() => 
-        $"{nameof(Sub)}[" +
-        $"{nameof(subscription)}: {subscription}, " +
-        $"{nameof(onEvent)}: {onEvent}, " +
-        $"{nameof(active)}: {active}" +
-        $"]";
-
       public Sub withActive(bool active) =>
-        new Sub(subscription, onEvent, active);
+        new Sub(onEvent, active, haveUnsubscribed, subscription, debugInfo);
+      
+      public Sub unsubscribe() =>
+        new Sub(onEvent, false, true, subscription, debugInfo);
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
@@ -435,7 +435,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sourceProps = new SourceProperties(submit, subscribeFn).some();
     }
 
-    protected virtual void submit(A a) {
+    protected void submit(A a) {
       if (iterating) {
         // Do not submit if iterating.
         pendingSubmits.add(a);
@@ -463,14 +463,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
-    public virtual ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
+    public virtual ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo=default
+    ) {
+      Option.ensureValue(ref debugInfo);
+      
       // Hard ref from subscription to this
-      var subscription = new Subscription(onUnsubscribed);
+      var subscription = new Subscription(() => onUnsubscribed(onEvent));
       tracker.track(subscription);
       
       var active = !iterating;
-      // Weak reference from this to action.
-      subscriptions.Add(new Sub(WeakReference.a(subscription), onEvent, active));
+      var debugInfo2 =
+        Log.d.isDebug()
+          ? F.some(new StackTrace(fNeedFileInfo: true) + "\n\ndebugInfo = " + debugInfo.getOrElse(""))
+          : F.none<string>();
+      subscriptions.Add(new Sub(
+        onEvent: onEvent, active: active, haveUnsubscribed: false, 
+        subscription: WeakReference.a(subscription), debugInfo: debugInfo2
+      ));
       if (!active) pendingSubscriptionActivations++;
       
       // Subscribe to source if we have a first subscriber.
@@ -481,7 +491,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region private methods
 
-    void onUnsubscribed() {
+    void onUnsubscribed(Act<A> onEvent) {
+      for (var idx = 0; idx < subscriptions.Count; idx++) {
+        var sub = subscriptions[idx];
+        if (sub.onEvent == onEvent) {
+          subscriptions[idx] = sub.unsubscribe();
+        }
+      }
       pendingRemovals++;
       if (iterating) return;
       afterIteration();
@@ -509,5 +525,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     #endregion
+    
   }
 }

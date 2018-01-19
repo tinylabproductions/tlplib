@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
@@ -28,18 +30,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<B> flatMap<A, B>(this IRxVal<A> src, Fn<A, IRxVal<B>> mapper) {
       var bRx = mapper(src.value);
 
+      var debugInfo =
+        Log.d.isDebug()
+          ? F.some("creator = " + new StackTrace(fNeedFileInfo: true, skipFrames: 1))
+          : F.none<string>();
+
       return new RxVal<B>(
         bRx.value,
         setValue => {
-          var subToBRx = bRx.subscribeWithoutEmit(NoOpDisposableTracker.instance, b => setValue(b));
+          var tracker = NoOpDisposableTracker.instance;
+          var subToBRx = bRx.subscribeWithoutEmit(tracker, b => setValue(b), debugInfo);
 
           var aSub = src.subscribeWithoutEmit(
-            NoOpDisposableTracker.instance,
+            tracker,
             a => {
               subToBRx.unsubscribe();
               bRx = mapper(a);
               setValue(bRx.value);
-              subToBRx = bRx.subscribeWithoutEmit(NoOpDisposableTracker.instance, b => setValue(b));
+              subToBRx = bRx.subscribeWithoutEmit(tracker, b => setValue(b), debugInfo);
             }
           );
           return aSub.andThen(() => subToBRx.unsubscribe());

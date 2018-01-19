@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /// <summary>RxVal which has a constant value.</summary>
@@ -10,12 +11,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public RxValStatic(A value) { this.value = value; }
 
-    public ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent) {
+    public ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) {
       onEvent(value);
       return Subscription.empty;
     }
     
-    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent) =>
+    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) =>
       Subscription.empty;
   }
 

@@ -18,26 +18,29 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static ISubscription subscribe<A>(
       this IObservable<A> observable, 
       IDisposableTracker tracker,
-      Act<A, ISubscription> onChange
+      Act<A, ISubscription> onChange, 
+      Option<string> debugInfo = default
     ) {
       ISubscription subscription = null;
       // ReSharper disable once AccessToModifiedClosure
-      subscription = observable.subscribe(tracker, a => onChange(a, subscription));
+      subscription = observable.subscribe(tracker, a => onChange(a, subscription), debugInfo);
       return subscription;
     }
 
     public static ISubscription subscribe<A>(
-      this IObservable<A> observable, GameObject tracker, Act<A> onChange
-    ) => observable.subscribe(tracker.asDisposableTracker(), onChange);
+      this IObservable<A> observable, GameObject tracker, Act<A> onChange, 
+      Option<string> debugInfo = default 
+    ) => observable.subscribe(tracker.asDisposableTracker(), onChange, debugInfo);
 
     public static ISubscription subscribeForOneEvent<A>(
       this IObservable<A> observable, 
       IDisposableTracker tracker,
-      Act<A> onEvent
+      Act<A> onEvent, 
+      Option<string> debugInfo = default
     ) => observable.subscribe(tracker, (a, sub) => {
       sub.unsubscribe();
       onEvent(a);
-    });
+    }, debugInfo);
 
     #endregion
 
