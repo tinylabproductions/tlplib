@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -94,6 +95,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     bool foldout1 = true, foldout2 = true, foldout3 = true;
     Object hoverItem, previousHoverItem, lockedObj;
     readonly IRxRef<bool> locked = RxRef.a(false);
+    bool showActions;
 
     public void OnGUI() {
       var isMouseMoveEvent = Event.current.type == EventType.MouseMove;
@@ -106,6 +108,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         enabled.value = EditorGUILayout.Toggle("Enabled", enabled.value);
         foreach (var _ in enabled.value.opt(F.unit)) {
           locked.value = EditorGUILayout.Toggle("Lock", locked.value);
+          showActions = EditorGUILayout.Toggle("Show Actions", showActions);
           var cur = locked.value ? lockedObj : Selection.activeObject;
           if (cur == null) break;
           var curPath = AssetDatabase.GetAssetPath(cur);
@@ -145,8 +148,19 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     void displayObjects(string name, ICollection<string> guids, ref bool foldout) {
       foldout = EditorGUILayout.Foldout(foldout, name + " " + guids.Count);
       if (foldout) {
+        if (showActions) {
+          if (GUILayout.Button("select"))
+            Selection.objects = loadGuids(guids).ToArray();
+
+          if (GUILayout.Button("set dirty")) {
+            var objects = loadGuids(guids).ToArray();
+            Undo.RecordObjects(objects, "Set objects dirty");
+            foreach (var o in objects) EditorUtility.SetDirty(o);
+          }
+        }
+
         foreach (var guid in guids.OrderBy(AssetDatabase.GUIDToAssetPath)) {
-          var asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+          var asset = AssetDatabaseUtils.loadMainAssetByGuid(guid);
           if (asset != null) {
             objectDisplay(guid);
           }
@@ -157,9 +171,13 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       }
     }
 
+    // ToArray in case someone modifies guids collection
+    static IEnumerable<Object> loadGuids(IEnumerable<string> guids) =>
+      guids.ToArray().Select(AssetDatabaseUtils.loadMainAssetByGuid);
+
     void objectDisplay(string guid) {
       EditorGUILayout.BeginHorizontal();
-      var obj = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+      var obj = AssetDatabaseUtils.loadMainAssetByGuid(guid);
       EditorGUILayout.ObjectField(obj, typeof(Object), false);
       var etype = Event.current.type;
       if (etype == EventType.MouseMove) {
