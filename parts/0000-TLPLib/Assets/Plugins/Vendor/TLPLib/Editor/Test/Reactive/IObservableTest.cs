@@ -5,6 +5,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -153,23 +154,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       Future<IObservable<int>> future;
       IObservable<int> extracted = null;
 
-      Tpl<List<int>, ISubscription> pipe() {
-        var list = new List<int>();
-        var sub = Subscription.empty;
+      Tpl<Ref<List<int>>, Ref<ISubscription>> pipe() {
+        var list = Ref.a(new List<int>());
+        var sub = Ref.a(Subscription.empty);
         beforeEach += () => {
           var (_list, _sub) = extracted.pipeToList(tracker);
-          list = _list;
-          sub = _sub;
+          list.value = _list;
+          sub.value = _sub;
         };
         return F.t(list, sub);
       }
       
-      void testProxying(List<int> list) {
+      void testProxying(Ref<List<int>> list) {
         it["should subscribe to source"] = () => source.subscribers.shouldEqual(1);
         it["should proxy events"] = () => {
-          list.Clear();
+          list.value.Clear();
           foreach (var a in new [] {1, 2, 3}) source.push(a);
-          list.shouldEqualEnum(1, 2, 3);
+          list.value.shouldEqualEnum(1, 2, 3);
         };
       }
 
@@ -182,10 +183,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
       }
 
-      void testUnsubResub(List<int> list, ISubscription sub) {
+      void testUnsubResub(Ref<List<int>> list, Ref<ISubscription> sub) {
         then["we unsubscribe from observable"] = () => {
-          beforeEach += () => sub.unsubscribe();
-          testNonProxying(list);
+          beforeEach += () => sub.value.unsubscribe();
+          testNonProxying(list.value);
 
           then["we resubscribe from observable"] = () => {
             var (_list, _sub) = pipe();
