@@ -8,7 +8,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.dispose {
-  [Case]
+  [Record]
   public partial struct TrackedDisposable : IStr {
     public readonly IDisposable disposable;
     public readonly string callerMemberName, callerFilePath;

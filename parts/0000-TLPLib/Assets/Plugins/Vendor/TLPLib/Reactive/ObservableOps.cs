@@ -130,10 +130,64 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// </summary>
     public static IObservable<B> flatMap<A, B>(
       this Future<A> future, Fn<A, IObservable<B>> mapper
+    ) => future.map(mapper).extract();
+
+    /// <summary>
+    /// Abstracts the future away and returns an observable that starts emmiting
+    /// events when the future completes with another observable. 
+    /// </summary>
+    public static IObservable<A> extract<A>(
+      this Future<IObservable<A>> future
     ) {
-      var s = new Subject<B>();
-      future.onComplete(a => mapper(a).subscribe(NoOpDisposableTracker.instance, s.push));
-      return s;
+      // Saves onEvent when someone is subscribed to us, but the future has not yet
+      // completed.
+      var supposedToBeSubscribed = Option<Act<A>>.None;
+      // Saves the actual subscription that is filled in when the future completes
+      // so that we could unsubscribe from source if everyone unsubscribes from us.
+      var currentSubscription = Subscription.empty;
+      // Subscription that cleans all the state up.
+      var onUnsubscribe = new Subscription(() => {
+        // Unsubscribe from real observable that the future returned.
+        currentSubscription.unsubscribe();
+        // Clean up the event handler storage, so that things would not happen
+        // if future completes while no one is subscribed to this.
+        supposedToBeSubscribed = supposedToBeSubscribed.none;
+      });
+      
+      // Allows us to lose the reference to the future.
+      var lastFutureValue = future.value;
+      future.onComplete(obs => {
+        // This path deals with the scenario where we got a subscriber before the future
+        // completed. Now the future has completed and we have to start proxying events.
+        lastFutureValue = obs.some();
+        
+        // When this completes if there is someone subscribed to this observable
+        // start proxying events. 
+        if (supposedToBeSubscribed.isSome) {
+          var onEvent = supposedToBeSubscribed.__unsafeGetValue;
+          currentSubscription = obs.subscribe(NoOpDisposableTracker.instance, onEvent);
+        }
+      });
+      // ReSharper disable once RedundantAssignment
+      // Release the future reference.
+      future = default;
+
+      ISubscription subscribeToSource(Act<A> onEvent) {
+        if (lastFutureValue.isSome) {
+          // If somebody subscribed to us and the future was already completed.
+          var obs = lastFutureValue.__unsafeGetValue;
+          currentSubscription = obs.subscribe(NoOpDisposableTracker.instance, onEvent);
+        }
+        else {
+          // If the future was not completed, mark that we are supposed to be subscribed
+          // to the source when the future completes.
+          supposedToBeSubscribed = F.some(onEvent);
+        }
+
+        return onUnsubscribe;
+      }
+
+      return new Observable<A>(subscribeToSource);
     }
 
     #endregion

@@ -144,6 +144,84 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       f.value.shouldBeSome(1);
       subj.subscribers.shouldEqual(0, "it should unsubscribe after completing the future");
     }
+
+    [Test]
+    public void extract() => describe(() => {
+      Subject<int> source = null;
+      beforeEach += () => source = new Subject<int>();
+      
+      Future<IObservable<int>> future;
+      IObservable<int> extracted = null;
+
+      Tpl<List<int>, ISubscription> pipe() {
+        var list = new List<int>();
+        var sub = Subscription.empty;
+        beforeEach += () => {
+          var (_list, _sub) = extracted.pipeToList(tracker);
+          list = _list;
+          sub = _sub;
+        };
+        return F.t(list, sub);
+      }
+      
+      void testProxying(List<int> list) {
+        it["should subscribe to source"] = () => source.subscribers.shouldEqual(1);
+        it["should proxy events"] = () => {
+          list.Clear();
+          foreach (var a in new [] {1, 2, 3}) source.push(a);
+          list.shouldEqualEnum(1, 2, 3);
+        };
+      }
+
+      void testNonProxying(List<int> list) {
+        it["should unsubscribe from source"] = () => source.subscribers.shouldEqual(0);
+        it["should not proxy events"] = () => {
+          list.Clear();
+          foreach (var a in new[] {1, 2, 3}) source.push(a);
+          list.shouldBeEmpty();
+        };
+      }
+
+      void testUnsubResub(List<int> list, ISubscription sub) {
+        then["we unsubscribe from observable"] = () => {
+          beforeEach += () => sub.unsubscribe();
+          testNonProxying(list);
+
+          then["we resubscribe from observable"] = () => {
+            var (_list, _sub) = pipe();
+            testProxying(_list);
+          };
+        };
+      }
+      
+      when["future is completed before we get a subscriber"] = () => {
+        beforeEach += () => {
+          future = Future.successful(source.asObservable());
+          extracted = future.extract();
+        };
+        
+        it["should not subscribe to source"] = () => source.subscribers.shouldEqual(0);
+        
+        then["we subscribe to observable"] = () => {
+          var (list, sub) = pipe();
+          testProxying(list);
+          testUnsubResub(list, sub);
+        };
+      };
+
+      when["future is completed after we have a subscriber"] = () => {
+        Promise<IObservable<int>> promise = null;
+        beforeEach += () => {
+          future = Future.async(out promise);
+          extracted = future.extract();
+        };
+        var (list, sub) = pipe();
+        beforeEach += () => promise.complete(source);
+        
+        testProxying(list);
+        testUnsubResub(list, sub);
+      };
+    });
   }
   
   public class IObservableTestMap : TestBase {

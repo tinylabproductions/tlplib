@@ -27,21 +27,22 @@ namespace com.tinylabproductions.TLPLib.Test {
         );
         return _currentBuilder;
       }
-      set { _currentBuilder = value; }
+      set => _currentBuilder = value;
     }
 
     protected SpecificationBuilder.Scope when => currentBuilder.when;
+    protected SpecificationBuilder.Scope then => currentBuilder.then;
     protected SpecificationBuilder.Scope on => currentBuilder.on;
     protected SpecificationBuilder.It it => currentBuilder.it;
 
     protected event Action beforeEach {
-      add { currentBuilder.beforeEach += value; }
-      remove { currentBuilder.beforeEach -= value; }
+      add => currentBuilder.beforeEach += value;
+      remove => currentBuilder.beforeEach -= value;
     }
 
     protected event Action afterEach {
-      add { currentBuilder.afterEach += value; }
-      remove { currentBuilder.afterEach -= value; }
+      add => currentBuilder.afterEach += value;
+      remove => currentBuilder.afterEach -= value;
     }
 
     protected SimpleRef<A> let<A>(A initialValue) => currentBuilder.let(initialValue);
@@ -157,12 +158,13 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     readonly List<Test<Action>> tests = new List<Test<Action>>();
 
-    public readonly Scope when, on;
+    public readonly Scope when, on, then;
     public readonly It it;
 
     public SpecificationBuilder() {
       when = new Scope(this, "when");
       on = new Scope(this, "on");
+      then = new Scope(this, "then");
       it = new It(this);
     }
 

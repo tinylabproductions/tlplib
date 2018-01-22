@@ -394,7 +394,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    [Case]
+    [Record]
     partial struct Sub {
       public readonly Act<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
