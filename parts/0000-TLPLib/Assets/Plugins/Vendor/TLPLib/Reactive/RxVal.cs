@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Data;
 using Smooth.Collections;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
@@ -12,8 +13,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// Because it is immutable, the only way for it to change is if its source changes.
   /// </summary>
   /// <typeparam name="A"></typeparam>
-  public interface IRxVal<out A> : IObservable<A> {
-    A value { get; }
+  public interface IRxVal<out A> : IObservable<A>, Val<A> {
     ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "", 
