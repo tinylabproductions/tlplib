@@ -59,16 +59,16 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// Logical part of layout item.
     /// Used to determine layout height and item positions
     /// </summary>
-    /// <param name="height">Height of an element in a layout.</param>
-    /// <param name="width">Item width portion of layout width.</param>
-    /// <param name="createItem">
-    /// Function to create a layout item.
-    /// It is expected that you take <see cref="IElementView"/> from a pool when <see cref="createItem"/> is called
-    /// and release an item to the pool on <see cref="IDisposable.Dispose"/>
-    /// </param>
     public interface IElementData {
+      /// <summary>Height of an element in a layout.</summary>
       float height { get; }
+      /// <summary>Item width portion of layout width.</summary>
       Percentage width { get; }
+      /// <summary>
+      /// Function to create a layout item.
+      /// It is expected that you take <see cref="IElementView"/> from a pool when <see cref="createItem"/> is called
+      /// and release an item to the pool on <see cref="IDisposable.Dispose"/>
+      /// </summary>
       IElementView createItem(Transform parent);
     }
 
@@ -97,12 +97,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           .map(_ => mask.rect)
           .toRxVal(mask.rect);
 
-        dt.track(maskSize.zip(containerHeight).subscribe(tpl => {
-          var height = tpl._2;
+        maskSize.zip(containerHeight, (_, height) => height).subscribe(dt, height => {
           backing._container.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
           clearLayout();
           updateLayout();
-        }));
+        });
         
         dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
       }
