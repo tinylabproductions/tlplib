@@ -153,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
                 }
               }
             }
-          ));
+          )).ToArray(); // ToArray is required to delazify Select
           return subscriptions.joinSubscriptions();
         }
       );
