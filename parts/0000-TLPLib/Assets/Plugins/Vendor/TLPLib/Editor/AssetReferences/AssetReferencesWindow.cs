@@ -147,17 +147,19 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     void displayObjects(string name, ICollection<string> guids, ref bool foldout) {
       foldout = EditorGUILayout.Foldout(foldout, name + " " + guids.Count);
       if (foldout) {
-        if (showActions && GUILayout.Button("select"))
-          Selection.objects = loadGuids(guids);
+        if (showActions) {
+          if (GUILayout.Button("select"))
+            Selection.objects = loadGuids(guids);
 
-        if (showActions && GUILayout.Button("select and set dirty")) {
-          Selection.objects = loadGuids(guids);
-          Undo.RecordObjects(Selection.objects, "Set objects dirty");
-          foreach (var o in Selection.objects) EditorUtility.SetDirty(o);
+          if (GUILayout.Button("select and set dirty")) {
+            Selection.objects = loadGuids(guids);
+            Undo.RecordObjects(Selection.objects, "Set objects dirty");
+            foreach (var o in Selection.objects) EditorUtility.SetDirty(o);
+          }
         }
 
         foreach (var guid in guids.OrderBy(AssetDatabase.GUIDToAssetPath)) {
-          var asset = AssetDatabaseUtils.loadMainAssetAtGuid(guid);
+          var asset = AssetDatabaseUtils.loadMainAssetByGuid(guid);
           if (asset != null) {
             objectDisplay(guid);
           }
@@ -169,11 +171,11 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     }
 
     static Object[] loadGuids(ICollection<string> guids) =>
-      guids.ToArray().Select(AssetDatabaseUtils.loadMainAssetAtGuid).ToArray();
+      guids.ToArray().Select(AssetDatabaseUtils.loadMainAssetByGuid).ToArray();
 
     void objectDisplay(string guid) {
       EditorGUILayout.BeginHorizontal();
-      var obj = AssetDatabaseUtils.loadMainAssetAtGuid(guid);
+      var obj = AssetDatabaseUtils.loadMainAssetByGuid(guid);
       EditorGUILayout.ObjectField(obj, typeof(Object), false);
       var etype = Event.current.type;
       if (etype == EventType.MouseMove) {

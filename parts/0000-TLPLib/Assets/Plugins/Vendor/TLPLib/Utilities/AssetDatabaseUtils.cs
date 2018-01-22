@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       var prefabGuids = AssetDatabase.FindAssets("t:prefab");
 
       var prefabs = prefabGuids
-        .Select(loadMainAssetAtGuid)
+        .Select(loadMainAssetByGuid)
         .OfType<GameObject>();
 
       var components = new List<A>();
@@ -23,10 +23,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static IEnumerable<A> getScriptableObjectsOfType<A>() where A : ScriptableObject => 
       AssetDatabase.FindAssets($"t:{typeof(A).Name}")
-      .Select(loadMainAssetAtGuid)
+      .Select(loadMainAssetByGuid)
       .OfType<A>();
     
-    public static Object loadMainAssetAtGuid(string guid) =>
+    public static Object loadMainAssetByGuid(string guid) =>
       AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
   }
 }
