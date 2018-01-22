@@ -1,54 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.dispose {
+  [Case]
+  public partial struct TrackedDisposable : IStr {
+    public readonly IDisposable disposable;
+    public readonly string callerMemberName, callerFilePath;
+    public readonly int callerLineNumber;
+
+    public string asString() => $"{callerMemberName} @ {callerFilePath}:{callerLineNumber}";
+  }
+  
   public interface IDisposableTracker : IDisposable {
-    void track(IDisposable a);
+    void track(
+      IDisposable a,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    );
+    
+    int trackedCount { get; }
+    IEnumerable<TrackedDisposable> trackedDisposables { get; }
   }
 
   public class DisposableTracker : IDisposableTracker {
-    readonly List<IDisposable> list = new List<IDisposable>();
+    readonly List<TrackedDisposable> list = new List<TrackedDisposable>();
+    public int trackedCount => list.Count;
+    public IEnumerable<TrackedDisposable> trackedDisposables => list;
 
-    public void track(IDisposable a) => list.Add(a);
+    public void track(
+      IDisposable a,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => list.Add(new TrackedDisposable(
+      a, callerMemberName, callerFilePath, callerLineNumber
+    ));
+
     public int count => list.Count;
 
     public void Dispose() {
-      foreach (var a in list) a.Dispose();
+      foreach (var a in list) a.disposable.Dispose();
       list.Clear();
       list.Capacity = 0;
-    }
-  }
-
-  public class ClosureDisposableTracker : IDisposableTracker {
-    readonly IDisposableTracker backing;
-    readonly object reference;
-
-    public ClosureDisposableTracker(IDisposableTracker backing, object reference) {
-      this.backing = backing;
-      this.reference = reference;
-    }
-
-    public void Dispose() => backing.Dispose();
-    public void track(IDisposable a) => backing.track(new ClosureDisposable(a, reference));
-  }
-  
-  public class ClosureDisposable : IDisposable {
-    [CanBeNull] IDisposable original;
-    // ReSharper disable once NotAccessedField.Local
-    [CanBeNull] object reference;
-
-    public ClosureDisposable(IDisposable original, object reference) {
-      this.original = original;
-      this.reference = reference;
-    }
-
-    public void Dispose() {
-      if (original == null) return;
-      original.Dispose();
-      original = null;
-      reference = null;
     }
   }
 
@@ -57,10 +57,18 @@ namespace com.tinylabproductions.TLPLib.dispose {
   /// (for example in Observable operations). 
   /// </summary>
   public class NoOpDisposableTracker : IDisposableTracker {
-    public static readonly NoOpDisposableTracker instance = new NoOpDisposableTracker();
+    public static readonly IDisposableTracker instance = new NoOpDisposableTracker();
     NoOpDisposableTracker() {}
     
-    public void track(IDisposable a) {}
+    public void track(
+      IDisposable a,
+      string callerMemberName, 
+      string callerFilePath, 
+      int callerLineNumber
+    ) {}
+
+    public int trackedCount => 0;
+    public IEnumerable<TrackedDisposable> trackedDisposables => Enumerable.Empty<TrackedDisposable>();
     public void Dispose() {}
   }
 }

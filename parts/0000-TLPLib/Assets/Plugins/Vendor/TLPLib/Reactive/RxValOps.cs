@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
@@ -30,16 +28,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<B> flatMap<A, B>(this IRxVal<A> src, Fn<A, IRxVal<B>> mapper) {
       var bRx = mapper(src.value);
 
-      var debugInfo =
-        Log.d.isDebug()
-          ? F.some("creator = " + new StackTrace(fNeedFileInfo: true, skipFrames: 1))
-          : F.none<string>();
-
       return new RxVal<B>(
         bRx.value,
         setValue => {
           var tracker = NoOpDisposableTracker.instance;
-          var subToBRx = bRx.subscribeWithoutEmit(tracker, b => setValue(b), debugInfo);
+          var subToBRx = bRx.subscribeWithoutEmit(tracker, b => setValue(b));
 
           var aSub = src.subscribeWithoutEmit(
             tracker,
@@ -47,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
               subToBRx.unsubscribe();
               bRx = mapper(a);
               setValue(bRx.value);
-              subToBRx = bRx.subscribeWithoutEmit(tracker, b => setValue(b), debugInfo);
+              subToBRx = bRx.subscribeWithoutEmit(tracker, b => setValue(b));
             }
           );
           return aSub.andThen(() => subToBRx.unsubscribe());
@@ -126,32 +119,46 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
     }
 
-    /* Returns any value that satisfies the predicate. Order is not guaranteed. */
-    public static IRxVal<Option<A>> anyThat<A, C>(
-      this C vals, Fn<A, bool> predicate
-    ) where C : IEnumerable<IRxVal<A>> {
-      var val = RxRef.a(F.none<A>());
+    /// <summary>
+    /// Returns any value that satisfies the predicate. Order is not guaranteed.
+    /// </summary>
+    public static IRxVal<Option<A>> anyThat<A, Coll>(
+      this Coll vals, Fn<A, bool> predicate
+    ) where Coll : IEnumerable<IRxVal<A>> {
       var dict = new Dictionary<IRxVal<A>, A>();
 
-      foreach (var rx in vals)
-        rx.subscribe(
-          NoOpDisposableTracker.instance,
-          a => {
-            var matched = predicate(a);
-  
-            if (matched) {
-              dict[rx] = a;
-              if (val.value.isNone) val.value = a.some();
-            }
-            else {
-              dict.Remove(rx);
-              if (val.value.isSome) {
-                val.value = dict.isEmpty() ? Option<A>.None : dict.First().Value.some();
+      var lastKnownValue = F.none<A>();
+      var rxVal = new RxVal<Option<A>>(
+        lastKnownValue,
+        setValue => {
+          void set(Option<A> value) {
+            lastKnownValue = value;
+            setValue(value);
+          }
+          
+          var subscriptions = vals.Select(rx => rx.subscribe(
+            NoOpDisposableTracker.instance,
+            a => {
+              var matched = predicate(a);
+
+              if (matched) {
+                dict[rx] = a;
+                if (lastKnownValue.isNone)
+                  set(a.some());
+              }
+              else {
+                dict.Remove(rx);
+                if (lastKnownValue.isSome) {
+                  set(dict.isEmpty() ? Option<A>.None : dict.First().Value.some());
+                }
               }
             }
-          }
-        );
-      return val;
+          ));
+          return subscriptions.joinSubscriptions();
+        }
+      );
+      
+      return rxVal;
     }
 
     public static IRxVal<Option<A>> anyThat<A>(

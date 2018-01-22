@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Collections;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
@@ -15,7 +15,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public interface IRxVal<out A> : IObservable<A> {
     A value { get; }
     ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
     );
   }
   
@@ -158,14 +161,34 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       baseObservableSubscription = sub;
     }
 
-    public override ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) {
-      var subscription = base.subscribe(tracker, onEvent, debugInfo);
+    public override ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0  
+    ) {
+      var subscription = base.subscribe(
+        tracker, onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
       onEvent(value);
       return subscription;
     }
 
-    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) =>
-      base.subscribe(tracker, onEvent, debugInfo);
+    public ISubscription subscribeWithoutEmit(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) =>
+      base.subscribe(
+        tracker, onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
 
     public override string ToString() => $"RxVal({value})";
   }

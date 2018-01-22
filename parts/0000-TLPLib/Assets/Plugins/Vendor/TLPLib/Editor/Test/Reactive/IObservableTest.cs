@@ -11,15 +11,6 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public class TestDisposableTracker : IDisposableTracker {
-    public readonly List<IDisposable> disposables = new List<IDisposable>();
-    
-    public bool disposed { get; private set; }
-
-    public void Dispose() => disposed = true;
-    public void track(IDisposable a) => disposables.Add(a);
-  }
-  
   public class IObservableTest : ImplicitSpecification {
     [Test]
     public void subscriptionCounting() => describe(() => {
@@ -62,9 +53,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void subscribe() => describe(() => {
       it["should add created subscription to the given tracker"] = () => {
         var s = new Subject<Unit>();
-        var t = new TestDisposableTracker();
+        var t = new DisposableTracker();
         var sub = s.subscribe(t, _ => { });
-        t.disposables.shouldContain((IDisposable) sub);
+        t.trackedDisposables.shouldContain(_ => ReferenceEquals(_.disposable, sub));
       };
 
       it["should not invoke the subscription function upon subscribing"] = () => {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Concurrent;
@@ -19,28 +20,52 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this IObservable<A> observable, 
       IDisposableTracker tracker,
       Act<A, ISubscription> onChange, 
-      Option<string> debugInfo = default
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
       ISubscription subscription = null;
       // ReSharper disable once AccessToModifiedClosure
-      subscription = observable.subscribe(tracker, a => onChange(a, subscription), debugInfo);
+      subscription = observable.subscribe(
+        tracker: tracker, onEvent: a => onChange(a, subscription), 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
       return subscription;
     }
 
     public static ISubscription subscribe<A>(
       this IObservable<A> observable, GameObject tracker, Act<A> onChange, 
-      Option<string> debugInfo = default 
-    ) => observable.subscribe(tracker.asDisposableTracker(), onChange, debugInfo);
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => observable.subscribe(
+      tracker: tracker.asDisposableTracker(), onEvent: onChange, 
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerMemberName: callerMemberName, callerFilePath: callerFilePath, 
+      callerLineNumber: callerLineNumber
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
 
     public static ISubscription subscribeForOneEvent<A>(
       this IObservable<A> observable, 
       IDisposableTracker tracker,
       Act<A> onEvent, 
-      Option<string> debugInfo = default
-    ) => observable.subscribe(tracker, (a, sub) => {
-      sub.unsubscribe();
-      onEvent(a);
-    }, debugInfo);
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => observable.subscribe(
+      tracker: tracker, 
+      onChange: (a, sub) => {
+        sub.unsubscribe();
+        onEvent(a);
+      }, 
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerMemberName: callerMemberName, callerFilePath: callerFilePath, 
+      callerLineNumber: callerLineNumber
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
 
     #endregion
 

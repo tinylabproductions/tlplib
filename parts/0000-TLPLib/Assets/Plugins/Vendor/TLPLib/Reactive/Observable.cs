@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
@@ -202,8 +202,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// responsible for cleaning up the subscription when the object on which the subscription action works
     /// is destroyed. 
     ///  
+    /// For caller information please refer to
+    /// https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/caller-information
     /// </summary>
-    ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default);
+    ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    );
   }
 
   public static class Observable {
@@ -392,27 +399,32 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       public readonly Act<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
-      public readonly bool active, haveUnsubscribed;
+      public readonly bool active;
       
+      readonly bool haveUnsubscribed;
       readonly WeakReference<Subscription> subscription;
-      readonly Option<string> debugInfo;
+      readonly string callerMemberName, callerFilePath;
+      readonly int callerLineNumber;
 
       public bool isSubscribed { get {
         if (haveUnsubscribed) return false;
         foreach (var sub in subscription.Target) return sub.isSubscribed;
-        if (Log.d.isWarn()) Log.d.warn(
-          $"Subscription reference lost, but it was not unsubscribed before!\n\n" +
-          $"Debug Info:\n" +
-          $"{debugInfo.getOrElse("none")}"
+        Log.d.error(
+          $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
+          $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}."
         );
         return false;
       } }
 
-      public Sub withActive(bool active) =>
-        new Sub(onEvent, active, haveUnsubscribed, subscription, debugInfo);
+      public Sub withActive(bool active) => new Sub(
+        onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription, 
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+      );
       
-      public Sub unsubscribe() =>
-        new Sub(onEvent, false, true, subscription, debugInfo);
+      public Sub unsubscribe() => new Sub(
+        onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription, 
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+      );
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
@@ -464,22 +476,26 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
     public virtual ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo=default
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
-      Option.ensureValue(ref debugInfo);
-      
       // Hard ref from subscription to this
       var subscription = new Subscription(() => onUnsubscribed(onEvent));
-      tracker.track(subscription);
+      tracker.track(
+        subscription, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
       
       var active = !iterating;
-      var debugInfo2 =
-        Log.d.isDebug()
-          ? F.some(new StackTrace(fNeedFileInfo: true) + "\n\ndebugInfo = " + debugInfo.getOrElse(""))
-          : F.none<string>();
       subscriptions.Add(new Sub(
         onEvent: onEvent, active: active, haveUnsubscribed: false, 
-        subscription: WeakReference.a(subscription), debugInfo: debugInfo2
+        subscription: WeakReference.a(subscription),
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, 
+        callerLineNumber: callerLineNumber
       ));
       if (!active) pendingSubscriptionActivations++;
       
@@ -496,6 +512,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         var sub = subscriptions[idx];
         if (sub.onEvent == onEvent) {
           subscriptions[idx] = sub.unsubscribe();
+          break;
         }
       }
       pendingRemovals++;

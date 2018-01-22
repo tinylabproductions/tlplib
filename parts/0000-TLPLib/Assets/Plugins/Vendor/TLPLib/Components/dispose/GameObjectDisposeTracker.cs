@@ -1,20 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using AdvancedInspector;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.dispose {
   public class GameObjectDisposeTracker : MonoBehaviour, IMB_OnDestroy, IDisposableTracker {
     readonly DisposableTracker tracker = new DisposableTracker();
-    [Inspect] public int count => tracker.count;
+    public int trackedCount => tracker.trackedCount;
+    public IEnumerable<TrackedDisposable> trackedDisposables => tracker.trackedDisposables;
 
     public void OnDestroy() => Dispose();
-    public void track(IDisposable a) => tracker.track(a);
     public void Dispose() => tracker.Dispose();
+    public void track(
+      IDisposable a,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => tracker.track(
+      a, 
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
   }
 
   public static class GameObjectDisposeTrackerOps {

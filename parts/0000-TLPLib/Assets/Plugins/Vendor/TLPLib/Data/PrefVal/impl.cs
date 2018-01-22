@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
@@ -69,11 +70,31 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region IRxRef
 
     public int subscribers => rxRef.subscribers;
-    public ISubscription subscribe(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) => 
-      rxRef.subscribe(tracker, onEvent, debugInfo);
+    public ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => 
+      rxRef.subscribe(
+        tracker: tracker, onEvent: onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
 
-    public ISubscription subscribeWithoutEmit(IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo) =>
-      rxRef.subscribeWithoutEmit(tracker, onEvent, debugInfo);
+    public ISubscription subscribeWithoutEmit(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) =>
+      rxRef.subscribeWithoutEmit(
+        tracker: tracker, onEvent: onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
 
     #endregion
   }

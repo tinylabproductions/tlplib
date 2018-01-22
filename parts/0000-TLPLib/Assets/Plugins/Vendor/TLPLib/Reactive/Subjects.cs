@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubject : IObservable {}
@@ -22,9 +22,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     readonly List<A> events = new List<A>();
 
     public override ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+      IDisposableTracker tracker, Act<A> onEvent, 
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
-      var subscription = base.subscribe(tracker, onEvent, debugInfo);
+      // ReSharper disable ExplicitCallerInfoArgument
+      var subscription = base.subscribe(tracker, onEvent, callerMemberName, callerFilePath, callerLineNumber);
+      // ReSharper restore ExplicitCallerInfoArgument
       foreach (var evt in events) onEvent(evt);
       return subscription;
     }
@@ -43,10 +48,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ISubscription lastSubscription = Subscription.empty;
 
     public override ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, Option<string> debugInfo = default
+      IDisposableTracker tracker, Act<A> onEvent, 
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
       lastSubscription.unsubscribe();
-      lastSubscription = base.subscribe(tracker, onEvent, debugInfo);
+      // ReSharper disable ExplicitCallerInfoArgument
+      lastSubscription = base.subscribe(tracker, onEvent, callerMemberName, callerFilePath, callerLineNumber);
+      // ReSharper restore ExplicitCallerInfoArgument
       return lastSubscription;
     }
 
