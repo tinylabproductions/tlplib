@@ -174,22 +174,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
       }
 
-      void testNonProxying(List<int> list) {
+      void testNonProxying(Ref<List<int>> list) {
         it["should unsubscribe from source"] = () => source.subscribers.shouldEqual(0);
         it["should not proxy events"] = () => {
-          list.Clear();
+          list.value.Clear();
           foreach (var a in new[] {1, 2, 3}) source.push(a);
-          list.shouldBeEmpty();
+          list.value.shouldBeEmpty();
         };
       }
 
       void testUnsubResub(Ref<List<int>> list, Ref<ISubscription> sub) {
         then["we unsubscribe from observable"] = () => {
           beforeEach += () => sub.value.unsubscribe();
-          testNonProxying(list.value);
+          testNonProxying(list);
 
           then["we resubscribe from observable"] = () => {
-            var (_list, _sub) = pipe();
+            var (_list, _) = pipe();
             testProxying(_list);
           };
         };
