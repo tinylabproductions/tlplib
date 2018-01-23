@@ -10,15 +10,15 @@ namespace com.tinylabproductions.TLPLib.system {
   }
 
   public struct WeakReference<A> where A : class {
-    readonly WR reference;
+    public readonly WR untyped;
 
     public WeakReference(A reference, bool trackResurrection = false) {
-      this.reference = new WR(reference, trackResurrection);
+      untyped = new WR(reference, trackResurrection);
     }
 
-    public bool IsAlive => reference.IsAlive;
-    public bool TrackResurrection => reference.TrackResurrection;
-    public Option<A> Target => F.opt(reference.Target as A);
+    public bool IsAlive => untyped.IsAlive;
+    public bool TrackResurrection => untyped.TrackResurrection;
+    public Option<A> Target => F.opt(untyped.Target as A);
 
     public override string ToString() =>
       $"{nameof(WeakReference<A>)}({Target})";
