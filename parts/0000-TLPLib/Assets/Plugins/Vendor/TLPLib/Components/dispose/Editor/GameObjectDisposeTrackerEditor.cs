@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace com.tinylabproductions.TLPLib.Components.dispose.Editor {
+namespace com.tinylabproductions.TLPLib.Components.dispose {
   [CustomEditor(typeof(GameObjectDisposeTracker))]
   public class GameObjectDisposeTrackerEditor : UnityEditor.Editor {
     public override void OnInspectorGUI() {
