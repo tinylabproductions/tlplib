@@ -13,13 +13,14 @@ namespace com.tinylabproductions.TLPLib.binding {
       var lastCoroutine = F.none<Coroutine>();
       void stopOpt() { foreach (var c in lastCoroutine) { c.stop(); } };
       var sub = observable.subscribe(
-        tracker,
+        NoOpDisposableTracker.instance, 
         a => {
           stopOpt();
           lastCoroutine = f(a).some();
         }
-      );
-      return sub.andThen(stopOpt);
+      ).andThen(stopOpt);
+      tracker.track(sub);
+      return sub;
     }
   }
 }
