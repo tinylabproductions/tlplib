@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     /// </returns>
     public static Option<Rect> calculateSpriteBounds(IEnumerable<SpriteRenderer> spriteRenderers) {
       var hasOne = false;
-      var b = default(Rect);
+      var bounds = default(Rect);
       foreach (var r in spriteRenderers) {
         var sprite = r.sprite;
         if (!sprite) continue;
@@ -25,14 +25,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         var offset = ((rect.size / 2 - sprite.pivot) / pixelsPerUnit).multiply(scale);
         var newBounds = RectUtils.fromCenter((Vector2) r.transform.position + offset, size);
         if (hasOne) {
-          b = b.encapsulate(newBounds);
+          bounds = bounds.encapsulate(newBounds);
         }
         else {
           hasOne = true;
-          b = newBounds;
+          bounds = newBounds;
         }
       }
-      return hasOne.opt(b);
+      return hasOne.opt(bounds);
     }
   }
 }

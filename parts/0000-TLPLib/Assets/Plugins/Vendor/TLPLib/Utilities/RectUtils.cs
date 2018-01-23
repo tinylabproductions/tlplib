@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static Rect fromCenter(Vector2 center, Vector2 size) => 
       new Rect(new Vector2(center.x -  size.x / 2, center.y -  size.y / 2), size);
 
-    public static float aspecRatio(this Rect rect) => rect.width / rect.height;
+    public static float aspectRatio(this Rect rect) => rect.width / rect.height;
     public static Vector2 topLeft(this Rect rect) => new Vector2(rect.min.x, rect.max.y);
     public static Vector2 bottomRight(this Rect rect) => new Vector2(rect.max.x, rect.min.y);
   }
