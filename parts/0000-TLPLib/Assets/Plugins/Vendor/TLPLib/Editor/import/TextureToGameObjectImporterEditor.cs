@@ -1,7 +1,6 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,7 +13,9 @@ namespace com.tinylabproductions.TLPLib.import {
       base.OnInspectorGUI();
       EditorGUILayout.Space();
       if (GUILayout.Button("Generate")) {
-        var (width, height) = F.t(obj.texture.width, obj.texture.height);
+        var width = obj.texture.width;
+        var height = obj.texture.height;
+        
         using (var progress = new EditorProgress("Generating objects")) {
           var pixels = progress.execute("Getting pixels", obj.texture.GetPixels);
           var dict = obj.pallete.toDict(_ => _.color.withAlpha(1), _ => _.gameObject);
