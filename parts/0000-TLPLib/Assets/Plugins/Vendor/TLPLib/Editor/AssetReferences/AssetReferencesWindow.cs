@@ -49,9 +49,11 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       window.Show();
     }
 
+    static ISubscription lastSubscription;
+
     [InitializeOnLoadMethod, UsedImplicitly]
     static void initTasks() {
-      enabled.subscribe(NoOpDisposableTracker.instance, b => {
+      lastSubscription = enabled.subscribe(NoOpDisposableTracker.instance, b => {
         if (b) {
           refsOpt = Option<AssetReferences>.None;
           processFiles(AssetUpdate.fromAllAssets(AssetDatabase.GetAllAssetPaths().ToImmutableList()));
