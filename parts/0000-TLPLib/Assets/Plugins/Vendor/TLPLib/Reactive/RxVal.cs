@@ -141,11 +141,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // we want to be very careful here to not capture this reference, to avoid
         // establishing a circular strong reference.
         //
-        //                       +--------------+                               
+        //                       +--------------+   hard ref [2]                  
         //        +--------------- Subscription <------------------------+      
-        //        |              +---^----------+                        |      
-        // +------v-----+            |                                   |      
-        // | Source     -------------+     +----------+                +-|-----+
+        //        |              +-----^------^-+                        |      
+        // +------v-----+ weak ref     |      | hard ref [1]             |      
+        // | Source     - - - - - - - -+   +----------+                +-|-----+
         // | observable -------------------> Callback - - - - - - - - -> RxVal |
         // +------------+                  +----------+  weak          +-------+
         //                                               reference
@@ -155,9 +155,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           // Make sure to not capture `this`!
           var thizOpt = wr.Target;
           if (thizOpt.isSome) thizOpt.__unsafeGetValue.value = a;
+          // This hard is reference [1]. It is needed so that subscription would
+          // not be lost even if this RxVal would be garbage collected and we would
+          // not get "lost subscription without unsubscribing first" warning.
+          //
+          // It also allows us to unsubscribe if this RxVal was garbage collected.
           else sub.unsubscribe();
         }
       );
+      // This is hard reference [2]. It is needed so that we would not lose
+      // intermediate objects in long chains.
       baseObservableSubscription = sub;
     }
 

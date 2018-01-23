@@ -168,9 +168,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           currentSubscription = obs.subscribe(NoOpDisposableTracker.instance, onEvent);
         }
       });
-      // ReSharper disable once RedundantAssignment
-      // Release the future reference.
-      future = default;
 
       ISubscription subscribeToSource(Act<A> onEvent) {
         if (lastFutureValue.isSome) {
