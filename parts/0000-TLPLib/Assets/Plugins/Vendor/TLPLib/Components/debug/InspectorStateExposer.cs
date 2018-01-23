@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -11,6 +10,7 @@ using UnityEngine;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Components.debug {
+#if UNITY_EDITOR
   /// <summary>
   /// Exposes fields of non-monobehaviour objects to unity inspector.
   /// 
@@ -39,17 +39,14 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
       Option<ForRepresentation> repr { get; }
     }
     
-    public class Data<A> : IData where A : class {
-      readonly WeakReference<A> reference;
-      readonly ExposeData<A> data;
-
-      public Data(WeakReference<A> reference, ExposeData<A> data) {
-        this.reference = reference;
-        this.data = data;
-      }
+    [Record]
+    public partial class Data<A> : IData where A : class {
+      public readonly WeakReference<A> reference;
+      public readonly string name;
+      public readonly Fn<A, IValue> get;
 
       public Option<ForRepresentation> repr => reference.Target.map(reference => new ForRepresentation(
-        reference, data.name, data.get(reference)
+        reference, name, get(reference)
       ));
     }
     
@@ -60,31 +57,18 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     public IEnumerable<IGrouping<object, ForRepresentation>> groupedData =>
       data.collect(_ => _.repr).GroupBy(_ => _.objectReference);
   }
+#endif
 
-  [Record]
-  public readonly partial struct ExposeData<A> {
-    public readonly string name;
-    public readonly Fn<A, InspectorStateExposer.IValue> get;
-  }
-  
   public static class InspectorStateExposerExts {
-    [Conditional("UNITY_EDITOR")]
-    public static void exposeToInspector<A>(
-      this GameObject go, A reference, params ExposeData<A>[] data
-    ) where A : class {
-      var exposer = go.EnsureComponent<InspectorStateExposer>();
-      var wr = WeakReference.a(reference);
-      foreach (var d in data)
-        exposer.add(new InspectorStateExposer.Data<A>(wr, d));
-    }
-    
     [Conditional("UNITY_EDITOR")]
     public static void exposeToInspector<A>(
       this GameObject go, A reference, string name, Fn<A, InspectorStateExposer.IValue> get
     ) where A : class {
+#if UNITY_EDITOR
       var exposer = go.EnsureComponent<InspectorStateExposer>();
       var wr = WeakReference.a(reference);
-      exposer.add(new InspectorStateExposer.Data<A>(wr, new ExposeData<A>(name, get)));
+      exposer.add(new InspectorStateExposer.Data<A>(wr, name, get));
+#endif
     }
 
     [Conditional("UNITY_EDITOR")]
