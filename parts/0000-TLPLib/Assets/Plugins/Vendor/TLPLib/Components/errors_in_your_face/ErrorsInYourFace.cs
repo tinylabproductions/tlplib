@@ -59,16 +59,16 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
       }
 
       public Init(
-        TagInstance<ErrorsInYourFace> binding,
+        ErrorsInYourFace binding,
         int queueSize = DEFAULT_QUEUE_SIZE, IImmutableSet<LogType> handledTypes = null
       ) {
         this.handledTypes = handledTypes ?? DEFAULT_HANDLED_TYPES;
         this.queueSize = queueSize;
         entries = new LinkedList<string>();
-        this.binding = binding.instance;
+        this.binding = binding;
         logCallback = logMessageHandlerThreaded;
 
-        initBinding(binding.instance);
+        initBinding(binding);
         setText();
         hide();
       }
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
         TagPrefab<ErrorsInYourFace> prefab,
         int queueSize = DEFAULT_QUEUE_SIZE,
         IImmutableSet<LogType> handledTypes = null
-      ) : this(prefab.instantiate(), queueSize, handledTypes) {}
+      ) : this(prefab.prefab.clone(), queueSize, handledTypes) {}
 
       public Init(
         int queueSize = DEFAULT_QUEUE_SIZE,
