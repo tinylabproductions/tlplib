@@ -1,8 +1,20 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ColorExts {
+    public static Color mult(
+      this Color color, float r = 1, float g = 1, float b = 1, float a = 1
+    ) {
+      return new Color(
+        color.r * r,
+        color.g * g,
+        color.b * b,
+        color.a * a
+      );
+    }
+    
     public static Color with(
       this Color color, float r = -1, float g = -1, float b = -1, float a = -1
     ) {
@@ -14,35 +26,26 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
-    public static Color mult(
-      this Color color, float r = 1, float g = 1, float b = 1, float a = 1
-    ) {
-      return new Color(
-        color.r * r,
-        color.g * g,
-        color.b * b,
-        color.a * a
-      );
-    }
-
-    public static Color withAlpha(this Color color, float alpha) {
-      return color.with(a: alpha);
-    }
+    public static Color withAlpha(this Color color, float alpha) => color.with(a: alpha);
 
     public static Color32 with32(
-      this Color32 color, int r = -1, int g = 1, int b = -1, int a = -1
+      this Color32 color, Option<byte> r = default, Option<byte> g = default, Option<byte> b = default, 
+      Option<byte> a = default
     ) {
-      return new Color(
-        r < 0 ? color.r : r,
-        g < 0 ? color.g : g,
-        b < 0 ? color.b : b,
-        a < 0 ? color.a : a
+      Option.ensureValue(ref r);
+      Option.ensureValue(ref g);
+      Option.ensureValue(ref b);
+      Option.ensureValue(ref a);
+      return new Color32(
+        r.getOrElse(color.r),
+        g.getOrElse(color.g),
+        b.getOrElse(color.b),
+        a.getOrElse(color.a)
       );
     }
 
-    public static Color32 with32Alpha(this Color32 color, int alpha) {
-      return color.with32(a: alpha);
-    }
+    public static Color32 with32Alpha(this Color32 color, byte alpha) => 
+      color.with32(a: F.some(alpha));
 
     public static Color modifyBrightness(this Color rgb, Fn<float, float> f) {
       var hsv = rgb.RGBToHSV();
