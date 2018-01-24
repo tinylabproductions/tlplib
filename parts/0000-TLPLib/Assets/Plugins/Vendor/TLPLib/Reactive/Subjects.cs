@@ -39,27 +39,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       events.Add(value);
     }
 
-    /** Clears the event backlog. */
+    /// <summary>Clears the event backlog.</summary>
     public void clear() => events.Clear();
-  }
-
-  /// <summary>Subject that only allows having one subscription.</summary>
-  public class SingleSubscriberSubject<A> : Observable<A>, ISubject<A> {
-    ISubscription lastSubscription = Subscription.empty;
-
-    public override ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, 
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
-      [CallerLineNumber] int callerLineNumber = 0
-    ) {
-      lastSubscription.unsubscribe();
-      // ReSharper disable ExplicitCallerInfoArgument
-      lastSubscription = base.subscribe(tracker, onEvent, callerMemberName, callerFilePath, callerLineNumber);
-      // ReSharper restore ExplicitCallerInfoArgument
-      return lastSubscription;
-    }
-
-    public void push(A value) => submit(value);
   }
 }
