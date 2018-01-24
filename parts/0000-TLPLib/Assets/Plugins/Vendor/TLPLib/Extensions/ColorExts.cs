@@ -160,8 +160,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return white;
     }
 
-    public static string toHex(this Color32 color) {
-      return color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
-    }
+    public static string toHex(this Color32 color) => 
+      color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
   }
 }
