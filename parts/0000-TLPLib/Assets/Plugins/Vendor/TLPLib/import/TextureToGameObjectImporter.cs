@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.import {
@@ -10,11 +12,14 @@ namespace com.tinylabproductions.TLPLib.import {
       #region Unity Serialized Fields
 
 #pragma warning disable 649
-      public Color color;
+      public Color32 color;
       public GameObject gameObject;
 #pragma warning restore 649
 
       #endregion
+
+      public override string ToString() => 
+        $"#{color.toHex()} -> {F.opt(gameObject).fold("none", _ => _.name)}";
     }
     
     #region Unity Serialized Fields
@@ -23,7 +28,8 @@ namespace com.tinylabproductions.TLPLib.import {
     public Texture2D texture;
     public Vector3 startPoint;
     public Vector2 spacing;
-    public List<Data> pallete;
+    public Data[] pallete;
+    public Color32[] ignoredColors;
     public string holderGameObjectName = "Generated from Texture";
 #pragma warning restore 649
 
