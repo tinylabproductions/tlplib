@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -7,9 +8,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> flatten<A>(this Future<Future<A>> future) =>
       future.flatMap(_ => _);
 
-    /** Complete the future with the right side, never complete if left side occurs. **/
-    public static Future<B> dropError<A, B>(this Future<Either<A, B>> future) => 
-      Future.a<B>(p => future.onSuccess(p.complete));
+    /// <summary>
+    /// Complete the future with the right side, never complete if left side occurs.
+    /// </summary>
+    public static Future<B> dropError<A, B>(
+      this Future<Either<A, B>> future, bool logOnError = false
+    ) => 
+      Future.a<B>(p => future.onComplete(either => either.voidFold(
+        err => { if (logOnError) Log.d.error(err.ToString()); },
+        p.complete
+      )));
 
     public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
       var rx = RxRef.a(F.none<A>());

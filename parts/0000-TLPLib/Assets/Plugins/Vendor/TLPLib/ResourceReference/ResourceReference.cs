@@ -3,6 +3,7 @@ using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -57,6 +58,11 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
         p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
       ));
     }
+
+    public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
+      PathStr loadPath, bool logOnError = true
+    ) where A : Object => 
+      loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
 
     public static IEnumerator waitForLoadCoroutine<A>(
       ResourceRequest request, Action<Either<string, A>> whenDone, string path
