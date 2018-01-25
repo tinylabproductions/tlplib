@@ -46,7 +46,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     class PublicFieldExtended : PublicField {
+#pragma warning disable 649, 414
       [NotNull, SerializeField] GameObject field2;
+#pragma warning restore 649, 414
     }
 
     class NotNullPublicFieldExtended : NotNullPublicField { }

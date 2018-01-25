@@ -1,6 +1,9 @@
-﻿using com.tinylabproductions.TLPLib.caching;
+﻿using System;
+using System.Runtime.CompilerServices;
+using com.tinylabproductions.TLPLib.caching;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
-using Smooth.Collections;
+using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Data {
   // Should be class (not struct) because .write mutates object.
@@ -10,25 +13,25 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     readonly IPrefValueBackend backend;
     readonly IPrefValueWriter<A> writer;
+    readonly IRxRef<A> rxRef;
+    
+    // ReSharper disable once NotAccessedField.Local
+    // To keep the subscription alive.
+    readonly ISubscription persistSubscription;
 
-    A _value;
     public A value {
-      get { return _value; }
-      set {
-        if (EqComparer<A>.Default.Equals(_value, value)) return;
-        _value = persist(value);
-      }
+      get => rxRef.value;
+      set => rxRef.value = value;
     }
 
     public object valueUntyped {
-      get { return value; }
-      set { this.trySetUntyped(value); }
+      get => value;
+      set => this.trySetUntyped(value);
     }
 
-    A persist(A value) {
+    void persist(A value) {
       writer.write(backend, key, value);
       if (saveOnEveryWrite) backend.save();
-      return value;
     }
 
     public PrefValImpl(
@@ -39,12 +42,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       writer = rw;
       this.backend = backend;
       this.saveOnEveryWrite = saveOnEveryWrite;
-      _value = persist(rw.read(backend, key, defaultVal));
+      rxRef = RxRef.a(rw.read(backend, key, defaultVal));
+      persistSubscription = rxRef.subscribe(NoOpDisposableTracker.instance, persist);
     }
 
     public void forceSave() => backend.save();
 
-    public override string ToString() => $"{nameof(PrefVal<A>)}({_value})";
+    public override string ToString() => $"{nameof(PrefVal<A>)}({value})";
 
     #region ICachedBlob
 
@@ -60,6 +64,37 @@ namespace com.tinylabproductions.TLPLib.Data {
       backend.delete(key);
       return F.scs(F.unit);
     } 
+
+    #endregion
+
+    #region IRxRef
+
+    public int subscribers => rxRef.subscribers;
+    public ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => 
+      rxRef.subscribe(
+        tracker: tracker, onEvent: onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+
+    public ISubscription subscribeWithoutEmit(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) =>
+      rxRef.subscribeWithoutEmit(
+        tracker: tracker, onEvent: onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
 
     #endregion
   }

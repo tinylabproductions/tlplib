@@ -4,122 +4,140 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public class IObservableTestSubscriptionCounting {
+  public class IObservableTest : ImplicitSpecification {
     [Test]
-    public void Simple() {
-      var o = new Subject<Unit>();
-      var s1 = o.subscribe(_ => {});
-      var s2 = o.subscribe(_ => {});
-      o.subscribers.shouldEqual(2);
-      s1.unsubscribe();
-      o.subscribers.shouldEqual(1);
-      s1.unsubscribe();
-      o.subscribers.shouldEqual(1);
-      s2.unsubscribe();
-      o.subscribers.shouldEqual(0);
-      var s3 = o.subscribe(_ => { });
-      o.subscribers.shouldEqual(1);
-      s3.unsubscribe();
-      o.subscribers.shouldEqual(0);
-    }
+    public void subscriptionCounting() => describe(() => {
+      when["simple"] = () => {
+        it["should work"] = () => {
+          var o = new Subject<Unit>();
+          var s1 = o.subscribe(tracker, _ => { });
+          var s2 = o.subscribe(tracker, _ => { });
+          o.subscribers.shouldEqual(2);
+          s1.unsubscribe();
+          o.subscribers.shouldEqual(1);
+          s1.unsubscribe();
+          o.subscribers.shouldEqual(1);
+          s2.unsubscribe();
+          o.subscribers.shouldEqual(0);
+          var s3 = o.subscribe(tracker, _ => { });
+          o.subscribers.shouldEqual(1);
+          s3.unsubscribe();
+          o.subscribers.shouldEqual(0);
+        };
+      };
+
+      when["nested"] = () => {
+        it["should work"] = () => {
+          var o = new Subject<Unit>();
+          var o2 = o.map(_ => 1);
+          Assert.AreEqual(0, o.subscribers);
+          Assert.AreEqual(0, o2.subscribers);
+          var s = o2.subscribe(tracker, _ => { });
+          Assert.AreEqual(1, o.subscribers);
+          Assert.AreEqual(1, o2.subscribers);
+          s.unsubscribe();
+          Assert.AreEqual(0, o.subscribers);
+          Assert.AreEqual(0, o2.subscribers);
+        };
+      };
+    });
 
     [Test]
-    public void Nested() {
-      var o = new Subject<Unit>();
-      var o2 = o.map(_ => 1);
-      Assert.AreEqual(0, o.subscribers);
-      Assert.AreEqual(0, o2.subscribers);
-      var s = o2.subscribe(_ => { });
-      Assert.AreEqual(1, o.subscribers);
-      Assert.AreEqual(1, o2.subscribers);
-      s.unsubscribe();
-      Assert.AreEqual(0, o.subscribers);
-      Assert.AreEqual(0, o2.subscribers);
-    }
-  }
+    public void subscribe() => describe(() => {
+      it["should add created subscription to the given tracker"] = () => {
+        var s = new Subject<Unit>();
+        var t = new DisposableTracker();
+        var sub = s.subscribe(t, _ => { });
+        t.trackedDisposables.shouldContain(_ => ReferenceEquals(_.disposable, sub));
+      };
 
-  public class IObservableSubscriptionTest {
+      it["should not invoke the subscription function upon subscribing"] = () => {
+        var s = new Subject<Unit>();
+        var counter = 0;
+        s.subscribe(tracker, _ => counter++);
+        counter.shouldEqual(0);
+      };
+
+      it["should invoke the subscription function upon event"] = () => {
+        var s = new Subject<Unit>();
+        var counter = 0;
+        s.subscribe(tracker, _ => counter++);
+        s.push(F.unit);
+        counter.shouldEqual(1);
+      };
+
+      when["subscribing from inside of other event"] = () => {
+        it["should work"] = () => {
+          var subject = new Subject<Unit>();
+          var pushedOuter = 0;
+          var pushedInner = 0;
+          subject.subscribe(tracker, _ => {
+            pushedOuter++;
+            subject.subscribe(tracker, __ => pushedInner++);
+            subject.subscribers.shouldEqual(
+              pushedOuter,
+              "it wait until event dispatching is completed until subscribing the observable"
+            );
+          });
+          subject.push(F.unit);
+          subject.subscribers.shouldEqual(2, "it should subscribe after the event has been dispatched");
+          pushedOuter.shouldEqual(1, "it should get the simple event");
+          pushedInner.shouldEqual(0, "it should not get the event which caused subscribe to happen");
+
+          subject.push(F.unit);
+          subject.subscribers.shouldEqual(3, "inner subscription should work for subsequent events");
+          pushedOuter.shouldEqual(2, "it should work for simple events");
+          pushedInner.shouldEqual(1, "it should not get the event which caused subscribe to happen");
+        };
+      };
+
+      when["pushing from inside of other event"] = () => {
+        it["should work"] = () => {
+          var subj = new Subject<int>();
+          var list = F.emptyList<Tpl<int, char>>();
+          subj.subscribe(tracker, a => {
+            list.Add(F.t(a, 'a'));
+            if (a == 0) {
+              subj.push(1);
+              subj.push(2);
+            }
+          });
+          subj.subscribe(tracker, a => { list.Add(F.t(a, 'b')); });
+          list.shouldBeEmpty();
+          subj.push(0);
+          list.shouldEqual(F.list(
+            F.t(0, 'a'), F.t(0, 'b'),
+            F.t(1, 'a'), F.t(1, 'b'),
+            F.t(2, 'a'), F.t(2, 'b')
+          ));
+        };
+      };
+
+      when["unsubscribing after receiving an event"] = () => {
+        it["should successfully unsubscribe"] = () => {
+          var subject = new Subject<Unit>();
+          var called = 0;
+          subject.subscribe(tracker, (_, subscription) => {
+            called += 1;
+            subscription.unsubscribe();
+          });
+          subject.push(F.unit);
+          subject.push(F.unit);
+          Assert.AreEqual(1, called);
+        };
+      };
+    });
+
     [Test]
-    public void SubscribeFromInsideEvent() {
-      var subject = new Subject<Unit>();
-      var pushedOuter = 0;
-      var pushedInner = 0;
-      subject.subscribe(_ => {
-        pushedOuter++;
-        subject.subscribe(__ => pushedInner++);
-        subject.subscribers.shouldEqual(
-          pushedOuter, 
-          "it wait until event dispatching is completed until subscribing the observable"
-        );
-      });
-      subject.push(F.unit);
-      subject.subscribers.shouldEqual(2, "it should subscribe after the event has been dispatched");
-      pushedOuter.shouldEqual(1, "it should get the simple event");
-      pushedInner.shouldEqual(0, "it should not get the event which caused subscribe to happen");
-
-      subject.push(F.unit);
-      subject.subscribers.shouldEqual(3, "inner subscription should work for subsequent events");
-      pushedOuter.shouldEqual(2, "it should work for simple events");
-      pushedInner.shouldEqual(1, "it should not get the event which caused subscribe to happen");
-    }
-
-    [Test]
-    public void PushFromInsideEvent() {
-      var subj = new Subject<int>();
-      var list = F.emptyList<Tpl<int, char>>();
-      subj.subscribe(a => {
-        list.Add(F.t(a, 'a'));
-        if (a == 0) {
-          subj.push(1);
-          subj.push(2);
-        }
-      });
-      subj.subscribe(a => {
-        list.Add(F.t(a, 'b'));
-      });
-      list.shouldBeEmpty();
-      subj.push(0);
-      list.shouldEqual(F.list(
-        F.t(0, 'a'), F.t(0, 'b'),
-        F.t(1, 'a'), F.t(1, 'b'),
-        F.t(2, 'a'), F.t(2, 'b')
-      ));
-    }
-
-    [Test]
-    public void UnsubscribeAfterEvent() {
-      var subject = new Subject<Unit>();
-      var called = 0;
-      subject.subscribe((_, subscription) => {
-        called += 1;
-        subscription.unsubscribe();
-      });
-      subject.push(F.unit);
-      subject.push(F.unit);
-      Assert.AreEqual(1, called);
-    }
-
-    [Test]
-    public void SubscribeToFinishedObservable() {
-      var subject = new Subject<Unit>();
-      var s1 = subject.subscribe(_ => {});
-      s1.isSubscribed.shouldBeTrue("Subscription should be alive initially.");
-      subject.finish();
-      s1.isSubscribed.shouldBeFalse("Subscription should be killed after observable finishes.");
-      subject.subscribe(_ => {}).isSubscribed
-        .shouldBeFalse("Subscription to finished observable should come out dead.");
-    }
-  }
-
-  public class IObservableTestToFuture {
-    [Test]
-    public void Test() {
+    public void toFuture() {
       var subj = new Subject<int>();
       var f = subj.toFuture();
       f.value.shouldBeNone();
@@ -127,51 +145,126 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       f.value.shouldBeSome(1);
       subj.subscribers.shouldEqual(0, "it should unsubscribe after completing the future");
     }
-  }
 
-  public class IObservableTestMap {
+    [Test]
+    public void extract() => describe(() => {
+      Subject<int> source = null;
+      beforeEach += () => source = new Subject<int>();
+      
+      Future<IObservable<int>> future;
+      IObservable<int> extracted = null;
+
+      Tpl<Ref<List<int>>, Ref<ISubscription>> pipe() {
+        var list = Ref.a(new List<int>());
+        var sub = Ref.a(Subscription.empty);
+        beforeEach += () => {
+          var (_list, _sub) = extracted.pipeToList(tracker);
+          list.value = _list;
+          sub.value = _sub;
+        };
+        return F.t(list, sub);
+      }
+      
+      void testProxying(Ref<List<int>> list) {
+        it["should subscribe to source"] = () => source.subscribers.shouldEqual(1);
+        it["should proxy events"] = () => {
+          list.value.Clear();
+          foreach (var a in new [] {1, 2, 3}) source.push(a);
+          list.value.shouldEqualEnum(1, 2, 3);
+        };
+      }
+
+      void testNonProxying(Ref<List<int>> list) {
+        it["should unsubscribe from source"] = () => source.subscribers.shouldEqual(0);
+        it["should not proxy events"] = () => {
+          list.value.Clear();
+          foreach (var a in new[] {1, 2, 3}) source.push(a);
+          list.value.shouldBeEmpty();
+        };
+      }
+
+      void testUnsubResub(Ref<List<int>> list, Ref<ISubscription> sub) {
+        then["we unsubscribe from observable"] = () => {
+          beforeEach += () => sub.value.unsubscribe();
+          testNonProxying(list);
+
+          then["we resubscribe from observable"] = () => {
+            var (_list, _) = pipe();
+            testProxying(_list);
+          };
+        };
+      }
+      
+      when["future is completed before we get a subscriber"] = () => {
+        beforeEach += () => {
+          future = Future.successful(source.asObservable());
+          extracted = future.extract();
+        };
+        
+        it["should not subscribe to source"] = () => source.subscribers.shouldEqual(0);
+        
+        then["we subscribe to observable"] = () => {
+          var (list, sub) = pipe();
+          testProxying(list);
+          testUnsubResub(list, sub);
+        };
+      };
+
+      when["future is completed after we have a subscriber"] = () => {
+        Promise<IObservable<int>> promise = null;
+        beforeEach += () => {
+          future = Future.async(out promise);
+          extracted = future.extract();
+        };
+        var (list, sub) = pipe();
+        beforeEach += () => promise.complete(source);
+        
+        testProxying(list);
+        testUnsubResub(list, sub);
+      };
+    });
+  }
+  
+  public class IObservableTestMap : TestBase {
     [Test]
     public void Test() {
       var subj = new Subject<int>();
       var obs = subj.map(i => i * 2);
-      obs.pipeToList().ua((list, sub) => {
-        subj.pushMany(1, 2, 3, 4, 5);
+      obs.pipeToList(tracker).ua((list, sub) => {
+        foreach (var a in new[] {1, 2, 3, 4, 5}) subj.push(a);
         list.shouldEqual(F.list(2, 4, 6, 8, 10));
         sub.testUnsubscription(subj);
-        obs.testFinishing(subj);
       });
     }
   }
 
-  public class IObservableTestDiscardValue {
+  public class IObservableTestDiscardValue : TestBase {
     [Test]
     public void Test() {
       var subj = new Subject<int>();
       var obs = subj.discardValue();
-      obs.countEvents().ua((evts, sub) => {
+      obs.countEvents(tracker).ua((evts, sub) => {
         evts.value.shouldEqual(0u);
-        subj.pushMany(1, 2, 3, 4);
+        foreach (var a in new[] {1, 2, 3, 4}) subj.push(a);
         evts.value.shouldEqual(4u);
         sub.testUnsubscription(subj);
-        obs.testFinishing(subj);
       });
     }
   }
 
-  public class IObservableTestFlatMap {
+  public class IObservableTestFlatMap : TestBase {
     [Test]
     public void TestIEnumerable() {
       var subj = new Subject<int>();
       var obs = subj.flatMap(i => Enumerable.Range(0, i));
-      obs.pipeToList().ua((list, sub) => {
-        subj.pushMany(1, 2, 3);
+      obs.pipeToList(tracker).ua((list, sub) => {
+        foreach (var a in new[] {1, 2, 3}) subj.push(a);
         list.shouldEqual(F.list(
           0,
           0, 1,
           0, 1, 2
         ));
         sub.testUnsubscription(subj);
-        obs.testFinishing(subj);
       });
     }
 
@@ -181,13 +274,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj1 = new Subject<int>();
       var subj2 = new Subject<int>();
       var obs = subj.flatMap(i => i % 2 == 0 ? subj1 : subj2);
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
       var sub = t._2;
-      Act<int, int> checkSubs = (s1, s2) => {
+
+      void checkSubs(int s1, int s2) {
         subj1.subscribers.shouldEqual(s1);
         subj2.subscribers.shouldEqual(s2);
-      };
+      }
 
       list.shouldBeEmpty();
       checkSubs(0, 0);
@@ -217,71 +311,50 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       list.shouldEqual(F.list(1, -2, 3));
 
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
       checkSubs(0, 0);
     }
 
     [Test]
     public void TestFuture() {
-      Promise<Unit> gateP;
-      var gateF = Future<Unit>.async(out gateP);
+      var gateF = Future<Unit>.async(out var gateP);
       var subj = new Subject<int>();
       var obs = subj.flatMap(i => gateF.map(_ => i));
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
       var sub = t._2;
-      subj.pushMany(1, 2, 3);
+      foreach (var a in new[] {1, 2, 3}) subj.push(a);
       list.shouldBeEmpty();
       gateP.complete(F.unit);
       list.shouldEqual(F.list(1, 2, 3));
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
-    }
-
-    [Test]
-    public void TestWhenFutureCompletesAfterFinish() {
-      Promise<Unit> gateP;
-      var gateF = Future<Unit>.async(out gateP);
-      var subj = new Subject<int>();
-      var obs = subj.flatMap(i => gateF.map(_ => i));
-      var t = obs.pipeToList();
-      var list = t._1;
-      subj.pushMany(1, 2, 3);
-      list.shouldBeEmpty();
-      subj.finish();
-      list.shouldBeEmpty();
-      gateP.complete(F.unit);
-      list.shouldBeEmpty();
     }
   }
 
-  public class IObservableTestFilter {
+  public class IObservableTestFilter : TestBase {
     [Test]
     public void Test() {
       var subj = new Subject<int>();
       var obs = subj.filter(i => i % 2 == 0);
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
       var sub = t._2;
       foreach (var i in Enumerable.Range(0, 5)) subj.push(i);
       list.shouldEqual(F.list(0, 2, 4));
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
   }
 
-  public class IObservableTestCollect {
+  public class IObservableTestCollect : TestBase {
     [Test]
     public void Test() {
       var subj = new Subject<int>();
       var obs = subj.collect(i => (i % 2 == 0).opt(i * 2));
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
       var sub = t._2;
-      subj.pushMany(0, 1, 2, 3, 4, 5, 6);
+      foreach (var a in new[] {0, 1, 2, 3, 4, 5, 6}) subj.push(a);
       list.shouldEqual(F.list(0, 4, 8, 12));
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
   }
 
@@ -308,7 +381,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
   }
 
-  public class IObservableTestBuffer {
+  public class IObservableTestBuffer : TestBase {
     [Test]
     public void Test() {
       test(
@@ -325,12 +398,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       ));
     }
 
-    static void test<C>(
+    void test<C>(
       Fn<Subject<int>, IObservable<C>> createObs, Fn<List<int>, C> createCollection
     ) where C : IEnumerable<int> {
       var subj = new Subject<int>();
       var obs = createObs(subj);
-      var t = obs.pipeToRef();
+      var t = obs.pipeToRef(tracker);
       var r = t._1;
       var sub = t._2;
       r.value.shouldBeNone();
@@ -346,31 +419,29 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       r.value.shouldBeSomeEnum(createCollection(F.list(3, 4, 5)));
 
       sub.testUnsubscription(subj);
-      obs.testFinishing(subj);
     }
   }
 
   // TODO: test timeBuffer with integration tests
 
-  public class IObservableTestJoin {
+  public class IObservableTestJoin : TestBase {
     [Test]
     public void Test() {
       var subj1 = new Subject<int>();
       var subj2 = new Subject<int>();
       var obs = subj1.join(subj2);
-      obs.pipeToList().ua((list, sub) => {
+      obs.pipeToList(tracker).ua((list, sub) => {
         subj1.push(1);
         subj2.push(2);
         subj1.push(3);
         subj2.push(4);
         list.shouldEqual(F.list(1, 2, 3, 4));
         sub.testUnsubscription(subj1, subj2);
-        obs.testFinishing(subj1, subj2);
       });
     }
   }
 
-  public class IObservableTestJoinAll {
+  public class IObservableTestJoinAll : TestBase {
     class A {}
     class B : A {}
 
@@ -380,10 +451,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var otherSubjects = ImmutableList.Create(new Subject<B>(), new Subject<B>());
       var otherObservables = otherSubjects.Select(s => s.map(_ => (A)_)).ToImmutableList();
       var allObservables = aSubj.Yield<IObservable>().Concat(otherObservables.Cast<IObservable>()).ToArray();
-      var allSubjects = aSubj.Yield<IObserver>().Concat(otherSubjects.Cast<IObserver>()).ToArray();
 
       var obs = aSubj.joinAll(otherObservables);
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var a = new A();
       var b = new B();
 
@@ -391,44 +461,42 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       foreach (var subj in otherSubjects) subj.push(b);
       t._1.shouldEqual(F.list(a, b, b));
       t._2.testUnsubscriptionC(allObservables);
-      obs.testFinishing(allSubjects);
     }
 
     [Test]
     public void TestCollection() {
       var subjs = new[] {new Subject<int>(), new Subject<int>(), new Subject<int>()};
       var obs = subjs.joinAll();
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       foreach (var subj in subjs) subj.push(1);
       t._1.shouldEqual(F.list(1, 1, 1));
       t._2.testUnsubscriptionC(subjs);
-      obs.testFinishing(subjs);
     }
   }
 
-  public class IObservableTestJoinDiscard {
+  public class IObservableTestJoinDiscard : TestBase {
     [Test]
     public void Test() {
       var subj1 = new Subject<int>();
       var subj2 = new Subject<int>();
       var obs = subj1.joinDiscard(subj2);
-      var t = obs.countEvents();
+      var t = obs.countEvents(tracker);
       var evts = t._1;
-      subj1.pushMany(1, 2, 3);
-      subj2.pushMany(1, 2, 3);
+      foreach (var a in new[] {1, 2, 3}) subj1.push(a);
+      foreach (var a in new[] {1, 2, 3}) subj2.push(a);
       evts.value.shouldEqual(6u);
       
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2);
     }
   }
 
-  public class IObservableTestZip {
+  public class IObservableTestZip : TestBase {
     [Test]
     public void Zip2() {
       var subj1 = new Subject<int>();
       var subj2 = new Subject<int>();
-      var obs = subj1.zip(subj2);
-      var t = obs.pipeToRef();
+      var obs = subj1.zip(subj2, F.t);
+      var t = obs.pipeToRef(tracker);
       var r = t._1;
       subj1.push(1);
       r.value.shouldBeNone();
@@ -439,7 +507,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj1.push(0);
       r.value.shouldBeSome(F.t(0, 2));
       
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2);
     }
 
     [Test]
@@ -447,8 +515,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj1 = new Subject<int>();
       var subj2 = new Subject<int>();
       var subj3 = new Subject<int>();
-      var obs = subj1.zip(subj2, subj3);
-      var t = obs.pipeToRef();
+      var obs = subj1.zip(subj2, subj3, F.t);
+      var t = obs.pipeToRef(tracker);
       var r = t._1;
       subj1.push(1);
       r.value.shouldBeNone();
@@ -463,7 +531,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj1.push(3);
       r.value.shouldBeSome(F.t(3, 2, 0));
       
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2, subj3);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3);
     }
 
     [Test]
@@ -472,8 +540,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj2 = new Subject<int>();
       var subj3 = new Subject<int>();
       var subj4 = new Subject<int>();
-      var obs = subj1.zip(subj2, subj3, subj4);
-      var t = obs.pipeToRef();
+      var obs = subj1.zip(subj2, subj3, subj4, F.t);
+      var t = obs.pipeToRef(tracker);
       var r = t._1;
       subj1.push(1);
       r.value.shouldBeNone();
@@ -492,7 +560,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj4.push(5);
       r.value.shouldBeSome(F.t(3, 2, 0, 5));
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2, subj3, subj4);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3, subj4);
     }
 
     [Test]
@@ -502,8 +570,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj3 = new Subject<int>();
       var subj4 = new Subject<int>();
       var subj5 = new Subject<int>();
-      var obs = subj1.zip(subj2, subj3, subj4, subj5);
-      var t = obs.pipeToRef();
+      var obs = subj1.zip(subj2, subj3, subj4, subj5, F.t);
+      var t = obs.pipeToRef(tracker);
       var r = t._1;
       subj1.push(1);
       r.value.shouldBeNone();
@@ -526,7 +594,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj5.push(6);
       r.value.shouldBeSome(F.t(3, 2, 0, 5, 6));
       
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2, subj3, subj4, subj5);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3, subj4, subj5);
     }
 
     [Test]
@@ -537,8 +605,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj4 = new Subject<int>();
       var subj5 = new Subject<int>();
       var subj6 = new Subject<int>();
-      var obs = subj1.zip(subj2, subj3, subj4, subj5, subj6);
-      var t = obs.pipeToRef();
+      var obs = subj1.zip(subj2, subj3, subj4, subj5, subj6, F.t);
+      var t = obs.pipeToRef(tracker);
       var r = t._1;
       subj1.push(1);
       r.value.shouldBeNone();
@@ -565,34 +633,34 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       subj6.push(7);
       r.value.shouldBeSome(F.t(3, 2, 0, 5, 6, 7));
       
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj1, subj2, subj3, subj4, subj5, subj6);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3, subj4, subj5, subj6);
     }
   }
 
-  public class IObservableTestChangesOpt {
+  public class IObservableTestChangesOpt : TestBase {
     [Test]
     public void WithDefaultEq() {
       var subj = new Subject<int>();
       var obs = subj.changesOpt();
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
-      subj.pushMany(1, 1, 2, 2, 3, 3);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3}) subj.push(a);
       list.shouldEqual(F.list(
         F.t(Option<int>.None, 1),
         F.t(1.some(), 2),
         F.t(2.some(), 3)
       ));
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj);
     }
 
     [Test]
     public void WithCustomEq() {
       var subj = new Subject<int>();
       var obs = subj.changesOpt((a, b) => false);
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
-      subj.pushMany(1, 1, 3, 3, 2, 2, 4, 4, 5, 5);
+      foreach (var a in new[] {1, 1, 3, 3, 2, 2, 4, 4, 5, 5}) subj.push(a);
       list.shouldEqual(F.list(
         F.t(Option<int>.None, 1),
         F.t(1.some(), 1),
@@ -606,52 +674,52 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         F.t(5.some(), 5)
       ));
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj);
     }
   }
 
-  public class IObservableTestChanges {
+  public class IObservableTestChanges : TestBase {
     [Test]
     public void WithDefaultEq() {
       var subj = new Subject<int>();
       var obs = subj.changes();
-      var t = obs.pipeToList();
-      subj.pushMany(1, 1, 2, 2, 3, 3, 4, 4);
+      var t = obs.pipeToList(tracker);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);
       t._1.shouldEqual(F.list(
         F.t(1, 2), F.t(2, 3), F.t(3, 4)
       ));
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj);
     }
 
     [Test]
     public void WithCustomEq() {
       var subj = new Subject<int>();
       var obs = subj.changes((a, b) => false);
-      var t = obs.pipeToList();
-      subj.pushMany(1, 1, 2, 2, 3, 3, 4, 4);
+      var t = obs.pipeToList(tracker);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);
       t._1.shouldEqual(F.list(
         F.t(1, 1), F.t(1, 2), F.t(2, 2), F.t(2, 3), F.t(3, 3), 
         F.t(3, 4), F.t(4, 4)
       ));
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj);
     }
   }
 
-  public class IOBservableTestChangedValues {
+  public class IOBservableTestChangedValues : TestBase {
     [Test]
     public void WithDefaultEq() {
       var subj = new Subject<int>();
       var obs = subj.changedValues();
-      var t = obs.pipeToList();
+      var t = obs.pipeToList(tracker);
       var list = t._1;
       subj.push(1);
       list.shouldEqual(F.list(1));
-      subj.pushMany(1, 1, 2, 2, 3, 3, 4, 4);
+      foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);
       list.shouldEqual(F.list(1, 2, 3, 4));
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj);
     }
 
     [Test]
@@ -659,26 +727,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj = new Subject<int>();
       var elems = new[] {1, 1, 2, 2, 3, 3, 4, 4};
       var obs = subj.changedValues((a, b) => false);
-      var t = obs.pipeToList();
-      subj.pushMany(elems);
+      var t = obs.pipeToList(tracker);
+      foreach (var a in elems) subj.push(a);
       t._1.shouldEqual(elems.ToList());
 
-      IObservableTestExts.testUnsubAndFinish(t._2, obs, subj);
+      IObservableTestExts.testUnsubAndFinish(t._2, subj);
     }
   }
 
-  public class IObservableTestSkip {
-    [Test]
-    public void Finishing() {
-      new Subject<int>().testFinishing(_ => _.skip(3));
-      new Subject<int>().testFinishing(_ => _.skip(0));
-    }
-
+  public class IObservableTestSkip : TestBase {
     [Test]
     public void Some() {
       var subj = new Subject<int>();
       var events = new List<int>();
-      subj.skip(3).subscribe(events.Add);
+      subj.skip(3).subscribe(tracker, events.Add);
       for (var idx = 1; idx <= 5; idx++) subj.push(idx);
       events.shouldEqual(F.list(4, 5));
     }
@@ -687,13 +749,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void None() {
       var subj = new Subject<int>();
       var events = new List<int>();
-      subj.skip(0).subscribe(events.Add);
+      subj.skip(0).subscribe(tracker, events.Add);
       for (var idx = 1; idx <= 5; idx++) subj.push(idx);
       events.shouldEqual(F.list(1, 2, 3, 4, 5));
     }
   }
 
-  public class IObservableTestToRxVal {
+  public class IObservableTestToRxVal : TestBase {
     [Test]
     public void WithoutSubscribers() {
       var subj = new Subject<int>();
@@ -708,17 +770,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj = new Subject<int>();
       var rx = subj.toRxVal(100);
       rx.value.shouldEqual(100);
-      rx.pipeToRef().ua((r, sub) => {
-        r.value.shouldBeSome(100);
-        subj.push(10);
-        r.value.shouldBeSome(10);
-        rx.value.shouldEqual(10);
+      var (r, sub) = rx.pipeToRef(tracker);
+      r.value.shouldBeSome(100);
+      subj.push(10);
+      r.value.shouldBeSome(10);
+      rx.value.shouldEqual(10);
 
-        sub.unsubscribe();
-        subj.push(20);
-        r.value.shouldBeSome(10);
-        rx.value.shouldEqual(20);
-      });
+      sub.unsubscribe();
+      subj.push(20);
+      r.value.shouldBeSome(10);
+      rx.value.shouldEqual(20);
     }
   }
 }

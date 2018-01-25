@@ -6,8 +6,7 @@ using UnityEngine.Events;
 class TestUnityEvent : ScriptableObject {
   #region Unity Serialized Fields
 
-#pragma warning disable 649, 169
-  // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
+#pragma warning disable 649, 169, 414
   [Serializable] class NestedEvent {
     [SerializeField, UsedImplicitly] UnityEvent unityEvent;
   }
@@ -19,8 +18,7 @@ class TestUnityEvent : ScriptableObject {
   [SerializeField, UsedImplicitly] NestedEvent[] nestedEventArray;
   [SerializeField, UsedImplicitly] UnityEventGameObject unityEventGameObject;
   [SerializeField, UsedImplicitly] UnityEventGameObject[] unityEventGameObjectArray;
-  // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
-#pragma warning restore 649, 169
+#pragma warning restore 649, 169, 414
 
   #endregion
 }

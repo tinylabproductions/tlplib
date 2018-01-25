@@ -23,10 +23,8 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
 #pragma warning restore 649
 
     public event Action<Vector2> swipeEnded;
-    public event Action swipedLeft;
-    public event Action swipedRigth;
-    public event Action swipedUp;
-    public event Action swipedDown;
+    public event Action swipedLeft, swipedRigth, swipedUp, swipedDown;
+    
     Vector2 dragBeginPos;
     bool dragFinished;
     Option<float> _eventOnThresholdSqr;

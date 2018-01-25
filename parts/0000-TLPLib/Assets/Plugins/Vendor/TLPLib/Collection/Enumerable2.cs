@@ -14,5 +14,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static IEnumerable<int> from(int startingNumber) {
       return Enumerable.Range(startingNumber, int.MaxValue - startingNumber);
     }
+
+    public static IEnumerable<A> fill<A>(int count, Fn<A> create) {
+      for (var idx = 0; idx < count; idx++)
+        yield return create();
+    }
   }
 }

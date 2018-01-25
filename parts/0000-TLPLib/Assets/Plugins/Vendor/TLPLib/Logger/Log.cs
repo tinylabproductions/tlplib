@@ -300,7 +300,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
     }
 
-    public static LazyVal<IObservable<LogEvent>> fromUnityLogMessages = F.lazy(() => {
+    public static readonly LazyVal<IObservable<LogEvent>> fromUnityLogMessages = F.lazy(() => {
       var subject = new Subject<LogEvent>();
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         // Ignore messages that we ourselves sent to Unity.
@@ -322,7 +322,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
           runNowIfOnMainThread: false
         );
       };
-      return subject.asObservable;
+      return subject.asObservable();
     });
 
     static Log.Level convertLevel(LogType type) {

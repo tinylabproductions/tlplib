@@ -4,21 +4,26 @@ using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public interface Val<out A> {
-    A value { get; }
-  }
-
   public interface Ref<A> : Val<A> {
     new A value { get; set; }
   }
 
   /* Simple heap-allocated reference. */
-  public class SimpleRef<A> : Ref<A> {
-    public A value { get; set; }
+  public sealed class SimpleRef<A> : Ref<A> {
+    // For access using ref keyword.
+    public A value;
+
+    A Val<A>.value => value;
+
+    A Ref<A>.value {
+      get { return value;}
+      set { this.value = value; }
+    }
 
     public SimpleRef(A value) { this.value = value; }
 
     public static implicit operator A(SimpleRef<A> r) => r.value;
+    public override string ToString() => $"{nameof(SimpleRef<A>)}({value})";
   }
 
   public class LambdaRef<A> : Ref<A> {

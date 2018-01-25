@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Configuration;
+using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
@@ -14,6 +16,27 @@ using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestBase {
+    protected readonly IDisposableTracker tracker = new DisposableTracker();
+    
+    [TearDown]
+    public void CleanupIDisposableTracker() => tracker.Dispose();
+
+    public static void testCollection() {
+      WeakReference reference = null;
+      new Action(() => {
+        var service = new object();
+        reference = new WeakReference(service, true);
+      })();
+
+      // Service should have gone out of scope about now, 
+      // so the garbage collector can clean it up
+      new object().forSideEffects();
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+
+      Assert.IsNull(reference.Target);
+    }
+    
     public static void shouldBeIdentical<A>(A a1, A a2) {
       a1.shouldEqual(a2);
       a2.shouldEqual(a1);
@@ -25,7 +48,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       a2.shouldNotEqual(a1);
     }
 
-    public static Action code(Action a) => a;
+    public static Fn<Unit> code(Action a) => () => {
+      a();
+      return F.unit;
+    };
+
+    public static Fn<A> code<A>(Fn<A> a) => a;
   }
 
   public static class TestExts {
@@ -252,19 +280,34 @@ namespace com.tinylabproductions.TLPLib.Test {
     ) =>
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
 
-    public static ChangeMatcher<A> shouldChange<A>(
-      this Action act, Fn<A> measure, Numeric<A> num
-    ) => new ChangeMatcher<A>(act, measure, num);
+    public static ChangeMatcher<A, R> shouldChange<A, R>(
+      this Fn<R> fn, Fn<A> measure, Numeric<A> num
+    ) => new ChangeMatcher<A, R>(fn, measure, num);
 
-    public static void shouldNotChange<A>(
-      this Action act, Fn<A> measure, Numeric<A> num
-    ) => act.shouldChange(measure, num).by(0);
+    public static ChangeMatcher<A, R> shouldChange<A, R>(
+      this Fn<R> fn, Val<A> measure, Numeric<A> num
+    ) => new ChangeMatcher<A, R>(fn, () => measure.value, num);
 
-    public static ChangeMatcher<int> shouldChange(this Action act, Fn<int> measure) => 
-      act.shouldChange(measure, Numeric.integer);
-    public static void shouldNotChange(this Action act, Fn<int> measure) => 
-      act.shouldChange(measure).by(0);
+    public static void shouldNotChange<A, R>(
+      this Fn<R> fn, Fn<A> measure, Numeric<A> num
+    ) => fn.shouldChange(measure, num).by(0);
 
+    public static void shouldNotChange<A, R>(
+      this Fn<R> fn, Val<A> measure, Numeric<A> num
+    ) => fn.shouldChange(measure, num).by(0);
+
+    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Fn<int> measure) => 
+      fn.shouldChange(measure, Numeric.integer);
+
+    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Val<int> measure) => 
+      fn.shouldChange(measure, Numeric.integer);
+
+    public static void shouldNotChange<R>(this Fn<R> fn, Fn<int> measure) => 
+      fn.shouldChange(measure).by(0);
+
+    public static void shouldNotChange<R>(this Fn<R> fn, Val<int> measure) => 
+      fn.shouldChange(measure).by(0);
+    
     public static StreamMatcher<A> shouldPushTo<A>(
       this Action act, IObservable<A> obs
     ) => new StreamMatcher<A>(act, obs);
@@ -285,21 +328,21 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
   }
 
-  public class ChangeMatcher<A> {
-    readonly Action act;
-    readonly Fn<A> measure;
-    readonly Numeric<A> num;
+  public class ChangeMatcher<MeasurementType, ReturnedType> {
+    readonly Fn<ReturnedType> run;
+    readonly Fn<MeasurementType> measure;
+    readonly Numeric<MeasurementType> num;
 
-    public ChangeMatcher(Action act, Fn<A> measure, Numeric<A> num) {
-      this.act = act;
+    public ChangeMatcher(Fn<ReturnedType> run, Fn<MeasurementType> measure, Numeric<MeasurementType> num) {
+      this.run = run;
       this.measure = measure;
       this.num = num;
     }
 
-    public void by(int i, string message = null) {
+    public ReturnedType by(int i, string message = null) {
       var change = num.fromInt(i);
       var initial = measure();
-      act();
+      var ret = run();
       var after = measure();
       var actualChange = num.subtract(after, initial);
 
@@ -313,6 +356,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       }
 
       num.subtract(after, initial).shouldEqual(change, message);
+      return ret;
     }
   }
 
@@ -335,7 +379,7 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public void resultIn(ICollection<A> match, string message = null) {
       var streamValues = new List<A>();
-      var sub = obs.subscribe(streamValues.Add);
+      var sub = obs.subscribe(NoOpDisposableTracker.instance, streamValues.Add);
       act();
       sub.unsubscribe();
 

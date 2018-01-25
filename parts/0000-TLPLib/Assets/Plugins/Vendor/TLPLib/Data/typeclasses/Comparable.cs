@@ -7,13 +7,15 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
 
   public static class CompareResultExts {
+    public static int asInt(this CompareResult res) => (int) res;
+    
     public static CompareResult asCmpRes(this int result) =>
         result < 0 ? CompareResult.LT 
       : result == 0 ? CompareResult.EQ 
       : CompareResult.GT;
   }
 
-  public interface Comparable<A> : IComparer<A> {
+  public interface Comparable<A> : IComparer<A>, Eql<A> {
     CompareResult compare(A a1, A a2);
   }
 
@@ -39,6 +41,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       public Lambda(Fn<A, A, CompareResult> compare) { _compare = compare; }
 
       public CompareResult compare(A a1, A a2) => _compare(a1, a2);
+      public bool eql(A a1, A a2) => _compare(a1, a2) == CompareResult.EQ;
       public int Compare(A x, A y) => (int) _compare(x, y);
     }
   }
