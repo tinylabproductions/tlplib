@@ -8,16 +8,14 @@ using com.tinylabproductions.TLPLib.system;
 using GenerationAttributes;
 using UnityEngine;
 using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
-
 namespace com.tinylabproductions.TLPLib.Components.debug {
-#if UNITY_EDITOR
   /// <summary>
   /// Exposes fields of non-monobehaviour objects to unity inspector.
   /// 
   /// <see cref="InspectorStateExposerExts"/> and <see cref="InspectorStateExposerExts.exposeAllToInspector{A}"/>
   /// </summary>
   public partial class InspectorStateExposer : MonoBehaviour {
-    [Matcher] public abstract partial class IValue {}
+    [Matcher] public abstract class IValue {}
     [Record] public sealed partial class StringValue : IValue {
       public readonly string value;
     }
@@ -27,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     [Record] public sealed partial class ObjectValue : IValue {
       public readonly UnityEngine.Object value;
     }
-    
+#if UNITY_EDITOR
     [Record]
     public readonly partial struct ForRepresentation {
       public readonly object objectReference;
@@ -56,8 +54,8 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
 
     public IEnumerable<IGrouping<object, ForRepresentation>> groupedData =>
       data.collect(_ => _.repr).GroupBy(_ => _.objectReference);
-  }
 #endif
+  }
 
   public static class InspectorStateExposerExts {
     [Conditional("UNITY_EDITOR")]
