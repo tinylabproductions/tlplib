@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     protected Carousel() {
       __currentElement = F.lazy(() => {
         var res = RxRef.a(elements.get(page.value));
-        _page.subscribeWhileAlive(gameObject, p => res.value = elements.get(p));
+        _page.subscribe(gameObject, p => res.value = elements.get(p));
         return res;
       });
     }

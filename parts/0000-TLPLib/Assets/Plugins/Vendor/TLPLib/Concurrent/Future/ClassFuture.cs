@@ -18,11 +18,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
-    static readonly Pool<IList<Act<A>>> pool = new Pool<IList<Act<A>>>(
-      () => new List<Act<A>>(), list => list.Clear()
-    );
+    static readonly Pool<List<Act<A>>> pool = ListPool<Act<A>>.Instance;
 
-    IList<Act<A>> listeners = pool.Borrow();
+    List<Act<A>> listeners = pool.Borrow();
 
     public bool isCompleted => value.isSome;
     public Option<A> value { get; private set; } = F.none<A>();

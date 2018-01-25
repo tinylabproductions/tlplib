@@ -1,43 +1,71 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
+using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  /**
-   * RxRef is a reactive reference, which stores a value and also acts as a IObserver.
-   **/
+  /// <summary>
+  /// RxRef is a reactive reference, which stores a value and also acts as a IObservable.
+  /// </summary>
   public interface IRxRef<A> : Ref<A>, IRxVal<A> {
     new A value { get; set; }
-    IRxVal<A> asVal { get; }
   }
 
-  /**
-   * Mutable reference which is also an observable.
-   **/
-  public class RxRef<A> : RxBase<A>, IRxRef<A> {
-    protected override A currentValue => _value;
-
+  /// <summary>
+  /// Mutable reference which is also an observable.
+  /// </summary>
+  public class RxRef<A> : Observable<A>, IRxRef<A> {
+    readonly IEqualityComparer<A> comparer;
+    
+    A _value;
     public A value {
-      get { return currentValue; }
-      set { submit(value); }
+      get => _value;
+      set {
+        if (RxBase.compareAndSet(comparer, ref _value, value))
+          submit(value);
+      }
     }
 
-    public RxRef(A initialValue) { _value = initialValue; }
+    public RxRef(A value, IEqualityComparer<A> comparer = null) {
+      this.comparer = comparer ?? EqComparer<A>.Default;
+      _value = value;
+    }
 
-    public override string ToString() => $"RxRef({_value})";
+    public override ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      var subscription = base.subscribe(
+        tracker, onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+      onEvent(value);
+      return subscription;
+    }
 
-    public IRxVal<A> asVal => this;
+    public ISubscription subscribeWithoutEmit(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) =>
+      base.subscribe(
+        tracker, onEvent, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+
+    public override string ToString() => $"{nameof(RxRef)}({value})";
   }
 
   public static class RxRef {
     public static IRxRef<A> a<A>(A value) => new RxRef<A>(value);
-  }
-
-  public static class RxRefOps {
-    /** Returns a new ref that is bound to this ref and vice versa. **/
-    public static IRxRef<B> comap<A, B>(this IRxRef<A> rx, Fn<A, B> mapper, Fn<B, A> comapper) {
-      var bRef = RxRef.a(mapper(rx.value));
-      bRef.subscribe(b => rx.value = comapper(b));
-      return bRef;
-    }
   }
 }

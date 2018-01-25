@@ -28,15 +28,13 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     protected readonly AndroidJavaObject java;
     readonly DisposableTracker dt = new DisposableTracker();
 
-    public StandardBanner(AndroidJavaObject java) {
+    protected StandardBanner(AndroidJavaObject java) {
       this.java = java;
-      dt.track(ASync.onAppPause.subscribe(paused => {
+      ASync.onAppPause.subscribe(dt, paused => {
         if (paused) onPause();
         else onResume();
-      }));
-      dt.track(ASync.onAppQuit.subscribe(_ => {
-        destroy();
-      }));
+      });
+      ASync.onAppQuit.subscribe(dt, _ => destroy());
     }
 
     public void setVisibility(bool visible) => java.Call("setVisibility", visible);

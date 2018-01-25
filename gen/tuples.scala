@@ -1,10 +1,10 @@
 import java.io._
 
 object TupleData {
-  def paramsRange(params: Int) = 1 to params
-  def genericParameterNames(genericParamPrefix: String, paramsRange: Range) =
+  def paramsRange(params: Int): Range.Inclusive = 1 to params
+  def genericParameterNames(genericParamPrefix: String, paramsRange: Range): IndexedSeq[String] =
     paramsRange.map(n => s"$genericParamPrefix$n")
-  def typeSigGenerics(genericParameterNames: Seq[String]) =
+  def typeSigGenerics(genericParameterNames: Seq[String]): String =
     genericParameterNames.mkString(", ")
   def fullType(typename: String, typeSigGenerics: String) = s"$typename<$typeSigGenerics>"
 }
@@ -80,9 +80,17 @@ class TupleData(
   }
   lazy val unshifterS = unshifter.getOrElse("")
 
-  def fCsStr =
-    s"public static $fullType t<$typeSigGenerics>($paramArgsS) " +
-    s"{ return new $fullType($paramArgNamesS); }"
+  // public void Deconstruct(out T1 x1, ..., out Tn xn) { ... }
+  lazy val deconstructor = {
+    val params = genericParameterNames.zip(propNames).map {
+      case (type_, prop) => s"out $type_ $prop"
+    }.mkString(", ")
+    val body = propNames.map { prop => s"$prop = this.$prop;" }.mkString(" ")
+    s"public void Deconstruct($params) { $body }"
+  }
+
+  def fCsStr: String =
+    s"public static $fullType t<$typeSigGenerics>($paramArgsS) => new $fullType($paramArgNamesS);"
 
   def tupleCsStr =
     s"""
@@ -99,13 +107,16 @@ IComparable<$fullType>, IEquatable<$fullType> {
   public $typename($paramArgsS)
     { $constructorSettersS; }
 
+  $deconstructor
+
   public override string ToString() => $$"($toStringFmtS)";
+
   public override bool Equals(object o) => o is $fullType && Equals(($fullType) o);
   public bool Equals($fullType t) => $equalsS;
 
   public override int GetHashCode() {
     unchecked {
-      int hash = 17;
+      var hash = 17;
       $hashS
       return hash;
     }
@@ -136,7 +147,7 @@ IComparable<$fullType>, IEquatable<$fullType> {
   public static R ua<$typeSigGenerics, R>(this $fullType t, Fn<$typeSigGenerics, R> f) => f(${propArgsFor("t.")});
      """.stripMargin
 
-  def eitherCsStr = {
+  def eitherCsStr: String = {
     val tupledReturnType = s"Either<ImmutableList<A>, Tpl<$typeSigGenerics>>"
 
     def tupleRights =

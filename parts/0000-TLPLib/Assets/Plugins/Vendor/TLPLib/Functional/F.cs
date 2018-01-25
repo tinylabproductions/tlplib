@@ -152,5 +152,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
 
     public static readonly IDisposable emptyDisposable = new EmptyDisposable();
+
+    /// <summary>Representation of && as a function.</summary>
+    public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
+    
+    /// <summary>Representation of || as a function.</summary>
+    public static readonly Fn<bool, bool, bool> or2 = (a, b) => a || b;
+
+    /// <summary>Representation of + as a function.</summary>
+    public static readonly Fn<float, float, float> add2F = (a, b) => a + b;
   }
 }

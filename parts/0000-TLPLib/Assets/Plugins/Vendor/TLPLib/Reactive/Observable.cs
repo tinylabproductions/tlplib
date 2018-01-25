@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.system;
+using GenerationAttributes;
 using UnityEngine;
+using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -48,24 +54,166 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    **/
   public interface IObservable {
     int subscribers { get; }
-    bool finished { get; }
   }
 
   public interface IObservable<out A> : IObservable {
-    ISubscription subscribe(Act<A> onChange);
-    ISubscription subscribe(Act<A, ISubscription> onChange);
-    ISubscription subscribe(Act<A> onChange, Action onFinish);
-    ISubscription subscribe(IObserver<A> observer);
-    /** Return self as IObservable. */
-    IObservable<A> asObservable { get; }
-    // Logs actions at verbose level to standard logger.
-    IObservable<A> setLogging(bool value);
+    /// <summary>
+    /// Subscribe to this observable to get a value every time an event happens.
+    /// 
+    /// Before using this you need to understand how lifetime of subscriptions and observables
+    /// work.
+    /// 
+    /// This diagram shows types of references that exist between various objects in observables.
+    /// 
+    /// <code><![CDATA[
+    ///       +--------------+
+    ///       | Subscription |
+    ///       +--------------+
+    ///         /|\       |
+    ///          |        |
+    ///          |        |
+    ///          |       \|/
+    ///    +------------------+        +-------------+        +------------------------------+
+    ///    |    Observable    |------->| Action Code |------->| Object to perform effects on | 
+    ///    +------------------+        +-------------+        +------------------------------+
+    /// ]]></code>
+    /// 
+    /// Observables are divided into two major groups: sources and transformations.
+    /// 
+    /// ### Sources
+    /// 
+    /// Sources are things, where events originate (for example <see cref="Subject{A}"/>). They
+    /// are usually referenced with a hard reference in some other object and emit events when
+    /// things happen in Unity, for example:
+    /// 
+    /// <code><![CDATA[
+    /// public class OnUpdateForwarder : MonoBehaviour, IMB_Update {
+    ///   readonly Subject<Unit> _onUpdate = new Subject<Unit>();
+    ///   public IObservable<Unit> onUpdate => _onUpdate;
+    /// 
+    ///   public void Update() => _onUpdate.push(F.unit);
+    /// }
+    /// ]]></code>
+    /// 
+    /// They are garbage collected when the underlying MonoBehaviour is collected.
+    /// 
+    /// ### Transformations
+    /// 
+    /// Transformations are observables that emit events based on one or more source observables.
+    /// 
+    /// For example <see cref="ObservableOps.zip{A1,A2,R}(com.tinylabproductions.TLPLib.Reactive.IObservable{A1},com.tinylabproductions.TLPLib.Reactive.IObservable{A2},System.Fn{A1,A2,R})"/>
+    /// takes two observables and produces an observable that emits tupled values.
+    /// 
+    /// Transformations have a nice property, that if nobody is listening to them, they do not have to listen
+    /// to their source as well.
+    /// 
+    /// This allows them to only run the transformation code in case they have listeners subscribed.
+    /// 
+    /// However this also implies that they hold a hard reference to their source, because they need to be
+    /// able to subscribe or unsubscribe to their source at any time.
+    /// 
+    /// Lets look into how memory layout looks for them.
+    /// 
+    /// These observables are often not explicitly referenced, for example:
+    /// 
+    /// <code><![CDATA[
+    /// this.someEventSource =
+    ///   observableA.zip(observableB)
+    ///   .map(t => Mathf.max(t._1, t._2))
+    ///   .filter(_ => _ > 10);
+    /// ]]></code>
+    /// 
+    /// Here zip and map are not explicitly referenced, however each operation creates an intermediate
+    /// observable. The memory layout looks like this.
+    /// 
+    /// <code><![CDATA[
+    ///                   source hard ref
+    ///                 /-----------------
+    ///                |/                 \
+    ///   +-------------+              +----------------+ source   +----------------+
+    ///   | observableA |              | zip observable |<---------| map observable |
+    ///   +-------------+              +----------------+ hard ref +----------------+
+    ///                                   /                                /|\
+    ///                 /-----------------                           source | hard ref
+    ///                |/ source hard ref                                   |
+    ///   +-------------+                                          +-------------------+
+    ///   | observableB |                                          | filter observable | 
+    ///   +-------------+                                          +-------------------+
+    ///                                                                    /|\
+    ///                                                            hard ref | this.someEventSource
+    ///                                                                     |
+    ///                                                                 +-------+
+    ///                                                                 | this  |
+    /// ]]></code>                                                      +-------+
+    /// 
+    /// As you can see, all the references point backwards and the only thing that is keeping the whole
+    /// thing from being garbage collected is a hard reference from this. If this were to be collected, so would
+    /// be the whole observable chain.
+    /// 
+    /// On the other hand if observableA and observableB are sources and no one has references to them, new
+    /// events can not be emmited and the whole thing is kept in memory for no reason.
+    /// 
+    /// Unfortunately this is a design limitation.
+    /// 
+    /// You can either:
+    /// 1. have references pointing backwards. You do not perform calculations when no one is listening, however
+    ///    you cannot garbage collect when no one can emit an event (references to sources are lost).
+    /// 2. have references pointing forwards. You do perform calculations even if no one is listening, however
+    ///    you can garbage collect if all references to sources are lost.
+    /// 
+    /// We feel that option 1 is more likely in day to day code. 
+    /// 
+    /// If you subscribe to this.someEventSource, it subscribes to map observable, which subscribes
+    /// to zip, which then in turn subscribes to observableA and observableB, which are source, not transformation
+    /// observables.
+    /// 
+    /// The memory layout then looks like this (action objects between observables ommited for brevity). 
+    /// 
+    /// <code><![CDATA[
+    ///                   source hard ref              act hard ref
+    ///                 /-----------------            -----------------\ 
+    ///                |/                 \          /                 \|
+    ///   +-------------+ act hard ref +----------------+ source   +----------------+
+    ///   | observableA |------------->| zip observable |<---------| map observable |-------\
+    ///   +-------------+              +----------------+ hard ref +----------------+       | act
+    ///                                   /  /|\                           /|\              | hard
+    ///                 /-----------------    |                      source | hard ref      | ref
+    ///                |/ source hard ref     |                             |               |
+    ///   +-------------+                     |    act hard ref    +-------------------+    |
+    ///   | observableB |--------------------/   /-----------------| filter observable |<---/ 
+    ///   +-------------+  act hard ref          |           _____ +-------------------+
+    ///                                          |          |     /|\      /|\ 
+    ///                                          |          |      |        |  hard ref
+    ///                                         \|/         |      |        |  this.someEventSource
+    ///                               +--------------+      |      |    +-------+
+    ///                               | Subscription |      |      |    | this  |
+    ///                               | action code  |      |      |    +-------+
+    ///                               +--------------+     \|/     |
+    ///                                                 +--------------+
+    ///                                                 | Subscription |
+    ///                                                 +--------------+
+    /// ]]></code>
+    /// 
+    /// ### Closing points
+    /// 
+    /// When using observables we need to ensure we do not leak memory.
+    /// 
+    /// The easiest way to do that is to force a user to give an <see cref="IDisposableTracker"/> that is
+    /// responsible for cleaning up the subscription when the object on which the subscription action works
+    /// is destroyed. 
+    ///  
+    /// For caller information please refer to
+    /// https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/caller-information
+    /// </summary>
+    ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    );
   }
 
   public static class Observable {
-    public static IObservable<A> a<A>(SubscribeFn<A> subscribeFn) => 
-      new Observable<A>(subscribeFn);
-
     public static IObservableQueue<A, C> createQueue<A, C>(
       Act<A> addLast, Action removeFirst,
       Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last
@@ -73,9 +221,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       addLast, removeFirst, count, collection, first, last
     );
 
-    public static Tpl<A, IObservable<Evt>> a<A, Evt>
-    (Fn<IObserver<Evt>, Tpl<A, ISubscription>> creator) {
-      IObserver<Evt> observer = null;
+    public static Tpl<A, IObservable<Evt>> a<A, Evt>(
+      Fn<Act<Evt>, Tpl<A, ISubscription>> creator
+    ) {
+      Act<Evt> observer = null;
       ISubscription subscription = null;
       var observable = new Observable<Evt>(obs => {
         observer = obs;
@@ -93,7 +242,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       Act<Act<A>> registerCallback, Action unregisterCallback
     ) {
       return new Observable<A>(obs => {
-        registerCallback(obs.push);
+        registerCallback(obs);
         return new Subscription(unregisterCallback);
       });
     }
@@ -183,108 +332,106 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    static IEnumerator everyFrameCR(IObserver<Unit> observer) {
+    static IEnumerator everyFrameCR(Act<Unit> onEvent) {
       while (true) {
-        observer.push(Unit.instance);
+        onEvent(Unit.instance);
         yield return null;
       }
       // ReSharper disable once IteratorNeverReturns
     }
 
     static IEnumerator intervalEnum(
-      IObserver<DateTime> observer, Duration interval, Option<Duration> delay
+      Act<DateTime> pushEvent, Duration interval, Option<Duration> delay
     ) {
       foreach (var d in delay) yield return new WaitForSeconds(d.seconds);
       var wait = new WaitForSeconds(interval.seconds);
       while (true) {
-        observer.push(DateTime.Now);
+        pushEvent(DateTime.Now);
         yield return wait;
       }
       // ReSharper disable once IteratorNeverReturns
     }
   }
 
-  public delegate ISubscription SubscribeFn<out Elem>(IObserver<Elem> observer);
-
   public delegate ObservableImplementation ObserverBuilder<
-    in Elem, out ObservableImplementation
-  >(SubscribeFn<Elem> subscriptionFn);
+    Elem, out ObservableImplementation
+  >(Observable<Elem>.SubscribeToSource subscriptionFn);
 
-  public class ObservableFinishedException : Exception {
-    public ObservableFinishedException(string message) : base(message) {}
-  }
-
-  public class Observable<A> : IObservable<A> {
+  public partial class Observable<A> : IObservable<A> {
+    public delegate ISubscription SubscribeToSource(Act<A> onEvent);
+    
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
-      readonly IObserver<A> observer;
-      readonly SubscribeFn<A> subscribeFn;
-      public readonly bool beAlwaysSubscribed;
+      readonly Act<A> onEvent;
+      readonly SubscribeToSource subscribeFn;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        IObserver<A> observer, SubscribeFn<A> subscribeFn, 
-        bool beAlwaysSubscribed
+        Act<A> onEvent, SubscribeToSource subscribeFn
       ) {
-        this.observer = observer;
+        this.onEvent = onEvent;
         this.subscribeFn = subscribeFn;
-        this.beAlwaysSubscribed = beAlwaysSubscribed;
       }
 
-      public bool trySubscribe() => 
-        subscription.fold(
-          () => {
-            subscription = F.some(subscribeFn(observer));
-            return true;
-          },
-          _ => false
-        );
+      public bool trySubscribe() {
+        if (subscription.isNone) {
+          subscription = F.some(subscribeFn(onEvent));
+          return true;
+        }
+        return false;
+      }
 
-      public bool tryUnsubscribe() => 
-        subscription.fold(
-          () => false, 
-          s => {
-            subscription = F.none<ISubscription>();
-            return s.unsubscribe();
-          }
-        );
+      public bool tryUnsubscribe() {
+        foreach (var sub in subscription) {
+          subscription = Option<ISubscription>.None;
+          return sub.unsubscribe();
+        }
+        return false;
+      }
     }
 
-    struct Sub {
-      public readonly Subscription subscription;
-      public readonly IObserver<A> observer;
+    [Record]
+    partial struct Sub {
+      public readonly Act<A> onEvent;
+      // When subscriptions happen whilst we are processing other event, they are
+      // initially inactive.
       public readonly bool active;
+      
+      readonly bool haveUnsubscribed;
+      readonly WeakReference<Subscription> subscription;
+      readonly string callerMemberName, callerFilePath;
+      readonly int callerLineNumber;
 
-      public Sub(Subscription subscription, IObserver<A> observer, bool active) {
-        this.subscription = subscription;
-        this.observer = observer;
-        this.active = active;
-      }
+      public bool isSubscribed { get {
+        if (haveUnsubscribed) return false;
+        foreach (var sub in subscription.Target) return sub.isSubscribed;
+        Log.d.error(
+          $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
+          $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}."
+        );
+        return false;
+      } }
 
-      public override string ToString() => 
-        $"{nameof(Sub)}[" +
-        $"{nameof(subscription)}: {subscription}, " +
-        $"{nameof(observer)}: {observer}, " +
-        $"{nameof(active)}: {active}" +
-        $"]";
-
-      public Sub withActive(bool active) =>
-        new Sub(subscription, observer, active);
+      public Sub withActive(bool active) => new Sub(
+        onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription, 
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+      );
+      
+      public Sub unsubscribe() => new Sub(
+        onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription, 
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+      );
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
     SList4<A> pendingSubmits = new SList4<A>();
 
     // Are we currently iterating through subscriptions?
-    protected bool iterating { get; private set; }
-    // We were iterating when #finish was called, so we have to finish when we clean up.
-    bool willFinish;
-    // Is this observable finished and will not take any more submits.
-    public bool finished { get; private set; }
+    bool iterating;
     // How many subscription activations do we have pending?
     int pendingSubscriptionActivations;
     // How many subscription removals we have pending?
@@ -292,36 +439,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     readonly Option<SourceProperties> sourceProps;
 
-    bool doLogging;
-
     protected Observable() {
       sourceProps = F.none<SourceProperties>();
     }
 
-    public Observable(
-      SubscribeFn<A> subscribeFn,
-      bool beAlwaysSubscribed = false
-    ) {
-      var sourceProps = new SourceProperties(
-        new Observer<A>(submit, finishObservable), subscribeFn,
-        beAlwaysSubscribed
-      );
-      if (sourceProps.beAlwaysSubscribed) subscribeToSource(sourceProps);
-      this.sourceProps = F.some(sourceProps);
+    public Observable(SubscribeToSource subscribeFn) {
+      sourceProps = new SourceProperties(submit, subscribeFn).some();
     }
 
-    protected virtual void submit(A value) {
-      if (doLogging) {
-        if (Log.d.isVerbose()) Log.d.verbose($"[{nameof(Observable<A>)}] submit: {value}");
-      }
-
-      if (finished) throw new ObservableFinishedException(
-        $"Observable {this} is finished, but #submit called with {value}"
-      );
-
+    protected void submit(A a) {
       if (iterating) {
         // Do not submit if iterating.
-        pendingSubmits.add(value);
+        pendingSubmits.add(a);
         return;
       }
 
@@ -331,7 +460,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (sub.active && sub.subscription.isSubscribed) sub.observer.push(value);
+          if (sub.active && sub.isSubscribed) {
+            sub.onEvent(a);
+          }
         }
       }
       finally {
@@ -341,68 +472,49 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
       }
     }
-
-    protected void finishObservable() {
-      if (iterating) {
-        willFinish = true;
-        return;
-      }
-
-      finished = true;
-      iterating = true;
-      for (var idx = 0; idx < subscriptions.Count; idx++) {
-        var sub = subscriptions[idx];
-        sub.observer.finish();
-        sub.subscription.unsubscribe();
-      }
-      iterating = false;
-      afterIteration();
-      subscriptions.Clear();
-    }
-
+    
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
-    public ISubscription subscribe(Act<A> onChange) => subscribe(onChange, () => {});
-
-    public ISubscription subscribe(Act<A> onChange, Action onFinish) => 
-      subscribe(new Observer<A>(onChange, onFinish));
-
-    public virtual ISubscription subscribe(IObserver<A> observer) {
-      if (doLogging && Log.d.isVerbose())
-        Log.d.verbose($"[{nameof(Observable<A>)}] subscribe: {observer}");
-      if (finished) return Subscription.empty;
-
-      var subscription = new Subscription(onUnsubscribed);
+    public virtual ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "", 
+      [CallerFilePath] string callerFilePath = "", 
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      // Hard ref from subscription to this
+      var subscription = new Subscription(() => onUnsubscribed(onEvent));
+      tracker.track(
+        subscription, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+      
       var active = !iterating;
-      subscriptions.Add(new Sub(subscription, observer, active));
+      subscriptions.Add(new Sub(
+        onEvent: onEvent, active: active, haveUnsubscribed: false, 
+        subscription: WeakReference.a(subscription),
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, 
+        callerLineNumber: callerLineNumber
+      ));
       if (!active) pendingSubscriptionActivations++;
       
       // Subscribe to source if we have a first subscriber.
-      foreach (var source in sourceProps) subscribeToSource(source);
+      foreach (var source in sourceProps)
+        source.trySubscribe();
       return subscription;
-    }
-
-    public ISubscription subscribe(Act<A, ISubscription> onChange) {
-      ISubscription subscription = null;
-      // ReSharper disable once AccessToModifiedClosure
-      subscription = subscribe(a => onChange(a, subscription));
-      return subscription;
-    }
-
-    public IObservable<A> asObservable => this;
-
-    public IObservable<A> setLogging(bool value) {
-      doLogging = value;
-      return this;
     }
 
     #region private methods
 
-    void subscribeToSource(SourceProperties source) {
-      if (source.trySubscribe()) log("subscribed to source");
-    }
-
-    void onUnsubscribed() {
+    void onUnsubscribed(Act<A> onEvent) {
+      for (var idx = 0; idx < subscriptions.Count; idx++) {
+        var sub = subscriptions[idx];
+        if (sub.onEvent == onEvent) {
+          subscriptions[idx] = sub.unsubscribe();
+          break;
+        }
+      }
       pendingRemovals++;
       if (iterating) return;
       afterIteration();
@@ -410,14 +522,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // Unsubscribe from source if we don't have any subscribers that are
       // subscribed to us.
       foreach (var source in sourceProps) {
-        if (subscribers == 0 && !source.beAlwaysSubscribed) {
-          if (source.tryUnsubscribe()) log("unsubscribed from source");
-        }
+        if (subscribers == 0)
+          source.tryUnsubscribe();
       }
-    }
-
-    void log(string s) {
-      if (doLogging && Log.d.isVerbose()) Log.d.verbose($"[{nameof(Observable<A>)}] {s}");
     }
 
     void afterIteration() {
@@ -429,15 +536,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         pendingSubscriptionActivations = 0;
       }
       if (pendingRemovals != 0) {
-        subscriptions.RemoveWhere(sub => !sub.subscription.isSubscribed);
+        subscriptions.RemoveWhere(sub => !sub.isSubscribed);
         pendingRemovals = 0;
-      }
-      if (willFinish) {
-        willFinish = false;
-        finishObservable();
       }
     }
 
     #endregion
+    
   }
 }
