@@ -1,5 +1,9 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class RectUtils {
@@ -64,5 +68,19 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       var worldPos = from.isSome ? from.__unsafeGetValue.TransformPoint(localPos) : localPos;
       return to.InverseTransformPoint(worldPos);
     }
+
+    public static Rect encapsulate(this Rect rect, Rect other) => Rect.MinMaxRect(
+      Mathf.Min(rect.xMin, other.xMin),
+      Mathf.Min(rect.yMin, other.yMin),
+      Mathf.Max(rect.xMax, other.xMax),
+      Mathf.Max(rect.yMax, other.yMax)
+    );
+
+    public static Rect fromCenter(Vector2 center, Vector2 size) => 
+      new Rect(new Vector2(center.x -  size.x / 2, center.y -  size.y / 2), size);
+
+    public static float aspectRatio(this Rect rect) => rect.width / rect.height;
+    public static Vector2 topLeft(this Rect rect) => new Vector2(rect.min.x, rect.max.y);
+    public static Vector2 bottomRight(this Rect rect) => new Vector2(rect.max.x, rect.min.y);
   }
 }
