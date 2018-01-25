@@ -505,7 +505,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
                 yield return createError.emptyCollection(fieldHierarchy.asString());
               }
-              var fieldValidationResults = validateFields(
+              var fieldValidationResults = validateListElementsFields(
                 containingComponent, list, fi, hasNotNull, 
                 fieldHierarchy, createError, customObjectValidatorOpt
               );
@@ -542,7 +542,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static readonly Type unityObjectType = typeof(Object);
 
-    static IEnumerable<Error> validateFields(
+    static IEnumerable<Error> validateListElementsFields(
       Object containingComponent, IList list, FieldInfo listFieldInfo, 
       bool hasNotNull, FieldHierarchy fieldHierarchy,
       IErrorFactory createError,
