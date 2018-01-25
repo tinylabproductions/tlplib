@@ -55,11 +55,6 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       Encoding.UTF8.GetString(
         new FileCachedBlob(randomFileWithContent("foobar")).read().get.getOrThrow
       ).shouldEqual("foobar");
-
-    [Test, Ignore]
-    public void WhenFileExistsAndCanNotBeRead() { 
-      new FileCachedBlob(randomUnreadableFile()).read().get.shouldBeError();
-    }
   }
 
   public class FileCachedBlobTestStore : FileCachedBlobTest {
@@ -78,11 +73,6 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
         .store(encoding.GetBytes("unreal")).shouldBeSuccess(F.unit);
       File.ReadAllText(path, encoding).shouldEqual("unreal");
     }
-
-    [Test, Ignore]
-    public void WhenWriteFails() => 
-      new FileCachedBlob(randomUnreadableFile())
-        .store(encoding.GetBytes("unreal")).shouldBeError();
   }
 
   public class FileCachedBlobTestClear : FileCachedBlobTest {
@@ -95,13 +85,6 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       var path = randomFileWithContent("foo");
       new FileCachedBlob(path).clear().shouldBeSuccess(F.unit);
       File.Exists(path).shouldBeFalse();
-    }
-
-    [Test, Ignore]
-    public void WhenFileExistsUnsuccessful() {
-      var path = randomUnreadableFile();
-      new FileCachedBlob(path).clear().shouldBeError();
-      File.Exists(path).shouldBeTrue();
     }
   }
 }

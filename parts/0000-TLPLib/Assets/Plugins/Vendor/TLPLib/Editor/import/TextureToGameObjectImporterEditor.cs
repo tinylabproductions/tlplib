@@ -67,7 +67,8 @@ namespace com.tinylabproductions.TLPLib.import {
                 // ReSharper disable once AccessToDisposedClosure
                 progress.progress(idx, pixels.Length);
                 var pixel = pixels[idx].with32Alpha(maxAlpha);
-                if (dict.TryGetValue(pixel, out var go)) {
+                GameObject go;
+                if (dict.TryGetValue(pixel, out go)) {
                   var position = obj.startPoint + new Vector3(x * obj.spacing.x, y * obj.spacing.y);
                   var instantiated = ((GameObject) PrefabUtility.InstantiatePrefab(go)).transform;
                   instantiated.parent = parent;

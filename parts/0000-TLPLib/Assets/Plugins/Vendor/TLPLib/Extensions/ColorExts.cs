@@ -29,8 +29,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Color withAlpha(this Color color, float alpha) => color.with(a: alpha);
 
     public static Color32 with32(
-      this Color32 color, Option<byte> r = default, Option<byte> g = default, Option<byte> b = default, 
-      Option<byte> a = default
+      this Color32 color, Option<byte> r = default(Option<byte>), 
+      Option<byte> g = default(Option<byte>), Option<byte> b = default(Option<byte>), 
+      Option<byte> a = default(Option<byte>)
     ) {
       Option.ensureValue(ref r);
       Option.ensureValue(ref g);

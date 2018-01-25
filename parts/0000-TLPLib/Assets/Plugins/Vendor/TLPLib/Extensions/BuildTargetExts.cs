@@ -7,7 +7,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
   public static class BuildTargetExts {
     public static RuntimePlatform toRuntimePlatform(this BuildTarget t) {
       switch (t) {
-        case BuildTarget.StandaloneOSXUniversal:
         case BuildTarget.StandaloneOSXIntel:
         case BuildTarget.StandaloneOSXIntel64:
           return RuntimePlatform.OSXPlayer;
@@ -57,7 +56,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
 
     public static BuildTargetGroup toGroup(this BuildTarget t) {
       switch (t) {
-        case BuildTarget.StandaloneOSXUniversal: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneOSXIntel: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows: return BuildTargetGroup.Standalone;
         case BuildTarget.iOS: return BuildTargetGroup.iOS;

@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Components {
    */
   public class RegionClickObservable {
     readonly Subject<int> _regionIndex = new Subject<int>();
-    public IObservable<int> regionIndex => _regionIndex;
+    public Reactive.IObservable<int> regionIndex => _regionIndex;
 
     readonly int gridWidth, gridHeight;
 
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     }
 
     /* Emits event when a particular region index sequence is executed within X seconds */
-    public IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float timeS) {
+    public Reactive.IObservable<Unit> sequenceWithinTimeframe(IList<int> sequence, float timeS) {
       // Specific implementation to reduce garbage.
       var s = new Subject<Unit>();
       var regions = new Queue<SeqEntry>(sequence.Count);

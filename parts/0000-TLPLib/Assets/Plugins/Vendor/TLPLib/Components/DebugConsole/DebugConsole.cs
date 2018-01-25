@@ -102,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public static IObservable<Unit> registerDebugSequence(
+    public static Reactive.IObservable<Unit> registerDebugSequence(
       DebugSequenceMouseData mouseData=null, 
       Option<DebugSequenceDirectionData> directionDataOpt=default(Option<DebugSequenceDirectionData>),
       DebugConsoleBinding binding=null

@@ -40,13 +40,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Coroutine everyFrame(this GameObject go, Action a) => 
       go.everyFrame(() => { a(); return true; });
 
-    public static IObservable<Unit> onMouseDown(this GameObject go) =>
+    public static Reactive.IObservable<Unit> onMouseDown(this GameObject go) =>
       go.onEvent<Unit, OnMouseDownForwarder>();
 
-    public static IObservable<Unit> onMouseUp(this GameObject go) =>
+    public static Reactive.IObservable<Unit> onMouseUp(this GameObject go) =>
       go.onEvent<Unit, OnMouseUpForwarder>();
 
-    public static IObservable<A> onEvent<A, Forwarder>(this GameObject go) where Forwarder : EventForwarder<A> =>
+    public static Reactive.IObservable<A> onEvent<A, Forwarder>(this GameObject go) where Forwarder : EventForwarder<A> =>
       go.EnsureComponent<Forwarder>().onEvent;
 
     public static A EnsureComponent<A>(this GameObject go) where A : Component => 

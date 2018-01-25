@@ -53,8 +53,6 @@ namespace Smooth.Platform {
 #if !UNITY_5_4_OR_NEWER
 			case RuntimePlatform.OSXWebPlayer:
 #endif
-			case RuntimePlatform.OSXDashboardPlayer:
-				return BasePlatform.Osx;
 			case RuntimePlatform.LinuxPlayer:
 				return BasePlatform.Linux;
 #if UNITY_3_5

@@ -18,8 +18,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
    **/
   public class CarouselEmitter<A> : IEnumerable<A> {
     protected readonly Tpl<A, int>[] itemsWithCounts;
+
     // Total number of counts. E.g. from [("a", 3), ("b", 1)] this would be 4.
     public readonly int totalCount;
+
     // Max number of counts. E.g. from [("a", 3), ("b", 1)] this would be 3.
     public readonly int maxCount;
 
@@ -36,6 +38,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
         totalCnt += cnt;
         maxCnt = Math.Max(maxCnt, cnt);
       }
+
       totalCount = totalCnt;
       maxCount = maxCnt;
     }

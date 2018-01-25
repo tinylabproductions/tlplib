@@ -6,7 +6,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ObservableExts {
     public static ISubscription subscribeWhileAlive<A>(
-      this IObservable<A> obs, GameObject obj, Act<A, ISubscription> onChange
+      this Reactive.IObservable<A> obs, GameObject obj, Act<A, ISubscription> onChange
     ) {
       var onDestroySub = Subscription.empty;
       var subscription = obs.subscribe((val, sub) => {
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     //) => obs.subscribeWhileAlive(behaviour.gameObject, onChange);
 
     public static ISubscription subscribeWhileAlive<A>(
-      this IObservable<A> obs, GameObject obj, Act<A> onChange
+      this Reactive.IObservable<A> obs, GameObject obj, Act<A> onChange
     ) => subscribeWhileAlive(obs, obj, (val, _) => onChange(val));
   }
 }

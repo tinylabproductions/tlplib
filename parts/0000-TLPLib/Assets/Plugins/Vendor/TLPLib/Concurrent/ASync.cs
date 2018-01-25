@@ -245,11 +245,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       while (f()) yield return wait;
     }
 
-    public static IObservable<bool> onAppPause => behaviour.onPause;
+    public static Reactive.IObservable<bool> onAppPause => behaviour.onPause;
 
-    public static IObservable<Unit> onAppQuit => behaviour.onQuit;
+    public static Reactive.IObservable<Unit> onAppQuit => behaviour.onQuit;
 
-    public static IObservable<Unit> onLateUpdate { get; } = behaviour.onLateUpdate;
+    public static Reactive.IObservable<Unit> onLateUpdate { get; } = behaviour.onLateUpdate;
 
     /**
      * Takes a function that transforms an element into a future and

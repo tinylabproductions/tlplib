@@ -9,7 +9,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.OSXEditor, RuntimePlatform.OSXPlayer,
         RuntimePlatform.LinuxPlayer,
         RuntimePlatform.Android, RuntimePlatform.IPhonePlayer, 
-        RuntimePlatform.OSXDashboardPlayer,
         RuntimePlatform.Android,
         RuntimePlatform.LinuxPlayer,
         RuntimePlatform.WebGLPlayer,

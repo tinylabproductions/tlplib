@@ -7,7 +7,7 @@ using com.tinylabproductions.TLPLib.Reactive;
 namespace com.tinylabproductions.TLPLib.binding {
   public static class Unity {
     public static ISubscription bind<A>(
-      this IObservable<A> observable, Fn<A, Coroutine> f
+      this Reactive.IObservable<A> observable, Fn<A, Coroutine> f
     ) {
       var lastCoroutine = F.none<Coroutine>();
       Action stopOpt = () => { foreach (var c in lastCoroutine) { c.stop(); } };

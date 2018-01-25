@@ -121,7 +121,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldEqual<A>(this HashSet<A> a, HashSet<A> expected, string message=null) {
-      Assert.That(a, new SetEquals<A>(expected), message);
+      Assert.AreEqual(expected, a, message);
     }
 
     public static void shouldEqualEnum<A>(
@@ -266,23 +266,8 @@ namespace com.tinylabproductions.TLPLib.Test {
       act.shouldChange(measure).by(0);
 
     public static StreamMatcher<A> shouldPushTo<A>(
-      this Action act, IObservable<A> obs
+      this Action act, Reactive.IObservable<A> obs
     ) => new StreamMatcher<A>(act, obs);
-  }
-
-  public class SetEquals<A> : Constraint {
-    public readonly HashSet<A> expected;
-
-    public SetEquals(HashSet<A> expected) { this.expected = expected; }
-
-    public override bool Matches(object actualO) {
-      return F.opt(actualO as HashSet<A>).fold(false, expected.SetEquals);
-    }
-
-    public override void WriteDescriptionTo(MessageWriter writer) {
-      writer.WriteExpectedValue(expected);
-      writer.WriteActualValue(actual);
-    }
   }
 
   public class ChangeMatcher<A> {
@@ -324,9 +309,9 @@ namespace com.tinylabproductions.TLPLib.Test {
   /// <typeparam name="A"></typeparam>
   public class StreamMatcher<A> {
     readonly Action act;
-    readonly IObservable<A> obs;
+    readonly Reactive.IObservable<A> obs;
 
-    public StreamMatcher(Action act, IObservable<A> obs) {
+    public StreamMatcher(Action act, Reactive.IObservable<A> obs) {
       this.act = act;
       this.obs = obs;
     }

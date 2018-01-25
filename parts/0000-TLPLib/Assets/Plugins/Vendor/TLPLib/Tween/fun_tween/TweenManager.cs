@@ -46,8 +46,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ISubject<TweenCallback.Event> onStart_ => __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
     ISubject<TweenCallback.Event> onEnd_ => __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
 
-    public IObservable<TweenCallback.Event> onStart => onStart_;
-    public IObservable<TweenCallback.Event> onEnd => onEnd_;
+    public Reactive.IObservable<TweenCallback.Event> onStart => onStart_;
+    public Reactive.IObservable<TweenCallback.Event> onEnd => onEnd_;
 
     public float timescale = 1;
     public bool forwards = true;

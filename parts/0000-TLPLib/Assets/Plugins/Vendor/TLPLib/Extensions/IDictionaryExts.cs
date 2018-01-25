@@ -15,11 +15,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return opt;
     }
 
-    public static Option<V> get<K, V>(this IReadOnlyDictionary<K, V> dict, K key) {
-      V outVal;
-      return dict.TryGetValue(key, out outVal) ? F.some(outVal) : F.none<V>();
-    }
-
     public static Either<string, V> getE<K, V>(this IDictionary<K, V> dict, K key) =>
       dict.get(key).toRight($"Can't find '{key}'!");
 

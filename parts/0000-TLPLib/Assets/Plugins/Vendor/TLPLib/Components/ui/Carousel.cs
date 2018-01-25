@@ -82,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     int targetPageValue;
     public bool isMoving { get; private set; }
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
-    public IObservable<Unit> movementComplete => _movementComplete;
+    public Reactive.IObservable<Unit> movementComplete => _movementComplete;
 
     public void nextPage() => setPageAnimated(targetPageValue + 1);
     public void prevPage() => setPageAnimated(targetPageValue - 1);

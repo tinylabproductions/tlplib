@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     RectTransform rt;
 
     readonly Subject<SwipeDirection> swipeAction = new Subject<SwipeDirection>();
-    public IObservable<SwipeDirection> swipe => swipeAction;
+    public Reactive.IObservable<SwipeDirection> swipe => swipeAction;
 
     public void Awake() {
       _eventOnThresholdSqr = eventOnThreshold.value.map(_ => _ * _);

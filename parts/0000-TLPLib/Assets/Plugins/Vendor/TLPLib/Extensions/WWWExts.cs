@@ -74,6 +74,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this.headers = headers;
     }
 
-    public Option<string> this[string key] => headers.get(key);
+    public Option<string> this[string key] {
+      get {
+        string x;
+        if (headers.TryGetValue(key, out x)) return x.some();
+        return Option<string>.None;
+      }
+    }
   }
 }
