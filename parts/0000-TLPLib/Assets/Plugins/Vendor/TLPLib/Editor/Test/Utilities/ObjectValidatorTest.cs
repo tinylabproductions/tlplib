@@ -368,7 +368,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region UnityEvent
 
-    void testPrefab(string prefabName, ErrorType errorType) {
+    static void testPrefab(string prefabName, ErrorType errorType) {
       var go = getPrefab(prefabName);
       var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] { go });
       errors.shouldHave(errorType);
@@ -385,6 +385,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     [Test] public void WhenUnityEventInvalidNestedInArray() =>
       testPrefab("TestUnityEventInvalidNestedInArray.asset", ErrorType.UnityEventInvalid);
+    
+    [Test] public void WhenUnityEventGenericInvalid() =>
+      testPrefab("TestUnityEventGeneric.asset", ErrorType.UnityEventInvalid);
+    
+    [Test] public void WhenUnityEventGenericInAssetInvalid() =>
+      testPrefab("TestUnityEventGenericInArray.asset", ErrorType.UnityEventInvalid);
 
     #endregion
 

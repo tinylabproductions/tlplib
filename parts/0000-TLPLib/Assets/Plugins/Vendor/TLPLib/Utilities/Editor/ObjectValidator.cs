@@ -31,8 +31,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Error nullField(FieldHierarchyStr hierarchy);
       Error emptyCollection(FieldHierarchyStr hierarchy);
       Error badTextFieldTag(FieldHierarchyStr hierarchy);
-      Error unityEventInvalid(string property, int index);
-      Error unityEventInvalidMethod(string property, int index);
+      Error unityEventInvalid(FieldHierarchyStr hierarchy, int index);
+      Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index);
       Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage);
     }
 
@@ -168,19 +168,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         $"in context '{context}'.";
 
       public static Error unityEventInvalidMethod(
-        Object o, string property, int index, CheckContext context
+        Object o, FieldHierarchyStr hierarchy, int index, CheckContext context
       ) => new Error(
         Type.UnityEventInvalidMethod,
-        $"{unityEventMessagePrefix(property, index)} has invalid method " +
+        $"{unityEventMessagePrefix(hierarchy.s, index)} has invalid method " +
           unityEventMessageSuffix(context),
         o
       );
 
       public static Error unityEventInvalid(
-        Object o, string property, int index, CheckContext context
+        Object o, FieldHierarchyStr hierarchy, int index, CheckContext context
       ) => new Error(
         Type.UnityEventInvalid,
-        $"{unityEventMessagePrefix(property, index)} is not valid " + 
+        $"{unityEventMessagePrefix(hierarchy.s, index)} is not valid " + 
           unityEventMessageSuffix(context),
         o
       );
@@ -371,7 +371,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fieldErrors = validateFields(
         containingComponent: component,
         objectBeingValidated: component,
-        fieldName: component.name,
         createError: new ErrorFactory(component, context), 
         customObjectValidatorOpt: customObjectValidatorOpt
       );
@@ -398,11 +397,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public Error badTextFieldTag(FieldHierarchyStr hierarchy) =>
         Error.badTextFieldTag(o: component, hierarchy: hierarchy, context: context);
       
-      public Error unityEventInvalid(string property, int index) =>
-        Error.unityEventInvalid(o: component, property: property, index: index, context: context);
+      public Error unityEventInvalid(FieldHierarchyStr hierarchy, int index) =>
+        Error.unityEventInvalid(o: component, hierarchy: hierarchy, index: index, context: context);
       
-      public Error unityEventInvalidMethod(string property, int index) =>
-        Error.unityEventInvalidMethod(o: component, property: property, index: index, context: context);
+      public Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index) =>
+        Error.unityEventInvalidMethod(o: component, hierarchy: hierarchy, index: index, context: context);
 
       public Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage) =>
         Error.customError(o: component, hierarchy: hierarchy, error: customErrorMessage, context: context);
@@ -422,7 +421,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     );
 
     static IEnumerable<Error> checkUnityEvent(
-      IErrorFactory errorFactory, UnityEventBase evt, string propertyName
+      IErrorFactory errorFactory, FieldHierarchyStr fieldHierarchy, UnityEventBase evt
     ) {
       UnityEventReflector.rebuildPersistentCallsIfNeeded(evt);
 
@@ -433,10 +432,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         foreach (var persistentCall in listPersistentCall) {
           if (persistentCall.isValid) {
             if (evt.__findMethod(persistentCall).isNone)
-              yield return errorFactory.unityEventInvalidMethod(propertyName, index);
+              yield return errorFactory.unityEventInvalidMethod(fieldHierarchy, index);
           }
           else
-            yield return errorFactory.unityEventInvalid(propertyName, index);
+            yield return errorFactory.unityEventInvalid(fieldHierarchy, index);
 
           index++;
         }
@@ -458,7 +457,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static IEnumerable<Error> validateFields(
       Object containingComponent, 
       object objectBeingValidated,
-      string fieldName,
       IErrorFactory createError, 
       Option<CustomObjectValidator> customObjectValidatorOpt,
       FieldHierarchy fieldHierarchy = null
@@ -472,7 +470,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
       
       foreach (var unityEvent in F.opt(objectBeingValidated as UnityEventBase)) {
-        var errors = checkUnityEvent(createError, unityEvent, fieldName);
+        var errors = checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent);
         foreach (var error in errors) yield return error;
       }
 
@@ -508,7 +506,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 yield return createError.emptyCollection(fieldHierarchy.asString());
               }
               var fieldValidationResults = validateFields(
-                containingComponent, fi.Name, list, fi, hasNotNull, 
+                containingComponent, list, fi, hasNotNull, 
                 fieldHierarchy, createError, customObjectValidatorOpt
               );
               foreach (var _err in fieldValidationResults) yield return _err;
@@ -521,7 +519,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 && fieldType.hasAttribute<SerializableAttribute>()
               ) {
                 var validationErrors = validateFields(
-                  containingComponent, fieldValue, fi.Name, createError,
+                  containingComponent, fieldValue, createError,
                   customObjectValidatorOpt, fieldHierarchy
                 );
                 foreach (var _err in validationErrors) yield return _err;
@@ -545,7 +543,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static readonly Type unityObjectType = typeof(Object);
 
     static IEnumerable<Error> validateFields(
-      Object containingComponent, string fieldName, IList list, FieldInfo listFieldInfo, 
+      Object containingComponent, IList list, FieldInfo listFieldInfo, 
       bool hasNotNull, FieldHierarchy fieldHierarchy,
       IErrorFactory createError,
       Option<CustomObjectValidator> customObjectValidatorOpt 
@@ -562,7 +560,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         foreach (var listItem in list) {
           fieldHierarchy.stack.Push($"[{index}]");
           var validationResults = validateFields(
-            containingComponent, listItem, fieldName, createError, 
+            containingComponent, listItem, createError, 
             customObjectValidatorOpt, fieldHierarchy
           );
           foreach (var _err in validationResults) yield return _err;
