@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Components.Swiping;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -19,6 +20,17 @@ namespace com.tinylabproductions.TLPLib.Data {
     public Point2D down => new Point2D(x, y-1);
     public Point2D left => new Point2D(x-1, y);
     public Point2D right => new Point2D(x+1, y);
+
+    public Point2D translate(SwipeDirection d) {
+      switch (d) {
+        case SwipeDirection.Left: return left;
+        case SwipeDirection.Right: return right;
+        case SwipeDirection.Up: return up;
+        case SwipeDirection.Down: return down;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(d), d, null);
+      }
+    }
 
     public Vector2 ToVector2() { return new Vector2(x, y); }
     public Vector3 ToVector3() { return new Vector3(x, y); }
