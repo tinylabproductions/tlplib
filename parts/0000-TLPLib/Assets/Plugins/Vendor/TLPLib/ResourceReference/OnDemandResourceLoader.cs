@@ -32,13 +32,6 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
         currentLoader
           .flatMap(opt => enableLoading.map(b => b ? opt : F.none<AssetLoader<A>>()))
           .flatMap(opt => {
-            requestNumber++;
-            if (requestNumber == 2) {
-              // BUG: workaround for flatMap bug
-              // TODO: remove this when bug fixed
-              // somehow it matters what this value is
-              return RxVal.cached(F.left<bool, A>(true));
-            }
             discardPreviousRequest();
             foreach (var binding in opt) {
               var tpl = binding.loadAssetAsync();
@@ -48,21 +41,22 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
             }
             return RxVal.cached(F.left<bool, A>(false));
           })
-          .subscribe(either => {
+          .subscribe(tracker, either => {
             var isLoading = either.fold(_ => _, _ => false);
             var assetOpt = either.rightValue;
             if (assetOpt.isSome) discardPreviousRequest();
             onAssetStateChanged(assetOpt, isLoading);
           })
       );
-      tracker.track(enableLoading.zip(highPriority, request).subscribe(tpl => {
-        var show = tpl._1;
-        var highPrior = tpl._2;
-        var request = tpl._3;
-        foreach (var r in request) {
-          r.priority = show ? (highPrior ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF;
+      enableLoading.zip(highPriority, request, 
+        (show, highPrior, req) => F.t(show ? (highPrior ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
+      ).subscribe(tracker, tpl => {
+        var priority = tpl._1;
+        var req = tpl._2;
+        foreach (var r in req) {
+          r.priority = priority;
         }
-      }));
+      });
     }
 
     void discardPreviousRequest() {
