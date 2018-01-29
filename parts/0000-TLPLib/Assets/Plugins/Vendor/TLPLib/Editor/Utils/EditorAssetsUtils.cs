@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   class EditorAssetsUtils {
-    [UsedImplicitly, MenuItem("TLP/Tools/Reserialize all assets")]
+    [UsedImplicitly, MenuItem("TLP/Tools/Reserialize/All assets")]
     static void reserializeAllAssets() {
       if (!EditorUtility.DisplayDialog("Slow operation", "Do you really want to reserialize all ASSETS?", "Yes", "No"))
         return;
@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       }
     }
     
-    [UsedImplicitly, MenuItem("TLP/Tools/Reserialize all scenes")]
+    [UsedImplicitly, MenuItem("TLP/Tools/Reserialize/All scenes")]
     static void reserializeAllScenes() {
       if (!EditorUtility.DisplayDialog("Slow operation", "Do you really want to reserialize all SCENES?", "Yes", "No"))
         return;
