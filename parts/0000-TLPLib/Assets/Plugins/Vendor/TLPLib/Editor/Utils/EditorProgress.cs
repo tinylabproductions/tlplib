@@ -25,6 +25,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
+    /// <param name="showAfter">Minimum time to wait before showing the UI. Default is Duration.zero.</param>
     public EditorProgress(string title, ILog log = null, Duration showAfter = default) {
       this.title = title;
       this.showAfter = showAfter;
