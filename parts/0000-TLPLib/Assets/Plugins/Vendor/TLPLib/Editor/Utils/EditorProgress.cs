@@ -15,6 +15,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     const string NONE = "none";
 
     public readonly string title;
+    public readonly Duration showAfter;
 
     readonly Stopwatch sw = new Stopwatch();
     readonly ILog log;
@@ -24,9 +25,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
-    public EditorProgress(string title, ILog log = null) {
+    public EditorProgress(string title, ILog log = null, Duration showAfter = default) {
       this.title = title;
+      this.showAfter = showAfter;
       this.log = (log ?? Log.@default).withScope($"{s(title)}:");
+      sw.Start();
     }
 
     public void execute(string name, Action a) => 
@@ -44,11 +47,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       sw.Start();
       current = name;
       if (log.isInfo()) log.info($"Running {s(name)}...");
-      EditorUtility.DisplayProgressBar(title, $"Running {s(name)}...", 0);
+      if (showAfter == Duration.zero)
+        EditorUtility.DisplayProgressBar(title, $"Running {s(name)}...", 0);
       lastProgressUIUpdate = lastProgressLogUpdate = DateTime.MinValue;
     }
 
     bool _progress(int idx, int total, bool cancellable) {
+      if (sw.ElapsedMilliseconds < showAfter.millis) return false;
       var now = DateTime.Now;
       var needsUpdate = idx == 0 || idx == total - 1;
       // Updating progress for every call is expensive, only show every X ms.
