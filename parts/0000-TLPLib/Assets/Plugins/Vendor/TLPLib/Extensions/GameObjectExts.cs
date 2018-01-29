@@ -63,6 +63,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         : res.__unsafeGetValue;
     }
 
+    public static string nameOrNull(this GameObject go) =>
+      go ? go.name : "none";
+
     // Modified from unity decompiled dll.
     // Added includeInactive parameter.
     public static T getComponentInChildren<T>(this GameObject go, bool includeInactive) where T : Component {

@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -19,25 +20,30 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         p.complete
       )));
 
-    public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
-      var rx = RxRef.a(F.none<A>());
-      future.onComplete(a => rx.value = F.some(a));
-      return rx;
-    }
-
     public static ISubscription onCompleteCancellable<A>(this Future<A> future, Act<A> action) {
       var sub = new Subscription(() => { });
       future.onComplete(val => { if (sub.isSubscribed) action(val); });
       return sub;
     }
 
-    public static IRxVal<A> toRxVal<A>(
-      this Future<IRxVal<A>> future, A whileNotCompleted
-    ) {
-      var rx = RxRef.a(whileNotCompleted);
-      future.onComplete(rx2 => rx2.subscribe(v => rx.value = v));
+    public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
+      var rx = RxRef.a(F.none<A>());
+      future.onComplete(a => rx.value = F.some(a));
       return rx;
     }
+
+    public static IRxVal<A> toRxVal<A>(
+      this Future<IRxVal<A>> future, A whileNotCompleted
+    ) => new RxVal<A>(
+      whileNotCompleted,
+      setValue => {
+        var sub = Subscription.empty;
+        future.onComplete(rx2 => {
+          sub = rx2.subscribe(NoOpDisposableTracker.instance, a => setValue(a));
+        });
+        return new Subscription(() => sub.unsubscribe());
+      }
+    );
 
     public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(Future<A>.unfulfilled, f => f);

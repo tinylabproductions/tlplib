@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -8,32 +9,10 @@ using com.tinylabproductions.TLPLib.Test;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class IObservableTestExts {
-    public static void testUnsubAndFinish<A>(
-      ISubscription sub, IObservable<A> obs, params ISubject[] subjects
+    public static void testUnsubAndFinish(
+      ISubscription sub, params ISubject[] subjects
     ) {
       sub.testUnsubscriptionC(subjects);
-      obs.testFinishing(subjects);
-    }
-
-    public static void testFinishing<A, B>(
-      this Subject<A> subj, Fn<Subject<A>, IObservable<B>> obsFn
-    ) => obsFn(subj).testFinishing(subj);
-
-    public static void testFinishing<A>(
-      this IObservable<A> obs, params IObserver[] subjects
-    ) {
-      var sub = obs.subscribe(_ => { });
-      sub.isSubscribed.shouldBeTrue("Subscription should be active before finish.");
-      obs.finished.shouldBeFalse("Observable should not be finished prior to source finish.");
-      for (var idx = 0; idx < subjects.Length - 1; idx++) {
-        subjects[idx].finish();
-        var cond = $"when {idx + 1}/{subjects.Length} sources  has finished";
-        sub.isSubscribed.shouldBeTrue($"Subscription should be active {cond}.");
-        obs.finished.shouldBeFalse($"Observable should not be finished {cond}.");
-      }
-      subjects.Last().finish();
-      obs.finished.shouldBeTrue("Observable should be finished after all sources finish.");
-      sub.isSubscribed.shouldBeFalse("Subscription should be cancelled after all sources finish.");
     }
 
     public static void testUnsubscription(
@@ -52,21 +31,27 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         obs.subscribers.shouldEqual(0, "aggregate should be unsubscribe from sources");
     }
 
-    public static Tpl<List<A>, ISubscription> pipeToList<A>(this IObservable<A> obs) {
+    public static Tpl<List<A>, ISubscription> pipeToList<A>(
+      this IObservable<A> obs, IDisposableTracker tracker
+    ) {
       var list = new List<A>();
-      var sub = obs.subscribe(list.Add);
+      var sub = obs.subscribe(tracker, list.Add);
       return F.t(list, sub);
     }
 
-    public static Tpl<Ref<uint>, ISubscription> countEvents<A>(this IObservable<A> obs) {
+    public static Tpl<Ref<uint>, ISubscription> countEvents<A>(
+      this IObservable<A> obs, IDisposableTracker tracker
+    ) {
       var r = Ref.a(0u);
-      var sub = obs.subscribe(_ => r.value++);
+      var sub = obs.subscribe(tracker, _ => r.value++);
       return F.t(r, sub);
     }
 
-    public static Tpl<Ref<Option<A>>, ISubscription> pipeToRef<A>(this IObservable<A> obs) {
+    public static Tpl<Ref<Option<A>>, ISubscription> pipeToRef<A>(
+      this IObservable<A> obs, IDisposableTracker tracker
+    ) {
       var reference = Ref.a(Option<A>.None);
-      var sub = obs.subscribe(a => reference.value = a.some());
+      var sub = obs.subscribe(tracker, a => reference.value = a.some());
       return F.t(reference, sub);
     }
 

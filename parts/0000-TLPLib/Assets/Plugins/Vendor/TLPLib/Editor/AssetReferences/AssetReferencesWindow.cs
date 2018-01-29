@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -35,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
   }
 
   // Ugly code ahead 🚧
-  public class AssetReferencesWindow : EditorWindow, IMB_OnGUI, IMB_Update, IMB_OnEnable {
+  public class AssetReferencesWindow : EditorWindow, IMB_OnGUI, IMB_Update, IMB_OnEnable, IMB_OnDisable {
     Vector2 scrollPos;
     // disables automatically on code refresh
     // code refresh happens on code change and when entering play mode
@@ -48,9 +49,12 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       window.Show();
     }
 
+    // ReSharper disable once NotAccessedField.Local
+    static ISubscription enabledSubscription;
+
     [InitializeOnLoadMethod, UsedImplicitly]
     static void initTasks() {
-      enabled.subscribe(b => {
+      enabledSubscription = enabled.subscribe(NoOpDisposableTracker.instance, b => {
         if (b) {
           refsOpt = Option<AssetReferences>.None;
           processFiles(AssetUpdate.fromAllAssets(AssetDatabase.GetAllAssetPaths().ToImmutableList()));
@@ -206,11 +210,15 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     [UsedImplicitly]
     void OnSelectionChange() => Repaint();
 
+    readonly IDisposableTracker tracker = new DisposableTracker();
+    
     public void OnEnable() {
       wantsMouseMove = true;
-      locked.subscribe(v => {
+      locked.subscribe(tracker, v => {
         if (v) lockedObj = Selection.activeObject;
       });
     }
+
+    public void OnDisable() => tracker.Dispose();
   }
 }
