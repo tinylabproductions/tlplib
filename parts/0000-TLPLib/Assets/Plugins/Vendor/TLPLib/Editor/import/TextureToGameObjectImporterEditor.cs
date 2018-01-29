@@ -33,15 +33,14 @@ namespace com.tinylabproductions.TLPLib.import {
         var dictV = obj.pallete
           .GroupBy(_ => _.color.with32Alpha(maxAlpha))
           .Select(group => {
-            var gameObjects = group.Select(_ => _.gameObject).ToArray();
+            var count = group.Count();
             return (
-              gameObjects.Length == 1
-              ? Either<string, KeyValuePair<Color32, GameObject>>.Right(F.kv(
-                group.Key, gameObjects[0]
+              count == 1
+              ? Either<string, KeyValuePair<Color32, GameObject[]>>.Right(F.kv(
+                group.Key, group.SelectMany(_ => _.gameObjects).ToArray()
               ))
-              : Either<string, KeyValuePair<Color32, GameObject>>.Left(
-                $"More than 1 game object found for #{group.Key.toHex()}: " +
-                $"{gameObjects.Select(_ => _.nameOrNull()).mkStringEnum()}"
+              : Either<string, KeyValuePair<Color32, GameObject[]>>.Left(
+                $"#{group.Key.toHex()} should have 1 entry: {count} entries found."
               )
             ).asValidation();
           })
@@ -67,8 +66,9 @@ namespace com.tinylabproductions.TLPLib.import {
                 // ReSharper disable once AccessToDisposedClosure
                 progress.progress(idx, pixels.Length);
                 var pixel = pixels[idx].with32Alpha(maxAlpha);
-                if (dict.TryGetValue(pixel, out var go)) {
+                if (dict.TryGetValue(pixel, out var gameObjects)) {
                   var position = obj.startPoint + new Vector3(x * obj.spacing.x, y * obj.spacing.y);
+                  var go = gameObjects.random().getOrThrow($"No objects for #{pixel.toHex()} found!");
                   var instantiated = ((GameObject) PrefabUtility.InstantiatePrefab(go)).transform;
                   instantiated.parent = parent;
                   instantiated.position = position;
