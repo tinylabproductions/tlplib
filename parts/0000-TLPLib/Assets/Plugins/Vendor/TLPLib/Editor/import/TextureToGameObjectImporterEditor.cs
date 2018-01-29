@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -33,15 +34,14 @@ namespace com.tinylabproductions.TLPLib.import {
         var dictV = obj.pallete
           .GroupBy(_ => _.color.with32Alpha(maxAlpha))
           .Select(group => {
-            var gameObjects = group.Select(_ => _.gameObject).ToArray();
+            var count = group.Count();
             return (
-              gameObjects.Length == 1
-              ? Either<string, KeyValuePair<Color32, GameObject>>.Right(F.kv(
-                group.Key, gameObjects[0]
+              count == 1
+              ? Either<string, KeyValuePair<Color32, GameObject[]>>.Right(F.kv(
+                group.Key, group.SelectMany(_ => _.gameObjects).ToArray()
               ))
-              : Either<string, KeyValuePair<Color32, GameObject>>.Left(
-                $"More than 1 game object found for #{group.Key.toHex()}: " +
-                $"{gameObjects.Select(_ => _.nameOrNull()).mkStringEnum()}"
+              : Either<string, KeyValuePair<Color32, GameObject[]>>.Left(
+                $"#{group.Key.toHex()} should have 1 entry: {count} entries found."
               )
             ).asValidation();
           })
@@ -61,14 +61,16 @@ namespace com.tinylabproductions.TLPLib.import {
           var parent = new GameObject(obj.holderGameObjectName).transform;
 
           progress.execute("Reading pixels", () => {
+            var rng = new Rng(new Rng.Seed(obj.randomSeed));
             for (var y = 0; y < height; y++) {
               for (var x = 0; x < width; x++) {
                 var idx = y * width + x;
                 // ReSharper disable once AccessToDisposedClosure
                 progress.progress(idx, pixels.Length);
                 var pixel = pixels[idx].with32Alpha(maxAlpha);
-                if (dict.TryGetValue(pixel, out var go)) {
+                if (dict.TryGetValue(pixel, out var gameObjects)) {
                   var position = obj.startPoint + new Vector3(x * obj.spacing.x, y * obj.spacing.y);
+                  var go = gameObjects.random(ref rng).getOrThrow($"No objects for #{pixel.toHex()} found!");
                   var instantiated = ((GameObject) PrefabUtility.InstantiatePrefab(go)).transform;
                   instantiated.parent = parent;
                   instantiated.position = position;
