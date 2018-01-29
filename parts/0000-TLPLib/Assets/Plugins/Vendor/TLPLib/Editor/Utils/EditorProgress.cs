@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
-    /// <param name="showAfter">Minimum time to wait before showing the UI. Default is Duration.zero.</param>
+    /// <param name="showAfter">Duration to wait before showing the UI. Use this to filter out shorter tasks that are needlessly appearing in screen.</param>
     public EditorProgress(string title, ILog log = null, Duration showAfter = default) {
       this.title = title;
       this.showAfter = showAfter;
