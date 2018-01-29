@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -60,6 +61,7 @@ namespace com.tinylabproductions.TLPLib.import {
           var parent = new GameObject(obj.holderGameObjectName).transform;
 
           progress.execute("Reading pixels", () => {
+            var rng = new Rng(new Rng.Seed(obj.randomSeed));
             for (var y = 0; y < height; y++) {
               for (var x = 0; x < width; x++) {
                 var idx = y * width + x;
@@ -68,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.import {
                 var pixel = pixels[idx].with32Alpha(maxAlpha);
                 if (dict.TryGetValue(pixel, out var gameObjects)) {
                   var position = obj.startPoint + new Vector3(x * obj.spacing.x, y * obj.spacing.y);
-                  var go = gameObjects.random().getOrThrow($"No objects for #{pixel.toHex()} found!");
+                  var go = gameObjects.random(ref rng).getOrThrow($"No objects for #{pixel.toHex()} found!");
                   var instantiated = ((GameObject) PrefabUtility.InstantiatePrefab(go)).transform;
                   instantiated.parent = parent;
                   instantiated.position = position;
