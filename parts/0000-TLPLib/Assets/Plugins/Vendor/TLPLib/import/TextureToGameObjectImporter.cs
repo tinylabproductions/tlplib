@@ -5,9 +5,7 @@ using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using UnityEditor;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.import {
   [CreateAssetMenu(menuName = "Game/Texture To Game Object Importer Data")]
@@ -44,14 +42,16 @@ namespace com.tinylabproductions.TLPLib.import {
       }
 
       public void OnHeaderGUI() {
-        EditorGUILayout.HelpBox(
+#if UNITY_EDITOR
+        UnityEditor.EditorGUILayout.HelpBox(
           "If other objects are present, a random object will be spawned from " +
           "the first object and other objects.",
-          MessageType.Info
+          UnityEditor.MessageType.Info
         );
+#endif        
       }
 
-      public void OnFooterGUI() {}
+      public void OnFooterGUI() { }
     }
     
     #region Unity Serialized Fields
