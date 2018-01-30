@@ -8,9 +8,7 @@ namespace com.tinylabproductions.TLPLib.Components {
   /// Allows to receive UI click events even if we do not have a visible part for this UI object.
   /// </summary>
   public class InvisibleUIClickEventsReceiver : Graphic {
-    InvisibleUIClickEventsReceiver() {
-      useLegacyMeshGeneration = false;
-    }
+    InvisibleUIClickEventsReceiver() => useLegacyMeshGeneration = false;
 
     // http://forum.unity3d.com/threads/recttransform-and-events.285740/
     // Do not generate mesh (do not call base).
@@ -18,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
 #if !UNITY_5_1 && !UNITY_5_0
     [Obsolete] protected override void OnPopulateMesh(Mesh m) => m.Clear();
-    protected override void OnPopulateMesh(VertexHelper vh) { }
+    protected override void OnPopulateMesh(VertexHelper vh) => vh.Clear();
 #endif
   }
 }
