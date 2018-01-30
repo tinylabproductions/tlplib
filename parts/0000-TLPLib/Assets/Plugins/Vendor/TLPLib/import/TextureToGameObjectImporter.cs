@@ -5,9 +5,6 @@ using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.import {
@@ -46,10 +43,10 @@ namespace com.tinylabproductions.TLPLib.import {
 
       public void OnHeaderGUI() {
 #if UNITY_EDITOR
-        EditorGUILayout.HelpBox(
+        UnityEditor.EditorGUILayout.HelpBox(
           "If other objects are present, a random object will be spawned from " +
           "the first object and other objects.",
-          MessageType.Info
+          UnityEditor.MessageType.Info
         );
 #endif        
       }
