@@ -32,6 +32,5 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       });
       return F.t(loaded._1, valuedFuture);
     }
-
   }
 }

@@ -26,28 +26,26 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       IRxVal<Option<AssetLoader<A>>> currentLoader, IRxVal<bool> enableLoading, IRxVal<bool> highPriority, 
       OnAssetStateChanged onAssetStateChanged
     ) {
-
       var requestNumber = 0;
-      tracker.track(
-        currentLoader
-          .flatMap(opt => enableLoading.map(b => b ? opt : F.none<AssetLoader<A>>()))
-          .flatMap(opt => {
-            discardPreviousRequest();
-            foreach (var binding in opt) {
-              var tpl = binding.loadAssetAsync();
-              request.value = tpl._1.some();
-              var future = tpl._2;
-              return future.toRxVal().map(csOpt => csOpt.toRight(true));
-            }
-            return RxVal.cached(F.left<bool, A>(false));
-          })
-          .subscribe(tracker, either => {
-            var isLoading = either.fold(_ => _, _ => false);
-            var assetOpt = either.rightValue;
-            if (assetOpt.isSome) discardPreviousRequest();
-            onAssetStateChanged(assetOpt, isLoading);
-          })
-      );
+      currentLoader
+        .flatMap(opt => enableLoading.map(b => b ? opt : F.none<AssetLoader<A>>()))
+        .flatMap(opt => {
+          discardPreviousRequest();
+          foreach (var binding in opt) {
+            var tpl = binding.loadAssetAsync();
+            request.value = tpl._1.some();
+            var future = tpl._2;
+            return future.toRxVal().map(csOpt => csOpt.toRight(true));
+          }
+          return RxVal.cached(F.left<bool, A>(false));
+        })
+        .subscribe(tracker, either => {
+          var isLoading = either.fold(_ => _, _ => false);
+          var assetOpt = either.rightValue;
+          if (assetOpt.isSome) discardPreviousRequest();
+          onAssetStateChanged(assetOpt, isLoading);
+        });
+      
       enableLoading.zip(highPriority, request, 
         (show, highPrior, req) => F.t(show ? (highPrior ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
       ).subscribe(tracker, tpl => {

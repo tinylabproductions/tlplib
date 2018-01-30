@@ -3,7 +3,6 @@ using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
