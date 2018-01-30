@@ -19,18 +19,21 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     readonly Stopwatch sw = new Stopwatch();
     readonly ILog log;
-
+    readonly DateTime creationTime = DateTime.Now;
+    
     string current = NONE;
     DateTime 
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
-    /// <param name="showAfter">Duration to wait before showing the UI. Use this to filter out shorter tasks that are needlessly appearing in screen.</param>
+    /// <param name="showAfter">Duration to wait before allowing to show the UI.
+    /// Use case: When tasks using EditorProgress are called frequently (ex. every time you save project) and it takes a short amount of time (ex. loading small amount of files),
+    /// that can only be seen as a flicker, you can set showAfter to a certain value to prevent progressbar from appearing in screen.
+    /// </param>
     public EditorProgress(string title, ILog log = null, Duration showAfter = default) {
       this.title = title;
       this.showAfter = showAfter;
       this.log = (log ?? Log.@default).withScope($"{s(title)}:");
-      sw.Start();
     }
 
     public void execute(string name, Action a) => 
@@ -48,13 +51,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       sw.Start();
       current = name;
       if (log.isInfo()) log.info($"Running {s(name)}...");
-      if (showAfter == Duration.zero)
-        EditorUtility.DisplayProgressBar(title, $"Running {s(name)}...", 0);
+      showProgressBar($"Running {s(name)}...", 0);
       lastProgressUIUpdate = lastProgressLogUpdate = DateTime.MinValue;
     }
 
     bool _progress(int idx, int total, bool cancellable) {
-      if (sw.ElapsedMilliseconds < showAfter.millis) return false;
       var now = DateTime.Now;
       var needsUpdate = idx == 0 || idx == total - 1;
       // Updating progress for every call is expensive, only show every X ms.
@@ -67,10 +68,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         var msg = $"{s(current)} ({s(item)}/{s(total)})...";
 
         if (updateUI) {
-          if(cancellable)
-            canceled = EditorUtility.DisplayCancelableProgressBar(title, msg, (float) item / total);
-          else
-            EditorUtility.DisplayProgressBar(title, msg, (float) item / total);
+          canceled = showProgressBar(msg, (float) item / total, cancellable);
           lastProgressUIUpdate = now;
         }
         if (updateLog) {
@@ -79,6 +77,15 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         }
       }
       return canceled;
+    }
+
+    bool showProgressBar(string info, float progress, bool cancelable = false) {
+      if ((DateTime.Now - creationTime).TotalSeconds >= showAfter.seconds) {
+        if (cancelable)
+          return EditorUtility.DisplayCancelableProgressBar(title, info, progress);
+        EditorUtility.DisplayProgressBar(title, info, progress);
+      }
+      return false;
     }
     
     public void progress(int idx, int total) => _progress(idx, total, false);
@@ -91,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void done() {
       var duration = new Duration(sw.ElapsedMilliseconds.toIntClamped());
       if (log.isInfo()) log.info($"{s(current)} done in {s(duration)}");
-      EditorUtility.DisplayProgressBar(title, $"{s(current)} done in {s(duration)}.", 1);
+      showProgressBar($"{s(current)} done in {s(duration)}.", 1);
       current = NONE;
     }
 
