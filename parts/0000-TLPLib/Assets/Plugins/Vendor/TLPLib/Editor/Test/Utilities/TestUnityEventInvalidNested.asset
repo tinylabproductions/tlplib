@@ -11,6 +11,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ab5501238448c64aa706e8273c91f5b, type: 3}
   m_Name: TestUnityEventInvalidNested
   m_EditorClassIdentifier: 
+  unityEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   nestedEvent:
     unityEvent:
       m_PersistentCalls:
@@ -29,3 +34,9 @@ MonoBehaviour:
       m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
   nestedEventArray: []
+  unityEventGameObject:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TestUnityEvent+UnityEventGameObject, Assembly-CSharp-Editor-firstpass,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  unityEventGameObjectArray: []
