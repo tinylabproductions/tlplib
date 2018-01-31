@@ -34,3 +34,9 @@ MonoBehaviour:
       m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
   nestedEventArray: []
+  unityEventGameObject:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TestUnityEvent+UnityEventGameObject, Assembly-CSharp-Editor-firstpass,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  unityEventGameObjectArray: []

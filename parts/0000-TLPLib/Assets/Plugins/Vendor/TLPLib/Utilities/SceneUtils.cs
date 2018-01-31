@@ -60,11 +60,6 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         EditorUtility.ClearProgressBar();
       }
     }
-
-    static bool _modifyAllScenesInProject(Fn<Scene, bool> modifyScene) => openScenesAndDo(
-      AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Select(_ => new ScenePath(_)),
-      scene => { if (modifyScene(scene)) EditorSceneManager.SaveScene(scene); }
-    );
   }
 }
 #endif
