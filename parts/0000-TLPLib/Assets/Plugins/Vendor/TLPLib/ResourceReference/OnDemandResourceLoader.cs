@@ -4,11 +4,12 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public class OnDemandResourceLoader<A> : IDisposable where A : Object {
+  public partial class OnDemandResourceLoader<A> : IDisposable where A : Object {
 
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<ResourceRequest>> request = RxRef.a(F.none<ResourceRequest>());
@@ -20,14 +21,17 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       // Priority can't be set to negative value - got this info from error message
       PRIORITY_OFF = 0;
 
-    public delegate void OnAssetStateChanged(Option<A> currentAsset, bool isLoading);
+    [Record]
+    public partial struct IsLoading {
+      public readonly bool value;
+    }
+    
+    public readonly IObservable<Either<IsLoading, A>> assetStateChanged; 
 
     public OnDemandResourceLoader(
-      IRxVal<Option<AssetLoader<A>>> currentLoader, IRxVal<bool> enableLoading, IRxVal<bool> highPriority, 
-      OnAssetStateChanged onAssetStateChanged
+      IRxVal<Option<AssetLoader<A>>> currentLoader, IRxVal<bool> enableLoading, IRxVal<bool> highPriority 
     ) {
-      var requestNumber = 0;
-      currentLoader
+      assetStateChanged = currentLoader
         .flatMap(opt => enableLoading.map(b => b ? opt : F.none<AssetLoader<A>>()))
         .flatMap(opt => {
           discardPreviousRequest();
@@ -35,16 +39,14 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
             var tpl = binding.loadAssetAsync();
             request.value = tpl._1.some();
             var future = tpl._2;
-            return future.toRxVal().map(csOpt => csOpt.toRight(true));
+            return future.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
           }
-          return RxVal.cached(F.left<bool, A>(false));
-        })
-        .subscribe(tracker, either => {
-          var isLoading = either.fold(_ => _, _ => false);
-          var assetOpt = either.rightValue;
-          if (assetOpt.isSome) discardPreviousRequest();
-          onAssetStateChanged(assetOpt, isLoading);
-        });
+          return RxVal.cached(F.left<IsLoading, A>(new IsLoading(false)));
+        }).asObservable();
+
+      assetStateChanged.subscribe(tracker, e => {
+        if (e.isRight) discardPreviousRequest();
+      });
       
       enableLoading.zip(highPriority, request, 
         (show, highPrior, req) => F.t(show ? (highPrior ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
