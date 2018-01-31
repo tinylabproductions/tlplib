@@ -18,10 +18,11 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
+using GenerationAttributes;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public class ObjectValidator {
+  public partial class ObjectValidator {
     /// <param name="containingObject">Unity object </param>
     /// <param name="obj">Object that is being validated.</param>
     /// <returns></returns>
@@ -34,6 +35,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Error unityEventInvalid(FieldHierarchyStr hierarchy, int index);
       Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index);
       Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage);
+    }
+    
+    [Record]
+    public partial struct Progress {
+      public readonly int currentIdx, total;
+
+      public float ratio => (float) currentIdx / total;
     }
 
     public struct Error : IEquatable<Error> {
@@ -243,7 +251,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         scene,
         Option<CustomObjectValidator>.None,
         progress => EditorUtility.DisplayProgressBar(
-          "Validating Objects", "Please wait...", progress
+          "Validating Objects", "Please wait...", progress.ratio
         ),
         EditorUtility.ClearProgressBar
       );
@@ -262,7 +270,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         new CheckContext("Selection"), Selection.objects,
         Option<CustomObjectValidator>.None,
         progress => EditorUtility.DisplayProgressBar(
-          "Validating Objects", "Please wait...", progress
+          "Validating Objects", "Please wait...", progress.ratio
         ),
         EditorUtility.ClearProgressBar
       );
@@ -271,7 +279,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static ImmutableList<Error> checkScene(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt,
-      Act<float> onProgress = null, Action onFinish = null
+      Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var objects = getSceneObjects(scene);
       var errors = check(new CheckContext(scene.name), objects, customValidatorOpt, onProgress, onFinish);
@@ -280,7 +288,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static Tpl<ImmutableList<Error>, TimeSpan> checkSceneWithTime(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt, 
-      Act<float> onProgress = null, Action onFinish = null
+      Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = Stopwatch.StartNew();
       var errors = checkScene(scene, customValidatorOpt, onProgress, onFinish);
@@ -289,7 +297,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static ImmutableList<Error> checkAssetsAndDependencies(
       IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt,
-      Act<float> onProgress = null, Action onFinish = null
+      Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var loadedAssets = 
         assets.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
@@ -307,15 +315,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects, 
       Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<float> onProgress = null, Action onFinish = null
+      Act<Progress> onProgress = null, Action onFinish = null
     ) {
       Option.ensureValue(ref customValidatorOpt);
 
       var errors = ImmutableList<Error>.Empty;
       var scanned = 0;
       foreach (var o in objects) {
-        var progress = (float) scanned++ / objects.Count;
-        onProgress?.Invoke(progress);
+        onProgress?.Invoke(new Progress(scanned++, objects.Count));
 
         var goOpt = F.opt(o as GameObject);
         if (goOpt.isSome) {
