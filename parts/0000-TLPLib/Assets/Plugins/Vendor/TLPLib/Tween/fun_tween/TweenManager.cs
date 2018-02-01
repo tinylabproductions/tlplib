@@ -35,6 +35,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public static Loop forever(Mode mode = Mode.Normal) => new Loop(TIMES_FOREVER, mode);
       public static Loop foreverYoYo => new Loop(TIMES_FOREVER, Mode.YoYo);
       public static Loop single => new Loop(TIMES_SINGLE, Mode.Normal);
+      public static Loop singleYoYo => new Loop(2, Mode.YoYo);
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
 
