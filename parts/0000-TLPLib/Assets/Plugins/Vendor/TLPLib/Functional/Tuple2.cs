@@ -17,7 +17,7 @@ namespace System {
     
     public static Tpl<A, B, C, D> flatten<A, B, C, D>(this Tpl<Tpl<Tpl<A, B>, C>, D> _) => 
       t(_._1._1._1, _._1._1._2, _._1._2, _._2);
-    public static Tpl<Tpl<Tpl<A, B>, C>, D> unflatten<A, B, C, D)(this Tpl<A, B, C, D> _) =>
+    public static Tpl<Tpl<Tpl<A, B>, C>, D> unflatten<A, B, C, D>(this Tpl<A, B, C, D> _) =>
       F.t(F.t(F.t(_._1, _._2), _._3), _._4);
     
     public static Tpl<A, B, C, D, E> flatten<A, B, C, D, E>(this Tpl<Tpl<Tpl<Tpl<A, B>, C>, D>, E> _) => 
