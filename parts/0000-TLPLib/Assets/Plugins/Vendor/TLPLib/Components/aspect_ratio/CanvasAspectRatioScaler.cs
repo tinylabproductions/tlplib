@@ -1,7 +1,5 @@
 ﻿using AdvancedInspector;
-using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Logger;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -62,13 +60,13 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       var widthScaleRatio = originalWidth / transform.rect.width;
       var heightScaleRatio = originalHeight / transform.rect.height;
       var scale = 1 / Mathf.Max(widthScaleRatio, heightScaleRatio);
+      target.localScale = Vector3.one * scale;
 
       if (stretchMode != StretchMode.None) {
         var axis = stretchMode == StretchMode.Vertical ? RectTransform.Axis.Vertical : RectTransform.Axis.Horizontal;
         var size = axis == RectTransform.Axis.Vertical ? transform.rect.height : transform.rect.width;
         target.SetSizeWithCurrentAnchors(axis, size / scale);
       } 
-      target.localScale = Vector3.one * scale;
     }
   }
 }
