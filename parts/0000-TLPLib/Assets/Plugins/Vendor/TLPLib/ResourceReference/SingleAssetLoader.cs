@@ -60,9 +60,6 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       });
     }
 
-    public void setPriority(AssetLoadPriority priority) => this.priority.value = priority;
-    public void setLoader(Option<AssetLoader<A>> loaderOpt) => currentLoader.value = loaderOpt;
-
     void discardPreviousRequest() {
       foreach (var r in request.value) r.priority = PRIORITY_OFF;
       request.value = F.none<ResourceRequest>();
