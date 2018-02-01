@@ -17,6 +17,8 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     )
   ]
   public class CanvasAspectRatioScaler : UIBehaviour {
+    enum StretchMode : byte { None, Horizontal, Vertical }
+    
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -29,6 +31,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       )
     ] protected RectTransform target;
     [SerializeField] float originalWidth, originalHeight;
+    [SerializeField] StretchMode stretchMode;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -42,6 +45,13 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
         Log.d.warn($"{nameof(target)} == self on {this}!");
     }
 
+    // We force to recalculate sizes on Start() because Unity is not persistent and there are cases when it 
+    // resizes objects after the last OnRectTransformDimensionsChange() call.
+    protected override void Start() {
+      base.Start();
+      OnRectTransformDimensionsChange();
+    }
+
     protected override void OnRectTransformDimensionsChange() {
       base.OnRectTransformDimensionsChange();
 
@@ -51,6 +61,12 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       var heightScaleRatio = originalHeight / transform.rect.height;
       var scale = 1 / Mathf.Max(widthScaleRatio, heightScaleRatio);
       target.localScale = Vector3.one * scale;
+
+      if (stretchMode != StretchMode.None) {
+        var axis = stretchMode == StretchMode.Vertical ? RectTransform.Axis.Vertical : RectTransform.Axis.Horizontal;
+        var size = axis == RectTransform.Axis.Vertical ? transform.rect.height : transform.rect.width;
+        target.SetSizeWithCurrentAnchors(axis, size / scale);
+      } 
     }
   }
 }
