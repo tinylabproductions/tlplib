@@ -15,8 +15,10 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<ResourceRequest>> request = RxRef.a(F.none<ResourceRequest>());
-    readonly IRxRef<Option<AssetLoader<A>>> currentLoader = RxRef.a(Option<AssetLoader<A>>.None);
-    readonly IRxRef<AssetLoadPriority> priority = RxRef.a(AssetLoadPriority.High);
+    
+    public readonly IRxRef<Option<AssetLoader<A>>> currentLoader = RxRef.a(Option<AssetLoader<A>>.None);
+    public readonly IRxRef<AssetLoadPriority> priority = RxRef.a(AssetLoadPriority.High);
+    public readonly IRxVal<Either<IsLoading, A>> assetState;
 
     const int
       PRIORITY_HIGH = 2,
@@ -30,34 +32,30 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       public readonly bool value;
     }
     
-    public readonly IRxVal<Either<IsLoading, A>> assetStateChanged;
-    
-    
     public SingleAssetLoader() {
-      assetStateChanged =
+      assetState =
         currentLoader
           .flatMap(opt => {
             discardPreviousRequest();
             foreach (var binding in opt) {
-              var tpl = binding.loadAssetAsync();
-              request.value = tpl._1.some();
-              var future = tpl._2;
-              return future.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
+              var (_request, assetFtr) = binding.loadAssetAsync();
+              request.value = _request.some();
+              return assetFtr.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
             }
 
             return RxVal.cached(F.left<IsLoading, A>(new IsLoading(false)));
           });
 
-      assetStateChanged.subscribe(tracker, e => {
+      assetState.subscribe(tracker, e => {
         if (e.isRight) discardPreviousRequest();
       });
       
-      currentLoader.zip(priority, request, (show, highPrior, req) =>
-        F.t(show.isSome ? (highPrior == AssetLoadPriority.High ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
+      currentLoader.zip(priority, request, (show, _priority, req) =>
+        F.t(show.isSome ? (_priority == AssetLoadPriority.High ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
       ).subscribe(tracker, tpl => {
-        var (priority, req) = tpl;
+        var (_priority, req) = tpl;
         foreach (var r in req) {
-          r.priority = priority;
+          r.priority = _priority;
         }
       });
     }
