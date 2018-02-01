@@ -9,10 +9,14 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public partial class OnDemandResourceLoader<A> : IDisposable where A : Object {
+  public enum AssetLoadPriority : byte { Low, High }
 
+  public partial class SingleAssetLoader<A> : IDisposable where A : Object {
+    
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<ResourceRequest>> request = RxRef.a(F.none<ResourceRequest>());
+    readonly IRxRef<Option<AssetLoader<A>>> currentLoader = RxRef.a(Option<AssetLoader<A>>.None);
+    readonly IRxRef<AssetLoadPriority> priority = RxRef.a(AssetLoadPriority.High);
 
     const int
       PRIORITY_HIGH = 2,
@@ -26,30 +30,30 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       public readonly bool value;
     }
     
-    public readonly IObservable<Either<IsLoading, A>> assetStateChanged; 
+    public readonly IRxVal<Either<IsLoading, A>> assetStateChanged;
+    
+    
+    public SingleAssetLoader() {
+      assetStateChanged =
+        currentLoader
+          .flatMap(opt => {
+            discardPreviousRequest();
+            foreach (var binding in opt) {
+              var tpl = binding.loadAssetAsync();
+              request.value = tpl._1.some();
+              var future = tpl._2;
+              return future.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
+            }
 
-    public OnDemandResourceLoader(
-      IRxVal<Option<AssetLoader<A>>> currentLoader, IRxVal<bool> enableLoading, IRxVal<bool> highPriority 
-    ) {
-      assetStateChanged = currentLoader
-        .flatMap(opt => enableLoading.map(b => b ? opt : F.none<AssetLoader<A>>()))
-        .flatMap(opt => {
-          discardPreviousRequest();
-          foreach (var binding in opt) {
-            var tpl = binding.loadAssetAsync();
-            request.value = tpl._1.some();
-            var future = tpl._2;
-            return future.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
-          }
-          return RxVal.cached(F.left<IsLoading, A>(new IsLoading(false)));
-        }).asObservable();
+            return RxVal.cached(F.left<IsLoading, A>(new IsLoading(false)));
+          });
 
       assetStateChanged.subscribe(tracker, e => {
         if (e.isRight) discardPreviousRequest();
       });
       
-      enableLoading.zip(highPriority, request, 
-        (show, highPrior, req) => F.t(show ? (highPrior ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
+      currentLoader.zip(priority, request, (show, highPrior, req) =>
+        F.t(show.isSome ? (highPrior == AssetLoadPriority.High ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
       ).subscribe(tracker, tpl => {
         var priority = tpl._1;
         var req = tpl._2;
@@ -58,6 +62,9 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
         }
       });
     }
+
+    public void setPriority(AssetLoadPriority priority) => this.priority.value = priority;
+    public void setLoader(Option<AssetLoader<A>> loaderOpt) => currentLoader.value = loaderOpt;
 
     void discardPreviousRequest() {
       foreach (var r in request.value) r.priority = PRIORITY_OFF;
