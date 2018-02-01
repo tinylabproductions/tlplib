@@ -58,6 +58,11 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       ));
     }
 
+    public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
+      PathStr loadPath, bool logOnError = true
+    ) where A : Object => 
+      loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
+
     public static IEnumerator waitForLoadCoroutine<A>(
       ResourceRequest request, Action<Either<string, A>> whenDone, string path
     ) where A : Object {

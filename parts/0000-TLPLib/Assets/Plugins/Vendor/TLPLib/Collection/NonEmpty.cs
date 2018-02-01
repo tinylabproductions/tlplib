@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Collection {
@@ -11,6 +12,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static Option<NonEmpty<ImmutableArray<A>>> toNonEmpty<A>(this ImmutableArray<A> c) =>
       NonEmpty<ImmutableArray<A>>.__unsafeApply(c, _ => _.IsEmpty);
+    
+    public static Option<NonEmpty<A[]>> toNonEmpty<A>(this A[] c) =>
+      NonEmpty<A[]>.__unsafeApply(c, _ => _.isEmpty());
 
     public static Option<NonEmpty<ImmutableHashSet<A>>> toNonEmpty<A>(this ImmutableHashSet<A> c) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeApply(c, _ => _.IsEmpty);
@@ -41,6 +45,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
   public static class NonEmptyExts {
     public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
     public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
+    public static A head<A>(this NonEmpty<A[]> ne) => ne.a[0];
 
     public static NonEmpty<IEnumerable<B>> map<A, B, C>(
       this NonEmpty<C> ne, Func<A, B> f
@@ -58,6 +63,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableSortedSet<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableSortedSet<A>>(ne, f);
+    
+    public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<A[]> ne, Func<A, B> f) =>
+      map<A, B, A[]>(ne, f);
 
     public static NonEmpty<ImmutableArray<A>> ToImmutableArray<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ne.a.ToImmutableArray());
