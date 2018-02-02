@@ -34,6 +34,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Error badTextFieldTag(FieldHierarchyStr hierarchy);
       Error unityEventInvalid(FieldHierarchyStr hierarchy, int index);
       Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index);
+      Error exceptionInCustomValidator(FieldHierarchyStr hierarchy, Exception exception);
       Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage);
     }
     
@@ -54,7 +55,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         UnityEventInvalidMethod,
         UnityEventInvalid,
         TextFieldBadTag,
-        CustomValidation
+        CustomValidation,
+        CustomValidationException
       }
 
       public struct UnknownLocation : IEquatable<UnknownLocation> {
@@ -206,6 +208,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       ) => new Error(
         Type.CustomValidation,
         $"{context}. Property: {hierarchy.s}. Error: {error}",
+        o
+      );
+
+      public static Error customValidationException(
+        Object o, FieldHierarchyStr hierarchy, Exception exception, CheckContext context  
+      ) => new Error(
+        Type.CustomValidationException,
+        $"{context}. Property: {hierarchy.s}. Error while running {nameof(OnObjectValidate)}:\n{exception}",
         o
       );
 
@@ -410,6 +420,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index) =>
         Error.unityEventInvalidMethod(o: component, hierarchy: hierarchy, index: index, context: context);
 
+      public Error exceptionInCustomValidator(FieldHierarchyStr hierarchy, Exception exception) =>
+        Error.customValidationException(o: component, hierarchy: hierarchy, exception: exception, context: context);
+
       public Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage) =>
         Error.customError(o: component, hierarchy: hierarchy, error: customErrorMessage, context: context);
     }
@@ -471,8 +484,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
 
       foreach (var onObjectValidatable in F.opt(objectBeingValidated as OnObjectValidate)) {
-        foreach (var error in onObjectValidatable.onObjectValidate(containingComponent)) {
-          yield return createError.custom(fieldHierarchy.asString(), error);
+        // Try because custom validations can throw exceptions. 
+        var validateResult = F.doTry(() => onObjectValidatable.onObjectValidate(containingComponent));
+        if (validateResult.isSuccess) {
+          foreach (var error in validateResult.__unsafeGet) {
+            yield return createError.custom(fieldHierarchy.asString(), error);
+          }
+        }
+        else {
+          var error = validateResult.__unsafeException;
+          yield return createError.exceptionInCustomValidator(fieldHierarchy.asString(), error);
         }
       }
       
