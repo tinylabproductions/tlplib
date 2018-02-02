@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   /// <summary>
-  /// Manages a sequence, calling its <see cref="TweenSequence.update"/> method for you on
+  /// Manages a sequence, calling its <see cref="TweenSequence.setRelativeTimePassed"/> method for you on
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
   public class TweenManager {
@@ -35,6 +35,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public static Loop forever(Mode mode = Mode.Normal) => new Loop(TIMES_FOREVER, mode);
       public static Loop foreverYoYo => new Loop(TIMES_FOREVER, Mode.YoYo);
       public static Loop single => new Loop(TIMES_SINGLE, Mode.Normal);
+      public static Loop singleYoYo => new Loop(2, Mode.YoYo);
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
 
