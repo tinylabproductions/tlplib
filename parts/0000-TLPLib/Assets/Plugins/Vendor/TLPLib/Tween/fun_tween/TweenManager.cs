@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   /// <summary>
-  /// Manages a sequence, calling its <see cref="TweenSequence.update"/> method for you on
+  /// Manages a sequence, calling its <see cref="TweenSequence.setRelativeTimePassed"/> method for you on
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
   public class TweenManager {
