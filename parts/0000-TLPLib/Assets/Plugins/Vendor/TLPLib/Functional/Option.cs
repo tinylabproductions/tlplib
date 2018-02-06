@@ -224,7 +224,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Option<C> zip<B, C>(Option<B> opt2, Fn<A, B, C> mapper) => 
       isSome && opt2.isSome
-      ? F.some(mapper(get, opt2.get))
+      ? F.some(mapper(__unsafeGetValue, opt2.__unsafeGetValue))
       : F.none<C>();
 
     /// <summary>
