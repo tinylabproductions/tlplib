@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.provider {
       public static string getAndroidId(ContentResolver contentResolver = null) =>
         getString(contentResolver ?? defaultContentResolver, "android_id");
 
-      public static ContentResolver defaultContentResolver => 
+      public static ContentResolver defaultContentResolver =>
         AndroidActivity.activity.applicationContext.contentResolver;
     }
   }

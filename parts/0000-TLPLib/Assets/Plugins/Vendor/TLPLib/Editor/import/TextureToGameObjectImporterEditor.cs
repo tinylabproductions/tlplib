@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.import {
   public class TextureToGameObjectImporterEditor : ScriptableEditor {
     public override void OnInspectorGUI() {
       var obj = (TextureToGameObjectImporter) target;
-      
+
       base.OnInspectorGUI();
       EditorGUILayout.Space();
       if (GUILayout.Button("Generate")) {
@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.import {
           );
           return;
         }
-        
+
         var width = obj.texture.width;
         var height = obj.texture.height;
         var unknownColorsFound = new HashSet<Color32>();
@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.import {
           return;
         }
         var dict = dictV.__unsafeGetRight.toDict();
-        
+
         using (var progress = new EditorProgress("Generating objects")) {
           var pixels = progress.execute("Getting pixels", obj.texture.GetPixels32);
           var parent = new GameObject(obj.holderGameObjectName).transform;
@@ -86,8 +86,8 @@ namespace com.tinylabproductions.TLPLib.import {
         if (unknownColorsFound.nonEmpty()) {
           EditorUtils.userInfo(
             "Found unknown colors!", level: Log.Level.ERROR,
-            body: 
-              "These colors were not defined:\n" + 
+            body:
+              "These colors were not defined:\n" +
                 unknownColorsFound.Select(_ => $"#{_.toHex()}").OrderBySafe(_ => _).mkString("\n")
           );
         }

@@ -68,12 +68,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return encoding.GetString(Convert.FromBase64String(source));
     }
 
-    public static Either<Exception, string> fromBase64Safe(this string source, Encoding encoding = null) => 
+    public static Either<Exception, string> fromBase64Safe(this string source, Encoding encoding = null) =>
       F.doTry(() => fromBase64(source, encoding)).toEither;
 
-    public static string trimTo(this string s, int length, bool fromRight=false) => 
+    public static string trimTo(this string s, int length, bool fromRight=false) =>
       s.Length > length ? s.Substring(
-        fromRight ? s.Length - length : 0, 
+        fromRight ? s.Length - length : 0,
         length
       ) : s;
 
@@ -93,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isTrimmable(this string s) =>
       s.StartsWithFast(" ") || s.EndsWithFast(" ");
 
-    public static bool isEmpty(this string s, bool trim = false) => 
+    public static bool isEmpty(this string s, bool trim = false) =>
       (trim ? s.Trim() : s).Length == 0;
     public static bool isNullOrEmpty(this string s, bool trim = false) =>
       s == null || s.isEmpty(trim);
@@ -123,15 +123,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     /**
      * Replaces a part of string with other string.
-     * 
+     *
      * For example:
-     * 
+     *
      * s = "foobar";
      * spliceIdx = 2;
      * spliceCount = 2;
      * spliceContent = "baz";
      * result = "fobazar";
-     * 
+     *
      * Negative indexes index from the end (-1 = last char)
      **/
     public static string splice(
@@ -159,23 +159,23 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     // http://stackoverflow.com/a/18739120/935259
-    public static string rot13(this string input) => 
-      !string.IsNullOrEmpty(input) 
+    public static string rot13(this string input) =>
+      !string.IsNullOrEmpty(input)
       ? new string(
-        input.ToCharArray().Select(s => 
+        input.ToCharArray().Select(s =>
           (char) (
-              s >= 97 && s <= 122 ? (s + 13 > 122 ? s - 13 : s + 13) 
-            : s >= 65 && s <= 90  ? (s + 13 > 90 ? s - 13 : s + 13) 
+              s >= 97 && s <= 122 ? (s + 13 > 122 ? s - 13 : s + 13)
+            : s >= 65 && s <= 90  ? (s + 13 > 90 ? s - 13 : s + 13)
             : s
           )
         ).ToArray()
-      ) 
+      )
       : input;
 
     /**
      * string methods StartsWith, EndsWith, IndexOf ... by default use
      * StringComparison.CurrentCulture.
-     * 
+     *
      * That is about 30 times slower than StringComparison.Ordinal.
      */
     public static bool StartsWithFast(
@@ -192,7 +192,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /** See #StartsWithFast */
     public static int IndexOfFast(
       this string s, string value, bool ignoreCase = false
-    ) => 
+    ) =>
       s.IndexOf(value, ordinalStringComparison(ignoreCase));
 
     static StringComparison ordinalStringComparison(bool ignoreCase) =>

@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
   public class GradientMultiply : GradientBase {
     public Color32 topColor = Color.white, bottomColor = Color.black;
 
-    public override void ModifyVertices(List<UIVertex> vertexList) => 
+    public override void ModifyVertices(List<UIVertex> vertexList) =>
       GradientHelper.modifyVertices(
         vertexList, (c, t) => mult(c, Color32.Lerp(bottomColor, topColor, t)), type
       );

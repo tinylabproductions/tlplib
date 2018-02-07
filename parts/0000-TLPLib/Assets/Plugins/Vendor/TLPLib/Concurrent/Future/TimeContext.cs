@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class TimeContext : ITimeContext {
-    public static readonly TimeContext 
+    public static readonly TimeContext
       playMode = new TimeContext(TimeScale.Unity, () => Duration.fromSeconds(Time.time)),
       unscaledTime = new TimeContext(TimeScale.UnscaledTime, () => Duration.fromSeconds(Time.unscaledTime)),
       fixedTime = new TimeContext(TimeScale.FixedTime, () => Duration.fromSeconds(Time.fixedTime)),
@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     readonly Option<MonoBehaviour> behaviour;
 
     public TimeContext(
-      TimeScale timeScale, Fn<Duration> passedSinceStartup, 
+      TimeScale timeScale, Fn<Duration> passedSinceStartup,
       Option<MonoBehaviour> behaviour = default(Option<MonoBehaviour>)
     ) {
       Option.ensureValue(ref behaviour);

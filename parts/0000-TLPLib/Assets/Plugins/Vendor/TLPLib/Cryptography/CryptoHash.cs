@@ -66,7 +66,7 @@ namespace com.tinylabproductions.Cryptography {
 
       return sb.ToString().PadLeft(stringLength, '0');
     }
-    
+
     public static CryptoHash calculate(string s, Kind kind, Encoding encoding = null) =>
       calculate((encoding ?? Encoding.UTF8).GetBytes(s), kind);
 

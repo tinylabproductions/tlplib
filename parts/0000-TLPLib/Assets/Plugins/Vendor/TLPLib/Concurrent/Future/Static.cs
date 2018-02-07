@@ -15,16 +15,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> successful<A>(A value) => Future<A>.successful(value);
     public static Future<A> unfulfilled<A>() => Future<A>.unfulfilled;
 
-    public static Future<A> delay<A>(Duration duration, Fn<A> createValue, ITimeContext tc=null) => 
+    public static Future<A> delay<A>(Duration duration, Fn<A> createValue, ITimeContext tc=null) =>
       a<A>(p => tc.orDefault().after(duration, () => p.complete(createValue())));
 
-    public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc=null) => 
+    public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc=null) =>
       a<A>(p => tc.orDefault().after(duration, () => p.complete(value)));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue) => 
+    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue) =>
       a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(createValue())));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, A value) => 
+    public static Future<A> delayFrames<A>(int framesToSkip, A value) =>
       a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(value)));
 
     /**
@@ -99,10 +99,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       ));
     }
 
-    public static Future<Unit> fromCoroutine(IEnumerator enumerator) => 
+    public static Future<Unit> fromCoroutine(IEnumerator enumerator) =>
       fromCoroutine(ASync.StartCoroutine(enumerator));
 
-    public static Future<Unit> fromCoroutine(Coroutine coroutine) => 
+    public static Future<Unit> fromCoroutine(Coroutine coroutine) =>
       Future<Unit>.async(p => {
         if (coroutine.finished) p.complete(F.unit);
         else {

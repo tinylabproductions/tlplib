@@ -6,25 +6,25 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class SingletonActionRegistry {
     /// <summary>
-    /// Create a registry for type inferred from given parameter. 
+    /// Create a registry for type inferred from given parameter.
     /// </summary>
     public static SingletonActionRegistry<A> forTypeOf<A>(IHeapFuture<A> a) =>
       new SingletonActionRegistry<A>();
   }
-  
+
   /// <summary>
   /// Allows registering multiple callbacks to future completion, but differs from
   /// <see cref="Future{A}.onComplete"/> that this registry will only evaluate
   /// the last callback registered to it when the future completes.
-  /// 
+  ///
   /// This is very handy to register state that needs to be applied when <see cref="LazyVal{A}"/>
   /// is computed.
-  /// 
+  ///
   /// For example:
   /// <code><![CDATA[
-  ///   readonly SingletonActionRegistry<IHasBuyWholeGameButton> singletonActionRegistry = 
+  ///   readonly SingletonActionRegistry<IHasBuyWholeGameButton> singletonActionRegistry =
   ///     new SingletonActionRegistry<IHasBuyWholeGameButton>();
-  ///   
+  ///
   ///   public void buyAllSetActive(
   ///     bool active, bool worldSelectActive
   ///   ) {
@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   ///       singletonActionRegistry.singletonAction(s, _ => _.buyAllContentActive = active);
   ///     singletonActionRegistry.singletonAction(screens.worldSelect, _ => _.buyAllContentActive = worldSelectActive);
   ///   }
-  /// ]]></code> 
+  /// ]]></code>
   /// </summary>
   public sealed class SingletonActionRegistry<A> {
     readonly Dictionary<IHeapFuture<A>, Act<A>> callbacks = new Dictionary<IHeapFuture<A>, Act<A>>();
@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Act<A> this[IHeapFuture<A> ftr] {
       set { singletonAction(ftr, value); }
     }
-    
+
     public void singletonAction(IHeapFuture<A> ftr, Act<A> action) {
       var value = ftr.value;
       if (value.isSome) {
@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         if (!callbacks.Remove(ftr)) {
           ftr.onComplete(a => futureCompleted(ftr, a));
         }
-        callbacks.Add(ftr, action); 
+        callbacks.Add(ftr, action);
       }
     }
 

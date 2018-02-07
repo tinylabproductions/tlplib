@@ -30,11 +30,11 @@ namespace Smooth.Comparisons {
 			this.equals = EqComparer.Equals;
 			this.hashCode = EqComparer.GetHashCode;
 		}
-		
+
 		public override bool Equals(T t1, T t2) {
 			return equals(t1, t2);
 		}
-		
+
 		public override int GetHashCode(T t) {
 			return hashCode(t);
 		}

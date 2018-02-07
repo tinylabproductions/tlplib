@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (mb != null) {
         sb.Append(mb.Name);
 
-        // deal with the generic portion of the method 
+        // deal with the generic portion of the method
         var info = mb as MethodInfo;
         if (info != null && info.IsGenericMethod) {
           var typars = info.GetGenericArguments();

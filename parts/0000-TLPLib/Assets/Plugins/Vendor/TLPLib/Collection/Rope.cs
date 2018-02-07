@@ -4,7 +4,7 @@ using System.Linq;
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class Rope {
     public static Rope<A> a<A>(A[] first) => new Rope<A>(first);
-    public static Rope<A> a<A>(A[] first, A[] second) => 
+    public static Rope<A> a<A>(A[] first, A[] second) =>
       new Rope<A>(first, ImmutableList.Create<A[]>(second));
     public static Rope<A> create<A>(params A[] args) => new Rope<A>(args);
   }

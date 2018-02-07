@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
       PREF_REFERRER = klass.GetStatic<string>("PREF_REFERRER");
     }
 
-    public static SharedPreferences preferences(Context ctx) => 
+    public static SharedPreferences preferences(Context ctx) =>
       new SharedPreferences(klass.csjo("getPrefs", ctx.java));
   }
 }

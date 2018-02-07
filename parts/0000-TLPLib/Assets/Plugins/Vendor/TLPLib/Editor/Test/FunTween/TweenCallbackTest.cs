@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.FunTween {
       float insertCallbackAt, ImmutableList<float> otherPoints, TestCases testCases
     ) {
       var tsb = TweenSequence.Builder.create().insert(
-        insertCallbackAt, 
+        insertCallbackAt,
         new TweenCallback(_ => stateSubject.push(_.playingForwards))
       );
       foreach (var otherPoint in otherPoints) tsb.insert(otherPoint, emptyCallback);

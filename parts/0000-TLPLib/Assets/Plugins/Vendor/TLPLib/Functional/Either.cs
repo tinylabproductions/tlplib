@@ -7,7 +7,7 @@ using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class EitherExts {
-    public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e) => 
+    public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e) =>
       e.flatMapRight(_ => _);
 
     static Fn<CollFrom, IEnumerable<ElemTo>> mapC<CollFrom, ElemFrom, ElemTo>(
@@ -146,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public A __unsafeGetLeft => _leftValue;
     public Option<B> rightValue => (! isLeft).opt(_rightValue);
     public B __unsafeGetRight => _rightValue;
-    
+
     public A leftOrThrow { get {
       if (isLeft) return _leftValue;
       throw new WrongEitherSideException($"Expected to have Left({typeof(A)}), but had {this}.");
@@ -157,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       throw new WrongEitherSideException($"Expected to have Right({typeof(B)}), but had {this}.");
     } }
 
-    public override string ToString() => 
+    public override string ToString() =>
       isLeft ? $"Left({_leftValue})" : $"Right({_rightValue})";
 
     public Either<C, B> flatMapLeft<C>(Fn<A, Either<C, B>> mapper) =>
@@ -168,8 +168,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Either<A, C1> flatMapRight<C, C1>(Fn<B, Either<A, C>> f, Fn<B, C, C1> g) {
       var self = this;
-      return isLeft 
-        ? new Either<A, C1>(_leftValue) 
+      return isLeft
+        ? new Either<A, C1>(_leftValue)
         : f(_rightValue).mapRight(c => g(self._rightValue, c));
     }
 
@@ -190,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public B getOrElse(Fn<B> onLeft) =>
       isLeft ? onLeft() : __unsafeGetRight;
 
-    public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight) => 
+    public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight) =>
       isLeft ? onLeft(_leftValue) : onRight(_rightValue);
 
     public void voidFold(Act<A> onLeft, Act<B> onRight)
@@ -202,7 +202,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Try<B> toTry(Fn<A, Exception> onLeft) =>
       isLeft ? new Try<B>(onLeft(_leftValue)) : new Try<B>(_rightValue);
 
-    public Either<B, A> swap => 
+    public Either<B, A> swap =>
       isLeft ? new Either<B, A>(_leftValue) : new Either<B, A>(_rightValue);
 
     /** Change type of left side, throwing exception if this Either is of left side. */

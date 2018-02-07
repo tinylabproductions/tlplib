@@ -8,17 +8,17 @@ using NUnit.Framework;
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.analytics {
   public class FirebaseEventParamTest {
     [Test]
-    public void ItShouldConvertStrings() => 
+    public void ItShouldConvertStrings() =>
       "root.TLPAdsInit.ads.provider setup.MobFox".firebaseParam(FirebaseEvent.Trim.None)
       .shouldEqual(new OneOf<string, long, double>("root.TLPAdsInit.ads.provider setup.MobFox"));
 
     [Test]
-    public void ItShouldLeftTrimStrings() => 
+    public void ItShouldLeftTrimStrings() =>
       "root.TLPAdsInit.ads.provider setup.MobFox".firebaseParam(FirebaseEvent.Trim.KeepLeftSide)
       .shouldEqual(new OneOf<string, long, double>("root.TLPAdsInit.ads.provider setup.M"));
 
     [Test]
-    public void ItShouldRightTrimStrings() => 
+    public void ItShouldRightTrimStrings() =>
       "root.TLPAdsInit.ads.provider setup.MobFox".firebaseParam(FirebaseEvent.Trim.KeepRightSide)
       .shouldEqual(new OneOf<string, long, double>("TLPAdsInit.ads.provider setup.MobFox"));
   }
@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
         parameters.Add(key, paramValue);
       }
       FirebaseEvent.a(
-        "e".repeat(FirebaseEvent.MAX_EVENT_LENGTH), 
+        "e".repeat(FirebaseEvent.MAX_EVENT_LENGTH),
         parameters
       ).shouldBeRight();
     }

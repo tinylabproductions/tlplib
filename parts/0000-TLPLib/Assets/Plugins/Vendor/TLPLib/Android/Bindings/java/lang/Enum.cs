@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
 // Example usage:
 //
 //  public sealed class ResponseStatus : Enum {
-//    static readonly EnumBuilder<ResponseStatus> builder = 
+//    static readonly EnumBuilder<ResponseStatus> builder =
 //      EnumBuilder.a(
 //        "com.ampiri.sdk.mediation.ResponseStatus",
 //        jo => new ResponseStatus(jo)
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
       Fn<AndroidJavaObject, A> create
     ) where A : Enum => a(
       // Fake support when running in editor
-      Application.platform == RuntimePlatform.Android 
+      Application.platform == RuntimePlatform.Android
         ? new AndroidJavaClass(klass)
         : null,
       create

@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector2 with2(
       this Vector2 v,
-      Option<float> x = default(Option<float>), 
+      Option<float> x = default(Option<float>),
       Option<float> y = default(Option<float>)
     ) {
       Option.ensureValue(ref x);
@@ -39,8 +39,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector3 with3(
       this Vector3 v,
-      Option<float> x = default(Option<float>), 
-      Option<float> y = default(Option<float>), 
+      Option<float> x = default(Option<float>),
+      Option<float> y = default(Option<float>),
       Option<float> z = default(Option<float>)
     ) {
       Option.ensureValue(ref x);
@@ -59,10 +59,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var radians = degrees * Mathf.Deg2Rad;
       var sin = Mathf.Sin(radians);
       var cos = Mathf.Cos(radians);
-         
+
       var tx = v.x;
       var ty = v.y;
- 
+
       return new Vector2(cos * tx - sin * ty, sin * tx + cos * ty);
     }
   }

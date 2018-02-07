@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       return bugfix.CompareTo(other.bugfix);
     }
 
-    public VersionNumber withSeparator(char separator) => 
+    public VersionNumber withSeparator(char separator) =>
       new VersionNumber(major, minor, bugfix, separator);
 
     public static VersionNumber operator +(VersionNumber a, VersionNumber b) {
@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       )));
     }
 
-    static Either<string, uint> getIdx(IList<string> parts, int idx) => 
+    static Either<string, uint> getIdx(IList<string> parts, int idx) =>
       parts.get(idx).fold(0u.right().l<string>(), _ => _.parseUInt());
   }
 }

@@ -76,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       Mathf.Max(rect.yMax, other.yMax)
     );
 
-    public static Rect fromCenter(Vector2 center, Vector2 size) => 
+    public static Rect fromCenter(Vector2 center, Vector2 size) =>
       new Rect(new Vector2(center.x -  size.x / 2, center.y -  size.y / 2), size);
 
     public static float aspectRatio(this Rect rect) => rect.width / rect.height;

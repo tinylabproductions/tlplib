@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
       else if (! containsA && containsB) {
         throw new ArgumentException($"Trying to replace {b2a[b]} -> {b} with {a} -> {b}!");
       }
-      else 
+      else
         return false;
     }
     public bool Add(B b, A a) { return Add(a, b); }

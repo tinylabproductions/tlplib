@@ -20,9 +20,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     readonly Stopwatch sw = new Stopwatch();
     readonly ILog log;
     readonly DateTime creationTime = DateTime.Now;
-    
+
     string current = NONE;
-    DateTime 
+    DateTime
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       this.log = (log ?? Log.@default).withScope($"{s(title)}:");
     }
 
-    public void execute(string name, Action a) => 
+    public void execute(string name, Action a) =>
       execute(name, () => { a(); return F.unit; });
 
     public A execute<A>(string name, Fn<A> f) {
@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       }
       return false;
     }
-    
+
     public void progress(int idx, int total) => _progress(idx, total, false);
 
     /// <summary>Wrapper for Unity CancelableProgressBar</summary>

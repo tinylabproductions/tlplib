@@ -10,24 +10,24 @@ namespace Smooth.Collections {
 		private readonly IList<T> list;
 		private readonly int startIndex;
 		private readonly int step;
-		
+
 		private IListStepper() {}
-		
+
 		public IListStepper(IList<T> list, int startIndex, int step) {
 			this.list = list;
 			this.startIndex = startIndex;
 			this.step = step;
 		}
-		
+
 		public IEnumerator<T> GetEnumerator() {
 			for (int i = startIndex; 0 <= i && i < list.Count; i += step) {
 				yield return list[i];
 			}
 		}
-		
+
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 	}
-	
+
 	/// <summary>
 	/// Helper class for enuemrating the element, index pairs of an IList<T> using a start index and step value.
 	/// </summary>
@@ -35,21 +35,21 @@ namespace Smooth.Collections {
 		private readonly IList<T> list;
 		private readonly int startIndex;
 		private readonly int step;
-		
+
 		private IListStepperWithIndex() {}
-		
+
 		public IListStepperWithIndex(IList<T> list, int startIndex, int step) {
 			this.list = list;
 			this.startIndex = startIndex;
 			this.step = step;
 		}
-		
+
 		public IEnumerator<Tpl<T, int>> GetEnumerator() {
 			for (int i = startIndex; 0 <= i && i < list.Count; i += step) {
 				yield return new Tpl<T, int>(list[i], i);
 			}
 		}
-		
+
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 	}
 }

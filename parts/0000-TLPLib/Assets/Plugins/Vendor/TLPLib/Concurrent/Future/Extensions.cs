@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /// </summary>
     public static Future<B> dropError<A, B>(
       this Future<Either<A, B>> future, bool logOnError = false
-    ) => 
+    ) =>
       Future.a<B>(p => future.onComplete(either => either.voidFold(
         err => { if (logOnError) Log.d.error(err.ToString()); },
         p.complete
@@ -54,36 +54,36 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Option<A>> extractOpt<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(() => Future.successful(F.none<A>()), f => f.map(F.some));
 
-    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action) => 
+    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action) =>
       future.onComplete(e => {
         foreach (var b in e.rightValue) action(b);
       });
 
-    public static void onSuccess<A>(this Future<Try<A>> future, Act<A> action) => 
+    public static void onSuccess<A>(this Future<Try<A>> future, Act<A> action) =>
       future.onComplete(e => {
         foreach (var a in e.value) action(a);
       });
 
-    public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future) => 
+    public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future) =>
       future.map(e => e.rightValue);
 
-    public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) => 
+    public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
       future.map(e => e.value);
 
-    public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action) => 
+    public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action) =>
       future.onComplete(e => {
         foreach (var a in e.leftValue) action(a);
       });
 
-    public static void onFailure<A>(this Future<Try<A>> future, Act<Exception> action) => 
+    public static void onFailure<A>(this Future<Try<A>> future, Act<Exception> action) =>
       future.onComplete(e => {
         foreach (var ex in e.exception) action(ex);
       });
 
-    public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future) => 
+    public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future) =>
       future.map(e => e.leftValue);
 
-    public static Future<Option<Exception>> ofFailure<A>(this Future<Try<A>> future) => 
+    public static Future<Option<Exception>> ofFailure<A>(this Future<Try<A>> future) =>
       future.map(e => e.exception);
 
     /**

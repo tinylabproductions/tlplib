@@ -12,15 +12,15 @@ namespace Smooth.Compare {
 	/// Configuration class for Smooth.Compare.
 	///
 	/// To supply a custom configuration, simply add a class to your project called Smooth.Compare.CustomConfiguration that inherits from this type.
-	/// 
+	///
 	/// If a custom configuration exists, it will override the the default configuration.
-	/// 
+	///
 	/// Note: Don't edit this class directly, as it may get updated in future versions of Smooth.Compare.
 	///
 	public class Configuration {
 		///
 		/// Default constructor that simply adds a listener to Finder.OnEvent.
-		/// 
+		///
 		/// If you supply a custom configuration, don't register types or do any comparsions from the constructor as the finder will not be fully initialized yet.
 		///
 		public Configuration() {
@@ -29,18 +29,18 @@ namespace Smooth.Compare {
 
 		/// <summary>
 		/// Method called by the finder to set up registrations before any comparer requests are handled.
-		/// 
+		///
 		/// If you supply a custom configuration and want to apply the default registrations, add a call to base.RegisterComparers() from your method override.
 		/// </summary>
 		public virtual void RegisterComparers() {
 			#region Common structs without type specific equality and/or hashcode methods
-			
+
 			Finder.Register<Color32>((a, b) => Color32ToInt(a) == Color32ToInt(b), Color32ToInt);
-			
+
 			#endregion
-			
+
 			#region Basic types for platforms without JIT compilation
-			
+
 			if (NoJit) {
 				//
 				// Note: On non-JIT platforms, you must be careful to not get too cute / abstract with your registrations or the AOT may not create
@@ -49,60 +49,60 @@ namespace Smooth.Compare {
 				// implementation either inherit from the corresponding Smooth.Collections.Comparer or wrap your comparer in a FuncComparer to
 				// force the compiler to create the proper types.
 				//
-				
+
 				#region System built-in types
-				
+
 				Finder.RegisterIComparableIEquatable<Boolean>();
-				
+
 				Finder.RegisterIComparableIEquatable<Char>();
-				
+
 				Finder.RegisterIComparableIEquatable<Byte>();
 				Finder.RegisterIComparableIEquatable<SByte>();
-				
+
 				Finder.RegisterIComparableIEquatable<Int16>();
 				Finder.RegisterIComparableIEquatable<UInt16>();
-				
+
 				Finder.RegisterIComparableIEquatable<Int32>();
 				Finder.RegisterIComparableIEquatable<UInt32>();
-				
+
 				Finder.RegisterIComparableIEquatable<Int64>();
 				Finder.RegisterIComparableIEquatable<UInt64>();
-				
+
 				Finder.RegisterIComparableIEquatable<Single>();
 				Finder.RegisterIComparableIEquatable<Double>();
-				
+
 				Finder.RegisterIComparableIEquatable<Decimal>();
-				
+
 				#endregion
-				
+
 				#region System.Runtime handles
-				
+
 				Finder.Register<RuntimeTypeHandle>((a, b) => a.Equals(b));
 				Finder.Register<RuntimeFieldHandle>((a, b) => a == b);
 				Finder.Register<RuntimeMethodHandle>((a, b) => a == b);
-				
+
 				#endregion
-				
+
 				#region UnityEngine structs
-				
+
 				//
 				// Note: UnityEngine structs do not adhere to the contract of equality.
 				//
 				// Thus they should not be used as Dictionary keys or in other use cases that rely on a correct equality implementation.
 				//
-				
+
 				Finder.Register<Color>((a, b) => a == b);
-				
+
 				Finder.Register<Vector2>((a, b) => a == b);
 				Finder.Register<Vector3>((a, b) => a == b);
 				Finder.Register<Vector4>((a, b) => a == b);
-				
+
 				Finder.Register<Quaternion>((a, b) => a == b);
-				
+
 				#endregion
-				
+
 				#region UnityEngine enums
-				
+
 				Finder.RegisterEnum<AudioSpeakerMode>();
 				Finder.RegisterEnum<EventModifiers>();
 				Finder.RegisterEnum<UnityEngine.EventType>();
@@ -113,20 +113,20 @@ namespace Smooth.Compare {
 				#endregion
 
 				#region Smooth enums
-				
+
 				Finder.RegisterEnum<BasePlatform>();
 				Finder.RegisterEnum<ComparerType>();
 				Finder.RegisterEnum<EventType>();
 
 				#endregion
 			}
-			
+
 			#endregion
 		}
 
 		/// <summary>
 		/// Listens for finder events which are useful for finding potential comparison problems.
-		/// 
+		///
 		/// The default implementation logs warnings on registration collisions, the use of inefficient or invalid comparers, and unregistered find requests for value types if JIT is disabled.
 		/// </summary>
 		public virtual void HandleFinderEvent(ComparerType comparerType, EventType eventType, Type type) {
@@ -154,7 +154,7 @@ namespace Smooth.Compare {
 		/// This can be used to override the platform setting and enable or disable automatic comparer creation, which can be quite useful while testing in different environments.
 		/// </summary>
 		public virtual bool UseJit { get { return Runtime.hasJit; } }
-		
+
 		/// <summary>
 		/// Convenience method for !UseJit.
 		/// </summary>

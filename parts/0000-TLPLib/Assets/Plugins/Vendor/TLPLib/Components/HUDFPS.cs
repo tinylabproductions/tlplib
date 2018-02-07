@@ -45,10 +45,10 @@ public class HUDFPS : MonoBehaviour, IMB_Start, IMB_OnGUI {
       }
 
       //Update the color
-      color = 
-          fps >= 60 ? Color.cyan 
-        : fps >= 30 ? Color.green 
-        : fps >= 10 ? Color.yellow 
+      color =
+          fps >= 60 ? Color.cyan
+        : fps >= 30 ? Color.green
+        : fps >= 10 ? Color.yellow
         : Color.red;
     });
   }

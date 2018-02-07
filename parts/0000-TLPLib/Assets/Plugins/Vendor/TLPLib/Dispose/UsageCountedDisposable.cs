@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Dispose {
       new UsageCountedDisposable<A>(value, onDispose);
   }
 
-  /// <summary>Disposable that automatically disposes underlying resource when all the users 
+  /// <summary>Disposable that automatically disposes underlying resource when all the users
   /// dispose it.</summary>
   public class UsageCountedDisposable<A> {
     readonly A value;

@@ -15,11 +15,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     void save();
     void delete(string name);
   }
-  
+
   public static class IPrefValueBackendExts {
     public static uint getUInt(
       this IPrefValueBackend backend, string name, uint defaultValue
-    ) => 
+    ) =>
       unchecked((uint)backend.getInt(name, unchecked((int)defaultValue)));
 
     public static void setUInt(

@@ -14,7 +14,7 @@ public class SmoothDisposer : MonoBehaviour {
 			DontDestroyOnLoad(this);
 		}
 	}
-	
+
 	private void LateUpdate() {
 		DisposalQueue.Pulse();
 	}

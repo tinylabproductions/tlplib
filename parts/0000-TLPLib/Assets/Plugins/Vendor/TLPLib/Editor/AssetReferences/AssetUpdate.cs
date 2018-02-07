@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     public readonly int totalAssets;
 
     public AssetUpdate(
-      ImmutableList<string> newAssets, ImmutableList<string> deletedAssets, 
+      ImmutableList<string> newAssets, ImmutableList<string> deletedAssets,
       ImmutableList<Move> movedAssets
     ) {
       this.newAssets = newAssets;

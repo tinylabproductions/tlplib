@@ -34,11 +34,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
     }
 
     class MediaPlayerBinding : Binding {
-      public MediaPlayerBinding() 
+      public MediaPlayerBinding()
         : base(new AndroidJavaObject("com.tinylabproductions.tlplib.video_player.VideoPlayerBridge")) { }
 
-      public void showVideo(string fileName, string clickUrl, VideoListener listener) 
-        => java.CallStatic("playFromStreamingAssets", fileName, clickUrl, listener); 
+      public void showVideo(string fileName, string clickUrl, VideoListener listener)
+        => java.CallStatic("playFromStreamingAssets", fileName, clickUrl, listener);
     }
 
     public class VideoListener : BaseAdListener {

@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
   public class AssetReferences {
     public readonly Dictionary<string, HashSet<string>> parents =
       new Dictionary<string, HashSet<string>>();
-    public readonly Dictionary<string, HashSet<string>> children = 
+    public readonly Dictionary<string, HashSet<string>> children =
       new Dictionary<string, HashSet<string>>();
     readonly Dictionary<string, string> pathToGuid =
       new Dictionary<string, string>();
@@ -86,9 +86,9 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     ) {
       progress.value = 0;
       Func<string, bool> predicate = p =>
-        p.EndsWithFast(".asset") 
-        || p.EndsWithFast(".prefab") 
-        || p.EndsWithFast(".unity") 
+        p.EndsWithFast(".asset")
+        || p.EndsWithFast(".prefab")
+        || p.EndsWithFast(".unity")
         || p.EndsWithFast(".mat");
 
       var assets = data.filter(predicate, _ => predicate(_.fromPath));
@@ -149,8 +149,8 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     }
 
     static void parseFile(
-      Dictionary<string, string> pathToGuid, ILog log, 
-      string assetPath, 
+      Dictionary<string, string> pathToGuid, ILog log,
+      string assetPath,
       Dictionary<string, HashSet<string>> updatedChildren
     ) {
       string guid;
@@ -170,7 +170,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     }
 
     static void addParents(
-      Dictionary<string, HashSet<string>> parents, 
+      Dictionary<string, HashSet<string>> parents,
       Dictionary<string, HashSet<string>> updatedChildren
     ) {
       foreach (var kv in updatedChildren) {

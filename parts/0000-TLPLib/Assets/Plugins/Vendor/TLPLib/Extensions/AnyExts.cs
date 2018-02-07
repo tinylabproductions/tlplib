@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class AnyExts {
-    /** 
+    /**
      * Useful in marking object creation just for side effects.
      *
      * For example:
@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
     public static To upcast<From, To>(this From any) where From : To => any;
-    public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To 
+    public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To
       => any.Select(_ => _.upcast<From, To>());
 
     public static A tap<A>(this A any, Act<A> tapper) {
@@ -40,8 +40,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (a is string) return $"'{a}'";
       var enumerable = a as IEnumerable;
       // ReSharper disable once InvokeAsExtensionMethod
-      return enumerable != null 
-        ? IEnumerableExts.asDebugString(enumerable) 
+      return enumerable != null
+        ? IEnumerableExts.asDebugString(enumerable)
         : a == null ? "null" : a.ToString();
     }
   }

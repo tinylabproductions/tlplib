@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public class TestTimeContext : ITimeContext {
     public readonly Duration timePerFrame;
 
-    readonly RandomList<Tpl<Duration, Action, string>> actions = 
+    readonly RandomList<Tpl<Duration, Action, string>> actions =
       new RandomList<Tpl<Duration, Action, string>>();
 
     public IOrderedEnumerable<Tpl<Duration, ImmutableList<string>>> debugActions =>
@@ -47,11 +47,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void reset() {
       actions.Clear();
       timePassed = 0.seconds();
-    } 
+    }
 
     void triggerActions() {
       // Actions might remove themselves as side effects, so we should first evaluate
-      // all actions that should be run, then remove the ran actions if they are still 
+      // all actions that should be run, then remove the ran actions if they are still
       // there.
       var toRun = actions.Where(t => t.ua((runAt, act, name) => {
         var shouldRun = timePassed >= runAt;
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       after(timePerFrame * framesToSkip, act, name);
 
     public override string ToString() {
-      var acts = debugActions.Select(t => 
+      var acts = debugActions.Select(t =>
         $"{t._1.asString()}:{t._2.Select(_ => _ ?? "?").mkStringEnum()}"
       ).mkStringEnum();
       return $"{nameof(TestTimeContext)}[@{timePassed.asString()}, acts={acts}]";

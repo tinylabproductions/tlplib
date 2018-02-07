@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Components.Forwarders {
 
     public IObservable<Unit> rectDimensionsChanged => _rectDimensionsChanged;
     public RectTransform rectTransform => (RectTransform) transform;
-     
+
     protected override void OnRectTransformDimensionsChange() => _rectDimensionsChanged.push(F.unit);
   }
 }

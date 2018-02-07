@@ -6,10 +6,10 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   public sealed class RendererSortingLayer : SortingLayerSetter {
     new Renderer renderer => GetComponent<Renderer>();
 
-    protected override void recordEditorChanges() => 
+    protected override void recordEditorChanges() =>
       renderer.recordEditorChanges("Renderer sorting layer changed");
 
-    protected override void apply(SortingLayerReference sortingLayer) => 
+    protected override void apply(SortingLayerReference sortingLayer) =>
       sortingLayer.applyTo(renderer);
 
     protected override SortingLayerAndOrder extract() {

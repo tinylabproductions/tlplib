@@ -7,7 +7,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
-    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Fn<A, B> mapper) => 
+    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Fn<A, B> mapper) =>
       new RxVal<B>(
         mapper(src.value),
         setValue => src.subscribeWithoutEmit(
@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
 
     public static IRxVal<R> zip<A1, A2, A3, A4, R>(
-      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, IRxVal<A4> a4Src, 
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, IRxVal<A4> a4Src,
       Fn<A1, A2, A3, A4, R> zipper
     ) =>
       new RxVal<R>(
@@ -135,7 +135,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
             lastKnownValue = value;
             setValue(value);
           }
-          
+
           var subscriptions = vals.Select(rx => rx.subscribe(
             NoOpDisposableTracker.instance,
             a => {
@@ -157,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           return subscriptions.joinSubscriptions();
         }
       );
-      
+
       return rxVal;
     }
 
@@ -166,13 +166,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) => vals.anyThat<A, IEnumerable<IRxVal<A>>>(predicate);
 
     public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
-      where C : IEnumerable<IRxVal<bool>> 
-    => 
+      where C : IEnumerable<IRxVal<bool>>
+    =>
       vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isSome);
 
     public static IRxVal<Option<A>> anyDefined<A>(
       this IEnumerable<IRxVal<Option<A>>> vals
-    ) => 
+    ) =>
       vals
       .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isSome)
       .map(_ => _.flatten());
@@ -182,11 +182,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Convert <see cref="IRxVal{A}"/> to <see cref="IObservable{B}"/>.
     ///
     /// Useful for converting from <see cref="IRxVal{A}"/> to event source. For example:
-    /// 
+    ///
     /// <code><![CDATA[
     ///   someRxVal.map(_ => F.unit)
     /// ]]></code>
-    /// 
+    ///
     /// would only emit one event, because the result of a map would be a <see cref="IRxVal{A}"/>
     /// that has a <see cref="Unit"/> type, which by it's definition only has one value.
     ///
@@ -197,16 +197,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// </summary>
     public static IObservable<B> toEventSource<A, B>(
       this IRxVal<A> rxVal, Fn<A, B> mapper
-    ) => new Observable<B>(onEvent => 
+    ) => new Observable<B>(onEvent =>
       rxVal.subscribe(NoOpDisposableTracker.instance, v => onEvent(mapper(v)))
     );
 
-    public static IObservable<Unit> toEventSource<A>(this IRxVal<A> o) => 
+    public static IObservable<Unit> toEventSource<A>(this IRxVal<A> o) =>
       o.toEventSource(_ => F.unit);
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
       this IRxVal<Option<A>> source, Fn<A, IRxVal<Option<B>>> extractor
-    ) => 
+    ) =>
       source.flatMap(aOpt =>
         aOpt.fold(
           () => RxVal.cached(F.none<B>()),
@@ -221,7 +221,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
       this IRxVal<Option<A>> source, Fn<A, Option<IRxVal<Option<B>>>> extractor
-    ) => 
+    ) =>
       source.flatMap(aOpt =>
         aOpt.flatMap(extractor).getOrElse(RxVal.cached(F.none<B>()))
       );
@@ -230,13 +230,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       this IRxVal<Option<A>> source, Fn<A, B> mapper
     ) => source.map(aOpt => aOpt.map(mapper));
 
-    public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) => 
+    public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) =>
       rxOpt.fold(RxVal.cached(F.none<A>()), val => val.map(a => a.some()));
 
-    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, Fn<A> onFiltered) => 
+    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, Fn<A> onFiltered) =>
       a => predicate(a) ? a : onFiltered();
 
-    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, A onFiltered) => 
+    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, A onFiltered) =>
       a => predicate(a) ? a : onFiltered;
   }
 }

@@ -71,7 +71,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       }
     }
 
-    public string[] blacklistedFields() => 
+    public string[] blacklistedFields() =>
       isSome
       ? new string[] {}
       : new [] { nameof(_value) };

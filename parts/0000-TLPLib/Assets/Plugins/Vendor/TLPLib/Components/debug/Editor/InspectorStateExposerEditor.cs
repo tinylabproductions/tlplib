@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
 
         first = false;
       }
-      
+
       // Update inspector every frame.
       Repaint();
     }

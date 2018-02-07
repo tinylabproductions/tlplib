@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }.sequenceValidations().shouldBeRightEnum(ImmutableList.Create(3, 4));
     }
   }
-  
+
   public class EitherTestIsLeft {
     [Test] public void WhenLeft() => new Either<int, string>(3).isLeft.shouldBeTrue();
     [Test] public void WhenRight() => new Either<int, string>("3").isLeft.shouldBeFalse();
@@ -111,17 +111,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public class EitherTestFlatMapLeft {
-    [Test] public void WhenLeftToLeft() => 
+    [Test] public void WhenLeftToLeft() =>
       new Either<int, string>(3)
       .flatMapLeft(i => new Either<char,string>(i.ToString()[0]))
       .shouldBeLeft('3');
 
-    [Test] public void WhenLeftToRight() => 
+    [Test] public void WhenLeftToRight() =>
       new Either<int, string>(3)
       .flatMapLeft(i => new Either<char,string>(i.ToString()))
       .shouldBeRight("3");
 
-    [Test] public void WhenRight() => 
+    [Test] public void WhenRight() =>
       new Either<int, string>("3")
       .flatMapLeft(i => new Either<char,string>('a'))
       .shouldBeRight("3");
@@ -193,12 +193,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class EitherTestToTry {
     static readonly Fn<int, Exception> onLeft = i => new ArgumentException(i.ToString());
 
-    [Test] public void WhenLeft() => 
+    [Test] public void WhenLeft() =>
       Either<int, string>.Left(3)
       .toTry(onLeft)
       .shouldBeError(typeof(ArgumentException));
 
-    [Test] public void WhenRight() => 
+    [Test] public void WhenRight() =>
       Either<int, string>.Right("foo")
       .toTry(onLeft)
       .shouldBeSuccess("foo");
@@ -211,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
   public class EitherTestUnsafeCastLeft {
     [Test]
-    public void WhenLeft() => 
+    public void WhenLeft() =>
       Assert.Throws<WrongEitherSideException>(() =>
         new Either<int, string>(3).__unsafeCastLeft<char>()
       );

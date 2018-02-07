@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.support.v4.content {
   public class ContextCompat {
-    static readonly AndroidJavaClass klass = 
+    static readonly AndroidJavaClass klass =
       new AndroidJavaClass("android.support.v4.content.ContextCompat");
 
     public static bool checkSelfPermission(

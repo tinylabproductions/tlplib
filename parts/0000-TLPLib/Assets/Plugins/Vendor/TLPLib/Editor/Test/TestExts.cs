@@ -17,7 +17,7 @@ using NUnit.Framework.Constraints;
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestBase {
     protected readonly IDisposableTracker tracker = new DisposableTracker();
-    
+
     [TearDown]
     public void CleanupIDisposableTracker() => tracker.Dispose();
 
@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Test {
         reference = new WeakReference(service, true);
       })();
 
-      // Service should have gone out of scope about now, 
+      // Service should have gone out of scope about now,
       // so the garbage collector can clean it up
       new object().forSideEffects();
       GC.Collect();
@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Test {
 
       Assert.IsNull(reference.Target);
     }
-    
+
     public static void shouldBeIdentical<A>(A a1, A a2) {
       a1.shouldEqual(a2);
       a2.shouldEqual(a1);
@@ -57,12 +57,12 @@ namespace com.tinylabproductions.TLPLib.Test {
   }
 
   public static class TestExts {
-    public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) => 
+    public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) =>
       Assert.IsEmpty(enumerable, message);
 
     public static void shouldBeEmpty<A>(
       this ICollection<A> enumerable, Fn<ICollection<A>, string> message = null
-    ) => 
+    ) =>
       Assert.IsEmpty(enumerable, message?.Invoke(enumerable));
 
     public static void shouldNotBeEmpty(this IEnumerable enumerable, string message = null) {
@@ -77,17 +77,17 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.False(b, message);
     }
 
-    public static void shouldEqual<A>(this A a, A expected, string message=null) => 
+    public static void shouldEqual<A>(this A a, A expected, string message=null) =>
       Assert.AreEqual(expected, a, message);
 
-    public static void shouldNotEqual<A>(this A a, A expected, string message=null) => 
+    public static void shouldNotEqual<A>(this A a, A expected, string message=null) =>
       Assert.AreNotEqual(expected, a, message);
 
     public static void shouldRefEqual<A>(
       this A a, A expected, string message = null
     ) where A : class {
       if (!ReferenceEquals(a, expected)) Assert.Fail(
-        message ?? 
+        message ??
         $"Expected expected={expected} and actual={a} to be the same reference, but they were not."
       );
     }
@@ -102,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldInclude(this string s, string substring, string message = null) {
       if (!s.Contains(substring))
         Assert.Fail(
-          $"\"{s}\" should include \"{substring}\", but it did not." + 
+          $"\"{s}\" should include \"{substring}\", but it did not." +
           F.opt(message).map(_ => $" {_}").getOrElse("")
         );
     }
@@ -110,7 +110,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotInclude(this string s, string substring, string message = null) {
       if (s.Contains(substring))
         Assert.Fail(
-          $"\"{s}\" should not include \"{substring}\", but it did." + 
+          $"\"{s}\" should not include \"{substring}\", but it did." +
           F.opt(message).map(_ => $" {_}").getOrElse("")
         );
     }
@@ -130,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldNotContain<A>(
-      this IEnumerable<A> enumerable, Fn<A, bool> predicate, 
+      this IEnumerable<A> enumerable, Fn<A, bool> predicate,
       Fn<A, string> message = null
     ) {
       foreach (var a in enumerable.find(predicate)) Assert.Fail(
@@ -160,7 +160,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       this IEnumerable a, IEnumerable expected, string message = null
     ) => CollectionAssert.AreEquivalent(expected, a, message);
 
-    public static void shouldEqualEnum<A>(this IEnumerable<A> a, params A[] expected) => 
+    public static void shouldEqualEnum<A>(this IEnumerable<A> a, params A[] expected) =>
       shouldEqualEnum(a, expected, null);
 
     public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
@@ -194,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       if (! either.isLeft) Assert.Fail(message ?? $"Expected {either} to be left!");
     }
 
-    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) => 
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) =>
       either.shouldEqual(F.left<A, B>(expected), message);
 
     public static void shouldBeLeftEnum<A, B>(
@@ -211,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       if (! either.isRight) Assert.Fail(message ?? $"Expected {either} to be right!");
     }
 
-    public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) => 
+    public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) =>
       either.shouldEqual(F.right<A, B>(expected), message);
 
     public static void shouldBeRightEnum<A, B>(
@@ -296,18 +296,18 @@ namespace com.tinylabproductions.TLPLib.Test {
       this Fn<R> fn, Val<A> measure, Numeric<A> num
     ) => fn.shouldChange(measure, num).by(0);
 
-    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Fn<int> measure) => 
+    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Fn<int> measure) =>
       fn.shouldChange(measure, Numeric.integer);
 
-    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Val<int> measure) => 
+    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Val<int> measure) =>
       fn.shouldChange(measure, Numeric.integer);
 
-    public static void shouldNotChange<R>(this Fn<R> fn, Fn<int> measure) => 
+    public static void shouldNotChange<R>(this Fn<R> fn, Fn<int> measure) =>
       fn.shouldChange(measure).by(0);
 
-    public static void shouldNotChange<R>(this Fn<R> fn, Val<int> measure) => 
+    public static void shouldNotChange<R>(this Fn<R> fn, Val<int> measure) =>
       fn.shouldChange(measure).by(0);
-    
+
     public static StreamMatcher<A> shouldPushTo<A>(
       this Action act, IObservable<A> obs
     ) => new StreamMatcher<A>(act, obs);
@@ -347,8 +347,8 @@ namespace com.tinylabproductions.TLPLib.Test {
       var actualChange = num.subtract(after, initial);
 
       if (message == null) {
-        message = 
-          i == 0 
+        message =
+          i == 0
           ? $"value should have not been changed, but it was changed " +
             $"from {initial} to {after} by {actualChange}"
           : $"value should have been changed from {initial} to {num.add(initial, change)} " +

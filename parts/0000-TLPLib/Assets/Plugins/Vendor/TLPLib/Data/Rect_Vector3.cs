@@ -14,8 +14,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public static Rect_Vector3 operator +(Rect_Vector3 r, Vector3 v) =>
       new Rect_Vector3(r.lowerLeft + v, r.lowerRight + v, r.upperLeft + v, r.upperRight + v);
-    
-    public static implicit operator Rect_Vector2(Rect_Vector3 r) => 
+
+    public static implicit operator Rect_Vector2(Rect_Vector3 r) =>
       new Rect_Vector2(r.lowerLeft, r.lowerRight, r.upperLeft, r.upperRight);
 
     #region Equality

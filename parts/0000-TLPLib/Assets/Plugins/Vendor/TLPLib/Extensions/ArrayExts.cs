@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (count < 0) count = a.Length - startIndex;
       var endIdxExclusive = startIndex + count;
       if (endIdxExclusive > a.Length) throw new ArgumentOutOfRangeException(
-        nameof(count), 
+        nameof(count),
         $"{nameof(count)}({count}) is too big (arr size: {a.Length}, {nameof(endIdxExclusive)}={endIdxExclusive})"
       );
       var arr = new A[count];
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       var b = ImmutableArray.CreateBuilder<To>(source.Length);
       foreach (var a in source) b.Add(mapper(a));
-      return b.MoveToImmutable(); 
+      return b.MoveToImmutable();
     }
 
     /// <summary>

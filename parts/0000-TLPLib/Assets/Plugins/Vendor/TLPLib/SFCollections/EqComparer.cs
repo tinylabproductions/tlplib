@@ -8,7 +8,7 @@ namespace Smooth.Collections {
 	/// </summary>
 	public abstract class EqComparer<T> : IEqualityComparer<T> {
 		private static IEqualityComparer<T> _default;
-		
+
 		public static IEqualityComparer<T> Default {
 			get {
 				if (_default == null) {
@@ -18,9 +18,9 @@ namespace Smooth.Collections {
 			}
 			set { _default = value; }
 		}
-		
+
 		public abstract bool Equals(T lhs, T rhs);
-		
+
 		public abstract int GetHashCode(T t);
 	}
 }

@@ -16,17 +16,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return bArr;
     }
 
-    public static Range indexRange<A>(this ICollection<A> coll) => 
+    public static Range indexRange<A>(this ICollection<A> coll) =>
       new Range(0, coll.Count - 1);
 
     /// <summary>
     /// Given a collection of tuples (A, B), shuffle their Bs.
-    /// 
+    ///
     /// For example:
     /// <code><![CDATA[
     /// Given           : [(1, '1'), (2, '2'), (3, '3')]
     /// (one of) results: [(1, '3'), (2, '1'), (3, '2')]
-    /// ]]></code> 
+    /// ]]></code>
     /// </summary>
     public static ImmutableList<TupleType> shuffleTuplePairs<TupleType, A, B>(
       this ICollection<TupleType> tuples, ref Rng rng,
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Fn<A, B, TupleType> createTuple
     ) {
       var r = rng;
-      var result = 
+      var result =
         tuples.Select(extractFirst)
         .zip(
           tuples.Select(extractSecond).OrderBySafe(_ => r.nextInt(out r)),

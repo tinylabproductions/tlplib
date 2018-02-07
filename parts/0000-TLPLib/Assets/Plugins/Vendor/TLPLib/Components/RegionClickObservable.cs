@@ -7,11 +7,11 @@ using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  /* Divides screen into X * Y grid and emits new region index when a pointer 
-   * moves between different regions. 
-   * 
+  /* Divides screen into X * Y grid and emits new region index when a pointer
+   * moves between different regions.
+   *
    * For example, if width=2, height=2, regions would be:
-   * 
+   *
    * /-------\
    * | 2 | 3 |
    * |---+---|

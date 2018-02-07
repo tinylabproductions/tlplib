@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   /// <summary>
   /// A thing you save in to resources folder that allows you to reference something outside
-  /// of resources folder. 
+  /// of resources folder.
   /// </summary>
   public abstract partial class ResourceReference<A> : ScriptableObject where A : Object {
 #pragma warning disable 649
@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
   public static class ResourceReference {
 #if UNITY_EDITOR
-    public static SO create<SO, A>(string path, A reference) 
+    public static SO create<SO, A>(string path, A reference)
       where SO : ResourceReference<A> where A : Object
     {
       var so = ScriptableObject.CreateInstance<SO>();
@@ -42,8 +42,8 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
       var path = loadPath.unityPath;
       var csr = Resources.Load<ResourceReference<A>>(path);
-      return csr 
-        ? F.right<string, A>(csr.reference) 
+      return csr
+        ? F.right<string, A>(csr.reference)
         : F.left<string, A>(notFound(path));
     }
 
@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
-    ) where A : Object => 
+    ) where A : Object =>
       loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
 
     public static IEnumerator waitForLoadCoroutine<A>(

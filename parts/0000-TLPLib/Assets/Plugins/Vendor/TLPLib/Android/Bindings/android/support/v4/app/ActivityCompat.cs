@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.support.v4.app {
   public class ActivityCompat : ContextCompat {
-    static readonly AndroidJavaClass klass = 
+    static readonly AndroidJavaClass klass =
       new AndroidJavaClass("android.support.v4.app.ActivityCompat");
 
     static readonly PrefVal<ImmutableHashSet<string>> permissionsRequestedBefore =
@@ -17,12 +17,12 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.support.v4.app 
       );
 
     /// <summary>
-    /// This method returns true if the app has requested this permission previously 
+    /// This method returns true if the app has requested this permission previously
     /// and the user denied the request.
-    /// 
-    /// Note: If the user turned down the permission request in the past and chose 
-    /// the Don't ask again option in the permission request system dialog, 
-    /// this method returns false. The method also returns false if a device policy 
+    ///
+    /// Note: If the user turned down the permission request in the past and chose
+    /// the Don't ask again option in the permission request system dialog,
+    /// this method returns false. The method also returns false if a device policy
     /// prohibits the app from having that permission.
     /// </summary>
     public static bool shouldShowRequestPermissionRationale(
@@ -33,14 +33,14 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.support.v4.app 
     );
 
     /// <summary>
-    /// Same as <see cref="shouldShowRequestPermissionRationale"/>, but checks with a 
+    /// Same as <see cref="shouldShowRequestPermissionRationale"/>, but checks with a
     /// local <see cref="PrefVal"/> to check if this is the first time we ask for this
     /// permission.
     /// </summary>
     public static bool shouldShowRequestPermissionRationaleIncludingFirstTime(
       string permission, Activity activity = null
-    ) => 
-      !permissionsRequestedBefore.value.Contains(permission) 
+    ) =>
+      !permissionsRequestedBefore.value.Contains(permission)
       || shouldShowRequestPermissionRationale(permission, activity);
 
     public static void requestPermissions(

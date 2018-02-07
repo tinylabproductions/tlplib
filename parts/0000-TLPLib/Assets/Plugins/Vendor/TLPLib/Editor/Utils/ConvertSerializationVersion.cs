@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     [MenuItem(MENU_PATH, false)]
     public static void ConvertSerializationVersion53() { ConvertSelectedAssetSerializationVersion(); }
-  
+
     [MenuItem(MENU_PATH, true)]
     public static bool ValidateAsset() {
       if (Selection.activeObject == null || Selection.activeObject is DefaultAsset)
