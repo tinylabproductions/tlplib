@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
         return new Subscription(() => button.Click -= dlg);
       });
     }
-    
+
     /*********** One-way binds ***********/
 
     public static ISubscription bind<A>(
@@ -145,10 +145,10 @@ namespace com.tinylabproductions.TLPLib.Binding {
       Fn<T, string> mapper, Fn<string, T> comapper
     ) {
       var optSubject = RxRef.a(F.some(subject.value));
-      var optSubjectSourceSubscription = subject.subscribe(v => 
+      var optSubjectSourceSubscription = subject.subscribe(v =>
         optSubject.value = F.some(v)
       );
-      var optSubjectTargetSubscription = optSubject.subscribe(opt => 
+      var optSubjectTargetSubscription = optSubject.subscribe(opt =>
         opt.each(v => subject.value = v)
       );
 
@@ -167,7 +167,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       Action uncheckAll = () => {
         foreach (var cb in checkboxes) cb.IsChecked = false;
       };
-      Act<Option<T>, string> check = (v, name) => 
+      Act<Option<T>, string> check = (v, name) =>
         checkboxes.hIter().find(cb => cb.name == name).voidFold(
           () => {
             throw new Exception(String.Format(
@@ -181,7 +181,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       uncheckAll();
       subject.value.map(mapper).each(name => check(subject.value, name));
 
-      var subscription = subject.subscribe(v => 
+      var subscription = subject.subscribe(v =>
         v.map(mapper).voidFold(uncheckAll, name => check(v, name))
       );
       PropertyChangedEventHandler<bool> handler = (control, selected) => {
@@ -257,7 +257,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     }
 
     public static ISubscription bind<T>(
-      this IRxRef<T> subject, 
+      this IRxRef<T> subject,
       Fn<T, string> mapper, Fn<string, T> comapper,
       Act<string> changeControlText,
       Act<PropertyChangedEventHandler<string>> subscribeToControlChanged,
@@ -265,7 +265,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     ) {
       var f = mapper.andThen(changeControlText);
       var subscription = subject.subscribe(f);
-      PropertyChangedEventHandler<string> handler = 
+      PropertyChangedEventHandler<string> handler =
         (c, value) => subject.value = comapper(value);
       subscribeToControlChanged(handler);
       return new Subscription(() => {

@@ -9,7 +9,7 @@ using UnityEngine.Events;
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static class UnityEventReflector {
     const string
-      UnityEngineAssembly = 
+      UnityEngineAssembly =
         "UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
       UnityEngineEventsPersistentCallGroup =
         "UnityEngine.Events.PersistentCallGroup, " + UnityEngineAssembly,
@@ -73,11 +73,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         "RebuildPersistentCallsIfNeeded",
         BindingFlags.Instance | BindingFlags.NonPublic
       );
-      rebuildPersistentCallsIfNeeded = 
+      rebuildPersistentCallsIfNeeded =
         ue => m_RebuildPersistentCallsIfNeeded.Invoke(ue, noArgs);
 
       var f_PersistentCalls = baseType.GetField(
-        "m_PersistentCalls", 
+        "m_PersistentCalls",
         BindingFlags.Instance | BindingFlags.NonPublic
       );
       persistentCalls = ue => new PersistentCallGroup(f_PersistentCalls.GetValue(ue));

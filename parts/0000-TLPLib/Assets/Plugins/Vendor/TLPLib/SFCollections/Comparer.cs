@@ -8,7 +8,7 @@ namespace Smooth.Collections {
 	/// </summary>
 	public abstract class Comparer<T> : IComparer<T> {
 		private static IComparer<T> _default;
-		
+
 		public static IComparer<T> Default {
 			get {
 				if (_default == null) {

@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   public class DurationTestArithmetic {
     [Test]
-    public void Addition() => 
+    public void Addition() =>
       (new Duration(150) + new Duration(300)).shouldEqual(new Duration(450));
 
     [Test]

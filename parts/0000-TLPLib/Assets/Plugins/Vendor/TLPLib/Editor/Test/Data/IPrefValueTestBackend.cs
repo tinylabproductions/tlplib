@@ -5,7 +5,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public class IPrefValueTestBackend : IPrefValueBackend {
-    public readonly Dictionary<string, OneOf<string, int, float>> storage = 
+    public readonly Dictionary<string, OneOf<string, int, float>> storage =
       new Dictionary<string, OneOf<string, int, float>>();
 
     public bool hasKey(string name) =>

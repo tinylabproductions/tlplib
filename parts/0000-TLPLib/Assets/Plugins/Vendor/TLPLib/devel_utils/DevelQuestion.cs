@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.devel_utils {
         $"]"
       );
 #if UNITY_EDITOR
-      return enabled 
+      return enabled
         ? UnityEditor.EditorUtility.DisplayDialog(title, info, yesButtonText, noButtonText)
         : defaultValue;
 #else

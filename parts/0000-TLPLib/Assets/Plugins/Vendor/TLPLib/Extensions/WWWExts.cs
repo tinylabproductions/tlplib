@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class WWWExts {
-    public static Either<WWWError, WWW> toEither(this WWW www) => 
+    public static Either<WWWError, WWW> toEither(this WWW www) =>
       string.IsNullOrEmpty(www.error)
       ? F.right<WWWError, WWW>(www)
       : F.left<WWWError, WWW>(new WWWError(www));
@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           : Either<WWWError, Texture2D>.Left(new WWWError(www, "WWW didn't produce a texture!"));
       });
 
-    public static WWWWithHeaders headers(this WWW www) => 
+    public static WWWWithHeaders headers(this WWW www) =>
       new WWWWithHeaders(www, www.responseHeaders.asReadOnly());
 
     public static void trackWWWSend(this WWW www, string prefix, Dictionary<string, string> headers) {
@@ -61,8 +61,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
   }
 
-  /** 
-   * Struct that wraps the parsed headers, because `www.responseHeaders` parses headers 
+  /**
+   * Struct that wraps the parsed headers, because `www.responseHeaders` parses headers
    * each time it is called.
    **/
   public struct WWWWithHeaders {

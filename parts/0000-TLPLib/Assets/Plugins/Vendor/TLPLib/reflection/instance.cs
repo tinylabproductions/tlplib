@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.reflection {
   public static class PrivateField {
-    public static Fn<ObjectType, FieldType> getter<ObjectType, FieldType>(string fieldName) => 
+    public static Fn<ObjectType, FieldType> getter<ObjectType, FieldType>(string fieldName) =>
       a => accessor<ObjectType, FieldType>(fieldName)(a).value;
 
     public static Fn<ObjectType, Ref<FieldType>> accessor<ObjectType, FieldType>(string fieldName) {
@@ -15,8 +15,8 @@ namespace com.tinylabproductions.TLPLib.reflection {
       );
 
       return a => new LambdaRef<FieldType>(
-        () => (FieldType) fieldInfo.GetValue(a), 
-        valueToSet => fieldInfo.SetValue(a, valueToSet) 
+        () => (FieldType) fieldInfo.GetValue(a),
+        valueToSet => fieldInfo.SetValue(a, valueToSet)
       );
     }
   }

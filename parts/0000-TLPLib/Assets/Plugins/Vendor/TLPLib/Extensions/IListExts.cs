@@ -11,16 +11,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IListExts {
     public static A a<A>(this IList<A> list, int index) {
       if (index < 0 || index >= list.Count) throw new ArgumentOutOfRangeException(
-        nameof(index), 
+        nameof(index),
         $"Index invalid for IList<{typeof(A)}> (count={list.Count}): {index}"
       );
       return list[index];
     }
 
-    public static Option<T> get<T>(this IList<T> list, int index) => 
+    public static Option<T> get<T>(this IList<T> list, int index) =>
       index >= 0 && index < list.Count ? F.some(list[index]) : F.none<T>();
 
-    public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) => 
+    public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) =>
       index >= 0 && index < list.Count ? list[index] : defaultValue;
 
     public static List<A> reversed<A>(this List<A> list) {
@@ -71,7 +71,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isEmpty<A>(this IList<A> list) => list.Count == 0;
     public static bool nonEmpty<A>(this IList<A> list) => list.Count != 0;
 
-    public static Option<A> random<A>(this IList<A> list) => 
+    public static Option<A> random<A>(this IList<A> list) =>
       list.randomIndex().map(idx => list[idx]);
 
     public static Option<A> random<A>(this IList<A> list, ref Rng rng) =>
@@ -80,28 +80,28 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<Tpl<Rng, A>> randomT<A>(this IList<A> list, Rng rng) =>
       list.randomIndexT(rng).map(t => t.map2(idx => list[idx]));
 
-    public static A random<C, A>(this NonEmpty<C> list, ref Rng rng) 
-      where C : IReadOnlyList<A> 
-    => 
+    public static A random<C, A>(this NonEmpty<C> list, ref Rng rng)
+      where C : IReadOnlyList<A>
+    =>
       list.a[rng.nextIntInRange(new Range(0, list.a.Count - 1), out rng)];
 
-    public static A random<A>(this NonEmpty<ImmutableList<A>> list, ref Rng rng) => 
+    public static A random<A>(this NonEmpty<ImmutableList<A>> list, ref Rng rng) =>
       random<ImmutableList<A>, A>(list, ref rng);
 
-    public static A random<A>(this NonEmpty<ImmutableArray<A>> list, ref Rng rng) => 
+    public static A random<A>(this NonEmpty<ImmutableArray<A>> list, ref Rng rng) =>
       random<ImmutableArray<A>, A>(list, ref rng);
 
-    public static Option<int> randomIndex<A>(this IList<A> list) => 
+    public static Option<int> randomIndex<A>(this IList<A> list) =>
       list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
 
-    public static Option<int> randomIndex<A>(this IList<A> list, ref Rng rng) => 
-      list.Count == 0 
-      ? F.none<int>() 
+    public static Option<int> randomIndex<A>(this IList<A> list, ref Rng rng) =>
+      list.Count == 0
+      ? F.none<int>()
       : F.some(rng.nextIntInRange(new Range(0, list.Count - 1), out rng));
 
-    public static Option<Tpl<Rng, int>> randomIndexT<A>(this IList<A> list, Rng rng) => 
-      list.Count == 0 
-      ? F.none<Tpl<Rng, int>>() 
+    public static Option<Tpl<Rng, int>> randomIndexT<A>(this IList<A> list, Rng rng) =>
+      list.Count == 0
+      ? F.none<Tpl<Rng, int>>()
       : F.some(rng.nextIntInRangeT(new Range(0, list.Count - 1)));
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {

@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         deletedAssets.ToImmutableList(),
         movedFromAssetPaths.zip(movedAssets).Select(t => new AssetUpdate.Move(t._1, t._2)).ToImmutableList()
       );
-      
+
       AssetReferencesWindow.processFiles(data);
     }
   }
@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         }
       });
     }
-    
+
     static readonly Ref<float> progress = Ref.a(0f);
     static volatile bool processing, needsRepaint;
     static Option<AssetReferences> refsOpt;
@@ -211,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     void OnSelectionChange() => Repaint();
 
     readonly IDisposableTracker tracker = new DisposableTracker();
-    
+
     public void OnEnable() {
       wantsMouseMove = true;
       locked.subscribe(tracker, v => {

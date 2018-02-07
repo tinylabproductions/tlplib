@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var e = new[] {9, 8};
 
       Assert.AreEqual(
-        new[] { 1, 2, 3, 2, 3, 4, 10, 11, 12, 13, 9, 8 }, 
+        new[] { 1, 2, 3, 2, 3, 4, 10, 11, 12, 13, 9, 8 },
         a.concat(b, c, d, e)
       );
       Assert.AreEqual(
@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       source.slice(0).shouldEqual(source);
       for (var startIdx = 0; startIdx < source.Length; startIdx++)
         source.slice(startIdx, 0).shouldEqual(
-          new int[0], 
+          new int[0],
           $"count=0 should return empty slice for {nameof(startIdx)}={startIdx}"
         );
       Assert.Throws<ArgumentOutOfRangeException>(() => source.slice(source.Length, 0));

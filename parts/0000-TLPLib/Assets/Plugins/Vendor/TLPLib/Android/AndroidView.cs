@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     /* [2017-05-18] usage of this method was removed.
      * With Unity 5.5 screen resizing randomly while loading issue came up
      * and removing this seems like it fixes the issue */
-    /* If the layout is stable, screen space never changes, but navigation buttons just 
+    /* If the layout is stable, screen space never changes, but navigation buttons just
      * become a black stripe and never hides. */
     public static Future<bool> hideNavigationBar(bool stableLayout) {
       if (Application.platform != RuntimePlatform.Android) return Future.successful(false);

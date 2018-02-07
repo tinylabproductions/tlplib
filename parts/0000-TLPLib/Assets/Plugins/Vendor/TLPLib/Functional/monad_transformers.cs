@@ -25,9 +25,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Either<A, Option<B>> extract<A, B>(this Option<Either<A, B>> o) {
       if (o.isSome) {
         var e = o.__unsafeGetValue;
-        return 
-          e.isLeft 
-            ? Either<A, Option<B>>.Left(e.__unsafeGetLeft) 
+        return
+          e.isLeft
+            ? Either<A, Option<B>>.Left(e.__unsafeGetLeft)
             : Either<A, Option<B>>.Right(e.__unsafeGetRight.some());
       }
       return F.none<B>();
@@ -39,9 +39,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static IEnumerable<Option<A>> extract<A>(
       this Option<IEnumerable<A>> opt
-    ) => 
-      opt.isNone 
-        ? Enumerable.Empty<Option<A>>() 
+    ) =>
+      opt.isNone
+        ? Enumerable.Empty<Option<A>>()
         : opt.__unsafeGetValue.Select(a => a.some());
 
     #endregion

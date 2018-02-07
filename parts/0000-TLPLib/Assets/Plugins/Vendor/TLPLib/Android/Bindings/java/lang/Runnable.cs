@@ -3,7 +3,7 @@ using System;
 
 namespace com.tinylabproductions.TLPLib.Android.java.lang {
   /**
-   * Better AndroidJavaRunnableProxy which implements standard java.lang.Object 
+   * Better AndroidJavaRunnableProxy which implements standard java.lang.Object
    * methods in case someone wants to call them.
    **/
   public class Runnable : JavaProxy {

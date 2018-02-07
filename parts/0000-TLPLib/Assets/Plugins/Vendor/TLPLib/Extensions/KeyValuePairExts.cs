@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class KeyValuePairExts {
     public static KeyValuePair<KK, VV> map<K, KK, V, VV>(
-      this KeyValuePair<K, V> kv, 
+      this KeyValuePair<K, V> kv,
       Fn<K, KK> keyMapper, Fn<V, VV> valueMapper
     ) => new KeyValuePair<KK, VV>(keyMapper(kv.Key), valueMapper(kv.Value));
 

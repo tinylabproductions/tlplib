@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.caching {
       this.bimap = bimap;
     }
 
-    public ICachedBlob<B> blobFor(string name) => 
+    public ICachedBlob<B> blobFor(string name) =>
       backing.blobFor(name).bimap(bimap);
   }
 }

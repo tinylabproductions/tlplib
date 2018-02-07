@@ -17,10 +17,10 @@ using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
    * Notes:
-   * 
-   * #subscribe - if you subscribe to an observable during a callback, you 
+   *
+   * #subscribe - if you subscribe to an observable during a callback, you
    * will not get the current event.
-   * 
+   *
    * <code>
    * void example(IObservable<A> observable) {
    *   observable.subscribe(a => {
@@ -31,12 +31,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    *   });
    * }
    * </code>
-   * 
+   *
    * You will not get the A1 log statement here if you only submit one value into the observable.
-   * 
-   * #submit - all subscribers will be notified about current value, before 
+   *
+   * #submit - all subscribers will be notified about current value, before
    * doing a submission of next value. Thus
-   * 
+   *
    * <code>
    * void example(Subject<int> observable) {
    *   observable.subscribe(a => {
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    *   observable.push(0);
    * }
    * </code>
-   * 
+   *
    * Will print A1=0,A2=0 and then A1=1,A2=1, not A1=0,A1=1,A2=1,A2=0
    **/
   public interface IObservable {
@@ -59,12 +59,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public interface IObservable<out A> : IObservable {
     /// <summary>
     /// Subscribe to this observable to get a value every time an event happens.
-    /// 
+    ///
     /// Before using this you need to understand how lifetime of subscriptions and observables
     /// work.
-    /// 
+    ///
     /// This diagram shows types of references that exist between various objects in observables.
-    /// 
+    ///
     /// <code><![CDATA[
     ///       +--------------+
     ///       | Subscription |
@@ -74,58 +74,58 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///          |        |
     ///          |       \|/
     ///    +------------------+        +-------------+        +------------------------------+
-    ///    |    Observable    |------->| Action Code |------->| Object to perform effects on | 
+    ///    |    Observable    |------->| Action Code |------->| Object to perform effects on |
     ///    +------------------+        +-------------+        +------------------------------+
     /// ]]></code>
-    /// 
+    ///
     /// Observables are divided into two major groups: sources and transformations.
-    /// 
+    ///
     /// ### Sources
-    /// 
+    ///
     /// Sources are things, where events originate (for example <see cref="Subject{A}"/>). They
     /// are usually referenced with a hard reference in some other object and emit events when
     /// things happen in Unity, for example:
-    /// 
+    ///
     /// <code><![CDATA[
     /// public class OnUpdateForwarder : MonoBehaviour, IMB_Update {
     ///   readonly Subject<Unit> _onUpdate = new Subject<Unit>();
     ///   public IObservable<Unit> onUpdate => _onUpdate;
-    /// 
+    ///
     ///   public void Update() => _onUpdate.push(F.unit);
     /// }
     /// ]]></code>
-    /// 
+    ///
     /// They are garbage collected when the underlying MonoBehaviour is collected.
-    /// 
+    ///
     /// ### Transformations
-    /// 
+    ///
     /// Transformations are observables that emit events based on one or more source observables.
-    /// 
+    ///
     /// For example <see cref="ObservableOps.zip{A1,A2,R}(com.tinylabproductions.TLPLib.Reactive.IObservable{A1},com.tinylabproductions.TLPLib.Reactive.IObservable{A2},System.Fn{A1,A2,R})"/>
     /// takes two observables and produces an observable that emits tupled values.
-    /// 
+    ///
     /// Transformations have a nice property, that if nobody is listening to them, they do not have to listen
     /// to their source as well.
-    /// 
+    ///
     /// This allows them to only run the transformation code in case they have listeners subscribed.
-    /// 
+    ///
     /// However this also implies that they hold a hard reference to their source, because they need to be
     /// able to subscribe or unsubscribe to their source at any time.
-    /// 
+    ///
     /// Lets look into how memory layout looks for them.
-    /// 
+    ///
     /// These observables are often not explicitly referenced, for example:
-    /// 
+    ///
     /// <code><![CDATA[
     /// this.someEventSource =
     ///   observableA.zip(observableB)
     ///   .map(t => Mathf.max(t._1, t._2))
     ///   .filter(_ => _ > 10);
     /// ]]></code>
-    /// 
+    ///
     /// Here zip and map are not explicitly referenced, however each operation creates an intermediate
     /// observable. The memory layout looks like this.
-    /// 
+    ///
     /// <code><![CDATA[
     ///                   source hard ref
     ///                 /-----------------
@@ -137,7 +137,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///                 /-----------------                           source | hard ref
     ///                |/ source hard ref                                   |
     ///   +-------------+                                          +-------------------+
-    ///   | observableB |                                          | filter observable | 
+    ///   | observableB |                                          | filter observable |
     ///   +-------------+                                          +-------------------+
     ///                                                                    /|\
     ///                                                            hard ref | this.someEventSource
@@ -145,33 +145,33 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///                                                                 +-------+
     ///                                                                 | this  |
     /// ]]></code>                                                      +-------+
-    /// 
+    ///
     /// As you can see, all the references point backwards and the only thing that is keeping the whole
     /// thing from being garbage collected is a hard reference from this. If this were to be collected, so would
     /// be the whole observable chain.
-    /// 
+    ///
     /// On the other hand if observableA and observableB are sources and no one has references to them, new
     /// events can not be emmited and the whole thing is kept in memory for no reason.
-    /// 
+    ///
     /// Unfortunately this is a design limitation.
-    /// 
+    ///
     /// You can either:
     /// 1. have references pointing backwards. You do not perform calculations when no one is listening, however
     ///    you cannot garbage collect when no one can emit an event (references to sources are lost).
     /// 2. have references pointing forwards. You do perform calculations even if no one is listening, however
     ///    you can garbage collect if all references to sources are lost.
-    /// 
-    /// We feel that option 1 is more likely in day to day code. 
-    /// 
+    ///
+    /// We feel that option 1 is more likely in day to day code.
+    ///
     /// If you subscribe to this.someEventSource, it subscribes to map observable, which subscribes
     /// to zip, which then in turn subscribes to observableA and observableB, which are source, not transformation
     /// observables.
-    /// 
-    /// The memory layout then looks like this (action objects between observables ommited for brevity). 
-    /// 
+    ///
+    /// The memory layout then looks like this (action objects between observables ommited for brevity).
+    ///
     /// <code><![CDATA[
     ///                   source hard ref              act hard ref
-    ///                 /-----------------            -----------------\ 
+    ///                 /-----------------            -----------------\
     ///                |/                 \          /                 \|
     ///   +-------------+ act hard ref +----------------+ source   +----------------+
     ///   | observableA |------------->| zip observable |<---------| map observable |-------\
@@ -180,9 +180,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///                 /-----------------    |                      source | hard ref      | ref
     ///                |/ source hard ref     |                             |               |
     ///   +-------------+                     |    act hard ref    +-------------------+    |
-    ///   | observableB |--------------------/   /-----------------| filter observable |<---/ 
+    ///   | observableB |--------------------/   /-----------------| filter observable |<---/
     ///   +-------------+  act hard ref          |           _____ +-------------------+
-    ///                                          |          |     /|\      /|\ 
+    ///                                          |          |     /|\      /|\
     ///                                          |          |      |        |  hard ref
     ///                                         \|/         |      |        |  this.someEventSource
     ///                               +--------------+      |      |    +-------+
@@ -193,22 +193,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///                                                 | Subscription |
     ///                                                 +--------------+
     /// ]]></code>
-    /// 
+    ///
     /// ### Closing points
-    /// 
+    ///
     /// When using observables we need to ensure we do not leak memory.
-    /// 
+    ///
     /// The easiest way to do that is to force a user to give an <see cref="IDisposableTracker"/> that is
     /// responsible for cleaning up the subscription when the object on which the subscription action works
-    /// is destroyed. 
-    ///  
+    /// is destroyed.
+    ///
     /// For caller information please refer to
     /// https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/caller-information
     /// </summary>
     ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     );
   }
@@ -276,7 +276,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     static IObservable<List<Touch>> touchesInstance;
 
-    public static IObservable<List<Touch>> touches => 
+    public static IObservable<List<Touch>> touches =>
       touchesInstance ?? (touchesInstance = createTouchesInstance());
 
     static IObservable<List<Touch>> createTouchesInstance() {
@@ -319,7 +319,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #endregion
 
-    public static IObservable<DateTime> interval(Duration interval, Duration delay) => 
+    public static IObservable<DateTime> interval(Duration interval, Duration delay) =>
       Observable.interval(interval, F.some(delay));
 
     public static IObservable<DateTime> interval(
@@ -359,7 +359,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   public partial class Observable<A> : IObservable<A> {
     public delegate ISubscription SubscribeToSource(Act<A> onEvent);
-    
+
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
@@ -400,7 +400,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
       public readonly bool active;
-      
+
       readonly bool haveUnsubscribed;
       readonly WeakReference<Subscription> subscription;
       readonly string callerMemberName, callerFilePath;
@@ -417,12 +417,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       } }
 
       public Sub withActive(bool active) => new Sub(
-        onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription, 
+        onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription,
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
       );
-      
+
       public Sub unsubscribe() => new Sub(
-        onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription, 
+        onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription,
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
       );
     }
@@ -472,33 +472,33 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
       }
     }
-    
+
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
     public virtual ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       // Hard ref from subscription to this
       var subscription = new Subscription(() => onUnsubscribed(onEvent));
       tracker.track(
-        subscription, 
+        subscription,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
       );
-      
+
       var active = !iterating;
       subscriptions.Add(new Sub(
-        onEvent: onEvent, active: active, haveUnsubscribed: false, 
+        onEvent: onEvent, active: active, haveUnsubscribed: false,
         subscription: WeakReference.a(subscription),
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, 
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath,
         callerLineNumber: callerLineNumber
       ));
       if (!active) pendingSubscriptionActivations++;
-      
+
       // Subscribe to source if we have a first subscriber.
       foreach (var source in sourceProps)
         source.trySubscribe();
@@ -542,6 +542,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     #endregion
-    
+
   }
 }

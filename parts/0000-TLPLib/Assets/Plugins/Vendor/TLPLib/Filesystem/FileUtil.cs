@@ -4,7 +4,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
   public class FileUtil {
     /**
      * Because Unity method sucks balls with uninformative error messages.
-     * 
+     *
      * Source: https://msdn.microsoft.com/en-us/library/bb762914(v=vs.110).aspx
      **/
     public static void copyDirectory(PathStr source, PathStr destination) {

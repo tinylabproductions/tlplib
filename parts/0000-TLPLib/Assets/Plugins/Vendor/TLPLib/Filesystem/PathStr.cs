@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 #pragma warning restore 649
 
     #endregion
-    
+
     public string path => _path;
 
     public PathStr(string path) {
@@ -54,12 +54,12 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     // Use this with Unity Resources, AssetDatabase and PrefabUtility methods
     public string unityPath => Path.DirectorySeparatorChar == '/' ? path : path.Replace('\\' , '/');
 
-    public static readonly ISerializedRW<PathStr> serializedRW = 
+    public static readonly ISerializedRW<PathStr> serializedRW =
       SerializedRW.str.map(s => new PathStr(s).some(), path => path.path);
   }
 
   public static class PathStrExts {
-    static Option<PathStr> onCondition(this string s, bool condition) => 
+    static Option<PathStr> onCondition(this string s, bool condition) =>
       (condition && s != null).opt(new PathStr(s));
 
     public static Option<PathStr> asFile(this string s) => s.onCondition(File.Exists(s));

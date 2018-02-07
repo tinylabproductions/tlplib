@@ -5,14 +5,14 @@ using com.tinylabproductions.TLPLib.Functional;
 using Smooth.Comparisons;
 
 namespace Smooth.Collections {
-	
+
 	/// <summary>
 	/// Extension methods for IList<>s.
 	/// </summary>
 	public static class IListExtensions {
-		
+
 		#region Randomize
-		
+
 		/// <summary>
 		/// If the specified list is empty, returns an empty option; otherwise, returns an option containing a random element from the specified list.
 		/// </summary>
@@ -35,9 +35,9 @@ namespace Smooth.Collections {
 		}
 
 		#endregion
-		
+
 		#region Sort
-		
+
 		/// <summary>
 		/// Sorts the specified list using an insertion sort algorithm and the default sort comparer for T.
 		/// </summary>
@@ -48,7 +48,7 @@ namespace Smooth.Collections {
 		public static void InsertionSort<T>(this IList<T> ts) {
 			InsertionSort(ts, Comparisons<T>.Default);
 		}
-		
+
 		/// <summary>
 		/// Sorts the specified list using an insertion sort algorithm and the specified comparer.
 		/// </summary>
@@ -59,7 +59,7 @@ namespace Smooth.Collections {
 		public static void InsertionSort<T>(this IList<T> ts, IComparer<T> comparer) {
 			InsertionSort(ts, Comparisons<T>.ToComparison(comparer));
 		}
-		
+
 		/// <summary>
 		/// Sorts the specified list using an insertion sort algorithm and the specified comparison.
 		/// </summary>

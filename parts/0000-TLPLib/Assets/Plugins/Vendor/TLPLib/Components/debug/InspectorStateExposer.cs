@@ -11,7 +11,7 @@ using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 namespace com.tinylabproductions.TLPLib.Components.debug {
   /// <summary>
   /// Exposes fields of non-monobehaviour objects to unity inspector.
-  /// 
+  ///
   /// <see cref="InspectorStateExposerExts"/> and <see cref="InspectorStateExposerExts.exposeAllToInspector{A}"/>
   /// </summary>
   public partial class InspectorStateExposer : MonoBehaviour {
@@ -32,11 +32,11 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
       public readonly string name;
       public readonly IValue value;
     }
-    
+
     public interface IData {
       Option<ForRepresentation> repr { get; }
     }
-    
+
     [Record]
     public partial class Data<A> : IData where A : class {
       public readonly WeakReference<A> reference;
@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
         reference, name, get(reference)
       ));
     }
-    
+
     readonly List<IData> data = new List<IData>();
 
     public void add(IData data) => this.data.Add(data);
@@ -97,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     ) where A : class {
       foreach (var field in typeof(A).getAllFields()) {
         var fieldType = field.FieldType;
-        if (fieldType.IsSubclassOf(typeof(float))) 
+        if (fieldType.IsSubclassOf(typeof(float)))
           exposeToInspector(go, reference, field.Name, a => (float) field.GetValue(a));
         else if (fieldType.IsSubclassOf(typeof(bool)))
           exposeToInspector(go, reference, field.Name, a => (bool) field.GetValue(a));

@@ -6,10 +6,10 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   public sealed class CanvasSortingLayer : SortingLayerSetter {
     Canvas canvas => GetComponent<Canvas>();
 
-    protected override void recordEditorChanges() => 
+    protected override void recordEditorChanges() =>
       canvas.recordEditorChanges("Canvas sorting layer changed");
 
-    protected override void apply(SortingLayerReference sortingLayer) => 
+    protected override void apply(SortingLayerReference sortingLayer) =>
       sortingLayer.applyTo(canvas);
 
     protected override SortingLayerAndOrder extract() {

@@ -6,11 +6,11 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Collection {
-  /* IList<A> like mutable struct which has 4 members in it and falls back 
+  /* IList<A> like mutable struct which has 4 members in it and falls back
    * to List<A> if overflown.
-   * 
+   *
    * Has a benefit of sitting on stack while static size is not exceeded.
-   * 
+   *
    * Beware that this is a mutable struct - do not store it as a readonly value! Be careful!
    */
   public struct SList4<A> : IList<A> {
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     #endregion
 
-    public A this[int idx] { 
+    public A this[int idx] {
       get {
         checkIndex(idx);
         switch (idx) {
@@ -154,10 +154,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public void CopyTo(A[] array, int arrayIndex) => IListDefaultImpls.copyTo(this, array, arrayIndex);
     public void Insert(int index, A item) => IListDefaultImpls.insert(ref this, index, item);
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(SList4<A>)}({s0}, {s1}, {s2}, {s3}, {F.opt(fallback).map(_ => _.asDebugString(false)).getOrElse("-")})";
 
-    public IListStructEnumerator<SList4<A>, A> GetEnumerator() => 
+    public IListStructEnumerator<SList4<A>, A> GetEnumerator() =>
       new IListStructEnumerator<SList4<A>, A>(this);
     IEnumerator<A> IEnumerable<A>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -168,7 +168,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static SList4<A> create<A>(A a1, A a2) => new SList4<A>(a1, a2);
     public static SList4<A> create<A>(A a1, A a2, A a3) => new SList4<A>(a1, a2, a3);
     public static SList4<A> create<A>(A a1, A a2, A a3, A a4) => new SList4<A>(a1, a2, a3, a4);
-    public static SList4<A> create<A>(A a1, A a2, A a3, A a4, params A[] rest) => 
+    public static SList4<A> create<A>(A a1, A a2, A a3, A a4, params A[] rest) =>
       new SList4<A>(a1, a2, a3, a4, rest);
   }
 }

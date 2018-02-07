@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static Option<Backtrace> fromException(Exception e) =>
       convertFromStacktrace(new StackTrace(e, true));
 
-    public static Option<Backtrace> convertFromStacktrace(StackTrace trace) => 
+    public static Option<Backtrace> convertFromStacktrace(StackTrace trace) =>
       from frames in F.opt(trace.GetFrames())
       from _ in frames.Select(_ => _.toBacktraceElem()).Where(bt => bt.inApp).ToImmutableList().toNonEmpty()
       select new Backtrace(_);

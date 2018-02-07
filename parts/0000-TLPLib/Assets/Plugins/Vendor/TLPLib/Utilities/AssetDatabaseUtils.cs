@@ -21,11 +21,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       }
     }
 
-    public static IEnumerable<A> getScriptableObjectsOfType<A>() where A : ScriptableObject => 
+    public static IEnumerable<A> getScriptableObjectsOfType<A>() where A : ScriptableObject =>
       AssetDatabase.FindAssets($"t:{typeof(A).Name}")
       .Select(loadMainAssetByGuid)
       .OfType<A>();
-    
+
     public static Object loadMainAssetByGuid(string guid) =>
       AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
   }

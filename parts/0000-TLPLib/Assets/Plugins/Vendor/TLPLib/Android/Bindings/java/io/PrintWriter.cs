@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.io {
     public PrintWriter(AndroidJavaObject java) : base(java) {}
 
     // ReSharper disable once SuggestBaseTypeForParameter
-    public PrintWriter(Writer writer) 
+    public PrintWriter(Writer writer)
       : this(new AndroidJavaObject("java.io.PrintWriter", writer.java)) {}
   }
 }

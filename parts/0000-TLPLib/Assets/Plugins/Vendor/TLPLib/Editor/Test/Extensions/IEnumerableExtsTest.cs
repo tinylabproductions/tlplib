@@ -30,13 +30,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     });
 
     class TestObj {}
-    
+
     [Test] public void mapDistinct() => describe(() => {
       it["should map multiple entries to same element"] = () => {
         var obj = new TestObj();
         new[] {1, 1, 1}.mapDistinct(a => obj).shouldEqualEnum(new [] {obj, obj, obj});
       };
-      
+
       it["should only invoke mapper once for a unique element"] = () => {
         var invocations = new Dictionary<int, int>();
         new[] {1, 2, 3, 4, 1, 2, 3, 4}.mapDistinct(a => {
@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
   public class IEnumerableTestAsString {
     [Test]
-    public void TestNull() => 
+    public void TestNull() =>
       ((IEnumerable) null).asDebugString().shouldEqual("null");
 
     [Test]
@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
   public class IEnumerableTestZip {
     [Test]
-    public void TestWhenEmpty() => 
+    public void TestWhenEmpty() =>
       ImmutableList<int>.Empty.zip(ImmutableList<string>.Empty)
       .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
 

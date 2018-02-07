@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public struct Loop {
       public enum Mode { Normal, YoYo }
 
-      public const uint 
+      public const uint
         TIMES_FOREVER = 0,
         TIMES_SINGLE = 1;
 
@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public uint currentIteration;
 
     // TODO: implement me: loop(times, forever, yoyo)
-    // notice: looping needs to take into account that some duration might have passed in the 
+    // notice: looping needs to take into account that some duration might have passed in the
     // new iteration
     public TweenManager(ITweenSequence sequence, TweenTime time, Loop looping) {
       this.sequence = sequence;
@@ -165,7 +165,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) => sequence.managed(TweenManager.Loop.single, time, delay);
 
     public static TweenManager managed(
-      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate, 
+      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
       float delay = 0
     ) => new TweenManager(TweenSequence.single(sequence, delay), time, looping);
   }

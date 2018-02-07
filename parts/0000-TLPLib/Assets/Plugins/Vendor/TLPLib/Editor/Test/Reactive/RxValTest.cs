@@ -58,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
       };
     });
-    
+
     [Test] public void map() => describe(_ => {
       var mapperInvocations = 0;
       IRxRef<int> src = null;
@@ -183,17 +183,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
             interim1.value = "i1_3";
             src.value++;
           };
-          
+
           it["should invoke mapper"] = () => mapperInvocations.shouldEqual(3);
           it["should have correct value"] = () => rx.value.shouldEqual("i1_3");
         };
       };
     });
   }
-  
+
   public class RxValTestFirstThat {
     [Test]
-    public void WhenEmpty() => 
+    public void WhenEmpty() =>
       Enumerable.Empty<IRxVal<int>>().anyThat(_ => true).value.shouldBeNone();
 
     [Test]
@@ -230,10 +230,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       _.when["empty"] = () => {
         var e = Enumerable.Empty<IRxVal<bool>>();
 
-        _.it["should return false when searching for true"] = () => 
+        _.it["should return false when searching for true"] = () =>
           e.anyOf(searchFor: true).value.shouldBeFalse();
 
-        _.it["should return false when searching for false"] = () => 
+        _.it["should return false when searching for false"] = () =>
           e.anyOf(searchFor: false).value.shouldBeFalse();
       };
     });
@@ -304,7 +304,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       rx.value = 4.some();
       dst.value.shouldBeSome(4);
     }
-    
+
     [Test]
     public void WhenMultipleItems() {
       var rx1 = RxRef.a(3.some());

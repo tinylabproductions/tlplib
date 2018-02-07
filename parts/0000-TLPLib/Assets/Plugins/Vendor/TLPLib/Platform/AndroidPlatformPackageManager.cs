@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Platform {
     }
 
     public bool hasAppInstalled(string bundleIdentifier) => packageNames.Contains(bundleIdentifier);
-    public Option<ErrorMsg> openApp(string bundleIdentifier) => 
+    public Option<ErrorMsg> openApp(string bundleIdentifier) =>
       AndroidActivity.packageManager.openApp(bundleIdentifier);
   }
 }

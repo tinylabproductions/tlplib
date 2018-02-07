@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
   /// <summary>
   /// Knows how to change state of some property <see cref="A"/> on <see cref="T"/>.
-  /// 
+  ///
   /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
   /// </summary>
   public class Tweener<A, T> : TweenSequenceElement {
@@ -71,10 +71,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.changeState = changeState;
     }
 
-    public void setRelativeTimePassed(float t, bool playingForwards) => 
+    public void setRelativeTimePassed(float t, bool playingForwards) =>
       changeState(tween.eval(t), this.t);
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(Tweener)}[on {t}, {tween}]";
   }
 }

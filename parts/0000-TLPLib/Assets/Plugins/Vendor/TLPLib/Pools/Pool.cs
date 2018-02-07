@@ -14,7 +14,7 @@ namespace Smooth.Pools {
 		private readonly Act<T> release;
 
 		private Pool() {}
-		
+
 		/// <summary>
 		/// Creates a new pool with the specified value creation and reset delegates.
 		/// </summary>
@@ -32,7 +32,7 @@ namespace Smooth.Pools {
 				return values.Count > 0 ? values.Pop() : create();
 			}
 		}
-		
+
 		/// <summary>
 		/// Relinquishes ownership of the specified value and returns it to the pool.
 		/// </summary>

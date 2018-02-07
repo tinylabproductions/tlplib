@@ -37,7 +37,7 @@ using Smooth.Compare.Comparers;
 //
 //			//
 //			// Register sort order comparers for types that don't implement the IComparable<> and equality comparers for value types that don't provide type specific equality checks.
-//			// 
+//			//
 //			Finder.Register<ExampleStruct2>((a, b) => string.Compare(a.name, b.name));
 //			Finder.Register<ExampleStruct3>((a, b) => string.Compare(a.name, b.name), (a, b) => a.id == b.id);
 //			Finder.Register<ExampleClass>((a, b) => string.Compare(a.name, b.name));
@@ -75,49 +75,49 @@ using Smooth.Compare.Comparers;
 //	public struct ExampleStruct1 : IEquatable<ExampleStruct1>, IComparable<ExampleStruct1> {
 //		public uint id;
 //		public string name;
-//		
+//
 //		public override bool Equals(object o) {
 //			return o is ExampleStruct1 && this.Equals((ExampleStruct1) o);
 //		}
-//		
+//
 //		public bool Equals(ExampleStruct1 other) {
 //			// Note: Only compares ids, but the sort comparer uses names.
 //			// To properly adhere to the contract of equality, a.id == b.id must imply a.name == b.name.
 //			return this.id == other.id;
 //		}
-//		
+//
 //		public override int GetHashCode() {
 //			return (int) id;
 //		}
-//		
+//
 //		public int CompareTo(ExampleStruct1 other) {
 //			return string.Compare(this.name, other.name);
 //		}
-//		
+//
 //		public static bool operator == (ExampleStruct1 lhs, ExampleStruct1 rhs) {
 //			return lhs.Equals(rhs);
 //		}
-//		
+//
 //		public static bool operator != (ExampleStruct1 lhs, ExampleStruct1 rhs) {
 //			return !lhs.Equals(rhs);
 //		}
-//		
+//
 //		public static bool operator > (ExampleStruct1 lhs, ExampleStruct1 rhs) {
 //			return lhs.CompareTo(rhs) > 0;
 //		}
-//		
+//
 //		public static bool operator < (ExampleStruct1 lhs, ExampleStruct1 rhs) {
 //			return lhs.CompareTo(rhs) < 0;
 //		}
-//		
+//
 //		public static bool operator >= (ExampleStruct1 lhs, ExampleStruct1 rhs) {
 //			return lhs.CompareTo(rhs) >= 0;
 //		}
-//		
+//
 //		public static bool operator <= (ExampleStruct1 lhs, ExampleStruct1 rhs) {
 //			return lhs.CompareTo(rhs) <= 0;
 //		}
-//		
+//
 //		public override string ToString() {
 //			return name;
 //		}
@@ -130,11 +130,11 @@ using Smooth.Compare.Comparers;
 //
 //		public uint id;
 //		public string name;
-//		
+//
 //		public override bool Equals(object o) {
 //			return o is ExampleStruct2 && this.Equals((ExampleStruct2) o);
 //		}
-//		
+//
 //		public bool Equals(ExampleStruct2 other) {
 //			return this.id == other.id;
 //		}
@@ -154,37 +154,37 @@ using Smooth.Compare.Comparers;
 //		//
 //		// Thus we use a priori knowledge about the type to make allocation free equality comparisons.
 //		//
-//		
+//
 //		public uint id;
 //		public string name;
-//		
+//
 //		public override int GetHashCode() {
 //			return (int) id;
 //		}
-//		
+//
 //		public override string ToString() {
 //			return name;
 //		}
 //	}
-//	
+//
 //	public class ExampleClass {
 //		//
 //		// Class version of ExampleStruct, without a type specific equals method.
 //		//
 //		// Equality comparisons won't box / allocate, but we still want to register a sort order comparer.
 //		//
-//		
+//
 //		public uint id;
 //		public string name;
-//		
+//
 //		public override bool Equals(object o) {
 //			return o is ExampleClass && this.id == ((ExampleClass) o).id;
 //		}
-//		
+//
 //		public override int GetHashCode() {
 //			return (int) id;
 //		}
-//		
+//
 //		public override string ToString() {
 //			return name;
 //		}

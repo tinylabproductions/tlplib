@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Dispose {
   }
 
   public static class UnityObjectDisposableExts {
-    public static UnityObjectDisposable asDisposable(this Object obj) => 
+    public static UnityObjectDisposable asDisposable(this Object obj) =>
       new UnityObjectDisposable(obj);
   }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.EditorTools {
-  /** 
+  /**
    * Allows to easily instantiate things and not lose their prefab connection,
    * no matter if source is prefab, prefab instance or not a prefab.
    */

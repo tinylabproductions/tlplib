@@ -44,11 +44,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     static GameObject[] findObjects(Type type, bool includeDerived) {
-      using (var progress = new EditorProgress(nameof(AssetSelector))) { 
+      using (var progress = new EditorProgress(nameof(AssetSelector))) {
         var prefabs = progress.execute("Finding all prefabs", () => AssetDatabase.FindAssets("t:prefab"));
 
         progress.start($"Searching for {type}");
-        var objects = 
+        var objects =
           prefabs
           .Select((a, idx) => {
             progress.progress(idx, prefabs.Length);

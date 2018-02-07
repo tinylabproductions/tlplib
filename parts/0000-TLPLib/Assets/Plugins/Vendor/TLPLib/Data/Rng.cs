@@ -4,10 +4,10 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>
   /// Implementation of XORSHIFT, random number generation algorithm unity uses for Random.
-  /// 
+  ///
   /// https://forum.unity3d.com/threads/which-random-number-generator-does-unity-use.148601/
   /// https://en.wikipedia.org/wiki/Xorshift
-  /// 
+  ///
   /// This implementation uses xorshift* version.
   /// </summary>
   public struct Rng {
@@ -74,11 +74,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly Fn<Rng, Tpl<Rng, int>> nextIntS = rng => rng.nextIntT;
     public int nextInt(out Rng newState) => ulongToInt(nextULong(out newState));
 
-    static int ulongToIntInRange(Range range, ulong v) => 
+    static int ulongToIntInRange(Range range, ulong v) =>
       range.from + (int) (v % (ulong) (range.to - range.from + 1));
     public Tpl<Rng, int> nextIntInRangeT(Range range) =>
       nextULongT.map2(v => ulongToIntInRange(range, v));
-    public static Fn<Rng, Tpl<Rng, int>> nextIntInRangeS(Range range) => 
+    public static Fn<Rng, Tpl<Rng, int>> nextIntInRangeS(Range range) =>
       rng => rng.nextIntInRangeT(range);
     public int nextIntInRange(Range range, out Rng newState) =>
       ulongToIntInRange(range, nextULong(out newState));
@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       range.from + (uint)(v % (range.to - range.from + 1));
     public Tpl<Rng, uint> nextUIntInRangeT(URange range) =>
       nextUIntT.map2(v => ulongToUIntInRange(range, v));
-    public static Fn<Rng, Tpl<Rng, uint>> nextUIntInRangeS(URange range) => 
+    public static Fn<Rng, Tpl<Rng, uint>> nextUIntInRangeS(URange range) =>
       rng => rng.nextUIntInRangeT(range);
     public uint nextUIntInRange(URange range, out Rng newState) =>
       ulongToUIntInRange(range, nextULong(out newState));
@@ -111,7 +111,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     /// <returns>0f to 1f</returns>
     public float nextFloat(out Rng newState) => ulongToFloat(nextULong(out newState));
 
-    static float floatToFloatInRange(FRange range, float v) => 
+    static float floatToFloatInRange(FRange range, float v) =>
       range.from + (range.to - range.from) * v;
     public Tpl<Rng, float> nextFloatInRangeT(FRange range) =>
       nextFloatT.map2(v => floatToFloatInRange(range, v));

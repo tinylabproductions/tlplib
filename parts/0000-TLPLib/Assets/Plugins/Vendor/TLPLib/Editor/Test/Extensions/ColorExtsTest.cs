@@ -19,25 +19,25 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         if (b) it["should not change b"] = () => newColor.b.shouldEqual(color.b);
         if (a) it["should not change a"] = () => newColor.a.shouldEqual(color.a);
       }
-      
+
       when["changing r"] = () => {
         var newColor = color.with32(r: F.some(value));
         it["should change r"] = () => newColor.r.shouldEqual(value);
         notChange(newColor, r: false);
       };
-      
+
       when["changing g"] = () => {
         var newColor = color.with32(g: F.some(value));
         it["should change g"] = () => newColor.g.shouldEqual(value);
         notChange(newColor, g: false);
       };
-      
+
       when["changing b"] = () => {
         var newColor = color.with32(b: F.some(value));
         it["should change b"] = () => newColor.b.shouldEqual(value);
         notChange(newColor, b: false);
       };
-      
+
       when["changing a"] = () => {
         var newColor = color.with32(a: F.some(value));
         it["should change a"] = () => newColor.a.shouldEqual(value);

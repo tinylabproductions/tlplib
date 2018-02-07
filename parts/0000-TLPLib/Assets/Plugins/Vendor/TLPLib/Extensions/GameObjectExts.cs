@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Coroutine everyFrame(this GameObject go, Fn<bool> f) => ASync.EveryFrame(go, f);
 
-    public static Coroutine everyFrame(this GameObject go, Action a) => 
+    public static Coroutine everyFrame(this GameObject go, Action a) =>
       go.everyFrame(() => { a(); return true; });
 
     public static IObservable<Unit> onMouseDown(this GameObject go) =>
@@ -49,17 +49,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IObservable<A> onEvent<A, Forwarder>(this GameObject go) where Forwarder : EventForwarder<A> =>
       go.EnsureComponent<Forwarder>().onEvent;
 
-    public static A EnsureComponent<A>(this GameObject go) where A : Component => 
+    public static A EnsureComponent<A>(this GameObject go) where A : Component =>
       go.GetComponent<A>() ?? go.AddComponent<A>();
-    
+
     public static Option<A> GetComponentSafe<A>(this GameObject go) where A : Component =>
       go.GetComponent<A>().opt();
 
     public static Either<ErrorMsg, A> GetComponentSafeE<A>(this GameObject go) where A : Component {
       var res = go.GetComponentSafe<A>();
-      return 
-        res.isNone 
-        ? (Either<ErrorMsg, A>) new ErrorMsg($"Can't find component {typeof(A)} on '{go}'") 
+      return
+        res.isNone
+        ? (Either<ErrorMsg, A>) new ErrorMsg($"Can't find component {typeof(A)} on '{go}'")
         : res.__unsafeGetValue;
     }
 

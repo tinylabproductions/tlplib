@@ -19,4 +19,3 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.util {
   }
 }
 #endif
-      

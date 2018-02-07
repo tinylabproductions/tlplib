@@ -22,9 +22,9 @@ namespace com.tinylabproductions.TLPLib.Tween {
     }
 
     class Tweens {
-      readonly HashSet<TweenManager> 
-        current = new HashSet<TweenManager>(), 
-        toAdd = new HashSet<TweenManager>(), 
+      readonly HashSet<TweenManager>
+        current = new HashSet<TweenManager>(),
+        toAdd = new HashSet<TweenManager>(),
         toRemove = new HashSet<TweenManager>();
 
       bool running;
@@ -82,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Tween {
       }
     }
 
-    readonly Tweens 
+    readonly Tweens
       onUpdate = new Tweens(),
       onUpdateUnscaled = new Tweens(),
       onFixedUpdate = new Tweens(),
@@ -108,10 +108,10 @@ namespace com.tinylabproductions.TLPLib.Tween {
       onFixedUpdate.runOn(Time.fixedDeltaTime);
     }
 
-    public void add(TweenManager tweenManager) => 
+    public void add(TweenManager tweenManager) =>
       lookupSet(tweenManager.time).add(tweenManager);
 
-    public void remove(TweenManager tweenManager) => 
+    public void remove(TweenManager tweenManager) =>
       lookupSet(tweenManager.time).remove(tweenManager);
 
     Tweens lookupSet(TweenTime time) {

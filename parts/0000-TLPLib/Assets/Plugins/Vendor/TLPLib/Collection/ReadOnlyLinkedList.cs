@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public LinkedListNode<A> First { get { return backing.First; } }
     public LinkedListNode<A> Last { get { return backing.Last; } }
     public LinkedListNode<A> Find(A value) { return backing.Find(value); }
-    public LinkedListNode<A> FindLast(A value) 
+    public LinkedListNode<A> FindLast(A value)
       { return backing.FindLast(value); }
   }
 }

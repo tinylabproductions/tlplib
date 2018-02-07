@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public int from => _from;
     public int to => _to;
-    
+
     public Range(int from, int to) {
       _from = from;
       _to = to;
@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     object IEnumerator.Current => Current;
     public void Dispose() {}
   }
-  
+
   [Serializable]
   public struct URange : IEnumerable<uint> {
     #region Unity Serialized Fields

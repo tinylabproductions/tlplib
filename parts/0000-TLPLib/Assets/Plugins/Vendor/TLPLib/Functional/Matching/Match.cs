@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
 #else
   struct
 #endif
-  Matcher<Base, Return> 
+  Matcher<Base, Return>
   : IVoidMatcher<Base>, IMatcher<Base, Return>
   where Base : class {
     private readonly Base subject;
@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
 #else
   struct
 #endif
-  SuccessfulMatcher<Base, Return> 
+  SuccessfulMatcher<Base, Return>
   : IVoidMatcher<Base>, IMatcher<Base, Return>
   where Base : class {
     private readonly Return result;
@@ -74,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
       this.result = result;
     }
 
-    public IVoidMatcher<Base> when<T>(Act<T> onMatch) 
+    public IVoidMatcher<Base> when<T>(Act<T> onMatch)
     where T : Base { return this; }
 
     public IMatcher<Base, Return> when<T>(Fn<T, Return> onMatch)

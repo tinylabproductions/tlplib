@@ -1,8 +1,8 @@
-﻿/** 
+﻿/**
  * Co & contravariant definitions of Action and Func
- * 
+ *
  * Generated with scala:
- * 
+ *
 
 println(s"  public delegate R Fn<out R>();")
 (1 to 22).foreach { i =>
@@ -13,7 +13,7 @@ println(s"  public delegate R Fn<out R>();")
   println(s"  public delegate R Fn<$types, out R>($args);")
 }
 
- * 
+ *
  **/
 
 namespace System {

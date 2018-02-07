@@ -30,10 +30,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.telephony {
     public PhoneType phoneType => (PhoneType) java.c<int>("getPhoneType");
 
     public Option<string> phoneCountryIso =>
-      simCountryIso 
+      simCountryIso
       || (phoneType == PhoneType.CDMA ? F.none<string>() : networkCountryIso);
   }
 }
 
 #endif
-      

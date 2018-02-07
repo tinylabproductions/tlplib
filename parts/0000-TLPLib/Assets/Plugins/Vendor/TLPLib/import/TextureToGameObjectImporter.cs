@@ -48,12 +48,12 @@ namespace com.tinylabproductions.TLPLib.import {
           "the first object and other objects.",
           UnityEditor.MessageType.Info
         );
-#endif        
+#endif
       }
 
       public void OnFooterGUI() { }
     }
-    
+
     #region Unity Serialized Fields
 
 #pragma warning disable 649

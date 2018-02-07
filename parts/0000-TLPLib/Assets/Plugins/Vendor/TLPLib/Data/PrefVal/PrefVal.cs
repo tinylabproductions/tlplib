@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   /// <summary>PlayerPrefs backed value.</summary>
   public interface PrefVal<A> : IRxRef<A>, ICachedBlob<A>, InspectablePrefVal {}
-  
+
   public static class PrefVal {
     public delegate void Base64StorePart(byte[] partData);
     public delegate byte[] Base64ReadPart();

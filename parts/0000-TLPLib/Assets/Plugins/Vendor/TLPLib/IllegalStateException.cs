@@ -3,7 +3,7 @@
 namespace com.tinylabproductions.TLPLib {
   /**
    * Illegal state exception.
-   * 
+   *
    * http://www.youtube.com/watch?v=WIXGUzRo3H0
    **/
   public class IllegalStateException : Exception {

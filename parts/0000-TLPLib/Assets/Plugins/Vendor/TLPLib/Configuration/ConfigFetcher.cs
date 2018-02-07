@@ -20,8 +20,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       public readonly ImmutableArray<Tpl<string, string>> tags, extras;
 
       public UrlWithContext(
-        Uri url, 
-        ImmutableArray<Tpl<string, string>> tags, 
+        Uri url,
+        ImmutableArray<Tpl<string, string>> tags,
         ImmutableArray<Tpl<string, string>> extras
       ) {
         this.url = url;
@@ -72,14 +72,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> fetch(
       UrlWithContext urls
-    ) => 
+    ) =>
       F.t(
         urls,
         new WWW(urls.url.ToString()).toFuture().asNonCancellable().map(wwwE => {
           var www = wwwE.fold(err => err.www, _ => _);
           var headers = www.headers();
           return wwwE.map(
-            err => (ConfigFetchError)new ConfigWWWError(urls, headers), 
+            err => (ConfigFetchError)new ConfigWWWError(urls, headers),
             _ => headers
           );
         })
@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       Duration timeout, ITimeContext timeContext = default(ITimeContext)
     ) {
       timeContext = timeContext.orDefault();
-      return tpl.map2((urls, future) => 
+      return tpl.map2((urls, future) =>
         future
         .timeout(timeout, () => (ConfigFetchError) new ConfigTimeoutError(urls, timeout), timeContext)
         .map(e => e.flatten())
@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> checkingServerHeader(
       this Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> tpl,
       string headerName, string expectedValue
-    ) => tpl.map2((urls, future) => 
+    ) => tpl.map2((urls, future) =>
       future.map(wwwE => {
         var headersOpt = wwwE.fold(
           err => F.opt(err as ConfigWWWError).map(_ => _.wwwWithHeaders),

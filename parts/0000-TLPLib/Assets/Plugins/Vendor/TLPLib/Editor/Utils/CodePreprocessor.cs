@@ -16,20 +16,20 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       File.WriteAllLines(path, editedText);
     }
 
-    public static ImmutableList<string> checkAndRemovePragma(ImmutableList<string> lines) => 
+    public static ImmutableList<string> checkAndRemovePragma(ImmutableList<string> lines) =>
       lines.process(
         onNoPragma: _ => lines,
         onNoDirectives: () => lines,
         onPragmaExists: (pragmaLineIdx, _) => lines.RemoveAt(pragmaLineIdx)
       );
 
-    public static ImmutableList<string> checkAndWritePragma(ImmutableList<string> lines) => 
+    public static ImmutableList<string> checkAndWritePragma(ImmutableList<string> lines) =>
       lines.process(
         onNoPragma: lastDirectiveLineIdx => lines.addPragmaAt(lastDirectiveLineIdx + 1),
         onNoDirectives: () => lines.addPragmaAt(0),
-        onPragmaExists: (pragmaLineIdx, lastDirectiveIdx) => 
-          pragmaLineIdx == lastDirectiveIdx 
-          ? lines 
+        onPragmaExists: (pragmaLineIdx, lastDirectiveIdx) =>
+          pragmaLineIdx == lastDirectiveIdx
+          ? lines
           : lines.reformatPragmas(pragmaLineIdx, lastDirectiveIdx)
       );
 
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       Fn<int, ImmutableList<string>> onNoPragma,
       Fn<int, int, ImmutableList<string>> onPragmaExists,
       Fn<ImmutableList<string>> onNoDirectives
-    ) => 
+    ) =>
       getLastDirectiveIndex(lines).fold(
         onNoDirectives,
         lastDirectiveIdx => pragmaLineNumber(lines.GetRange(0, lastDirectiveIdx + 1)).fold(
@@ -47,18 +47,18 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         )
       );
 
-    static ImmutableList<string> addPragmaAt(this ImmutableList<string> lines, int lineIndex) => 
+    static ImmutableList<string> addPragmaAt(this ImmutableList<string> lines, int lineIndex) =>
       lines.Insert(lineIndex, PRAG_STR);
 
     static ImmutableList<string> reformatPragmas(
       this ImmutableList<string> lines, int currentPragmaLineIdx, int lastDirectiveLineIdx
-    ) => 
+    ) =>
       lines.addPragmaAt(lastDirectiveLineIdx + 1).RemoveAt(currentPragmaLineIdx);
 
-    public static Option<int> getLastDirectiveIndex(this ImmutableList<string> lines) => 
+    public static Option<int> getLastDirectiveIndex(this ImmutableList<string> lines) =>
       lines.indexWhere(line => !line.StartsWithFast(DIRECTIVES_STR)).flatMap(idx => (idx > 0).opt(idx - 1));
 
-    public static Option<int> pragmaLineNumber(this ImmutableList<string> lines) => 
+    public static Option<int> pragmaLineNumber(this ImmutableList<string> lines) =>
       lines.indexWhere(line => line.StartsWithFast(PRAG_STR));
   }
 }

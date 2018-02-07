@@ -42,14 +42,14 @@ namespace com.tinylabproductions.TLPLib.Assertions {
       }
     }
 
-    public static Option<ErrorMsg> requireExistsOpt(this UnityEngine.Object a, string message = null) => 
+    public static Option<ErrorMsg> requireExistsOpt(this UnityEngine.Object a, string message = null) =>
       (!a).opt(() => F.opt(message).fold(
-        new ErrorMsg($"Expected unity object to exist, but it did not!", a), 
+        new ErrorMsg($"Expected unity object to exist, but it did not!", a),
         m => new ErrorMsg(m, a)
       ));
 
     public static void requireExists(this UnityEngine.Object a, string message = null) {
-      foreach (var err in requireExistsOpt(a, message)) 
+      foreach (var err in requireExistsOpt(a, message))
         throw new RequirementFailedError(err.s);
     }
   }

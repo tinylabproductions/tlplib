@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     // optimized for minimal allocations
-    public static TweenSequence single(TweenSequenceElement sequence, float delay = 0) => 
+    public static TweenSequence single(TweenSequenceElement sequence, float delay = 0) =>
       new TweenSequence(
         sequence.duration + delay,
         new []{ new Effect(delay, sequence.duration + delay, sequence) }
@@ -150,14 +150,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public static Builder parallel(params TweenSequenceElement[] elements) {
       var builder = Builder.create();
-      foreach (var element in elements) 
+      foreach (var element in elements)
         builder.insert(0, element);
       return builder;
     }
 
     public static Builder sequential(params TweenSequenceElement[] elements) {
       var builder = Builder.create();
-      foreach (var element in elements) 
+      foreach (var element in elements)
         builder.append(element);
       return builder;
     }
@@ -200,11 +200,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public static void update(this ITweenSequence element, float deltaTime) {
       if (deltaTime == 0) return;
-      
+
       var directionForwards = Mathf.Sign(deltaTime) >= 0;
       element.setRelativeTimePassed(element.timePassed + deltaTime , directionForwards);
     }
-    
+
     public static TweenSequence single(this TweenSequenceElement element) =>
       TweenSequence.single(element);
   }
