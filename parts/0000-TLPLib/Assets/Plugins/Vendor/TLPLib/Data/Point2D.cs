@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public override string ToString() => $"({x},{y})";
 
-    public static ISerializedRW<Point2D> rw =
+    public static readonly ISerializedRW<Point2D> rw =
       SerializedRW.integer.and(SerializedRW.integer).map(
         tpl => new Point2D(tpl._1, tpl._2).some(),
         p => F.t(p.x, p.y)

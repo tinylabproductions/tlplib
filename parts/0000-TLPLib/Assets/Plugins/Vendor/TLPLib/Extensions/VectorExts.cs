@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -65,5 +66,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
  
       return new Vector2(cos * tx - sin * ty, sin * tx + cos * ty);
     }
+    
+    public static readonly ISerializedRW<Vector2> rw2 =
+      SerializedRW.flt.and(SerializedRW.flt).map(
+        tpl => new Vector2(tpl._1, tpl._2).some(),
+        p => F.t(p.x, p.y)
+      );
+    
+    public static readonly ISerializedRW<Vector3> rw3 =
+      SerializedRW.flt.and(SerializedRW.flt).and(SerializedRW.flt).map(
+        tpl => new Vector3(tpl._1._1, tpl._1._2, tpl._2).some(),
+        p => F.t(F.t(p.x, p.y), p.z)
+      );
   }
 }
