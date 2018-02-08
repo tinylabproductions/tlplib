@@ -10,16 +10,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public class TryTestMap : TryTestBase {
-    [Test] public void ErrorToGood() => 
+    [Test] public void ErrorToGood() =>
       new Try<int>(ex).map(a => a * 2).shouldBeError(ex.GetType());
 
-    [Test] public void ErrorToError() => 
+    [Test] public void ErrorToError() =>
       new Try<int>(ex).map<int>(a => { throw new Exception(); }).shouldBeError(ex.GetType());
 
-    [Test] public void GoodToGood() => 
+    [Test] public void GoodToGood() =>
       new Try<int>(1).map(a => a * 2).shouldBeSuccess(2);
 
-    [Test] public void GoodToError() => 
+    [Test] public void GoodToError() =>
       new Try<int>(1).map<int>(a => { throw ex; }).shouldBeError(ex.GetType());
   }
 

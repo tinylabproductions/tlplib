@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public static class ISubscriptionExts {
-    public static ISubscription andThen(this ISubscription sub, Action action) => 
+    public static ISubscription andThen(this ISubscription sub, Action action) =>
       new Subscription(() => {
         sub.unsubscribe();
         action();

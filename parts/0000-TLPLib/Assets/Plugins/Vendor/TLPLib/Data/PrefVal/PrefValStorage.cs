@@ -31,16 +31,16 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite = true) =>
       create(key, defaultVal, PrefValRW.flt, saveOnEveryWrite);
-    
+
     public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = true) =>
       create(key, defaultVal, PrefValRW.boolean, saveOnEveryWrite);
 
     public PrefVal<Duration> duration(string key, Duration defaultVal, bool saveOnEveryWrite = true) =>
       create(key, defaultVal, PrefValRW.duration, saveOnEveryWrite);
-    
+
     public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = true) =>
       create(key, defaultVal, PrefValRW.dateTime, saveOnEveryWrite);
-    
+
     #region Collections
 
     public PrefVal<ImmutableArray<A>> array<A>(
@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
-      key, rw, a => a, defaultVal, saveOnEveryWrite, 
+      key, rw, a => a, defaultVal, saveOnEveryWrite,
       onDeserializeFailure, log
     );
 
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     );
 
     #endregion
-    
+
     #region Custom
 
     /* Provide custom mapping. It uses string representation inside and returns
@@ -88,18 +88,18 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => create(key, defaultVal, PrefValRW.custom__OLD(map, comap), saveOnEveryWrite);
 
     public PrefVal<A> custom<A>(
-      string key, A defaultVal, 
+      string key, A defaultVal,
       Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
-      bool saveOnEveryWrite = true, 
+      bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(
-      key, defaultVal, PrefValRW.custom(serialize, deserialize, onDeserializeFailure, log), 
+      key, defaultVal, PrefValRW.custom(serialize, deserialize, onDeserializeFailure, log),
       saveOnEveryWrite
     );
 
     public PrefVal<A> custom<A>(
-      string key, A defaultVal, 
+      string key, A defaultVal,
       ISerializedRW<A> aRW,
       bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
@@ -123,8 +123,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<C> collection<A, C>(
       string key,
       ISerializedRW<A> rw, Fn<ImmutableArray<A>, C> toCollection,
-      C defaultVal, bool saveOnEveryWrite = true, 
-      PrefVal.OnDeserializeFailure onDeserializeFailure = 
+      C defaultVal, bool saveOnEveryWrite = true,
+      PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) where C : ICollection<A> {
@@ -140,11 +140,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public PrefVal<C> collection<A, C>(
-      string key, ISerializedRW<C> rw, C defaultVal, bool saveOnEveryWrite = true, 
-      PrefVal.OnDeserializeFailure onDeserializeFailure = 
+      string key, ISerializedRW<C> rw, C defaultVal, bool saveOnEveryWrite = true,
+      PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) where C : ICollection<A> => 
+    ) where C : ICollection<A> =>
       custom(key, defaultVal, rw, saveOnEveryWrite, onDeserializeFailure, log);
 
     #endregion

@@ -568,11 +568,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   public class OptionFutureTestExtractOpt {
     [Test]
-    public void WhenNone() => 
+    public void WhenNone() =>
       F.none<Future<int>>().extractOpt().shouldBeOfSuccessfulType(F.none<int>());
 
     [Test]
-    public void WhenSome() => 
+    public void WhenSome() =>
       F.some(Future.successful(3)).extractOpt().shouldEqual(Future.successful(F.some(3)));
   }
 }

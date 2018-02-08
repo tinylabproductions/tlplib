@@ -20,7 +20,7 @@ namespace Smooth.Pools {
 		/// </summary>
 		public static KeyedPoolWithDefaultKey<IEqualityComparer<K>, Dictionary<K, V>> Instance { get { return _Instance; } }
 	}
-	
+
 	/// <summary>
 	/// Singleton HashSet<T> pool.
 	/// </summary>
@@ -31,7 +31,7 @@ namespace Smooth.Pools {
 				hashSet => { hashSet.Clear(); return hashSet.Comparer; },
 				() => Smooth.Collections.EqComparer<T>.Default
 			);
-		
+
 		/// <summary>
 		/// Singleton HashSet<T> pool instance.
 		/// </summary>
@@ -45,7 +45,7 @@ namespace Smooth.Pools {
 		private static readonly Pool<List<T>> _Instance = new Pool<List<T>>(
 			() => new List<T>(),
 			list => list.Clear());
-		
+
 		/// <summary>
 		/// Singleton List<T> pool instance.
 		/// </summary>
@@ -67,13 +67,13 @@ namespace Smooth.Pools {
 				}
 			}
 		);
-		
+
 		/// <summary>
 		/// Singleton LinkedList<T> pool instance.
 		/// </summary>
 		public static Pool<LinkedList<T>> Instance { get { return _Instance; } }
 	}
-	
+
 	/// <summary>
 	/// Singleton LinkedListNode<T> pool.
 	/// </summary>
@@ -83,13 +83,13 @@ namespace Smooth.Pools {
 			node => node.Value = default(T),
 			(node, value) => node.Value = value
 		);
-		
+
 		/// <summary>
 		/// Singleton LinkedListNode<T> pool instance.
 		/// </summary>
 		public static PoolWithInitializer<LinkedListNode<T>, T> Instance { get { return _Instance; } }
 	}
-	
+
 	/// <summary>
 	/// Singleton StringBuilder pool.
 	/// </summary>
@@ -97,7 +97,7 @@ namespace Smooth.Pools {
 		private static readonly Pool<StringBuilder> _Instance = new Pool<StringBuilder>(
 			() => new StringBuilder(),
 			sb => sb.Length = 0);
-		
+
 		/// <summary>
 		/// Singleton StringBuilder pool instance.
 		/// </summary>

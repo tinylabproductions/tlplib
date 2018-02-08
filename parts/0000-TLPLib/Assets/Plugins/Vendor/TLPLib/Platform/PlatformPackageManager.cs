@@ -11,8 +11,8 @@ namespace com.tinylabproductions.TLPLib.Platform {
   public static class PlatformPackageManager {
     public static readonly IPlatformPackageManager packageManager =
 #if UNITY_ANDROID
-      Application.isEditor 
-        ? (IPlatformPackageManager) new NoOpPlatformPackageManager() 
+      Application.isEditor
+        ? (IPlatformPackageManager) new NoOpPlatformPackageManager()
         : new AndroidPlatformPackageManager();
 #else
       new NoOpPlatformPackageManager();

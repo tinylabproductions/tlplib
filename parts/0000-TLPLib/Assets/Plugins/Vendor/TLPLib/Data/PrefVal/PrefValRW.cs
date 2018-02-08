@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly IPrefValueRW<Duration> duration = new DurationRW();
     public static readonly IPrefValueRW<DateTime> dateTime = new DateTimeRW();
 
-    public static IPrefValueRW<A> custom__OLD<A>(Fn<A, string> map, Fn<string, A> comap) => 
+    public static IPrefValueRW<A> custom__OLD<A>(Fn<A, string> map, Fn<string, A> comap) =>
       new CustomOldRW<A>(map, comap);
 
     public static IPrefValueRW<A> custom<A>(
@@ -59,14 +59,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => custom(SerializedRW.opt(baRW), onDeserializeFailure, log);
 
     class stringRW : IPrefValueRW<string> {
-      public string read(IPrefValueBackend backend, string key, string defaultVal) => 
+      public string read(IPrefValueBackend backend, string key, string defaultVal) =>
         backend.getString(key, defaultVal);
 
       public void write(IPrefValueBackend backend, string key, string value) =>
         backend.setString(key, value);
     }
 
-    class intRW : IPrefValueRW<int> { 
+    class intRW : IPrefValueRW<int> {
       public int read(IPrefValueBackend backend, string key, int defaultVal) =>
         backend.getInt(key, defaultVal);
 
@@ -158,7 +158,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       static string deserializeFailureMsg(string key, string serialized, string ending = "") =>
         $"Can't deserialize {typeof(A)} from '{serialized}' for PrefVal '{key}'{ending}.";
     }
-    
+
     class CustomOldRW<A> : IPrefValueRW<A> {
       /* If you store this as a value in type custom PrefValue, you'll get back a default value. */
       const string CUSTOM_V1_DEFAULT = "";

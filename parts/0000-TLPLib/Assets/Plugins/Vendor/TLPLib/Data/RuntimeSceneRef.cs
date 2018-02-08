@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public Future<A> load(LoadSceneMode loadSceneMode = LoadSceneMode.Single) =>
       SceneWithObjectLoader.load<A>(scenePath, loadSceneMode).map(e => e.rightOrThrow);
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(RuntimeSceneRefWithComponent<A>)}({typeof(A)} @ {scenePath.path})";
   }
 }

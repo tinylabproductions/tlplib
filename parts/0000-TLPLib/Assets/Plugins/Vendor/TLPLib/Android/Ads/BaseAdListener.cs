@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
    *
    * Sidenote:
    *
-   * We can't do: 
+   * We can't do:
    * <code>
    *   public static void invoke(Action a) { if (a != null) ASync.OnMainThread(a); }
    * </code>
@@ -36,19 +36,19 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
    * </code>
    *
    * If `evt1` and `evt2` fires in succession, second event would fail with future already completed.
-   * 
+   *
    * This happens because at the time of calling `invoke` we take the Action assigned  to the listener and
    * store it in a closure, thus the `-=` does not take effect. We have to delay getting the action to run
    * until the last possible time, thus the mandatory `OnMainThread`.
    **/
   public static class BaseAdListenerOps {
-    public static void invoke(Fn<Action> aFn) => 
+    public static void invoke(Fn<Action> aFn) =>
       ASync.OnMainThread(() => aFn()?.Invoke());
 
-    public static void invoke<A>(Fn<Act<A>> act, A a) => 
+    public static void invoke<A>(Fn<Act<A>> act, A a) =>
       ASync.OnMainThread(() => act()?.Invoke(a));
 
-    public static void invoke<A, B>(Fn<Act<A, B>> act, A a, B b) => 
+    public static void invoke<A, B>(Fn<Act<A, B>> act, A a, B b) =>
       ASync.OnMainThread(() => act()?.Invoke(a, b));
   }
 

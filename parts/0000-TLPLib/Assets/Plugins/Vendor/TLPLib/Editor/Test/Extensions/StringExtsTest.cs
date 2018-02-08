@@ -10,7 +10,7 @@ bar
 baz";
 
       when["first line should be indented"] = () => {
-        it["should work"] = () => 
+        it["should work"] = () =>
           source.indentLines(">.", indents: 3, indentFirst: true)
           .shouldEqual(@">.>.>.foo
 >.>.>.bar
@@ -160,11 +160,11 @@ baz";
 
   public class StringTestJoinOpt {
     [Test]
-    public void WhenJoinedIsNull() => 
+    public void WhenJoinedIsNull() =>
       "foo".joinOpt(null).shouldEqual("foo");
 
     [Test]
-    public void WhenJoinedIsNotNull() => 
+    public void WhenJoinedIsNotNull() =>
       "foo".joinOpt("bar", " - ").shouldEqual("foo - bar");
   }
 

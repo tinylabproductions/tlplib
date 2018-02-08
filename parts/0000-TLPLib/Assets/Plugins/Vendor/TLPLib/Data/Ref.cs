@@ -46,12 +46,12 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>
   /// Lazy reference that wraps another <see cref="Ref{A}"/>, but does not initialize it
   /// until first access.
-  /// 
+  ///
   /// Very useful in making <see cref="PrefVal{A}"/>s inspectable.
-  /// 
+  ///
   /// For example:
   /// <code>
-  /// [Inspect, UsedImplicitly] 
+  /// [Inspect, UsedImplicitly]
   /// LazyRef&lt;string&gt; adbAdditions = Ref.lazy(() =&gt; prefVals.adbAdditions);
   /// </code>
   /// </summary>

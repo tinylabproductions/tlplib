@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void specification() => describe(() => {
       var registry = new SingletonActionRegistry<int>();
-      
+
       when["future is going to complete in the future"] = () => {
         var f1 = let(() => F.lazy(() => 10));
 
@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           registry[f1.value] = _ => called = true;
           called.shouldBeFalse();
         };
-        
+
         it["should only call the last registered action"] = () => {
           var result = 0;
           registry[f1.value] = x => result = x;
@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       when["future is already completed"] = () => {
         const int VALUE = 10;
         var f1 = F.lazyLift(VALUE);
-        
+
         it["should immediatelly call the given action every time it is called"] = () => {
           var result = 0;
           registry[f1] = x => result = x;

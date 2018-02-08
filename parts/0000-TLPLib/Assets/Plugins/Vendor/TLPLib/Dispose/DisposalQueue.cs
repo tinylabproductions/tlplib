@@ -7,11 +7,11 @@ namespace Smooth.Dispose {
 
 	/// <summary>
 	/// Queues pooled resources for cleanup by a background thread.
-	/// 
+	///
 	/// By default, the disposal thread is woken up at the end of LateUpdate, when there is likely to be free CPU time available while GPU operations are in progress.
-	/// 
+	///
 	/// Various pools may be locked and unlocked while resources are released, potentially causing contention if pooled resources are borrowed during the disposal process.
-	/// 
+	///
 	/// Advanced users who are using pools from the main thread during the rendering phase may want to customize the point in the Unity event loop when the queue lock is pulsed, potentially pulsing from a Camera event.
 	/// </summary>
 	public static class DisposalQueue {

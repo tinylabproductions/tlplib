@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [NonSerialized]
-    public static readonly Comparable<Duration> comparable = 
+    public static readonly Comparable<Duration> comparable =
       Comparable.long_.comap((Duration d) => d.millis);
 
     [NonSerialized]

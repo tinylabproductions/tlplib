@@ -8,10 +8,10 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
 
   public static class CompareResultExts {
     public static int asInt(this CompareResult res) => (int) res;
-    
+
     public static CompareResult asCmpRes(this int result) =>
-        result < 0 ? CompareResult.LT 
-      : result == 0 ? CompareResult.EQ 
+        result < 0 ? CompareResult.LT
+      : result == 0 ? CompareResult.EQ
       : CompareResult.GT;
   }
 
@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
     public static readonly Comparable<bool> bool_ = lambda<bool>((a1, a2) => a1.CompareTo(a2));
-    public static readonly Comparable<string> string_ = 
+    public static readonly Comparable<string> string_ =
       lambda<string>((a1, a2) => string.CompareOrdinal(a1, a2));
 
     public static Comparable<A> lambda<A>(Fn<A, A, CompareResult> compare) =>

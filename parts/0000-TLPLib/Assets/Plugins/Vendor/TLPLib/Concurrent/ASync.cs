@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) => 
+    static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) =>
       go.GetComponent<ASyncHelperBehaviourEmpty>()
       ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
 
@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static ASyncHelperBehaviour behaviour { get {
       if (
-#if !UNITY_EDITOR        
+#if !UNITY_EDITOR
         // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator
         // which calls into native code to check whether objects are alive (which is a lot slower than
         // managed reference check).
@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         // The only case where this should be uninitialized is until we create a reference on first access
         // in managed code.
         //
-        // ReSharper disable once RedundantCast.0        
+        // ReSharper disable once RedundantCast.0
         (object)_behaviour == null
 #else
         // However...
@@ -56,12 +56,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       new UnityCoroutine(behaviour, coroutine);
 
     public static Coroutine WithDelay(
-      float seconds, Action action, 
+      float seconds, Action action,
       MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
     ) => WithDelay(Duration.fromSeconds(seconds), action, behaviour, timeScale);
 
     public static Coroutine WithDelay(
-      Duration duration, Action action, 
+      Duration duration, Action action,
       MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
     ) {
       behaviour = behaviour ?? ASync.behaviour;
@@ -69,12 +69,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new UnityCoroutine(behaviour, enumerator);
     }
 
-    public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
+    public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) =>
       Threads.OnMainThread.run(action, runNowIfOnMainThread);
 
     public static Coroutine NextFrame(Action action) => NextFrame(behaviour, action);
 
-    public static Coroutine NextFrame(GameObject gameObject, Action action) => 
+    public static Coroutine NextFrame(GameObject gameObject, Action action) =>
       NextFrame(coroutineHelper(gameObject), action);
 
     public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
@@ -124,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) => EveryXSeconds(seconds, behaviour, f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) => 
+    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) =>
       EveryXSeconds(seconds, coroutineHelper(go), f);
 
     /* Do thing every X seconds until f returns false. */

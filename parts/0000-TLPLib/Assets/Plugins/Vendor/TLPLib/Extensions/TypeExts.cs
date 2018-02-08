@@ -15,21 +15,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       BindingFlags.DeclaredOnly;
 
     // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
-    public static IEnumerable<FieldInfo> getAllFields(this Type t) => 
+    public static IEnumerable<FieldInfo> getAllFields(this Type t) =>
       t.GetFields(FLAGS_ANY_FIELD_TYPE)
       .Concat(t.BaseTypeSafe().map(getAllFields).getOrEmpty());
 
     /// <summary>
     /// Like <see cref="Type.GetField(string,System.Reflection.BindingFlags)"/>
     /// </summary>
-    public static Option<FieldInfo> GetFieldInHierarchy(this Type t, string fieldName) => 
-      F.opt(t.GetField(fieldName, FLAGS_ANY_FIELD_TYPE)) 
+    public static Option<FieldInfo> GetFieldInHierarchy(this Type t, string fieldName) =>
+      F.opt(t.GetField(fieldName, FLAGS_ANY_FIELD_TYPE))
       || t.BaseTypeSafe().flatMap(baseType => GetFieldInHierarchy(baseType, fieldName));
 
     public static Option<Type> BaseTypeSafe(this Type t) => F.opt(t.BaseType);
 
     // checks if type can be used in GetComponent and friends
-    public static bool canBeUnityComponent(this Type type) => 
+    public static bool canBeUnityComponent(this Type type) =>
       type.IsInterface
       || typeof(MonoBehaviour).IsAssignableFrom(type)
       || typeof(Component).IsAssignableFrom(type);

@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// <summary>
     /// Retrieve first <see cref="A"/> attached to a root <see cref="GameObject"/> in the <see cref="Scene"/>.
     /// </summary>
-    public static Either<ErrorMsg, A> findComponentOnRootGameObjects<A>(this Scene scene) where A : Component => 
+    public static Either<ErrorMsg, A> findComponentOnRootGameObjects<A>(this Scene scene) where A : Component =>
       scene.GetRootGameObjects()
       .collectFirst(go => go.GetComponent<A>().opt())
       .fold(

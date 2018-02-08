@@ -3,9 +3,9 @@ using System.Threading;
 using com.tinylabproductions.TLPLib.Data;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  /* Allows executing code in other threads in synchronous fashion. 
-   * 
-   * Operation blocks until a value can be returned or exception can be thrown. 
+  /* Allows executing code in other threads in synchronous fashion.
+   *
+   * Operation blocks until a value can be returned or exception can be thrown.
    */
   public static class SyncOtherThreadOp {
     public static SyncOtherThreadOp<A> a<A>(

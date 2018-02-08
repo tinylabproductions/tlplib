@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       ASync.OnMainThread(() => promise.complete(ret));
     }));
 
-    public static A runOnUIBlocking<A>(Fn<A> f) => 
+    public static A runOnUIBlocking<A>(Fn<A> f) =>
       SyncOtherThreadOp.a(AndroidUIThreadExecutor.a(f)).execute();
 
     public static void runOnUIBlocking(Action act) =>
@@ -97,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Android {
 
     /**
      * To use this, add the following to your AndroidManifest.xml
-     * 
+     *
      * <receiver
      *   android:name="com.tinylabproductions.tlplib.referrer.InstallReferrerReceiver"
      *   android:exported="true"

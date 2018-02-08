@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       : Option<LockedAxis2>.None;
 
     public override void OnInspectorGUI() {
-      const string msg = 
+      const string msg =
         "Helps to clone objects easily.\n" +
         "\n" +
         "Set the fields, hold CTRL, " +
@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
 
         foreach (var data in _target.editorData) {
           var newObjPositionOpt = newObjPosition(
-            currentEvent.mousePosition, 
+            currentEvent.mousePosition,
             lastPlacedPosition.getOrElse(data.sourceTransform.position),
             _target.lockedAxis, lockedAxis2
           );
@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
               obj.transform.rotation = data.sourceTransform.rotation;
               obj.transform.localScale = data.sourceTransform.localScale;
               objectToMoveAroundOpt = F.some(obj);
-            }    
+            }
           }
 
           foreach (var obj in objectToMoveAroundOpt) {
@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
     // Determines where on screen we are currently pointing, given that we have one
     // axis locked.
     static Option<Vector3> newObjPosition(
-      Vector2 mousePosition, Vector3 originPosition, 
+      Vector2 mousePosition, Vector3 originPosition,
       ObjectCloner.LockedAxis lockedAxis, Option<LockedAxis2> secondaryLockedAxis
     ) {
       var ray = posInWorld(mousePosition);
@@ -121,7 +121,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       float distance;
       plane.Raycast(ray, out distance);
 
-      return distance > 0 
+      return distance > 0
         ? F.some(ray.GetPoint(distance))
         : Option<Vector3>.None;
     }
@@ -131,17 +131,17 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       ObjectCloner.LockedAxis lockedAxis, LockedAxis2 secondaryLockedAxis
     ) => projectToPlane(ray, originPosition, shiftedPosition).map(inPlane => {
       var lineP1 = originPosition;
-      var lineP2 = 
+      var lineP2 =
         lockedAxis == ObjectCloner.LockedAxis.X ? new Vector3(
           originPosition.x,
           (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).y,
           (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).z
-        ) 
+        )
         : lockedAxis == ObjectCloner.LockedAxis.Y ? new Vector3(
           (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).x,
           originPosition.y,
           (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).z
-        ) 
+        )
         : new Vector3(
           (secondaryLockedAxis == LockedAxis2.B ? originPosition : shiftedPosition).x,
           (secondaryLockedAxis == LockedAxis2.A ? originPosition : shiftedPosition).y,

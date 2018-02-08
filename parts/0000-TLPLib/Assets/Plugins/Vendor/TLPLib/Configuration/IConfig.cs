@@ -41,9 +41,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region getters
 
-    public static A get<A>(this IConfig cfg, string key, Parser<A> parser) => 
+    public static A get<A>(this IConfig cfg, string key, Parser<A> parser) =>
       cfg.tryGet(key, parser).getOrThrow;
-    public static List<A> getList<A>(this IConfig cfg, string key, Parser<A> parser) => 
+    public static List<A> getList<A>(this IConfig cfg, string key, Parser<A> parser) =>
       cfg.tryList(key, parser).getOrThrow;
     public static Dictionary<K, V> getDict<K, V>(
       this IConfig cfg, string key, Parser<K> keyParser, Parser<V> valueParser
@@ -167,10 +167,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       this.lazyExtras = lazyExtras;
     }
 
-    public static ConfigLookupError keyNotFound(LazyVal<ImmutableArray<Tpl<string, string>>> extras) => 
+    public static ConfigLookupError keyNotFound(LazyVal<ImmutableArray<Tpl<string, string>>> extras) =>
       new ConfigLookupError(Kind.KEY_NOT_FOUND, extras);
 
-    public static ConfigLookupError wrongType(LazyVal<ImmutableArray<Tpl<string, string>>> extras) => 
+    public static ConfigLookupError wrongType(LazyVal<ImmutableArray<Tpl<string, string>>> extras) =>
       new ConfigLookupError(Kind.WRONG_TYPE, extras);
 
     public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {extras.mkStringEnum()}]";
@@ -188,7 +188,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         builder.AddRange(extraExtras);
         extras = builder.MoveToImmutable();
       }
-      
+
       return new LogEntry(
         $"{message}: {kind}",
         tags: ImmutableArray<Tpl<string, string>>.Empty,

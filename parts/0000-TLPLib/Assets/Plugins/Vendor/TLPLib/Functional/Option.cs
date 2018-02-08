@@ -7,8 +7,8 @@ using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class Option {
-    /** 
-     * Options are classes on iOS and if we use default(Option<A>) as a 
+    /**
+     * Options are classes on iOS and if we use default(Option<A>) as a
      * default argument in method parameter list, you'd get a null. To make
      * sure we have a value, use ```Option.ensureValue(ref someOpt);```.
      */
@@ -21,9 +21,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     /// <summary>
     /// Example usage:
-    /// 
+    ///
     /// <code><![CDATA[
-    /// Option<NonEmpty<ImmutableList<DraggablePart>>> __parts = 
+    /// Option<NonEmpty<ImmutableList<DraggablePart>>> __parts =
     ///   Option<NonEmpty<ImmutableList<DraggablePart>>>.None;
     /// public NonEmpty<ImmutableList<DraggablePart>> parts =>
     ///   Option.getOrUpdate(ref __parts, () => _parts.ToImmutableList().toNonEmpty().get);
@@ -34,16 +34,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return opt.__unsafeGetValue;
     }
 
-    public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt) where Child : Base => 
+    public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt) where Child : Base =>
       opt.isSome ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
 
-    public static A getOrNull<A>(this Option<A> opt) where A : class => 
+    public static A getOrNull<A>(this Option<A> opt) where A : class =>
       opt.isSome ? opt.get : null;
 
-    public static A orNull<A>(this Option<A> opt) where A : class => 
+    public static A orNull<A>(this Option<A> opt) where A : class =>
       opt.getOrNull();
 
-    public static Option<A> flatten<A>(this Option<Option<A>> opt) => 
+    public static Option<A> flatten<A>(this Option<Option<A>> opt) =>
       opt.isSome ? opt.__unsafeGetValue : F.none<A>();
 
     public static Option<Base> cast<Child, Base>(this Option<Child> o) where Child : Base
@@ -90,10 +90,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isSome = true;
     }
 
-    public A getOrThrow(Fn<Exception> getEx) => 
+    public A getOrThrow(Fn<Exception> getEx) =>
       isSome ? __unsafeGetValue : F.throws<A>(getEx());
 
-    public A getOrThrow(string message) => 
+    public A getOrThrow(string message) =>
       isSome ? __unsafeGetValue : F.throws<A>(new IllegalStateException(message));
 
     public void onNone(Action action) { if (! isSome) action(); }
@@ -108,22 +108,22 @@ namespace com.tinylabproductions.TLPLib.Functional {
       else ifEmpty();
     }
 
-    public void voidCata(Act<A> ifNonEmpty, Action ifEmpty) => 
+    public void voidCata(Act<A> ifNonEmpty, Action ifEmpty) =>
       voidFold(ifEmpty, ifNonEmpty);
 
     public Option<A> filter(bool keepValue) =>
       keepValue ? this : F.none<A>();
 
-    public Option<A> filter(Fn<A, bool> predicate) => 
+    public Option<A> filter(Fn<A, bool> predicate) =>
       isSome && predicate(__unsafeGetValue) ? this : F.none<A>();
 
-    public bool exists(Fn<A, bool> predicate) => 
+    public bool exists(Fn<A, bool> predicate) =>
       isSome && predicate(__unsafeGetValue);
 
-    public bool exists(A a) => 
+    public bool exists(A a) =>
       exists(a, Smooth.Collections.EqComparer<A>.Default);
 
-    public bool exists(A a, IEqualityComparer<A> comparer) => 
+    public bool exists(A a, IEqualityComparer<A> comparer) =>
       isSome && comparer.Equals(__unsafeGetValue, a);
 
     public bool isNone => ! isSome;
@@ -153,14 +153,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #endif
       return lhs.Equals(rhs);
     }
-    
+
     public static bool operator !=(Option<A> lhs, Option<A> rhs) => !(lhs == rhs);
 
     #endregion
 
     public OptionEnumerator<A> GetEnumerator() => new OptionEnumerator<A>(this);
 
-    public Option<B> map<B>(Fn<A, B> func) => 
+    public Option<B> map<B>(Fn<A, B> func) =>
       isSome ? F.some(func(get)) : F.none<B>();
 
     public Option<B> flatMap<B>(Fn<A, Option<B>> func) =>
@@ -172,22 +172,22 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return bOpt.isNone ? Option<C>.None : F.some(mapper(__unsafeGetValue, bOpt.__unsafeGetValue));
     }
 
-    public override string ToString() => 
+    public override string ToString() =>
       isSome ? $"Some({__unsafeGetValue})" : "None";
 
-    public Either<A, B> toLeft<B>(B right) => 
+    public Either<A, B> toLeft<B>(B right) =>
       isSome ? Either<A, B>.Left(__unsafeGetValue) : Either<A, B>.Right(right);
 
-    public Either<A, B> toLeft<B>(Fn<B> right) => 
+    public Either<A, B> toLeft<B>(Fn<B> right) =>
       isSome ? Either<A, B>.Left(__unsafeGetValue) : Either<A, B>.Right(right());
 
-    public Either<B, A> toRight<B>(B left) => 
+    public Either<B, A> toRight<B>(B left) =>
       isSome ? Either<B, A>.Right(__unsafeGetValue) : Either<B, A>.Left(left);
 
-    public Either<B, A> toRight<B>(Fn<B> left) => 
+    public Either<B, A> toRight<B>(Fn<B> left) =>
       isSome ? Either<B, A>.Right(__unsafeGetValue) : Either<B, A>.Left(left());
 
-    public IEnumerable<A> asEnum() => 
+    public IEnumerable<A> asEnum() =>
       isSome ? get.Yield() : Enumerable.Empty<A>();
 
     public Option<A> createOrTap(Fn<A> ifEmpty, Act<A> ifNonEmpty) {
@@ -200,36 +200,36 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Obsolete("Use opt1 || opt2")] public Option<A> orElse(Fn<Option<A>> other) => this || other();
     [Obsolete("Use opt1 || opt2")] public Option<A> orElse(Option<A> other) => this || other;
 
-    public B fold<B>(Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) => 
+    public B fold<B>(Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) =>
       isSome ? ifNonEmpty(get) : ifEmpty();
 
-    public B fold<B>(B ifEmpty, Fn<A, B> ifNonEmpty) => 
+    public B fold<B>(B ifEmpty, Fn<A, B> ifNonEmpty) =>
       isSome ? ifNonEmpty(get) : ifEmpty;
 
-    public B fold<B>(B ifEmpty, B ifNonEmpty) => 
+    public B fold<B>(B ifEmpty, B ifNonEmpty) =>
       isSome ? ifNonEmpty : ifEmpty;
 
-    public B fold<B>(B initial, Fn<A, B, B> ifNonEmpty) => 
+    public B fold<B>(B initial, Fn<A, B, B> ifNonEmpty) =>
       isSome ? ifNonEmpty(get, initial) : initial;
 
     // Alias for #fold with elements switched up.
-    public B cata<B>(Fn<A, B> ifNonEmpty, Fn<B> ifEmpty) => 
+    public B cata<B>(Fn<A, B> ifNonEmpty, Fn<B> ifEmpty) =>
       fold(ifEmpty, ifNonEmpty);
 
     // Alias for #fold with elements switched up.
-    public B cata<B>(Fn<A, B> ifNonEmpty, B ifEmpty) => 
+    public B cata<B>(Fn<A, B> ifNonEmpty, B ifEmpty) =>
       fold(ifEmpty, ifNonEmpty);
 
     public Option<Tpl<A, B>> zip<B>(Option<B> opt2) => zip(opt2, F.t);
 
-    public Option<C> zip<B, C>(Option<B> opt2, Fn<A, B, C> mapper) => 
+    public Option<C> zip<B, C>(Option<B> opt2, Fn<A, B, C> mapper) =>
       isSome && opt2.isSome
       ? F.some(mapper(__unsafeGetValue, opt2.__unsafeGetValue))
       : F.none<C>();
 
     /// <summary>
     /// If both options are Some, join them together and return Some(result).
-    /// 
+    ///
     /// Otherwise return that option which is Some, or None if both are None.
     /// </summary>
     public Option<A> join(Option<A> opt, Fn<A, A, A> joiner) =>
@@ -249,13 +249,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     /**
       * Required by |.
-      * 
+      *
       * http://stackoverflow.com/questions/686424/what-are-true-and-false-operators-in-c#comment43525525_686473
-      * The only situation where operator false matters, seems to be if MyClass also overloads 
+      * The only situation where operator false matters, seems to be if MyClass also overloads
       * the operator &, in a suitable way. So you can say MyClass conj = GetMyClass1() & GetMyClass2();.
-      * Then with operator false you can short-circuit and say 
-      * MyClass conj = GetMyClass1() && GetMyClass2();, using && instead of &. That will only 
-      * evaluate the second operand if the first one is not "false".  
+      * Then with operator false you can short-circuit and say
+      * MyClass conj = GetMyClass1() && GetMyClass2();, using && instead of &. That will only
+      * evaluate the second operand if the first one is not "false".
       **/
     public static bool operator false(Option<A> opt) => opt.isNone;
 
@@ -279,7 +279,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public static class OptionExts {
-    public static ImmutableList<A> toImmutableList<A>(this Option<A> opt) => 
+    public static ImmutableList<A> toImmutableList<A>(this Option<A> opt) =>
       opt.isSome
       ? ImmutableList.Create(opt.__unsafeGetValue)
       : ImmutableList<A>.Empty;

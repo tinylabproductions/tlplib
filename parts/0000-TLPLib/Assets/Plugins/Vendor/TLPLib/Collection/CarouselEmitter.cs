@@ -7,13 +7,13 @@ using com.tinylabproductions.TLPLib.Functional;
 namespace com.tinylabproductions.TLPLib.Collection {
   /**
    * Carousel like item emitter.
-   * 
+   *
    * Given:
    * * itemsWithCounts: [("a", 3), ("c", 1), ("b", 2), ("c", 2)]
-   * 
+   *
    * Will yield:
    * "a", "c", "b", "c", "a", "b", "c", "a", starts from beggining.
-   * 
+   *
    * This enumerable is endless.
    **/
   public class CarouselEmitter<A> : IEnumerable<A> {

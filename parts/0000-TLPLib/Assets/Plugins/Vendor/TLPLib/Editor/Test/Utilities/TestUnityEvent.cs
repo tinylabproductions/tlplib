@@ -10,7 +10,7 @@ class TestUnityEvent : ScriptableObject {
   [Serializable] class NestedEvent {
     [SerializeField, UsedImplicitly] UnityEvent unityEvent;
   }
-  
+
   [Serializable] class UnityEventGameObject : UnityEvent<GameObject> { }
 
   [SerializeField, UsedImplicitly] UnityEvent unityEvent;

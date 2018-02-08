@@ -31,8 +31,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Option<A> value => implementation.fold(F.some, _ => F.none<A>(), f => f.value);
 
     public FutureType type => implementation.fold(
-      _ => FutureType.Successful, 
-      _ => FutureType.Unfulfilled, 
+      _ => FutureType.Successful,
+      _ => FutureType.Unfulfilled,
       _ => FutureType.ASync
     );
 
@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future(IHeapFuture<A> future) : this(new OneOf<A, UnfulfilledFuture, IHeapFuture<A>>(future)) {}
 
     #region Equality
-    
+
     public bool Equals(Future<A> other) => value.Equals(other.value);
 
     public override bool Equals(object obj) {
@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       else if (implementation.isC) implementation.__unsafeGetC.onComplete(action);
     }
 
-    /** 
+    /**
      * Always run `action`. If the future is not completed right now, run `action` again when it
      * completes.
      */
@@ -103,9 +103,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action(current);
       if (current.isNone) onComplete(a => action(a.some()));
     }
-    
+
     public Future<B> map<B>(Fn<A, B> mapper) => implementation.fold(
-      v => Future<B>.successful(mapper(v)), 
+      v => Future<B>.successful(mapper(v)),
       _ => Future<B>.unfulfilled,
       f => Future<B>.async(p => f.onComplete(v => p.complete(mapper(v))))
     );
@@ -132,8 +132,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       );
     }
 
-    /** 
-     * Filter & map future on value. If collector returns Some, completes the future, 
+    /**
+     * Filter & map future on value. If collector returns Some, completes the future,
      * otherwise - never completes.
      **/
     public Future<B> collect<B>(Fn<A, Option<B>> collector) {

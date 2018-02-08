@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
 
   /**
    * For convenience use:
-   * 
+   *
    * using static com.tinylabproductions.TLPLib.Data.typeclasses.Str;
    */
   public static class Str {

@@ -15,16 +15,16 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
   /// <summary>
   /// Scrollable vertical layout, which makes sure that only visible elements are created.
   /// Element is considered visible if it intersects with <see cref="_maskRect"/> bounds.
-  /// 
+  ///
   /// Sample layout:
-  /// 
+  ///
   ///  #  | height | width
   ///  0    10       33%
   ///  1    30       33%
   ///  2    10       33%
   ///  3    10       50%
   ///  4    10       100%
-  /// 
+  ///
   /// +-----+-----+-----+
   /// |  0  |  1  |  2  |
   /// +-----|     |-----+
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
   /// +--------+--------+
   /// |        4        |
   /// +-----------------+
-  /// 
+  ///
   /// </summary>
   public class DynamicVerticalLayout : MonoBehaviour {
     #region Unity Serialized Fields
@@ -82,14 +82,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly Dictionary<IElementData, IElementView> items = new Dictionary<IElementData, IElementView>();
 
       public Init(
-        DynamicVerticalLayout backing, 
+        DynamicVerticalLayout backing,
         ImmutableArray<IElementData> layoutData
       ) {
         this.backing = backing;
         this.layoutData = layoutData;
         var mask = backing._maskRect;
-        
-        // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive() 
+
+        // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive()
         // from OnRectTransformDimensionsChange()
         // oncePerFrame() performs operation in LateUpdate
         var maskSize = mask.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>().rectDimensionsChanged
@@ -102,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           clearLayout();
           updateLayout();
         });
-        
+
         dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
       }
 
@@ -138,9 +138,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           var width = backing._container.rect.width;
           var x = itemLeftPerc * width;
           var cellRect = new Rect(
-            x: x, 
-            y: -totalHeightUntilThisRow - data.height, 
-            width: width * itemWidthPerc, 
+            x: x,
+            y: -totalHeightUntilThisRow - data.height,
+            width: width * itemWidthPerc,
             height: data.height
           );
           var placementVisible = visibleRect.Overlaps(cellRect, true);

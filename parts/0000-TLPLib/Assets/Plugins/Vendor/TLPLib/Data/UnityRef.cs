@@ -3,7 +3,7 @@
 namespace com.tinylabproductions.TLPLib.Data {
   public static class UnityRef {
     public static UnityRef<A> a<A>(A a) where A : UnityEngine.Object =>
-      new UnityRef<A>(a); 
+      new UnityRef<A>(a);
   }
 
   public class UnityRef<A> : IDisposable where A : UnityEngine.Object {

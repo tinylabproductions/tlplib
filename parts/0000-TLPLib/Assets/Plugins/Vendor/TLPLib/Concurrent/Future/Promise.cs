@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /** Complete with value, return false if already completed. **/
     bool tryComplete(A v);
   }
-  
+
   public static class PromiseExts {
     public static void completeSuccess<Err, Val>(this Promise<Either<Err, Val>> p, Val value) {
       p.complete(Either<Err, Val>.Right(value));

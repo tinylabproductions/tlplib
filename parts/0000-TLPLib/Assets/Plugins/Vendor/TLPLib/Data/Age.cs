@@ -38,8 +38,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       var age = now.Year - birthDate.Year;
       if (now.Month < birthDate.Month || (now.Month == birthDate.Month && now.Day < birthDate.Day))
         age--;
-      return age >= 0 
-        ? Either<string, Age>.Right(new Age((uint) age)) 
+      return age >= 0
+        ? Either<string, Age>.Right(new Age((uint) age))
         : $"Player age is negative: ${age}";
     }
   }

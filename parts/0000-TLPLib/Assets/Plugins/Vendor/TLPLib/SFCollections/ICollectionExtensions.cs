@@ -19,7 +19,7 @@ namespace Smooth.Collections {
 			}
 			return collection;
 		}
-		
+
 		/// <summary>
 		/// Adds the specified values to and returns the specific collection.
 		/// </summary>
@@ -39,7 +39,7 @@ namespace Smooth.Collections {
 			}
 			return collection;
 		}
-		
+
 		#endregion
 
 	}

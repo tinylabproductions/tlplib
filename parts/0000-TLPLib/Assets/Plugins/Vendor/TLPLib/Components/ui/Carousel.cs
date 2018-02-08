@@ -105,11 +105,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// <summary>Set page with smooth animations.</summary>
     public void setPageAnimated(int index) {
       if (elements.isEmpty()) return;
-      
+
       if (!loopable) {
         // when we increase past last page go to page 0 if wrapCarouselAround == true
-        targetPageValue = wrapCarouselAround 
-          ? index.modPositive(elements.Count) 
+        targetPageValue = wrapCarouselAround
+          ? index.modPositive(elements.Count)
           : Mathf.Clamp(index, 0, elements.Count - 1);
         _page.value = targetPageValue;
       }
@@ -135,7 +135,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public void Update() {
       lerpPosition(Time.deltaTime * 5);
-    } 
+    }
 
     void lerpPosition(float amount) {
       var withinMoveCompletedThreshold =
@@ -159,9 +159,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         }
         var absDiff = Mathf.Abs(idx - elementPos);
         var sign = Mathf.Sign(idx - elementPos);
-        var delta = (Mathf.Clamp01(absDiff) 
-          * SpaceBetweenSelectedAndAdjacentPages + Mathf.Max(0, absDiff - 1) 
-          * SpaceBetweenOtherPages) 
+        var delta = (Mathf.Clamp01(absDiff)
+          * SpaceBetweenSelectedAndAdjacentPages + Mathf.Max(0, absDiff - 1)
+          * SpaceBetweenOtherPages)
           * sign;
 
         foreach (var distance in disableDistantElements) {
@@ -173,7 +173,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         t.localScale = Vector3.one * (absDiff < 1
           ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, absDiff)
-          : 
+          :
             maxElementsFromCenter.value.fold(
               () => Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, absDiff - 1),
               maxElementsFromCenter => Mathf.Lerp(
@@ -185,10 +185,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     static Vector3 getPosition(
-      Carousel.Direction carouselDirection, float positionChange, float absDiff, 
-      Option<Vector3> centralItemOffset 
+      Carousel.Direction carouselDirection, float positionChange, float absDiff,
+      Option<Vector3> centralItemOffset
     ) {
-      var newPos = carouselDirection == Carousel.Direction.Horizontal 
+      var newPos = carouselDirection == Carousel.Direction.Horizontal
         ? new Vector3(positionChange, 0, 0)
         : new Vector3(0, -positionChange, 0);
 
@@ -201,7 +201,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     /// <summary>
-    /// Immediately refresh carousel content. Call after modifying <see cref="elements"/> to prevent 
+    /// Immediately refresh carousel content. Call after modifying <see cref="elements"/> to prevent
     /// visual flicker.
     /// </summary>
     public void forceUpdate() => lerpPosition(1);

@@ -12,18 +12,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
-      string callerMemberName = "", 
-      string callerFilePath = "", 
+      string callerMemberName = "",
+      string callerFilePath = "",
       int callerLineNumber = 0
     ) {
       onEvent(value);
       return Subscription.empty;
     }
-    
+
     public ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
-      string callerMemberName = "", 
-      string callerFilePath = "", 
+      string callerMemberName = "",
+      string callerFilePath = "",
       int callerLineNumber = 0
     ) =>
       Subscription.empty;

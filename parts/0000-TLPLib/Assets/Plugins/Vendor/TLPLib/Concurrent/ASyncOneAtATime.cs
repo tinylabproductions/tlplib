@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  /* Execute asynchronous things one at a time. Useful for wrapping not 
+  /* Execute asynchronous things one at a time. Useful for wrapping not
    * concurrent event based apis to futures. */
   public static class ASyncNAtATimeQueue {
     public static ASyncNAtATimeQueue<Params, Return> a<Params, Return>(
@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static ASyncNAtATimeQueue<Params, Return> a<Params, Return>(
       Act<Params, Promise<Return>> execute, ushort maxTasks = 1
     ) => new ASyncNAtATimeQueue<Params,Return>(
-      maxTasks, 
+      maxTasks,
       p => Future<Return>.async(promise => execute(p, promise))
     );
   }

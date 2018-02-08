@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static Option<NonEmpty<ImmutableArray<A>>> toNonEmpty<A>(this ImmutableArray<A> c) =>
       NonEmpty<ImmutableArray<A>>.__unsafeApply(c, _ => _.IsEmpty);
-    
+
     public static Option<NonEmpty<A[]>> toNonEmpty<A>(this A[] c) =>
       NonEmpty<A[]>.__unsafeApply(c, _ => _.isEmpty());
 
@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableSortedSet<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableSortedSet<A>>(ne, f);
-    
+
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<A[]> ne, Func<A, B> f) =>
       map<A, B, A[]>(ne, f);
 

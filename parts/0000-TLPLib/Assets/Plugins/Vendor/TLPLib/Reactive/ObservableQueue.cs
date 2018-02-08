@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     C collection { get; }
   }
 
-  public class ObservableReadOnlyLinkedListQueue<A> 
+  public class ObservableReadOnlyLinkedListQueue<A>
     : IObservableQueue<A, ReadOnlyLinkedList<A>>
   {
     readonly LinkedList<A> buffer;

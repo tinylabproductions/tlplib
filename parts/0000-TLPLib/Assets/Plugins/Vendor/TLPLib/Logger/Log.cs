@@ -18,10 +18,10 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   /**
-   * This double checks logging levels because string concatenation is more 
+   * This double checks logging levels because string concatenation is more
    * expensive than boolean check.
    *
-   * The general rule of thumb is that if your log object doesn't need any 
+   * The general rule of thumb is that if your log object doesn't need any
    * processing you can call appropriate logging method by itself. If it does
    * need processing, you should use `if (Log.d.isDebug()) Log.d.debug("foo=" + foo);` style.
    **/
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       DConsole.instance.onShow += dc => {
         var r = dc.registrarFor("Default Logger");
         r.registerEnum(
-          "level", 
+          "level",
           Ref.a(() => @default.level, v => @default.level = v),
           EnumUtils.GetValues<Level>()
         );
@@ -91,9 +91,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public readonly Option<Backtrace> backtrace;
 
     public LogEntry(
-      string message, 
-      ImmutableArray<Tpl<string, string>> tags, 
-      ImmutableArray<Tpl<string, string>> extras, 
+      string message,
+      ImmutableArray<Tpl<string, string>> tags,
+      ImmutableArray<Tpl<string, string>> extras,
       Option<Backtrace> backtrace = default(Option<Backtrace>),
       Option<Object> context = default(Option<Object>)
     ) {
@@ -119,8 +119,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static LogEntry simple(
       string message, Option<Backtrace> backtrace = default(Option<Backtrace>), Object context = null
     ) => new LogEntry(
-      message, ImmutableArray<Tpl<string, string>>.Empty, 
-      ImmutableArray<Tpl<string, string>>.Empty, 
+      message, ImmutableArray<Tpl<string, string>>.Empty,
+      ImmutableArray<Tpl<string, string>>.Empty,
       backtrace: backtrace, context: context.opt()
     );
 
@@ -128,12 +128,12 @@ namespace com.tinylabproductions.TLPLib.Logger {
       string message, Exception ex, Object context = null
     ) => simple($"{message}: {ex.Message}", Backtrace.fromException(ex), context);
 
-    public LogEntry withMessage(string message) => 
+    public LogEntry withMessage(string message) =>
       new LogEntry(message, tags, extras, backtrace, context);
 
-    public LogEntry withMessage(Fn<string, string> message) => 
+    public LogEntry withMessage(Fn<string, string> message) =>
       new LogEntry(message(this.message), tags, extras, backtrace, context);
-    
+
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.and(SerializedRW.str));
   }
@@ -164,32 +164,32 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static bool isInfo(this ILog log) => log.willLog(Log.Level.INFO);
     public static bool isWarn(this ILog log) => log.willLog(Log.Level.WARN);
 
-    public static void log(this ILog log, Log.Level l, string message) => 
+    public static void log(this ILog log, Log.Level l, string message) =>
       log.log(l, LogEntry.simple(message));
 
-    public static void verbose(this ILog log, string msg, Object context = null) => 
+    public static void verbose(this ILog log, string msg, Object context = null) =>
       log.log(Log.Level.VERBOSE, LogEntry.simple(msg, context: context));
-    public static void debug(this ILog log, string msg, Object context = null) => 
+    public static void debug(this ILog log, string msg, Object context = null) =>
       log.log(Log.Level.DEBUG, LogEntry.simple(msg, context: context));
-    public static void info(this ILog log, string msg, Object context = null) => 
+    public static void info(this ILog log, string msg, Object context = null) =>
       log.log(Log.Level.INFO, LogEntry.simple(msg, context: context));
-    public static void warn(this ILog log, string msg, Object context = null) => 
+    public static void warn(this ILog log, string msg, Object context = null) =>
       log.warn(LogEntry.simple(msg, context: context));
-    public static void warn(this ILog log, LogEntry entry) => 
+    public static void warn(this ILog log, LogEntry entry) =>
       log.log(Log.Level.WARN, entry);
-    public static void error(this ILog log, string msg, Object context = null) => 
+    public static void error(this ILog log, string msg, Object context = null) =>
       log.error(LogEntry.simple(msg, context: context));
-    public static void error(this ILog log, LogEntry entry) => 
+    public static void error(this ILog log, LogEntry entry) =>
       log.log(Log.Level.ERROR, entry);
-    public static void error(this ILog log, Exception ex, Object context = null) => 
+    public static void error(this ILog log, Exception ex, Object context = null) =>
       log.error(ex.Message, ex, context);
-    public static void error(this ILog log, string msg, Exception ex, Object context = null) => 
+    public static void error(this ILog log, string msg, Exception ex, Object context = null) =>
       log.error(LogEntry.fromException(msg, ex, context));
   }
 
   /**
-   * Useful for logging from inside Application.logMessageReceivedThreaded, because 
-   * log calls are silently ignored from inside the handlers. Just make sure not to 
+   * Useful for logging from inside Application.logMessageReceivedThreaded, because
+   * log calls are silently ignored from inside the handlers. Just make sure not to
    * get into an endless loop.
    **/
   public class DeferToMainThreadLog : ILog {
@@ -203,14 +203,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, LogEntry entry) => 
+    public void log(Log.Level l, LogEntry entry) =>
       defer(() => backing.log(l, entry));
 
     static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
 
     public IObservable<LogEvent> messageLogged => backing.messageLogged;
   }
-  
+
   public abstract class LogBase : ILog {
     readonly ISubject<LogEvent> _messageLogged = new Subject<LogEvent>();
     public IObservable<LogEvent> messageLogged => _messageLogged;
@@ -238,13 +238,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly ConsoleLog instance = new ConsoleLog();
     ConsoleLog() {}
 
-    protected override void logInner(Log.Level l, LogEntry entry) => 
+    protected override void logInner(Log.Level l, LogEntry entry) =>
       Console.WriteLine(entry.ToString());
   }
 
   public class UnityLog : LogBase {
     /// <summary>
-    /// Prefix to all messages so we could differentiate what comes from 
+    /// Prefix to all messages so we could differentiate what comes from
     /// our logging framework in Unity console.
     /// </summary>
     public const string MESSAGE_PREFIX = "[TLPLog]";
@@ -306,7 +306,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
         // Ignore messages that we ourselves sent to Unity.
         if (message.StartsWithFast(MESSAGE_PREFIX)) return;
         var logEventTry = convertUnityMessageToLogEvent(
-          message, backtrace, type, 
+          message, backtrace, type,
           stackFramesToSkipWhenGenerating: 1 /* This stack frame */
         );
         var logEvent =
@@ -351,7 +351,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
   class EditorLog {
     public static readonly string logfilePath;
     public static readonly StreamWriter logfile;
-    
+
     static EditorLog() {
       logfilePath = Application.temporaryCachePath + "/unity-editor-runtime.log";
       if (Log.d.isInfo()) Log.d.info("Editor Runtime Logfile: " + logfilePath);

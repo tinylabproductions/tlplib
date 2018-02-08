@@ -17,7 +17,7 @@ namespace Smooth.Collections {
 			this.seed = seed;
 			this.step = Either<Fn<T, T>, Fn<T, Option<T>>>.Left(step);
 		}
-		
+
 		public FuncEnumerable(T seed, Fn<T, Option<T>> step) {
 			this.seed = seed;
 			this.step = Either<Fn<T, T>, Fn<T, Option<T>>>.Right(step);
@@ -49,21 +49,21 @@ namespace Smooth.Collections {
 		private readonly T seed;
 		private readonly Either<Fn<T, P, T>, Fn<T, P, Option<T>>> step;
 		private readonly P parameter;
-		
+
 		private FuncEnumerable() {}
-		
+
 		public FuncEnumerable(T seed, Fn<T, P, T> step, P parameter) {
 			this.seed = seed;
 			this.step = Either<Fn<T, P, T>, Fn<T, P, Option<T>>>.Left(step);
 			this.parameter = parameter;
 		}
-		
+
 		public FuncEnumerable(T seed, Fn<T, P, Option<T>> step, P parameter) {
 			this.seed = seed;
 			this.step = Either<Fn<T, P, T>, Fn<T, P, Option<T>>>.Right(step);
 			this.parameter = parameter;
 		}
-		
+
 		public IEnumerator<T> GetEnumerator() {
 			if (step.isLeft) {
 				var current = seed;
@@ -79,7 +79,7 @@ namespace Smooth.Collections {
 				}
 			}
 		}
-		
+
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 	}
 }

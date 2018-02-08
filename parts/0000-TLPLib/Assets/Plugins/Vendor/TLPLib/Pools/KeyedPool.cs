@@ -34,7 +34,7 @@ namespace Smooth.Pools {
 				return keyToValues.TryGetValue(key, out values) && values.Count > 0 ? values.Pop() : create(key);
 			}
 		}
-		
+
 		/// <summary>
 		/// Relinquishes ownership of the specified value and returns it to the pool.
 		/// </summary>

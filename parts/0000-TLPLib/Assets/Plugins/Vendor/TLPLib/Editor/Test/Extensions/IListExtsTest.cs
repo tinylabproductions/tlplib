@@ -13,18 +13,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       F.list(0, 1).headOption().shouldBeSome(0);
     }
   }
-  
+
   public static class IListExtsTestExts {
     public static IList<A> downcast<A>(this IImmutableList<A> l) => (IList<A>) l;
   }
 
   public class IListExtsTestIsEmpty {
     [Test]
-    public void WhenEmpty() => 
+    public void WhenEmpty() =>
       ImmutableList<int>.Empty.downcast().isEmpty().shouldBeTrue();
 
     [Test]
-    public void WhenNonEmpty() => 
+    public void WhenNonEmpty() =>
       ImmutableList.Create(1).downcast().isEmpty().shouldBeFalse();
   }
 

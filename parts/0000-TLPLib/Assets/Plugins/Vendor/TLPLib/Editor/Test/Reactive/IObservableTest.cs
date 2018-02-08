@@ -150,7 +150,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void extract() => describe(() => {
       Subject<int> source = null;
       beforeEach += () => source = new Subject<int>();
-      
+
       Future<IObservable<int>> future;
       IObservable<int> extracted = null;
 
@@ -164,7 +164,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
         return F.t(list, sub);
       }
-      
+
       void testProxying(Ref<List<int>> list) {
         it["should subscribe to source"] = () => source.subscribers.shouldEqual(1);
         it["should proxy events"] = () => {
@@ -194,15 +194,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           };
         };
       }
-      
+
       when["future is completed before we get a subscriber"] = () => {
         beforeEach += () => {
           future = Future.successful(source.asObservable());
           extracted = future.extract();
         };
-        
+
         it["should not subscribe to source"] = () => source.subscribers.shouldEqual(0);
-        
+
         then["we subscribe to observable"] = () => {
           var (list, sub) = pipe();
           testProxying(list);
@@ -218,13 +218,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
         var (list, sub) = pipe();
         beforeEach += () => promise.complete(source);
-        
+
         testProxying(list);
         testUnsubResub(list, sub);
       };
     });
   }
-  
+
   public class IObservableTestMap : TestBase {
     [Test]
     public void Test() {
@@ -485,7 +485,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       foreach (var a in new[] {1, 2, 3}) subj1.push(a);
       foreach (var a in new[] {1, 2, 3}) subj2.push(a);
       evts.value.shouldEqual(6u);
-      
+
       IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2);
     }
   }
@@ -506,7 +506,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       r.value.shouldBeSome(F.t(1, 2));
       subj1.push(0);
       r.value.shouldBeSome(F.t(0, 2));
-      
+
       IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2);
     }
 
@@ -530,7 +530,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       r.value.shouldBeSome(F.t(1, 2, 0));
       subj1.push(3);
       r.value.shouldBeSome(F.t(3, 2, 0));
-      
+
       IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3);
     }
 
@@ -593,7 +593,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       r.value.shouldBeSome(F.t(3, 2, 0, 5, 1));
       subj5.push(6);
       r.value.shouldBeSome(F.t(3, 2, 0, 5, 6));
-      
+
       IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3, subj4, subj5);
     }
 
@@ -632,7 +632,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       r.value.shouldBeSome(F.t(3, 2, 0, 5, 6, 1));
       subj6.push(7);
       r.value.shouldBeSome(F.t(3, 2, 0, 5, 6, 7));
-      
+
       IObservableTestExts.testUnsubAndFinish(t._2, subj1, subj2, subj3, subj4, subj5, subj6);
     }
   }
@@ -699,7 +699,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = obs.pipeToList(tracker);
       foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);
       t._1.shouldEqual(F.list(
-        F.t(1, 1), F.t(1, 2), F.t(2, 2), F.t(2, 3), F.t(3, 3), 
+        F.t(1, 1), F.t(1, 2), F.t(2, 2), F.t(2, 3), F.t(3, 3),
         F.t(3, 4), F.t(4, 4)
       ));
 

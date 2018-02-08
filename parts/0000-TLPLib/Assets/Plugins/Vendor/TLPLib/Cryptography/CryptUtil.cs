@@ -21,7 +21,7 @@ namespace com.tinylabproductions.Cryptography {
       // o    modulus is the modulus n.
       //
       // o    publicExponent is the public exponent e.
-      //            
+      //
 
       // BER Encoding
       // http://en.wikipedia.org/wiki/Distinguished_Encoding_Rules#DER_encoding
@@ -61,13 +61,13 @@ namespace com.tinylabproductions.Cryptography {
       // 00       ???? Why 0, what does this mean?
       // 30       Identifier: 30 hex = 00110000, P/C = Constructed (1), TAG = SEQUENCE (10000)
       // 82       Length: 82 hex = 130 decimal = 10000010, Long Form Length with 2 octects for length
-      // 01       Byte 1/2 of long form length        
+      // 01       Byte 1/2 of long form length
       // 0a       Byte 2/2 of long form length, 0x01 0x0a, 00000001 00001010 = 266 bytes
       // 02       Identifier: 02 hex = 00000010, P/C = Primitive (0), TAG = INTEGER (00010)
       // 82       Length: 82 hex = 130 decimal = 10000010, Long Form Length with 2 octects for length
       // 01       Byte 1/2 of long form length
       // 01       Byte 2/2 of long form length, 0x01 0x01, 00000001 00000001 = 257 bytes
-      // 00       Byte 1/257 of modulus (padded left with a 0, leaves 256 actual values)      
+      // 00       Byte 1/257 of modulus (padded left with a 0, leaves 256 actual values)
       // a9       Byte 2/257 of modulus... public key (modulus) starts here??
       // 87       Byte 3/257 of modulus
       // ....

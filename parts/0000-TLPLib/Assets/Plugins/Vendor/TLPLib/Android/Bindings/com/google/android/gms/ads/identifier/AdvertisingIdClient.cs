@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
         limitAdTrackingEnabled = java.c<bool>("isLimitAdTrackingEnabled");
       }
 
-      public override string ToString() => 
+      public override string ToString() =>
         $"{nameof(AdvertisingIdClientInfo)}[" +
         $"{nameof(id)}: {id}, " +
         $"{nameof(limitAdTrackingEnabled)}: {limitAdTrackingEnabled}" +
@@ -59,8 +59,8 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
     public Try<AdvertisingIdClientInfo> getAdvertisingIdInfoForCurrentActivity() =>
       getAdvertisingIdInfo(AndroidActivity.current);
 
-    public Try<AdvertisingIdClientInfo> getAdvertisingIdInfo(Context context) => 
-      F.doTry(() => withKlass(klass => 
+    public Try<AdvertisingIdClientInfo> getAdvertisingIdInfo(Context context) =>
+      F.doTry(() => withKlass(klass =>
         (AdvertisingIdClientInfo) new Info(klass.csjo("getAdvertisingIdInfo", context.java))
       ));
   }

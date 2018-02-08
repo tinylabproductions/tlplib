@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
     Renderer[] renderers;
 
     public void OnEnable() {
-      renderers = 
+      renderers =
         targets
         .collect(t => ((MonoBehaviour) t).GetComponent<Renderer>().opt())
         .ToArray();

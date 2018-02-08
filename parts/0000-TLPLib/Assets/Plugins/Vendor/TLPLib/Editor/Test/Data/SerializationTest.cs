@@ -87,7 +87,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public class SerializationTestTplRW : SerializationTestBase {
-    static readonly ISerializedRW<Tpl<int, string>> rw = 
+    static readonly ISerializedRW<Tpl<int, string>> rw =
       SerializedRW.tpl(SerializedRW.integer, SerializedRW.str);
 
     [Test]
@@ -120,13 +120,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [Test]
-    public void TestFailure() => 
+    public void TestFailure() =>
       rw.deserialize(noise.toArray(), 0).shouldBeNone();
   }
 
   public class SerializationTestEitherRW : SerializationTestBase {
     static readonly ISerializedRW<Either<int, string>> rw = SerializedRW.either(SerializedRW.integer, SerializedRW.str);
-    
+
     [Test]
     public void TestLeft() {
       const int value = int.MaxValue;
@@ -148,7 +148,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public class SerializationTestCollection : SerializationTestBase {
-    static readonly ISerializer<ICollection<int>> serializer = 
+    static readonly ISerializer<ICollection<int>> serializer =
       SerializedRW.collectionSerializer(SerializedRW.integer);
 
     static readonly IDeserializer<ImmutableArray<int>> deserializer =

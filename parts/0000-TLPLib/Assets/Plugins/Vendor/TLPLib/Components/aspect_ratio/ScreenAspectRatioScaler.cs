@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
     [
-      SerializeField, 
+      SerializeField,
       Help(HelpType.Info, "Original aspect ratio that this object is designed for.")
     ] Vector2 originalAspectRatio = new Vector2(16, 9);
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local

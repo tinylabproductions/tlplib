@@ -5,7 +5,7 @@ using Smooth.Collections;
 namespace Smooth.Comparisons {
 	/// <summary>
 	/// Allocation free equality comparer for type T where T implements IEquatable<T>.
-	/// 
+	///
 	/// Only useful to circumvent potential JIT exceptions on platforms without JIT compilation.
 	/// </summary>
 	public class EquatableEqComparer<T> : Smooth.Collections.EqComparer<T> where T : IEquatable<T> {

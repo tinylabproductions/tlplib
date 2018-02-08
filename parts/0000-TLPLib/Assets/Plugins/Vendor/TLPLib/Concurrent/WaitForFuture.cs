@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class WaitForFuture {
-    public static WaitForFuture<A> coroutineWait<A>(this Future<A> f) => 
+    public static WaitForFuture<A> coroutineWait<A>(this Future<A> f) =>
       new WaitForFuture<A>(f, Option<MaxWait>.None);
 
     public static WaitForFuture<A> coroutineWait<A>(
@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this.maxWait = maxWait;
     }
 
-    public override bool keepWaiting => 
+    public override bool keepWaiting =>
       future.value.isNone && maxWait.fold(true, _ => _.keepWaiting);
   }
 }

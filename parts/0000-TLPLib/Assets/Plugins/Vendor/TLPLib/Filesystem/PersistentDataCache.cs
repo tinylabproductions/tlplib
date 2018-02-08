@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   public class PersistentDataCache : ICache<byte[]> {
-    public static Option<ICache<byte[]>> instance = 
-      Application.persistentDataPath.nonEmptyOpt(trim: true).map<ICache<byte[]>>(path => 
+    public static Option<ICache<byte[]>> instance =
+      Application.persistentDataPath.nonEmptyOpt(trim: true).map<ICache<byte[]>>(path =>
         new PersistentDataCache(new PathStr(path))
       );
 
