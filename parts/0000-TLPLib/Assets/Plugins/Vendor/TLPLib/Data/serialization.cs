@@ -63,12 +63,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<long> lng = new longRW();
     public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
     public static readonly ISerializedRW<Vector2> vector2 =
-      SerializedRW.flt.and(SerializedRW.flt).map(
+      flt.and(flt).map(
         tpl => new Vector2(tpl._1, tpl._2).some(),
         p => F.t(p.x, p.y)
       );    
     public static readonly ISerializedRW<Vector3> vector3 =
-      SerializedRW.flt.and(SerializedRW.flt).and(SerializedRW.flt).map(
+      flt.and(flt).and(flt).map(
         tpl => new Vector3(tpl._1._1, tpl._1._2, tpl._2).some(),
         p => F.t(F.t(p.x, p.y), p.z)
       );
