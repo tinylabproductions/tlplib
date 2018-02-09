@@ -60,6 +60,16 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
   }
 
+  public class SerializationTestGuidRW : SerializationTestBase {
+    static readonly ISerializedRW<Guid> rw = SerializedRW.guid;
+
+    [Test]
+    public void Test() {
+      var value = Guid.NewGuid();
+      checkWithNoise(rw, rw.serialize(value), value);
+    }
+  }
+
   public class SerializationTestStringRW : SerializationTestBase {
     static readonly ISerializedRW<string> rw = SerializedRW.str;
 
