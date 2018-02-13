@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface Coroutine : IDisposable {
-    /** 
+    /**
      * We could use Future here, but future is a heap allocated object and
      * we don't want each coroutine to allocate 2 extra heap objects.
-     * 
+     *
      * So instead we use event + property.
      */
     event Action onFinish;
@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /**
      * So...
-     * 
+     *
      * 1. https://fogbugz.unity3d.com/default.asp?826400_tcbicqltkckqmer1
      * 2. Unity API has no way to check whether Coroutine has been completed.
      **/

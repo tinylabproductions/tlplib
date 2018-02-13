@@ -6,13 +6,13 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Components {
   /// <summary>
   /// Quick way to add a random number generator with settable seed to a script.
-  /// 
+  ///
   /// Example usage:
-  /// 
+  ///
   /// <code><![CDATA[
   /// [SerializeField] RngOption random;
-  /// 
-  /// public override void onEvent() => 
+  ///
+  /// public override void onEvent() =>
   ///   events[random.rng.nextIntInRange(new Range(0, events.Length), out random.__rng)].onEvent();
   /// ]]></code>
   /// </summary>
@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     /// <summary>
     /// Only public because we can't use out with properties.
-    /// 
+    ///
     /// Do not get this field directly!
     /// </summary>
     public Rng __rng;

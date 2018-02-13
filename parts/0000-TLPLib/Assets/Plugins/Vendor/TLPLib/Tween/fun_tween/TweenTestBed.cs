@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 //        obj4T.end, obj4T.end + Vector3.right * 10, Eases.quadratic, duration
 //      );
 //
-//      // 
+//      //
 //
       var t1 = obj1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration);
       var tra = TweenSequence.sequential(

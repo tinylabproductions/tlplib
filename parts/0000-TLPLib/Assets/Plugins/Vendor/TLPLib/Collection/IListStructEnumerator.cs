@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
       this.list = list;
       position = -1;
     }
-      
+
     public bool MoveNext() {
       if (position + 1 >= list.Count) return false;
       position++;

@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class SpriteRendererUtils {
-    
+
     /// <summary>
     /// Calculates rect which encapsulates all of the sprites from given <see cref="IEnumerable{SpriteRenderer}"/>.
     /// </summary>
     /// <returns>
-    /// Option.some if at least one <see cref="SpriteRenderer.sprite"/> was not null. 
+    /// Option.some if at least one <see cref="SpriteRenderer.sprite"/> was not null.
     /// </returns>
     public static Option<Rect> calculateSpriteBounds(IEnumerable<SpriteRenderer> spriteRenderers) {
       var hasOne = false;

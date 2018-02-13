@@ -26,21 +26,21 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public static class TryLinqExts {
     public static Try<B> Select<A, B>(this Try<A> t, Fn<A, B> f) => t.map(f);
     public static Try<B> SelectMany<A, B>(this Try<A> t, Fn<A, Try<B>> f) => t.flatMap(f);
-    public static Try<B1> SelectMany<A, B, B1>(this Try<A> t, Fn<A, Try<B>> f, Fn<A, B, B1> g) => 
+    public static Try<B1> SelectMany<A, B, B1>(this Try<A> t, Fn<A, Try<B>> f, Fn<A, B, B1> g) =>
       t.flatMap(f, g);
   }
 
   public static class IOLinqExts {
     public static IO<B> Select<A, B>(this IO<A> t, Fn<A, B> f) => t.map(f);
     public static IO<B> SelectMany<A, B>(this IO<A> t, Fn<A, IO<B>> f) => t.flatMap(f);
-    public static IO<B1> SelectMany<A, B, B1>(this IO<A> t, Fn<A, IO<B>> f, Fn<A, B, B1> g) => 
+    public static IO<B1> SelectMany<A, B, B1>(this IO<A> t, Fn<A, IO<B>> f, Fn<A, B, B1> g) =>
       t.flatMap(f, g);
   }
 
   public static class FutureLinqExts {
     public static Future<B> Select<A, B>(this Future<A> fa, Fn<A, B> f) => fa.map(f);
 
-    public static Future<B> SelectMany<A, B>(this Future<A> fa, Fn<A, Future<B>> f) => 
+    public static Future<B> SelectMany<A, B>(this Future<A> fa, Fn<A, Future<B>> f) =>
       fa.flatMap(f);
 
     public static Future<C> SelectMany<A, B, C>(

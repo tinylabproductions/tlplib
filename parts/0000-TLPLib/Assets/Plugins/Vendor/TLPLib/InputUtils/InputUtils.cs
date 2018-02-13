@@ -5,8 +5,8 @@ namespace com.tinylabproductions.TLPLib.InputUtils {
   public static class Pointer {
     public const int MOUSE_BTN_FIRST = 0;
 
-    public static bool isDown => 
-      (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) 
+    public static bool isDown =>
+      (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began)
       || Input.GetMouseButtonDown(MOUSE_BTN_FIRST);
 
     public static bool held => Input.touchCount == 1 || Input.GetMouseButton(MOUSE_BTN_FIRST);

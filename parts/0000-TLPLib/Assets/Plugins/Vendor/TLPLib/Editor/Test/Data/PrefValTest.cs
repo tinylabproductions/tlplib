@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void Normal() {
-      Fn<PrefVal<int>> create = () => 
+      Fn<PrefVal<int>> create = () =>
         storage.custom(key, 3, i => i.ToString(), i => i.parseInt().rightValue);
       var pv = create();
       pv.value.shouldEqual(3);
@@ -176,7 +176,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       ));
     }
   }
-  
+
   class PrefValTestCollection : PrefValTestBase {
     const string key = nameof(PrefValTestCollection);
 
@@ -193,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         PrefVal.OnDeserializeFailure.ReturnDefault
     ) =>
       storage.collection(
-        key, 
+        key,
         SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize),
         convert, defaultVal,
         onDeserializeFailure: onDeserializeFailure,

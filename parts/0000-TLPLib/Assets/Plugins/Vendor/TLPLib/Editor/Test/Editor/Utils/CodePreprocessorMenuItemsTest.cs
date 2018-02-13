@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   class CodePreprocessorMenuItemsTest {
-    readonly PathStr 
+    readonly PathStr
       p_rootPath, p_emptyDir, p_noCsFilesDir, p_noneCsFile,
       p_cs1, p_cs2, p_cs3, p_cs4;
 

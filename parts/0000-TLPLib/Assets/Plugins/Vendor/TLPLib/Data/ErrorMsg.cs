@@ -16,9 +16,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
-      message: errorMsg.s, 
-      tags: ImmutableArray<Tpl<string, string>>.Empty, 
-      extras: ImmutableArray<Tpl<string, string>>.Empty, 
+      message: errorMsg.s,
+      tags: ImmutableArray<Tpl<string, string>>.Empty,
+      extras: ImmutableArray<Tpl<string, string>>.Empty,
       context: errorMsg.context
     );
 
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public LogEntry toLogEntry() => new LogEntry(
       s,
-      ImmutableArray<Tpl<string, string>>.Empty, 
+      ImmutableArray<Tpl<string, string>>.Empty,
       ImmutableArray<Tpl<string, string>>.Empty,
       context: context
     );

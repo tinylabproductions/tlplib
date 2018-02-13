@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
       var interfaceType = typeof(A);
       if (!interfaceType.IsInterface)
         throw new ArgumentException($"{interfaceType} is not an interface!");
-      return 
+      return
         assembly.GetTypes()
         .Where(t => t.GetInterfaces().Contains(interfaceType))
         .Select(t => new Props<A>(t));
@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
   }
 
   public static class TypeExts {
-    public static bool hasEmptyConstructor(this Type t) => 
+    public static bool hasEmptyConstructor(this Type t) =>
       t.GetConstructor(Type.EmptyTypes) != null;
 
     public static Option<A> getCustomAttribute<A>(this Type t) where A : Attribute =>

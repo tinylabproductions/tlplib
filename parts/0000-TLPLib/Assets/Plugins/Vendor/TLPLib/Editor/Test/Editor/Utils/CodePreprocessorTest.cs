@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public const string CODE =
       @"#if PART_UNITYADS
 #if UNITY_ANDROID
-using com.tinylabproductions.TLPLib.Test; 
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
@@ -20,12 +20,12 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 }";
 
     public const string PRAG_STR = "#pragma warning disable\n";
-    
+
     public const string CODE_WITH_PRAGMA =
        @"#if PART_UNITYADS
 #if UNITY_ANDROID
 #pragma warning disable
-using com.tinylabproductions.TLPLib.Test; 
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       @"#if PART_UNITYADS
 #pragma warning disable
 #if UNITY_ANDROID
-using com.tinylabproductions.TLPLib.Test; 
+using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {

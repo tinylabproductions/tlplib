@@ -8,19 +8,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public static class LazyValExts {
     /// <summary>
     /// Create a new lazy value B, based on lazy value A.
-    /// 
-    /// Evaluating B will evaluate A, but evaluating A will not evaluate B. 
+    ///
+    /// Evaluating B will evaluate A, but evaluating A will not evaluate B.
     /// </summary>
-    public static LazyVal<B> lazyMap<A, B>(this LazyVal<A> lazy, Fn<A, B> mapper) => 
+    public static LazyVal<B> lazyMap<A, B>(this LazyVal<A> lazy, Fn<A, B> mapper) =>
       F.lazy(() => mapper(lazy.get));
-    
+
     /// <summary>
     /// Create a new lazy value B, based on lazy value A.
-    /// 
+    ///
     /// Evaluating B will evaluate A and evaluating A will evaluate B.
-    /// 
+    ///
     /// Projector function is called on every access, so make sure it is something lite,
-    /// like a cast or field access. 
+    /// like a cast or field access.
     /// </summary>
     public static LazyVal<B> project<A, B>(this LazyVal<A> lazy, Fn<A, B> projector) =>
       new ProjectedLazyVal<A, B>(lazy, projector);
@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static A getOrElse<A>(this LazyVal<A> lazy, Fn<A> orElse) =>
       lazy.isCompleted ? lazy.get : orElse();
-    
+
     public static A getOrElse<A>(this LazyVal<A> lazy, A orElse) =>
       lazy.isCompleted ? lazy.get : orElse;
 
@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public interface LazyVal<A> : IHeapFuture<A> {
     A get { get; }
   }
-  
+
   public class NotReallyLazyVal<A> : LazyVal<A> {
     public A get { get; }
 
@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     } }
 
     #region Future
-    
+
     public Option<A> value => isCompleted ? F.some(obj) : Option<A>.None;
 
     public void onComplete(Act<A> action) {
@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
         listeners.Add(action);
       }
     }
-    
+
     #endregion
 
     void onValueInited(A a) {

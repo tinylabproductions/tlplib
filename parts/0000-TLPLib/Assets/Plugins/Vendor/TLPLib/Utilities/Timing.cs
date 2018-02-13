@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  /// <summary> 
+  /// <summary>
   ///   <para>
   ///    Tracks how much time has passed from the moment scope is opened <see cref="openScope"/> until it is closed <see cref="closeScope"/>,
   ///    counts how many iterations occured inside scope. Tracking also supports nesting (scope inside a scope).
@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public void Dispose() {
       timing.closeScope();
     }
-  } 
+  }
 
   public struct TimingData {
     public readonly string scope;
@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public readonly ImmutableArray<KeyValuePair<string, Duration>> childDurations;
 
     public TimingData(
-      string scope, DateTime startTime, DateTime endTime, uint iterations, 
+      string scope, DateTime startTime, DateTime endTime, uint iterations,
       ImmutableArray<KeyValuePair<string, Duration>> childDurations
     ) {
       this.scope = scope;
@@ -116,7 +116,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     static TimingNoOp() {
       noOpScope = new FrameTimingScope(null, instance);
     }
-    
+
     TimingNoOp() {}
 
     public FrameTimingScope frameScope(string name) => noOpScope;
@@ -145,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       public string name, fullScopeName;
       public DateTime startTime;
       public uint iterations;
-      public readonly Dictionary<string, Duration> innerScopeDurations = 
+      public readonly Dictionary<string, Duration> innerScopeDurations =
         new Dictionary<string, Duration>();
       public Option<Data> parent = Option<Data>.None;
     }
@@ -180,7 +180,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       checkForScope();
       var data = scopes.Pop();
       var timingData = new TimingData(
-        data.fullScopeName, data.startTime, DateTime.Now, data.iterations, 
+        data.fullScopeName, data.startTime, DateTime.Now, data.iterations,
         data.innerScopeDurations.ToImmutableArray()
       );
       foreach (var parent in data.parent) {

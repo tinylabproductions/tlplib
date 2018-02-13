@@ -8,9 +8,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     static void reserializeAllAssets() {
       if (!EditorUtility.DisplayDialog("Slow operation", "Do you really want to reserialize all ASSETS?", "Yes", "No"))
         return;
-      using (var editorProgress = new EditorProgress("Reserializing All Assets")) { 
+      using (var editorProgress = new EditorProgress("Reserializing All Assets")) {
         var assetsPaths = editorProgress.execute("Loading all assets", AssetDatabase.GetAllAssetPaths);
-        
+
         editorProgress.execute("Setting assets dirty", () => {
           for (var i = 0; i < assetsPaths.Length; i++) {
             var asset = AssetDatabase.LoadMainAssetAtPath(assetsPaths[i]);
@@ -19,11 +19,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
             if (asset != null) EditorUtility.SetDirty(asset);
           }
         });
-        
+
         editorProgress.execute("Saving reserialized assets", AssetDatabase.SaveAssets);
       }
     }
-    
+
     [UsedImplicitly, MenuItem("TLP/Tools/Reserialize/All scenes")]
     static void reserializeAllScenes() {
       if (!EditorUtility.DisplayDialog("Slow operation", "Do you really want to reserialize all SCENES?", "Yes", "No"))

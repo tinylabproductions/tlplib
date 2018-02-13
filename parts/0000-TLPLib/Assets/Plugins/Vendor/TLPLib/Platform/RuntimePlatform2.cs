@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.WindowsEditor, RuntimePlatform.WindowsPlayer,
         RuntimePlatform.OSXEditor, RuntimePlatform.OSXPlayer,
         RuntimePlatform.LinuxPlayer,
-        RuntimePlatform.Android, RuntimePlatform.IPhonePlayer, 
+        RuntimePlatform.Android, RuntimePlatform.IPhonePlayer,
         RuntimePlatform.OSXDashboardPlayer,
         RuntimePlatform.Android,
         RuntimePlatform.LinuxPlayer,

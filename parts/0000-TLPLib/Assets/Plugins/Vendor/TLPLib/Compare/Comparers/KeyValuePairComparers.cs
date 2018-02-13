@@ -21,7 +21,7 @@ namespace Smooth.Compare.Comparers {
 			return Smooth.Collections.EqComparer<K>.Default.Equals(l.Key, r.Key) &&
 				Smooth.Collections.EqComparer<V>.Default.Equals(l.Value, r.Value);
 		}
-		
+
 		public override int GetHashCode(KeyValuePair<K, V> kvp) {
 			unchecked {
 				int hash = 17;

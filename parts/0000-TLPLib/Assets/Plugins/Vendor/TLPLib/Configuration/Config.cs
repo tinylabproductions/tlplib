@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     ConfigPath(ImmutableList<string> path) : this(path, Option<string>.None) {}
 
-    public ConfigPath baseOn(ConfigPath basePath) => 
+    public ConfigPath baseOn(ConfigPath basePath) =>
       new ConfigPath(path, basePath.pathStrWithBase.some());
 
     public bool isRoot => path.isEmpty();
@@ -63,14 +63,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region Parsers
 
-    /** 
+    /**
      * Either Left(additional error message or "" if none) or Right(value).
      */
     public delegate Either<ConfigLookupError, A> Parser<A>(ConfigPath path, object node);
 
     public static ConfigLookupError parseErrorFor<A>(
       ConfigPath path, object node, string extraInfo = null
-    ) => 
+    ) =>
       ConfigLookupError.wrongType(F.lazy(() => ImmutableArray.Create(
         F.t("path", path.pathStrWithBase),
         F.t("type", typeof(A).FullName),
@@ -82,9 +82,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       ConfigPath path, object node, string extraInfo = null
     ) => Either<ConfigLookupError, A>.Left(parseErrorFor<A>(path, node, extraInfo));
 
-    public static Parser<A> createCastParser<A>() => (path, node) => 
+    public static Parser<A> createCastParser<A>() => (path, node) =>
       node is A
-      ? Either<ConfigLookupError, A>.Right((A) node) 
+      ? Either<ConfigLookupError, A>.Right((A) node)
       : parseErrorEFor<A>(path, node);
 
     /** Parser that always succeeds and returns constant. */
@@ -96,10 +96,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static readonly Parser<List<object>> objectListParser = createCastParser<List<object>>();
 
-    public static Parser<Option<A>> opt<A>(Parser<A> parser) => 
-      (path, o) => 
-        o == null 
-        ? Either<ConfigLookupError, Option<A>>.Right(Option<A>.None) 
+    public static Parser<Option<A>> opt<A>(Parser<A> parser) =>
+      (path, o) =>
+        o == null
+        ? Either<ConfigLookupError, Option<A>>.Right(Option<A>.None)
         : parser(path, o).mapRight(_ => _.some());
 
     public static Parser<CB> collectionParser<CB, A>(
@@ -168,8 +168,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         }
         return Either<ConfigLookupError, Dictionary<K, V>>.Right(dict);
       });
-    
-    public static Parser<A> configPathedParser<A>(string key, Parser<A> aParser) => 
+
+    public static Parser<A> configPathedParser<A>(string key, Parser<A> aParser) =>
       configParser.flatMap((path, cfg) => cfg.eitherGet(key, aParser));
 
     public static Parser<B> configPathedParser<A1, A2, B>(
@@ -283,12 +283,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static readonly Parser<bool> boolParser = createCastParser<bool>();
 
-    public static readonly Parser<DateTime> dateTimeParser = 
+    public static readonly Parser<DateTime> dateTimeParser =
       createCastParser<DateTime>()
       .or(stringParser.flatMap((path, s) => {
         var t = s.parseDateTime();
-        return t.isSuccess 
-          ? Either<ConfigLookupError, DateTime>.Right(t.__unsafeGet) 
+        return t.isSuccess
+          ? Either<ConfigLookupError, DateTime>.Right(t.__unsafeGet)
           : parseErrorEFor<DateTime>(path, s, t.__unsafeException.Message);
       }));
 
@@ -302,11 +302,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static readonly Parser<FRange> fRangeParser =
       rangeParser(floatParser, (l, u) => new FRange(l, u));
-    
+
     public static readonly Parser<URange> uRangeParser =
       rangeParser(uintParser, (l, u) => new URange(l, u));
 
-    public static readonly Parser<Url> 
+    public static readonly Parser<Url>
       urlParser = stringParser.map(s => new Url(s)),
       /** for relative paths, like 'foo bar/baz.jpg' */
       uriEscapedUrlParser = urlParser.map(url => new Url(Uri.EscapeUriString(url.url)));
@@ -333,7 +333,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public A as_<A>(Parser<A> parser) =>
       e2a(eitherAs(parser));
 
-    public A get<A>(string key, Parser<A> parser) => 
+    public A get<A>(string key, Parser<A> parser) =>
       e2a(internalGet(key, parser));
 
     static A e2a<A>(Either<ConfigLookupError, A> e) {
@@ -341,16 +341,16 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return e.__unsafeGetRight;
     }
 
-    public Option<A> optAs<A>(Parser<A> parser) => 
+    public Option<A> optAs<A>(Parser<A> parser) =>
       eitherAs(parser).rightValue;
 
     public Option<A> optGet<A>(string key, Parser<A> parser) =>
       internalGet(key, parser).rightValue;
 
-    public Try<A> tryAs<A>(Parser<A> parser) => 
+    public Try<A> tryAs<A>(Parser<A> parser) =>
       e2t(eitherAs(parser));
 
-    public Try<A> tryGet<A>(string key, Parser<A> parser) => 
+    public Try<A> tryGet<A>(string key, Parser<A> parser) =>
       e2t(internalGet(key, parser));
 
     static Try<A> e2t<A>(Either<ConfigLookupError, A> e) =>
@@ -358,13 +358,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         ? new Try<A>(new ConfigFetchException(e.__unsafeGetLeft))
         : new Try<A>(e.__unsafeGetRight);
 
-    public Either<ConfigLookupError, A> eitherAs<A>(Parser<A> parser) => 
+    public Either<ConfigLookupError, A> eitherAs<A>(Parser<A> parser) =>
       parser(scope, root);
 
     public Either<ConfigLookupError, A> eitherGet<A>(
       string key, Parser<A> parser
     ) => internalGet(key, parser);
-    
+
     #endregion
 
 
@@ -402,7 +402,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parser(path, node);
     }
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(Config)}({nameof(scope)}: \"{scope}\", {nameof(root)}: {root})";
   }
 
@@ -418,7 +418,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) => aParser.flatMap((path, a) => {
       var bOpt = f(path, a);
       return bOpt.isSome
-        ? Either<ConfigLookupError, B>.Right(bOpt.get) 
+        ? Either<ConfigLookupError, B>.Right(bOpt.get)
         : Config.parseErrorEFor<B>(path, a);
     });
 
@@ -433,7 +433,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static Config.Parser<B> flatMapTry<A, B>(
       this Config.Parser<A> aParser, Fn<ConfigPath, A, B> f
-    ) => 
+    ) =>
       (path, o) => aParser(path, o).flatMapRight(a => {
         try { return new Either<ConfigLookupError, B>(f(path, a)); }
         catch (ConfigFetchException e) { return new Either<ConfigLookupError, B>(e.error); }
@@ -442,9 +442,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Config.Parser<A> filter<A>(
       this Config.Parser<A> parser, Fn<A, bool> predicate
     ) =>
-      (path, o) => parser(path, o).flatMapRight(a => 
-        predicate(a) 
-        ? new Either<ConfigLookupError, A>(a) 
+      (path, o) => parser(path, o).flatMapRight(a =>
+        predicate(a)
+        ? new Either<ConfigLookupError, A>(a)
         : Config.parseErrorEFor<A>(path, a, "didn't pass predicate")
       );
 

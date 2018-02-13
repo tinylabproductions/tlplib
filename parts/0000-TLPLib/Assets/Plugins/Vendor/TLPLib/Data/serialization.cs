@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -61,12 +62,23 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<float> flt = new floatRW();
     public static readonly ISerializedRW<long> lng = new longRW();
     public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
+    public static readonly ISerializedRW<Vector2> vector2 =
+      flt.and(flt).map(
+        tpl => new Vector2(tpl._1, tpl._2).some(),
+        p => F.t(p.x, p.y)
+      );    
+    public static readonly ISerializedRW<Vector3> vector3 =
+      flt.and(flt).and(flt).map(
+        tpl => new Vector3(tpl._1._1, tpl._1._2, tpl._2).some(),
+        p => F.t(F.t(p.x, p.y), p.z)
+      );
     public static readonly ISerializedRW<Uri> uri = lambda(
       uri => str.serialize(uri.ToString()),
-      (bytes, startIndex) => 
+      (bytes, startIndex) =>
         str.deserialize(bytes, startIndex)
         .flatMap(di => di.flatMapTry(s => new Uri(s)))
     );
+    public static readonly ISerializedRW<Guid> guid = new GuidRW();
 
 #if UNITY_EDITOR
     public static ISerializedRW<A> unityObjectSerializedRW<A>() where A : UnityEngine.Object => PathStr.serializedRW.map(
@@ -78,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static ISerializedRW<Unit> unit => UnitRW.instance;
 
     /// <summary>Serialized RW for a type that has no parameters (like <see cref="Unit"/>)</summary>
-    public static ISerializedRW<A> unitType<A>() where A : new() => 
+    public static ISerializedRW<A> unitType<A>() where A : new() =>
       unit.map(_ => F.some(new A()), _ => F.unit);
 
     public static ISerializedRW<A> a<A>(
@@ -107,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       try { return deserializeConversion(a).some(); }
       catch (Exception) { return Option<B>.None; }
     });
-    
+
     public static ISerializedRW<A> lambda<A>(
       Serialize<A> serialize, Deserialize<DeserializeInfo<A>> deserialize
     ) => new Lambda<A>(serialize, deserialize);
@@ -124,10 +136,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       this ISerializedRW<A> aRW, ISerializedRW<B> bRW
     ) => tpl(aRW, bRW);
 
-    public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) => 
+    public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) =>
       new OptRW<A>(rw);
 
-    public static ISerializedRW<Either<A, B>> either<A, B>(ISerializedRW<A> aRW, ISerializedRW<B> bRW) => 
+    public static ISerializedRW<Either<A, B>> either<A, B>(ISerializedRW<A> aRW, ISerializedRW<B> bRW) =>
       new EitherRW<A, B>(aRW, bRW);
 
     public static ISerializedRW<ImmutableArray<A>> immutableArray<A>(
@@ -151,11 +163,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       UnitRW() {}
 
       static readonly Rope<byte> UNIT_ROPE = Rope.a(new byte[0]);
-      static readonly Option<DeserializeInfo<Unit>> DESERIALIZE_INFO = 
+      static readonly Option<DeserializeInfo<Unit>> DESERIALIZE_INFO =
         F.some(new DeserializeInfo<Unit>(F.unit, 0));
 
       public Rope<byte> serialize(Unit a) => UNIT_ROPE;
-      public Option<DeserializeInfo<Unit>> deserialize(byte[] serialized, int startIndex) => 
+      public Option<DeserializeInfo<Unit>> deserialize(byte[] serialized, int startIndex) =>
         DESERIALIZE_INFO;
     }
 
@@ -222,7 +234,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       readonly Fn<A, Option<B>> deserializeConversion;
 
       public MappedRW(
-        ISerializedRW<A> aRw, Fn<B, A> serializeConversion, 
+        ISerializedRW<A> aRw, Fn<B, A> serializeConversion,
         Fn<A, Option<B>> deserializeConversion
       ) {
         aRW = aRw;
@@ -356,7 +368,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     class floatRW : BaseRW<float> {
       public const int LENGTH = 4;
 
-      protected override DeserializeInfo<float> tryDeserialize(byte[] serialized, int startIndex) => 
+      protected override DeserializeInfo<float> tryDeserialize(byte[] serialized, int startIndex) =>
         new DeserializeInfo<float>(BitConverter.ToSingle(serialized, startIndex), LENGTH);
 
       public override Rope<byte> serialize(float a) => Rope.a(BitConverter.GetBytes(a));
@@ -378,9 +390,31 @@ namespace com.tinylabproductions.TLPLib.Data {
       public override Rope<byte> serialize(DateTime a) => lng.serialize(a.ToBinary());
     }
 
+    class GuidRW : BaseRW<Guid> {
+      protected override DeserializeInfo<Guid> tryDeserialize(byte[] b, int startIndex) {
+        const int GUID_SIZE = 16;
+        // Copied from new Guid(byte[]) source.
+        var _a = b[startIndex + 3] << 24 | b[startIndex + 2] << 16 | b[startIndex + 1] << 8 | b[startIndex + 0];
+        var _b = (short) (b[startIndex + 5] << 8 | b[startIndex + 4]);
+        var _c = (short) (b[startIndex + 7] << 8 | b[startIndex + 6]);
+        var _d = b[startIndex + 8];
+        var _e = b[startIndex + 9];
+        var _f = b[startIndex + 10];
+        var _g = b[startIndex + 11];
+        var _h = b[startIndex + 12];
+        var _i = b[startIndex + 13];
+        var _j = b[startIndex + 14];
+        var _k = b[startIndex + 15];
+        var guid = new Guid(a: _a, b: _b, c: _c, d: _d, e: _e, f: _f, g: _g, h: _h, i: _i, j: _j, k: _k);
+        return new DeserializeInfo<Guid>(guid, GUID_SIZE);
+      }
+
+      public override Rope<byte> serialize(Guid a) => Rope.a(a.ToByteArray());
+    }
+
     static class OptByteArrayRW {
-      public const byte 
-        DISCRIMINATOR_NONE = (byte) 'n', 
+      public const byte
+        DISCRIMINATOR_NONE = (byte) 'n',
         DISCRIMINATOR_SOME = (byte) 's';
 
       public static readonly Rope<byte>
@@ -401,7 +435,7 @@ namespace com.tinylabproductions.TLPLib.Data {
           case OptByteArrayRW.DISCRIMINATOR_NONE:
             return F.some(new DeserializeInfo<Option<A>>(Option<A>.None, 1));
           case OptByteArrayRW.DISCRIMINATOR_SOME:
-            return rw.deserialize(bytes, startIndex + 1).map(info => 
+            return rw.deserialize(bytes, startIndex + 1).map(info =>
               new DeserializeInfo<Option<A>>(F.some(info.value), info.bytesRead + 1)
             );
           default:
@@ -409,8 +443,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         }
       }
 
-      public Rope<byte> serialize(Option<A> a) => 
-        a.isSome 
+      public Rope<byte> serialize(Option<A> a) =>
+        a.isSome
         ? OptByteArrayRW.DISCRIMINATOR_SOME_ROPE + rw.serialize(a.get)
         : OptByteArrayRW.DISCRIMINATOR_NONE_ROPE;
     }
@@ -453,7 +487,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
 
       public Rope<byte> serialize(Either<A, B> either) =>
-        either.isLeft 
+        either.isLeft
         ? EitherRW.DISCRIMINATOR_LEFT_ROPE + aRW.serialize(either.__unsafeGetLeft)
         : EitherRW.DISCRIMINATOR_RIGHT_ROPE + bRW.serialize(either.__unsafeGetRight);
     }

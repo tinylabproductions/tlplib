@@ -17,7 +17,7 @@ namespace AnalyzersImporter {
   public class AnalyzersImporter : AssetPostprocessor {
 
     static AnalyzersImporter() {
-      // Most code is from here: 
+      // Most code is from here:
       // https://bitbucket.org/alexzzzz/unity-c-5.0-and-6.0-integration/src/4cd7615febbe3456aa89b31c5b4f165de75618d3/CSharp%20vNext%20Support%20Solution/CSharpVNextSupport/CSharpProjectPostprocessor.cs?at=default&fileviewer=file-view-default
       foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
         if (assembly.FullName.StartsWith("SyntaxTree.VisualStudio.Unity.Bridge") == false) {
@@ -55,7 +55,7 @@ namespace AnalyzersImporter {
 
     // ReSharper disable once UnusedMethodReturnValue.Local
     // ReSharper disable once UnusedParameter.Local
-    static string modifyProjectFile(string name, string content) => 
+    static string modifyProjectFile(string name, string content) =>
       write(setup(content));
 
     // This is our actual code
@@ -77,9 +77,9 @@ namespace AnalyzersImporter {
       return container;
     }
 
-    static IEnumerable<string> findAllCustomDlls() => 
-      !Directory.Exists("analyzers") 
-      ? Enumerable.Empty<string>() 
+    static IEnumerable<string> findAllCustomDlls() =>
+      !Directory.Exists("analyzers")
+      ? Enumerable.Empty<string>()
       : Directory.GetFiles("analyzers", "*.dll", SearchOption.AllDirectories);
 
     static string write(XDocument document) {

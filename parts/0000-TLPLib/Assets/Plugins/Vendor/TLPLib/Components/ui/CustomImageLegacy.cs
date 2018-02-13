@@ -195,7 +195,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         .ElementAt(0);
       var newScript = UnityEditor.AssetDatabase.LoadMainAssetAtPath(newScriptPath);
       scriptProp.objectReferenceValue = newScript;
-      
+
       var scaleFix = activeSprite.pixelsPerUnit / referencePPU;
       var spritePixelsPerUnitProp = so.FindProperty(nameof(spritePixelsPerUnit));
       spritePixelsPerUnitProp.floatValue = spritePixelsPerUnit /= scaleFix;
@@ -211,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         float referencePixelsPerUnit = 100;
         if (canvas)
           referencePixelsPerUnit = canvas.referencePixelsPerUnit;
-        
+
         return spritePixelsPerUnit / referencePixelsPerUnit;
       }
     }

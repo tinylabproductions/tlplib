@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
     const string JAVA_CLASS_NAME = "java.lang.Thread";
     static readonly AndroidJavaClass klass = new AndroidJavaClass(JAVA_CLASS_NAME);
 
-    public JThread(Action act) 
+    public JThread(Action act)
       : base(new AndroidJavaObject(JAVA_CLASS_NAME, new Runnable(act)))
     {}
 

@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
   public static class TextureImporterExts {
     public class Platform {
       //https://docs.unity3d.com/ScriptReference/TextureImporterPlatformSettings-name.html
-      public static Platform 
+      public static Platform
         android = a("Android"),
         standalone = a("Standalone"),
         web = a("Web"),

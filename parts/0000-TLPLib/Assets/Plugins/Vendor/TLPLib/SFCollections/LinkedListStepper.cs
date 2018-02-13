@@ -15,7 +15,7 @@ namespace Smooth.Collections {
 			this.startNode = startNode;
 			this.step = step;
 		}
-		
+
 		public IEnumerator<T> GetEnumerator() {
 			var node = startNode;
 
@@ -43,20 +43,20 @@ namespace Smooth.Collections {
 	public class LinkedListStepperNodes<T> : IEnumerable<LinkedListNode<T>> {
 		private readonly LinkedListNode<T> startNode;
 		private readonly int step;
-		
+
 		private LinkedListStepperNodes() {}
-		
+
 		public LinkedListStepperNodes(LinkedListNode<T> startNode, int step) {
 			this.startNode = startNode;
 			this.step = step;
 		}
-		
+
 		public IEnumerator<LinkedListNode<T>> GetEnumerator() {
 			var node = startNode;
-			
+
 			while (node != null) {
 				yield return node;
-				
+
 				var step = this.step;
 				while (step > 0 && node != null) {
 					node = node.Next;
@@ -68,7 +68,7 @@ namespace Smooth.Collections {
 				}
 			}
 		}
-		
+
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 	}
 }

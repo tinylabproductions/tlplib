@@ -3,37 +3,36 @@ using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public abstract class ResourceReference<A> : ScriptableObject where A : Object {
+  /// <summary>
+  /// A thing you save in to resources folder that allows you to reference something outside
+  /// of resources folder.
+  /// </summary>
+  public abstract partial class ResourceReference<A> : ScriptableObject where A : Object {
 #pragma warning disable 649
-    [SerializeField, NotNull] A _reference;
+    [SerializeField, NotNull, PublicAccessor] A _reference;
 #pragma warning restore 649
-
-    public A reference => _reference;
 
 #if UNITY_EDITOR
     public A editorReference {
-      get { return _reference; }
-      set { _reference = value; }
+      set => _reference = value;
     }
 #endif
   }
 
   public static class ResourceReference {
 #if UNITY_EDITOR
-    public static SO create<SO, A>(string path, A reference) 
+    public static SO create<SO, A>(string path, A reference)
       where SO : ResourceReference<A> where A : Object
     {
       var so = ScriptableObject.CreateInstance<SO>();
       so.editorReference = reference;
-      AssetDatabase.CreateAsset(so, path);
+      UnityEditor.AssetDatabase.CreateAsset(so, path);
       return so;
     }
 #endif
@@ -43,8 +42,8 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
       var path = loadPath.unityPath;
       var csr = Resources.Load<ResourceReference<A>>(path);
-      return csr 
-        ? F.right<string, A>(csr.reference) 
+      return csr
+        ? F.right<string, A>(csr.reference)
         : F.left<string, A>(notFound(path));
     }
 
@@ -60,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
-    ) where A : Object => 
+    ) where A : Object =>
       loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
 
     public static IEnumerator waitForLoadCoroutine<A>(

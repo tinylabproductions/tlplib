@@ -23,11 +23,11 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
 #pragma warning disable 649
     [SerializeField] Text _errorsText;
     [SerializeField] Button _hideButton;
-    [SerializeField] Color 
-      _errorColor = Color.red, 
-      _exceptionColor = Color.red, 
-      _assertColor = Color.cyan, 
-      _warningColor = Color.yellow, 
+    [SerializeField] Color
+      _errorColor = Color.red,
+      _exceptionColor = Color.red,
+      _assertColor = Color.cyan,
+      _warningColor = Color.yellow,
       _logColor = Color.gray,
       _stacktraceColor = Color.gray;
     [SerializeField] uint _stacktraceTextSize = 20;
@@ -115,7 +115,7 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
         var entry = $"<color=#{color.toHex()}>{message}</color>";
         if (binding._stacktraceTextSize != 0) {
           Color32 stacktraceColor = binding._stacktraceColor;
-          entry += 
+          entry +=
             $"\n<color=#{stacktraceColor.toHex()}><size={binding._stacktraceTextSize}>" +
             stacktrace +
             $"</size></color>";

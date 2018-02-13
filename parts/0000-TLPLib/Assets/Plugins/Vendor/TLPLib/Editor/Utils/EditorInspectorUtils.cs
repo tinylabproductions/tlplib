@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     /// <summary>
     /// Creates a new inspector window instance and locks it to inspect the specified target
     /// </summary>
-    public static void InspectTarget(Object target) {
+    public static void inspectTarget(Object target) {
       // Get a reference to the `InspectorWindow` type object
       var inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
       // Create an InspectorWindow instance
@@ -35,13 +35,20 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     [MenuItem("Assets/TLP/Inspect This &i", false, 20)]
-    public static void InspectThis() {
+    public static void inspectThis() {
       var o = Selection.activeObject;
-      if (o) InspectTarget(o);
+      if (o) inspectTarget(o);
+    }
+    
+    [MenuItem("Assets/TLP/Toggle Active State &e", priority = 20)]
+    public static void toggleActiveState() {
+      var objects = Selection.gameObjects;
+      Undo.RegisterCompleteObjectUndo(objects, "Toggle Active State");
+      foreach (var go in objects) go.SetActive(!go.activeSelf);
     }
 
     [MenuItem("TLP/Tools/Shortcuts/Break Prefab Instance &b")]
-    public static void BreakPrefabInstance() {
+    public static void breakPrefabInstance() {
       EditorApplication.ExecuteMenuItem("GameObject/Break Prefab Instance");
     }
   }

@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
   public class FileCachedBlobTestCached : FileCachedBlobTest {
     [Test]
-    public void WhenFileExists() => 
+    public void WhenFileExists() =>
       new FileCachedBlob(randomFile()).cached.shouldBeTrue();
 
     [Test]
@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
   public class FileCachedBlobTestRead : FileCachedBlobTest {
     [Test]
-    public void WhenFileDoesNotExist() => 
+    public void WhenFileDoesNotExist() =>
       new FileCachedBlob(randomNonExistant()).read().shouldBeNone();
 
     [Test]
@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       ).shouldEqual("foobar");
 
     [Test, Ignore("Unknown reasons")]
-    public void WhenFileExistsAndCanNotBeRead() { 
+    public void WhenFileExistsAndCanNotBeRead() {
       new FileCachedBlob(randomUnreadableFile()).read().get.shouldBeError();
     }
   }
@@ -80,14 +80,14 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     }
 
     [Test, Ignore("Unknown reasons")]
-    public void WhenWriteFails() => 
+    public void WhenWriteFails() =>
       new FileCachedBlob(randomUnreadableFile())
         .store(encoding.GetBytes("unreal")).shouldBeError();
   }
 
   public class FileCachedBlobTestClear : FileCachedBlobTest {
     [Test]
-    public void WhenFileDoesNotExist() => 
+    public void WhenFileDoesNotExist() =>
       new FileCachedBlob(randomNonExistant()).clear().shouldBeSuccess(F.unit);
 
     [Test]

@@ -26,8 +26,8 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
         );
 
       if (
-        check("Are you sure?") 
-        && check("Are you really sure?") 
+        check("Are you sure?")
+        && check("Are you really sure?")
         && check("You're sure you understand the consequences?")
       ) {
         EditorPrefs.DeleteAll();

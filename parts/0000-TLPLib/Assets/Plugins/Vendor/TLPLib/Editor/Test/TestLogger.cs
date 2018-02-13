@@ -4,14 +4,14 @@ using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestLogger : LogBase {
-    public readonly List<LogEntry> 
-      verboseMsgs = new List<LogEntry>(), 
-      debugMsgs = new List<LogEntry>(), 
+    public readonly List<LogEntry>
+      verboseMsgs = new List<LogEntry>(),
+      debugMsgs = new List<LogEntry>(),
       infoMsgs = new List<LogEntry>(),
       warnMsgs = new List<LogEntry>(),
       errorMsgs = new List<LogEntry>();
 
-    public int count => 
+    public int count =>
       verboseMsgs.Count + debugMsgs.Count + infoMsgs.Count + warnMsgs.Count + errorMsgs.Count;
 
     public bool isEmpty => count == 0;

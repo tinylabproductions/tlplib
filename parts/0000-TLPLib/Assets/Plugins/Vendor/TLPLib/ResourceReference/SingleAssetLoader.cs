@@ -12,10 +12,10 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   public enum AssetLoadPriority : byte { Low, High }
 
   public partial class SingleAssetLoader<A> : IDisposable where A : Object {
-    
+
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<ResourceRequest>> request = RxRef.a(F.none<ResourceRequest>());
-    
+
     public readonly IRxRef<Option<AssetLoader<A>>> currentLoader = RxRef.a(Option<AssetLoader<A>>.None);
     public readonly IRxRef<AssetLoadPriority> priority = RxRef.a(AssetLoadPriority.High);
     public readonly IRxVal<Either<IsLoading, A>> assetState;
@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     public partial struct IsLoading {
       public readonly bool value;
     }
-    
+
     public SingleAssetLoader() {
       assetState =
         currentLoader
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       assetState.subscribe(tracker, e => {
         if (e.isRight) discardPreviousRequest();
       });
-      
+
       currentLoader.zip(priority, request, (show, _priority, req) =>
         F.t(show.isSome ? (_priority == AssetLoadPriority.High ? PRIORITY_HIGH : PRIORITY_LOW) : PRIORITY_OFF, req)
       ).subscribe(tracker, tpl => {

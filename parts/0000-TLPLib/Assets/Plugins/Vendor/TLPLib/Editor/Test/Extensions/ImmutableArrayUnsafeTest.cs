@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       int[] arr = {1, 2, 3};
       var iArr = ImmutableArrayUnsafe.createByMove(arr);
       iArr.shouldEqual(
-        ImmutableArray.Create(arr), 
+        ImmutableArray.Create(arr),
         "it should be the same as created via a safe way"
       );
       var arr2 = iArr.internalArray();

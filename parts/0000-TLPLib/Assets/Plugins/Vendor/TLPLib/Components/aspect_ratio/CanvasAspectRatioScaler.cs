@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
   ]
   public class CanvasAspectRatioScaler : UIBehaviour {
     enum StretchMode : byte { None, Horizontal, Vertical }
-    
+
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     [
       SerializeField,
       Help(
-        HelpType.Info, 
+        HelpType.Info,
         "Target game object to scale. Must NOT be stretched across parent!"
       )
     ] protected RectTransform target;
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
         Log.d.warn($"{nameof(target)} == self on {this}!");
     }
 
-    // We force to recalculate sizes on Start() because Unity is not persistent and there are cases when it 
+    // We force to recalculate sizes on Start() because Unity is not persistent and there are cases when it
     // resizes objects after the last OnRectTransformDimensionsChange() call.
     protected override void Start() {
       base.Start();
@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
         var axis = stretchMode == StretchMode.Vertical ? RectTransform.Axis.Vertical : RectTransform.Axis.Horizontal;
         var size = axis == RectTransform.Axis.Vertical ? transform.rect.height : transform.rect.width;
         target.SetSizeWithCurrentAnchors(axis, size / scale);
-      } 
+      }
     }
   }
 }

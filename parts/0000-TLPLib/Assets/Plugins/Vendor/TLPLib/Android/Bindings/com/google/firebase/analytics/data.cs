@@ -49,15 +49,15 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
     public override string ToString() => $"{nameof(FirebaseUserId)}({id})";
 
     public static Either<string, FirebaseUserId> create(string id) =>
-        id == null ? Either<string, FirebaseUserId>.Left("id can't be null") 
+        id == null ? Either<string, FirebaseUserId>.Left("id can't be null")
       : id.Length > 36 ? Either<string, FirebaseUserId>.Left(
         $"id length must be <= 36, but was {id.Length}: '{id}'"
-      ) 
+      )
       : Either<string, FirebaseUserId>.Right(new FirebaseUserId(id));
   }
 
   public struct FirebaseEvent {
-    public const int 
+    public const int
       MAX_EVENT_LENGTH = 32,
       MAX_PARAM_COUNT = 25,
       MAX_PARAM_KEY_LENGTH = 24,
@@ -97,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
 
     static ImmutableList<string> validateName(string errorPrefix, int maxLength, string name) {
       var errors = ImmutableList<string>.Empty;
-      
+
       if (name.Length < 1 || name.Length > maxLength) errors = errors.Add(
         $"{errorPrefix} name length must be from 1 to {maxLength} chars, " +
         $"but it was {name.Length} chars long: '{name}'"
@@ -120,11 +120,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
 
     public static IDictionary<string, OneOf<string, long, double>> createEmptyParams() =>
       new Dictionary<string, OneOf<string, long, double>>();
-    
+
     public static OneOf<string, long, double> param(string value, Trim trim=Trim.None) =>
       new OneOf<string, long, double>(
-        trim == Trim.None 
-        ? value 
+        trim == Trim.None
+        ? value
         : value.trimTo(MAX_PARAM_VALUE_LENGTH, fromRight: trim == Trim.KeepRightSide)
       );
 
@@ -139,9 +139,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
     ) {
       var errors = ImmutableList<string>.Empty;
 
-      // The name of the event. Should contain 1 to 32 alphanumeric characters or underscores. 
+      // The name of the event. Should contain 1 to 32 alphanumeric characters or underscores.
       // The name must start with an alphabetic character. Some event names are reserved. See
-      // FirebaseAnalytics.Event for the list of reserved event names. The "firebase_" prefix 
+      // FirebaseAnalytics.Event for the list of reserved event names. The "firebase_" prefix
       // is reserved and should not be used. Note that event names are case-sensitive and that
       // logging two events whose names differ only in case will result in two distinct events.
       errors = errors.AddRange(validateName("Event", MAX_EVENT_LENGTH, name));
@@ -157,11 +157,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
         );
       }
 
-      // The map of event parameters. Passing null indicates that the event has no parameters. 
-      // Parameter names can be up to 24 characters long and must start with an alphabetic 
-      // character and contain only alphanumeric characters and underscores. Only String, 
-      // long and double param types are supported. String parameter values can be up to 
-      // 36 characters long. The "firebase_" prefix is reserved and should not be used 
+      // The map of event parameters. Passing null indicates that the event has no parameters.
+      // Parameter names can be up to 24 characters long and must start with an alphabetic
+      // character and contain only alphanumeric characters and underscores. Only String,
+      // long and double param types are supported. String parameter values can be up to
+      // 36 characters long. The "firebase_" prefix is reserved and should not be used
       // for parameter names.
       foreach (var kv in parameters) {
         errors = errors.AddRange(validateName("Parameter", MAX_PARAM_KEY_LENGTH, kv.Key));

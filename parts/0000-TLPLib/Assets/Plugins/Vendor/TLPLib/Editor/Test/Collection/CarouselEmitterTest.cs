@@ -63,8 +63,8 @@ namespace com.tinylabproductions.TLPLib.Collection {
       var actual = ce.Take(12).ToArray();
       var expected = new[] {
         "a", "b", "a",
-        "b", "a", 
-        "b", 
+        "b", "a",
+        "b",
         "a", "b", "a",
         "b", "a",
         "b"

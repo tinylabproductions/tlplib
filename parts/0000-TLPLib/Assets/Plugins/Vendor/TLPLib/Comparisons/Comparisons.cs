@@ -13,28 +13,28 @@ namespace Smooth.Comparisons {
 		public static Comparison<T> Reverse<T>(Comparison<T> comparison) {
 			return (a, b) => comparison(b, a);
 		}
-		
+
 		/// <summary>
 		/// Prepends null sorting to the specified reference type comparison, with nulls preceeding non-nulls.
 		/// </summary>
 		public static Comparison<T> NullsFirst<T>(Comparison<T> comparison) where T : class {
 			return (a, b) => a == null ? (b == null ? 0 : -1) : b == null ? 1 : comparison(a, b);
 		}
-		
+
 		/// <summary>
 		/// Prepends null sorting to the specified reference type comparison, with nulls suceeding non-nulls.
 		/// </summary>
 		public static Comparison<T> NullsLast<T>(Comparison<T> comparison) where T : class  {
 			return (a, b) => a == null ? (b == null ? 0 : 1) : b == null ? -1 : comparison(a, b);
 		}
-		
+
 		/// <summary>
 		/// Converts the specified comparison for value type T into a comparison for Nullable<T>s, with nulls preceeding non-nulls.
 		/// </summary>
 		public static Comparison<Nullable<T>> NullableNullsFirst<T>(Comparison<T> comparison) where T : struct {
 			return (a, b) => a == null ? (b == null ? 0 : -1) : b == null ? 1 : comparison(a.Value, b.Value);
 		}
-		
+
 		/// <summary>
 		/// Converts the specified comparison for value type T into a comparison for Nullable<T>s, with nulls suceeding non-nulls.
 		/// </summary>

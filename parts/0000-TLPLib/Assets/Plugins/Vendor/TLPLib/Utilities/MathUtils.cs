@@ -29,10 +29,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
 
     //Two non-parallel lines which may or may not touch each other have a point on each line which are closest
-    //to each other. This function finds those two points. If the lines are not parallel, the function 
+    //to each other. This function finds those two points. If the lines are not parallel, the function
     //outputs true, otherwise false.
     public static bool ClosestPointsOnTwoLines(
-      out Vector3 closestPointLine1, out Vector3 closestPointLine2, 
+      out Vector3 closestPointLine1, out Vector3 closestPointLine2,
       Vector3 linePoint1, Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2
     ) {
       closestPointLine1 = Vector3.zero;
@@ -114,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       Vector3 lineVecB = pointB2 - pointB1;
 
       bool valid = ClosestPointsOnTwoLines(
-        out closestPointA, out closestPointB, pointA1, 
+        out closestPointA, out closestPointB, pointA1,
         lineVecA.normalized, pointB1, lineVecB.normalized
       );
 

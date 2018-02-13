@@ -12,7 +12,7 @@ namespace Smooth.Compare.Utilities {
 #endif
 	/// <summary>
 	/// Simple utility that listens to finder events and logs all requests for unregistered comparers when the component is destroyed.
-	/// 
+	///
 	/// This can be useful when running an application meant for a non-JIT platform in a JIT-enabled simulator so you can test many code paths, then track down and fix any potential comparer issues.
 	/// </summary>
 	public class LogUnregisteredOnDestroy : MonoBehaviour {
@@ -29,7 +29,7 @@ namespace Smooth.Compare.Utilities {
 
 			Finder.OnEvent.Handle += HandleFinderEvent;
 		}
-		
+
 		protected void OnDestroy() {
 			Finder.OnEvent.Handle -= HandleFinderEvent;
 

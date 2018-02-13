@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       cmp.eq(2, 1).shouldBeFalse();
       cmp.eq(1, 2).shouldBeFalse();
     }
-    
+
 
     [Test]
     public void TestOpGt() {

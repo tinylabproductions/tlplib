@@ -5,7 +5,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Android.Bindings.java.util {
   public class ArrayList : List {
     public ArrayList(AndroidJavaObject java) : base(java) {}
-    public ArrayList(int capacity) 
+    public ArrayList(int capacity)
       : this(new AndroidJavaObject("java.util.ArrayList", capacity)) {}
     public ArrayList() : this(0) {}
 

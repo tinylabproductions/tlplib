@@ -207,16 +207,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable) => 
+    public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable) =>
       from aOpt in enumerable
       where aOpt.isSome
       select aOpt.__unsafeGetValue;
 
-    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) => 
+    public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) =>
       enumerable.SelectMany(_ => _);
 
     /// <summary>
-    /// Maps enumerable invoking mapper once per distinct A. 
+    /// Maps enumerable invoking mapper once per distinct A.
     /// </summary>
     public static IEnumerable<B> mapDistinct<A, B>(
       this IEnumerable<A> enumerable, Fn<A, B> mapper
@@ -232,7 +232,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         yield return b;
       }
     }
-    
+
     public static IEnumerable<B> collect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
@@ -252,7 +252,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<B>();
     }
 
-    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) => 
+    public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) =>
       new HashSet<A>(enumerable);
 
     /// <summary>Partitions enumerable into two lists using a predicate.</summary>
@@ -327,7 +327,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     #endregion
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(Partitioned)}[" +
       $"{nameof(trues)}: {trues.asDebugString()}, " +
       $"{nameof(falses)}: {falses.asDebugString()}" +
@@ -335,7 +335,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   }
 
   public static class Partitioned {
-    public static Partitioned<A> a<A>(ImmutableList<A> trues, ImmutableList<A> falses) => 
+    public static Partitioned<A> a<A>(ImmutableList<A> trues, ImmutableList<A> falses) =>
       new Partitioned<A>(trues, falses);
   }
 }

@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   }
 
   public static class ImmutableArrayUnsafe<A> {
-    public static readonly Fn<object[], ImmutableArray<A>> constructor = 
+    public static readonly Fn<object[], ImmutableArray<A>> constructor =
       PrivateConstructor.creator<ImmutableArray<A>>();
 
     public static readonly Fn<ImmutableArray<A>, A[]> internalArray =

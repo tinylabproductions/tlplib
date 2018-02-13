@@ -19,9 +19,9 @@ namespace Smooth.Compare {
 
 		/// <summary>
 		/// Returns an option containing a sort order comparer for type T, or None if no comparer can be created.
-		/// 
+		///
 		/// This method will create comparers for the following types:
-		/// 
+		///
 		/// System.Collections.KeyValuePair<,>.
 		/// </summary>
 		public static Option<IComparer<T>> Comparer<T>() {
@@ -35,16 +35,16 @@ namespace Smooth.Compare {
 				return Option<IComparer<T>>.None;
 			}
 		}
-		
+
 		#endregion
 
 		#region EqComparer
 
 		/// <summary>
 		/// Returns an option containing an equality comparer for type T, or None if no comparer can be created.
-		/// 
+		///
 		/// This method will create comparers for the following types:
-		/// 
+		///
 		/// Enumerations,
 		/// System.Collections.KeyValuePair<,>s,
 		/// Value types T with a public T.Equals(T) method or ==(T,T) operator.
@@ -66,7 +66,7 @@ namespace Smooth.Compare {
 
 				return expression.isSome ?
 					new Option<IEqualityComparer<T>>(new FuncEqComparer<T>(Expression.Lambda<Func<T, T, bool>>(expression.get, l, r).Compile())) :
-						Option<IEqualityComparer<T>>.None; 
+						Option<IEqualityComparer<T>>.None;
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace Smooth.Compare {
 		private static Expression HashCodeSeed() {
 			return Expression.Constant(hashCodeSeed, typeof(int));
 		}
-		
+
 		private static Expression HashCodeStepMultiplier() {
 			return Expression.Constant(hashCodeStepMultiplier, typeof(int));
 		}
@@ -99,7 +99,7 @@ namespace Smooth.Compare {
 			} catch (Exception e) {
 				Debug.LogError(e);
 			}
-			
+
 			try {
 				var mi = l.Type.GetMethod(
 					"Equals",
@@ -108,14 +108,14 @@ namespace Smooth.Compare {
 					new Type[] { r.Type },
 					null
 				);
-				
+
 				if (mi != null && mi.GetParameters()[0].ParameterType == r.Type) {
 					return new Option<Expression>(Expression.Call(l, mi, r));
 				}
 			} catch (Exception e) {
 				Debug.LogError(e);
 			}
-			
+
 			return Option<Expression>.None;
 		}
 
@@ -141,14 +141,14 @@ namespace Smooth.Compare {
 				typeof(IComparer<>).MakeGenericType(type),
 				Type.EmptyTypes,
 				null);
-			
+
 			var c = Expression.Property(null, pi);
-			
+
 			return new Tpl<Expression, MethodInfo>(
 				c,
 				c.Type.GetMethod("Compare", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { type, type }, null));
 		}
-		
+
 		/// <summary>
 		/// Returns a Tpl containing:
 		/// an expression for the default equality comparer for type T, and
@@ -173,7 +173,7 @@ namespace Smooth.Compare {
 				typeof(IEqualityComparer<>).MakeGenericType(type),
 				Type.EmptyTypes,
 				null);
-			
+
 			var ec = Expression.Property(null, pi);
 
 			return new Tpl<Expression, MethodInfo, MethodInfo>(
@@ -181,21 +181,21 @@ namespace Smooth.Compare {
 				ec.Type.GetMethod("Equals", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { type, type }, null),
 				ec.Type.GetMethod("GetHashCode", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { type }, null));
 		}
-		
+
 		#endregion
 
 		#region Comparers for specific types
-		
+
 		private static IComparer<T> KeyValuePairComparer<T>(Type type) {
 			var l = Expression.Parameter(type, "l");
 			var r = Expression.Parameter(type, "r");
-			
+
 			var keyL = Expression.Property(l, "Key");
 			var keyR = Expression.Property(r, "Key");
-			
+
 			var valueL = Expression.Property(l, "Value");
 			var valueR = Expression.Property(r, "Value");
-			
+
 			var keyComparer = ExistingComparer(keyL.Type);
 			var valueComparer = ExistingComparer(valueL.Type);
 
@@ -204,7 +204,7 @@ namespace Smooth.Compare {
 
 			return new FuncComparer<T>((lhs, rhs) => { var c = keysCompared(lhs, rhs); return c == 0 ? valuesCompared(lhs, rhs) : c; });
 		}
-		
+
 		#endregion
 
 		#region EqComparers for specific types
@@ -218,14 +218,14 @@ namespace Smooth.Compare {
 				return new Blittable32EqComparer<T>();
 			}
 		}
-		
+
 		private static IEqualityComparer<T> KeyValuePairEqComparer<T>(Type type) {
 			var l = Expression.Parameter(type, "l");
 			var r = Expression.Parameter(type, "r");
 
 			var keyL = Expression.Property(l, "Key");
 			var keyR = Expression.Property(r, "Key");
-			
+
 			var valueL = Expression.Property(l, "Value");
 			var valueR = Expression.Property(r, "Value");
 

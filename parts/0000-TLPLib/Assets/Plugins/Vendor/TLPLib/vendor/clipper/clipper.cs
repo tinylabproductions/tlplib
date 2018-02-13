@@ -97,15 +97,15 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       //The GC probably handles this cleanup more efficiently ...
       //~PolyTree(){Clear();}
-        
-      public void Clear() 
+
+      public void Clear()
       {
           for (int i = 0; i < m_AllPolys.Count; i++)
               m_AllPolys[i] = null;
-          m_AllPolys.Clear(); 
-          m_Childs.Clear(); 
+          m_AllPolys.Clear();
+          m_Childs.Clear();
       }
-        
+
       public PolyNode GetFirst()
       {
           if (m_Childs.Count > 0)
@@ -116,8 +116,8 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       public int Total
       {
-          get 
-          { 
+          get
+          {
             int result = m_AllPolys.Count;
             //with negative offsets, ignore the hidden outer polygon ...
             if (result > 0 && m_Childs[0] != m_AllPolys[0]) result--;
@@ -126,8 +126,8 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       }
 
   }
-        
-  public class PolyNode 
+
+  public class PolyNode
   {
       internal PolyNode m_Parent;
       internal Path m_polygon = new Path();
@@ -168,12 +168,12 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       public PolyNode GetNext()
       {
-          if (m_Childs.Count > 0) 
-              return m_Childs[0]; 
+          if (m_Childs.Count > 0)
+              return m_Childs[0];
           else
-              return GetNextSiblingUp();        
+              return GetNextSiblingUp();
       }
-  
+
       internal PolyNode GetNextSiblingUp()
       {
           if (m_Parent == null)
@@ -315,9 +315,9 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       else
         return (double)(val.lo + val.hi * shift64);
     }
-    
-    //nb: Constructing two new Int128 objects every time we want to multiply longs  
-    //is slow. So, although calling the Int128Mul method doesn't look as clean, the 
+
+    //nb: Constructing two new Int128 objects every time we want to multiply longs
+    //is slow. So, although calling the Int128Mul method doesn't look as clean, the
     //code runs significantly faster than if we'd used the * operator.
 
     public static Int128 Int128Mul(Int64 lhs, Int64 rhs)
@@ -356,17 +356,17 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
     public cInt Y;
 #if use_xyz
     public cInt Z;
-    
+
     public IntPoint(cInt x, cInt y, cInt z = 0)
     {
       this.X = x; this.Y = y; this.Z = z;
     }
-    
+
     public IntPoint(double x, double y, double z = 0)
     {
       this.X = (cInt)x; this.Y = (cInt)y; this.Z = (cInt)z;
     }
-    
+
     public IntPoint(DoublePoint dp)
     {
       this.X = (cInt)dp.X; this.Y = (cInt)dp.Y; this.Z = 0;
@@ -399,7 +399,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
     public static bool operator !=(IntPoint a, IntPoint b)
     {
-      return a.X != b.X  || a.Y != b.Y; 
+      return a.X != b.X  || a.Y != b.Y;
     }
 
     public override bool Equals(object obj)
@@ -442,19 +442,19 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
   public enum ClipType { ctIntersection, ctUnion, ctDifference, ctXor };
   public enum PolyType { ptSubject, ptClip };
-  
+
   //By far the most widely used winding rules for polygon filling are
   //EvenOdd & NonZero (GDI, GDI+, XLib, OpenGL, Cairo, AGG, Quartz, SVG, Gr32)
   //Others rules include Positive, Negative and ABS_GTR_EQ_TWO (only in OpenGL)
   //see http://glprogramming.com/red/chapter11.html
   public enum PolyFillType { pftEvenOdd, pftNonZero, pftPositive, pftNegative };
-  
+
   public enum JoinType { jtSquare, jtRound, jtMiter };
   public enum EndType { etClosedPolygon, etClosedLine, etOpenButt, etOpenSquare, etOpenRound };
 
   internal enum EdgeSide {esLeft, esRight};
   internal enum Direction {dRightToLeft, dLeftToRight};
-    
+
   internal class TEdge {
     internal IntPoint Bot;
     internal IntPoint Curr; //current (updated for every new scanbeam)
@@ -544,7 +544,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
   };
 
   public class ClipperBase
-  {    
+  {
     internal const double horizontal = -3.4E+38;
     internal const int Skip = -2;
     internal const int Unassigned = -1;
@@ -556,7 +556,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
     public const cInt hiRange = 0x7FFF;
 #else
     public const cInt loRange = 0x3FFFFFFF;
-    public const cInt hiRange = 0x3FFFFFFFFFFFFFFFL; 
+    public const cInt hiRange = 0x3FFFFFFFFFFFFFFFL;
 #endif
 
     internal LocalMinima m_MinimaList;
@@ -604,7 +604,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
     }
     //------------------------------------------------------------------------------
 
-    internal bool PointOnLineSegment(IntPoint pt, 
+    internal bool PointOnLineSegment(IntPoint pt,
         IntPoint linePt1, IntPoint linePt2, bool UseFullRange)
     {
       if (UseFullRange)
@@ -709,10 +709,10 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
     {
       if (useFullRange)
       {
-        if (Pt.X > hiRange || Pt.Y > hiRange || -Pt.X > hiRange || -Pt.Y > hiRange) 
+        if (Pt.X > hiRange || Pt.Y > hiRange || -Pt.X > hiRange || -Pt.Y > hiRange)
           throw new ClipperException("Coordinate outside allowed range");
       }
-      else if (Pt.X > loRange || Pt.Y > loRange || -Pt.X > loRange || -Pt.Y > loRange) 
+      else if (Pt.X > loRange || Pt.Y > loRange || -Pt.X > loRange || -Pt.Y > loRange)
       {
         useFullRange = true;
         RangeTest(Pt, ref useFullRange);
@@ -842,11 +842,11 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         while (E != Result)
         {
           E.NextInLML = E.Next;
-          if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Prev.Top.X) 
+          if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Prev.Top.X)
             ReverseHorizontal(E);
           E = E.Next;
         }
-        if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Prev.Top.X) 
+        if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Prev.Top.X)
           ReverseHorizontal(E);
         Result = Result.Next; //move to the edge just beyond current bound
       }
@@ -858,18 +858,18 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         {
           Horz = Result;
           while (Horz.Next.Dx == horizontal) Horz = Horz.Next;
-          if (Horz.Next.Top.X == Result.Prev.Top.X || 
+          if (Horz.Next.Top.X == Result.Prev.Top.X ||
               Horz.Next.Top.X > Result.Prev.Top.X) Result = Horz.Next;
         }
 
         while (E != Result)
         {
           E.NextInLML = E.Prev;
-          if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Next.Top.X) 
+          if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Next.Top.X)
             ReverseHorizontal(E);
           E = E.Prev;
         }
-        if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Next.Top.X) 
+        if (E.Dx == horizontal && E != EStart && E.Bot.X != E.Next.Top.X)
           ReverseHorizontal(E);
         Result = Result.Prev; //move to the edge just beyond current bound
       }
@@ -896,7 +896,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       //create a new edge array ...
       List<TEdge> edges = new List<TEdge>(highI+1);
       for (int i = 0; i <= highI; i++) edges.Add(new TEdge());
-          
+
       bool IsFlat = true;
 
       //1. Basic (first) edge initialization ...
@@ -925,12 +925,12 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           eLoopStop = E;
           continue;
         }
-        if (E.Prev == E.Next) 
+        if (E.Prev == E.Next)
           break; //only two vertices
         else if (Closed &&
-          SlopesEqual(E.Prev.Curr, E.Curr, E.Next.Curr, m_UseFullRange) && 
+          SlopesEqual(E.Prev.Curr, E.Curr, E.Next.Curr, m_UseFullRange) &&
           (!PreserveCollinear ||
-          !Pt2IsBetweenPt1AndPt3(E.Prev.Curr, E.Curr, E.Next.Curr))) 
+          !Pt2IsBetweenPt1AndPt3(E.Prev.Curr, E.Curr, E.Next.Curr)))
         {
           //Collinear edges are allowed for open paths but in closed paths
           //the default is to merge adjacent collinear edges into a single edge.
@@ -969,7 +969,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       //Totally flat paths must be handled differently when adding them
       //to LocalMinima list to avoid endless loops etc ...
-      if (IsFlat) 
+      if (IsFlat)
       {
         if (Closed) return false;
         E.Prev.OutIdx = Skip;
@@ -1011,7 +1011,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         LocalMinima locMin = new LocalMinima();
         locMin.Next = null;
         locMin.Y = E.Bot.Y;
-        if (E.Dx < E.Prev.Dx) 
+        if (E.Dx < E.Prev.Dx)
         {
           locMin.LeftBound = E.Prev;
           locMin.RightBound = E;
@@ -1373,7 +1373,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       private List<Join> m_GhostJoins;
       private bool m_UsingPolyTree;
 #if use_xyz
-      public delegate void ZFillCallback(IntPoint bot1, IntPoint top1, 
+      public delegate void ZFillCallback(IntPoint bot1, IntPoint top1,
         IntPoint bot2, IntPoint top2, ref IntPoint pt);
       public ZFillCallback ZFillFunction { get; set; }
 #endif
@@ -1439,12 +1439,12 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       public bool StrictlySimple
       {
-        get; 
+        get;
         set;
       }
       //------------------------------------------------------------------------------
-       
-      public bool Execute(ClipType clipType, Paths solution, 
+
+      public bool Execute(ClipType clipType, Paths solution,
           PolyFillType FillType = PolyFillType.pftEvenOdd)
       {
           return Execute(clipType, solution, FillType, FillType);
@@ -1462,7 +1462,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           PolyFillType subjFillType, PolyFillType clipFillType)
       {
           if (m_ExecuteLocked) return false;
-          if (m_HasOpenPaths) throw 
+          if (m_HasOpenPaths) throw
             new ClipperException("Error: PolyTree struct is needed for open path clipping.");
 
           m_ExecuteLocked = true;
@@ -1546,7 +1546,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             ProcessEdgesAtTopOfScanbeam(topY);
             botY = topY;
             InsertLocalMinimaIntoAEL(botY);
-          } 
+          }
 
           //fix orientations ...
           foreach (OutRec outRec in m_PolyOuts)
@@ -1560,7 +1560,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
           foreach (OutRec outRec in m_PolyOuts)
           {
-            if (outRec.Pts == null) 
+            if (outRec.Pts == null)
                 continue;
             else if (outRec.IsOpen)
                 FixupOutPolyline(outRec);
@@ -1572,10 +1572,10 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           return true;
         }
         //catch { return false; }
-        finally 
+        finally
         {
           m_Joins.Clear();
-          m_GhostJoins.Clear();          
+          m_GhostJoins.Clear();
         }
       }
       //------------------------------------------------------------------------------
@@ -1669,7 +1669,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         if (lb == null || rb == null) continue;
 
           //if output polygons share an Edge with a horizontal rb, they'll need joining later ...
-          if (Op1 != null && IsHorizontal(rb) && 
+          if (Op1 != null && IsHorizontal(rb) &&
             m_GhostJoins.Count > 0 && rb.WindDelta != 0)
           {
             for (int i = 0; i < m_GhostJoins.Count; i++)
@@ -1758,19 +1758,19 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       }
       //------------------------------------------------------------------------------
 
-      private bool IsEvenOddFillType(TEdge edge) 
+      private bool IsEvenOddFillType(TEdge edge)
       {
         if (edge.PolyTyp == PolyType.ptSubject)
-            return m_SubjFillType == PolyFillType.pftEvenOdd; 
+            return m_SubjFillType == PolyFillType.pftEvenOdd;
         else
             return m_ClipFillType == PolyFillType.pftEvenOdd;
       }
       //------------------------------------------------------------------------------
 
-      private bool IsEvenOddAltFillType(TEdge edge) 
+      private bool IsEvenOddAltFillType(TEdge edge)
       {
         if (edge.PolyTyp == PolyType.ptSubject)
-            return m_ClipFillType == PolyFillType.pftEvenOdd; 
+            return m_ClipFillType == PolyFillType.pftEvenOdd;
         else
             return m_SubjFillType == PolyFillType.pftEvenOdd;
       }
@@ -1803,7 +1803,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
                   if (edge.WindCnt != 1) return false;
                   break;
               default: //PolyFillType.pftNegative
-                  if (edge.WindCnt != -1) return false; 
+                  if (edge.WindCnt != -1) return false;
                   break;
           }
 
@@ -1926,7 +1926,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             if (Math.Abs(e.WindCnt) > 1)
             {
               //outside prev poly but still inside another.
-              //when reversing direction of prev poly use the same WC 
+              //when reversing direction of prev poly use the same WC
               if (e.WindDelta * edge.WindDelta < 0) edge.WindCnt = e.WindCnt;
               //otherwise continue to 'decrease' WC ...
               else edge.WindCnt = e.WindCnt + edge.WindDelta;
@@ -2008,7 +2008,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         return true;
       }
       //------------------------------------------------------------------------------
-     
+
       private void CopyAELToSEL()
       {
           TEdge e = m_ActiveEdges;
@@ -2090,9 +2090,9 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
               e1.OutIdx = Unassigned;
               e2.OutIdx = Unassigned;
           }
-          else if (e1.OutIdx < e2.OutIdx) 
+          else if (e1.OutIdx < e2.OutIdx)
               AppendPolygon(e1, e2);
-          else 
+          else
               AppendPolygon(e2, e1);
       }
       //------------------------------------------------------------------------------
@@ -2109,7 +2109,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           e2.Side = EdgeSide.esRight;
           e = e1;
           if (e.PrevInAEL == e2)
-            prevE = e2.PrevInAEL; 
+            prevE = e2.PrevInAEL;
           else
             prevE = e.PrevInAEL;
         }
@@ -2183,7 +2183,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       private OutPt GetLastOutPt(TEdge e)
       {
         OutRec outRec = m_PolyOuts[e.OutIdx];
-        if (e.Side == EdgeSide.esLeft) 
+        if (e.Side == EdgeSide.esLeft)
             return outRec.Pts;
         else
             return outRec.Pts.Prev;
@@ -2205,19 +2205,19 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         return (seg1a < seg2b) && (seg2a < seg1b);
       }
       //------------------------------------------------------------------------------
-  
+
       private void SetHoleState(TEdge e, OutRec outRec)
       {
         TEdge e2 = e.PrevInAEL;
-        TEdge eTmp = null;  
+        TEdge eTmp = null;
         while (e2 != null)
           {
-            if (e2.OutIdx >= 0 && e2.WindDelta != 0) 
+            if (e2.OutIdx >= 0 && e2.WindDelta != 0)
             {
               if (eTmp == null)
                 eTmp = e2;
               else if (eTmp.OutIdx == e2.OutIdx)
-                eTmp = null; //paired               
+                eTmp = null; //paired
             }
             e2 = e2.PrevInAEL;
           }
@@ -2307,9 +2307,9 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       private OutRec GetLowermostRec(OutRec outRec1, OutRec outRec2)
       {
           //work out which polygon fragment has the correct hole state ...
-          if (outRec1.BottomPt == null) 
+          if (outRec1.BottomPt == null)
               outRec1.BottomPt = GetBottomPt(outRec1.Pts);
-          if (outRec2.BottomPt == null) 
+          if (outRec2.BottomPt == null)
               outRec2.BottomPt = GetBottomPt(outRec2.Pts);
           OutPt bPt1 = outRec1.BottomPt;
           OutPt bPt2 = outRec2.BottomPt;
@@ -2350,7 +2350,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         OutRec outRec2 = m_PolyOuts[e2.OutIdx];
 
         OutRec holeStateRec;
-        if (OutRec1RightOfOutRec2(outRec1, outRec2)) 
+        if (OutRec1RightOfOutRec2(outRec1, outRec2))
             holeStateRec = outRec2;
         else if (OutRec1RightOfOutRec2(outRec2, outRec1))
             holeStateRec = outRec1;
@@ -2405,7 +2405,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           }
         }
 
-        outRec1.BottomPt = null; 
+        outRec1.BottomPt = null;
         if (holeStateRec == outRec2)
         {
             if (outRec2.FirstLeft != outRec1)
@@ -2490,7 +2490,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             //are both open paths, AND they are both 'contributing maximas' ...
             if (e1.WindDelta == 0 && e2.WindDelta == 0) return;
             //if intersecting a subj line with a subj poly ...
-            else if (e1.PolyTyp == e2.PolyTyp && 
+            else if (e1.PolyTyp == e2.PolyTyp &&
               e1.WindDelta != e2.WindDelta && m_ClipType == ClipType.ctUnion)
             {
               if (e1.WindDelta == 0)
@@ -2512,13 +2512,13 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             }
             else if (e1.PolyTyp != e2.PolyTyp)
             {
-              if ((e1.WindDelta == 0) && Math.Abs(e2.WindCnt) == 1 && 
+              if ((e1.WindDelta == 0) && Math.Abs(e2.WindCnt) == 1 &&
                 (m_ClipType != ClipType.ctUnion || e2.WindCnt2 == 0))
               {
                 AddOutPt(e1, pt);
                 if (e1Contributing) e1.OutIdx = Unassigned;
               }
-              else if ((e2.WindDelta == 0) && (Math.Abs(e1.WindCnt) == 1) && 
+              else if ((e2.WindDelta == 0) && (Math.Abs(e1.WindCnt) == 1) &&
                 (m_ClipType != ClipType.ctUnion || e1.WindCnt2 == 0))
               {
                 AddOutPt(e2, pt);
@@ -2721,7 +2721,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         GetHorzDirection(horzEdge, out dir, out horzLeft, out horzRight);
 
         TEdge eLastHorz = horzEdge, eMaxPair = null;
-        while (eLastHorz.NextInLML != null && IsHorizontal(eLastHorz.NextInLML)) 
+        while (eLastHorz.NextInLML != null && IsHorizontal(eLastHorz.NextInLML))
           eLastHorz = eLastHorz.NextInLML;
         if (eLastHorz.NextInLML == null)
           eMaxPair = GetMaximaPair(eLastHorz);
@@ -2734,12 +2734,12 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             {
               while (currMax != null && currMax.X <= horzEdge.Bot.X)
                   currMax = currMax.Next;
-              if (currMax != null && currMax.X >= eLastHorz.Top.X) 
+              if (currMax != null && currMax.X >= eLastHorz.Top.X)
                   currMax = null;
             }
             else
             {
-              while (currMax.Next != null && currMax.Next.X < horzEdge.Bot.X) 
+              while (currMax.Next != null && currMax.Next.X < horzEdge.Bot.X)
                   currMax = currMax.Next;
               if (currMax.X <= eLastHorz.Top.X) currMax = null;
             }
@@ -2760,11 +2760,11 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
               {
                   if (dir == Direction.dLeftToRight)
                   {
-                      while (currMax != null && currMax.X < e.Curr.X) 
+                      while (currMax != null && currMax.X < e.Curr.X)
                       {
-                        if (horzEdge.OutIdx >= 0 && !IsOpen) 
+                        if (horzEdge.OutIdx >= 0 && !IsOpen)
                           AddOutPt(horzEdge, new IntPoint(currMax.X, horzEdge.Bot.Y));
-                        currMax = currMax.Next;                  
+                        currMax = currMax.Next;
                       }
                   }
                   else
@@ -2780,10 +2780,10 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
               if ((dir == Direction.dLeftToRight && e.Curr.X > horzRight) ||
                 (dir == Direction.dRightToLeft && e.Curr.X < horzLeft)) break;
-                                
+
               //Also break if we've got to the end of an intermediate horizontal edge ...
               //nb: Smaller Dx's are to the right of larger Dx's ABOVE the horizontal.
-              if (e.Curr.X == horzEdge.Top.X && horzEdge.NextInLML != null && 
+              if (e.Curr.X == horzEdge.Top.X && horzEdge.NextInLML != null &&
                 e.Dx < horzEdge.NextInLML.Dx) break;
 
               if (horzEdge.OutIdx >= 0 && !IsOpen)  //note: may be done multiple times
@@ -2808,7 +2808,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
                   }
                   AddGhostJoin(op1, horzEdge.Bot);
               }
-            
+
               //OK, so far we're still in range of the horizontal Edge  but make sure
               //we're at the last of consec. horizontals when matching with eMaxPair
               if(e == eMaxPair && IsLastHorz)
@@ -2819,7 +2819,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
                 DeleteFromAEL(eMaxPair);
                 return;
               }
-              
+
               if(dir == Direction.dLeftToRight)
               {
                 IntPoint Pt = new IntPoint(e.Curr.X, horzEdge.Curr.Y);
@@ -2891,7 +2891,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             }
           }
           else
-            UpdateEdgeIntoAEL(ref horzEdge); 
+            UpdateEdgeIntoAEL(ref horzEdge);
         }
         else
         {
@@ -2931,7 +2931,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           return e.Next;
         else if ((e.Prev.Top == e.Top) && e.Prev.NextInLML == null)
           return e.Prev;
-        else 
+        else
 					return null;
       }
       //------------------------------------------------------------------------------
@@ -2952,9 +2952,9 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         try {
           BuildIntersectList(topY);
           if ( m_IntersectList.Count == 0) return true;
-          if (m_IntersectList.Count == 1 || FixupIntersectionOrder()) 
+          if (m_IntersectList.Count == 1 || FixupIntersectionOrder())
               ProcessIntersectList();
-          else 
+          else
               return false;
         }
         catch {
@@ -3027,7 +3027,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       {
         //the following typecast is safe because the differences in Pt.Y will
         //be limited to the height of the scanbeam.
-        return (int)(node2.Pt.Y - node1.Pt.Y); 
+        return (int)(node2.Pt.Y - node1.Pt.Y);
       }
       //------------------------------------------------------------------------------
 
@@ -3091,7 +3091,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       {
         ip = new IntPoint();
         double b1, b2;
-        //nb: with very large coordinate values, it's possible for SlopesEqual() to 
+        //nb: with very large coordinate values, it's possible for SlopesEqual() to
         //return false but for the edge.Dx value be equal due to double precision rounding.
         if (edge1.Dx == edge2.Dx)
         {
@@ -3154,9 +3154,9 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         {
           ip.Y = edge1.Curr.Y;
           //better to use the more vertical edge to derive X ...
-          if (Math.Abs(edge1.Dx) > Math.Abs(edge2.Dx)) 
+          if (Math.Abs(edge1.Dx) > Math.Abs(edge2.Dx))
             ip.X = TopX(edge2, ip.Y);
-          else 
+          else
             ip.X = TopX(edge1, ip.Y);
         }
       }
@@ -3194,7 +3194,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
               if (e.OutIdx >= 0)
                 AddOutPt(e, e.Bot);
               AddEdgeToSEL(e);
-            } 
+            }
             else
             {
               e.Curr.X = TopX( e, topY );
@@ -3239,7 +3239,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           if(IsIntermediate(e, topY))
           {
             OutPt op = null;
-            if( e.OutIdx >= 0 ) 
+            if( e.OutIdx >= 0 )
               op = AddOutPt(e, e.Top);
             UpdateEdgeIntoAEL(ref e);
 
@@ -3303,7 +3303,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 #if use_lines
         else if (e.WindDelta == 0)
         {
-          if (e.OutIdx >= 0) 
+          if (e.OutIdx >= 0)
           {
             AddOutPt(e, e.Top);
             e.OutIdx = Unassigned;
@@ -3316,7 +3316,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             eMaxPair.OutIdx = Unassigned;
           }
           DeleteFromAEL(eMaxPair);
-        } 
+        }
 #endif
         else throw new ClipperException("DoMaxima error");
       }
@@ -3381,7 +3381,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           {
               OutRec outRec = m_PolyOuts[i];
               int cnt = PointCount(outRec.Pts);
-              if ((outRec.IsOpen && cnt < 2) || 
+              if ((outRec.IsOpen && cnt < 2) ||
                 (!outRec.IsOpen && cnt < 3)) continue;
               FixHoleLinkage(outRec);
               PolyNode pn = new PolyNode();
@@ -3407,7 +3407,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
                 outRec.PolyNode.IsOpen = true;
                 polytree.AddChild(outRec.PolyNode);
               }
-              else if (outRec.FirstLeft != null && 
+              else if (outRec.FirstLeft != null &&
                 outRec.FirstLeft.PolyNode != null)
                   outRec.FirstLeft.PolyNode.AddChild(outRec.PolyNode);
               else
@@ -3483,7 +3483,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           result.Prev = outPt;
           outPt.Next.Prev = result;
           outPt.Next = result;
-        } 
+        }
         else
         {
           result.Prev = outPt.Prev;
@@ -3501,7 +3501,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         {
           if (b1 < b2) {Left = Math.Max(a1,b1); Right = Math.Min(a2,b2);}
           else {Left = Math.Max(a1,b2); Right = Math.Min(a2,b1);}
-        } 
+        }
         else
         {
           if (b1 < b2) {Left = Math.Max(a2,b1); Right = Math.Min(a1,b2);}
@@ -3511,10 +3511,10 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       }
       //------------------------------------------------------------------------------
 
-      bool JoinHorz(OutPt op1, OutPt op1b, OutPt op2, OutPt op2b, 
+      bool JoinHorz(OutPt op1, OutPt op1b, OutPt op2, OutPt op2b,
         IntPoint Pt, bool DiscardLeft)
       {
-        Direction Dir1 = (op1.Pt.X > op1b.Pt.X ? 
+        Direction Dir1 = (op1.Pt.X > op1b.Pt.X ?
           Direction.dRightToLeft : Direction.dLeftToRight);
         Direction Dir2 = (op2.Pt.X > op2b.Pt.X ?
           Direction.dRightToLeft : Direction.dLeftToRight);
@@ -3525,24 +3525,24 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         //So, to facilitate this while inserting Op1b and Op2b ...
         //when DiscardLeft, make sure we're AT or RIGHT of Pt before adding Op1b,
         //otherwise make sure we're AT or LEFT of Pt. (Likewise with Op2b.)
-        if (Dir1 == Direction.dLeftToRight) 
+        if (Dir1 == Direction.dLeftToRight)
         {
-          while (op1.Next.Pt.X <= Pt.X && 
-            op1.Next.Pt.X >= op1.Pt.X && op1.Next.Pt.Y == Pt.Y)  
+          while (op1.Next.Pt.X <= Pt.X &&
+            op1.Next.Pt.X >= op1.Pt.X && op1.Next.Pt.Y == Pt.Y)
               op1 = op1.Next;
           if (DiscardLeft && (op1.Pt.X != Pt.X)) op1 = op1.Next;
           op1b = DupOutPt(op1, !DiscardLeft);
-          if (op1b.Pt != Pt) 
+          if (op1b.Pt != Pt)
           {
             op1 = op1b;
             op1.Pt = Pt;
             op1b = DupOutPt(op1, !DiscardLeft);
           }
-        } 
+        }
         else
         {
-          while (op1.Next.Pt.X >= Pt.X && 
-            op1.Next.Pt.X <= op1.Pt.X && op1.Next.Pt.Y == Pt.Y) 
+          while (op1.Next.Pt.X >= Pt.X &&
+            op1.Next.Pt.X <= op1.Pt.X && op1.Next.Pt.Y == Pt.Y)
               op1 = op1.Next;
           if (!DiscardLeft && (op1.Pt.X != Pt.X)) op1 = op1.Next;
           op1b = DupOutPt(op1, DiscardLeft);
@@ -3556,7 +3556,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
         if (Dir2 == Direction.dLeftToRight)
         {
-          while (op2.Next.Pt.X <= Pt.X && 
+          while (op2.Next.Pt.X <= Pt.X &&
             op2.Next.Pt.X >= op2.Pt.X && op2.Next.Pt.Y == Pt.Y)
               op2 = op2.Next;
           if (DiscardLeft && (op2.Pt.X != Pt.X)) op2 = op2.Next;
@@ -3569,8 +3569,8 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           };
         } else
         {
-          while (op2.Next.Pt.X >= Pt.X && 
-            op2.Next.Pt.X <= op2.Pt.X && op2.Next.Pt.Y == Pt.Y) 
+          while (op2.Next.Pt.X >= Pt.X &&
+            op2.Next.Pt.X <= op2.Pt.X && op2.Next.Pt.Y == Pt.Y)
               op2 = op2.Next;
           if (!DiscardLeft && (op2.Pt.X != Pt.X)) op2 = op2.Next;
           op2b = DupOutPt(op2, DiscardLeft);
@@ -3615,15 +3615,15 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         bool isHorizontal = (j.OutPt1.Pt.Y == j.OffPt.Y);
 
         if (isHorizontal && (j.OffPt == j.OutPt1.Pt) && (j.OffPt == j.OutPt2.Pt))
-        {          
+        {
           //Strictly Simple join ...
           if (outRec1 != outRec2) return false;
           op1b = j.OutPt1.Next;
-          while (op1b != op1 && (op1b.Pt == j.OffPt)) 
+          while (op1b != op1 && (op1b.Pt == j.OffPt))
             op1b = op1b.Next;
           bool reverse1 = (op1b.Pt.Y > j.OffPt.Y);
           op2b = j.OutPt2.Next;
-          while (op2b != op2 && (op2b.Pt == j.OffPt)) 
+          while (op2b != op2 && (op2b.Pt == j.OffPt))
             op2b = op2b.Next;
           bool reverse2 = (op2b.Pt.Y > j.OffPt.Y);
           if (reverse1 == reverse2) return false;
@@ -3650,7 +3650,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             j.OutPt2 = op1b;
             return true;
           }
-        } 
+        }
         else if (isHorizontal)
         {
           //treat horizontal joins differently to non-horizontal joins since with
@@ -3680,18 +3680,18 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           //on the discard Side as either may still be needed for other joins ...
           IntPoint Pt;
           bool DiscardLeftSide;
-          if (op1.Pt.X >= Left && op1.Pt.X <= Right) 
+          if (op1.Pt.X >= Left && op1.Pt.X <= Right)
           {
             Pt = op1.Pt; DiscardLeftSide = (op1.Pt.X > op1b.Pt.X);
-          } 
-          else if (op2.Pt.X >= Left&& op2.Pt.X <= Right) 
+          }
+          else if (op2.Pt.X >= Left&& op2.Pt.X <= Right)
           {
             Pt = op2.Pt; DiscardLeftSide = (op2.Pt.X > op2b.Pt.X);
-          } 
+          }
           else if (op1b.Pt.X >= Left && op1b.Pt.X <= Right)
           {
             Pt = op1b.Pt; DiscardLeftSide = op1b.Pt.X > op1.Pt.X;
-          } 
+          }
           else
           {
             Pt = op2b.Pt; DiscardLeftSide = (op2b.Pt.X > op2.Pt.X);
@@ -3870,7 +3870,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       //----------------------------------------------------------------------
 
       private void FixupFirstLefts1(OutRec OldOutRec, OutRec NewOutRec)
-      { 
+      {
         foreach (OutRec outRec in m_PolyOuts)
         {
           OutRec firstLeft = ParseFirstLeft(outRec.FirstLeft);
@@ -3892,16 +3892,16 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         OutRec orfl = outerOutRec.FirstLeft;
         foreach (OutRec outRec in m_PolyOuts)
         {
-          if (outRec.Pts == null || outRec == outerOutRec || outRec == innerOutRec) 
+          if (outRec.Pts == null || outRec == outerOutRec || outRec == innerOutRec)
             continue;
           OutRec firstLeft = ParseFirstLeft(outRec.FirstLeft);
-          if (firstLeft != orfl && firstLeft != innerOutRec && firstLeft != outerOutRec) 
+          if (firstLeft != orfl && firstLeft != innerOutRec && firstLeft != outerOutRec)
             continue;
           if (Poly2ContainsPoly1(outRec.Pts, innerOutRec.Pts))
             outRec.FirstLeft = innerOutRec;
           else if (Poly2ContainsPoly1(outRec.Pts, outerOutRec.Pts))
             outRec.FirstLeft = outerOutRec;
-          else if (outRec.FirstLeft == innerOutRec || outRec.FirstLeft == outerOutRec) 
+          else if (outRec.FirstLeft == innerOutRec || outRec.FirstLeft == outerOutRec)
             outRec.FirstLeft = orfl;
         }
       }
@@ -3913,7 +3913,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         foreach (OutRec outRec in m_PolyOuts)
         {
           OutRec firstLeft = ParseFirstLeft(outRec.FirstLeft);
-          if (outRec.Pts != null && firstLeft == OldOutRec) 
+          if (outRec.Pts != null && firstLeft == OldOutRec)
             outRec.FirstLeft = NewOutRec;
         }
       }
@@ -3921,7 +3921,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       private static OutRec ParseFirstLeft(OutRec FirstLeft)
       {
-        while (FirstLeft != null && FirstLeft.Pts == null) 
+        while (FirstLeft != null && FirstLeft.Pts == null)
           FirstLeft = FirstLeft.FirstLeft;
         return FirstLeft;
       }
@@ -3995,7 +3995,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
               //fixup FirstLeft pointers that may need reassigning to OutRec2
               if (m_UsingPolyTree) FixupFirstLefts1(outRec1, outRec2);
             }
-     
+
           } else
           {
             //joined 2 polygons together ...
@@ -4005,7 +4005,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             outRec2.Idx = outRec1.Idx;
 
             outRec1.IsHole = holeStateRec.IsHole;
-            if (holeStateRec == outRec2) 
+            if (holeStateRec == outRec2)
               outRec1.FirstLeft = outRec2.FirstLeft;
             outRec2.FirstLeft = outRec1;
 
@@ -4017,7 +4017,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       //------------------------------------------------------------------------------
 
       private void UpdateOutPtIdxs(OutRec outrec)
-      {  
+      {
         OutPt op = outrec.Pts;
         do
         {
@@ -4031,7 +4031,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       private void DoSimplePolygons()
       {
         int i = 0;
-        while (i < m_PolyOuts.Count) 
+        while (i < m_PolyOuts.Count)
         {
           OutRec outrec = m_PolyOuts[i++];
           OutPt op = outrec.Pts;
@@ -4039,9 +4039,9 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
           do //for each Pt in Polygon until duplicate found do ...
           {
             OutPt op2 = op.Next;
-            while (op2 != outrec.Pts) 
+            while (op2 != outrec.Pts)
             {
-              if ((op.Pt == op2.Pt) && op2.Next != op && op2.Prev != op) 
+              if ((op.Pt == op2.Pt) && op2.Next != op && op2.Prev != op)
               {
                 //split the polygon into two ...
                 OutPt op3 = op.Prev;
@@ -4127,7 +4127,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       // Convert self-intersecting polygons into simple polygons
       //------------------------------------------------------------------------------
 
-      public static Paths SimplifyPolygon(Path poly, 
+      public static Paths SimplifyPolygon(Path poly,
             PolyFillType fillType = PolyFillType.pftEvenOdd)
       {
           Paths result = new Paths();
@@ -4175,12 +4175,12 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       }
       //---------------------------------------------------------------------------
 
-      private static bool SlopesNearCollinear(IntPoint pt1, 
+      private static bool SlopesNearCollinear(IntPoint pt1,
           IntPoint pt2, IntPoint pt3, double distSqrd)
       {
-        //this function is more accurate when the point that's GEOMETRICALLY 
-        //between the other 2 points is the one that's tested for distance.  
-        //nb: with 'spikes', either pt1 or pt3 is geometrically between the other pts                    
+        //this function is more accurate when the point that's GEOMETRICALLY
+        //between the other 2 points is the one that's tested for distance.
+        //nb: with 'spikes', either pt1 or pt3 is geometrically between the other pts
         if (Math.Abs(pt1.X - pt2.X) > Math.Abs(pt1.Y - pt2.Y))
 	      {
           if ((pt1.X > pt2.X) == (pt1.X < pt3.X))
@@ -4222,8 +4222,8 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
       public static Path CleanPolygon(Path path, double distance = 1.415)
       {
-        //distance = proximity in units/pixels below which vertices will be stripped. 
-        //Default ~= sqrt(2) so when adjacent vertices or semi-adjacent vertices have 
+        //distance = proximity in units/pixels below which vertices will be stripped.
+        //Default ~= sqrt(2) so when adjacent vertices or semi-adjacent vertices have
         //both x & y coords within 1 unit, then the second vertex will be stripped.
 
         int cnt = path.Count;
@@ -4339,7 +4339,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       }
       //------------------------------------------------------------------------------
 
-      private static Path TranslatePath(Path path, IntPoint delta) 
+      private static Path TranslatePath(Path path, IntPoint delta)
       {
         Path outPath = new Path(path.Count);
         for (int i = 0; i < path.Count; i++)
@@ -4362,7 +4362,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
             c.AddPath(path, PolyType.ptClip, true);
           }
         }
-        c.Execute(ClipType.ctUnion, solution, 
+        c.Execute(ClipType.ctUnion, solution,
           PolyFillType.pftNonZero, PolyFillType.pftNonZero);
         return solution;
       }
@@ -4522,14 +4522,14 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
     {
       //fixup orientations of all closed paths if the orientation of the
       //closed path with the lowermost vertex is wrong ...
-      if (m_lowest.X >= 0 && 
+      if (m_lowest.X >= 0 &&
         !Clipper.Orientation(m_polyNodes.Childs[(int)m_lowest.X].m_polygon))
       {
         for (int i = 0; i < m_polyNodes.ChildCount; i++)
         {
           PolyNode node = m_polyNodes.Childs[i];
           if (node.m_endtype == EndType.etClosedPolygon ||
-            (node.m_endtype == EndType.etClosedLine && 
+            (node.m_endtype == EndType.etClosedLine &&
             Clipper.Orientation(node.m_polygon)))
             node.m_polygon.Reverse();
         }
@@ -4567,7 +4567,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       m_delta = delta;
 
       //if Zero offset, just copy any CLOSED polygons to m_p and return ...
-      if (ClipperBase.near_zero(delta)) 
+      if (ClipperBase.near_zero(delta))
       {
         m_destPolys.Capacity = m_polyNodes.ChildCount;
         for (int i = 0; i < m_polyNodes.ChildCount; i++)
@@ -4584,11 +4584,11 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       else m_miterLim = 0.5;
 
       double y;
-      if (ArcTolerance <= 0.0) 
+      if (ArcTolerance <= 0.0)
         y = def_arc_tolerance;
       else if (ArcTolerance > Math.Abs(delta) * def_arc_tolerance)
         y = Math.Abs(delta) * def_arc_tolerance;
-      else 
+      else
         y = ArcTolerance;
       //see offset_triginometry2.svg in the documentation folder ...
       double steps = Math.PI / Math.Acos(1 - y / Math.Abs(delta));
@@ -4605,7 +4605,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
 
         int len = m_srcPoly.Count;
 
-        if (len == 0 || (delta <= 0 && (len < 3 || 
+        if (len == 0 || (delta <= 0 && (len < 3 ||
           node.m_endtype != EndType.etClosedPolygon)))
             continue;
 
@@ -4648,7 +4648,7 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
         m_normals.Capacity = len;
         for (int j = 0; j < len - 1; j++)
           m_normals.Add(GetUnitNormal(m_srcPoly[j], m_srcPoly[j + 1]));
-        if (node.m_endtype == EndType.etClosedLine || 
+        if (node.m_endtype == EndType.etClosedLine ||
           node.m_endtype == EndType.etClosedPolygon)
           m_normals.Add(GetUnitNormal(m_srcPoly[len - 1], m_srcPoly[0]));
         else
@@ -4820,21 +4820,21 @@ namespace com.tinylabproductions.TLPLib.vendor.ClipperLib
       //cross product ...
       m_sinA = (m_normals[k].X * m_normals[j].Y - m_normals[j].X * m_normals[k].Y);
 
-      if (Math.Abs(m_sinA * m_delta) < 1.0) 
+      if (Math.Abs(m_sinA * m_delta) < 1.0)
       {
         //dot product ...
-        double cosA = (m_normals[k].X * m_normals[j].X + m_normals[j].Y * m_normals[k].Y); 
+        double cosA = (m_normals[k].X * m_normals[j].X + m_normals[j].Y * m_normals[k].Y);
         if (cosA > 0) // angle ==> 0 degrees
         {
           m_destPoly.Add(new IntPoint(Round(m_srcPoly[j].X + m_normals[k].X * m_delta),
             Round(m_srcPoly[j].Y + m_normals[k].Y * m_delta)));
-          return; 
+          return;
         }
-        //else angle ==> 180 degrees   
+        //else angle ==> 180 degrees
       }
       else if (m_sinA > 1.0) m_sinA = 1.0;
       else if (m_sinA < -1.0) m_sinA = -1.0;
-      
+
       if (m_sinA * m_delta < 0)
       {
         m_destPoly.Add(new IntPoint(Round(m_srcPoly[j].X + m_normals[k].X * m_delta),

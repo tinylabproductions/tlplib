@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           var bytesObj = stringObj.Call<AndroidJavaObject>("getBytes", "UTF8")
         ) {
           var bytes = bytesObj.asBytes();
-          return bytes == null 
+          return bytes == null
             ? null : System.Text.Encoding.UTF8.GetString(bytes);
         }
       }
@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static byte[] asBytes(this AndroidJavaObject obj) {
       var raw = obj.GetRawObject();
-      return raw.ToInt32() == 0 
+      return raw.ToInt32() == 0
         ? null : AndroidJNIHelper.ConvertFromJNIArray<byte[]>(raw);
     }
   }
