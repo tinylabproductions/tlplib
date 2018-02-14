@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -9,21 +10,20 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public struct Backtrace {
-    public readonly NonEmpty<ImmutableList<BacktraceElem>> elements;
+    public readonly List<BacktraceElem> elements;
 
-    public Backtrace(NonEmpty<ImmutableList<BacktraceElem>> elements) { this.elements = elements; }
+    public Backtrace(List<BacktraceElem> elements) { this.elements = elements; }
 
-    public override string ToString() => $"{nameof(Backtrace)}({elements.a.mkStringEnumNewLines()})";
+    public override string ToString() => $"{nameof(Backtrace)}({elements.mkStringEnumNewLines()})";
 
     #region Parsing
 
     public static Option<Backtrace> parseUnityBacktrace(string backtrace) =>
-      Regex.Split(backtrace, "\n")
+      new Backtrace(Regex.Split(backtrace, "\n")
         .Select(s => s.Trim())
         .Where(s => !string.IsNullOrEmpty(s))
         .Select(BacktraceElem.parseUnityBacktraceLine)
-        .ToImmutableList()
-        .toNonEmpty().map(_ => new Backtrace(_));
+        .ToList()).some();
 
     /// <summary>Creates a backtrace from the caller site.</summary>
     public static Option<Backtrace> generateFromHere(int skipFrames = 0) =>
@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public static Option<Backtrace> convertFromStacktrace(StackTrace trace) =>
       from frames in F.opt(trace.GetFrames())
-      from _ in frames.Select(_ => _.toBacktraceElem()).Where(bt => bt.inApp).ToImmutableList().toNonEmpty()
+      from _ in frames.Select(_ => _.toBacktraceElem()).Where(bt => bt.inApp).ToList().some()
       select new Backtrace(_);
 
     #endregion
