@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -61,12 +62,23 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly ISerializedRW<float> flt = new floatRW();
     public static readonly ISerializedRW<long> lng = new longRW();
     public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
+    public static readonly ISerializedRW<Vector2> vector2 =
+      flt.and(flt).map(
+        tpl => new Vector2(tpl._1, tpl._2).some(),
+        p => F.t(p.x, p.y)
+      );    
+    public static readonly ISerializedRW<Vector3> vector3 =
+      flt.and(flt).and(flt).map(
+        tpl => new Vector3(tpl._1._1, tpl._1._2, tpl._2).some(),
+        p => F.t(F.t(p.x, p.y), p.z)
+      );
     public static readonly ISerializedRW<Uri> uri = lambda(
       uri => str.serialize(uri.ToString()),
       (bytes, startIndex) =>
         str.deserialize(bytes, startIndex)
         .flatMap(di => di.flatMapTry(s => new Uri(s)))
     );
+    public static readonly ISerializedRW<Guid> guid = new GuidRW();
 
 #if UNITY_EDITOR
     public static ISerializedRW<A> unityObjectSerializedRW<A>() where A : UnityEngine.Object => PathStr.serializedRW.map(
@@ -376,6 +388,28 @@ namespace com.tinylabproductions.TLPLib.Data {
         lng.deserialize(serialized, startIndex).map(DateTime.FromBinary).get;
 
       public override Rope<byte> serialize(DateTime a) => lng.serialize(a.ToBinary());
+    }
+
+    class GuidRW : BaseRW<Guid> {
+      protected override DeserializeInfo<Guid> tryDeserialize(byte[] b, int startIndex) {
+        const int GUID_SIZE = 16;
+        // Copied from new Guid(byte[]) source.
+        var _a = b[startIndex + 3] << 24 | b[startIndex + 2] << 16 | b[startIndex + 1] << 8 | b[startIndex + 0];
+        var _b = (short) (b[startIndex + 5] << 8 | b[startIndex + 4]);
+        var _c = (short) (b[startIndex + 7] << 8 | b[startIndex + 6]);
+        var _d = b[startIndex + 8];
+        var _e = b[startIndex + 9];
+        var _f = b[startIndex + 10];
+        var _g = b[startIndex + 11];
+        var _h = b[startIndex + 12];
+        var _i = b[startIndex + 13];
+        var _j = b[startIndex + 14];
+        var _k = b[startIndex + 15];
+        var guid = new Guid(a: _a, b: _b, c: _c, d: _d, e: _e, f: _f, g: _g, h: _h, i: _i, j: _j, k: _k);
+        return new DeserializeInfo<Guid>(guid, GUID_SIZE);
+      }
+
+      public override Rope<byte> serialize(Guid a) => Rope.a(a.ToByteArray());
     }
 
     static class OptByteArrayRW {
