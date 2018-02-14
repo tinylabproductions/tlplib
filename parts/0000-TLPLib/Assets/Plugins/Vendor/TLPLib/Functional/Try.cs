@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<ImmutableList<string>, A> toValidation =>
       isSuccess
       ? Either<ImmutableList<string>, A>.Right(_value)
-      : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.Message));
+      : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.ToString()));
 
     public B fold<B>(B onValue, Fn<Exception, B> onException) =>
       isSuccess ? onValue : onException(_exception);
