@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
@@ -20,7 +21,7 @@ using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator
 #pragma warning disable 169
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public class ObjectValidatorTest {
+  public class ObjectValidatorTest : ImplicitSpecification {
     class Component1 : MonoBehaviour { }
     class Component2 : MonoBehaviour { }
     class Component3 : MonoBehaviour { }
@@ -125,7 +126,41 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public string field;
     }
 
+    class OnObjectValidateThrowException : MonoBehaviour, OnObjectValidate {
+      public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) { throw new Exception("I'm broken"); }
+    }
+
+    class OnObjectValidateThrowLazyException : MonoBehaviour, OnObjectValidate {
+      public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+        yield return new ErrorMsg("test1");
+        throw new Exception("I'm broken");
+      }
+    }
+
+    class OnObjectValidateReturnsNull : MonoBehaviour, OnObjectValidate {
+      public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) => null;
+    }
+
     #endregion
+
+    [Test]
+    public void customObjectValidator() => describe(() => {
+      when["method throws exception"] = () => {
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowException>(
+          ErrorType.CustomValidationException
+        );
+      };
+      when["method return null"] = () => {
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateReturnsNull>(
+          ErrorType.CustomValidationException
+        );
+      };
+      when["method throws exception in lazy evaluation"] = () => {
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowLazyException>(
+          ErrorType.CustomValidationException
+        );
+      };
+    });
 
     #region Missing References
 

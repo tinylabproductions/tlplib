@@ -485,7 +485,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       foreach (var onObjectValidatable in F.opt(objectBeingValidated as OnObjectValidate)) {
         // Try because custom validations can throw exceptions.
-        var validateResult = F.doTry(() => onObjectValidatable.onObjectValidate(containingComponent));
+        var validateResult = F.doTry(() => 
+          // Force strict enumerable evaluation, because it might throw an exception while evaluating.
+          onObjectValidatable.onObjectValidate(containingComponent).ToArray()
+        );
         if (validateResult.isSuccess) {
           foreach (var error in validateResult.__unsafeGet) {
             yield return createError.custom(fieldHierarchy.asString(), error);
