@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
@@ -48,6 +49,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     #endregion
 
+    public ScrollRect scrollRect => _scrollRect;
+
     /// <summary>
     /// Visual part of layout item.
     /// </summary>
@@ -64,6 +67,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       float height { get; }
       /// <summary>Item width portion of layout width.</summary>
       Percentage width { get; }
+      Option<IElementWithViewData> asElementWithView { get; }
+    }
+    
+    public interface IElementWithViewData : IElementData {
       /// <summary>
       /// Function to create a layout item.
       /// It is expected that you take <see cref="IElementView"/> from a pool when <see cref="createItem"/> is called
@@ -72,6 +79,20 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       IElementView createItem(Transform parent);
     }
 
+    /// <summary>
+    /// Empty spacer element
+    /// </summary>
+    public class EmptyElement : IElementData {
+      public float height { get; }
+      public Percentage width { get; }
+      public Option<IElementWithViewData> asElementWithView => Option<IElementWithViewData>.None;
+
+      public EmptyElement(float height, Percentage width) {
+        this.height = height;
+        this.width = width;
+      }
+    }
+    
     public class Init : IDisposable {
       const float EPS = 1e-9f;
 
@@ -79,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly DynamicVerticalLayout backing;
       readonly ImmutableArray<IElementData> layoutData;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
-      readonly Dictionary<IElementData, IElementView> items = new Dictionary<IElementData, IElementView>();
+      readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
 
       public Init(
         DynamicVerticalLayout backing,
@@ -108,7 +129,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       void clearLayout() {
         foreach (var kv in items) {
-          kv.Value.Dispose();
+          foreach (var item in kv.Value) item.Dispose();
         }
         items.Clear();
       }
@@ -146,18 +167,23 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           var placementVisible = visibleRect.Overlaps(cellRect, true);
 
           if (placementVisible && !items.ContainsKey(data)) {
-            var instance = data.createItem(backing._container);
-            var rectTrans = instance.rectTransform;
-            rectTrans.anchorMin = Vector2.up;
-            rectTrans.anchorMax = Vector2.up;
-            rectTrans.localPosition = Vector3.zero;
-            rectTrans.anchoredPosition = cellRect.center;
-            items.Add(data, instance);
+            var instanceOpt = Option<IElementView>.None;
+            foreach (var elementWithView in data.asElementWithView) {
+              var instance = elementWithView.createItem(backing._container);
+              var rectTrans = instance.rectTransform;
+              rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
+              rectTrans.localPosition = Vector3.zero;
+              rectTrans.anchoredPosition = cellRect.center;
+              instanceOpt = instance.some();
+            }
+            items.Add(data, instanceOpt);
           }
           else if (!placementVisible && items.ContainsKey(data)) {
-            var item = items[data];
+            var itemOpt = items[data];
             items.Remove(data);
-            item.Dispose();
+            foreach (var item in itemOpt) {
+              item.Dispose();
+            }
           }
         }
         containerHeight.value = totalHeightUntilThisRow + currentRowHeight;
