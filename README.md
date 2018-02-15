@@ -23,7 +23,7 @@ Its documentation resides in our general [knowledge base](https://github.com/tin
 Requirements
 ------------
 
-This library requires at least Unity 5.x with [Roslyn or new Mono compilers](https://bitbucket.org/alexzzzz/unity-c-5.0-and-6.0-integration/overview).
+This library requires at least Unity 5.6 with [Roslyn or new Mono compilers](https://bitbucket.org/alexzzzz/unity-c-5.0-and-6.0-integration/overview).
 
 Because we need the new compiler this only works where Mono VM or il2cpp is used. It does not support Mono AOT.
 

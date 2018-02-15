@@ -20,6 +20,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
       var verts = ListPool<UIVertex>.Instance.Borrow();
       vh.GetUIVertexStream(verts);
       ModifyVertices(verts);  // calls the old ModifyVertices which was used on pre 5.2
+      vh.Clear();
       vh.AddUIVertexTriangleStream(verts);
       ListPool<UIVertex>.Instance.Release(verts);
     }
