@@ -56,7 +56,8 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       base.OnRectTransformDimensionsChange();
 
       // transform may be null if OnRectTransformDimensionsChange was called before Awake
-      var transform = this.transform ?? ((RectTransform)base.transform);
+      var transform = this.transform ? this.transform : ((RectTransform)base.transform);
+      
       var widthScaleRatio = originalWidth / transform.rect.width;
       var heightScaleRatio = originalHeight / transform.rect.height;
       var scale = 1 / Mathf.Max(widthScaleRatio, heightScaleRatio);
