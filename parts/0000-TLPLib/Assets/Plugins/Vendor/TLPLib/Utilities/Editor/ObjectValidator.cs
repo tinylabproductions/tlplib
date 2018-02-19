@@ -45,7 +45,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public float ratio => (float) currentIdx / total;
     }
 
-    public struct Error : IEquatable<Error> {
+    [Record(GenerateConstructor = false, GenerateToString = false)]
+    public partial struct Error {
       public enum Type : byte {
         MissingComponent,
         MissingRequiredComponent,
@@ -68,33 +69,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public readonly Object obj;
       public readonly string objFullPath;
       public readonly OneOf<AssetPath, ScenePath, UnknownLocation> location;
-
-      #region Equality
-
-      public bool Equals(Error other) {
-        return type == other.type && string.Equals(message, other.message) && Equals(obj, other.obj) && string.Equals(objFullPath, other.objFullPath) && location.Equals(other.location);
-      }
-
-      public override bool Equals(object obj) {
-        if (ReferenceEquals(null, obj)) return false;
-        return obj is Error && Equals((Error) obj);
-      }
-
-      public override int GetHashCode() {
-        unchecked {
-          var hashCode = (int) type;
-          hashCode = (hashCode * 397) ^ (message != null ? message.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ (obj != null ? obj.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ (objFullPath != null ? objFullPath.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ location.GetHashCode();
-          return hashCode;
-        }
-      }
-
-      public static bool operator ==(Error left, Error right) { return left.Equals(right); }
-      public static bool operator !=(Error left, Error right) { return !left.Equals(right); }
-
-      #endregion
 
       public override string ToString() =>
         $"{nameof(Error)}[" +
@@ -286,6 +260,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
       showErrors(errors);
     }
+    
+    public static ImmutableList<Object> collectAndFilterDependencies(Object[] roots) => 
+      EditorUtility.CollectDependencies(roots).Where(o => o is GameObject || o is ScriptableObject).ToImmutableList();
 
     public static ImmutableList<Error> checkScene(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt,
@@ -311,10 +288,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     ) {
       var loadedAssets =
         assets.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
-      var dependencies =
-        EditorUtility.CollectDependencies(loadedAssets)
-        .Where(x => x is GameObject || x is ScriptableObject)
-        .ToImmutableList();
+      var dependencies = collectAndFilterDependencies(loadedAssets);
       return check(
         // and instead of &, because unity does not show '&' in some windows
         new CheckContext("Assets and Deps"),
