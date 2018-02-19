@@ -63,10 +63,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
       public static readonly ISerializedRW<UrlWithContext> serializedRW =
         SerializedRW.uri.and(LogEntry.kvArraySerializedRw).and(LogEntry.kvArraySerializedRw)
-          .map(t => t.flatten().some(), t => t.unflatten())
           .map(
-            t => new UrlWithContext(t._1, tags: t._2, extras: t._3).some(),
-            url => F.t(url.url, url.tags, url.extras)
+            t => new UrlWithContext(t._1._1, tags: t._1._2, extras: t._2).some(),
+            url => F.t(F.t(url.url, url.tags), url.extras)
           );
     }
 
