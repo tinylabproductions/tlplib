@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Data;
+using System.Linq;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,7 +18,8 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
         LogType.Exception, LogType.Assert, LogType.Error, LogType.Warning
       );
 
-    public const int DEFAULT_QUEUE_SIZE = 10;
+    // Unity UI fails to render too may characters, because of vertex limit per mesh
+    public const int DEFAULT_MAX_SYMBOLS = 10000;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -40,12 +42,13 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
       readonly IImmutableSet<LogType> handledTypes;
       readonly Application.LogCallback logCallback;
       readonly ErrorsInYourFace binding;
-      readonly int queueSize;
+      readonly int maxSymbols;
       readonly LinkedList<string> entries;
+      int removedMessages;
 
       bool _enabled;
       public bool enabled {
-        get { return _enabled; }
+        get => _enabled;
         set {
           _enabled = value;
           if (value) {
@@ -60,10 +63,10 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
 
       public Init(
         ErrorsInYourFace binding,
-        int queueSize = DEFAULT_QUEUE_SIZE, IImmutableSet<LogType> handledTypes = null
+        int maxSymbols = DEFAULT_MAX_SYMBOLS, IImmutableSet<LogType> handledTypes = null
       ) {
         this.handledTypes = handledTypes ?? DEFAULT_HANDLED_TYPES;
-        this.queueSize = queueSize;
+        this.maxSymbols = maxSymbols;
         entries = new LinkedList<string>();
         this.binding = binding;
         logCallback = logMessageHandlerThreaded;
@@ -74,17 +77,11 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
       }
 
       public Init(
-        TagPrefab<ErrorsInYourFace> prefab,
-        int queueSize = DEFAULT_QUEUE_SIZE,
-        IImmutableSet<LogType> handledTypes = null
-      ) : this(prefab.prefab.clone(), queueSize, handledTypes) {}
-
-      public Init(
-        int queueSize = DEFAULT_QUEUE_SIZE,
+        int maxSymbols = DEFAULT_MAX_SYMBOLS,
         IImmutableSet<LogType> handledTypes = null
       ) : this(
-        TagPrefab.a(Resources.Load<ErrorsInYourFace>("ErrorsInYourFaceCanvas")),
-        queueSize, handledTypes
+        Resources.Load<ErrorsInYourFace>("ErrorsInYourFaceCanvas").clone(),
+        maxSymbols, handledTypes
       ) {}
 
       void initBinding(ErrorsInYourFace instance) {
@@ -101,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
 
       void logMessageHandlerThreaded(string message, string stackTrace, LogType type) {
         if (!handledTypes.Contains(type)) return;
-        lock (this) logMessageHandler(message, stackTrace, type);
+        ASync.OnMainThread(() => logMessageHandler(message, stackTrace, type));
       }
 
       void logMessageHandler(string message, string stackTrace, LogType type) {
@@ -120,11 +117,21 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
             stacktrace +
             $"</size></color>";
         }
-        if (entries.Count == queueSize) entries.RemoveLast();
+
+        while (calculateSymbols() > maxSymbols) {
+          entries.RemoveLast();
+          removedMessages++;
+        }
         entries.AddFirst(entry);
       }
 
-      void setText() => binding._errorsText.text = entries.mkString("\n");
+      int calculateSymbols() => entries.Aggregate(0, (sum, entry) => sum + entry.Length);
+
+      void setText() {
+        var text = entries.mkString("\n");
+        if (removedMessages > 0) text += $"\nRemoved messages: {removedMessages}";
+        binding._errorsText.text = text;
+      }
 
       Color32 logTypeToColor(LogType type) {
         switch (type) {

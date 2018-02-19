@@ -13,11 +13,12 @@ namespace com.tinylabproductions.TLPLib.Threads {
    * thread. */
   public class OnMainThread {
     static readonly Queue<Action> actions = new Queue<Action>();
-    public static readonly Thread mainThread;
+    [ThreadStatic] public static readonly bool isMainThread;
 
     /* Initialization. */
     static OnMainThread() {
-      mainThread = Thread.CurrentThread;
+      // We assume that class constructor was called on the main thread
+      isMainThread = true;
 #if UNITY_EDITOR
       if (Application.isPlaying) ASync.EveryFrame(onUpdate);
       else EditorApplication.update += () => onUpdate();
@@ -35,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
 
     /* Run the given action in the main thread. */
     public static void run(Action action, bool runNowIfOnMainThread=true) {
-      if (Thread.CurrentThread == mainThread && runNowIfOnMainThread) action();
+      if (isMainThread && runNowIfOnMainThread) action();
       else lock (actions) { actions.Enqueue(action); }
     }
 

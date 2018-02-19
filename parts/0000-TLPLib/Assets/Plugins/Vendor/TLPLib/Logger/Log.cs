@@ -220,17 +220,21 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public void log(Log.Level l, LogEntry entry) {
       logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
-      _messageLogged.push(new LogEvent(l, entry));
+      var logEvent = new LogEvent(l, entry);
+      if (OnMainThread.isMainThread) _messageLogged.push(logEvent);
+      else {
+        // extracted method to avoid closure allocation when running on main thread
+        logOnMainThread(logEvent);
+      }
     }
+
+    void logOnMainThread(LogEvent logEvent) => OnMainThread.run(() => _messageLogged.push(logEvent));
 
     protected abstract void logInner(Log.Level l, LogEntry entry);
 
     static string line(string level, object o) => $"[{thread}|{level}]> {o}";
 
-    static string thread { get {
-      var t = Thread.CurrentThread;
-      return t == OnMainThread.mainThread ? "Tm" : $"T{t.ManagedThreadId}";
-    } }
+    static string thread => OnMainThread.isMainThread ? "Tm" : $"T{Thread.CurrentThread.ManagedThreadId}";
   }
 
   /** Useful for batch mode to log to the log file without the stacktraces. */
