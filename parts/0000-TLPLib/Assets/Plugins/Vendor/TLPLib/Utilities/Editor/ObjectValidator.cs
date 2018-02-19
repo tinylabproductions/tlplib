@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using AdvancedInspector;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -18,234 +16,16 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
-using GenerationAttributes;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public partial class ObjectValidator {
-    /// <param name="containingObject">Unity object </param>
-    /// <param name="obj">Object that is being validated.</param>
-    /// <returns></returns>
-    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(Object containingObject, object obj);
-
-    interface IErrorFactory {
-      Error nullField(FieldHierarchyStr hierarchy);
-      Error emptyCollection(FieldHierarchyStr hierarchy);
-      Error badTextFieldTag(FieldHierarchyStr hierarchy);
-      Error unityEventInvalid(FieldHierarchyStr hierarchy, int index);
-      Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index);
-      Error exceptionInCustomValidator(FieldHierarchyStr hierarchy, Exception exception);
-      Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage);
-    }
-
-    [Record]
-    public partial struct Progress {
-      public readonly int currentIdx, total;
-
-      public float ratio => (float) currentIdx / total;
-    }
-
-    public struct Error : IEquatable<Error> {
-      public enum Type : byte {
-        MissingComponent,
-        MissingRequiredComponent,
-        MissingReference,
-        NullReference,
-        EmptyCollection,
-        UnityEventInvalidMethod,
-        UnityEventInvalid,
-        TextFieldBadTag,
-        CustomValidation,
-        CustomValidationException
-      }
-
-      public struct UnknownLocation : IEquatable<UnknownLocation> {
-        public bool Equals(UnknownLocation other) => true;
-      }
-
-      public readonly Type type;
-      public readonly string message;
-      public readonly Object obj;
-      public readonly string objFullPath;
-      public readonly OneOf<AssetPath, ScenePath, UnknownLocation> location;
-
-      #region Equality
-
-      public bool Equals(Error other) {
-        return type == other.type && string.Equals(message, other.message) && Equals(obj, other.obj) && string.Equals(objFullPath, other.objFullPath) && location.Equals(other.location);
-      }
-
-      public override bool Equals(object obj) {
-        if (ReferenceEquals(null, obj)) return false;
-        return obj is Error && Equals((Error) obj);
-      }
-
-      public override int GetHashCode() {
-        unchecked {
-          var hashCode = (int) type;
-          hashCode = (hashCode * 397) ^ (message != null ? message.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ (obj != null ? obj.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ (objFullPath != null ? objFullPath.GetHashCode() : 0);
-          hashCode = (hashCode * 397) ^ location.GetHashCode();
-          return hashCode;
-        }
-      }
-
-      public static bool operator ==(Error left, Error right) { return left.Equals(right); }
-      public static bool operator !=(Error left, Error right) { return !left.Equals(right); }
-
-      #endregion
-
-      public override string ToString() =>
-        $"{nameof(Error)}[" +
-        $"{type} " +
-        $"in '{objFullPath}' " +
-        $@"@ '{location.fold(
-          asset => asset.path,
-          scenePath => scenePath.path,
-          unknownLocation => "Unknown location"
-        )}'. " +
-        $"{message}" +
-        $"]";
-
-      #region Constructors
-
-      public Error(Type type, string message, Object obj) {
-        this.type = type;
-        this.message = message;
-        this.obj = obj;
-        objFullPath = fullPath(obj);
-        location = findLocation(obj);
-      }
-
-      static OneOf<AssetPath, ScenePath, UnknownLocation> findLocation(Object obj) {
-        foreach (var _ in lookupAssetPath(obj)) return _;
-        foreach (var _ in lookupScenePath(obj)) return _;
-        // Objects created in Editor Tests don't have a real scene attached
-        return new UnknownLocation();
-      }
-
-      static Option<AssetPath> lookupAssetPath(Object o) =>
-        AssetDatabase.GetAssetPath(o).nonEmptyOpt().map(_ => new AssetPath(_));
-
-      static Option<ScenePath> lookupScenePath(Object o) =>
-        from go in F.opt(o as GameObject) || F.opt(o as Component).map(c => c.gameObject)
-        from path in go.scene.path.nonEmptyOpt(trim: true)
-        select new ScenePath(path);
-
-      // Missing component is null, that is why we need GO
-      public static Error missingComponent(GameObject o) => new Error(
-        Type.MissingComponent,
-        "in GO",
-        o
-      );
-
-      public static Error emptyCollection(
-        Object o, FieldHierarchyStr hierarchy, CheckContext context
-      ) => new Error(
-        Type.EmptyCollection,
-        $"{context}. Property: {hierarchy.s}",
-        o
-      );
-
-      public static Error missingReference(
-        Object o, string property, CheckContext context
-      ) => new Error(
-        Type.MissingReference,
-        $"{context}. Property: {property}",
-        o
-      );
-
-      public static Error requiredComponentMissing(
-        GameObject go, System.Type requiredType, System.Type requiredBy, CheckContext context
-      ) => new Error(
-        Type.MissingRequiredComponent,
-        $"{context}. {requiredType} missing (required by {requiredBy})",
-        go
-      );
-
-      public static Error nullReference(
-        Object o, FieldHierarchyStr hierarchy, CheckContext context
-      ) => new Error(
-        Type.NullReference,
-        $"{context}. Property: {hierarchy.s}",
-        o
-      );
-
-      static string unityEventMessagePrefix(string property, int index) =>
-        $"In property '{property}' callback at index {index} of UnityEvent";
-      static string unityEventMessageSuffix(CheckContext context) =>
-        $"in context '{context}'.";
-
-      public static Error unityEventInvalidMethod(
-        Object o, FieldHierarchyStr hierarchy, int index, CheckContext context
-      ) => new Error(
-        Type.UnityEventInvalidMethod,
-        $"{unityEventMessagePrefix(hierarchy.s, index)} has invalid method " +
-          unityEventMessageSuffix(context),
-        o
-      );
-
-      public static Error unityEventInvalid(
-        Object o, FieldHierarchyStr hierarchy, int index, CheckContext context
-      ) => new Error(
-        Type.UnityEventInvalid,
-        $"{unityEventMessagePrefix(hierarchy.s, index)} is not valid " +
-          unityEventMessageSuffix(context),
-        o
-      );
-
-      public static Error badTextFieldTag(
-        Object o, FieldHierarchyStr hierarchy, CheckContext context
-      ) => new Error(
-        Type.TextFieldBadTag,
-        $"{context}. Property: {hierarchy.s}",
-        o
-      );
-
-      public static Error customError(
-        Object o, FieldHierarchyStr hierarchy, ErrorMsg error, CheckContext context
-      ) => new Error(
-        Type.CustomValidation,
-        $"{context}. Property: {hierarchy.s}. Error: {error}",
-        o
-      );
-
-      public static Error customValidationException(
-        Object o, FieldHierarchyStr hierarchy, Exception exception, CheckContext context
-      ) => new Error(
-        Type.CustomValidationException,
-        $"{context}. Property: {hierarchy.s}. Error while running {nameof(OnObjectValidate)}:\n{exception}",
-        o
-      );
-
-      #endregion
-    }
-
-    public class CheckContext {
-      public static readonly CheckContext empty =
-        new CheckContext(Option<string>.None, ImmutableHashSet<Type>.Empty);
-
-      public readonly Option<string> value;
-      public readonly ImmutableHashSet<Type> checkedComponentTypes;
-
-      public CheckContext(Option<string> value, ImmutableHashSet<Type> checkedComponentTypes) {
-        this.value = value;
-        this.checkedComponentTypes = checkedComponentTypes;
-      }
-
-      public CheckContext(string value) : this(value.some(), ImmutableHashSet<Type>.Empty) {}
-
-      public override string ToString() => value.getOrElse("unknown ctx");
-
-      public CheckContext withCheckedComponentType(Type c) =>
-        new CheckContext(value, checkedComponentTypes.Add(c));
-    }
+  public static partial class ObjectValidator {
+    #region Menu Items
 
     [UsedImplicitly, MenuItem(
-      "TLP/Tools/Validate Objects in Current Scene",
-      isValidateFunction: false, priority: 55
-    )]
+       "TLP/Tools/Validate Objects in Current Scene",
+       isValidateFunction: false, priority: 55
+     )]
     static void checkCurrentSceneMenuItem() {
       if (EditorApplication.isPlayingOrWillChangePlaymode) {
         EditorUtility.DisplayDialog(
@@ -272,9 +52,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [UsedImplicitly, MenuItem(
-      "TLP/Tools/Validate Selected Objects",
-      isValidateFunction: false, priority: 56
-    )]
+       "TLP/Tools/Validate Selected Objects",
+       isValidateFunction: false, priority: 56
+     )]
     static void checkSelectedObjects() {
       var errors = check(
         new CheckContext("Selection"), Selection.objects,
@@ -286,9 +66,30 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
       showErrors(errors);
     }
+    
+    #endregion
+    
+    [PublicAPI]
+    public static void showErrors(IEnumerable<Error> errors, Log.Level level = Log.Level.ERROR) {
+      var log = Log.d;
+      if (log.willLog(level))
+        foreach (var error in errors)
+          log.log(level, LogEntry.simple(error.ToString(), context: error.obj));
+    }
+    
+    /// <summary>
+    /// Collect all objects that are needed to create given roots. 
+    /// </summary>
+    [PublicAPI]
+    public static ImmutableList<Object> collectDependencies(Object[] roots) => 
+      EditorUtility.CollectDependencies(roots)
+        .Where(o => o is GameObject || o is ScriptableObject)
+        .Distinct()
+        .ToImmutableList();
 
+    [PublicAPI]
     public static ImmutableList<Error> checkScene(
-      Scene scene, Option<CustomObjectValidator> customValidatorOpt,
+      Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var objects = getSceneObjects(scene);
@@ -296,8 +97,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors;
     }
 
+    [PublicAPI]
     public static Tpl<ImmutableList<Error>, TimeSpan> checkSceneWithTime(
-      Scene scene, Option<CustomObjectValidator> customValidatorOpt,
+      Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = Stopwatch.StartNew();
@@ -305,16 +107,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return F.t(errors, stopwatch.Elapsed);
     }
 
+    [PublicAPI]
     public static ImmutableList<Error> checkAssetsAndDependencies(
-      IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt,
+      IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var loadedAssets =
         assets.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
-      var dependencies =
-        EditorUtility.CollectDependencies(loadedAssets)
-        .Where(x => x is GameObject || x is ScriptableObject)
-        .ToImmutableList();
+      var dependencies = collectDependencies(loadedAssets);
       return check(
         // and instead of &, because unity does not show '&' in some windows
         new CheckContext("Assets and Deps"),
@@ -322,6 +122,26 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
     }
 
+    /// <summary>
+    /// Check objects and their children.
+    /// 
+    /// <see cref="check"/>.
+    /// </summary>
+    [PublicAPI]
+    public static ImmutableList<Error> checkRecursively(
+      CheckContext context, IEnumerable<Object> objects,
+      Option<CustomObjectValidator> customValidatorOpt = default,
+      Act<Progress> onProgress = null, Action onFinish = null
+    ) => check(
+      context,
+      collectDependencies(objects.ToArray()),
+      customValidatorOpt: customValidatorOpt, onProgress: onProgress, onFinish: onFinish
+    );
+
+    /// <summary>
+    /// Check given objects. This does not walk through them. <see cref="checkRecursively"/>.
+    /// </summary>
+    [PublicAPI]
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
@@ -358,6 +178,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors.Distinct().ToImmutableList();
     }
 
+    /// <summary>
+    /// Check one component non-recursively. 
+    /// </summary>
+    [PublicAPI]
     public static ImmutableList<Error> checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt
     ) {
@@ -394,37 +218,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       errors = errors.AddRange(items: fieldErrors);
 
       return errors;
-    }
-
-    class ErrorFactory : IErrorFactory {
-      readonly Object component;
-      readonly CheckContext context;
-
-      public ErrorFactory(Object component, CheckContext context) {
-        this.component = component;
-        this.context = context;
-      }
-
-      public Error nullField(FieldHierarchyStr hierarchy) =>
-        Error.nullReference(o: component, hierarchy: hierarchy, context: context);
-
-      public Error emptyCollection(FieldHierarchyStr hierarchy) =>
-        Error.emptyCollection(o: component, hierarchy: hierarchy, context: context);
-
-      public Error badTextFieldTag(FieldHierarchyStr hierarchy) =>
-        Error.badTextFieldTag(o: component, hierarchy: hierarchy, context: context);
-
-      public Error unityEventInvalid(FieldHierarchyStr hierarchy, int index) =>
-        Error.unityEventInvalid(o: component, hierarchy: hierarchy, index: index, context: context);
-
-      public Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index) =>
-        Error.unityEventInvalidMethod(o: component, hierarchy: hierarchy, index: index, context: context);
-
-      public Error exceptionInCustomValidator(FieldHierarchyStr hierarchy, Exception exception) =>
-        Error.customValidationException(o: component, hierarchy: hierarchy, exception: exception, context: context);
-
-      public Error custom(FieldHierarchyStr hierarchy, ErrorMsg customErrorMessage) =>
-        Error.customError(o: component, hierarchy: hierarchy, error: customErrorMessage, context: context);
     }
 
     public static ImmutableList<Error> checkComponentType(
@@ -606,11 +399,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       .Where(go => go.hideFlags == HideFlags.None)
       .Cast<Object>()
       .ToImmutableList();
-
-    public static void showErrors(IEnumerable<Error> errors) {
-      foreach (var error in errors)
-        Log.d.error(error.ToString(), context: error.obj);
-    }
 
     static string fullPath(Object o) {
       var go = o as GameObject;
