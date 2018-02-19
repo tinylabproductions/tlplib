@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -101,7 +103,7 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
 
       void logMessageHandlerThreaded(string message, string stackTrace, LogType type) {
         if (!handledTypes.Contains(type)) return;
-        lock (this) logMessageHandler(message, stackTrace, type);
+        ASync.OnMainThread(() => logMessageHandler(message, stackTrace, type));
       }
 
       void logMessageHandler(string message, string stackTrace, LogType type) {
@@ -124,7 +126,8 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
         entries.AddFirst(entry);
       }
 
-      void setText() => binding._errorsText.text = entries.mkString("\n");
+      // Unity UI fails to render too may characters, because of vertex limit per mesh
+      void setText() => binding._errorsText.text = entries.mkString("\n").trimTo(10000);
 
       Color32 logTypeToColor(LogType type) {
         switch (type) {
