@@ -50,6 +50,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     #endregion
 
     public ScrollRect scrollRect => _scrollRect;
+    public RectTransform maskRect => _maskRect;
 
     /// <summary>
     /// Visual part of layout item.
