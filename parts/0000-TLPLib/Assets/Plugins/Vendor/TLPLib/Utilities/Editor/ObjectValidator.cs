@@ -69,15 +69,25 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     
     #endregion
     
+    [PublicAPI]
+    public static void showErrors(IEnumerable<Error> errors, Log.Level level = Log.Level.ERROR) {
+      var log = Log.d;
+      if (log.willLog(level))
+        foreach (var error in errors)
+          log.log(level, LogEntry.simple(error.ToString(), context: error.obj));
+    }
+    
     /// <summary>
     /// Collect all objects that are needed to create given roots. 
     /// </summary>
+    [PublicAPI]
     public static ImmutableList<Object> collectDependencies(Object[] roots) => 
       EditorUtility.CollectDependencies(roots)
         .Where(o => o is GameObject || o is ScriptableObject)
         .Distinct()
         .ToImmutableList();
 
+    [PublicAPI]
     public static ImmutableList<Error> checkScene(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
@@ -87,6 +97,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return errors;
     }
 
+    [PublicAPI]
     public static Tpl<ImmutableList<Error>, TimeSpan> checkSceneWithTime(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
@@ -96,6 +107,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return F.t(errors, stopwatch.Elapsed);
     }
 
+    [PublicAPI]
     public static ImmutableList<Error> checkAssetsAndDependencies(
       IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
@@ -115,6 +127,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// 
     /// <see cref="check"/>.
     /// </summary>
+    [PublicAPI]
     public static ImmutableList<Error> checkRecursively(
       CheckContext context, IEnumerable<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
@@ -128,6 +141,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// <summary>
     /// Check given objects. This does not walk through them. <see cref="checkRecursively"/>.
     /// </summary>
+    [PublicAPI]
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
@@ -167,6 +181,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// <summary>
     /// Check one component non-recursively. 
     /// </summary>
+    [PublicAPI]
     public static ImmutableList<Error> checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt
     ) {
@@ -384,11 +399,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       .Where(go => go.hideFlags == HideFlags.None)
       .Cast<Object>()
       .ToImmutableList();
-
-    public static void showErrors(IEnumerable<Error> errors) {
-      foreach (var error in errors)
-        Log.d.error(error.ToString(), context: error.obj);
-    }
 
     static string fullPath(Object o) {
       var go = o as GameObject;
