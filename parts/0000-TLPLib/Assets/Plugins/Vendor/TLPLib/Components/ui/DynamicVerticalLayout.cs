@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +19,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
   /// Element is considered visible if it intersects with <see cref="_maskRect"/> bounds.
   ///
   /// Sample layout:
-  ///
+  /// 
+  /// <code><![CDATA[
   ///  #  | height | width
   ///  0    10       33%
   ///  1    30       33%
@@ -35,21 +37,20 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
   /// +--------+--------+
   /// |        4        |
   /// +-----------------+
-  ///
+  /// ]]></code>
   /// </summary>
-  public class DynamicVerticalLayout : MonoBehaviour {
+  public partial class DynamicVerticalLayout : MonoBehaviour {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
-    [SerializeField, NotNull] ScrollRect _scrollRect;
-    [SerializeField, NotNull] RectTransform _container, _maskRect;
+    [SerializeField, NotNull, PublicAccessor] ScrollRect _scrollRect;
+    [SerializeField, NotNull] RectTransform _container;
+    [SerializeField, NotNull, PublicAccessor] RectTransform _maskRect;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     #endregion
-
-    public ScrollRect scrollRect => _scrollRect;
 
     /// <summary>
     /// Visual part of layout item.

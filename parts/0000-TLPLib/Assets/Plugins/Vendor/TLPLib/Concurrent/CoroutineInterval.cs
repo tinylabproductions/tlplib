@@ -7,8 +7,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     foreach (var p in new CoroutineInterval(3)) {
       // p goes from 0 to 1 linearly
+      setValue(Mathf.Lerp(start, end, p.value);
       yield return null;
     }
+    // inside loop never reaches exactly 1, so we need to handle this after the loop
+    setValue(end);
   */
   public struct CoroutineInterval {
     readonly TimeScale timeScale;
@@ -25,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public struct CoroutineIntervalEnumerator {
       readonly CoroutineInterval ci;
       float curTime;
-
+      
       public CoroutineIntervalEnumerator(CoroutineInterval ci) : this() { this.ci = ci; }
 
       public bool MoveNext() {
