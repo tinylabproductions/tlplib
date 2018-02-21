@@ -19,6 +19,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static void stop(this Coroutine c) => c.Dispose();
   }
 
+  public static class CoroutineUtils {
+    public static readonly YieldInstruction waitFixed = new WaitForFixedUpdate();
+  }
+
   public class UnityCoroutine : Coroutine {
     public event Action onFinish;
     public bool finished { get; private set; }
