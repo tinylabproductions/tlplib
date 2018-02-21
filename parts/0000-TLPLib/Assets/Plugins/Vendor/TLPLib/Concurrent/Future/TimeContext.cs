@@ -20,12 +20,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this ITimeContext tc, Duration duration, Fn<bool> action, string name = null
     ) {
       var cr = new TimeContextEveryDurationCoroutine();
-      Action repeatingInvoke = null;
-      repeatingInvoke = () => {
+      void repeatingInvoke() {
         var keepRunning = action();
         if (keepRunning) cr.current = tc.after(duration, repeatingInvoke, name);
         else cr.stop();
-      };
+      }
       cr.current = tc.after(duration, repeatingInvoke, name);
       return cr;
     }
@@ -51,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class RealTimeButPauseWhenAdIsShowing : ITimeContext {
-    public static RealTimeButPauseWhenAdIsShowing instance = new RealTimeButPauseWhenAdIsShowing();
+    public static readonly RealTimeButPauseWhenAdIsShowing instance = new RealTimeButPauseWhenAdIsShowing();
 
     readonly IRxRef<bool> externalPause = RxRef.a(false);
     float totalSecondsPaused, totalSecondsPassed;
