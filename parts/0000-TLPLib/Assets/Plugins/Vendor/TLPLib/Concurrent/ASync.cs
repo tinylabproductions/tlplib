@@ -62,10 +62,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Coroutine WithDelay(
       Duration duration, Action action,
-      MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
+      MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
+    ) => WithDelay(duration, action, timeScale.asContext(), behaviour);
+
+    public static Coroutine WithDelay(
+      Duration duration, Action action, ITimeContext timeContext,
+      MonoBehaviour behaviour = null
     ) {
       behaviour = behaviour ?? ASync.behaviour;
-      var enumerator = WithDelayEnumerator(duration, action, timeScale);
+      var enumerator = WithDelayEnumerator(duration, action, timeContext);
       return new UnityCoroutine(behaviour, enumerator);
     }
 
@@ -204,33 +209,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WithDelayEnumerator(
-      Duration duration, Action action, TimeScale timeScale=TimeScale.Unity
+      Duration duration, Action action, ITimeContext timeContext
     ) {
-      var seconds = duration.seconds;
-      Option<object> yieldInstruction;
-      switch (timeScale) {
-        case TimeScale.Unity:
-          yieldInstruction = F.some<object>(new WaitForSeconds(seconds));
-          break;
-        case TimeScale.Realtime:
-          yieldInstruction = F.some<object>(new WaitForSecondsRealtime(seconds));
-          break;
-        case TimeScale.FixedTime:
-          yieldInstruction = Option<object>.None;
-          break;
-        case TimeScale.UnscaledTime:
-          yieldInstruction = F.some<object>(new WaitForSecondsUnscaled(seconds));
-          break;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(timeScale), timeScale, null);
+      if (timeContext == TimeContext.playMode) {
+        // WaitForSeconds is optimized Unity in native code
+        // waiters that extend CustomYieldInstruction (eg. WaitForSecondsRealtime) call C# code every frame,
+        // so we don't need special handling for them
+        yield return new WaitForSeconds(duration.seconds);
       }
-
-      if (yieldInstruction.isSome)
-        yield return yieldInstruction.get;
       else {
-        var waiter = timeScale == TimeScale.FixedTime ? new WaitForFixedUpdate() : null;
-        var waitTime = timeScale.now() + seconds;
-        while (waitTime > timeScale.now()) yield return waiter;
+        var waiter = timeContext == TimeContext.fixedTime ? CoroutineUtils.waitFixed : null;
+        var waitTime = timeContext.passedSinceStartup + duration;
+        while (waitTime > timeContext.passedSinceStartup) yield return waiter;
       }
       action();
     }
