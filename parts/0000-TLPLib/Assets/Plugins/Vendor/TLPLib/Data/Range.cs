@@ -37,6 +37,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       _to = to;
     }
 
+    public bool inRange(int v) =>  from <= v && v <= to; 
     public int random => Random.Range(from, to + 1);
     public int this[Percentage p] => from + (int) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";

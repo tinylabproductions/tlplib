@@ -297,11 +297,15 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static IEnumerable<KeyValuePair<string, Tag>> convertTags(
       ImmutableArray<Tpl<string, string>> source
-    ) => source.Select(t => F.kv(t._1, new Tag(t._2)));
+    ) =>
+      // Sentry does not support empty tags.
+      source.Select(t => F.kv(t._1, new Tag(t._2.isEmpty() ? "-" : t._2)));
 
     public static IEnumerable<KeyValuePair<string, string>> convertExtras(
       ImmutableArray<Tpl<string, string>> source
-    ) => source.Select(t => F.kv(t._1, t._2));
+    ) =>
+      // Sentry does not support empty extras.
+      source.Select(t => F.kv(t._1, t._2.isEmpty() ? "-" : t._2));
   }
 
   public static class SentryRESTAPI {
