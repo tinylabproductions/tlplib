@@ -1,7 +1,9 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -18,12 +20,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this ITimeContext tc, Duration duration, Fn<bool> action, string name = null
     ) {
       var cr = new TimeContextEveryDurationCoroutine();
-      Action repeatingInvoke = null;
-      repeatingInvoke = () => {
+      void repeatingInvoke() {
         var keepRunning = action();
         if (keepRunning) cr.current = tc.after(duration, repeatingInvoke, name);
         else cr.stop();
-      };
+      }
       cr.current = tc.after(duration, repeatingInvoke, name);
       return cr;
     }
@@ -48,36 +49,82 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
   }
 
+  public class RealTimeButPauseWhenAdIsShowing : ITimeContext {
+    public static readonly RealTimeButPauseWhenAdIsShowing instance = new RealTimeButPauseWhenAdIsShowing();
+
+    readonly IRxRef<bool> externalPause = RxRef.a(false);
+    float totalSecondsPaused, totalSecondsPassed;
+    int lastFrameCalculated;
+    bool isPaused;
+
+    /// <summary>
+    /// This class calculates realtimeSinceStartup,
+    /// but excludes time intervals when an ad is showing or application is paused
+    ///
+    /// on android - interstitials usually run on a separate activity (application gets paused/resumed automatically)
+    /// on IOS and some android ad networks - application does not get paused, so we need to call `setPaused` ourselves
+    /// </summary>
+    RealTimeButPauseWhenAdIsShowing() {
+      var pauseStarted = Time.realtimeSinceStartup;
+      ASync.onAppPause.toRxVal(false).zip(externalPause, F.or2).subscribe(
+        NeverDisposeDisposableTracker.instance,
+        paused => {
+          isPaused = paused;
+          if (paused)
+            pauseStarted = Time.realtimeSinceStartup;
+          else
+            totalSecondsPaused = Time.realtimeSinceStartup - pauseStarted;
+        }
+      );
+    }
+
+    public float passed { get {
+      var curFrame = Time.frameCount;
+      if (lastFrameCalculated != curFrame) {
+        lastFrameCalculated = curFrame;
+        if (!isPaused) totalSecondsPassed = Time.realtimeSinceStartup;
+      }
+      return totalSecondsPassed - totalSecondsPaused;
+    } }
+
+    public void setPaused(bool paused) => externalPause.value = paused;
+
+    public Duration passedSinceStartup => Duration.fromSeconds(passed);
+    public Coroutine after(Duration duration, Action act, string name = null) =>
+      ASync.WithDelay(duration, act, timeContext: this);
+  }
+
   public class TimeContext : ITimeContext {
     public static readonly TimeContext
-      playMode = new TimeContext(TimeScale.Unity, () => Duration.fromSeconds(Time.time)),
-      unscaledTime = new TimeContext(TimeScale.UnscaledTime, () => Duration.fromSeconds(Time.unscaledTime)),
-      fixedTime = new TimeContext(TimeScale.FixedTime, () => Duration.fromSeconds(Time.fixedTime)),
-      realTime = new TimeContext(TimeScale.Realtime, () => Duration.fromSeconds(Time.realtimeSinceStartup));
+      playMode = new TimeContext(() => Duration.fromSeconds(Time.time)),
+      unscaledTime = new TimeContext(() => Duration.fromSeconds(Time.unscaledTime)),
+      fixedTime = new TimeContext(() => Duration.fromSeconds(Time.fixedTime)),
+      realTime = new TimeContext(() => Duration.fromSeconds(Time.realtimeSinceStartup));
+
+    public static readonly ITimeContext
+      realTimeButPauseWhenAdIsShowing = RealTimeButPauseWhenAdIsShowing.instance;
 
     public static ITimeContext DEFAULT => playMode;
 
-    readonly TimeScale timeScale;
     readonly Fn<Duration> _passedSinceStartup;
     readonly Option<MonoBehaviour> behaviour;
 
     public TimeContext(
-      TimeScale timeScale, Fn<Duration> passedSinceStartup,
-      Option<MonoBehaviour> behaviour = default(Option<MonoBehaviour>)
+      Fn<Duration> passedSinceStartup,
+      Option<MonoBehaviour> behaviour = default
     ) {
       Option.ensureValue(ref behaviour);
 
-      this.timeScale = timeScale;
       _passedSinceStartup = passedSinceStartup;
       this.behaviour = behaviour;
     }
 
     public TimeContext withBehaviour(MonoBehaviour behaviour) =>
-      new TimeContext(timeScale, _passedSinceStartup, behaviour.some());
+      new TimeContext(_passedSinceStartup, behaviour.some());
 
     public Duration passedSinceStartup => _passedSinceStartup();
 
     public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration.seconds, act, behaviour: behaviour.orNull(), timeScale: timeScale);
+      ASync.WithDelay(duration, act, behaviour: behaviour.orNull(), timeContext: this);
   }
 }
