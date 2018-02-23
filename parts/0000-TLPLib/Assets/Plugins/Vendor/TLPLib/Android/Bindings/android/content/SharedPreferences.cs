@@ -16,6 +16,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
       java.c<int>("getInt", key, defaultValue);
     
     [PublicAPI]
+    public bool getBool(string key, bool defaultValue) => 
+      java.c<bool>("getBoolean", key, defaultValue);
+    
+    [PublicAPI]
     public Editor edit() => new Editor(java.cjo("edit"));
       
     public class Editor : Binding {
