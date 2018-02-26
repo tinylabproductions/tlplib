@@ -25,14 +25,17 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
     public class Editor : Binding {
       public Editor(AndroidJavaObject java) : base(java) {}
       
-      [PublicAPI] public bool commit() => java.c<bool>("commit");
+      [PublicAPI]
+      public bool commit() => java.c<bool>("commit");
       
-      [PublicAPI] public Editor putString(string key, string value) {
+      [PublicAPI]
+      public Editor putString(string key, string value) {
         java.cjo("putString", key, value);
         return this;
       }
       
-      [PublicAPI] public Editor putBool(string key, bool value) {
+      [PublicAPI]
+      public Editor putBool(string key, bool value) {
         java.cjo("putBoolean", key, value);
         return this;
       }
@@ -45,5 +48,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
     }
   }
 }
-
 #endif
