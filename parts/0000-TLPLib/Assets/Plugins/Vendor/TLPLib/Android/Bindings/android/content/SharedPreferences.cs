@@ -39,6 +39,12 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
         java.cjo("putBoolean", key, value);
         return this;
       }
+      
+      [PublicAPI]
+      public Editor putInt(string key, int value) {
+        java.cjo("putInt", key, value);
+        return this;
+      }
 
       [PublicAPI]
       public Editor remove(string key) {
