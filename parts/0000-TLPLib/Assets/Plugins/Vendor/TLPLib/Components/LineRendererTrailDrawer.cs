@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -9,19 +11,6 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Components {
   [ExecuteInEditMode]
   public partial class LineRendererTrailDrawer : MonoBehaviour, IMB_Update {
-    
-    public struct ForcedTrailData {
-      public readonly float startTime, minVertexTime;
-      public readonly Vector3 size;
-
-      public ForcedTrailData(float startTime, Vector3 size, float minVertexTime) {
-        this.startTime = startTime;
-        this.size = size;
-        this.minVertexTime = minVertexTime;
-      }
-    }
-    
-    enum Mode : byte { Regular, ForcedTrail } 
     
     #region Unity Serialized Fields
 
@@ -34,52 +23,60 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     #endregion
     
-    readonly Queue<Tpl<float, Vector3>> positions = new Queue<Tpl<float, Vector3>>();
-
-    Mode mode = Mode.Regular;
-    ForcedTrailData forcedData;
+    readonly Deque<Tpl<float, Vector3>> positions = new Deque<Tpl<float, Vector3>>();
     
-    public void setForceTrailMode(Vector3 size) {
-      forcedData = new ForcedTrailData(Time.time, size, duration / (size.magnitude / minVertexDistance));
-      positions.Clear();
-      positions.Enqueue(F.t(forcedData.startTime, transform.position));
-      mode = Mode.ForcedTrail;
+    bool shouldUpdate;
+    IDisposable disposable = F.emptyDisposable;
+
+    public void setRegularMode() {
+      disposable.Dispose();
+      shouldUpdate = true;
     }
 
-    public void setRegularMode() => mode = Mode.Regular;
+    public void setForceTrailMode(Vector3 size, Duration duration) {
+      disposable.Dispose();
+      disposable = new UnityCoroutine(this, routine(size, duration));
+      shouldUpdate = true;
+    }
+
+    IEnumerator routine(Vector3 target, Duration duration) {
+      var startPos = transform.position;
+      var endPos = transform.position + target;
+      lineRenderer.positionCount = 2;
+      lineRenderer.SetPosition(0, startPos);
+      lineRenderer.SetPosition(1, startPos);
+      foreach (var p in new CoroutineInterval(duration)) {
+        var current = Vector3.Lerp(startPos, endPos, p.value);
+        lineRenderer.SetPosition(1, current);
+        yield return null;
+      }
+    }
 
     public void Update() {
+      if (shouldUpdate) return;
+      
       var currentTime = Time.time;
       var currentPos = transform.position;
-
-      if (mode == Mode.ForcedTrail) {
-        if (
-          positions.Count == 0 || 
-           (currentTime - positions.Last()._1 >= forcedData.minVertexTime && positions.Last()._1 < forcedData.startTime + duration ) 
-        ) {
-          var pos = Vector3.Lerp(currentPos, currentPos + forcedData.size, (currentTime - forcedData.startTime) / duration);
-          positions.Enqueue(F.t(currentTime, pos));
+      if (shouldAddPoint(currentPos)) positions.Add(F.t(currentTime, currentPos));
+      var queueing = true;
+      while (queueing && positions.Count > 0) {
+        var tpl = positions[0];
+        if (tpl._1 + duration < currentTime) {
+          positions.RemoveFront();
         }
+        else queueing = false;
       }
-      else {
-        if (positions.Count == 0 || Vector3.Distance(positions.Last()._2, currentPos) >= minVertexDistance) {
-          positions.Enqueue(F.t(currentTime, currentPos));
-        }
 
-        var queueing = true;
-        while (queueing && positions.Count > 0) {
-          var tpl = positions.Peek();
-          if (tpl._1 + duration < currentTime) {
-            positions.Dequeue();
-          }
-          else queueing = false;
-        }
-      }
       lineRenderer.positionCount = positions.Count;
-      setPositions();
+      setVertexPositions();
     }
 
-    void setPositions() {
+    bool shouldAddPoint(Vector3 currentPos) {
+      if (positions.Count == 0) return true;
+      return Vector3.Distance(positions[positions.Count - 1]._2, currentPos) >= minVertexDistance;
+    }
+
+    void setVertexPositions() {
       var idx = 0;
       foreach (var pos in positions) {
         lineRenderer.SetPosition(idx, pos._2);
