@@ -7,14 +7,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this SerializedObject so, bool enterChildren
     ) {
       var sp = so.GetIterator();
-      while (sp.Next(enterChildren)) yield return sp;
+      // First
+      if (sp.Next(true)) {
+        yield return sp;
+        while (sp.Next(enterChildren)) yield return sp;
+      }
     }
 
     public static IEnumerable<SerializedProperty> iterateVisible(
       this SerializedObject so, bool enterChildren
     ) {
       var sp = so.GetIterator();
-      while (sp.NextVisible(enterChildren)) yield return sp;
+      if (sp.Next(true)) {
+        yield return sp;
+        while (sp.NextVisible(enterChildren)) yield return sp;
+      }
     }
   }
 }

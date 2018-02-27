@@ -43,6 +43,7 @@ namespace com.tinylabproductions.TLPLib.Components {
       forcedData = new ForcedTrailData(Time.time, size, duration / (size.magnitude / minVertexDistance));
       positions.Clear();
       positions.Enqueue(F.t(forcedData.startTime, transform.position));
+      mode = Mode.ForcedTrail;
     }
 
     public void setRegularMode() => mode = Mode.Regular;
