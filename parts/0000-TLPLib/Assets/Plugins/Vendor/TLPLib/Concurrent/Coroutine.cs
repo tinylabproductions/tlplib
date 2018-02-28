@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface Coroutine : IDisposable {
@@ -32,20 +31,39 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     bool shouldStop;
 
-    public UnityCoroutine(MonoBehaviour behaviour, IEnumerator enumerator) {
+    public UnityCoroutine(
+      MonoBehaviour behaviour, IEnumerator enumerator,
+      [CallerFilePath] string callerFilePath = "",
+      [CallerMemberName] string callerMemberName = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
       var fixBugsEnumerator = fixUnityBugs(enumerator);
       if (Application.isPlaying) {
         behaviour.StartCoroutine(fixBugsEnumerator);
-      } else {
-        #if UNITY_EDITOR
+      } 
+#if UNITY_EDITOR
+      else {
         // This is a hack to run coroutine in edit mode, yield is ignored.
         void updateFn() {
           // ReSharper disable once DelegateSubtraction
-          if (!behaviour || !fixBugsEnumerator.MoveNext()) EditorApplication.update -= updateFn;
+          void unsubscribe() => UnityEditor.EditorApplication.update -= updateFn;
+          
+          var hasNext = fixBugsEnumerator.MoveNext();
+          if (!behaviour || !hasNext) unsubscribe();
+          if (hasNext) {
+            var yieldInstruction = fixBugsEnumerator.Current;
+            if (yieldInstruction != null) {
+              unsubscribe();
+              Log.d.error(
+                $"Aborting coroutine started in {callerMemberName} @ {callerFilePath}:{callerLineNumber}, " +
+                $"because it yielded {yieldInstruction}, which we do not know how to fake to in editor!"
+              );
+            }
+          }
         }
-        EditorApplication.update += updateFn;
-        #endif
+        UnityEditor.EditorApplication.update += updateFn;
       }
+#endif
     }
 
     /**

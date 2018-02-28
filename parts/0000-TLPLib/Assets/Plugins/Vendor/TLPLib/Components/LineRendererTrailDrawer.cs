@@ -12,7 +12,6 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Components {
   [ExecuteInEditMode]
   public partial class LineRendererTrailDrawer : MonoBehaviour, IMB_Update {
-
     [Record]
     public partial struct PositionData {
       public readonly float time;
