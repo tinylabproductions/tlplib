@@ -321,7 +321,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         foreach (var cache in uniqueValuesCache.opt()) {
           foreach (var attribute in fi.getAttributes<UniqueValue>()) {
             var fieldValue = fi.GetValue(objectBeingValidated);
-            cache.addUniqueValue(attribute.category, fieldValue, containingComponent);
+            cache.addCheckedField(attribute.category, fieldValue, containingComponent);
           }
         }
         if (fi.FieldType == typeof(string)) {
@@ -348,7 +348,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               }
               var fieldValidationResults = validateListElementsFields(
                 containingComponent, list, fi, hasNotNull,
-                fieldHierarchy, createError, customObjectValidatorOpt
+                fieldHierarchy, createError, customObjectValidatorOpt,
+                uniqueValuesCache
               );
               foreach (var _err in fieldValidationResults) yield return _err;
             }
@@ -388,7 +389,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Object containingComponent, IList list, FieldInfo listFieldInfo,
       bool hasNotNull, FieldHierarchy fieldHierarchy,
       IErrorFactory createError,
-      Option<CustomObjectValidator> customObjectValidatorOpt
+      Option<CustomObjectValidator> customObjectValidatorOpt,
+      UniqueValuesCache uniqueValuesCache
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
@@ -403,7 +405,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           fieldHierarchy.stack.Push($"[{index}]");
           var validationResults = validateFields(
             containingComponent, listItem, createError,
-            customObjectValidatorOpt, fieldHierarchy
+            customObjectValidatorOpt, fieldHierarchy,
+            uniqueValuesCache
           );
           foreach (var _err in validationResults) yield return _err;
           fieldHierarchy.stack.Pop();

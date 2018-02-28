@@ -69,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         });
       }
       
-      public void addUniqueValue(string category, object identifier, Object unityObject) =>
+      public void addCheckedField(string category, object identifier, Object unityObject) =>
         checkedFields.Add(new CheckedField(category, identifier, unityObject));
     }
   }

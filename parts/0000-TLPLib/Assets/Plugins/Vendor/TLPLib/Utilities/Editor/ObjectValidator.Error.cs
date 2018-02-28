@@ -156,7 +156,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         string category, object fieldValue, Object checkedObject, CheckContext context
       ) => new Error(
         Type.DuplicateUniqueValue,
-        $"{context}. Duplicate value='{fieldValue}' at category='{category}'",
+        $"{context}. Duplicate value '{fieldValue}' in category '{category}'",
         checkedObject
       );      
 

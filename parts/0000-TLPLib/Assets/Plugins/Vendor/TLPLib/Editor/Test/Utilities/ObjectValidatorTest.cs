@@ -147,9 +147,27 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     
     class UniqueValueBehaviour : MonoBehaviour {
       [UniqueValue("category")] public byte[] identifier;
-      
-      public UniqueValueBehaviour(byte[] val) {
-        identifier = val;
+      [UniqueValue("category")] public byte[] identifier2;
+
+      public void set(byte[] a, byte[] b) {
+        identifier = a;
+        identifier2 = b;
+      }
+    }
+
+    [Serializable]
+    public struct UniqueValueStruct {
+      [UniqueValue("category")] public byte[] identifier;
+      public UniqueValueStruct(byte[] identifier) {
+        this.identifier = identifier;
+      }
+    }
+
+    class UniqueValueBehaviourWithList : MonoBehaviour {
+      public List<UniqueValueStruct> listOfStructs;
+
+      public void  set(List<UniqueValueStruct> val) {
+        listOfStructs = val;
       }
     }
 
@@ -177,30 +195,46 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [Test]
-    public void uniqueValues() {
+    public void uniqueValuesOfMonob() {
       describe(() => {
-        var go1 = new GameObject();
-        go1.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 2};
-        var go2 = new GameObject();
-        go2.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 3};
-
         when["duplicates exist"] = () => {
-          var go3 = new GameObject();
-          go3.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 2};
-
           it["should fail"] = () => {
-            var x = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] {go1, go2, go3});
-            x.shouldHave(ErrorType.DuplicateUniqueValue);
+            shouldFindErrors<UniqueValueBehaviour>(
+              ErrorType.DuplicateUniqueValue,
+              _ => _.set(new byte[] { 1, 2 }, new byte[] { 1, 2 })
+            );
           };
         };
-
         when["there are no duplicates"] = () => {
-          var go3 = new GameObject();
-          go3.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 4};
-
           it["should pass"] = () =>
-            ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] {go1, go2, go3})
-              .shouldNotHave(ErrorType.DuplicateUniqueValue);
+            shouldNotFindErrors<UniqueValueBehaviour>(
+              _ => _.set(new byte[] { 1, 2 }, new byte[] { 1, 3 })
+            );
+        };
+      });
+    }
+    [Test]
+    public void uniqueValuesOfLists() {
+      describe(() => {
+        when["duplicates exist"] = () => {
+          it["should fail"] = () => {
+            shouldFindErrors<UniqueValueBehaviourWithList>(
+              ErrorType.DuplicateUniqueValue,
+              _ => _.set(new List<UniqueValueStruct> {
+                new UniqueValueStruct(new byte[] {1, 2}),
+                new UniqueValueStruct(new byte[] {1, 2})
+              })
+            );
+          };
+        };
+        when["there are no duplicates"] = () => {
+          it["should pass"] = () =>
+            shouldNotFindErrors<UniqueValueBehaviourWithList>(
+              _ => _.set(new List<UniqueValueStruct> {
+                new UniqueValueStruct(new byte[] {1, 2}),
+                new UniqueValueStruct(new byte[] {1, 3})
+              })
+            );
         };
       });
     }
