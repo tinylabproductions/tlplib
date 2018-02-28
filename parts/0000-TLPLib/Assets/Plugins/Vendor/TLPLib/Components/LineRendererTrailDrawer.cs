@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     
     readonly Deque<Tpl<float, Vector3>> positions = new Deque<Tpl<float, Vector3>>();
     
-    bool shouldUpdate;
+    bool shouldUpdate = true;
     IDisposable disposable = F.emptyDisposable;
 
     public void setRegularMode() {
@@ -33,10 +33,10 @@ namespace com.tinylabproductions.TLPLib.Components {
       shouldUpdate = true;
     }
 
-    public void setForceTrailMode(Vector3 size, Duration duration) {
+    public void setForcedTrailMode(Vector3 size, Duration duration) {
       disposable.Dispose();
       disposable = new UnityCoroutine(this, routine(size, duration));
-      shouldUpdate = true;
+      shouldUpdate = false;
     }
 
     IEnumerator routine(Vector3 target, Duration duration) {
@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     }
 
     public void Update() {
-      if (shouldUpdate) return;
+      if (!shouldUpdate) return;
       
       var currentTime = Time.time;
       var currentPos = transform.position;
