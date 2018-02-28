@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface Coroutine : IDisposable {
@@ -35,12 +37,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       if (Application.isPlaying) {
         behaviour.StartCoroutine(fixBugsEnumerator);
       } else {
+        #if UNITY_EDITOR
         // This is a hack to run coroutine in edit mode, yield is ignored.
         void updateFn() {
           // ReSharper disable once DelegateSubtraction
           if (!behaviour || !fixBugsEnumerator.MoveNext()) EditorApplication.update -= updateFn;
         }
         EditorApplication.update += updateFn;
+        #endif
       }
     }
 
