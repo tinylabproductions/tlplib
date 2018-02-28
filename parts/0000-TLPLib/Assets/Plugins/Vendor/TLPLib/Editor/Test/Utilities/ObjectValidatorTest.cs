@@ -11,6 +11,7 @@ using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using Plugins.Vendor.TLPLib.Editor.Test.Utilities;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -144,30 +145,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     #endregion
 
     #region UniqueValue duplicates
-    
-    class UniqueValueBehaviour : MonoBehaviour {
-      [UniqueValue("category")] public byte[] identifier;
-      [UniqueValue("category")] public byte[] identifier2;
-
-      public void set(byte[] a, byte[] b) {
-        identifier = a;
-        identifier2 = b;
-      }
-    }
 
     [Serializable]
     public struct UniqueValueStruct {
       [UniqueValue("category")] public byte[] identifier;
       public UniqueValueStruct(byte[] identifier) {
         this.identifier = identifier;
-      }
-    }
-
-    class UniqueValueBehaviourWithList : MonoBehaviour {
-      public List<UniqueValueStruct> listOfStructs;
-
-      public void  set(List<UniqueValueStruct> val) {
-        listOfStructs = val;
       }
     }
 
@@ -184,7 +167,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               createValue1(), createValue2()
             ).shouldBeFalse();
           };
-        
+
         test(() => new byte[] {0, 1}, () => new byte[] {0, 2});
         test(() => new[] {"0", "1"}, () => new [] {"0", "2"});
         test(() => "foo", () => "bar");
@@ -195,46 +178,42 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [Test]
-    public void uniqueValuesOfMonob() {
+    public void uniqueValuesInScriptableObject() {
       describe(() => {
         when["duplicates exist"] = () => {
           it["should fail"] = () => {
-            shouldFindErrors<UniqueValueBehaviour>(
-              ErrorType.DuplicateUniqueValue,
-              _ => _.set(new byte[] { 1, 2 }, new byte[] { 1, 2 })
-            );
+            shouldHaveError<UniqueValueScriptableObject>(ErrorType.DuplicateUniqueValue,
+              a => a.set(new byte[] {1, 2}, new byte[] {1, 2}));
           };
         };
         when["there are no duplicates"] = () => {
           it["should pass"] = () =>
-            shouldNotFindErrors<UniqueValueBehaviour>(
-              _ => _.set(new byte[] { 1, 2 }, new byte[] { 1, 3 })
-            );
+            shouldNotHaveError<UniqueValueScriptableObject>(ErrorType.DuplicateUniqueValue,
+              a => a.set(new byte[] {1, 2}, new byte[] {1, 3}));
         };
       });
     }
+
     [Test]
-    public void uniqueValuesOfLists() {
+    public void uniqueValuesInScriptableObjectLists() {
       describe(() => {
         when["duplicates exist"] = () => {
           it["should fail"] = () => {
-            shouldFindErrors<UniqueValueBehaviourWithList>(
-              ErrorType.DuplicateUniqueValue,
+            shouldHaveError<UniqueValueScriptableObjectWithList>(ErrorType.DuplicateUniqueValue,
               _ => _.set(new List<UniqueValueStruct> {
                 new UniqueValueStruct(new byte[] {1, 2}),
                 new UniqueValueStruct(new byte[] {1, 2})
-              })
-            );
+              }));
           };
         };
         when["there are no duplicates"] = () => {
-          it["should pass"] = () =>
-            shouldNotFindErrors<UniqueValueBehaviourWithList>(
+          it["should pass"] = () => {
+            shouldNotHaveError<UniqueValueScriptableObjectWithList>(ErrorType.DuplicateUniqueValue,
               _ => _.set(new List<UniqueValueStruct> {
                 new UniqueValueStruct(new byte[] {1, 2}),
                 new UniqueValueStruct(new byte[] {1, 3})
-              })
-            );
+              }));
+          };
         };
       });
     }
@@ -551,6 +530,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
       errors.shouldHave(errorType);
     }
+
+    static ScriptableObject setSO<T>(Act<T> setup) where T: ScriptableObject {
+      var so = ScriptableObject.CreateInstance(typeof(T));
+      setup?.Invoke(so as T);
+      return so;
+    }
+
+    static void shouldHaveError<T>(ErrorType err, Act<T> setup) where T: ScriptableObject =>
+      ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { setSO(setup) }).shouldHave(err);
+
+    static void shouldNotHaveError<T>(ErrorType err, Act<T> setup) where T: ScriptableObject =>
+      ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { setSO(setup) }).shouldNotHave(err);
+
   }
 
   public static class ErrorValidationExts {

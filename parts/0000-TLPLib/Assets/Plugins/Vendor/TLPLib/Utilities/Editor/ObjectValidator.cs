@@ -163,7 +163,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             foreach (var c in components) {
               errors =
                 c
-                ? errors.AddRange(checkComponent(context, c, customValidatorOpt, uniqueValuesCache))
+                ? errors.AddRange(checkComponent(context, c, customValidatorOpt))
                 : errors.Add(Error.missingComponent(transform.gameObject));
             }
           }
@@ -191,7 +191,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
-      UniqueValuesCache uniqueCache
+      UniqueValuesCache uniqueCache = null
     ) {
       var errors = ImmutableList<Error>.Empty;
 
