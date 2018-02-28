@@ -149,6 +149,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     ) {
       Option.ensureValue(ref customValidatorOpt);
 
+      var uniqueValuesCache = new UniqueValuesCache();
       var errors = ImmutableList<Error>.Empty;
       var scanned = 0;
       foreach (var o in objects) {
@@ -162,13 +163,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             foreach (var c in components) {
               errors =
                 c
-                ? errors.AddRange(checkComponent(context, c, customValidatorOpt))
+                ? errors.AddRange(checkComponent(context, c, customValidatorOpt, uniqueValuesCache))
                 : errors.Add(Error.missingComponent(transform.gameObject));
             }
           }
         }
         else {
-          errors = errors.AddRange(checkComponent(context, o, customValidatorOpt));
+          errors = errors.AddRange(checkComponent(context, o, customValidatorOpt, uniqueValuesCache));
+        }
+      }
+
+      foreach (var df in uniqueValuesCache.getDuplicateFields()) {
+        foreach (var obj in df.objectsWithThisValue) {
+          errors = errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context)); 
         }
       }
 
@@ -183,7 +190,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// </summary>
     [PublicAPI]
     public static ImmutableList<Error> checkComponent(
-      CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt
+      CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
+      UniqueValuesCache uniqueCache
     ) {
       var errors = ImmutableList<Error>.Empty;
 
@@ -213,7 +221,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         containingComponent: component,
         objectBeingValidated: component,
         createError: new ErrorFactory(component, context),
-        customObjectValidatorOpt: customObjectValidatorOpt
+        customObjectValidatorOpt: customObjectValidatorOpt,
+        uniqueValuesCache: uniqueCache
       );
       errors = errors.AddRange(items: fieldErrors);
 
@@ -272,7 +281,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       object objectBeingValidated,
       IErrorFactory createError,
       Option<CustomObjectValidator> customObjectValidatorOpt,
-      FieldHierarchy fieldHierarchy = null
+      FieldHierarchy fieldHierarchy = null,
+      UniqueValuesCache uniqueValuesCache = null
     ) {
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
 
@@ -307,6 +317,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fields = getFilteredFields(objectBeingValidated);
       foreach (var fi in fields) {
         fieldHierarchy.stack.Push(fi.Name);
+        //add to unique fields cache
+        foreach (var cache in uniqueValuesCache.opt()) {
+          foreach (var attribute in fi.getAttributes<UniqueValue>()) {
+            var fieldValue = fi.GetValue(objectBeingValidated);
+            cache.addUniqueValue(attribute.category, fieldValue, containingComponent);
+          }
+        }
         if (fi.FieldType == typeof(string)) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
             var fieldValue = (string)fi.GetValue(objectBeingValidated);
@@ -344,7 +361,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               ) {
                 var validationErrors = validateFields(
                   containingComponent, fieldValue, createError,
-                  customObjectValidatorOpt, fieldHierarchy
+                  customObjectValidatorOpt, fieldHierarchy,
+                  uniqueValuesCache
                 );
                 foreach (var _err in validationErrors) yield return _err;
               }

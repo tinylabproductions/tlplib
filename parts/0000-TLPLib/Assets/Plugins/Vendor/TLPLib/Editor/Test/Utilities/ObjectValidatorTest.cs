@@ -143,6 +143,70 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
+    #region UniqueValue duplicates
+    
+    class UniqueValueBehaviour : MonoBehaviour {
+      [UniqueValue("category")] public byte[] identifier;
+      
+      public UniqueValueBehaviour(byte[] val) {
+        identifier = val;
+      }
+    }
+
+    [Test]
+    public void uniqueValuesComparer() {
+      describe(() => {
+        void test<A>(Fn<A> createValue1, Fn<A> createValue2) =>
+          when[typeof(A).Name] = () => {
+            it["should work on same values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
+              createValue1(), createValue1()
+            ).shouldBeTrue();
+  
+            it["should work on different values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
+              createValue1(), createValue2()
+            ).shouldBeFalse();
+          };
+        
+        test(() => new byte[] {0, 1}, () => new byte[] {0, 2});
+        test(() => new[] {"0", "1"}, () => new [] {"0", "2"});
+        test(() => "foo", () => "bar");
+        test(() => 0, () => 1);
+        test(() => 0u, () => 1u);
+        test(() => 0L, () => 1L);
+      });
+    }
+
+    [Test]
+    public void uniqueValues() {
+      describe(() => {
+        var go1 = new GameObject();
+        go1.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 2};
+        var go2 = new GameObject();
+        go2.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 3};
+
+        when["duplicates exist"] = () => {
+          var go3 = new GameObject();
+          go3.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 2};
+
+          it["should fail"] = () => {
+            var x = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] {go1, go2, go3});
+            x.shouldHave(ErrorType.DuplicateUniqueValue);
+          };
+        };
+
+        when["there are no duplicates"] = () => {
+          var go3 = new GameObject();
+          go3.AddComponent<UniqueValueBehaviour>().identifier = new byte[] {0, 1, 4};
+
+          it["should pass"] = () =>
+            ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] {go1, go2, go3})
+              .shouldNotHave(ErrorType.DuplicateUniqueValue);
+        };
+      });
+    }
+
+    #endregion
+    
     [Test]
     public void customObjectValidator() => describe(() => {
       when["method throws exception"] = () => {
@@ -356,7 +420,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       });
 
     #endregion
-
+    
     #region RequireComponent
 
     [Test] public void WhenRequireComponentComponentsAreThere() =>
@@ -460,6 +524,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       errors.shouldMatch(
         t => t.Exists(x => x.type == type),
         $"{type} does not exist in errors {errors.asDebugString()}"
+      );    
+    public static void shouldNotHave(this ImmutableList<ObjectValidator.Error> errors, ErrorType type) =>
+      errors.shouldMatch(
+        t => !t.Exists(x => x.type == type),
+        $"{type} exists in errors {errors.asDebugString()}"
       );
   }
 }

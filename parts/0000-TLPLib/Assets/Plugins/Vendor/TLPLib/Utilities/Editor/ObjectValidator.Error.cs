@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -22,7 +23,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         UnityEventInvalid,
         TextFieldBadTag,
         CustomValidation,
-        CustomValidationException
+        CustomValidationException,
+        DuplicateUniqueValue
       }
 
       public struct UnknownLocation : IEquatable<UnknownLocation> {
@@ -149,6 +151,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         $"{context}. Property: {hierarchy.s}. Error: {error}",
         o
       );
+      
+      public static Error duplicateUniqueValueError(
+        string category, object fieldValue, Object checkedObject, CheckContext context
+      ) => new Error(
+        Type.DuplicateUniqueValue,
+        $"{context}. Duplicate value='{fieldValue}' at category='{category}'",
+        checkedObject
+      );      
 
       public static Error customValidationException(
         Object o, FieldHierarchyStr hierarchy, Exception exception, CheckContext context
