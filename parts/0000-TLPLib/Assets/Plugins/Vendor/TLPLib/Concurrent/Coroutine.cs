@@ -43,7 +43,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       } 
 #if UNITY_EDITOR
       else {
-        // This is a hack to run coroutine in edit mode, yield is ignored.
+        // This is a hack to run coroutine in edit mode, no other yield instructions
+        // beside null are supported.
         void updateFn() {
           // ReSharper disable once DelegateSubtraction
           void unsubscribe() => UnityEditor.EditorApplication.update -= updateFn;
