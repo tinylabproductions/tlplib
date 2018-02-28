@@ -69,8 +69,8 @@ namespace com.tinylabproductions.TLPLib.Components {
       if (shouldAddPoint(currentPos)) positions.Add(new PositionData(currentTime, currentPos));
       var queueing = true;
       while (queueing && positions.Count > 0) {
-        var tpl = positions[0];
-        if (tpl.time + duration < currentTime) {
+        var position = positions[0];
+        if (position.time + duration < currentTime) {
           positions.RemoveFront();
         }
         else queueing = false;
