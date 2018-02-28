@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public class RealTimeButPauseWhenAdIsShowing : ITimeContext {
     public static readonly RealTimeButPauseWhenAdIsShowing instance = new RealTimeButPauseWhenAdIsShowing();
 
-    readonly IRxRef<bool> externalPause = RxRef.a(false);
+    readonly IRxRef<bool> externalPause;
     float totalSecondsPaused, totalSecondsPassed;
     int lastFrameCalculated;
     bool isPaused;
@@ -66,7 +66,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /// </summary>
     RealTimeButPauseWhenAdIsShowing() {
       var pauseStarted = Time.realtimeSinceStartup;
-      ASync.onAppPause.toRxVal(false).zip(externalPause, F.or2).subscribe(
+      externalPause = RxRef.a(false);
+      ASync.onAppPause.toRxVal(false).zip(externalPause, F.or2).subscribeWithoutEmit(
         NeverDisposeDisposableTracker.instance,
         paused => {
           isPaused = paused;

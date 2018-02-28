@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
+using Application = UnityEngine.Application;
 
 namespace com.tinylabproductions.TLPLib.Android {
   public static class AndroidActivity {
