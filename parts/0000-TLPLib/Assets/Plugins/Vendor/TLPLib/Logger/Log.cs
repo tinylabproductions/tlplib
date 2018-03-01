@@ -234,7 +234,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static string line(string level, object o) => $"[{thread}|{level}]> {o}";
 
-    static string thread => OnMainThread.isMainThread ? "Tm" : $"T{Thread.CurrentThread.ManagedThreadId}";
+    static string thread => (OnMainThread.isMainThread ? "Tm" : "T") + Thread.CurrentThread.ManagedThreadId;
   }
 
   /** Useful for batch mode to log to the log file without the stacktraces. */
