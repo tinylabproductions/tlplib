@@ -65,12 +65,12 @@ namespace com.tinylabproductions.TLPLib.Components {
       
       var currentTime = Time.time;
       var currentPos = transform.position;
-      if (shouldAddPoint(currentPos)) positions.Add(new PositionData(currentTime, currentPos));
+      if (shouldAddPoint(currentPos)) positions.AddFront(new PositionData(currentTime, currentPos));
       var queueing = true;
       while (queueing && positions.Count > 0) {
-        var position = positions[0];
+        var position = positions[positions.Count - 1];
         if (position.time + duration < currentTime) {
-          positions.RemoveFront();
+          positions.RemoveBack();
         }
         else queueing = false;
       }
@@ -81,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     bool shouldAddPoint(Vector3 currentPos) =>
       positions.Count == 0
-      || Vector3.Distance(positions[positions.Count - 1].position, currentPos) >= minVertexDistance;
+      || Vector3.Distance(positions[0].position, currentPos) >= minVertexDistance;
 
     void setVertexPositions() {
       var idx = 0;
