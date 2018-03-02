@@ -3,19 +3,25 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public class AssetLoader<A> where A : Object {
-    readonly string assetName, resourcesSubDir;
-    readonly PathStr generatedDir;
+  public interface IAssetLoader<A> {
+    A loadAsset();
+    Tpl<ResourceRequest, Future<A>> loadAssetAsync();
+  }
 
-    public AssetLoader(string assetName, string resourcesSubDir, PathStr generatedDir) {
-      this.assetName = assetName;
-      this.resourcesSubDir = resourcesSubDir;
-      this.generatedDir = generatedDir;
-    }
+  public static class AssetLoaderExts {
+    public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Fn<A, B> mapper) =>
+      new AssetLoaderMapped<A, B>(loader, mapper);
+  }
+
+  [Record]
+  public partial class AssetLoader<A> : IAssetLoader<A> where A : Object {
+    public readonly string assetName, resourcesSubDir;
+    public readonly PathStr generatedDir;
 
     string prefabName => $"{assetName}.prefab";
     public PathStr assetEditorResourcePath => generatedDir / prefabName;
@@ -32,5 +38,14 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       });
       return F.t(loaded._1, valuedFuture);
     }
+  }
+
+  [Record]
+  public partial class AssetLoaderMapped<A, B> : IAssetLoader<B> {
+    readonly IAssetLoader<A> loader;
+    readonly Fn<A, B> mapper;
+
+    public B loadAsset() => mapper(loader.loadAsset());
+    public Tpl<ResourceRequest, Future<B>> loadAssetAsync() => loader.loadAssetAsync().map2(_ => _.map(mapper));
   }
 }
