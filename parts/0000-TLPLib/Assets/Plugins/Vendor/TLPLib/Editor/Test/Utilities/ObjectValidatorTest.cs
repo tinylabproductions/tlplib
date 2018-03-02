@@ -9,9 +9,9 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using NUnit.Framework;
-using Plugins.Vendor.TLPLib.Editor.Test.Utilities;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -22,7 +22,7 @@ using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator
 #pragma warning disable 169
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public class ObjectValidatorTest : ImplicitSpecification {
+  public partial class ObjectValidatorTest : ImplicitSpecification {
     class Component1 : MonoBehaviour { }
     class Component2 : MonoBehaviour { }
     class Component3 : MonoBehaviour { }
@@ -146,12 +146,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region UniqueValue duplicates
 
-    [Serializable]
-    public struct UniqueValueStruct {
-      [UniqueValue("category")] public byte[] identifier;
-      public UniqueValueStruct(byte[] identifier) {
-        this.identifier = identifier;
-      }
+    [Serializable, Record]
+    public partial struct UniqueValueStruct {
+      [UniqueValue("category")] readonly byte[] identifier;
     }
 
     [Test]
@@ -531,17 +528,25 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       errors.shouldHave(errorType);
     }
 
-    static ScriptableObject setSO<T>(Act<T> setup) where T: ScriptableObject {
+    static ScriptableObject setupScriptableObject<T>(Act<T> setup) where T: ScriptableObject {
       var so = ScriptableObject.CreateInstance(typeof(T));
       setup?.Invoke(so as T);
       return so;
     }
 
     static void shouldHaveError<T>(ErrorType err, Act<T> setup) where T: ScriptableObject =>
-      ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { setSO(setup) }).shouldHave(err);
+      ObjectValidator.check(
+        context: ObjectValidator.CheckContext.empty,
+        objects: new Object[] { setupScriptableObject(setup) },
+        uniqueValuesCache: ObjectValidator.UniqueValuesCache.create.opt()
+      ).shouldHave(err);
 
     static void shouldNotHaveError<T>(ErrorType err, Act<T> setup) where T: ScriptableObject =>
-      ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { setSO(setup) }).shouldNotHave(err);
+      ObjectValidator.check(
+        context: ObjectValidator.CheckContext.empty,
+        objects: new Object[] { setupScriptableObject(setup) },
+        uniqueValuesCache: ObjectValidator.UniqueValuesCache.create.opt()
+      ).shouldNotHave(err);
 
   }
 

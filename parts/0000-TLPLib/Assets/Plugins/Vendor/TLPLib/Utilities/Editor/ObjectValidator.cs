@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress.ratio
         ),
-        EditorUtility.ClearProgressBar
+        EditorUtility.ClearProgressBar, UniqueValuesCache.create.opt()
       );
       showErrors(errors);
     }
@@ -118,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return check(
         // and instead of &, because unity does not show '&' in some windows
         new CheckContext("Assets and Deps"),
-        dependencies, customValidatorOpt, onProgress, onFinish
+        dependencies, customValidatorOpt, onProgress, onFinish, UniqueValuesCache.create.opt()
       );
     }
 
@@ -135,7 +135,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     ) => check(
       context,
       collectDependencies(objects.ToArray()),
-      customValidatorOpt: customValidatorOpt, onProgress: onProgress, onFinish: onFinish
+      customValidatorOpt: customValidatorOpt, onProgress: onProgress, onFinish: onFinish,
+      uniqueValuesCache: UniqueValuesCache.create.opt()
     );
 
     /// <summary>
@@ -145,11 +146,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<Progress> onProgress = null, Action onFinish = null
+      Act<Progress> onProgress = null, Action onFinish = null,
+      Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
       Option.ensureValue(ref customValidatorOpt);
 
-      var uniqueValuesCache = new UniqueValuesCache();
       var errors = ImmutableList<Error>.Empty;
       var scanned = 0;
       foreach (var o in objects) {
@@ -163,7 +164,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             foreach (var c in components) {
               errors =
                 c
-                ? errors.AddRange(checkComponent(context, c, customValidatorOpt))
+                ? errors.AddRange(checkComponent(context, c, customValidatorOpt, uniqueValuesCache))
                 : errors.Add(Error.missingComponent(transform.gameObject));
             }
           }
@@ -173,9 +174,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      foreach (var df in uniqueValuesCache.getDuplicateFields()) {
-        foreach (var obj in df.objectsWithThisValue) {
-          errors = errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context)); 
+      if (uniqueValuesCache.isSome) {
+        foreach (var df in uniqueValuesCache.get.getDuplicateFields()) {
+          foreach (var obj in df.objectsWithThisValue) {
+            errors = errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context));
+          }
         }
       }
 
@@ -191,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
-      UniqueValuesCache uniqueCache = null
+      Option<UniqueValuesCache>uniqueCache = default
     ) {
       var errors = ImmutableList<Error>.Empty;
 
@@ -282,7 +285,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       IErrorFactory createError,
       Option<CustomObjectValidator> customObjectValidatorOpt,
       FieldHierarchy fieldHierarchy = null,
-      UniqueValuesCache uniqueValuesCache = null
+      Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
 
@@ -318,7 +321,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       foreach (var fi in fields) {
         fieldHierarchy.stack.Push(fi.Name);
         //add to unique fields cache
-        foreach (var cache in uniqueValuesCache.opt()) {
+        foreach (var cache in uniqueValuesCache) {
           foreach (var attribute in fi.getAttributes<UniqueValue>()) {
             var fieldValue = fi.GetValue(objectBeingValidated);
             cache.addCheckedField(attribute.category, fieldValue, containingComponent);
@@ -390,7 +393,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       bool hasNotNull, FieldHierarchy fieldHierarchy,
       IErrorFactory createError,
       Option<CustomObjectValidator> customObjectValidatorOpt,
-      UniqueValuesCache uniqueValuesCache
+      Option<UniqueValuesCache>uniqueValuesCache
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);

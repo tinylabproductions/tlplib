@@ -1,7 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.validations;
 using UnityEngine;
 
-namespace Plugins.Vendor.TLPLib.Editor.Test.Utilities {
+namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class UniqueValueScriptableObject : ScriptableObject {
     [UniqueValue("category")] public byte[] identifier;
     [UniqueValue("category")] public byte[] identifier2;

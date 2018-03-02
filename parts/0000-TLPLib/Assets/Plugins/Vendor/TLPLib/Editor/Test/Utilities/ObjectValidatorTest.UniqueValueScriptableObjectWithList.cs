@@ -2,7 +2,7 @@
 using com.tinylabproductions.TLPLib.Utilities.Editor;
 using UnityEngine;
 
-namespace Plugins.Vendor.TLPLib.Editor.Test.Utilities {
+namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public class UniqueValueScriptableObjectWithList : ScriptableObject {
     public List<ObjectValidatorTest.UniqueValueStruct> listOfStructs;
 

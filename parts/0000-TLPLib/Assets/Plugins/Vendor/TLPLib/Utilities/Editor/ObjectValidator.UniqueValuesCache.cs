@@ -23,6 +23,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         public readonly ImmutableList<Object> objectsWithThisValue;
       }
 
+      public static UniqueValuesCache create => new UniqueValuesCache();
+
       public static readonly IEqualityComparer<object> comparer = new Eql.Lambda<object>((o1, o2) => {
         var o1Null = o1 == null;
         var o2Null = o2 == null;
@@ -40,7 +42,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (!enumerator2.MoveNext() || !comparer.Equals(enumerator1.Current, enumerator2.Current))
               return false;
           }
-
           return !enumerator2.MoveNext();
         }
 
