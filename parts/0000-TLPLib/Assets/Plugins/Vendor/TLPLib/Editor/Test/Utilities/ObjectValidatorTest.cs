@@ -161,7 +161,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             it["should work on same values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
               createValue1(), createValue1()
             ).shouldBeTrue();
-  
+
             it["should work on different values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
               createValue1(), createValue2()
             ).shouldBeFalse();
@@ -181,26 +181,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       describe(() => {
         when["duplicates exist"] = () => {
           it["should fail"] = () => {
-            shouldFindErrors(ErrorType.DuplicateUniqueValue,
-              () => setupScriptableObject<UniqueValueScriptableObject>(
-                _ => {
-                  _.identifier = new byte[] {1, 2};
-                  _.identifier2 = new byte[] {1, 2};
-                }
-              ),
+            shouldFindErrorsInScriptableObject<UniqueValueScriptableObject>(
+              ErrorType.DuplicateUniqueValue,
+              a => {
+                a.identifier = new byte[] {1, 2};
+                a.identifier2 = new byte[] {1, 2};
+              },
               ObjectValidator.UniqueValuesCache.create.some()
             );
           };
         };
         when["there are no duplicates"] = () => {
           it["should pass"] = () =>
-            shouldNotFindErrors(
-              () => setupScriptableObject<UniqueValueScriptableObject>(
-                _ => {
-                  _.identifier = new byte[] {1, 2};
-                  _.identifier2 = new byte[] {1, 3};
-                }
-              ),
+            shouldNotFindErrorsInScriptableObject<UniqueValueScriptableObject>(
+              a => {
+                a.identifier = new byte[] {1, 2};
+                a.identifier2 = new byte[] {1, 3};
+              },
               ObjectValidator.UniqueValuesCache.create.some()
             );
         };
@@ -212,26 +209,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       describe(() => {
         when["duplicates exist"] = () => {
           it["should fail"] = () => {
-            shouldFindErrors(ErrorType.DuplicateUniqueValue,
-              () => setupScriptableObject<UniqueValueScriptableObjectWithList>(
-                _ => _.listOfStructs = new List<UniqueValueStruct> {
-                  new UniqueValueStruct(new byte[] {1, 2}),
-                  new UniqueValueStruct(new byte[] {1, 2})
-                }
-              ),
+            shouldFindErrorsInScriptableObject<UniqueValueScriptableObjectWithList>(
+              ErrorType.DuplicateUniqueValue,
+              _ => _.listOfStructs = new List<UniqueValueStruct> {
+                new UniqueValueStruct(new byte[] {1, 2}),
+                new UniqueValueStruct(new byte[] {1, 2})
+              },
               ObjectValidator.UniqueValuesCache.create.some()
             );
           };
         };
         when["there are no duplicates"] = () => {
           it["should pass"] = () => {
-            shouldNotFindErrors(
-              () => setupScriptableObject<UniqueValueScriptableObjectWithList>(
-                _ => _.listOfStructs = new List<UniqueValueStruct> {
-                  new UniqueValueStruct(new byte[] {1, 2}),
-                  new UniqueValueStruct(new byte[] {1, 3})
-                }
-              ),
+            shouldNotFindErrorsInScriptableObject<UniqueValueScriptableObjectWithList>(
+              _ => _.listOfStructs = new List<UniqueValueStruct> {
+                new UniqueValueStruct(new byte[] {1, 2}),
+                new UniqueValueStruct(new byte[] {1, 3})
+              },
               ObjectValidator.UniqueValuesCache.create.some()
             );
           };
@@ -240,25 +234,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     #endregion
-    
+
     [Test]
     public void customObjectValidator() => describe(() => {
       when["method throws exception"] = () => {
-        it["should catch it"] = () => shouldFindErrors(
-          ErrorType.CustomValidationException,
-          () => setupGOWithComponent<OnObjectValidateThrowException>()
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowException>(
+          ErrorType.CustomValidationException
         );
       };
       when["method return null"] = () => {
-        it["should catch it"] = () => shouldFindErrors(
-          ErrorType.CustomValidationException,
-          () => setupGOWithComponent<OnObjectValidateReturnsNull>()
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateReturnsNull>(
+          ErrorType.CustomValidationException
         );
       };
       when["method throws exception in lazy evaluation"] = () => {
-        it["should catch it"] = () => shouldFindErrors(
-          ErrorType.CustomValidationException,
-          () => setupGOWithComponent<OnObjectValidateThrowLazyException>()
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowLazyException>(
+          ErrorType.CustomValidationException
         );
       };
     });
@@ -283,301 +274,223 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     [Test] public void WhenMissingReference() =>
-      shouldFindErrors(
+      shouldFindErrors<PublicField>(
         ErrorType.MissingReference,
-        () => setupGOWithComponent<PublicField>(
-          a => {
-            a.field = new GameObject();
-            Object.DestroyImmediate(a.field);
-          }
-        )
+        a => {
+          a.field = new GameObject();
+          Object.DestroyImmediate(a.field);
+        }
       );
 
     [Test] public void WhenReferenceNotMissing() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<PublicField>(a => {
-          a.field = new GameObject();
-        })
-      );
+      shouldNotFindErrors<PublicField>(a => {
+        a.field = new GameObject();
+      });
 
     [Test] public void WhenMissingReferenceInner() =>
-      shouldFindErrors(
+      shouldFindErrors<NullReferencePublicField>(
         ErrorType.MissingReference,
-        () => setupGOWithComponent<NullReferencePublicField>(
-          a => {
-            a.field.field = new GameObject();
-            Object.DestroyImmediate(a.field.field);
-          }
-        )
+        a => {
+          a.field.field = new GameObject();
+          Object.DestroyImmediate(a.field.field);
+        }
       );
 
     [Test] public void WhenReferenceNotMissingInner() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NullReferencePublicField>(a => {
-          a.field.field = new GameObject();
-        })
-      );
+      shouldNotFindErrors<NullReferencePublicField>(a => {
+        a.field.field = new GameObject();
+      });
 
     #endregion
 
     #region Public/Serialized Field
 
     [Test] public void WhenNotNullPublicField()
-      => shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullPublicField>()
-      );
+      => shouldFindErrors<NotNullPublicField>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullPublicFieldSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NotNullPublicField>(a => {
-          a.field = new GameObject();
-        }
-      ));
+      shouldNotFindErrors<NotNullPublicField>(a => {
+        a.field = new GameObject();
+      });
 
     [Test] public void WhenNotNullSerializedField()
-      => shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullSerializedField>()
-      );
+      => shouldFindErrors<NotNullSerializedField>(ErrorType.NullReference);
 
     [Test] public void WhenPublicFieldExtended()
-      => shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<PublicFieldExtended>()
-      );
+      => shouldFindErrors<PublicFieldExtended>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullPublicFieldExtended()
-      => shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullPublicFieldExtended>()
-      );
+      => shouldFindErrors<NotNullPublicFieldExtended>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullSerializedFieldExtended()
-      => shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullSerializedFieldExtended>()
-      );
+      => shouldFindErrors<NotNullSerializedFieldExtended>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullPublicFieldObjectSet() =>
-      shouldFindErrors(
+      shouldFindErrors<NotNullPublicFieldObject>(
         ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullPublicFieldObject>(
-          a => {
-            a.field = new Object();
-          }
-        )
+        a => {
+          a.field = new Object();
+        }
       );
 
     [Test] public void WhenNotNullSerializedFieldSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NotNullSerializedField>(a => {
-          a.setField(new GameObject());
-        })
-      );
+      shouldNotFindErrors<NotNullSerializedField>(a => {
+        a.setField(new GameObject());
+      });
 
     #endregion
 
     #region Array/List
 
     [Test] public void WhenArrayWithNulls() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<ArrayWithNulls>(
-          a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
-        )
+      shouldNotFindErrors<ArrayWithNulls>(
+        a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
       );
 
     [Test] public void WhenNotNullArray() =>
-      shouldFindErrors(
+      shouldFindErrors<NotNullArray>(
         ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullArray>(
-          a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
-        )
+        a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
       );
 
     [Test] public void WhenReferenceListEmpty() =>
-      shouldFindErrors(
+      shouldFindErrors<ListNotEmpty>(
         ErrorType.EmptyCollection,
-        () => setupGOWithComponent<ListNotEmpty>(
-          a => { a.field = new List<InnerNotNull>(); }
-        )
+        a => {
+          a.field = new List<InnerNotNull>();
+        }
       );
 
     [Test] public void WhenReferenceListNotEmpty() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<ListNotEmpty>(
-          a => {
-            var inner = new InnerNotNull {field = new GameObject()};
-            a.field = new List<InnerNotNull> {inner};
-          }
-        )
+      shouldNotFindErrors<ListNotEmpty>(
+        a => {
+          var inner = new InnerNotNull { field = new GameObject() };
+          a.field = new List<InnerNotNull> { inner };
+        }
       );
 
     [Test] public void WhenNullReferenceList() =>
-      shouldFindErrors(
+      shouldFindErrors<NullReferenceList>(
         ErrorType.NullReference,
-        () => setupGOWithComponent<NullReferenceList>(
-          a => { a.field = new List<InnerNotNull> {new InnerNotNull()}; }
-        )
+        a => {
+          a.field = new List<InnerNotNull> { new InnerNotNull() };
+        }
       );
 
     [Test] public void WhenNullReferenceListSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NullReferenceList>(
-          a => {
-            var inner = new InnerNotNull {field = new GameObject()};
-            a.field = new List<InnerNotNull> {inner};
-          }
-        )
+      shouldNotFindErrors<NullReferenceList>(
+        a => {
+          var inner = new InnerNotNull {field = new GameObject()};
+          a.field = new List<InnerNotNull> {inner};
+        }
       );
 
     #endregion
 
-    [Test] public void WhenNonSerializedFieldIsNotSet() =>
-      shouldNotFindErrors(() => setupGOWithComponent<NonSerializedField>());
+    [Test] public void WhenNonSerializedFieldIsNotSet() => shouldNotFindErrors<NonSerializedField>();
 
     [Test] public void WhenNonSerializedFieldIsSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NonSerializedField>(a => {
-          a.setField(new GameObject());
-        })
-      );
+      shouldNotFindErrors<NonSerializedField>(a => {
+        a.setField(new GameObject());
+      });
 
     [Test] public void WhenNullInsideMonoBehaviorPublicField() =>
-      shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NullReferencePublicField>()
+      shouldFindErrors<NullReferencePublicField>(
+        errorType: ErrorType.NullReference
       );
 
     [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NullReferencePublicField>(a => {
-          a.field = new InnerNotNull {field = new GameObject()};
-        })
-      );
+      shouldNotFindErrors<NullReferencePublicField>(a => {
+        a.field = new InnerNotNull {field = new GameObject()};
+      });
 
     [Test] public void WhenNullInsideMonoBehaviorSerializedField() =>
-      shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NullReferenceSerializedField>()
+      shouldFindErrors<NullReferenceSerializedField>(
+        ErrorType.NullReference
       );
 
     [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NullReferenceSerializedField>(a => {
-          a.setField(
-            new InnerNotNull {field = new GameObject()}
-          );
-        })
-      );
+      shouldNotFindErrors<NullReferenceSerializedField>(a => {
+        a.setField(new InnerNotNull {field = new GameObject()});
+      });
 
-    [Test] public void WhenNotNullProtectedSerializedField() =>
-      shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NotNullProtectedSerializedField>()
-      );
+    [Test] public void WhenNotNullProtectedSerializedField()
+      => shouldFindErrors<NotNullProtectedSerializedField>(ErrorType.NullReference);
 
     [Test] public void WhenNotNullProtectedSerializedFieldSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NotNullProtectedSerializedField>(a => {
-          a.setField(new GameObject());
-        })
-      );
+      shouldNotFindErrors<NotNullProtectedSerializedField>(a => {
+        a.setField(new GameObject());
+      });
 
     [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedField() =>
-      shouldFindErrors(
-        ErrorType.NullReference,
-        () => setupGOWithComponent<NullReferenceProtectedSerializedField>()
+      shouldFindErrors<NullReferenceProtectedSerializedField>(
+        ErrorType.NullReference
       );
 
     [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedFieldSet() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<NullReferenceProtectedSerializedField>(a => {
-          a.setField(new InnerNotNull {field = new GameObject()});
-        })
-      );
+      shouldNotFindErrors<NullReferenceProtectedSerializedField>(a => {
+        a.setField(new InnerNotNull {field = new GameObject()});
+      });
 
     #region [TextField(TextFieldType.Tag)]
 
-    [Test] public void WhenTextFieldTypeNotTag() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<TextFieldTypeNotTag>()
-      );
+    [Test] public void WhenTextFieldTypeNotTag() => shouldNotFindErrors<TextFieldTypeNotTag>();
 
     [Test] public void WhenBadTextFieldValue() =>
-      shouldFindErrors(
+      shouldFindErrors<TextFieldTypeTag>(
         ErrorType.TextFieldBadTag,
-        () => setupGOWithComponent<TextFieldTypeTag>(a => { a.field = ""; })
+        a => { a.field = ""; }
       );
 
     [Test] public void WhenGoodTextFieldValue() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<TextFieldTypeTag>(a => {
-          a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
-        })
-      );
+      shouldNotFindErrors<TextFieldTypeTag>(a => {
+        a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
+      });
 
     #endregion
-    
+
     #region RequireComponent
 
     [Test] public void WhenRequireComponentComponentsAreThere() =>
-       shouldNotFindErrors(
-        () => setupGOWithComponent<RequireComponentBehaviour>(
-          a => a.setup())
-       );
+       shouldNotFindErrors<RequireComponentBehaviour>(a => a.setup());
 
     [Test] public void WhenRequireComponentFirstComponentIsNotThere() =>
-      shouldFindErrors(
+      shouldFindErrors<RequireComponentBehaviour>(
         ErrorType.MissingRequiredComponent,
-        () => setupGOWithComponent<RequireComponentBehaviour>(
-          a => a.setup(first: false)
-        )
+        a => a.setup(first: false)
       );
 
     [Test] public void WhenRequireComponentSecondComponentIsNotThere() =>
-      shouldFindErrors(
+      shouldFindErrors<RequireComponentBehaviour>(
         ErrorType.MissingRequiredComponent,
-        () => setupGOWithComponent<RequireComponentBehaviour>(
-          a => a.setup(second: false)
-        )
+        a => a.setup(second: false)
       );
 
     [Test] public void WhenRequireComponentThirdComponentIsNotThere() =>
-      shouldFindErrors(
+      shouldFindErrors<RequireComponentBehaviour>(
         ErrorType.MissingRequiredComponent,
-        () => setupGOWithComponent<RequireComponentBehaviour>(
-          a => a.setup(third: false)
-        )
+        a => a.setup(third: false)
       );
 
     [Test] public void WhenInheritingRequireComponentComponentsAreThere() =>
-      shouldNotFindErrors(
-        () => setupGOWithComponent<InheritingRequireComponentBehaviour>(a => a.setup())
-      );
+      shouldNotFindErrors<InheritingRequireComponentBehaviour>(a => a.setup());
 
     [Test] public void WhenInheritingRequireComponentFirstComponentIsNotThere() =>
-      shouldFindErrors(
+      shouldFindErrors<InheritingRequireComponentBehaviour>(
         ErrorType.MissingRequiredComponent,
-        () => setupGOWithComponent<InheritingRequireComponentBehaviour>(
-          a => a.setup(first: false)
-        )
+        a => a.setup(first: false)
       );
 
     [Test] public void WhenInheritingRequireComponentSecondComponentIsNotThere() =>
-      shouldFindErrors(
+      shouldFindErrors<InheritingRequireComponentBehaviour>(
         ErrorType.MissingRequiredComponent,
-        () => setupGOWithComponent<InheritingRequireComponentBehaviour>(
-          a => a.setup(second: false)
-        )
+        a => a.setup(second: false)
       );
 
     [Test] public void WhenInheritingRequireComponentThirdComponentIsNotThere() =>
-      shouldFindErrors(
+      shouldFindErrors<InheritingRequireComponentBehaviour>(
         ErrorType.MissingRequiredComponent,
-        () => setupGOWithComponent<InheritingRequireComponentBehaviour>(
-          a => a.setup(third: false)
-        )
+        a => a.setup(third: false)
       );
 
     #endregion
@@ -610,13 +523,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
-    public static GameObject setupGOWithComponent<A>(Act<A> setupA = null) where A : Component {
+    static GameObject setupGOWithComponent<A>(Act<A> setupA = null) where A : Component {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
       return go;
     }
-
     static ScriptableObject setupScriptableObject<A>(Act<A> setup = null) where A : ScriptableObject {
       var so = ScriptableObject.CreateInstance(typeof(A));
       setup?.Invoke(so as A);
@@ -631,13 +543,35 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         uniqueValuesCache: uniqueValuesCache
       );
 
+    static void shouldNotFindErrorsInScriptableObject<A>(
+      Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+    ) where A : ScriptableObject =>
+      shouldNotFindErrorsInObject(() => setupScriptableObject(setup), uniqueValuesCache);
+
+    static void shouldFindErrorsInScriptableObject<A>(
+      ErrorType errorType, Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+    ) where A : ScriptableObject =>
+      shouldFindErrorsInObject(errorType, () => setupScriptableObject(setup), uniqueValuesCache);
+
+
     public static void shouldNotFindErrors<A>(
-      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default 
+      Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+    ) where A : Component =>
+      shouldNotFindErrorsInObject(() => setupGOWithComponent(setup), uniqueValuesCache);
+
+    public static void shouldFindErrors<A>(
+      ErrorType errorType, Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+    ) where A : Component =>
+      shouldFindErrorsInObject(errorType, () => setupGOWithComponent(setup), uniqueValuesCache);
+
+
+    static void shouldNotFindErrorsInObject<A>(
+      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache
     ) where A : Object =>
       checkForErrors(create, uniqueValuesCache).shouldBeEmpty();
 
-    public static void shouldFindErrors<A>(
-      ErrorType errorType, Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+    static void shouldFindErrorsInObject<A>(
+      ErrorType errorType, Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache
     ) where A : Object =>
       checkForErrors(create, uniqueValuesCache).shouldHave(errorType);
 

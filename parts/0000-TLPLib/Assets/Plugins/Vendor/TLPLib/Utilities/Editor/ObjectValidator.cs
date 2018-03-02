@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress.ratio
         ),
-        EditorUtility.ClearProgressBar, UniqueValuesCache.create.opt()
+        EditorUtility.ClearProgressBar, UniqueValuesCache.create.some()
       );
       showErrors(errors);
     }
@@ -118,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return check(
         // and instead of &, because unity does not show '&' in some windows
         new CheckContext("Assets and Deps"),
-        dependencies, customValidatorOpt, onProgress, onFinish, UniqueValuesCache.create.opt()
+        dependencies, customValidatorOpt, onProgress, onFinish, UniqueValuesCache.create.some()
       );
     }
 
@@ -136,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       context,
       collectDependencies(objects.ToArray()),
       customValidatorOpt: customValidatorOpt, onProgress: onProgress, onFinish: onFinish,
-      uniqueValuesCache: UniqueValuesCache.create.opt()
+      uniqueValuesCache: UniqueValuesCache.create.some()
     );
 
     /// <summary>
