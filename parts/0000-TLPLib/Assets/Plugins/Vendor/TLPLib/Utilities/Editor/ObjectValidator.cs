@@ -194,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
-      Option<UniqueValuesCache>uniqueCache = default
+      Option<UniqueValuesCache> uniqueCache = default
     ) {
       var errors = ImmutableList<Error>.Empty;
 
@@ -393,7 +393,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       bool hasNotNull, FieldHierarchy fieldHierarchy,
       IErrorFactory createError,
       Option<CustomObjectValidator> customObjectValidatorOpt,
-      Option<UniqueValuesCache>uniqueValuesCache
+      Option<UniqueValuesCache> uniqueValuesCache
     ) {
       var listItemType = listFieldInfo.FieldType.GetElementType();
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
