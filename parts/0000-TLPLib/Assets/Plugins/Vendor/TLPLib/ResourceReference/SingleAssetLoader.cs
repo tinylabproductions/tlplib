@@ -16,7 +16,9 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<ResourceRequest>> request = RxRef.a(F.none<ResourceRequest>());
 
-    public readonly IRxRef<Option<AssetLoader<A>>> currentLoader = RxRef.a(Option<AssetLoader<A>>.None);
+    // At this moment we could use Fn<Tpl<ResourceRequest, Future<A>>> instead of IAssetLoader<A>,
+    // but there is no gain in refactoring this now. Just a note.
+    public readonly IRxRef<Option<IAssetLoader<A>>> currentLoader = RxRef.a(Option<IAssetLoader<A>>.None);
     public readonly IRxRef<AssetLoadPriority> priority = RxRef.a(AssetLoadPriority.High);
     public readonly IRxVal<Either<IsLoading, A>> assetState;
 
@@ -33,18 +35,16 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     }
 
     public SingleAssetLoader() {
-      assetState =
-        currentLoader
-          .flatMap(opt => {
-            discardPreviousRequest();
-            foreach (var binding in opt) {
-              var (_request, assetFtr) = binding.loadAssetAsync();
-              request.value = _request.some();
-              return assetFtr.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
-            }
+      assetState = currentLoader.flatMap(opt => {
+        discardPreviousRequest();
+        foreach (var bindingLoader in opt) {
+          var (_request, assetFtr) = bindingLoader.loadAssetAsync();
+          request.value = _request.some();
+          return assetFtr.toRxVal().map(csOpt => csOpt.toRight(new IsLoading(true)));
+        }
 
-            return RxVal.cached(F.left<IsLoading, A>(new IsLoading(false)));
-          });
+        return RxVal.cached(F.left<IsLoading, A>(new IsLoading(false)));
+      });
 
       assetState.subscribe(tracker, e => {
         if (e.isRight) discardPreviousRequest();
