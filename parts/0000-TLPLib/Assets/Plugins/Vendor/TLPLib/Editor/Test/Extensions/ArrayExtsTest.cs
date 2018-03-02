@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [Test]
     public void ToImmutableTest() {
       var a = new[] {1, 2, 3};
-      a.toImmutable(i => i * 2).shouldEqual(ImmutableArray.Create(2, 4, 6));
+      a.toImmutable(i => i * 2).shouldEqualEnum(ImmutableArray.Create(2, 4, 6));
     }
 
     [Test]
