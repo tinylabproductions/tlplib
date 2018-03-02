@@ -5,7 +5,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   [Record]
   public partial class UniqueValueScriptableObject : ScriptableObject {
-    [UniqueValue(ObjectValidatorTest.uniqueCategory)] public byte[] identifier;
-    [UniqueValue(ObjectValidatorTest.uniqueCategory)] public byte[] identifier2;
+    [UniqueValue(ObjectValidatorTest.UNIQUE_CATEGORY)] public byte[] identifier;
+    [UniqueValue(ObjectValidatorTest.UNIQUE_CATEGORY)] public byte[] identifier2;
   }
 }

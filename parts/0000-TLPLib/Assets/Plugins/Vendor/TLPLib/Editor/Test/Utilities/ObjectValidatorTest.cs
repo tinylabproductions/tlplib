@@ -23,6 +23,8 @@ using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public partial class ObjectValidatorTest : ImplicitSpecification {
+    public const string UNIQUE_CATEGORY = "UNIQUE_CATEGORY";
+
     class Component1 : MonoBehaviour { }
     class Component2 : MonoBehaviour { }
     class Component3 : MonoBehaviour { }
@@ -146,11 +148,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region UniqueValue duplicates
 
-    public const string uniqueCategory = "uniqueCategory";
-
     [Serializable, Record]
     public partial struct UniqueValueStruct {
-      [UniqueValue(uniqueCategory)] readonly byte[] identifier;
+      [UniqueValue(UNIQUE_CATEGORY)] readonly byte[] identifier;
     }
 
     [Test]
@@ -186,8 +186,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               a => {
                 a.identifier = new byte[] {1, 2};
                 a.identifier2 = new byte[] {1, 2};
-              },
-              ObjectValidator.UniqueValuesCache.create.some()
+              }
             );
           };
         };
@@ -197,8 +196,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               a => {
                 a.identifier = new byte[] {1, 2};
                 a.identifier2 = new byte[] {1, 3};
-              },
-              ObjectValidator.UniqueValuesCache.create.some()
+              }
             );
         };
       });
@@ -214,8 +212,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               _ => _.listOfStructs = new List<UniqueValueStruct> {
                 new UniqueValueStruct(new byte[] {1, 2}),
                 new UniqueValueStruct(new byte[] {1, 2})
-              },
-              ObjectValidator.UniqueValuesCache.create.some()
+              }
             );
           };
         };
@@ -225,8 +222,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               _ => _.listOfStructs = new List<UniqueValueStruct> {
                 new UniqueValueStruct(new byte[] {1, 2}),
                 new UniqueValueStruct(new byte[] {1, 3})
-              },
-              ObjectValidator.UniqueValuesCache.create.some()
+              }
             );
           };
         };
@@ -543,38 +539,38 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         uniqueValuesCache: uniqueValuesCache
       );
 
-    static void shouldNotFindErrorsInScriptableObject<A>(
-      Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
-    ) where A : ScriptableObject =>
-      shouldNotFindErrorsInObject(() => setupScriptableObject(setup), uniqueValuesCache);
-
-    static void shouldFindErrorsInScriptableObject<A>(
-      ErrorType errorType, Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
-    ) where A : ScriptableObject =>
-      shouldFindErrorsInObject(errorType, () => setupScriptableObject(setup), uniqueValuesCache);
-
-
-    public static void shouldNotFindErrors<A>(
-      Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
-    ) where A : Component =>
-      shouldNotFindErrorsInObject(() => setupGOWithComponent(setup), uniqueValuesCache);
-
-    public static void shouldFindErrors<A>(
-      ErrorType errorType, Act<A> setup = null, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
-    ) where A : Component =>
-      shouldFindErrorsInObject(errorType, () => setupGOWithComponent(setup), uniqueValuesCache);
-
 
     static void shouldNotFindErrorsInObject<A>(
-      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache
+      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
     ) where A : Object =>
       checkForErrors(create, uniqueValuesCache).shouldBeEmpty();
 
     static void shouldFindErrorsInObject<A>(
-      ErrorType errorType, Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache
+      ErrorType errorType, Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
     ) where A : Object =>
       checkForErrors(create, uniqueValuesCache).shouldHave(errorType);
 
+
+    static void shouldNotFindErrorsInScriptableObject<A>(
+      Act<A> setup = null
+    ) where A : ScriptableObject =>
+      shouldNotFindErrorsInObject(() => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
+
+    static void shouldFindErrorsInScriptableObject<A>(
+      ErrorType errorType, Act<A> setup = null
+    ) where A : ScriptableObject =>
+      shouldFindErrorsInObject(errorType, () => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
+
+
+    public static void shouldNotFindErrors<A>(
+      Act<A> setup = null
+    ) where A : Component =>
+      shouldNotFindErrorsInObject(() => setupGOWithComponent(setup));
+
+    public static void shouldFindErrors<A>(
+      ErrorType errorType, Act<A> setup = null
+    ) where A : Component =>
+      shouldFindErrorsInObject(errorType, () => setupGOWithComponent(setup));
   }
 
   public static class ErrorValidationExts {

@@ -73,8 +73,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static void showErrors(IEnumerable<Error> errors, Log.Level level = Log.Level.ERROR) {
       var log = Log.d;
       if (log.willLog(level))
-        foreach (var error in errors)
+        foreach (var error in errors) {
+          var context = error.obj is MonoBehaviour;
           log.log(level, LogEntry.simple(error.ToString(), context: error.obj));
+        }
     }
     
     /// <summary>
@@ -174,13 +176,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      if (uniqueValuesCache.isSome) {
-        foreach (var df in uniqueValuesCache.get.getDuplicateFields()) {
+      foreach (var valuesCache in uniqueValuesCache)
+        foreach (var df in valuesCache.getDuplicateFields())
           foreach (var obj in df.objectsWithThisValue) {
             errors = errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context));
           }
-        }
-      }
 
       onFinish?.Invoke();
 
@@ -320,7 +320,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fields = getFilteredFields(objectBeingValidated);
       foreach (var fi in fields) {
         fieldHierarchy.stack.Push(fi.Name);
-        //add to unique fields cache
         foreach (var cache in uniqueValuesCache) {
           foreach (var attribute in fi.getAttributes<UniqueValue>()) {
             var fieldValue = fi.GetValue(objectBeingValidated);
