@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
 
     public void Dispose() => klass.Dispose();
 
-    public Option<string> getProperty(string key) => 
+    public Option<string> getProperty(string key) =>
       F.opt(klass.CallStatic<string>("getProperty", key));
   }
 }

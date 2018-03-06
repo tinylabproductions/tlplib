@@ -98,7 +98,7 @@ namespace Smooth.Platform {
 	  public static bool HasJit(this RuntimePlatform runtimePlatform) =>
 	    runtimePlatform != RuntimePlatform.IPhonePlayer
 #if !UNITY_5_5_OR_NEWER
-      && runtimePlatform != RuntimePlatform.PS3 
+      && runtimePlatform != RuntimePlatform.PS3
       && runtimePlatform != RuntimePlatform.XBOX360
 #endif
 	    ;
@@ -109,7 +109,7 @@ namespace Smooth.Platform {
 		public static bool HasJit(this BasePlatform basePlatform) =>
 			basePlatform != BasePlatform.Ios
 #if !UNITY_5_5_OR_NEWER
-      && basePlatform != BasePlatform.Ps3 
+      && basePlatform != BasePlatform.Ps3
       && basePlatform != BasePlatform.Xbox360
 #endif
         ;

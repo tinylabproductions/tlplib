@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
         F.some(0),
         F.some(1)
       ).shouldTestInequalityAgainst(ImmutableList.Create(
-        F.some(10), 
+        F.some(10),
         F.some(11)
       ));
     }
@@ -272,7 +272,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class OptionTestJoin {
     static string joiner(string a, string b) => $"{a}|{b}";
 
-    [Test] public void WhenFirstIsSome() => 
+    [Test] public void WhenFirstIsSome() =>
       F.some("a").join(F.none<string>(), joiner).shouldBeSome("a");
 
     [Test] public void WhenSecondIsSome() =>

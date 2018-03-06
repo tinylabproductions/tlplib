@@ -13,10 +13,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       // get the benefits of the nanny.
       value == null || value.Equals(null);
 
-    public static Option<A> opt<A>(A value) where A : class => 
+    public static Option<A> opt<A>(A value) where A : class =>
       isNull(value) ? Option<A>.None : new Option<A>(value);
 
-    public static Option<A> opt<A>(A? value) where A : struct => 
+    public static Option<A> opt<A>(A? value) where A : struct =>
       value == null ? Option<A>.None : some((A) value);
 
     public static Option<A> some<A>(A value) => new Option<A>(value);
@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Try<A> scs<A>(A value) { return new Try<A>(value); }
     public static Try<A> err<A>(Exception ex) { return new Try<A>(ex); }
 
-    public static KeyValuePair<K, V> kv<K, V>(K key, V value) => 
+    public static KeyValuePair<K, V> kv<K, V>(K key, V value) =>
       new KeyValuePair<K, V>(key, value);
 
     public static List<A> list<A>(params A[] args) {
@@ -115,7 +115,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Unit unit => Unit.instance;
 
-    public static LazyVal<A> lazy<A>(Fn<A> func, Act<A> afterInitialization = null) => 
+    public static LazyVal<A> lazy<A>(Fn<A> func, Act<A> afterInitialization = null) =>
       new LazyValImpl<A>(func, afterInitialization);
 
     public static LazyVal<A> loggedLazy<A>(
@@ -125,20 +125,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
       if (_log.willLog(level)) _log.log(level, $"Initiliazing lazy value: {name}");
       return func();
     });
-    
+
     /// <summary>Lift a value into lazy type.</summary>
     public static LazyVal<A> lazyLift<A>(A a) => new NotReallyLazyVal<A>(a);
 
     public static Fn<Unit> actToFn(Action action) =>
       () => { action(); return unit; };
 
-    public static Action andThen(this Action first, Action second) => 
+    public static Action andThen(this Action first, Action second) =>
       () => { first(); second(); };
 
-    public static Action andThenSys(this Action first, Action second) => 
+    public static Action andThenSys(this Action first, Action second) =>
       () => { first(); second(); };
 
-    public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) => 
+    public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) =>
       () => second(first());
 
     static class EmptyArray<T> {
@@ -155,7 +155,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     /// <summary>Representation of && as a function.</summary>
     public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
-    
+    public static readonly Fn<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;
+
     /// <summary>Representation of || as a function.</summary>
     public static readonly Fn<bool, bool, bool> or2 = (a, b) => a || b;
 

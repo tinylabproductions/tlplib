@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var fillColorArray = texture.GetPixels();
       for (var i = 0; i < fillColorArray.Length; ++i)
         fillColorArray[i] = color;
-     
+
       texture.SetPixels(fillColorArray);
       texture.Apply();
     }

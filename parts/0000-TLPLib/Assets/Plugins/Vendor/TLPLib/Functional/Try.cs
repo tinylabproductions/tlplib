@@ -51,14 +51,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isSuccess ? Either<string, A>.Right(_value) : Either<string, A>.Left(_exception.ToString());
 
     public Either<ImmutableList<string>, A> toValidation =>
-      isSuccess 
-      ? Either<ImmutableList<string>, A>.Right(_value) 
-      : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.Message));
-    
-    public B fold<B>(B onValue, Fn<Exception, B> onException) => 
+      isSuccess
+      ? Either<ImmutableList<string>, A>.Right(_value)
+      : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.ToString()));
+
+    public B fold<B>(B onValue, Fn<Exception, B> onException) =>
       isSuccess ? onValue : onException(_exception);
 
-    public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) => 
+    public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) =>
       isSuccess ? onValue(_value) : onException(_exception);
 
     public void voidFold(Act<A> onValue, Act<Exception> onException) {
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Try<B> map<B>(Fn<A, B> onValue) {
       if (isSuccess) {
         try { return new Try<B>(onValue(_value)); }
-        catch (Exception e) { return new Try<B>(e); } 
+        catch (Exception e) { return new Try<B>(e); }
       }
       return new Try<B>(_exception);
     }
@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return value;
     }
 
-    public override string ToString() => 
+    public override string ToString() =>
       isSuccess ? $"Success({_value})" : $"Error({_exception})";
   }
 

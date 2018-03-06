@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
       return request(
         $"{baseUrl}/api/0/projects/{projectData.organizationSlug}/{projectData.projectSlug}/keys/",
         Request.get, key, new Dictionary<string, string>()
-      ).mapRight(www => 
+      ).mapRight(www =>
         ((List<object>) Json.Deserialize(www.text)).
         Select(item => ClientKey.readFromJson((Dictionary<string, object>)item)).
         ToImmutableList()
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
     }
 
     public static Either<Error, WWW> request(
-      string url, Request request, ApiKey key, 
+      string url, Request request, ApiKey key,
       Dictionary<string, string> headers__WillBeMutated,
       int tryCount = 20
     ) {
@@ -159,11 +159,11 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
         this.projectSlug = projectSlug;
       }
     }
-    
+
     /**
 JSON representation:
       {
-        "secret": "https://public_part:secret_part@hostname/2", 
+        "secret": "https://public_part:secret_part@hostname/2",
         "public": "https://public_part@hostname/2"
       }
      **/
@@ -190,11 +190,11 @@ JSON representation:
     /**
 JSON representation:
 {
-      "dateCreated": "2016-04-06T07:50:18.730Z", 
-      "dsn": see DSN, 
-      "secret": "secret_part", 
-      "id": "string_id", 
-      "label": "test", 
+      "dateCreated": "2016-04-06T07:50:18.730Z",
+      "dsn": see DSN,
+      "secret": "secret_part",
+      "id": "string_id",
+      "label": "test",
       "public": "public_part"
 }
      **/
@@ -244,8 +244,8 @@ JSON representation:
       public static ClientKey readFromJson(Dictionary<string, object> json) {
         var dsn = DSN.readFromJson((Dictionary<string, object>) json["dsn"]);
         return new ClientKey(
-          id: (string) json["id"], 
-          name: (string) json["label"], 
+          id: (string) json["id"],
+          name: (string) json["label"],
           dsn:dsn
         );
       }

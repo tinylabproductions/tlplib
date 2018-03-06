@@ -8,9 +8,9 @@ namespace Smooth.Dispose {
 
 	/// <summary>
 	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
-	/// 
+	///
 	/// On iOS, this is a struct to avoid compute_class_bitmap errors.
-	/// 
+	///
 	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
 	/// </summary>
 	public struct Disposable<T> : IDisposable {
@@ -20,7 +20,7 @@ namespace Smooth.Dispose {
 		public static Disposable<T> Borrow(T value, Act<T> dispose) {
 			return new Disposable<T>(value, dispose);
 		}
-		
+
 		private readonly Act<T> dispose;
 
 		/// <summary>
@@ -32,14 +32,14 @@ namespace Smooth.Dispose {
 			this.value = value;
 			this.dispose = dispose;
 		}
-		
+
 		/// <summary>
 		/// Relinquishes ownership of the wrapper and disposes the wrapped value.
 		/// </summary>
 		public void Dispose() {
 			dispose(value);
 		}
-		
+
 		/// <summary>
 		/// Relinquishes ownership of the wrapper and adds it to the disposal queue.
 		/// </summary>
@@ -52,9 +52,9 @@ namespace Smooth.Dispose {
 
 	/// <summary>
 	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
-	/// 
+	///
 	/// On IOS, this is a value type to avoid compute_class_bitmap errors.
-	/// 
+	///
 	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
 	/// </summary>
 	public class Disposable<T> : IDisposable {
@@ -83,7 +83,7 @@ namespace Smooth.Dispose {
 		/// The wrapped value.
 		/// </summary>
 		public T value { get; private set; }
-		
+
 		private Disposable() {}
 
 		/// <summary>

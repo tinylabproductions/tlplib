@@ -54,9 +54,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
     public static readonly ImmutableList<Direction> DEFAULT_DIRECTION_SEQUENCE =
       ImmutableList.Create(
-        Direction.Left, Direction.Right, 
         Direction.Left, Direction.Right,
-        Direction.Left, Direction.Up, 
+        Direction.Left, Direction.Right,
+        Direction.Left, Direction.Up,
         Direction.Right, Direction.Down,
         Direction.Right, Direction.Up
       );
@@ -80,8 +80,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly ImmutableList<Direction> sequence;
 
       public DebugSequenceDirectionData(
-        string horizonalAxisName="Horizontal", 
-        string verticalAxisName="Vertical", 
+        string horizonalAxisName="Horizontal",
+        string verticalAxisName="Vertical",
         Duration timeframe=default(Duration),
         ImmutableList<Direction> sequence=null
       ) {
@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           var next = sequence[idx + 1];
           if (current == next) throw new ArgumentException(
             $"{nameof(DebugSequenceDirectionData)} sequence can't contain subsequent elements! " +
-            $"Found {current} at {idx} & {idx + 1}.", 
+            $"Found {current} at {idx} & {idx + 1}.",
             nameof(sequence)
           );
         }
@@ -105,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public static IObservable<Unit> registerDebugSequence(
       IDisposableTracker tracker,
-      DebugSequenceMouseData mouseData=null, 
+      DebugSequenceMouseData mouseData=null,
       Option<DebugSequenceDirectionData> directionDataOpt=default,
       DebugConsoleBinding binding=null
     ) {
@@ -114,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
 
-      var mouseObs = 
+      var mouseObs =
         new RegionClickObservable(mouseData.width, mouseData.height)
         .sequenceWithinTimeframe(tracker, mouseData.sequence, 3);
 
@@ -126,9 +126,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
             var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
             // Both are equal, can't decide.
             if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
-            return 
-              Math.Abs(horizontal) > Math.Abs(vertical) 
-              ? F.some(horizontal > 0 ? Direction.Right : Direction.Left) 
+            return
+              Math.Abs(horizontal) > Math.Abs(vertical)
+              ? F.some(horizontal > 0 ? Direction.Right : Direction.Left)
               : F.some(vertical > 0 ? Direction.Up : Direction.Down);
           }).changedValues();
 
@@ -155,7 +155,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return new Subscription(() => list.Remove(command));
     }
 
-    public DConsoleRegistrar registrarFor(string prefix) => 
+    public DConsoleRegistrar registrarFor(string prefix) =>
       new DConsoleRegistrar(this, prefix);
 
     public void registerHashSet<A>(
@@ -212,7 +212,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
       });
     }
-    
+
     static ImmutableList<ButtonBinding> showGroup(
       DebugConsoleBinding view, string groupName, IEnumerable<Command> commands
     ) {
@@ -316,7 +316,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public void registerNumeric<A>(
-      string name, Ref<A> a, Numeric<A> num, A step, 
+      string name, Ref<A> a, Numeric<A> num, A step,
       ImmutableList<A> quickSetValues = null
     ) {
       register($"{name}?", () => a.value);
@@ -329,7 +329,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public void registerNumeric<A>(
-      string name, Ref<A> a, Numeric<A> num, 
+      string name, Ref<A> a, Numeric<A> num,
       ImmutableList<A> quickSetValues = null
     ) =>
       registerNumeric(name, a, num, num.fromInt(1), quickSetValues);

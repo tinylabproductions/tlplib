@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         this.keys = keys;
       }
 
-      public override string ToString() => 
+      public override string ToString() =>
         $"{nameof(SentryAPI)}.{nameof(DSN)}[" +
         $"{nameof(reportingUrl)}: {reportingUrl}, " +
         $"{nameof(projectId)}: {projectId}, " +
@@ -110,7 +110,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         this.secretKey = secretKey;
       }
 
-      public override string ToString() => 
+      public override string ToString() =>
         $"{nameof(SentryAPI)}.{nameof(ApiKeys)}[" +
         $"{nameof(publicKey)}={publicKey}, " +
         $"{nameof(secretKey)}={secretKey}" +
@@ -159,8 +159,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public Option<IpAddress> ipAddress => uniqueIdentifier.thatValue;
 
       public UserInterface(
-        These<Id, IpAddress> uniqueIdentifier, 
-        Option<string> email = default(Option<string>), 
+        These<Id, IpAddress> uniqueIdentifier,
+        Option<string> email = default(Option<string>),
         Option<string> username = default(Option<string>),
         IDictionary<string, string> extras = null
       ) {
@@ -182,8 +182,8 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public readonly IDictionary<string, string> staticExtras;
 
       public SendOnErrorData(
-        ErrorReporter.AppInfo appInfo, ExtraData addExtraData, 
-        Option<UserInterface> userOpt, 
+        ErrorReporter.AppInfo appInfo, ExtraData addExtraData,
+        Option<UserInterface> userOpt,
         IDictionary<string, Tag> staticTags, IDictionary<string, string> staticExtras
       ) {
         this.appInfo = appInfo;
@@ -203,9 +203,9 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       {"App:InternetReachability", Tag.a(Application.internetReachability)},
       {"App:TargetFrameRate", Tag.a(Application.targetFrameRate)},
     };
-    
+
     /// <summary>Tags that will never change during runtime.</summary>
-    public static Dictionary<string, Tag> staticTags(ErrorReporter.AppInfo appInfo) => 
+    public static Dictionary<string, Tag> staticTags(ErrorReporter.AppInfo appInfo) =>
       new Dictionary<string, Tag> {
         // max tag name length = 32
         {"App:LevelCount", new Tag(s(SceneManager.sceneCountInBuildSettings))},
@@ -257,7 +257,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:SupportsRenderTextures", new Tag(s(SystemInfo.supportsRenderTextures))},
         {"SI:SupportsStencil", new Tag(s(SystemInfo.supportsStencil))},
         {"App:WebSecurityEnabled", new Tag(s(Application.webSecurityEnabled))},
-        {"App:WebSecurityHostUrl", new Tag(Application.webSecurityHostUrl)},   
+        {"App:WebSecurityHostUrl", new Tag(Application.webSecurityHostUrl)},
 #endif
       };
 
@@ -297,11 +297,15 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static IEnumerable<KeyValuePair<string, Tag>> convertTags(
       ImmutableArray<Tpl<string, string>> source
-    ) => source.Select(t => F.kv(t._1, new Tag(t._2)));
+    ) =>
+      // Sentry does not support empty tags.
+      source.Select(t => F.kv(t._1, new Tag(t._2.isEmpty() ? "-" : t._2)));
 
     public static IEnumerable<KeyValuePair<string, string>> convertExtras(
       ImmutableArray<Tpl<string, string>> source
-    ) => source.Select(t => F.kv(t._1, t._2));
+    ) =>
+      // Sentry does not support empty extras.
+      source.Select(t => F.kv(t._1, t._2.isEmpty() ? "-" : t._2));
   }
 
   public static class SentryRESTAPI {
@@ -389,14 +393,14 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       );
 
       // Beware of the order! Do not mutate static tags!
-      var tags = 
+      var tags =
         SentryAPI.dynamicTags()
         .addAll(staticTags)
         .addAll(SentryAPI.convertTags(data.entry.tags));
       extraData.addTagsToDictionary(tags);
 
       // Extra contextual data is limited to 4096 characters.
-      var extras = 
+      var extras =
         SentryAPI.dynamicExtras()
         .addAll(SentryAPI.convertExtras(data.entry.extras));
       extraData.addExtrasToDictionary(extras);
@@ -446,9 +450,9 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   public static class LogEventExts {
     /// <summary>
     /// An array of strings used to dictate the deduplication of this event.
-    /// A value of {{ default }} will be replaced with the built-in behavior, 
+    /// A value of {{ default }} will be replaced with the built-in behavior,
     /// thus allowing you to extend it, or completely replace it.
-    /// 
+    ///
     /// https://docs.sentry.io/clientdev/attributes/
     /// </summary>
     public static string[] toSentryFingerprint(this LogEntry e) =>

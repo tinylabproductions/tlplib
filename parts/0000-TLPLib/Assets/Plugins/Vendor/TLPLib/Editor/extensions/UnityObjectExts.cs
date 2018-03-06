@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
       this.guid = guid;
     }
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(EditorAssetInfo)}[" +
       $"{nameof(path)}: {path}, " +
       $"{nameof(guid)}: {guid}" +
@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
       this.assetInfo = assetInfo;
     }
 
-    public override string ToString() => 
+    public override string ToString() =>
       $"{nameof(EditorObjectInfo<A>)}[" +
       $"{nameof(obj)}: {obj}, " +
       $"{nameof(assetInfo)}: {assetInfo}" +

@@ -13,15 +13,18 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
         EditorGUILayout.Space();
         foreach (var data in group) {
           data.value.voidMatch(
-            str => EditorGUILayout.LabelField(data.name, str.value),
-            flt => EditorGUILayout.FloatField(data.name, flt.value),
-            obj => EditorGUILayout.ObjectField(data.name, obj.value, typeof(Object), allowSceneObjects: true)
+            stringValue: str => EditorGUILayout.LabelField(data.name, str.value),
+            floatValue: flt => EditorGUILayout.FloatField(data.name, flt.value),
+            objectValue: obj => EditorGUILayout.ObjectField(
+              data.name, obj.value, typeof(Object), allowSceneObjects: true
+            ),
+            actionValue: act => { if (GUILayout.Button(data.name)) act.value(); }
           );
         }
 
         first = false;
       }
-      
+
       // Update inspector every frame.
       Repaint();
     }

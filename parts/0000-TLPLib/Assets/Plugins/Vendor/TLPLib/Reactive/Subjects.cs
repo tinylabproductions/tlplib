@@ -22,9 +22,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     readonly List<A> events = new List<A>();
 
     public override ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, 
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       // ReSharper disable ExplicitCallerInfoArgument

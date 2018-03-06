@@ -4,38 +4,41 @@ using System.Threading;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace com.tinylabproductions.TLPLib.Threads {
-  /* Helper class to queue things from other threads to be ran on the main
-   * thread. */
-  public class OnMainThread {
+  /// <summary>
+  /// Helper class to queue things from other threads to be ran on the main thread.
+  /// </summary>
+  public static class OnMainThread {
     static readonly Queue<Action> actions = new Queue<Action>();
-    public static readonly Thread mainThread;
+    static readonly Thread mainThread;
+
+    public static bool isMainThread => Thread.CurrentThread == mainThread;
 
     /* Initialization. */
     static OnMainThread() {
       mainThread = Thread.CurrentThread;
+      if (Application.isPlaying) {
+        // In players isPlaying is always true.
+        ASync.EveryFrame(onUpdate);
+      }
 #if UNITY_EDITOR
-      if (Application.isPlaying) ASync.EveryFrame(onUpdate);
-      else EditorApplication.update += () => onUpdate();
-#else
-      ASync.EveryFrame(onUpdate);
+      else {
+        UnityEditor.EditorApplication.update += () => onUpdate();
+      }
 #endif
     }
 
 #if UNITY_EDITOR
-    [InitializeOnLoadMethod]
+    [UnityEditor.InitializeOnLoadMethod]
 #endif
     [RuntimeInitializeOnLoadMethod]
     // We can't add these attributes to constructor
-    static void init() { }
+    static void init() {}
 
     /* Run the given action in the main thread. */
     public static void run(Action action, bool runNowIfOnMainThread=true) {
-      if (Thread.CurrentThread == mainThread && runNowIfOnMainThread) action();
+      if (isMainThread && runNowIfOnMainThread) action();
       else lock (actions) { actions.Enqueue(action); }
     }
 

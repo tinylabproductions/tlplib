@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.Swiping {
   public enum SwipeDirection : byte {
-    Left, Right, Up, Down  
+    Left, Right, Up, Down
   }
 
   public class SwipeMonoBehaviour : MonoBehaviour, IMB_Awake, IBeginDragHandler, IEndDragHandler, IDragHandler {
@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
 
     public event Action<Vector2> swipeEnded;
     public event Action swipedLeft, swipedRigth, swipedUp, swipedDown;
-    
+
     Vector2 dragBeginPos;
     bool dragFinished;
     Option<float> _eventOnThresholdSqr;
@@ -87,15 +87,15 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
     }
 
     public static SwipeDirection getSwipeDirection(Vector2 delta) =>
-      (Mathf.Abs(delta.x) > Mathf.Abs(delta.y)) 
-        ? delta.x > 0 
-          ? SwipeDirection.Right 
+      (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+        ? delta.x > 0
+          ? SwipeDirection.Right
           : SwipeDirection.Left
-        : delta.y > 0 
-          ? SwipeDirection.Up 
+        : delta.y > 0
+          ? SwipeDirection.Up
           : SwipeDirection.Down;
 
-    static bool mayDrag(PointerEventData eventData) => 
+    static bool mayDrag(PointerEventData eventData) =>
       eventData.button == PointerEventData.InputButton.Left;
   }
 }

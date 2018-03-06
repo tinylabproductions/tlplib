@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     float _multiplier;
 
     ToggleableMultiplier(
-      float multiplier, RandomList<ToggleableMultiplier> list, 
+      float multiplier, RandomList<ToggleableMultiplier> list,
       IRxRef<float> totalMultiplier, bool active
     ) {
       _multiplier = multiplier;

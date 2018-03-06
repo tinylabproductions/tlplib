@@ -16,11 +16,11 @@ namespace com.tinylabproductions.TLPLib.Components.dispose {
     public void Dispose() => tracker.Dispose();
     public void track(
       IDisposable a,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) => tracker.track(
-      a, 
+      a,
       // ReSharper disable ExplicitCallerInfoArgument
       callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
       // ReSharper restore ExplicitCallerInfoArgument

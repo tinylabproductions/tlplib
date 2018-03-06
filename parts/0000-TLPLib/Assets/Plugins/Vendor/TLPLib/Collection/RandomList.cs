@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Collection {
-  /* A list which has random order inside. 
-   * 
+  /* A list which has random order inside.
+   *
    * Insertions: O(1), unless buffer expansion is needed.
    * Removals: O(1).
    * Traversals: O(n).

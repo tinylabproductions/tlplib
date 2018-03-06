@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public Object folder;
 
     [SerializeField, HideInInspector] string _folderName;
-    
+
     public string folderName { get {
       prepareForRuntime();
       return _folderName;

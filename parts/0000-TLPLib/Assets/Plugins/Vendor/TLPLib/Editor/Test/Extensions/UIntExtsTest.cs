@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public class UIntExtsTestToIntClamped {
     [Test]
-    public void WhenExceeds() => 
+    public void WhenExceeds() =>
       (int.MaxValue + 1u).toIntClamped().shouldEqual(int.MaxValue);
 
     [Test]

@@ -1,6 +1,6 @@
 ﻿namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UIntExts {
-    public static int toIntClamped(this uint a) => 
+    public static int toIntClamped(this uint a) =>
       a > int.MaxValue ? int.MaxValue : (int) a;
 
     public static uint addClamped(this uint a, int b) {

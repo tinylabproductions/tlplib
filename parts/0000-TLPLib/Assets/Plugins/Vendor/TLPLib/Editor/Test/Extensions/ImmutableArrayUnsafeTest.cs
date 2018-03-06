@@ -8,8 +8,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public void NoGarbageCreateAndGetShouldWork() {
       int[] arr = {1, 2, 3};
       var iArr = ImmutableArrayUnsafe.createByMove(arr);
-      iArr.shouldEqual(
-        ImmutableArray.Create(arr), 
+      iArr.shouldEqualEnum(
+        ImmutableArray.Create(arr),
         "it should be the same as created via a safe way"
       );
       var arr2 = iArr.internalArray();

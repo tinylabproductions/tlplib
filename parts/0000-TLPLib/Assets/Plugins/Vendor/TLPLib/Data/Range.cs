@@ -31,12 +31,13 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public int from => _from;
     public int to => _to;
-    
+
     public Range(int from, int to) {
       _from = from;
       _to = to;
     }
 
+    public bool inRange(int v) =>  from <= v && v <= to; 
     public int random => Random.Range(from, to + 1);
     public int this[Percentage p] => from + (int) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
@@ -78,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     object IEnumerator.Current => Current;
     public void Dispose() {}
   }
-  
+
   [Serializable]
   public struct URange : IEnumerable<uint> {
     #region Unity Serialized Fields

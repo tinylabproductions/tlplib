@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
+using Application = UnityEngine.Application;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
   public class PackageManager : Binding {
@@ -32,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
 
     public PackageManager(AndroidJavaObject java) : base(java) {}
 
-    public bool hasSystemFeature(string feature) => 
+    public bool hasSystemFeature(string feature) =>
       Application.platform != RuntimePlatform.Android || java.Call<bool>("hasSystemFeature", feature);
 
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getPackageInfo(java.lang.String,%20int)
@@ -66,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       var jList = new List(java.cjo("getInstalledPackages", (int) flags));
       return jList.Select(jo => new PackageInfo(jo)).ToImmutableList();
     }
-    
+
     // https://developer.android.com/reference/android/content/pm/PackageManager.html#getLaunchIntentForPackage(java.lang.String)
     public Option<Intent> getLaunchIntentForPackage(string bundleIdentifier) =>
       F.opt(java.cjo("getLaunchIntentForPackage", bundleIdentifier)).map(_ => new Intent(_));
@@ -74,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
     /// <summary>
     /// Convenience method for launching an app by bundle identifier.
     /// </summary>
-    public Option<ErrorMsg> openApp(string bundleIdentifier, Context context = null) => 
+    public Option<ErrorMsg> openApp(string bundleIdentifier, Context context = null) =>
       getLaunchIntentForPackage(bundleIdentifier).fold(
         () => F.some(new ErrorMsg($"Unknown bundle identifier '{bundleIdentifier}'")),
         intent => (context ?? AndroidActivity.current).startActivity(intent).fold(

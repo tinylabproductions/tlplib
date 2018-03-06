@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     readonly IPrefValueBackend backend;
     readonly IPrefValueWriter<A> writer;
     readonly IRxRef<A> rxRef;
-    
+
     // ReSharper disable once NotAccessedField.Local
     // To keep the subscription alive.
     readonly ISubscription persistSubscription;
@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public Try<Unit> clear() {
       backend.delete(key);
       return F.scs(F.unit);
-    } 
+    }
 
     #endregion
 
@@ -72,12 +72,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     public int subscribers => rxRef.subscribers;
     public ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
-    ) => 
+    ) =>
       rxRef.subscribe(
-        tracker: tracker, onEvent: onEvent, 
+        tracker: tracker, onEvent: onEvent,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
@@ -85,12 +85,12 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) =>
       rxRef.subscribeWithoutEmit(
-        tracker: tracker, onEvent: onEvent, 
+        tracker: tracker, onEvent: onEvent,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument

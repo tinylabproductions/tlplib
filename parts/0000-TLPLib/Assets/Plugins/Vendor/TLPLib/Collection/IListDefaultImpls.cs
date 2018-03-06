@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
         c[idx] = item;
       }
     }
-    
+
     public static void copyTo<C, A>(
       C c, A[] array, int targetStartIndex, int srcCopyFrom = 0, int srcCopyCount = -1
     )
@@ -49,17 +49,17 @@ namespace com.tinylabproductions.TLPLib.Collection {
         throw new ArgumentNullException(nameof(array), "array is null");
       if (targetStartIndex < 0)
         throw new ArgumentOutOfRangeException(
-          nameof(targetStartIndex), 
+          nameof(targetStartIndex),
           $"array index ({targetStartIndex}) is < 0"
         );
       if (srcCopyFrom < 0)
         throw new ArgumentOutOfRangeException(
-          nameof(srcCopyFrom), 
+          nameof(srcCopyFrom),
           $"array index ({srcCopyFrom}) is < 0"
         );
       if (srcCopyFrom >= c.Count)
         throw new ArgumentOutOfRangeException(
-          nameof(srcCopyFrom), 
+          nameof(srcCopyFrom),
           $"array index ({srcCopyFrom}) is > collection count ({c.Count})"
         );
       if (srcCopyCount < 0) srcCopyCount = c.Count - srcCopyFrom;
@@ -71,7 +71,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
       for (
         int srcIdx = srcCopyFrom, targetIdx = targetStartIndex;
-        targetIdx < targetEndIndex; 
+        targetIdx < targetEndIndex;
         srcIdx++, targetIdx++
       ) {
         array[targetIdx] = c[srcIdx];

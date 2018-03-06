@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static readonly Encoding defaultEncoding = Encoding.UTF8;
 
-    public static readonly BiMapper<byte[], string> utf8ByteArrString = 
+    public static readonly BiMapper<byte[], string> utf8ByteArrString =
       byteArrString(Encoding.UTF8);
 
     public static BiMapper<byte[], string> byteArrString(Encoding encoding = null) {

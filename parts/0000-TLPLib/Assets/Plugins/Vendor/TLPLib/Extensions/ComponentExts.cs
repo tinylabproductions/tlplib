@@ -3,7 +3,7 @@
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ComponentExts {
     public static A clone<A>(
-      this A self, Vector3? position=null, Quaternion? rotation=null, Transform parent=null, 
+      this A self, Vector3? position=null, Quaternion? rotation=null, Transform parent=null,
       int? siblingIndex=null, bool? setActive=null
     ) where A : Component {
 

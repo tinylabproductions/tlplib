@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       }
 
       describe(() => {
-        it[$"should not generate values out of [{min}, {max}]"] = () => 
+        it[$"should not generate values out of [{min}, {max}]"] = () =>
           seen.Keys.shouldNotContain(a => a.lt(min) || a.gt(max), a => $"value {a} is not in range");
 
         it["should generate values uniformly"] = () => {
@@ -77,12 +77,12 @@ namespace com.tinylabproductions.TLPLib.Data {
         Option<ImmutableHashSet<float>>.None, iterations: 100000,
         /**
          * Imagine float having 3 discrete values.
-         * 
+         *
          *   |       |       |
          * 0 |---+---+---+---| 1
          *   |       |       |
          *   A       B       C
-         * 
+         *
          * If you pick a point randomly between 0 and 1 and move towards nearest value, you
          * would get A 1/4th of the time, B 2/4th of the time and C 1/4th of the time.
          */

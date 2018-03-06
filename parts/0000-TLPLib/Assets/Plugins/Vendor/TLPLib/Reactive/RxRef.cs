@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// </summary>
   public class RxRef<A> : Observable<A>, IRxRef<A> {
     readonly IEqualityComparer<A> comparer;
-    
+
     A _value;
     public A value {
       get => _value;
@@ -35,12 +35,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public override ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       var subscription = base.subscribe(
-        tracker, onEvent, 
+        tracker, onEvent,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
@@ -51,12 +51,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) =>
       base.subscribe(
-        tracker, onEvent, 
+        tracker, onEvent,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument

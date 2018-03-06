@@ -5,12 +5,13 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
-    static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) => 
+    static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) =>
       go.GetComponent<ASyncHelperBehaviourEmpty>()
       ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
 
@@ -18,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static ASyncHelperBehaviour behaviour { get {
       if (
-#if !UNITY_EDITOR        
+#if !UNITY_EDITOR
         // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator
         // which calls into native code to check whether objects are alive (which is a lot slower than
         // managed reference check).
@@ -26,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         // The only case where this should be uninitialized is until we create a reference on first access
         // in managed code.
         //
-        // ReSharper disable once RedundantCast.0        
+        // ReSharper disable once RedundantCast.0
         (object)_behaviour == null
 #else
         // However...
@@ -56,25 +57,30 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       new UnityCoroutine(behaviour, coroutine);
 
     public static Coroutine WithDelay(
-      float seconds, Action action, 
+      float seconds, Action action,
       MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
     ) => WithDelay(Duration.fromSeconds(seconds), action, behaviour, timeScale);
 
     public static Coroutine WithDelay(
-      Duration duration, Action action, 
-      MonoBehaviour behaviour=null, TimeScale timeScale=TimeScale.Unity
+      Duration duration, Action action,
+      MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
+    ) => WithDelay(duration, action, timeScale.asContext(), behaviour);
+
+    public static Coroutine WithDelay(
+      Duration duration, Action action, ITimeContext timeContext,
+      MonoBehaviour behaviour = null
     ) {
       behaviour = behaviour ?? ASync.behaviour;
-      var enumerator = WithDelayEnumerator(duration, action, timeScale);
+      var enumerator = WithDelayEnumerator(duration, action, timeContext);
       return new UnityCoroutine(behaviour, enumerator);
     }
 
-    public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) => 
+    public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) =>
       Threads.OnMainThread.run(action, runNowIfOnMainThread);
 
     public static Coroutine NextFrame(Action action) => NextFrame(behaviour, action);
 
-    public static Coroutine NextFrame(GameObject gameObject, Action action) => 
+    public static Coroutine NextFrame(GameObject gameObject, Action action) =>
       NextFrame(coroutineHelper(gameObject), action);
 
     public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
@@ -124,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) => EveryXSeconds(seconds, behaviour, f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) => 
+    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) =>
       EveryXSeconds(seconds, coroutineHelper(go), f);
 
     /* Do thing every X seconds until f returns false. */
@@ -204,33 +210,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static IEnumerator WithDelayEnumerator(
-      Duration duration, Action action, TimeScale timeScale=TimeScale.Unity
+      Duration duration, Action action, ITimeContext timeContext
     ) {
-      var seconds = duration.seconds;
-      Option<object> yieldInstruction;
-      switch (timeScale) {
-        case TimeScale.Unity:
-          yieldInstruction = F.some<object>(new WaitForSeconds(seconds));
-          break;
-        case TimeScale.Realtime:
-          yieldInstruction = F.some<object>(new WaitForSecondsRealtime(seconds));
-          break;
-        case TimeScale.FixedTime:
-          yieldInstruction = Option<object>.None;
-          break;
-        case TimeScale.UnscaledTime:
-          yieldInstruction = F.some<object>(new WaitForSecondsUnscaled(seconds));
-          break;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(timeScale), timeScale, null);
+      if (timeContext == TimeContext.playMode) {
+        // WaitForSeconds is optimized Unity in native code
+        // waiters that extend CustomYieldInstruction (eg. WaitForSecondsRealtime) call C# code every frame,
+        // so we don't need special handling for them
+        yield return new WaitForSeconds(duration.seconds);
       }
-
-      if (yieldInstruction.isSome)
-        yield return yieldInstruction.get;
       else {
-        var waiter = timeScale == TimeScale.FixedTime ? new WaitForFixedUpdate() : null;
-        var waitTime = timeScale.now() + seconds;
-        while (waitTime > timeScale.now()) yield return waiter;
+        var waiter = timeContext == TimeContext.fixedTime ? CoroutineUtils.waitFixed : null;
+        var waitTime = timeContext.passedSinceStartup + duration;
+        while (waitTime > timeContext.passedSinceStartup) yield return waiter;
       }
       action();
     }
@@ -279,6 +270,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         rxRef.value = F.some(b);
         inAsyncSeq(e, rxRef, asyncAction);
       });
+    }
+
+    /// <summary>
+    /// Split running action over collection over N chunks separated by a given yield instruction.
+    /// </summary>
+    [PublicAPI] public static IEnumerator overNYieldInstructions<A>(
+      ICollection<A> collection, int n, Action<A, int> onA, YieldInstruction instruction = null
+    ) {
+      var chunkSize = collection.Count / n;
+      var idx = 0;
+      foreach (var a in collection) {
+        onA(a, idx);
+        if (idx % chunkSize == 0) yield return instruction;
+        idx++;
+      }
     }
   }
 

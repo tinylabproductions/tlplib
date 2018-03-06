@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
 
       var extracted = extract();
       var sortingLayerMatches =
-        extracted.layerId == sortingLayer.sortingLayer 
+        extracted.layerId == sortingLayer.sortingLayer
         && extracted.order == sortingLayer.orderInLayer;
 
       if (!sortingLayerMatches) {

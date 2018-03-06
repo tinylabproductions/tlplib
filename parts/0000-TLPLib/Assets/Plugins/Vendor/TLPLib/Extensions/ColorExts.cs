@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         color.a * a
       );
     }
-    
+
     public static Color with(
       this Color color, float r = -1, float g = -1, float b = -1, float a = -1
     ) {
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Color withAlpha(this Color color, float alpha) => color.with(a: alpha);
 
     public static Color32 with32(
-      this Color32 color, Option<byte> r = default, Option<byte> g = default, Option<byte> b = default, 
+      this Color32 color, Option<byte> r = default, Option<byte> g = default, Option<byte> b = default,
       Option<byte> a = default
     ) {
       Option.ensureValue(ref r);
@@ -44,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
-    public static Color32 with32Alpha(this Color32 color, byte alpha) => 
+    public static Color32 with32Alpha(this Color32 color, byte alpha) =>
       color.with32(a: F.some(alpha));
 
     public static Color modifyBrightness(this Color rgb, Fn<float, float> f) {
@@ -163,7 +163,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return white;
     }
 
-    public static string toHex(this Color32 color) => 
+    public static string toHex(this Color32 color) =>
       color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
   }
 }

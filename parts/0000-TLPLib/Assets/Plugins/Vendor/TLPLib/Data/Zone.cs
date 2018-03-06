@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     /**
      * Given a position returns how much "in the zone" we are in. 0 means out of zone, 1 means at the point.
-     * 
+     *
      * This function ignores movement perpendicular to direction vector.
      **/
     public float percentage(Vector2 position) {

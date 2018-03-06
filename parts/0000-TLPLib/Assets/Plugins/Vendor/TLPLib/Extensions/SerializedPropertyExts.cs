@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         var current = currentOpt.__unsafeGetValue;
         var currentFieldName = path[idx];
         if (currentSp.isArray) {
-          // if we have an array named myArray, 
+          // if we have an array named myArray,
           // then its first element will be serialized as myArray.Array.data[0]
           idx++;
           var nextFieldName = path[idx];

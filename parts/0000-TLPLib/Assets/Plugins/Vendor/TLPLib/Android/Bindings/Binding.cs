@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings {
-  public abstract class Binding : IEquatable<Binding> {
+  public abstract class Binding : IEquatable<Binding>, IDisposable {
     public readonly AndroidJavaObject java;
 
     protected Binding(AndroidJavaObject java) { this.java = java; }
@@ -11,6 +11,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings {
     public override string ToString() => java.Call<string>("toString");
     public override int GetHashCode() => java.Call<int>("hashCode");
     public override bool Equals(object obj) => Equals(obj as Binding);
+    public void Dispose() => java.Dispose();
 
     public bool Equals(Binding other) {
       if (ReferenceEquals(null, other)) return false;

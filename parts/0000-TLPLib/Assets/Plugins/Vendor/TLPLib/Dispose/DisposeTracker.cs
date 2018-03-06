@@ -16,15 +16,15 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
     public string asString() => $"{callerMemberName} @ {callerFilePath}:{callerLineNumber}";
   }
-  
+
   public interface IDisposableTracker : IDisposable {
     void track(
       IDisposable a,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     );
-    
+
     int trackedCount { get; }
     IEnumerable<TrackedDisposable> trackedDisposables { get; }
   }
@@ -36,8 +36,8 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
     public void track(
       IDisposable a,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) => list.Add(new TrackedDisposable(
       a, callerMemberName, callerFilePath, callerLineNumber
@@ -54,16 +54,16 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
   /// <summary>
   /// Used when we are sure that we never want to clean the subscription automatically
-  /// (for example in Observable operations). 
+  /// (for example in Observable operations).
   /// </summary>
   public class NoOpDisposableTracker : IDisposableTracker {
     public static readonly IDisposableTracker instance = new NoOpDisposableTracker();
     NoOpDisposableTracker() {}
-    
+
     public void track(
       IDisposable a,
-      string callerMemberName, 
-      string callerFilePath, 
+      string callerMemberName,
+      string callerFilePath,
       int callerLineNumber
     ) {}
 
@@ -74,8 +74,8 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
   /// <summary>
   /// Tracker that allows you to register a subscription to be kept forever.
-  /// 
-  /// This should only be used for things that should never go out 
+  ///
+  /// This should only be used for things that should never go out
   /// </summary>
   public class NeverDisposeDisposableTracker : IDisposableTracker {
     public static readonly IDisposableTracker instance = new NeverDisposeDisposableTracker();
@@ -83,7 +83,7 @@ namespace com.tinylabproductions.TLPLib.dispose {
     readonly List<TrackedDisposable> list = new List<TrackedDisposable>();
     public int trackedCount => list.Count;
     public IEnumerable<TrackedDisposable> trackedDisposables => list;
-    
+
     NeverDisposeDisposableTracker() {
 #if UNITY_EDITOR
       var go = new UnityEngine.GameObject(nameof(NeverDisposeDisposableTracker));
@@ -96,8 +96,8 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
     public void track(
       IDisposable a,
-      [CallerMemberName] string callerMemberName = "", 
-      [CallerFilePath] string callerFilePath = "", 
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) => list.Add(new TrackedDisposable(a, callerMemberName, callerFilePath, callerLineNumber));
   }

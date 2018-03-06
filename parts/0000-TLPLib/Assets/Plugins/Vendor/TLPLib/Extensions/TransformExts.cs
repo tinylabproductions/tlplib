@@ -19,8 +19,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void setPosition(
       this Transform t,
-      Option<float> x = default(Option<float>), 
-      Option<float> y = default(Option<float>), 
+      Option<float> x = default(Option<float>),
+      Option<float> y = default(Option<float>),
       Option<float> z = default(Option<float>)
     ) {
       t.position = t.position.with3(x, y, z);
@@ -28,8 +28,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void setScale(
       this Transform t,
-      Option<float> x = default(Option<float>), 
-      Option<float> y = default(Option<float>), 
+      Option<float> x = default(Option<float>),
+      Option<float> y = default(Option<float>),
       Option<float> z = default(Option<float>)
     ) {
       t.localScale = t.localScale.with3(x, y, z);
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    public static A addChild<A>(this Transform self, A child) 
+    public static A addChild<A>(this Transform self, A child)
     where A : Component {
       child.transform.parent = self;
       return child;

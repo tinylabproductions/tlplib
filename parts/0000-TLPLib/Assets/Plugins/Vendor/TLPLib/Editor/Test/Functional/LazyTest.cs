@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
 
     [Test]
-    public void ItShouldHaveTheSameValueAsFuture() => 
+    public void ItShouldHaveTheSameValueAsFuture() =>
       create().asFuture().value.shouldBeSome(value);
 
     [Test]
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class LazySpecification : ImplicitSpecification {
     class Base {}
     class Child : Base {}
-    
+
     [Test]
     public void upcast() => describe(() => {
       var obj = new Child();
@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       when["#" + nameof(lazy.value.onComplete)] = () => {
         var result = @let(Option<Base>.None);
         beforeEach += () => upcasted.value.onComplete(b => result.value = b.some());
-        
+
         it["should transmit non-completion"] = () => result.value.shouldBeNone();
         it["should transmit completion"] = () => {
           lazy.value.get.forSideEffects();

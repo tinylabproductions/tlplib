@@ -5,24 +5,24 @@ using System.Collections.Immutable;
 namespace com.tinylabproductions.TLPLib.Functional {
   // Non-generated methods for validation.
   public static class Either_Validation2 {
-    public static Either<ImmutableList<A>, B> validationSuccess<A, B>(this B b) => 
+    public static Either<ImmutableList<A>, B> validationSuccess<A, B>(this B b) =>
       Either<ImmutableList<A>, B>.Right(b);
 
-    public static Either<ImmutableList<string>, A> stringValidationSuccess<A>(this A b) => 
+    public static Either<ImmutableList<string>, A> stringValidationSuccess<A>(this A b) =>
       b.validationSuccess<string, A>();
 
     public static Either<ImmutableList<A>, B> asValidationErrors<A, B>(
       this ImmutableList<A> errors, B b
     ) =>
-      errors.IsEmpty 
-      ? Either<ImmutableList<A>, B>.Right(b) 
+      errors.IsEmpty
+      ? Either<ImmutableList<A>, B>.Right(b)
       : Either<ImmutableList<A>, B>.Left(errors);
 
     public static Either<ImmutableList<A>, B> asValidationErrors<A, B>(
       this ImmutableList<A> errors, Fn<B> b
     ) =>
-      errors.IsEmpty 
-      ? Either<ImmutableList<A>, B>.Right(b()) 
+      errors.IsEmpty
+      ? Either<ImmutableList<A>, B>.Right(b())
       : Either<ImmutableList<A>, B>.Left(errors);
 
     /// <summary>

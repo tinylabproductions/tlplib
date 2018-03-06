@@ -16,12 +16,12 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     [UsedImplicitly, MenuItem("Assets/TLP/Code Processor/Compiler Warnings/Disable")]
     static void removePragmas() => enablePragmas(true);
-    
+
     static void enablePragmas(bool addPragma) {
       selectedPath.voidFold(
         () => EditorUtility.DisplayDialog(
           "Error",
-          "Not a valid path.\nYou shouldn't do this in the project window's file tree, use the right panel.", 
+          "Not a valid path.\nYou shouldn't do this in the project window's file tree, use the right panel.",
           "OK"
         ),
         rootPath => {
@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       );
     }
 
-    static Option<PathStr> selectedPath => 
+    static Option<PathStr> selectedPath =>
       AssetDatabase.GetAssetPath(Selection.activeObject).nonEmptyOpt().map(PathStr.a);
 
     static void processFiles(IEnumerable<PathStr> paths, bool addPragma) {
@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
           $"Not a '*.{fileExt}' file.",
           () => ImmutableList.Create(new PathStr(rootPath.path))
         );
-      var paths = 
+      var paths =
         Directory.GetFiles(rootPath, fileExt, SearchOption.AllDirectories)
         .Select(PathStr.a).ToImmutableList();
       return (paths.Count > 0).either($"No '*.{fileExt}' files in directory.", () => paths);

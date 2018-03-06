@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
@@ -20,7 +21,7 @@ using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator
 #pragma warning disable 169
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public class ObjectValidatorTest {
+  public class ObjectValidatorTest : ImplicitSpecification {
     class Component1 : MonoBehaviour { }
     class Component2 : MonoBehaviour { }
     class Component3 : MonoBehaviour { }
@@ -78,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     [Serializable]
     public struct InnerNotNull {
-      [NotNull] public GameObject field;  
+      [NotNull] public GameObject field;
     }
 
     class NullReferencePublicField : MonoBehaviour {
@@ -125,7 +126,41 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public string field;
     }
 
+    class OnObjectValidateThrowException : MonoBehaviour, OnObjectValidate {
+      public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) { throw new Exception("I'm broken"); }
+    }
+
+    class OnObjectValidateThrowLazyException : MonoBehaviour, OnObjectValidate {
+      public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+        yield return new ErrorMsg("test1");
+        throw new Exception("I'm broken");
+      }
+    }
+
+    class OnObjectValidateReturnsNull : MonoBehaviour, OnObjectValidate {
+      public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) => null;
+    }
+
     #endregion
+
+    [Test]
+    public void customObjectValidator() => describe(() => {
+      when["method throws exception"] = () => {
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowException>(
+          ErrorType.CustomValidationException
+        );
+      };
+      when["method return null"] = () => {
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateReturnsNull>(
+          ErrorType.CustomValidationException
+        );
+      };
+      when["method throws exception in lazy evaluation"] = () => {
+        it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowLazyException>(
+          ErrorType.CustomValidationException
+        );
+      };
+    });
 
     #region Missing References
 
@@ -146,7 +181,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       errors.shouldHave(ErrorType.MissingComponent);
     }
 
-    [Test] public void WhenMissingReference() => 
+    [Test] public void WhenMissingReference() =>
       shouldFindErrors<PublicField>(
         ErrorType.MissingReference,
         a => {
@@ -155,12 +190,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       );
 
-    [Test] public void WhenReferenceNotMissing() => 
+    [Test] public void WhenReferenceNotMissing() =>
       shouldNotFindErrors<PublicField>(a => {
         a.field = new GameObject();
       });
 
-    [Test] public void WhenMissingReferenceInner() => 
+    [Test] public void WhenMissingReferenceInner() =>
       shouldFindErrors<NullReferencePublicField>(
         ErrorType.MissingReference,
         a => {
@@ -169,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       );
 
-    [Test] public void WhenReferenceNotMissingInner() => 
+    [Test] public void WhenReferenceNotMissingInner() =>
       shouldNotFindErrors<NullReferencePublicField>(a => {
         a.field.field = new GameObject();
       });
@@ -178,27 +213,27 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Public/Serialized Field
 
-    [Test] public void WhenNotNullPublicField() 
+    [Test] public void WhenNotNullPublicField()
       => shouldFindErrors<NotNullPublicField>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullPublicFieldSet() => 
+    [Test] public void WhenNotNullPublicFieldSet() =>
       shouldNotFindErrors<NotNullPublicField>(a => {
         a.field = new GameObject();
       });
 
-    [Test] public void WhenNotNullSerializedField() 
+    [Test] public void WhenNotNullSerializedField()
       => shouldFindErrors<NotNullSerializedField>(ErrorType.NullReference);
 
-    [Test] public void WhenPublicFieldExtended() 
+    [Test] public void WhenPublicFieldExtended()
       => shouldFindErrors<PublicFieldExtended>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullPublicFieldExtended() 
+    [Test] public void WhenNotNullPublicFieldExtended()
       => shouldFindErrors<NotNullPublicFieldExtended>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullSerializedFieldExtended() 
+    [Test] public void WhenNotNullSerializedFieldExtended()
       => shouldFindErrors<NotNullSerializedFieldExtended>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullPublicFieldObjectSet() => 
+    [Test] public void WhenNotNullPublicFieldObjectSet() =>
       shouldFindErrors<NotNullPublicFieldObject>(
         ErrorType.NullReference,
         a => {
@@ -206,7 +241,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       );
 
-    [Test] public void WhenNotNullSerializedFieldSet() => 
+    [Test] public void WhenNotNullSerializedFieldSet() =>
       shouldNotFindErrors<NotNullSerializedField>(a => {
         a.setField(new GameObject());
       });
@@ -215,18 +250,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #region Array/List
 
-    [Test] public void WhenArrayWithNulls() => 
+    [Test] public void WhenArrayWithNulls() =>
       shouldNotFindErrors<ArrayWithNulls>(
         a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
       );
 
-    [Test] public void WhenNotNullArray() => 
+    [Test] public void WhenNotNullArray() =>
       shouldFindErrors<NotNullArray>(
         ErrorType.NullReference,
         a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
       );
 
-    [Test] public void WhenReferenceListEmpty() => 
+    [Test] public void WhenReferenceListEmpty() =>
       shouldFindErrors<ListNotEmpty>(
         ErrorType.EmptyCollection,
         a => {
@@ -234,7 +269,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       );
 
-    [Test] public void WhenReferenceListNotEmpty() => 
+    [Test] public void WhenReferenceListNotEmpty() =>
       shouldNotFindErrors<ListNotEmpty>(
         a => {
           var inner = new InnerNotNull { field = new GameObject() };
@@ -242,7 +277,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       );
 
-    [Test] public void WhenNullReferenceList() => 
+    [Test] public void WhenNullReferenceList() =>
       shouldFindErrors<NullReferenceList>(
         ErrorType.NullReference,
         a => {
@@ -250,7 +285,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       );
 
-    [Test] public void WhenNullReferenceListSet() => 
+    [Test] public void WhenNullReferenceListSet() =>
       shouldNotFindErrors<NullReferenceList>(
         a => {
           var inner = new InnerNotNull {field = new GameObject()};
@@ -262,45 +297,45 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     [Test] public void WhenNonSerializedFieldIsNotSet() => shouldNotFindErrors<NonSerializedField>();
 
-    [Test] public void WhenNonSerializedFieldIsSet() => 
+    [Test] public void WhenNonSerializedFieldIsSet() =>
       shouldNotFindErrors<NonSerializedField>(a => {
         a.setField(new GameObject());
       });
 
-    [Test] public void WhenNullInsideMonoBehaviorPublicField() => 
+    [Test] public void WhenNullInsideMonoBehaviorPublicField() =>
       shouldFindErrors<NullReferencePublicField>(
         errorType: ErrorType.NullReference
       );
 
-    [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() => 
+    [Test] public void WhenNullInsideMonoBehaviorPublicFieldSet() =>
       shouldNotFindErrors<NullReferencePublicField>(a => {
         a.field = new InnerNotNull {field = new GameObject()};
       });
 
-    [Test] public void WhenNullInsideMonoBehaviorSerializedField() => 
+    [Test] public void WhenNullInsideMonoBehaviorSerializedField() =>
       shouldFindErrors<NullReferenceSerializedField>(
         ErrorType.NullReference
       );
 
-    [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() => 
+    [Test] public void WhenNullInsideMonoBehaviorSerializedFieldSet() =>
       shouldNotFindErrors<NullReferenceSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
 
-    [Test] public void WhenNotNullProtectedSerializedField() 
+    [Test] public void WhenNotNullProtectedSerializedField()
       => shouldFindErrors<NotNullProtectedSerializedField>(ErrorType.NullReference);
 
-    [Test] public void WhenNotNullProtectedSerializedFieldSet() => 
+    [Test] public void WhenNotNullProtectedSerializedFieldSet() =>
       shouldNotFindErrors<NotNullProtectedSerializedField>(a => {
         a.setField(new GameObject());
       });
 
-    [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedField() => 
+    [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedField() =>
       shouldFindErrors<NullReferenceProtectedSerializedField>(
         ErrorType.NullReference
       );
 
-    [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedFieldSet() => 
+    [Test] public void WhenNullInsideMonoBehaviorProtectedSerializedFieldSet() =>
       shouldNotFindErrors<NullReferenceProtectedSerializedField>(a => {
         a.setField(new InnerNotNull {field = new GameObject()});
       });
@@ -315,7 +350,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         a => { a.field = ""; }
       );
 
-    [Test] public void WhenGoodTextFieldValue() => 
+    [Test] public void WhenGoodTextFieldValue() =>
       shouldNotFindErrors<TextFieldTypeTag>(a => {
         a.field = UnityEditorInternal.InternalEditorUtility.tags.First();
       });
@@ -376,7 +411,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       errors.shouldHave(errorType);
     }
 
-    [Test] public void WhenUnityEventInvalid() => 
+    [Test] public void WhenUnityEventInvalid() =>
       testPrefab("TestUnityEventInvalid.asset", ErrorType.UnityEventInvalid);
 
     [Test] public void WhenUnityEventInvalidMethod() =>
@@ -387,10 +422,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     [Test] public void WhenUnityEventInvalidNestedInArray() =>
       testPrefab("TestUnityEventInvalidNestedInArray.asset", ErrorType.UnityEventInvalid);
-    
+
     [Test] public void WhenUnityEventGenericInvalid() =>
       testPrefab("TestUnityEventGeneric.asset", ErrorType.UnityEventInvalid);
-    
+
     [Test] public void WhenUnityEventGenericInAssetInvalid() =>
       testPrefab("TestUnityEventGenericInArray.asset", ErrorType.UnityEventInvalid);
 
