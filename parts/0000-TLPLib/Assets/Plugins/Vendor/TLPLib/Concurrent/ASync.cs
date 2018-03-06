@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -269,6 +270,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         rxRef.value = F.some(b);
         inAsyncSeq(e, rxRef, asyncAction);
       });
+    }
+
+    /// <summary>
+    /// Split running action over collection over N chunks separated by a given yield instruction.
+    /// </summary>
+    [PublicAPI] public static IEnumerator overNYieldInstructions<A>(
+      ICollection<A> collection, int n, Action<A, int> onA, YieldInstruction instruction = null
+    ) {
+      var chunkSize = collection.Count / n;
+      var idx = 0;
+      foreach (var a in collection) {
+        onA(a, idx);
+        if (idx % chunkSize == 0) yield return instruction;
+        idx++;
+      }
     }
   }
 
