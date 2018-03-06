@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 
 namespace com.tinylabproductions.TLPLib.caching {
   public interface ICachedBlob {
@@ -17,14 +18,10 @@ namespace com.tinylabproductions.TLPLib.caching {
     Try<Unit> store(A data);
   }
 
-  class ICachedBlobMapper<A, B> : ICachedBlob<B> {
+  [Record]
+  partial class ICachedBlobMapper<A, B> : ICachedBlob<B> {
     readonly ICachedBlob<A> backing;
     readonly BiMapper<A, B> bimap;
-
-    public ICachedBlobMapper(ICachedBlob<A> backing, BiMapper<A, B> bimap) {
-      this.backing = backing;
-      this.bimap = bimap;
-    }
 
     public bool cached => backing.cached;
     public Try<Unit> clear() => backing.clear();
