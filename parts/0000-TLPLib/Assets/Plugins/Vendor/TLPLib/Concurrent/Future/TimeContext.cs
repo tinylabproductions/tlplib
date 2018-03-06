@@ -3,7 +3,9 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -71,10 +73,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         NeverDisposeDisposableTracker.instance,
         paused => {
           isPaused = paused;
-          if (paused)
+          if (paused) {
             pauseStarted = Time.realtimeSinceStartup;
-          else
-            totalSecondsPaused = Time.realtimeSinceStartup - pauseStarted;
+          }
+          else {
+            var secondsPaused = Time.realtimeSinceStartup - pauseStarted;
+            totalSecondsPaused += secondsPaused;
+          }
         }
       );
     }
