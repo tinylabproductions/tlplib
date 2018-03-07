@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
@@ -8,6 +9,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.unity_serialization;
 using com.tinylabproductions.TLPLib.Utilities;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -20,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     GameObject gameObject { get; }
   }
 
-  public class Carousel<A> : UIBehaviour, IMB_Update where A : ICarouselItem {
+  public class Carousel<A> : UIBehaviour, IMB_Update, IMB_OnDrawGizmosSelected where A : ICarouselItem {
 
     #region Unity Serialized Fields
 
@@ -37,6 +39,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
+    [SerializeField] float selectionWindowWidth;
 #pragma warning restore 649
 
     #endregion
@@ -144,40 +147,64 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       isMoving = !withinMoveCompletedThreshold;
 
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
-      var isMovingLeft = targetPageValue < currentPosition;
-      var elementsOnTheLeft = elements.Count / 2 + (isMovingLeft ? -1 : 0);
+//      var isMovingLeft = targetPageValue < currentPosition;
+//      var elementsOnTheLeft = elements.Count / 2;// + (isMovingLeft ? -1 : 0);
+
+      var pivotPos = 0f;
+      {
+        var idx1 = Mathf.FloorToInt(currentPosition).modPositive(elementsCount);
+        var idx2 = Mathf.CeilToInt(currentPosition).modPositive(elementsCount);
+        var from = calcDeltaPos(idx1, currentPosition);
+        var to = calcDeltaPos(idx2, currentPosition);
+        pivotPos = Mathf.Lerp(from, to, currentPosition - Mathf.FloorToInt(currentPosition));
+        pivotPos = Mathf.Clamp(pivotPos, -selectionWindowWidth / 2, selectionWindowWidth / 2);
+      }
+
+      float calcDeltaPos(int idx, float elementPos) {
+        var indexDiff = Mathf.Abs(idx - elementPos);
+        var sign = Mathf.Sign(idx - elementPos);
+        return
+          (Mathf.Clamp01(indexDiff) * SpaceBetweenSelectedAndAdjacentPages +
+          Mathf.Max(0, indexDiff - 1) * SpaceBetweenOtherPages) * sign + pivotPos;
+      }
+
+      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(calcDeltaPos(idx, elementPos));
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
         if (loopable) {
-          if (targetPageValue > idx + elementsOnTheLeft) {
-            elementPos = currentPosition - elements.Count;
+          var best = calcDeltaPosAbs(idx, elementPos);
+          void test (float newElementPos) {
+            var cur = calcDeltaPosAbs(idx, newElementPos);
+            if (cur < best) {
+              best = cur;
+              elementPos = newElementPos;
+            }
           }
-          if (targetPageValue + elements.Count - 1 < idx + elementsOnTheLeft) {
-            elementPos = currentPosition + elements.Count;
-          }
+
+          test(currentPosition - elements.Count);
+          test(currentPosition + elements.Count);
         }
-        var absDiff = Mathf.Abs(idx - elementPos);
+        var indexDiff = Mathf.Abs(idx - elementPos);
         var sign = Mathf.Sign(idx - elementPos);
-        var delta = (Mathf.Clamp01(absDiff)
-          * SpaceBetweenSelectedAndAdjacentPages + Mathf.Max(0, absDiff - 1)
-          * SpaceBetweenOtherPages)
-          * sign;
+        var deltaPos =
+          Mathf.Clamp01(indexDiff) * SpaceBetweenSelectedAndAdjacentPages +
+          Mathf.Max(0, indexDiff - 1) * SpaceBetweenOtherPages;
 
         foreach (var distance in disableDistantElements) {
-          elements[idx].gameObject.SetActive(Mathf.Abs(delta) < distance);
+          elements[idx].gameObject.SetActive(deltaPos < distance);
         }
 
         var t = elements[idx].gameObject.transform;
-        t.localPosition = getPosition(_direction, delta, absDiff, selectedPageOffset);
+        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivotPos);
 
-        t.localScale = Vector3.one * (absDiff < 1
-          ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, absDiff)
+        t.localScale = Vector3.one * (indexDiff < 1
+          ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
           :
             maxElementsFromCenter.value.fold(
-              () => Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, absDiff - 1),
+              () => Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, indexDiff - 1),
               maxElementsFromCenter => Mathf.Lerp(
-                AdjacentToSelectedPageItemsScale, 0, absDiff - maxElementsFromCenter
+                AdjacentToSelectedPageItemsScale, 0, indexDiff - maxElementsFromCenter
               )
             )
         );
@@ -185,12 +212,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     static Vector3 getPosition(
-      Carousel.Direction carouselDirection, float positionChange, float absDiff,
-      Option<Vector3> centralItemOffset
-    ) {
+      Carousel.Direction carouselDirection, float distanceFromPivot, float absDiff,
+      Option<Vector3> centralItemOffset, float pivotPos) {
       var newPos = carouselDirection == Carousel.Direction.Horizontal
-        ? new Vector3(positionChange, 0, 0)
-        : new Vector3(0, -positionChange, 0);
+        ? new Vector3(distanceFromPivot+pivotPos, 0, 0)
+        : new Vector3(0, -distanceFromPivot-pivotPos, 0);
 
       foreach (var offset in centralItemOffset) {
         var lerpedOffset = Vector3.Lerp(offset, Vector3.zero, absDiff);
@@ -237,6 +263,31 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             default:
               throw new ArgumentOutOfRangeException(nameof(swipeDirection), swipeDirection, null);
           }
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
+      }
+    }
+
+    public void OnDrawGizmosSelected() {
+      Gizmos.color = Color.blue;
+      var halfOfSelectionWindow = selectionWindowWidth / 2;
+      var lineLength =
+        _direction == Carousel.Direction.Horizontal
+          ? ((RectTransform)transform).rect.height
+          : ((RectTransform)transform).rect.width;
+      var halfLineLength = lineLength / 2;
+
+      Vector3 t(Vector3 v) => transform.TransformPoint(v);
+
+      switch (_direction) {
+        case Carousel.Direction.Horizontal:
+          Gizmos.DrawLine(t(new Vector3(-halfOfSelectionWindow, -halfLineLength)), t(new Vector3(-halfOfSelectionWindow, halfLineLength)));
+          Gizmos.DrawLine(t(new Vector3(halfOfSelectionWindow, -halfLineLength)), t(new Vector3(halfOfSelectionWindow, halfLineLength)));
+          break;
+        case Carousel.Direction.Vertical:
+          Gizmos.DrawLine(t(new Vector3(-halfLineLength, -halfOfSelectionWindow)), t(new Vector3(halfLineLength, -halfOfSelectionWindow)));
+          Gizmos.DrawLine(t(new Vector3(-halfLineLength, halfOfSelectionWindow)), t(new Vector3(halfLineLength, halfOfSelectionWindow)));
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
