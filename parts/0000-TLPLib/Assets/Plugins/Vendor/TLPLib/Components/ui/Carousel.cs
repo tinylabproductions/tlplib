@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.Swiping;
@@ -140,35 +141,28 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       lerpPosition(Time.deltaTime * 5);
     }
 
+    float state;
+
     void lerpPosition(float amount) {
       var withinMoveCompletedThreshold =
         Math.Abs(currentPosition - targetPageValue) < moveCompletedEventThreshold;
       if (isMoving && withinMoveCompletedThreshold) _movementComplete.push(F.unit);
       isMoving = !withinMoveCompletedThreshold;
 
+      var prevPos = currentPosition;
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
-//      var isMovingLeft = targetPageValue < currentPosition;
-//      var elementsOnTheLeft = elements.Count / 2;// + (isMovingLeft ? -1 : 0);
 
-      var pivotPos = 0f;
+      var pivotPosIdx = 0f;
       {
-        var idx1 = Mathf.FloorToInt(currentPosition).modPositive(elementsCount);
-        var idx2 = Mathf.CeilToInt(currentPosition).modPositive(elementsCount);
-        var from = calcDeltaPos(idx1, currentPosition);
-        var to = calcDeltaPos(idx2, currentPosition);
-        pivotPos = Mathf.Lerp(from, to, currentPosition - Mathf.FloorToInt(currentPosition));
-        pivotPos = Mathf.Clamp(pivotPos, -selectionWindowWidth / 2, selectionWindowWidth / 2);
+        var diff = currentPosition - prevPos;
+        pivotPosIdx = state + diff;
+        var clampedPivot = Mathf.Clamp(pivotPosIdx,
+          -selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages,
+          selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
+        state = clampedPivot;
+        pivotPosIdx = clampedPivot;
       }
-
-      float calcDeltaPos(int idx, float elementPos) {
-        var indexDiff = Mathf.Abs(idx - elementPos);
-        var sign = Mathf.Sign(idx - elementPos);
-        return
-          (Mathf.Clamp01(indexDiff) * SpaceBetweenSelectedAndAdjacentPages +
-          Mathf.Max(0, indexDiff - 1) * SpaceBetweenOtherPages) * sign + pivotPos;
-      }
-
-      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(calcDeltaPos(idx, elementPos));
+      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotPosIdx);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
@@ -196,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         }
 
         var t = elements[idx].gameObject.transform;
-        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivotPos);
+        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivotPosIdx * SpaceBetweenSelectedAndAdjacentPages);
 
         t.localScale = Vector3.one * (indexDiff < 1
           ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
