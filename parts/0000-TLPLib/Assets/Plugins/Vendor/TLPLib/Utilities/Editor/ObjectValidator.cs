@@ -155,6 +155,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
       Option.ensureValue(ref customValidatorOpt);
+      Option.ensureValue(ref uniqueValuesCache);
 
       var errors = ImmutableList<Error>.Empty;
       var scanned = 0;
