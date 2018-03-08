@@ -128,8 +128,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           _page.value = (elements.Count + targetPageValue) % elements.Count;
         }
         else {
-          if (diff > elements.Count/2f) {
-            currentPosition = targetPageValue + (targetPageValue < index ? elements.Count : -elements.Count);
+          if (diff > elements.Count / 2f) {
+            currentPosition = currentPosition + (currentPosition < index ? 1 : - 1) * elements.Count;
           }
           targetPageValue = (elements.Count + index) % elements.Count;
           _page.value = targetPageValue;
