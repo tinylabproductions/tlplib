@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Components {
   [ExecuteInEditMode]
   public partial class LineRendererTrailDrawer : MonoBehaviour, IMB_Update {
     [Record]
-    public partial struct PositionData {
+    partial struct PositionData {
       public readonly float time;
       public Vector3 position;
     }
@@ -34,7 +34,10 @@ namespace com.tinylabproductions.TLPLib.Components {
     
     readonly Deque<PositionData> positions = new Deque<PositionData>();
 
+    [PublicAPI]
     public void setForcedLocalSpeed(Vector3 speed) => forcedLocalSpeed = speed;
+
+    [PublicAPI]
     public void setForcedWorldSpeed(Vector3 speed) => forcedWorldSpeed = speed;
 
     public void Update() {
