@@ -74,8 +74,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var log = Log.d;
       if (log.willLog(level))
         foreach (var error in errors) {
-          var context = error.obj is MonoBehaviour;
-          log.log(level, LogEntry.simple(error.ToString(), context: error.obj));
+          // If context is a MonoBehaviour,
+          // then unity does not ping the object (only a folder) when clicked on the log message.
+          // But it works fine for GameObjects
+          var context = (error.obj as MonoBehaviour)?.gameObject ?? error.obj;
+          log.log(level, LogEntry.simple(error.ToString(), context: context));
         }
     }
     
@@ -196,6 +199,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
       Option<UniqueValuesCache> uniqueCache = default
     ) {
+      Option.ensureValue(ref uniqueCache);
       var errors = ImmutableList<Error>.Empty;
 
       foreach (var mb in F.opt(value: component as MonoBehaviour)) {
@@ -287,6 +291,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       FieldHierarchy fieldHierarchy = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
+      Option.ensureValue(ref uniqueValuesCache);
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
 
       foreach (var onObjectValidatable in F.opt(objectBeingValidated as OnObjectValidate)) {
