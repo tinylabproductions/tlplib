@@ -26,14 +26,16 @@ namespace com.tinylabproductions.TLPLib.Components {
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField, NotNull] LineRenderer lineRenderer;
     [SerializeField] float duration, minVertexDistance;
-    [SerializeField]
-    public Vector3 forcedLocalSpeed, forcedWorldSpeed;
+    [SerializeField] Vector3 forcedLocalSpeed, forcedWorldSpeed;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     #endregion
     
     readonly Deque<PositionData> positions = new Deque<PositionData>();
+
+    public void setForcedLocalSpeed(Vector3 speed) => forcedLocalSpeed = speed;
+    public void setForcedWorldSpeed(Vector3 speed) => forcedWorldSpeed = speed;
 
     public void Update() {
       var currentTime = Time.time;
