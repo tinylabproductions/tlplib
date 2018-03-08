@@ -71,10 +71,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         NeverDisposeDisposableTracker.instance,
         paused => {
           isPaused = paused;
-          if (paused)
+          if (paused) {
             pauseStarted = Time.realtimeSinceStartup;
-          else
-            totalSecondsPaused = Time.realtimeSinceStartup - pauseStarted;
+          }
+          else {
+            var secondsPaused = Time.realtimeSinceStartup - pauseStarted;
+            totalSecondsPaused += secondsPaused;
+          }
         }
       );
     }

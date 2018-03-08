@@ -48,6 +48,38 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // ReSharper restore ExplicitCallerInfoArgument
     );
 
+    public static void subscribeLast<A>(
+      this IObservable<A> observable, ref IDisposable subscription, Act<A> onChange,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      subscription.Dispose();
+      subscription = observable.subscribe(
+        tracker: NoOpDisposableTracker.instance, onEvent: onChange,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath,
+        callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+    }
+
+    public static void subscribeLast<A>(
+      this IObservable<A> observable, ref ISubscription subscription, Act<A> onChange,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      subscription.unsubscribe();
+      subscription = observable.subscribe(
+        tracker: NoOpDisposableTracker.instance, onEvent: onChange,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath,
+        callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+    }
+
     public static ISubscription subscribeForOneEvent<A>(
       this IObservable<A> observable,
       IDisposableTracker tracker,

@@ -83,7 +83,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     #endregion
 
     /* Is this trace frame is in our application code? */
-    public bool inApp => !method.StartsWithFast($"{nameof(UnityEngine)}.");
+    public bool inApp => !method.StartsWithFast(nameof(UnityEngine) + ".");
 
     public string asString() => $"{method}{fileInfo.fold("", fi => $" (at {fi})")}";
     public override string ToString() => asString();
