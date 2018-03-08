@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.Swiping;
@@ -10,7 +8,6 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.unity_serialization;
 using com.tinylabproductions.TLPLib.Utilities;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -40,6 +37,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
+    // There's still a visual issue when all items fits into selection window
     [SerializeField] float selectionWindowWidth;
 #pragma warning restore 649
 
@@ -88,8 +86,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
     public IObservable<Unit> movementComplete => _movementComplete;
 
-    public void nextPage() => setPageAnimated(targetPageValue + 1);
-    public void prevPage() => setPageAnimated(targetPageValue - 1);
+    public void nextPage() => movePagesByAnimated(1);
+    public void prevPage() => movePagesByAnimated(-1);
 
     protected Carousel() {
       __currentElement = F.lazy(() => {
@@ -107,33 +105,34 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     /// <summary>Set page with smooth animations.</summary>
-    public void setPageAnimated(int index) {
+    public void setPageAnimated(int page) {
+      if (elements.isEmpty()) return;
+      var current = page - _page.value;
+      void test (int what) {
+        if (Math.Abs(what) <= Math.Abs(current)) {
+          current = what;
+        }
+      }
+      test(page - _page.value - elementsCount);
+      test(page - _page.value);
+      test(page - _page.value + elementsCount);
+      movePagesByAnimated(current);
+    }
+
+    void movePagesByAnimated(int offset) {
       if (elements.isEmpty()) return;
 
       if (!loopable) {
         // when we increase past last page go to page 0 if wrapCarouselAround == true
+        var page = offset + targetPageValue;
         targetPageValue = wrapCarouselAround
-          ? index.modPositive(elements.Count)
-          : Mathf.Clamp(index, 0, elements.Count - 1);
+          ? page.modPositive(elements.Count)
+          : Mathf.Clamp(page, 0, elements.Count - 1);
         _page.value = targetPageValue;
       }
       else {
-        var diff = Mathf.Abs(index - targetPageValue);
-        if (diff < 2) {
-          targetPageValue = Mathf.Clamp(index, -1, elements.Count);
-          if (index != targetPageValue) {
-            currentPosition = (elements.Count + targetPageValue) % elements.Count;
-            targetPageValue = (elements.Count + index) % elements.Count;
-          }
-          _page.value = (elements.Count + targetPageValue) % elements.Count;
-        }
-        else {
-          if (diff > elements.Count / 2f) {
-            currentPosition = currentPosition + (currentPosition < index ? 1 : - 1) * elements.Count;
-          }
-          targetPageValue = (elements.Count + index) % elements.Count;
-          _page.value = targetPageValue;
-        }
+        targetPageValue += offset;
+        _page.value = targetPageValue.modPositive(elements.Count);
       }
     }
 
@@ -151,11 +150,21 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       var prevPos = currentPosition;
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
+      var posDiff = currentPosition - prevPos;
+
+      while (currentPosition > elementsCount) {
+        currentPosition -= elementsCount;
+        targetPageValue -= elementsCount;
+      }
+
+      while (currentPosition < 0) {
+        currentPosition += elementsCount;
+        targetPageValue += elementsCount;
+      }
 
       var pivotPosIdx = 0f;
       {
-        var diff = currentPosition - prevPos;
-        pivotPosIdx = state + diff;
+        pivotPosIdx = state + posDiff;
         var clampedPivot = Mathf.Clamp(pivotPosIdx,
           -selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages,
           selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
