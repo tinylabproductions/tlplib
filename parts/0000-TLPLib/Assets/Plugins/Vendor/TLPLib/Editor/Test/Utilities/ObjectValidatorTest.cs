@@ -181,23 +181,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       describe(() => {
         when["duplicates exist"] = () => {
           it["should fail"] = () => {
-            shouldFindErrorsInScriptableObject<UniqueValueScriptableObject>(
-              ErrorType.DuplicateUniqueValue,
+            errorsInScriptableObject<UniqueValueScriptableObject>(
               a => {
                 a.identifier = new byte[] {1, 2};
                 a.identifier2 = new byte[] {1, 2};
               }
-            );
+            ).shouldHave(ErrorType.DuplicateUniqueValue);
           };
         };
         when["there are no duplicates"] = () => {
           it["should pass"] = () =>
-            shouldNotFindErrorsInScriptableObject<UniqueValueScriptableObject>(
+            errorsInScriptableObject<UniqueValueScriptableObject>(
               a => {
                 a.identifier = new byte[] {1, 2};
                 a.identifier2 = new byte[] {1, 3};
               }
-            );
+            ).shouldBeEmpty();
         };
       });
     }
@@ -207,23 +206,22 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       describe(() => {
         when["duplicates exist"] = () => {
           it["should fail"] = () => {
-            shouldFindErrorsInScriptableObject<UniqueValueScriptableObjectWithList>(
-              ErrorType.DuplicateUniqueValue,
+            errorsInScriptableObject<UniqueValueScriptableObjectWithList>(
               _ => _.listOfStructs = new List<UniqueValueStruct> {
                 new UniqueValueStruct(new byte[] {1, 2}),
                 new UniqueValueStruct(new byte[] {1, 2})
               }
-            );
+            ).shouldHave(ErrorType.DuplicateUniqueValue);
           };
         };
         when["there are no duplicates"] = () => {
           it["should pass"] = () => {
-            shouldNotFindErrorsInScriptableObject<UniqueValueScriptableObjectWithList>(
+            errorsInScriptableObject<UniqueValueScriptableObjectWithList>(
               _ => _.listOfStructs = new List<UniqueValueStruct> {
                 new UniqueValueStruct(new byte[] {1, 2}),
                 new UniqueValueStruct(new byte[] {1, 3})
               }
-            );
+            ).shouldBeEmpty();
           };
         };
       });
@@ -526,51 +524,33 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return go;
     }
     static ScriptableObject setupScriptableObject<A>(Act<A> setup = null) where A : ScriptableObject {
-      var so = ScriptableObject.CreateInstance(typeof(A));
-      setup?.Invoke(so as A);
+      var so = ScriptableObject.CreateInstance<A>();
+      setup?.Invoke(so);
       return so;
     }
 
     static ImmutableList<ObjectValidator.Error> checkForErrors<A>(
-      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache
+      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
     ) where A : Object =>
       ObjectValidator.check(
         ObjectValidator.CheckContext.empty, new Object[] {create()},
         uniqueValuesCache: uniqueValuesCache
       );
 
-
-    static void shouldNotFindErrorsInObject<A>(
-      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
-    ) where A : Object =>
-      checkForErrors(create, uniqueValuesCache).shouldBeEmpty();
-
-    static void shouldFindErrorsInObject<A>(
-      ErrorType errorType, Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
-    ) where A : Object =>
-      checkForErrors(create, uniqueValuesCache).shouldHave(errorType);
-
-
-    static void shouldNotFindErrorsInScriptableObject<A>(
+    static ImmutableList<ObjectValidator.Error> errorsInScriptableObject<A>(
       Act<A> setup = null
     ) where A : ScriptableObject =>
-      shouldNotFindErrorsInObject(() => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
-
-    static void shouldFindErrorsInScriptableObject<A>(
-      ErrorType errorType, Act<A> setup = null
-    ) where A : ScriptableObject =>
-      shouldFindErrorsInObject(errorType, () => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
-
+      checkForErrors(() => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
 
     public static void shouldNotFindErrors<A>(
       Act<A> setup = null
     ) where A : Component =>
-      shouldNotFindErrorsInObject(() => setupGOWithComponent(setup));
+      checkForErrors(() => setupGOWithComponent(setup)).shouldBeEmpty();
 
     public static void shouldFindErrors<A>(
       ErrorType errorType, Act<A> setup = null
     ) where A : Component =>
-      shouldFindErrorsInObject(errorType, () => setupGOWithComponent(setup));
+      checkForErrors(() => setupGOWithComponent(setup)).shouldHave(errorType);
   }
 
   public static class ErrorValidationExts {
