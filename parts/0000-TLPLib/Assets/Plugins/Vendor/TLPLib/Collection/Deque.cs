@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Collection
     /// <typeparam name="T">
     /// The type of objects to store in the deque.
     /// </typeparam>
-    public class Deque<T> : IList<T>
+    public partial class Deque<T> : IList<T>
     {
 
         /// <summary>
