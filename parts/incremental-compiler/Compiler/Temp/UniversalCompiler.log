@@ -1,0 +1,29 @@
+********************************************************************************
+*                      Friday, March 09, 2018 4:45:29 PM                       *
+********************************************************************************
+CSharpCompilerWrapper.exe version: 1.2.9
+Platform: Windows
+Target assembly: Assembly-CSharp-firstpass.dll
+Project directory: C:\work\unity\funkidracing\unity
+Target profile directory: C:\Software\Unity-5.6.x\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api
+Unity 'Data' or 'Frameworks' directory: C:/Software/Unity-5.6.x/Editor/Data
+Compiler: Incremental C# Compiler 6.0
+
+- Compilation -----------------------------------------------
+
+Process: C:\work\unity\funkidracing\unity\Compiler\IncrementalCompiler.exe
+Arguments: -nostdlib+ -noconfig -r:"C:\Software\Unity-5.6.x\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\mscorlib.dll" -r:"C:\Software\Unity-5.6.x\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.dll" -r:"C:\Software\Unity-5.6.x\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Core.dll" -r:"C:\Software\Unity-5.6.x\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Xml.dll" @Temp/UnityTempFile-b4b88de560eee644a87677b2f0966738
+Exit code: 1
+Elapsed time: 1.34 sec
+
+- Compiler output (1 line):
+0: Compile failed. (Duration=0,7431531sec)
+
+- Compiler errors (7 lines):
+0: Assets/Plugins/Vendor/TLPGameAds/AdNetworks/TLPAdNet.cs(153,19): error CS1525: Invalid expression term ')'
+1: Assets/Plugins/Vendor/TLPGameAds/AdNetworks/TLPAdNet.cs(155,10): error CS1002: ; expected
+2: Assets/Plugins/Vendor/TLPGame/Purchases/IAP.cs(124,52): error CS0246: The type or namespace name 'UniqueValueAttribute' could not be found (are you missing a using directive or an assembly reference?)
+3: Assets/Plugins/Vendor/TLPGame/Purchases/IAP.cs(124,52): error CS0246: The type or namespace name 'UniqueValue' could not be found (are you missing a using directive or an assembly reference?)
+4: Assets/Plugins/Vendor/TLPGameAds/AdNetworks/TLPAdNet.cs(149,31): error CS7036: There is no argument given that corresponds to the required formal parameter 'adShowing' of 'TLPAdNet.Data.Data(TLPAdNetCfg, IRxRef<bool>, IRxRef<bool>)'
+5: Assets/Plugins/Vendor/TLPGameAds/AdNetworks/TLPAdNet.cs(170,28): error CS0103: The name 'TODO_IMPLEMENT_ME' does not exist in the current context
+6: Assets/Plugins/Vendor/TLPGameAds/AdNetworks/TLPAdNet.cs(171,28): error CS0103: The name 'TODO_IMPLEMENT_ME' does not exist in the current context
