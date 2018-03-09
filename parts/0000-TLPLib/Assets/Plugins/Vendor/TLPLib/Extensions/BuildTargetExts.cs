@@ -6,6 +6,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Editor.Extensions {
   public static class BuildTargetExts {
     public static RuntimePlatform toRuntimePlatform(this BuildTarget t) {
+#pragma warning disable SwitchEnumAnalyzer
       switch (t) {
         case BuildTarget.StandaloneOSXUniversal:
         case BuildTarget.StandaloneOSXIntel:
