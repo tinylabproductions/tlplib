@@ -1,12 +1,12 @@
 ﻿using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  class PrefValOptCachedBlob<A> : ICachedBlob<A> {
+  [Record]
+  partial class PrefValOptCachedBlob<A> : ICachedBlob<A> {
     readonly PrefVal<Option<A>> backing;
-
-    public PrefValOptCachedBlob(PrefVal<Option<A>> backing) { this.backing = backing; }
 
     public bool cached => backing.value.isSome;
     public Option<Try<A>> read() => backing.value.map(F.scs);
