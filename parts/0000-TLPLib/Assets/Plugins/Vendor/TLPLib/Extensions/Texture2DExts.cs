@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class Texture2DExts {
@@ -44,9 +45,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return t;
     }
 
-    public static Sprite toSprite(this Texture2D texture) {
+    public static Sprite toSprite(this Texture2D texture, float pixelsPerUnit = 100) {
       var rec = new Rect(0, 0, texture.width, texture.height);
-      return Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
+      return Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), pixelsPerUnit);
     }
 
     public static Texture2D textureFromCamera(
@@ -76,6 +77,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       RenderTexture.active = currentRT;
       RenderTexture.ReleaseTemporary(renderTexture);
       return texture;
+    }
+
+    // Well, sometimes SupportsTextureFormat throws an exception. Not much we can do there.
+    public static bool isSupported(this TextureFormat f) {
+      try { return SystemInfo.SupportsTextureFormat(f); }
+      catch { return false; }
+    }
+
+    public static bool isSupported(this RenderTextureFormat f) {
+      try { return SystemInfo.SupportsRenderTextureFormat(f); }
+      catch { return false; }
     }
   }
 }
