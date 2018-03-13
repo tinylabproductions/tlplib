@@ -168,10 +168,16 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => and(aRW, bRW, F.t, t => t._1, t => t._2);
 
     [PublicAPI]
-    public static ISerializedRW<C> and<A, B, C>(
-      this ISerializedRW<A> aRW, ISerializedRW<B> bRW,
-      Fn<A, B, C> mapper, Fn<C, A> getA, Fn<C, B> getB
-    ) => new AndRW<A, B, C>(aRW, bRW, mapper, getA, getB);
+    public static ISerializedRW<B> and<A1, A2, B>(
+      this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW,
+      Fn<A1, A2, B> mapper, Fn<B, A1> getA1, Fn<B, A2> getA2
+    ) => new AndRW2<A1, A2, B>(a1RW, a2RW, mapper, getA1, getA2);
+
+    [PublicAPI]
+    public static ISerializedRW<B> and<A1, A2, A3, B>(
+      this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
+      Fn<A1, A2, A3, B> mapper, Fn<B, A1> getA1, Fn<B, A2> getA2, Fn<B, A3> getA3
+    ) => new AndRW3<A1, A2, A3, B>(a1RW, a2RW, a3RW, mapper, getA1, getA2, getA3);
 
     [PublicAPI]
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) =>
