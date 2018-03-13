@@ -50,18 +50,30 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Texture2D textureFromCamera(
-      this Camera cam, TextureFormat textureFormat = TextureFormat.RGB24, bool mipmap = false
+      this Camera camera, int width, int height,
+      int depthBuffer = 16,
+      RenderTextureFormat renderTextureFormat = RenderTextureFormat.ARGB32,
+      TextureFormat textureFormat = TextureFormat.RGB24,
+      bool mipmap = false
     ) {
+      var renderTexture = RenderTexture.GetTemporary(width, height, depthBuffer, renderTextureFormat);
+      renderTexture.Create();
+      camera.targetTexture = renderTexture;
+      camera.Render();
+
+      /*
+       * Texture2D#ReadPixels reads all pixels on the screen if RenderTexture.active is null,
+       * otherwise it reads from the set texture.
+       * https://docs.unity3d.com/ScriptReference/RenderTexture-active.html
+       */
       var currentRT = RenderTexture.active;
-      var width = cam.targetTexture.width;
-      var height = cam.targetTexture.height;
-      RenderTexture.active = cam.targetTexture;
-      cam.Render();
-      var image = new Texture2D(width, height, textureFormat, mipmap);
-      image.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-      image.Apply();
+      RenderTexture.active = camera.targetTexture;
+      var texture = new Texture2D(width, height, textureFormat, mipmap);
+      texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+      texture.Apply();
       RenderTexture.active = currentRT;
-      return image;
+      RenderTexture.ReleaseTemporary(renderTexture);
+      return texture;
     }
   }
 }
