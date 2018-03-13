@@ -79,13 +79,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return texture;
     }
 
-    public static bool isSupported(this TextureFormat f) =>
-      // Well, sometimes SupportsTextureFormat throws an exception. Not much we can do there.
-      F.doTry(() => SystemInfo.SupportsTextureFormat(f)).getOrElse(false);
+    // Well, sometimes SupportsTextureFormat throws an exception. Not much we can do there.
+    public static bool isSupported(this TextureFormat f) {
+      try { return SystemInfo.SupportsTextureFormat(f); }
+      catch { return false; }
+    }
 
-    public static bool isSupported(this RenderTextureFormat f) =>
-      F.doTry(() => SystemInfo.SupportsRenderTextureFormat(f)).getOrElse(false);
-
-
+    public static bool isSupported(this RenderTextureFormat f) {
+      try { return SystemInfo.SupportsRenderTextureFormat(f); }
+      catch { return false; }
+    }
   }
 }
