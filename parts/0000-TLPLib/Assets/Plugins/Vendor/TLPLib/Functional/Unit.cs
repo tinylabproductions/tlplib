@@ -1,9 +1,14 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.serialization;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public struct Unit : IEquatable<Unit> {
     public static Unit instance { get; } = new Unit();
     public override string ToString() => "()";
+    
+    [PublicAPI] public static ISerializedRW<Unit> rw => UnitRW.instance;
 
     #region Equality
 
@@ -11,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is Unit && Equals((Unit) obj);
+      return obj is Unit unit && Equals(unit);
     }
 
     public override int GetHashCode() => nameof(Unit).GetHashCode();

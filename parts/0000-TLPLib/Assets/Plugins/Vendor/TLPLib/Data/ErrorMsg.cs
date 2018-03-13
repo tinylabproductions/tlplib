@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -10,10 +11,15 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly string s;
     public readonly Option<Object> context;
 
-    public ErrorMsg(string s, Object context = null) {
+    ErrorMsg(string s, Option<Object> context) {
       this.s = s;
-      this.context = context.opt();
+      this.context = context;
     }
+
+    public ErrorMsg(string s, Object context = null) : this(s, context.opt()) {}
+
+    [PublicAPI] public ErrorMsg withMessage(Fn<string, string> f) => 
+      new ErrorMsg(f(s), context);
 
     public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
       message: errorMsg.s,
@@ -28,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is ErrorMsg && Equals((ErrorMsg) obj);
+      return obj is ErrorMsg msg && Equals(msg);
     }
 
     public override int GetHashCode() {

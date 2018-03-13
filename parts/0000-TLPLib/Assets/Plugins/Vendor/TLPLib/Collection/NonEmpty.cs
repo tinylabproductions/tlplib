@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class NonEmpty {
@@ -40,6 +41,14 @@ namespace com.tinylabproductions.TLPLib.Collection {
       b.AddRange(rest);
       return NonEmpty<ImmutableArray<A>>.__unsafeNew(b.MoveToImmutable());
     }
+
+    [PublicAPI] 
+    public static NonEmpty<ImmutableSortedSet<A>> sortedSet<A>(A a1) =>
+      NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ImmutableSortedSet.Create(a1));
+
+    [PublicAPI] 
+    public static NonEmpty<ImmutableSortedSet<A>> sortedSet<A>(A a1, params A[] rest) =>
+      NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ImmutableSortedSet.Create(rest).Add(a1));
   }
 
   public static class NonEmptyExts {

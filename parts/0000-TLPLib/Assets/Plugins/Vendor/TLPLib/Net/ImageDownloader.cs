@@ -7,29 +7,47 @@ using com.tinylabproductions.TLPLib.Dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using Smooth.Dispose;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Net {
-  public class ImageDownloader {
-    public static ImageDownloader instance = new ImageDownloader();
+  public partial class ImageDownloader {
+    [Record]
+    partial struct InternalResult {
+      public readonly Future<Either<WWWError, UsageCountedDisposable<Texture2D>>> future;
+      
+      public Result toResult() => new Result(future.mapT(_ => _.use()));
+    } 
+    
+    [Record]
+    public partial struct Result {
+      public readonly Future<Either<WWWError, Disposable<Texture2D>>> future;
+    }
+    
+    public static readonly ImageDownloader instance = new ImageDownloader();
 
-    readonly Dictionary<Url, Future<Either<WWWError, UsageCountedDisposable<Texture2D>>>> cache =
-      new Dictionary<Url, Future<Either<WWWError, UsageCountedDisposable<Texture2D>>>>();
-
+    readonly Dictionary<Url, InternalResult> cache = new Dictionary<Url, InternalResult>();
     readonly ASyncNAtATimeQueue<Url, Either<WWWError, UsageCountedDisposable<Texture2D>>> queue;
 
     ImageDownloader() {
       queue = new ASyncNAtATimeQueue<
         Url,
         Either<WWWError, UsageCountedDisposable<Texture2D>>
-      >(2, download);
+      >(2, url => download(url).future);
     }
 
-    Future<Either<WWWError, UsageCountedDisposable<Texture2D>>> download(Url url) =>
+    InternalResult download(Url url) => new InternalResult(
       Future<Either<WWWError, UsageCountedDisposable<Texture2D>>>.async((promise, f) => {
         ASync.StartCoroutine(textureLoader(
+          // TODO: change to UnityWebRequest.GetTexture
+//          var f = UnityWebRequest.GetTexture(staticAd.image.url).toFuture().flatMapT(req => {
+//            var dlHandler = (DownloadHandlerTexture) req.downloadHandler;
+//            var texture = dlHandler.texture;
+//            if (texture) return new Either<ErrorMsg, Texture>(texture);
+//            return new ErrorMsg($"Can't download texture from url{staticAd.image.url}");
+//          });
           new WWW(url), promise,
           onDispose: t => {
             Object.Destroy(t);
@@ -42,13 +60,14 @@ namespace com.tinylabproductions.TLPLib.Net {
           // remove from cache if image was not downloaded
           if (e.isLeft) cache.Remove(url);
         });
-      });
+      })
+    );
 
     // TODO: make it possible to dispose image before it started downloading / while downloading
-    public Future<Either<WWWError, Disposable<Texture2D>>> loadImage(Url url, bool ignoreQueue = false) =>
+    public Result loadImage(Url url, bool ignoreQueue = false) =>
       cache
-        .getOrUpdate(url, () => ignoreQueue ? download(url) : queue.enqueue(url))
-        .mapT(dt => dt.use());
+        .getOrUpdate(url, () => ignoreQueue ? download(url) : new InternalResult(queue.enqueue(url)))
+        .toResult();
 
     static IEnumerator textureLoader(
       WWW www,

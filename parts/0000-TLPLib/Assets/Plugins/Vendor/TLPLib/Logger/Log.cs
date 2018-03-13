@@ -135,7 +135,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       new LogEntry(message(this.message), tags, extras, backtrace, context);
 
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
-      SerializedRW.immutableArray(SerializedRW.str.and(SerializedRW.str));
+      SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
   }
 
   public struct LogEvent {
