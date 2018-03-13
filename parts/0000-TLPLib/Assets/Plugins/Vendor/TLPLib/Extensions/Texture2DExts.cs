@@ -58,8 +58,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       var renderTexture = RenderTexture.GetTemporary(width, height, depthBuffer, renderTextureFormat);
       renderTexture.Create();
+      var prevTargetTexture = camera.targetTexture;
       camera.targetTexture = renderTexture;
       camera.Render();
+      camera.targetTexture = prevTargetTexture;
 
       /*
        * Texture2D#ReadPixels reads all pixels on the screen if RenderTexture.active is null,
@@ -67,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
        * https://docs.unity3d.com/ScriptReference/RenderTexture-active.html
        */
       var currentRT = RenderTexture.active;
-      RenderTexture.active = camera.targetTexture;
+      RenderTexture.active = renderTexture;
       var texture = new Texture2D(width, height, textureFormat, mipmap);
       texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
       texture.Apply();
