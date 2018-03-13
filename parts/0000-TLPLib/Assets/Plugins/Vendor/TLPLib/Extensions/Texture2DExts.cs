@@ -48,5 +48,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var rec = new Rect(0, 0, texture.width, texture.height);
       return Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
     }
+
+    public static Texture2D textureFromCamera(
+      this Camera cam, TextureFormat textureFormat = TextureFormat.RGB24, bool mipmap = false
+    ) {
+      var currentRT = RenderTexture.active;
+      var width = cam.targetTexture.width;
+      var height = cam.targetTexture.height;
+      RenderTexture.active = cam.targetTexture;
+      cam.Render();
+      var image = new Texture2D(width, height, textureFormat, mipmap);
+      image.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+      image.Apply();
+      RenderTexture.active = currentRT;
+      return image;
+    }
   }
 }
