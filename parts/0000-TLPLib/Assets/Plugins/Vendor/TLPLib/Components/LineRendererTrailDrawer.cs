@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections;
-using com.tinylabproductions.TLPLib.Collection;
+﻿using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -13,9 +8,9 @@ namespace com.tinylabproductions.TLPLib.Components {
   [ExecuteInEditMode]
   public partial class LineRendererTrailDrawer : MonoBehaviour, IMB_Update {
     [Record]
-    public partial struct PositionData {
+    partial struct PositionData {
       public readonly float time;
-      public readonly Vector3 position;
+      public Vector3 position;
     }
 
     #region Unity Serialized Fields
@@ -24,47 +19,31 @@ namespace com.tinylabproductions.TLPLib.Components {
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField, NotNull] LineRenderer lineRenderer;
     [SerializeField] float duration, minVertexDistance;
+    [SerializeField] Vector3 forcedLocalSpeed, forcedWorldSpeed;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     #endregion
     
     readonly Deque<PositionData> positions = new Deque<PositionData>();
-    
-    bool shouldUpdate = true;
-    IDisposable disposable = F.emptyDisposable;
 
     [PublicAPI]
-    public void setRegularMode() {
-      disposable.Dispose();
-      shouldUpdate = true;
-    }
+    public void setForcedLocalSpeed(Vector3 speed) => forcedLocalSpeed = speed;
 
     [PublicAPI]
-    public void setForcedTrailMode(Vector3 size, Duration duration) {
-      disposable.Dispose();
-      disposable = new UnityCoroutine(this, routine(size, duration));
-      shouldUpdate = false;
-    }
-
-    IEnumerator routine(Vector3 target, Duration duration) {
-      var startPos = transform.position;
-      var endPos = transform.position + target;
-      lineRenderer.positionCount = 2;
-      lineRenderer.SetPosition(0, startPos);
-      lineRenderer.SetPosition(1, startPos);
-      foreach (var p in new CoroutineInterval(duration)) {
-        var current = Vector3.Lerp(startPos, endPos, p.value);
-        lineRenderer.SetPosition(1, current);
-        yield return null;
-      }
-    }
+    public void setForcedWorldSpeed(Vector3 speed) => forcedWorldSpeed = speed;
 
     public void Update() {
-      if (!shouldUpdate) return;
-      
       var currentTime = Time.time;
       var currentPos = transform.position;
+
+      if (forcedLocalSpeed != Vector3.zero || forcedWorldSpeed != Vector3.zero ) {
+        var worldSpeed = transform.TransformDirection(forcedLocalSpeed) + forcedWorldSpeed;
+        for (var i = 0; i < positions.Count; i++) {
+          positions.GetRef(i).position += worldSpeed * Time.deltaTime;
+        }
+      }
+
       if (shouldAddPoint(currentPos)) positions.AddFront(new PositionData(currentTime, currentPos));
       var queueing = true;
       while (queueing && positions.Count > 0) {

@@ -174,13 +174,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
+    [PublicAPI]
     public static Future<Either<ErrorMsg, UnityWebRequest>> toFuture(this UnityWebRequest req) {
-      Promise<Either<ErrorMsg, UnityWebRequest>> promise;
-      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out promise);
+      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out var promise);
       StartCoroutine(webRequestEnumerator(req, promise));
       return f;
     }
 
+    [PublicAPI]
     public static IEnumerator webRequestEnumerator(
       UnityWebRequest req, Promise<Either<ErrorMsg, UnityWebRequest>> p
     ) {
