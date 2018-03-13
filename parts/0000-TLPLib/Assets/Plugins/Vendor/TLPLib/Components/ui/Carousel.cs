@@ -39,6 +39,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
     // There's still a visual issue when all items fits into selection window
     [SerializeField] float selectionWindowWidth;
+    bool wrapAround => wrapCarouselAround;
+    [Inspect(nameof(wrapAround)), SerializeField] float becomesLoopableAtNElements = 5;
 #pragma warning restore 649
 
     #endregion
@@ -65,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
-    bool loopable => wrapCarouselAround && elements.Count > 4;
+    bool loopable => wrapCarouselAround && elements.Count >= becomesLoopableAtNElements;
 
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
@@ -140,6 +142,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     void lerpPosition(float amount) {
+      if (elements.isEmpty()) return;
+
       var withinMoveCompletedThreshold =
         Math.Abs(currentPosition - targetPageValue) < moveCompletedEventThreshold;
       if (isMoving && withinMoveCompletedThreshold) _movementComplete.push(F.unit);
