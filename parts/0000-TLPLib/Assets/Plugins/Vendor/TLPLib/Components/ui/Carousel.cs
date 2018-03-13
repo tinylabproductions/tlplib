@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    float currentPosition;
+    float currentPosition, pivotState;
 
     int targetPageValue;
     public bool isMoving { get; private set; }
@@ -108,14 +108,13 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public void setPageAnimated(int page) {
       if (elements.isEmpty()) return;
       var current = page - _page.value;
-      void test (int what) {
-        if (Math.Abs(what) <= Math.Abs(current)) {
-          current = what;
+      void findBestPage(int p) {
+        if (Math.Abs(p + pivotState) <= Math.Abs(current + pivotState)) {
+          current = p;
         }
       }
-      test(page - _page.value - elementsCount);
-      test(page - _page.value);
-      test(page - _page.value + elementsCount);
+      findBestPage(page - _page.value - elementsCount);
+      findBestPage(page - _page.value + elementsCount);
       movePagesByAnimated(current);
     }
 
@@ -140,8 +139,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       lerpPosition(Time.deltaTime * 5);
     }
 
-    float state;
-
     void lerpPosition(float amount) {
       var withinMoveCompletedThreshold =
         Math.Abs(currentPosition - targetPageValue) < moveCompletedEventThreshold;
@@ -162,22 +159,18 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         targetPageValue += elementsCount;
       }
 
-      var pivotPosIdx = 0f;
-      {
-        pivotPosIdx = state + posDiff;
-        var clampedPivot = Mathf.Clamp(pivotPosIdx,
-          -selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages,
-          selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
-        state = clampedPivot;
-        pivotPosIdx = clampedPivot;
-      }
-      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotPosIdx);
+      var clampedPivot = Mathf.Clamp(pivotState + posDiff,
+        -selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages,
+        selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
+      pivotState = clampedPivot;
+
+      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotState);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
         if (loopable) {
           var best = calcDeltaPosAbs(idx, elementPos);
-          void test (float newElementPos) {
+          void findBestElementPos(float newElementPos) {
             var cur = calcDeltaPosAbs(idx, newElementPos);
             if (cur < best) {
               best = cur;
@@ -185,8 +178,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             }
           }
 
-          test(currentPosition - elements.Count);
-          test(currentPosition + elements.Count);
+          findBestElementPos(currentPosition - elements.Count);
+          findBestElementPos(currentPosition + elements.Count);
         }
         var indexDiff = Mathf.Abs(idx - elementPos);
         var sign = Mathf.Sign(idx - elementPos);
@@ -199,7 +192,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         }
 
         var t = elements[idx].gameObject.transform;
-        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivotPosIdx * SpaceBetweenSelectedAndAdjacentPages);
+        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivotState * SpaceBetweenSelectedAndAdjacentPages);
 
         t.localScale = Vector3.one * (indexDiff < 1
           ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
@@ -216,10 +209,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     static Vector3 getPosition(
       Carousel.Direction carouselDirection, float distanceFromPivot, float absDiff,
-      Option<Vector3> centralItemOffset, float pivotPos) {
+      Option<Vector3> centralItemOffset, float pivotPos
+    ) {
       var newPos = carouselDirection == Carousel.Direction.Horizontal
-        ? new Vector3(distanceFromPivot+pivotPos, 0, 0)
-        : new Vector3(0, -distanceFromPivot-pivotPos, 0);
+        ? new Vector3(distanceFromPivot + pivotPos, 0, 0)
+        : new Vector3(0, -distanceFromPivot - pivotPos, 0);
 
       foreach (var offset in centralItemOffset) {
         var lerpedOffset = Vector3.Lerp(offset, Vector3.zero, absDiff);
