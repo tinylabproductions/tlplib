@@ -2,14 +2,13 @@
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Android;
-using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Platform {
   class AndroidPlatformPackageManager : IPlatformPackageManager {
-    readonly ImmutableSortedSet<string> packageNames;
+    public ImmutableSortedSet<string> packageNames { get; }
 
     public AndroidPlatformPackageManager() {
       //Cache all of the package names for better performance
