@@ -27,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
   public static class ResourceReference {
 #if UNITY_EDITOR
+    [PublicAPI]
     public static SO create<SO, A>(string path, A reference)
       where SO : ResourceReference<A> where A : Object
     {
@@ -39,6 +40,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     static string notFound(string path) => $"Resource not found: {path}";
 
+    [PublicAPI]
     public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
       var path = loadPath.unityPath;
       var csr = Resources.Load<ResourceReference<A>>(path);
@@ -47,6 +49,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
         : F.left<string, A>(notFound(path));
     }
 
+    [PublicAPI]
     public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object {
@@ -57,6 +60,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       ));
     }
 
+    [PublicAPI]
     public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
     ) where A : Object =>
