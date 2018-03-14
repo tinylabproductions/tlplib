@@ -32,15 +32,13 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       OtherPagesItemsScale = 1,
       AdjacentToSelectedPageItemsScale = 1,
       moveCompletedEventThreshold = 0.02f;
-    public bool wrapCarouselAround;
+    public bool wrapCarouselAround, whenNotLoopableMove = true;
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
     // There's still a visual issue when all items fits into selection window
     [SerializeField] float selectionWindowWidth;
-    bool wrapAround => wrapCarouselAround;
-    [Inspect(nameof(wrapAround)), SerializeField] float becomesLoopableAtNElements = 5;
 #pragma warning restore 649
 
     #endregion
@@ -67,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
-    bool loopable => wrapCarouselAround && elements.Count >= becomesLoopableAtNElements;
+    bool loopable => wrapCarouselAround && elements.Count > 4;
 
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
@@ -168,6 +166,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
       pivotState = clampedPivot;
 
+
       float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotState);
 
       for (var idx = 0; idx < elements.Count; idx++) {
@@ -185,6 +184,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           findBestElementPos(currentPosition - elements.Count);
           findBestElementPos(currentPosition + elements.Count);
         }
+
         var indexDiff = Mathf.Abs(idx - elementPos);
         var sign = Mathf.Sign(idx - elementPos);
         var deltaPos =
@@ -196,7 +196,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         }
 
         var t = elements[idx].gameObject.transform;
-        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivotState * SpaceBetweenSelectedAndAdjacentPages);
+
+        var pivot = (loopable || whenNotLoopableMove) ? pivotState : -(elementsCount - 1) / 2f + currentPosition;
+
+        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivot * SpaceBetweenSelectedAndAdjacentPages);
 
         t.localScale = Vector3.one * (indexDiff < 1
           ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
