@@ -78,8 +78,16 @@ namespace com.tinylabproductions.TLPLib.Collection {
       map<A, B, ImmutableArray<A>>(ne, f);
 
     [PublicAPI]
+    public static NonEmpty<ImmutableArray<A>> toImmutableArray<A>(this NonEmpty<IEnumerable<A>> ne) =>
+      NonEmpty<ImmutableArray<A>>.__unsafeNew(ne.a.ToImmutableArray());
+
+    [PublicAPI]
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableList<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableList<A>>(ne, f);
+
+    [PublicAPI]
+    public static NonEmpty<ImmutableList<A>> toImmutableList<A>(this NonEmpty<IEnumerable<A>> ne) =>
+      NonEmpty<ImmutableList<A>>.__unsafeNew(ne.a.ToImmutableList());
 
     [PublicAPI]
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableHashSet<A>> ne, Func<A, B> f) =>
