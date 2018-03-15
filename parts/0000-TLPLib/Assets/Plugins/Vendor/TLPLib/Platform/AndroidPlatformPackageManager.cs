@@ -11,7 +11,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
     public ImmutableSortedSet<string> packageNames { get; }
 
     public AndroidPlatformPackageManager() {
-      //Cache all of the package names for better performance
       packageNames =
         AndroidActivity.packageManager
           .getInstalledPackages(PackageManager.GetPackageInfoFlags.GET_ACTIVITIES)

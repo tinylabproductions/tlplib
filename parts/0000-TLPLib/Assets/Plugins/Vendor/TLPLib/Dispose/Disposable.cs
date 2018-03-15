@@ -84,21 +84,17 @@ namespace Smooth.Dispose {
 		/// </summary>
 		public T value { get; private set; }
 
-		private Disposable() {}
+		Disposable() {}
 
 		/// <summary>
 		/// Relinquishes ownership of the wrapper, disposes the wrapped value, and returns the wrapper to the pool.
 		/// </summary>
-		public void Dispose() {
-			pool.Release(this);
-		}
+		public void Dispose() => pool.Release(this);
 
 		/// <summary>
 		/// Relinquishes ownership of the wrapper and adds it to the disposal queue.
 		/// </summary>
-		public void DisposeInBackground() {
-			DisposalQueue.Enqueue(this);
-		}
+		public void DisposeInBackground() => DisposalQueue.Enqueue(this);
 	}
 
 #endif

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
@@ -50,12 +51,12 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     }
 
     [PublicAPI]
-    public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
+    public static Tpl<ResourceRequest, Future<Either<ErrorMsg, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object {
       var path = loadPath.unityPath;
       var request = Resources.LoadAsync<ResourceReference<A>>(path);
-      return F.t(request, Future<Either<string, A>>.async(
+      return F.t(request, Future<Either<ErrorMsg, A>>.async(
         p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
       ));
     }
@@ -66,15 +67,16 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     ) where A : Object =>
       loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
 
+    [PublicAPI]
     public static IEnumerator waitForLoadCoroutine<A>(
-      ResourceRequest request, Action<Either<string, A>> whenDone, string path
+      ResourceRequest request, Action<Either<ErrorMsg, A>> whenDone, string path
     ) where A : Object {
       yield return request;
       var csr = (ResourceReference<A>) request.asset;
       whenDone(
         csr
-        ? F.right<string, A>(csr.reference)
-        : F.left<string, A>(notFound(path))
+        ? F.right<ErrorMsg, A>(csr.reference)
+        : F.left<ErrorMsg, A>(new ErrorMsg(notFound(path)))
       );
     }
   }
