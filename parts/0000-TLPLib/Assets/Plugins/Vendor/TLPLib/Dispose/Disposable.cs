@@ -1,55 +1,8 @@
 using System;
-
+using JetBrains.Annotations;
 using Smooth.Pools;
 
 namespace Smooth.Dispose {
-
-#if UNITY_IOS || UNITY_PS3 || UNITY_XBOX360 || UNITY_WII
-
-	/// <summary>
-	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
-	///
-	/// On iOS, this is a struct to avoid compute_class_bitmap errors.
-	///
-	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
-	/// </summary>
-	public struct Disposable<T> : IDisposable {
-		/// <summary>
-		/// Borrows a wrapper for the specified value and disposal delegate.
-		/// </summary>
-		public static Disposable<T> Borrow(T value, Act<T> dispose) {
-			return new Disposable<T>(value, dispose);
-		}
-
-		private readonly Act<T> dispose;
-
-		/// <summary>
-		/// The wrapped value.
-		/// </summary>
-		public readonly T value;
-
-		public Disposable(T value, Act<T> dispose) {
-			this.value = value;
-			this.dispose = dispose;
-		}
-
-		/// <summary>
-		/// Relinquishes ownership of the wrapper and disposes the wrapped value.
-		/// </summary>
-		public void Dispose() {
-			dispose(value);
-		}
-
-		/// <summary>
-		/// Relinquishes ownership of the wrapper and adds it to the disposal queue.
-		/// </summary>
-		public void DisposeInBackground() {
-			DisposalQueue.Enqueue(this);
-		}
-	}
-
-#else
-
 	/// <summary>
 	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
 	///
@@ -58,7 +11,7 @@ namespace Smooth.Dispose {
 	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
 	/// </summary>
 	public class Disposable<T> : IDisposable {
-		private static readonly Pool<Disposable<T>> pool = new Pool<Disposable<T>>(
+		static readonly Pool<Disposable<T>> pool = new Pool<Disposable<T>>(
 			() => new Disposable<T>(),
 			wrapper => {
 				wrapper.dispose(wrapper.value);
@@ -77,7 +30,7 @@ namespace Smooth.Dispose {
 			return wrapper;
 		}
 
-		private Act<T> dispose;
+		Act<T> dispose;
 
 		/// <summary>
 		/// The wrapped value.
@@ -85,6 +38,10 @@ namespace Smooth.Dispose {
 		public T value { get; private set; }
 
 		Disposable() {}
+		
+		[PublicAPI]
+		public static Disposable<T> createUnpooled(T value, Act<T> dispose) =>
+			new Disposable<T> { value = value, dispose = dispose };
 
 		/// <summary>
 		/// Relinquishes ownership of the wrapper, disposes the wrapped value, and returns the wrapper to the pool.
@@ -97,6 +54,9 @@ namespace Smooth.Dispose {
 		public void DisposeInBackground() => DisposalQueue.Enqueue(this);
 	}
 
-#endif
-
+	public static class Disposable {
+		[PublicAPI]
+		public static Disposable<T> createUnpooled<T>(T value, Act<T> dispose) =>
+			Disposable<T>.createUnpooled(value, dispose);
+	}
 }
