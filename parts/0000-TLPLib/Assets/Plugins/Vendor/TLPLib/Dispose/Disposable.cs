@@ -3,6 +3,12 @@ using JetBrains.Annotations;
 using Smooth.Pools;
 
 namespace Smooth.Dispose {
+	// Unity runtime does not like variant interfaces. They occasionally crash.
+	// ReSharper disable once TypeParameterCanBeVariant
+	public interface IDisposable<A> : IDisposable {
+		A value { get; }
+	}
+	
 	/// <summary>
 	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
 	///
@@ -10,13 +16,13 @@ namespace Smooth.Dispose {
 	///
 	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
 	/// </summary>
-	public class Disposable<T> : IDisposable {
+	public class Disposable<T> : IDisposable<T> {
 		static readonly Pool<Disposable<T>> pool = new Pool<Disposable<T>>(
 			() => new Disposable<T>(),
 			wrapper => {
 				wrapper.dispose(wrapper.value);
 				wrapper.dispose = t => {};
-				wrapper.value = default(T);
+				wrapper.value = default;
 			}
 		);
 
@@ -38,10 +44,8 @@ namespace Smooth.Dispose {
 		public T value { get; private set; }
 
 		Disposable() {}
-		
-		[PublicAPI]
-		public static Disposable<T> createUnpooled(T value, Act<T> dispose) =>
-			new Disposable<T> { value = value, dispose = dispose };
+
+		public override string ToString() => $"{nameof(Disposable<T>)}({value})";
 
 		/// <summary>
 		/// Relinquishes ownership of the wrapper, disposes the wrapped value, and returns the wrapper to the pool.
@@ -54,9 +58,25 @@ namespace Smooth.Dispose {
 		public void DisposeInBackground() => DisposalQueue.Enqueue(this);
 	}
 
+	class UnpooledDisposable<A> : IDisposable<A> {
+		public A value { get; }
+		readonly Act<A> dispose;
+
+		public UnpooledDisposable(A value, Act<A> dispose) {
+			this.dispose = dispose;
+			this.value = value;
+		}
+
+		public void Dispose() => dispose(value);
+	}
+	
 	public static class Disposable {
 		[PublicAPI]
-		public static Disposable<T> createUnpooled<T>(T value, Act<T> dispose) =>
-			Disposable<T>.createUnpooled(value, dispose);
+		public static IDisposable<A> pooled<A>(A value, Act<A> dispose) =>
+			Disposable<A>.Borrow(value, dispose);
+		
+		[PublicAPI]
+		public static IDisposable<A> unpooled<A>(A value, Act<A> dispose) =>
+			new UnpooledDisposable<A>(value, dispose);
 	}
 }
