@@ -41,11 +41,12 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public Try<IEnumerable<PathStr>> files => 
       F.doTry(() => Directory.GetFiles(root).Select(_ => new PathStr(_)));
 
-    [PublicAPI] public FilesystemDataCache scoped(string scope) {
+    [PublicAPI]
+    public Try<FilesystemDataCache> scoped(string scope) => F.doTry(() => {
       var newPath = root / scope;
       Directory.CreateDirectory(newPath);
       return new FilesystemDataCache(newPath);
-    }
+    });
   }
 
   public static class PersistentDataCacheExts {
