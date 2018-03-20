@@ -17,7 +17,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static ASyncHelperBehaviour _behaviour;
 
-    static ASyncHelperBehaviour behaviour { get {
+    [PublicAPI]
+    public static ASyncHelperBehaviour behaviour { get {
       if (
 #if !UNITY_EDITOR
         // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator

@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +42,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static Tweener<Vector3, Transform> tweenPositionRelative(
       this Tweener<Vector3, Transform> t, Vector3 to, Ease ease, float duration
     ) => t.t.tweenPosition(t.tween.end, t.tween.end + to, ease, duration);
+    
+    public static Tweener<Vector3, Transform> tweenLocalPosition(
+      this Transform t, Vector3 start, Vector3 to, Ease ease, float duration
+    ) => tweenTransformVector(t, start, to, ease, duration, TweenMutators.localPosition);
     #endregion
 
     #region Transform Scale
@@ -88,6 +93,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Tweener<Vector2, RectTransform> t, Vector2 to, Ease ease, float duration
     ) => t.t.tweenAnchoredPosition(t.tween.end, t.tween.end + to, ease, duration);
     #endregion
+
+    [PublicAPI]
+    public static Tweener<A, Ref<A>> tweenValue<A>(
+      this Ref<A> reference, Tween<A> tween
+    ) => a(tween, reference, (val, r) => r.value = val);
   }
 
   /// <summary>

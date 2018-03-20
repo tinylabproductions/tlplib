@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  class ASyncHelperBehaviour : MonoBehaviour,
+  public class ASyncHelperBehaviour : MonoBehaviour,
     IMB_OnApplicationPause, IMB_OnApplicationQuit, IMB_LateUpdate
   {
     readonly Subject<bool> _onPause = new Subject<bool>();
