@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -104,6 +105,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Tweener<Vector2, RectTransform> t, Vector2 to, Ease ease, float duration
     ) => t.t.tweenAnchoredPosition(t.tween.end, t.tween.end + to, ease, duration);
     #endregion
+
+    [PublicAPI]
+    public static Tweener<A, Ref<A>> tweenValue<A>(
+      this Ref<A> reference, Tween<A> tween
+    ) => a(tween, reference, (val, r) => r.value = val);
   }
 
   /// <summary>

@@ -14,4 +14,8 @@ namespace com.tinylabproductions.TLPLib.validations {
     // Checked field values are grouped by category
     public readonly string category;
   }
+
+  public class UniqueGuid : UniqueValue {
+    public UniqueGuid() : base("Guid") { }
+  }
 }

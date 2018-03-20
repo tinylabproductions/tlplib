@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,5 +27,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         )),
         F.right<ErrorMsg, A>
       );
+
+    public static ScenePath scenePath(this Scene scene) => new ScenePath(scene.path);
   }
 }
