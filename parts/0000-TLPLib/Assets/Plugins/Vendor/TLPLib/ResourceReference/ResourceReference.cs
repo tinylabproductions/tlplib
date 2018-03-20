@@ -37,41 +37,22 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     }
 #endif
 
-    static string notFound(string path) => $"Resource not found: {path}";
+    [PublicAPI]
+    public static Either<string, A> load<A>(PathStr loadPath) where A : Object => 
+      ResourceLoader.load<ResourceReference<A>>(loadPath).mapRight(_ => _.reference);
 
-    public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
-      var path = loadPath.unityPath;
-      var csr = Resources.Load<ResourceReference<A>>(path);
-      return csr
-        ? F.right<string, A>(csr.reference)
-        : F.left<string, A>(notFound(path));
-    }
-
+    [PublicAPI]
     public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
       PathStr loadPath
-    ) where A : Object {
-      var path = loadPath.unityPath;
-      var request = Resources.LoadAsync<ResourceReference<A>>(path);
-      return F.t(request, Future<Either<string, A>>.async(
-        p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
-      ));
-    }
+    ) where A : Object =>
+      ResourceLoader.loadAsync<ResourceReference<A>>(loadPath)
+        .map2(future => future.mapT(_ => _.reference));
 
+    [PublicAPI]
     public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
     ) where A : Object =>
-      loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
-
-    public static IEnumerator waitForLoadCoroutine<A>(
-      ResourceRequest request, Action<Either<string, A>> whenDone, string path
-    ) where A : Object {
-      yield return request;
-      var csr = (ResourceReference<A>) request.asset;
-      whenDone(
-        csr
-        ? F.right<string, A>(csr.reference)
-        : F.left<string, A>(notFound(path))
-      );
-    }
+      ResourceLoader.loadAsyncIgnoreErrors<ResourceReference<A>>(loadPath, logOnError)
+        .map2(future => future.map(_ => _.reference));
   }
 }
