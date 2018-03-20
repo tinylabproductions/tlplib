@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
+using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
@@ -38,12 +40,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         }
         else if (!first) sb.Append(' ');
 
-        var str = item as string; // String is IEnumerable as well
-        if (str != null) sb.Append(str);
-        else {
-          var enumItem = item as IEnumerable;
-          if (enumItem != null) asStringRec(enumItem, sb, newlines, fullClasses, indent + 1);
-          else sb.Append(item);
+        switch (item) {
+          case string str:
+            sb.Append(str);
+            break;
+          case IEnumerable enumItem:
+            asStringRec(enumItem, sb, newlines, fullClasses, indent + 1);
+            break;
+          default:
+            sb.Append(item);
+            break;
         }
         first = false;
       }
@@ -295,6 +301,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static bool isEmpty<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
     public static bool nonEmpty<A>(this IEnumerable<A> enumerable) => enumerable.Any();
+
+    [PublicAPI]
+    public static IEnumerable<A> Except<A>(
+      this IEnumerable<A> enumerable, A except, IEqualityComparer<A> cmp = null
+    ) {
+      cmp = cmp ?? EqComparer<A>.Default;
+      return enumerable.Where(a => !cmp.Equals(a, except));
+    }
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
