@@ -8,15 +8,17 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public interface IAssetLoader<A> {
-    A loadAsset();
-    Tpl<ResourceRequest, Future<A>> loadAssetAsync();
-    
+  public interface IAssetLoader {
     string assetName { get; }
     string assetRuntimeResourceDirectory { get; }
     PathStr assetRuntimeResourcePath { get; }
     PathStr assetEditorResourceDirectory { get; }
     PathStr assetEditorResourcePath { get; }
+  }
+  
+  public interface IAssetLoader<A> : IAssetLoader {
+    A loadAsset();
+    Tpl<ResourceRequest, Future<A>> loadAssetAsync();
   }
 
   public static class AssetLoaderExts {
