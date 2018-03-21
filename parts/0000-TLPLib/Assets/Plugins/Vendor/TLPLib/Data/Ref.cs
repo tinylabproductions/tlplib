@@ -63,11 +63,11 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Inspect]
     public A value {
-      get { return backing.get.value; }
-      set { backing.get.value = value;}
+      get { return backing.strict.value; }
+      set { backing.strict.value = value;}
     }
 
-    public override string ToString() => backing.get.ToString();
+    public override string ToString() => backing.strict.ToString();
   }
 
   public static class Ref {
