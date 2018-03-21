@@ -338,29 +338,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       cmp = cmp ?? EqComparer<A>.Default;
       return enumerable.Where(a => !cmp.Equals(a, except));
     }
-    
-    /// <summary>
-    /// Turns enumerable into one that repeats itself forever
-    /// </summary>
-    /// <param name="enumerable"></param>
-    /// <typeparam name="A"></typeparam>
-    /// <returns></returns>
-    [PublicAPI]
-    public static IEnumerable<A> looped<A>(this IEnumerable<A> enumerable) {
-      var isEmpty = true;
-      // ReSharper disable once PossibleMultipleEnumeration
-      foreach (var firstA in enumerable) {
-        isEmpty = false;
-        yield return firstA;
-      }
-      if (isEmpty) yield break;
-      
-      while (true) {
-        // ReSharper disable once PossibleMultipleEnumeration
-        foreach (var a in enumerable)
-          yield return a;
-      }
-    }
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
