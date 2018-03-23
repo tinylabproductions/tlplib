@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class Texture2DExts {
@@ -44,9 +45,49 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return t;
     }
 
-    public static Sprite toSprite(this Texture2D texture) {
+    public static Sprite toSprite(this Texture2D texture, float pixelsPerUnit = 100) {
       var rec = new Rect(0, 0, texture.width, texture.height);
-      return Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
+      return Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), pixelsPerUnit);
+    }
+
+    public static Texture2D textureFromCamera(
+      this Camera camera, int width, int height,
+      int depthBuffer = 16,
+      RenderTextureFormat renderTextureFormat = RenderTextureFormat.ARGB32,
+      TextureFormat textureFormat = TextureFormat.RGB24,
+      bool mipmap = false
+    ) {
+      var renderTexture = RenderTexture.GetTemporary(width, height, depthBuffer, renderTextureFormat);
+      renderTexture.Create();
+      var prevTargetTexture = camera.targetTexture;
+      camera.targetTexture = renderTexture;
+      camera.Render();
+      camera.targetTexture = prevTargetTexture;
+
+      /*
+       * Texture2D#ReadPixels reads all pixels on the screen if RenderTexture.active is null,
+       * otherwise it reads from the set texture.
+       * https://docs.unity3d.com/ScriptReference/RenderTexture-active.html
+       */
+      var currentRT = RenderTexture.active;
+      RenderTexture.active = renderTexture;
+      var texture = new Texture2D(width, height, textureFormat, mipmap);
+      texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+      texture.Apply();
+      RenderTexture.active = currentRT;
+      RenderTexture.ReleaseTemporary(renderTexture);
+      return texture;
+    }
+
+    // Well, sometimes SupportsTextureFormat throws an exception. Not much we can do there.
+    public static bool isSupported(this TextureFormat f) {
+      try { return SystemInfo.SupportsTextureFormat(f); }
+      catch { return false; }
+    }
+
+    public static bool isSupported(this RenderTextureFormat f) {
+      try { return SystemInfo.SupportsRenderTextureFormat(f); }
+      catch { return false; }
     }
   }
 }
