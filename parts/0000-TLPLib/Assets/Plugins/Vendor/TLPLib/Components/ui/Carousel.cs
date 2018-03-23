@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     GameObject gameObject { get; }
   }
 
-  public class Carousel<A> : UIBehaviour, IMB_Update where A : ICarouselItem {
+  public class Carousel<A> : UIBehaviour, IMB_Update, IMB_OnDrawGizmosSelected where A : ICarouselItem {
 
     #region Unity Serialized Fields
 
@@ -32,11 +32,13 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       OtherPagesItemsScale = 1,
       AdjacentToSelectedPageItemsScale = 1,
       moveCompletedEventThreshold = 0.02f;
-    public bool wrapCarouselAround;
+    public bool wrapCarouselAround, whenNotLoopableMove = true;
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
+    // There's still a visual issue when all items fits into selection window
+    [SerializeField] float selectionWindowWidth;
 #pragma warning restore 649
 
     #endregion
@@ -77,15 +79,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    float currentPosition;
+    float currentPosition, pivotState;
 
     int targetPageValue;
     public bool isMoving { get; private set; }
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
     public IObservable<Unit> movementComplete => _movementComplete;
 
-    public void nextPage() => setPageAnimated(targetPageValue + 1);
-    public void prevPage() => setPageAnimated(targetPageValue - 1);
+    public void nextPage() => movePagesByAnimated(1);
+    public void prevPage() => movePagesByAnimated(-1);
 
     protected Carousel() {
       __currentElement = F.lazy(() => {
@@ -103,33 +105,33 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     /// <summary>Set page with smooth animations.</summary>
-    public void setPageAnimated(int index) {
+    public void setPageAnimated(int page) {
+      if (elements.isEmpty()) return;
+      var current = page - _page.value;
+      void findBestPage(int p) {
+        if (Math.Abs(p + pivotState) <= Math.Abs(current + pivotState)) {
+          current = p;
+        }
+      }
+      findBestPage(page - _page.value - elementsCount);
+      findBestPage(page - _page.value + elementsCount);
+      movePagesByAnimated(current);
+    }
+
+    void movePagesByAnimated(int offset) {
       if (elements.isEmpty()) return;
 
       if (!loopable) {
         // when we increase past last page go to page 0 if wrapCarouselAround == true
+        var page = offset + targetPageValue;
         targetPageValue = wrapCarouselAround
-          ? index.modPositive(elements.Count)
-          : Mathf.Clamp(index, 0, elements.Count - 1);
+          ? page.modPositive(elements.Count)
+          : Mathf.Clamp(page, 0, elements.Count - 1);
         _page.value = targetPageValue;
       }
       else {
-        var diff = Mathf.Abs(index - targetPageValue);
-        if (diff < 2) {
-          targetPageValue = Mathf.Clamp(index, -1, elements.Count);
-          if (index != targetPageValue) {
-            currentPosition = (elements.Count + targetPageValue) % elements.Count;
-            targetPageValue = (elements.Count + index) % elements.Count;
-          }
-          _page.value = (elements.Count + targetPageValue) % elements.Count;
-        }
-        else {
-          if (diff > elements.Count/2f) {
-            currentPosition = targetPageValue + (targetPageValue < index ? elements.Count : -elements.Count);
-          }
-          targetPageValue = (elements.Count + index) % elements.Count;
-          _page.value = targetPageValue;
-        }
+        targetPageValue += offset;
+        _page.value = targetPageValue.modPositive(elements.Count);
       }
     }
 
@@ -138,46 +140,74 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     void lerpPosition(float amount) {
+      if (elements.isEmpty()) return;
+
       var withinMoveCompletedThreshold =
         Math.Abs(currentPosition - targetPageValue) < moveCompletedEventThreshold;
       if (isMoving && withinMoveCompletedThreshold) _movementComplete.push(F.unit);
       isMoving = !withinMoveCompletedThreshold;
 
+      var prevPos = currentPosition;
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
-      var isMovingLeft = targetPageValue < currentPosition;
-      var elementsOnTheLeft = elements.Count / 2 + (isMovingLeft ? -1 : 0);
+      var posDiff = currentPosition - prevPos;
+
+      while (currentPosition > elementsCount) {
+        currentPosition -= elementsCount;
+        targetPageValue -= elementsCount;
+      }
+
+      while (currentPosition < 0) {
+        currentPosition += elementsCount;
+        targetPageValue += elementsCount;
+      }
+
+      var clampedPivot = Mathf.Clamp(pivotState + posDiff,
+        -selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages,
+        selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
+      pivotState = clampedPivot;
+
+
+      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotState);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
         if (loopable) {
-          if (targetPageValue > idx + elementsOnTheLeft) {
-            elementPos = currentPosition - elements.Count;
+          var best = calcDeltaPosAbs(idx, elementPos);
+          void findBestElementPos(float newElementPos) {
+            var cur = calcDeltaPosAbs(idx, newElementPos);
+            if (cur < best) {
+              best = cur;
+              elementPos = newElementPos;
+            }
           }
-          if (targetPageValue + elements.Count - 1 < idx + elementsOnTheLeft) {
-            elementPos = currentPosition + elements.Count;
-          }
+
+          findBestElementPos(currentPosition - elements.Count);
+          findBestElementPos(currentPosition + elements.Count);
         }
-        var absDiff = Mathf.Abs(idx - elementPos);
+
+        var indexDiff = Mathf.Abs(idx - elementPos);
         var sign = Mathf.Sign(idx - elementPos);
-        var delta = (Mathf.Clamp01(absDiff)
-          * SpaceBetweenSelectedAndAdjacentPages + Mathf.Max(0, absDiff - 1)
-          * SpaceBetweenOtherPages)
-          * sign;
+        var deltaPos =
+          Mathf.Clamp01(indexDiff) * SpaceBetweenSelectedAndAdjacentPages +
+          Mathf.Max(0, indexDiff - 1) * SpaceBetweenOtherPages;
 
         foreach (var distance in disableDistantElements) {
-          elements[idx].gameObject.SetActive(Mathf.Abs(delta) < distance);
+          elements[idx].gameObject.SetActive(deltaPos < distance);
         }
 
         var t = elements[idx].gameObject.transform;
-        t.localPosition = getPosition(_direction, delta, absDiff, selectedPageOffset);
 
-        t.localScale = Vector3.one * (absDiff < 1
-          ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, absDiff)
+        var pivot = (loopable || whenNotLoopableMove) ? pivotState : -(elementsCount - 1) / 2f + currentPosition;
+
+        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivot * SpaceBetweenSelectedAndAdjacentPages);
+
+        t.localScale = Vector3.one * (indexDiff < 1
+          ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
           :
             maxElementsFromCenter.value.fold(
-              () => Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, absDiff - 1),
+              () => Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, indexDiff - 1),
               maxElementsFromCenter => Mathf.Lerp(
-                AdjacentToSelectedPageItemsScale, 0, absDiff - maxElementsFromCenter
+                AdjacentToSelectedPageItemsScale, 0, indexDiff - maxElementsFromCenter
               )
             )
         );
@@ -185,12 +215,12 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     static Vector3 getPosition(
-      Carousel.Direction carouselDirection, float positionChange, float absDiff,
-      Option<Vector3> centralItemOffset
+      Carousel.Direction carouselDirection, float distanceFromPivot, float absDiff,
+      Option<Vector3> centralItemOffset, float pivotPos
     ) {
       var newPos = carouselDirection == Carousel.Direction.Horizontal
-        ? new Vector3(positionChange, 0, 0)
-        : new Vector3(0, -positionChange, 0);
+        ? new Vector3(distanceFromPivot + pivotPos, 0, 0)
+        : new Vector3(0, -distanceFromPivot - pivotPos, 0);
 
       foreach (var offset in centralItemOffset) {
         var lerpedOffset = Vector3.Lerp(offset, Vector3.zero, absDiff);
@@ -237,6 +267,31 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             default:
               throw new ArgumentOutOfRangeException(nameof(swipeDirection), swipeDirection, null);
           }
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
+      }
+    }
+
+    public void OnDrawGizmosSelected() {
+      Gizmos.color = Color.blue;
+      var halfOfSelectionWindow = selectionWindowWidth / 2;
+      var lineLength =
+        _direction == Carousel.Direction.Horizontal
+          ? ((RectTransform)transform).rect.height
+          : ((RectTransform)transform).rect.width;
+      var halfLineLength = lineLength / 2;
+
+      Vector3 t(Vector3 v) => transform.TransformPoint(v);
+
+      switch (_direction) {
+        case Carousel.Direction.Horizontal:
+          Gizmos.DrawLine(t(new Vector3(-halfOfSelectionWindow, -halfLineLength)), t(new Vector3(-halfOfSelectionWindow, halfLineLength)));
+          Gizmos.DrawLine(t(new Vector3(halfOfSelectionWindow, -halfLineLength)), t(new Vector3(halfOfSelectionWindow, halfLineLength)));
+          break;
+        case Carousel.Direction.Vertical:
+          Gizmos.DrawLine(t(new Vector3(-halfLineLength, -halfOfSelectionWindow)), t(new Vector3(halfLineLength, -halfOfSelectionWindow)));
+          Gizmos.DrawLine(t(new Vector3(-halfLineLength, halfOfSelectionWindow)), t(new Vector3(halfLineLength, halfOfSelectionWindow)));
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
