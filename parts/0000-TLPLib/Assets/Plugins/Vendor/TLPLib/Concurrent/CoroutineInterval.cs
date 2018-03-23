@@ -14,31 +14,35 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     setValue(end);
   */
   public struct CoroutineInterval {
-    readonly TimeScale timeScale;
-    readonly float startTime, endTime;
+    readonly ITimeContext timeContext;
+    readonly Duration startTime, endTime;
 
-    public CoroutineInterval(Duration duration, TimeScale timeScale = TimeScale.Unity) {
-      this.timeScale = timeScale;
-      startTime = timeScale.now();
-      endTime = startTime + duration.seconds;
+    public CoroutineInterval(Duration duration, TimeScale timeScale = TimeScale.Unity)
+      : this(duration, timeScale.asContext()) {}
+
+    public CoroutineInterval(Duration duration, ITimeContext timeContext) {
+      this.timeContext = timeContext;
+      startTime = timeContext.passedSinceStartup;
+      endTime = startTime + duration;
     }
 
     public CoroutineIntervalEnumerator GetEnumerator() => new CoroutineIntervalEnumerator(this);
 
     public struct CoroutineIntervalEnumerator {
       readonly CoroutineInterval ci;
-      float curTime;
+      Duration curTime;
       
       public CoroutineIntervalEnumerator(CoroutineInterval ci) : this() { this.ci = ci; }
 
       public bool MoveNext() {
-        curTime = ci.timeScale.now();
+        curTime = ci.timeContext.passedSinceStartup;
         return curTime <= ci.endTime;
       }
 
       public void Reset() { }
 
-      public Percentage Current => new Percentage(Mathf.InverseLerp(ci.startTime, ci.endTime, curTime));
+      public Percentage Current =>
+        new Percentage(Mathf.InverseLerp(ci.startTime.seconds, ci.endTime.seconds, curTime.seconds));
     }
   }
 }
