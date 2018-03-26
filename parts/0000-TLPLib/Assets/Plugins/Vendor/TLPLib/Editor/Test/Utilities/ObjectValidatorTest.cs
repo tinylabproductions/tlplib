@@ -9,6 +9,7 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEditor;
@@ -21,7 +22,9 @@ using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator
 #pragma warning disable 169
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
-  public class ObjectValidatorTest : ImplicitSpecification {
+  public partial class ObjectValidatorTest : ImplicitSpecification {
+    public const string UNIQUE_CATEGORY = "UNIQUE_CATEGORY";
+
     class Component1 : MonoBehaviour { }
     class Component2 : MonoBehaviour { }
     class Component3 : MonoBehaviour { }
@@ -139,6 +142,89 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     class OnObjectValidateReturnsNull : MonoBehaviour, OnObjectValidate {
       public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) => null;
+    }
+
+    #endregion
+
+    #region UniqueValue duplicates
+
+    [Serializable, Record]
+    public partial struct UniqueValueStruct {
+      [UniqueValue(UNIQUE_CATEGORY)] readonly byte[] identifier;
+    }
+
+    [Test]
+    public void uniqueValuesComparer() {
+      describe(() => {
+        void test<A>(Fn<A> createValue1, Fn<A> createValue2) =>
+          when[typeof(A).Name] = () => {
+            it["should work on same values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
+              createValue1(), createValue1()
+            ).shouldBeTrue();
+
+            it["should work on different values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
+              createValue1(), createValue2()
+            ).shouldBeFalse();
+          };
+
+        test(() => new byte[] {0, 1}, () => new byte[] {0, 2});
+        test(() => new[] {"0", "1"}, () => new [] {"0", "2"});
+        test(() => "foo", () => "bar");
+        test(() => 0, () => 1);
+        test(() => 0u, () => 1u);
+        test(() => 0L, () => 1L);
+      });
+    }
+
+    [Test]
+    public void uniqueValuesInScriptableObject() {
+      describe(() => {
+        when["duplicates exist"] = () => {
+          it["should fail"] = () => {
+            errorsInScriptableObject<UniqueValueScriptableObject>(
+              a => {
+                a.identifier = new byte[] {1, 2};
+                a.identifier2 = new byte[] {1, 2};
+              }
+            ).shouldHave(ErrorType.DuplicateUniqueValue);
+          };
+        };
+        when["there are no duplicates"] = () => {
+          it["should pass"] = () =>
+            errorsInScriptableObject<UniqueValueScriptableObject>(
+              a => {
+                a.identifier = new byte[] {1, 2};
+                a.identifier2 = new byte[] {1, 3};
+              }
+            ).shouldBeEmpty();
+        };
+      });
+    }
+
+    [Test]
+    public void uniqueValuesInScriptableObjectLists() {
+      describe(() => {
+        when["duplicates exist"] = () => {
+          it["should fail"] = () => {
+            errorsInScriptableObject<UniqueValueScriptableObjectWithList>(
+              _ => _.listOfStructs = new List<UniqueValueStruct> {
+                new UniqueValueStruct(new byte[] {1, 2}),
+                new UniqueValueStruct(new byte[] {1, 2})
+              }
+            ).shouldHave(ErrorType.DuplicateUniqueValue);
+          };
+        };
+        when["there are no duplicates"] = () => {
+          it["should pass"] = () => {
+            errorsInScriptableObject<UniqueValueScriptableObjectWithList>(
+              _ => _.listOfStructs = new List<UniqueValueStruct> {
+                new UniqueValueStruct(new byte[] {1, 2}),
+                new UniqueValueStruct(new byte[] {1, 3})
+              }
+            ).shouldBeEmpty();
+          };
+        };
+      });
     }
 
     #endregion
@@ -431,28 +517,40 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
-    static A setupComponent<A>(Act<A> setupA = null) where A : Component {
+    static GameObject setupGOWithComponent<A>(Act<A> setupA = null) where A : Component {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
-      return a;
+      return go;
     }
+    static ScriptableObject setupScriptableObject<A>(Act<A> setup = null) where A : ScriptableObject {
+      var so = ScriptableObject.CreateInstance<A>();
+      setup?.Invoke(so);
+      return so;
+    }
+
+    static ImmutableList<ObjectValidator.Error> checkForErrors<A>(
+      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+    ) where A : Object =>
+      ObjectValidator.check(
+        ObjectValidator.CheckContext.empty, new Object[] {create()},
+        uniqueValuesCache: uniqueValuesCache
+      );
+
+    static ImmutableList<ObjectValidator.Error> errorsInScriptableObject<A>(
+      Act<A> setup = null
+    ) where A : ScriptableObject =>
+      checkForErrors(() => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
 
     public static void shouldNotFindErrors<A>(
-      Act<A> setupA = null
-    ) where A : Component {
-      var go = setupComponent(setupA).gameObject;
-      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
-      errors.shouldBeEmpty();
-    }
+      Act<A> setup = null
+    ) where A : Component =>
+      checkForErrors(() => setupGOWithComponent(setup)).shouldBeEmpty();
 
     public static void shouldFindErrors<A>(
-      ErrorType errorType, Act<A> setupA = null
-    ) where A : Component {
-      var go = setupComponent(setupA).gameObject;
-      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new Object[] { go });
-      errors.shouldHave(errorType);
-    }
+      ErrorType errorType, Act<A> setup = null
+    ) where A : Component =>
+      checkForErrors(() => setupGOWithComponent(setup)).shouldHave(errorType);
   }
 
   public static class ErrorValidationExts {

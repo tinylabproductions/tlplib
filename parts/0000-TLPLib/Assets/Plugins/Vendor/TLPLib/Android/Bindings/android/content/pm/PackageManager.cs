@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
+using Application = UnityEngine.Application;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
   public class PackageManager : Binding {

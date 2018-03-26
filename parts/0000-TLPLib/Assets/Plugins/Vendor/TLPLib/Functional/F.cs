@@ -155,6 +155,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     /// <summary>Representation of && as a function.</summary>
     public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
+    public static readonly Fn<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;
 
     /// <summary>Representation of || as a function.</summary>
     public static readonly Fn<bool, bool, bool> or2 = (a, b) => a || b;

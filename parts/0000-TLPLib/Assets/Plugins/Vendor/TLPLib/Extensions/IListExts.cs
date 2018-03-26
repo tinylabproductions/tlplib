@@ -23,6 +23,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) =>
       index >= 0 && index < list.Count ? list[index] : defaultValue;
 
+    public static Option<T> last<T>(this IList<T> list) => list.get(list.Count - 1);
+
     public static List<A> reversed<A>(this List<A> list) {
       var reversed = new List<A>(list);
       reversed.Reverse();
@@ -183,7 +185,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       throw new IllegalStateException();
     }
 
-    public static Option<A> headOption<A>(this IList<A> list)
-      { return list.Count == 0 ? F.none<A>() : list[0].some(); }
+    public static Option<A> headOption<A>(this IList<A> list) => list.Count == 0 ? F.none<A>() : list[0].some();
   }
 }

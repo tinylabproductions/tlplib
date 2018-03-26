@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   [Serializable, Record(GenerateConstructor = false, GenerateToString = false)]
-  public partial struct PathStr : IComparable<PathStr> {
+  public partial struct PathStr : IComparable<PathStr>, IStr {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -48,7 +49,8 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public PathStr basename => new PathStr(Path.GetFileName(path));
     public string extension => Path.GetExtension(path);
     public PathStr ensureBeginsWith(PathStr p) => path.StartsWithFast(p.path) ? this : p / path;
-    public override string ToString() => path;
+    public override string ToString() => asString();
+    public string asString() => path;
     public string unixString => ToString().Replace('\\', '/');
 
     // Use this with Unity Resources, AssetDatabase and PrefabUtility methods

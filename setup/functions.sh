@@ -9,7 +9,7 @@ wname() { echo $@ | sed -e "s|/|\\\\|g"; }
 
 # Windows Directory Junction.
 junction() {
-  "$md/junction.exe" $@
+  "$md/junction.exe" "$@"
 }
 
 notif() {
@@ -86,7 +86,7 @@ END {
 
 dirlink() {
   local name="$1"
-  mkdir -p `dirname $name`
+  mkdir -p `dirname "$name"`
 
   if [[ "$OS" == *Windows* ]]; then
     junction -d "$name"

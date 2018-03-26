@@ -66,8 +66,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public static bool operator ==(OneOf<A, B, C> left, OneOf<A, B, C> right) => left.Equals(right);
-    public static bool operator !=(OneOf<A, B, C> left, OneOf<A, B, C> right) => !left.Equals(right);
+    public static bool operator ==(OneOf<A, B, C> lhs, OneOf<A, B, C> rhs) {
+#if ENABLE_IL2CPP
+      var leftNull = ReferenceEquals(lhs, null);
+      var rightNull = ReferenceEquals(rhs, null);
+      if (leftNull && rightNull) return true;
+      if (leftNull || rightNull) return false;
+#endif
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(OneOf<A, B, C> lhs, OneOf<A, B, C> rhs) => !(lhs == rhs);
 
 #endregion
 
