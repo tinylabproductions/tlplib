@@ -91,6 +91,9 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public UnityOptionString() { }
     public UnityOptionString(Option<string> value) : base(value) { }
   }
+  [Serializable] public class UnityOptionByteArray : UnityOption<byte[]> {
+    public UnityOptionByteArray(Option<byte[]> value) : base(value) { }
+  }
   [Serializable] public class UnityOptionVector2 : UnityOption<Vector2> {}
   [Serializable] public class UnityOptionVector3 : UnityOption<Vector3> {}
   [Serializable] public class UnityOptionVector4 : UnityOption<Vector4> {}

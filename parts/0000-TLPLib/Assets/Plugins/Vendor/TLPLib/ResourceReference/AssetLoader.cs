@@ -8,7 +8,15 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public interface IAssetLoader<A> {
+  public interface IAssetLoader {
+    string assetName { get; }
+    string assetRuntimeResourceDirectory { get; }
+    PathStr assetRuntimeResourcePath { get; }
+    PathStr assetEditorResourceDirectory { get; }
+    PathStr assetEditorResourcePath { get; }
+  }
+  
+  public interface IAssetLoader<A> : IAssetLoader {
     A loadAsset();
     Tpl<ResourceRequest, Future<A>> loadAssetAsync();
   }
@@ -18,19 +26,26 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       new AssetLoaderMapped<A, B>(loader, mapper);
   }
 
-  [Record]
-  public partial class AssetLoader<A> : IAssetLoader<A> where A : Object {
-    public readonly string assetName, resourcesSubDir;
-    public readonly PathStr generatedDir;
+  public class AssetLoader<A> : IAssetLoader<A> where A : Object {
+    public string assetName { get; }
+    public string assetRuntimeResourceDirectory { get; }
+    public PathStr assetEditorResourceDirectory { get; }
 
-    string prefabName => $"{assetName}.prefab";
-    public PathStr assetEditorResourcePath => generatedDir / prefabName;
-    public PathStr assetRuntimeResourcePath => PathStr.a(resourcesSubDir) / assetName;
+    public AssetLoader(string assetName, string assetRuntimeResourceDirectory, PathStr assetEditorResourceDirectory) {
+      this.assetName = assetName;
+      this.assetRuntimeResourceDirectory = assetRuntimeResourceDirectory;
+      this.assetEditorResourceDirectory = assetEditorResourceDirectory;
+    }
 
-    public A loadAsset() => ResourceReference.load<A>(assetRuntimeResourcePath).rightOrThrow;
+    public override string ToString() => $"{nameof(AssetLoader<A>)}({typeof(A)} @ {assetEditorResourcePath})";
+    
+    public PathStr assetEditorResourcePath => assetEditorResourceDirectory / $"{assetName}.asset";
+    public PathStr assetRuntimeResourcePath => PathStr.a(assetRuntimeResourceDirectory) / assetName;
+
+    public A loadAsset() => ResourceLoader.load<A>(assetRuntimeResourcePath).rightOrThrow;
 
     public Tpl<ResourceRequest, Future<A>> loadAssetAsync() {
-      var loaded = ResourceReference.loadAsync<A>(assetRuntimeResourcePath);
+      var loaded = ResourceLoader.loadAsync<A>(assetRuntimeResourcePath);
       var valuedFuture = loaded._2.flatMap(either => {
         if (either.isRight) return Future<A>.successful(either.rightOrThrow);
         Log.d.error(either.leftOrThrow);
@@ -47,5 +62,10 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     public B loadAsset() => mapper(loader.loadAsset());
     public Tpl<ResourceRequest, Future<B>> loadAssetAsync() => loader.loadAssetAsync().map2(_ => _.map(mapper));
+    public string assetName => loader.assetName;
+    public string assetRuntimeResourceDirectory => loader.assetRuntimeResourceDirectory;
+    public PathStr assetRuntimeResourcePath => loader.assetRuntimeResourcePath;
+    public PathStr assetEditorResourceDirectory => loader.assetEditorResourceDirectory;
+    public PathStr assetEditorResourcePath => loader.assetEditorResourcePath;
   }
 }

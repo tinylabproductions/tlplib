@@ -22,8 +22,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           var result = 0;
           registry[f1.value] = x => result = x;
           registry[f1.value] = x => result = x * 2;
-          f1.value.get.forSideEffects();
-          result.shouldEqual(f1.value.get * 2);
+          f1.value.strict.forSideEffects();
+          result.shouldEqual(f1.value.strict * 2);
         };
 
         it["should not interfere between registered futures of same type"] = () => {
@@ -34,9 +34,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           registry[f1.value] = x => result1 = x;
           registry[f2] = x => result2 = 0;
           registry[f2] = x => result2 = x;
-          f1.value.get.forSideEffects();
-          f2.get.forSideEffects();
-          F.t(result1, result2).shouldEqual(F.t(f1.value.get, f2.get));
+          f1.value.strict.forSideEffects();
+          f2.strict.forSideEffects();
+          F.t(result1, result2).shouldEqual(F.t(f1.value.strict, f2.strict));
         };
       };
 

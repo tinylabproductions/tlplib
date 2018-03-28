@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     /// Evaluating B will evaluate A, but evaluating A will not evaluate B.
     /// </summary>
     public static LazyVal<B> lazyMap<A, B>(this LazyVal<A> lazy, Fn<A, B> mapper) =>
-      F.lazy(() => mapper(lazy.get));
+      F.lazy(() => mapper(lazy.strict));
 
     /// <summary>
     /// Create a new lazy value B, based on lazy value A.
@@ -29,10 +29,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       project(lazy, mst => (LST) mst);
 
     public static A getOrElse<A>(this LazyVal<A> lazy, Fn<A> orElse) =>
-      lazy.isCompleted ? lazy.get : orElse();
+      lazy.isCompleted ? lazy.strict : orElse();
 
     public static A getOrElse<A>(this LazyVal<A> lazy, A orElse) =>
-      lazy.isCompleted ? lazy.get : orElse;
+      lazy.isCompleted ? lazy.strict : orElse;
 
     public static A getOrNull<A>(this LazyVal<A> lazy) where A : class =>
       lazy.getOrElse((A) null);
@@ -40,18 +40,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
   // Not `Lazy<A>` because of `System.Lazy<A>`.
   public interface LazyVal<A> : IHeapFuture<A> {
-    A get { get; }
+    A strict { get; }
   }
 
   public class NotReallyLazyVal<A> : LazyVal<A> {
-    public A get { get; }
+    public A strict { get; }
 
-    public NotReallyLazyVal(A get) { this.get = get; }
+    public NotReallyLazyVal(A get) { this.strict = get; }
 
     #region Future
     public bool isCompleted => true;
-    public Option<A> value => F.some(get);
-    public void onComplete(Act<A> action) => action(get);
+    public Option<A> value => F.some(strict);
+    public void onComplete(Act<A> action) => action(strict);
     #endregion
   }
 
@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       this.afterInitialization = afterInitialization.opt();
     }
 
-    public A get { get {
+    public A strict { get {
       if (! isCompleted) {
         obj = initializer();
         isCompleted = true;
@@ -117,6 +117,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public void onComplete(Act<B> action) => backing.onComplete(a => action(projector(a)));
     public Option<B> value => backing.value.map(projector);
     public bool isCompleted => backing.isCompleted;
-    public B get => projector(backing.get);
+    public B strict => projector(backing.strict);
   }
 }
