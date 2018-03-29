@@ -11,8 +11,13 @@ using Object = UnityEngine.Object;
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   public enum AssetLoadPriority : byte { Low, High }
 
+  /// <summary>
+  /// An asset loader that only loads one asset. If you set a new asset to be loaded, old asset
+  /// is stopped loading.
+  /// 
+  /// Exposes <see cref="assetState"/>, which indicates the state of current load. 
+  /// </summary>
   public partial class SingleAssetLoader<A> : IDisposable where A : Object {
-
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<ResourceRequest>> request = RxRef.a(F.none<ResourceRequest>());
 
