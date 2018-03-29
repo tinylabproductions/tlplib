@@ -1,6 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib.fns;
-
-namespace com.tinylabproductions.TLPLib.Data.typeclasses {
+﻿namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   public interface Numeric<A> : Comparable<A> {
     A add(A a1, A a2);
     A subtract(A a1, A a2);
