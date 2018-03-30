@@ -42,14 +42,14 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       ResourceLoader.load<ResourceReference<A>>(loadPath).mapRight(_ => _.reference);
 
     [PublicAPI]
-    public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
+    public static Tpl<IAsyncOperation, Future<Either<string, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object =>
       ResourceLoader.loadAsync<ResourceReference<A>>(loadPath)
         .map2(future => future.mapT(_ => _.reference));
 
     [PublicAPI]
-    public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
+    public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
     ) where A : Object =>
       ResourceLoader.loadAsyncIgnoreErrors<ResourceReference<A>>(loadPath, logOnError)
