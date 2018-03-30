@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
           if (deserializedOpt.isNone) {
             if (log.willLog(onDeserializeFailureLogLevel))
               log.log(onDeserializeFailureLogLevel, $"Can't deserialize {path}, deleting and returning default value.");
-            clear(path);
+            clear(path).getOrLog($"Couldn't clear file: '{path}'", log: log);
             return defaultValue;
           }
           return deserializedOpt.__unsafeGetValue.value;
