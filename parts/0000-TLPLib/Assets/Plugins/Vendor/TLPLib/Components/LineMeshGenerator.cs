@@ -1,0 +1,98 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+using static com.tinylabproductions.TLPLib.Components.MeshGenerationHelpers;
+
+namespace com.tinylabproductions.TLPLib.Components {
+  public class LineMeshGenerator {
+    const float LINES_PARALLEL_EPS = 0.2f;
+
+    readonly List<Vector3> vertices = new List<Vector3>();
+    readonly List<int> triangles = new List<int>();
+    readonly List<Vector2> uvs = new List<Vector2>();
+    readonly float width;
+    readonly Mesh m;
+
+    public LineMeshGenerator(float width, MeshFilter mf) {
+      this.width = width;
+      m = new Mesh();
+      mf.sharedMesh = m;
+    }
+
+    public delegate Vector3 GetPosByIndex(int idx);
+
+    public void update(int totalPositions, GetPosByIndex getPos) {
+      if (totalPositions < 2) return;
+      triangles.Clear();
+      fillVerticesAndUvs(totalPositions, getPos);
+      m.SetVertices(vertices);
+      m.SetTriangles(triangles, 0);
+      m.SetUVs(0, uvs);
+      m.RecalculateBounds();
+    }
+
+    void fillVerticesAndUvs(int totalPositions, GetPosByIndex getPos) {
+      var leftWidth = width / 2;
+      var vertCount = vertices.Count;
+      var idx = 0;
+
+      for (var i = 0; i < totalPositions; i++) {
+
+        var cur = getPos(i);
+        if (i == 0) {
+          var next = getPos(i + 1);
+          addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions, vertCount);
+        }
+        else if (i == totalPositions - 1) {
+          var prev = getPos(i - 1);
+          addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions, vertCount);
+        }
+        else {
+          var prev = getPos(i - 1);
+          var next = getPos(i + 1);
+          if (Vector2.Angle(prev - cur, next - cur) < 90) {
+            addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions, vertCount);
+            fillTriangle(idx);
+            addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions, vertCount);
+          }
+          else {
+            addVertsAndUvsForSegment(findCorners(prev, cur, next, -leftWidth, LINES_PARALLEL_EPS), ref idx, totalPositions, vertCount);
+            fillTriangle(idx);
+          }
+        }
+      }
+    }
+
+    void fillTriangle(int idx) {
+      /*
+       -2  |  -1
+       ----+----
+       -4  |  -3
+       */
+
+      triangles.Add(idx - 4);
+      triangles.Add(idx - 2);
+      triangles.Add(idx - 3);
+
+      triangles.Add(idx - 1);
+      triangles.Add(idx - 3);
+      triangles.Add(idx - 2);
+    }
+
+    void addVertsAndUvsForSegment(CornersData corners, ref int vertexIdx, int totalPositions, int vertCount) {
+      // ReSharper disable once PossibleLossOfFraction
+      var v = vertexIdx / 2 / (float) (totalPositions - 1);
+
+      setOrAdd(vertices, corners.res1, vertexIdx, vertCount);
+      setOrAdd(uvs, new Vector2(v, 0), vertexIdx, vertCount);
+      vertexIdx++;
+      setOrAdd(vertices, corners.res2, vertexIdx, vertCount);
+      setOrAdd(uvs, new Vector2(v, 1), vertexIdx, vertCount);
+      vertexIdx++;
+    }
+
+    static void setOrAdd<A>(IList<A> list, A a, int idx, int count) {
+      if (idx >= count) list.Add(a);
+      else list[idx] = a;
+    }
+  }
+}
