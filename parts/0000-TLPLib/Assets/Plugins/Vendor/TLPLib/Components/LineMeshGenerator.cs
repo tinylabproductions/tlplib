@@ -32,30 +32,30 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     void fillVerticesAndUvs(int totalPositions, GetPosByIndex getPos) {
       var leftWidth = width / 2;
-      var vertCount = vertices.Count;
       var idx = 0;
 
       for (var i = 0; i < totalPositions; i++) {
-
         var cur = getPos(i);
         if (i == 0) {
           var next = getPos(i + 1);
-          addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions, vertCount);
+          addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions);
         }
         else if (i == totalPositions - 1) {
           var prev = getPos(i - 1);
-          addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions, vertCount);
+          addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions);
         }
         else {
           var prev = getPos(i - 1);
           var next = getPos(i + 1);
           if (Vector2.Angle(prev - cur, next - cur) < 90) {
-            addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions, vertCount);
+            addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions);
             fillTriangle(idx);
-            addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions, vertCount);
+            addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions);
           }
           else {
-            addVertsAndUvsForSegment(findCorners(prev, cur, next, -leftWidth, LINES_PARALLEL_EPS), ref idx, totalPositions, vertCount);
+            addVertsAndUvsForSegment(
+              findCorners(prev, cur, next, -leftWidth, LINES_PARALLEL_EPS), ref idx, totalPositions
+            );
             fillTriangle(idx);
           }
         }
@@ -68,7 +68,6 @@ namespace com.tinylabproductions.TLPLib.Components {
        ----+----
        -4  |  -3
        */
-
       triangles.Add(idx - 4);
       triangles.Add(idx - 2);
       triangles.Add(idx - 3);
@@ -78,20 +77,20 @@ namespace com.tinylabproductions.TLPLib.Components {
       triangles.Add(idx - 2);
     }
 
-    void addVertsAndUvsForSegment(CornersData corners, ref int vertexIdx, int totalPositions, int vertCount) {
+    void addVertsAndUvsForSegment(CornersData corners, ref int vertexIdx, int totalPositions) {
       // ReSharper disable once PossibleLossOfFraction
       var v = vertexIdx / 2 / (float) (totalPositions - 1);
 
-      setOrAdd(vertices, corners.res1, vertexIdx, vertCount);
-      setOrAdd(uvs, new Vector2(v, 0), vertexIdx, vertCount);
+      setOrAdd(vertices, corners.res1, vertexIdx);
+      setOrAdd(uvs, new Vector2(v, 0), vertexIdx);
       vertexIdx++;
-      setOrAdd(vertices, corners.res2, vertexIdx, vertCount);
-      setOrAdd(uvs, new Vector2(v, 1), vertexIdx, vertCount);
+      setOrAdd(vertices, corners.res2, vertexIdx);
+      setOrAdd(uvs, new Vector2(v, 1), vertexIdx);
       vertexIdx++;
     }
 
-    static void setOrAdd<A>(IList<A> list, A a, int idx, int count) {
-      if (idx >= count) list.Add(a);
+    static void setOrAdd<A>(IList<A> list, A a, int idx) {
+      if (idx >= list.Count) list.Add(a);
       else list[idx] = a;
     }
   }
