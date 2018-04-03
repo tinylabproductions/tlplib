@@ -4,7 +4,7 @@ using Plugins.Vendor.TLPLib.Components;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  [ExecuteInEditMode]
+  [RequireComponent(typeof(MeshFilter)), ExecuteInEditMode]
   public class TrailDrawer : TrailDrawerBase {
 
     #region Unity Serialized Fields
@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     public TrailDrawer() {
       getPosFn = idx => positions[idx].position - transform.position;
-      ropeGenerator = F.lazy(() => new LineMeshGenerator(trailWidth, gameObject.EnsureComponent<MeshFilter>()));
+      ropeGenerator = F.lazy(() => new LineMeshGenerator(trailWidth, gameObject.GetComponent<MeshFilter>()));
     }
 
     public override void Update() {

@@ -34,32 +34,28 @@ namespace com.tinylabproductions.TLPLib.Components {
       var leftWidth = width / 2;
       var idx = 0;
 
-      for (var i = 0; i < totalPositions; i++) {
+      addVertsAndUvsForSegment(findCornersSimpleA(getPos(0), getPos(1), -leftWidth), ref idx, totalPositions);
+      for (var i = 1; i < totalPositions - 1; i++) {
         var cur = getPos(i);
-        if (i == 0) {
-          var next = getPos(i + 1);
+
+        var prev = getPos(i - 1);
+        var next = getPos(i + 1);
+        if (Vector2.Angle(prev - cur, next - cur) < 90) {
+          addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions);
+          fillTriangle(idx);
           addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions);
         }
-        else if (i == totalPositions - 1) {
-          var prev = getPos(i - 1);
-          addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions);
-        }
         else {
-          var prev = getPos(i - 1);
-          var next = getPos(i + 1);
-          if (Vector2.Angle(prev - cur, next - cur) < 90) {
-            addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions);
-            fillTriangle(idx);
-            addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions);
-          }
-          else {
-            addVertsAndUvsForSegment(
-              findCorners(prev, cur, next, -leftWidth, LINES_PARALLEL_EPS), ref idx, totalPositions
-            );
-            fillTriangle(idx);
-          }
+          addVertsAndUvsForSegment(
+            findCorners(prev, cur, next, -leftWidth, LINES_PARALLEL_EPS), ref idx, totalPositions
+          );
+          fillTriangle(idx);
         }
       }
+
+      addVertsAndUvsForSegment(
+        findCornersSimpleB(getPos(totalPositions - 2),  getPos(totalPositions - 1), -leftWidth), ref idx, totalPositions
+      );
     }
 
     void fillTriangle(int idx) {

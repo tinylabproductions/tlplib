@@ -45,13 +45,8 @@ namespace Plugins.Vendor.TLPLib.Components {
         }
       }
 
-      var queueing = true;
-      while (queueing && positions.Count > 0) {
-        var position = positions[positions.Count - 1];
-        if (position.time + duration < currentTime) {
-          positions.RemoveBack();
-        }
-        else queueing = false;
+      while (positions.Count > 0 && positions[positions.Count - 1].time + duration < currentTime) {
+        positions.RemoveBack();
       }
 
       if (shouldAddPoint(currentPos)) positions.AddFront(new PositionData(currentTime, currentPos));
