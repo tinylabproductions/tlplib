@@ -7,6 +7,12 @@ namespace com.tinylabproductions.TLPLib.Functional.higher_kinds {
     [PublicAPI]
     HigherKind<Witness, B> map<A, B>(HigherKind<Witness, A> data, Fn<A, B> mapper);
   }
+
+  public static class FunctorExts {
+    [PublicAPI] public static HigherKind<Witness, B> map<Witness, A, B>(
+      this HigherKind<Witness, A> hkt, Functor<Witness> F, Fn<A, B> mapper
+    ) => F.map(hkt, mapper);
+  }
   
   [PublicAPI]
   public class Functors : Functor<Id.W>, Functor<Future.W>, Functor<Option.W> {
