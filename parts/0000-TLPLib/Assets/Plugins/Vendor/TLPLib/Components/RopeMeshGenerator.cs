@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using static com.tinylabproductions.TLPLib.Components.MeshGenerationHelpers;
 
-namespace Assets.Code.Utils {
+namespace com.tinylabproductions.TLPLib.Components {
   public class RopeMeshGenerator {
     readonly int subSegments, totalSegments;
     readonly float width;
