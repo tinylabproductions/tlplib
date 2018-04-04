@@ -5,12 +5,28 @@ using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   public interface ILoader<A> {
     A loadSync();
     Tpl<IAsyncOperation, Future<A>> loadASync();
+  }
+  
+  [Record]
+  public partial class LoaderMapped<A, B> : ILoader<B> {
+    readonly ILoader<A> loader;
+    readonly Fn<A, B> mapper;
+
+    public B loadSync() => mapper(loader.loadSync());
+    public Tpl<IAsyncOperation, Future<B>> loadASync() => 
+      loader.loadASync().map2(_ => _.map(mapper));
+  }
+
+  public static class LoaderExts {
+    [PublicAPI] public static ILoader<B> map<A, B>(this ILoader<A> loader, Fn<A, B> mapper) =>
+      new LoaderMapped<A, B>(loader, mapper);
   }
   
   public interface IAssetLoader {
@@ -24,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   public interface IAssetLoader<A> : IAssetLoader, ILoader<A> {}
 
   public static class AssetLoaderExts {
-    public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Fn<A, B> mapper) =>
+    [PublicAPI] public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Fn<A, B> mapper) =>
       new AssetLoaderMapped<A, B>(loader, mapper);
   }
 
@@ -57,14 +73,13 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     }
   }
 
-  [Record]
-  public partial class AssetLoaderMapped<A, B> : IAssetLoader<B> {
+  public partial class AssetLoaderMapped<A, B> : LoaderMapped<A, B>, IAssetLoader<B> {
     readonly IAssetLoader<A> loader;
-    readonly Fn<A, B> mapper;
 
-    public B loadSync() => mapper(loader.loadSync());
-    public Tpl<IAsyncOperation, Future<B>> loadASync() => 
-      loader.loadASync().map2(_ => _.map(mapper));
+    public AssetLoaderMapped(IAssetLoader<A> loader, Fn<A, B> mapper) : base(loader, mapper) {
+      this.loader = loader;
+    }
+
     public string assetName => loader.assetName;
     public string assetRuntimeResourceDirectory => loader.assetRuntimeResourceDirectory;
     public PathStr assetRuntimeResourcePath => loader.assetRuntimeResourcePath;
