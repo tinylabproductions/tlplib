@@ -3,7 +3,11 @@ using Plugins.Vendor.TLPLib.Components;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  [RequireComponent(typeof(MeshFilter)), ExecuteInEditMode]
+  [
+    RequireComponent(typeof(MeshFilter)),
+    RequireComponent(typeof(MeshRenderer)),
+    ExecuteInEditMode
+  ]
   public class TrailDrawer : TrailDrawerBase {
 
     #region Unity Serialized Fields
