@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     readonly LazyVal<LineMeshGenerator> lineMeshGenerator;
 
     public TrailDrawer() {
-      getPosFn = idx => positions[idx].position - (useWorldSpace ? transform.position : transform.localPosition);
+      getPosFn = idx => positions[idx].position - getTransformPosition();
       lineMeshGenerator = F.lazy(() => new LineMeshGenerator(
         trailWidth, gameObject.GetComponent<MeshFilter>(), color, widthMultiplierCurve)
       );

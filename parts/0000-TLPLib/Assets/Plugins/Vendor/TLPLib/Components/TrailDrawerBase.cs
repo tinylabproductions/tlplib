@@ -36,7 +36,7 @@ namespace Plugins.Vendor.TLPLib.Components {
     public virtual void Update() {
       var currentTime = Time.time;
       var deltaTime = Time.deltaTime;
-      var currentPos = useWorldSpace ? transform.position : transform.localPosition;
+      var currentPos = getTransformPosition();
 
       if (forcedLocalSpeed != Vector3.zero || forcedWorldSpeed != Vector3.zero) {
         var worldSpeed = transform.TransformDirection(forcedLocalSpeed) + forcedWorldSpeed;
@@ -55,5 +55,7 @@ namespace Plugins.Vendor.TLPLib.Components {
     bool shouldAddPoint(Vector3 currentPos) =>
       positions.Count == 0
       || Vector3.Distance(positions[0].position, currentPos) >= minVertexDistance;
+
+    protected Vector3 getTransformPosition() => useWorldSpace ? transform.position : transform.localPosition;
   }
 }
