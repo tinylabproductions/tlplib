@@ -65,11 +65,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) => tweenScale(t, t.localScale, t.localScale * multiplier, ease, duration);
     #endregion
 
-    #region Transform Color
+    #region Color
     [PublicAPI]
     public static Tweener<Color, Graphic> tweenColor(
       this Graphic g, Color from, Color to, Ease ease, float duration
     ) => a(TweenLerp.color.tween(from, to, ease, duration), g, TweenMutators.color);
+
+    [PublicAPI]
+    public static Tweener<Color, Shadow> tweenColor(
+      this Shadow s, Color from, Color to, Ease ease, float duration
+    ) => a(TweenLerp.color.tween(from, to, ease, duration), s, TweenMutators.shadowEffectColor);
     #endregion
     
     #region RectTransform Position
