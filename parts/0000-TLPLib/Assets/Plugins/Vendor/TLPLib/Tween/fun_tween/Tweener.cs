@@ -72,6 +72,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) => a(TweenLerp.color.tween(from, to, ease, duration), g, TweenMutators.color);
     #endregion
     
+    #region Image FillAmount
+    [PublicAPI]
+    public static Tweener<float, Image> tweenFillAmount(
+      this Image i, float from, float to, Ease ease, float duration
+    ) => a(TweenLerp.float_.tween(from, to, ease, duration), i, TweenMutators.fillAmount);
+    #endregion
+    
     #region RectTransform Position
     [PublicAPI]
     public static Tweener<Vector2, RectTransform> tweenAnchoredPosition(
