@@ -1,6 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -20,6 +19,7 @@ namespace Plugins.Vendor.TLPLib.Components {
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField] protected float duration, minVertexDistance;
     [SerializeField] protected Vector3 forcedLocalSpeed, forcedWorldSpeed;
+    [SerializeField] protected bool useWorldSpace = true;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -36,7 +36,7 @@ namespace Plugins.Vendor.TLPLib.Components {
     public virtual void Update() {
       var currentTime = Time.time;
       var deltaTime = Time.deltaTime;
-      var currentPos = transform.position;
+      var currentPos = getTransformPosition();
 
       if (forcedLocalSpeed != Vector3.zero || forcedWorldSpeed != Vector3.zero) {
         var worldSpeed = transform.TransformDirection(forcedLocalSpeed) + forcedWorldSpeed;
@@ -55,5 +55,7 @@ namespace Plugins.Vendor.TLPLib.Components {
     bool shouldAddPoint(Vector3 currentPos) =>
       positions.Count == 0
       || Vector3.Distance(positions[0].position, currentPos) >= minVertexDistance;
+
+    protected Vector3 getTransformPosition() => useWorldSpace ? transform.position : transform.localPosition;
   }
 }
