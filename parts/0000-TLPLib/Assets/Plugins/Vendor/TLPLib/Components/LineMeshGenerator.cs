@@ -9,12 +9,11 @@ namespace com.tinylabproductions.TLPLib.Components {
     readonly List<Vector3> vertices = new List<Vector3>();
     readonly List<int> triangles = new List<int>();
     readonly List<Vector2> uvs = new List<Vector2>();
-    readonly List<Color> colors = new List<Color>();
+    readonly List<Color32> colors = new List<Color32>();
     readonly float halfWidth;
     readonly Mesh m;
     readonly Gradient colorGradient;
     readonly AnimationCurve curve;
-    readonly bool useWorldSpace;
 
     public LineMeshGenerator(
       float width, MeshFilter mf, Gradient colorGradient, AnimationCurve curve
@@ -22,7 +21,6 @@ namespace com.tinylabproductions.TLPLib.Components {
       halfWidth = width / 2;
       this.colorGradient = colorGradient;
       this.curve = curve;
-      this.useWorldSpace = useWorldSpace;
       m = new Mesh();
       mf.sharedMesh = m;
     }
