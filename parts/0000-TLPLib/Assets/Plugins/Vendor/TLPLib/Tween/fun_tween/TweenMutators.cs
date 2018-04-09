@@ -17,5 +17,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     
     public static readonly Act<float, Image>
       fillAmount = (f, g) => g.fillAmount = f;
+
+    public static readonly Act<Color, Shadow>
+      shadowEffectColor = (color, shadow) => shadow.effectColor = color;
   }
 }

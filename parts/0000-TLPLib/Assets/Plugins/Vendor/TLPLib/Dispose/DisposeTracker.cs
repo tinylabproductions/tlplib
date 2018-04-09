@@ -43,6 +43,11 @@ namespace com.tinylabproductions.TLPLib.dispose {
       a, callerMemberName, callerFilePath, callerLineNumber
     ));
 
+    public void track(params IDisposable[] disposables) {
+      foreach (var disposable in disposables)
+        track(disposable);
+    }
+
     public int count => list.Count;
 
     public void Dispose() {
