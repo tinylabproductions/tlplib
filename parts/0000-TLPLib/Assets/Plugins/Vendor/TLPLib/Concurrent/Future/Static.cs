@@ -4,10 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
+    // Witness for higher kinded types simulation
+    public struct W {}
+    
+    public static Future<A> narrowK<A>(this HigherKind<W, A> hkt) => (Future<A>) hkt;
+    
     public static Future<A> a<A>(Act<Promise<A>> action) => Future<A>.async(action);
     public static Future<A> a<A>(IHeapFuture<A> future) => new Future<A>(future);
     public static Future<A> async<A>(out Promise<A> promise) => Future<A>.async(out promise);

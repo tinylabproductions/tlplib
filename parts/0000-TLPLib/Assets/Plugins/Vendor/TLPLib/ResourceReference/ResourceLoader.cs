@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
@@ -19,26 +20,29 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       return notFound<A>(path);
     }
 
-    public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
+    public static Tpl<IAsyncOperation, Future<Either<string, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object {
       var path = loadPath.unityPath;
-      var request = Resources.LoadAsync<A>(path);
-      return F.t(request, Future<Either<string, A>>.async(
-        p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
-      ));
+      IResourceRequest request = new WrappedResourceRequest(Resources.LoadAsync<A>(path));
+      return F.t(
+        request.upcast(default(IAsyncOperation)), 
+        Future<Either<string, A>>.async(
+          p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
+        )
+      );
     }
 
     [PublicAPI]
-    public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
+    public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
     ) where A : Object =>
       loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
 
     static IEnumerator waitForLoadCoroutine<A>(
-      ResourceRequest request, Action<Either<string, A>> whenDone, string path
+      IResourceRequest request, Action<Either<string, A>> whenDone, string path
     ) where A : Object {
-      yield return request;
+      yield return request.yieldInstruction;
       if (request.asset is A a) {
         whenDone(a);
       }

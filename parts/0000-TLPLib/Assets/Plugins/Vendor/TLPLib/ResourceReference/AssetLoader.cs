@@ -1,13 +1,34 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
-using UnityEngine;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
+  public interface ILoader<A> {
+    A loadSync();
+    Tpl<IAsyncOperation, Future<A>> loadASync();
+  }
+  
+  [Record]
+  public partial class LoaderMapped<A, B> : ILoader<B> {
+    readonly ILoader<A> loader;
+    readonly Fn<A, B> mapper;
+
+    public B loadSync() => mapper(loader.loadSync());
+    public Tpl<IAsyncOperation, Future<B>> loadASync() => 
+      loader.loadASync().map2(_ => _.map(mapper));
+  }
+
+  public static class LoaderExts {
+    [PublicAPI] public static ILoader<B> map<A, B>(this ILoader<A> loader, Fn<A, B> mapper) =>
+      new LoaderMapped<A, B>(loader, mapper);
+  }
+  
   public interface IAssetLoader {
     string assetName { get; }
     string assetRuntimeResourceDirectory { get; }
@@ -16,13 +37,10 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     PathStr assetEditorResourcePath { get; }
   }
   
-  public interface IAssetLoader<A> : IAssetLoader {
-    A loadAsset();
-    Tpl<ResourceRequest, Future<A>> loadAssetAsync();
-  }
+  public interface IAssetLoader<A> : IAssetLoader, ILoader<A> {}
 
   public static class AssetLoaderExts {
-    public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Fn<A, B> mapper) =>
+    [PublicAPI] public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Fn<A, B> mapper) =>
       new AssetLoaderMapped<A, B>(loader, mapper);
   }
 
@@ -42,26 +60,26 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     public PathStr assetEditorResourcePath => assetEditorResourceDirectory / $"{assetName}.asset";
     public PathStr assetRuntimeResourcePath => PathStr.a(assetRuntimeResourceDirectory) / assetName;
 
-    public A loadAsset() => ResourceLoader.load<A>(assetRuntimeResourcePath).rightOrThrow;
+    public A loadSync() => ResourceLoader.load<A>(assetRuntimeResourcePath).rightOrThrow;
 
-    public Tpl<ResourceRequest, Future<A>> loadAssetAsync() {
+    public Tpl<IAsyncOperation, Future<A>> loadASync() {
       var loaded = ResourceLoader.loadAsync<A>(assetRuntimeResourcePath);
       var valuedFuture = loaded._2.flatMap(either => {
         if (either.isRight) return Future<A>.successful(either.rightOrThrow);
         Log.d.error(either.leftOrThrow);
         return Future<A>.unfulfilled;
       });
-      return F.t(loaded._1, valuedFuture);
+      return F.t(loaded._1.upcast(default(IAsyncOperation)), valuedFuture);
     }
   }
 
-  [Record]
-  public partial class AssetLoaderMapped<A, B> : IAssetLoader<B> {
+  public partial class AssetLoaderMapped<A, B> : LoaderMapped<A, B>, IAssetLoader<B> {
     readonly IAssetLoader<A> loader;
-    readonly Fn<A, B> mapper;
 
-    public B loadAsset() => mapper(loader.loadAsset());
-    public Tpl<ResourceRequest, Future<B>> loadAssetAsync() => loader.loadAssetAsync().map2(_ => _.map(mapper));
+    public AssetLoaderMapped(IAssetLoader<A> loader, Fn<A, B> mapper) : base(loader, mapper) {
+      this.loader = loader;
+    }
+
     public string assetName => loader.assetName;
     public string assetRuntimeResourceDirectory => loader.assetRuntimeResourceDirectory;
     public PathStr assetRuntimeResourcePath => loader.assetRuntimeResourcePath;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -141,6 +142,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public static LazyVal<Future<B>> lazyMapT<A, B>(
       this LazyVal<Future<A>> m, Fn<A, B> mapper
     ) => m.lazyMap(_ => _.map(mapper));
+
+    #endregion
+
+    #endregion
+
+    #region IRxVal
+
+    #region of Option
+
+    [PublicAPI] public static IRxVal<Option<B>> mapT<A, B>(
+      this IRxVal<Option<A>> rxMaybeA, Fn<A, B> f
+    ) => rxMaybeA.map(maybeA => maybeA.map(f));
 
     #endregion
 

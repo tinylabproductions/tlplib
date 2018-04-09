@@ -12,6 +12,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
+using JetBrains.Annotations;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -116,11 +117,28 @@ namespace com.tinylabproductions.TLPLib.Logger {
       return sb.ToString();
     }
 
-    public static LogEntry simple(
-      string message, Option<Backtrace> backtrace = default(Option<Backtrace>), Object context = null
+    [PublicAPI] public static LogEntry simple(
+      string message, Option<Backtrace> backtrace = default, Object context = null
     ) => new LogEntry(
-      message, ImmutableArray<Tpl<string, string>>.Empty,
-      ImmutableArray<Tpl<string, string>>.Empty,
+      message: message, 
+      tags: ImmutableArray<Tpl<string, string>>.Empty,
+      extras: ImmutableArray<Tpl<string, string>>.Empty,
+      backtrace: backtrace, context: context.opt()
+    );
+
+    [PublicAPI] public static LogEntry tags_(
+      string message, ImmutableArray<Tpl<string, string>> tags, 
+      Option<Backtrace> backtrace = default, Object context = null
+    ) => new LogEntry(
+      message: message, tags: tags, extras: ImmutableArray<Tpl<string, string>>.Empty,
+      backtrace: backtrace, context: context.opt()
+    );
+
+    [PublicAPI] public static LogEntry extras_(
+      string message, ImmutableArray<Tpl<string, string>> extras, 
+      Option<Backtrace> backtrace = default, Object context = null
+    ) => new LogEntry(
+      message: message, tags: ImmutableArray<Tpl<string, string>>.Empty, extras: extras,
       backtrace: backtrace, context: context.opt()
     );
 
