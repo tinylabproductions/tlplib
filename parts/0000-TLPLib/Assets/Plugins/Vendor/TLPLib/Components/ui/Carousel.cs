@@ -71,11 +71,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public IRxVal<int> page => _page;
 
     readonly LazyVal<IRxRef<Option<A>>> __currentElement;
-    public IRxVal<Option<A>> currentElement => __currentElement.get;
+    public IRxVal<Option<A>> currentElement => __currentElement.strict;
 
     void updateCurrentElement() {
       if (__currentElement.isCompleted) {
-        __currentElement.get.value = elements.get(_page.value);
+        __currentElement.strict.value = elements.get(_page.value);
       }
     }
 

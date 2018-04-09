@@ -9,6 +9,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using Smooth.Collections;
 using UnityEngine;
 
@@ -587,16 +588,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    public static IObservable<Tpl<Option<A>, A>> changesOpt<A>(
+    [PublicAPI] public static IObservable<Tpl<Option<A>, A>> changesOpt<A>(
       this IObservable<A> o, Fn<A, A, bool> areEqual = null
+    ) => o.changesOpt(F.t, areEqual);
+
+    /// <summary>
+    /// Returns pairs of (old, new) values when they are changing.
+    /// If there was no events before, old may be None.
+    /// </summary>
+    [PublicAPI] public static IObservable<B> changesOpt<A, B>(
+      this IObservable<A> o, Fn<Option<A>, A, B> zipper, Fn<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
-      return new Observable<Tpl<Option<A>, A>>(changesBase<A, Tpl<Option<A>, A>>(
+      return new Observable<B>(changesBase<A, B>(
         o,
         (onEvent, lastValue, val) => {
           var valueChanged =
             lastValue.isNone || !areEqual(lastValue.__unsafeGetValue, val);
-          if (valueChanged) onEvent(F.t(lastValue, val));
+          if (valueChanged) onEvent(zipper(lastValue, val));
         }
       ));
     }
