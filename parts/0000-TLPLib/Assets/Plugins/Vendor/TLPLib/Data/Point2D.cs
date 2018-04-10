@@ -14,9 +14,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public Point2D down => new Point2D(x, y-1);
     [PublicAPI] public Point2D left => new Point2D(x-1, y);
     [PublicAPI] public Point2D right => new Point2D(x+1, y);
-
+    
     public static implicit operator Vector2(Point2D p) => new Vector2(p.x, p.y);
     public static implicit operator Vector3(Point2D p) => new Vector3(p.x, p.y);
+    public static Point2D operator +(Point2D a, Point2D b) => new Point2D(a.x + b.x, a.y + b.y);
+    public static Point2D operator -(Point2D a, Point2D b) => new Point2D(a.x - b.x, a.y - b.y);
+    public static Point2D operator -(Point2D a) => new Point2D(-a.x, -a.y);
 
     public override string ToString() => $"({x},{y})";
 

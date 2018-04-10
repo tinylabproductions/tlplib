@@ -180,6 +180,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => new AndRW3<A1, A2, A3, B>(a1RW, a2RW, a3RW, mapper, getA1, getA2, getA3);
 
     [PublicAPI]
+    public static ISerializedRW<B> and<A1, A2, A3, A4, B>(
+      this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
+      ISerializedRW<A4> a4RW,
+      Fn<A1, A2, A3, A4, B> mapper, Fn<B, A1> getA1, Fn<B, A2> getA2, Fn<B, A3> getA3, Fn<B, A4> getA4
+    ) => new AndRW4<A1, A2, A3, A4, B>(a1RW, a2RW, a3RW, a4RW, mapper, getA1, getA2, getA3, getA4);
+
+    [PublicAPI]
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) =>
       new OptRW<A>(rw);
 

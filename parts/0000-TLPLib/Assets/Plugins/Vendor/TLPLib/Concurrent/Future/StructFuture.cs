@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   struct UnfulfilledFuture : IEquatable<UnfulfilledFuture> {
@@ -24,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
    * Struct based future which does not generate garbage if it's actually
    * synchronous.
    **/
-  public struct Future<A> : IEquatable<Future<A>> {
+  public struct Future<A> : IEquatable<Future<A>>, HigherKind<Future.W, A> {
     /* Future with a known value|unfulfilled future|async future. */
     readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);

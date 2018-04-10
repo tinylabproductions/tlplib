@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ArrayExts {
@@ -91,5 +92,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static bool contains<A>(this A[] arr, A a) => Array.IndexOf(arr, a) != -1;
+
+    [PublicAPI]
+    public static void fill<A>(this A[] arr, A a) {
+      for (var idx = 0; idx < arr.Length; idx++)
+        arr[idx] = a;
+    }
   }
 }

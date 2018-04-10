@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     });
   }
 
-  public static class PersistentDataCacheExts {
+  public static class FilesystemDataCacheExts {
     [PublicAPI] public static ICache<byte[]> asCache(this FilesystemDataCache cache) => cache;
   }
 }

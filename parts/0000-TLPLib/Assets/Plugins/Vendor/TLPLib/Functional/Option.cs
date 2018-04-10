@@ -4,9 +4,15 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class Option {
+    // Witness for higher kinds
+    public struct W {}
+
+    public static Option<A> narrowK<A>(this HigherKind<W, A> hkt) => (Option<A>) hkt;
+
     /**
      * Options are classes on iOS and if we use default(Option<A>) as a
      * default argument in method parameter list, you'd get a null. To make
@@ -74,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #else
     struct
 #endif
-    Option<A>
+    Option<A> : HigherKind<Option.W, A>
   {
     public static Option<A> None { get; } = new Option<A>();
 

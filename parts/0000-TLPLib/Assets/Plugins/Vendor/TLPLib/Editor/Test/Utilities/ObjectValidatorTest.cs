@@ -259,7 +259,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     static Object getPrefab(string prefabName) =>
-      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.get}/{prefabName}");
+      AssetDatabase.LoadMainAssetAtPath($"{testPrefabsDirectory.strict}/{prefabName}");
 
     [Test] public void WhenMissingComponent() {
       var go = getPrefab("TestMissingComponent.prefab");

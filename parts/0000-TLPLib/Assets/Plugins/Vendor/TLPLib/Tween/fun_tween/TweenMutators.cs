@@ -1,5 +1,4 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,11 +16,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static readonly Act<Color, Graphic>
       color = (c, g) => g.color = c;
 
-    public static readonly Act<float, Graphic>
-      colorAlpha = (alpha, g) => {
-        var c = g.color;
-        c.a = alpha;
-        g.color = c;
+    public static readonly Act<float, Graphic> 
+      colorAlpha = (alpha, graphic) => {
+        var color = graphic.color;
+        color.a = alpha;
+        graphic.color = color;
       };
+    
+    public static readonly Act<float, Image>
+      fillAmount = (f, g) => g.fillAmount = f;
+
+    public static readonly Act<Color, Shadow>
+      shadowEffectColor = (color, shadow) => shadow.effectColor = color;
   }
 }

@@ -56,5 +56,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableArray<Tpl<string, string>>.Empty,
       context: context
     );
+    
+    public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
   }
 }
