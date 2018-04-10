@@ -56,12 +56,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static ILog _default;
     public static ILog @default {
-      get {
-        return _default ?? (
-          _default = useConsoleLog ? (ILog) ConsoleLog.instance : UnityLog.instance
-        );
-      }
-      set { _default = value; }
+      get => _default ?? (
+        _default = useConsoleLog ? (ILog) ConsoleLog.instance : UnityLog.instance
+      );
+      set => _default = value;
     }
 
     /// <summary>
@@ -71,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// </summary>
     public static ILog d => @default;
 
-    [Conditional("UNITY_EDITOR")]
+    [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void editor(object o) => EditorLog.log(o);
   }
 
@@ -95,8 +93,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
       string message,
       ImmutableArray<Tpl<string, string>> tags,
       ImmutableArray<Tpl<string, string>> extras,
-      Option<Backtrace> backtrace = default(Option<Backtrace>),
-      Option<Object> context = default(Option<Object>)
+      Option<Backtrace> backtrace = default,
+      Option<Object> context = default
     ) {
       Option.ensureValue(ref backtrace);
       Option.ensureValue(ref context);
@@ -152,7 +150,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public LogEntry withMessage(Fn<string, string> message) =>
       new LogEntry(message(this.message), tags, extras, backtrace, context);
 
-    public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
+    public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> stringTupleArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
   }
 
@@ -216,8 +214,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public DeferToMainThreadLog(ILog backing) { this.backing = backing; }
 
     public Log.Level level {
-      get { return backing.level; }
-      set { backing.level = value; }
+      get => backing.level;
+      set => backing.level = value;
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
@@ -269,7 +267,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// Prefix to all messages so we could differentiate what comes from
     /// our logging framework in Unity console.
     /// </summary>
-    public const string MESSAGE_PREFIX = "[TLPLog]";
+    const string MESSAGE_PREFIX = "[TLPLog]";
 
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}

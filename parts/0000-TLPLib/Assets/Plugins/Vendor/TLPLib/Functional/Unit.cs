@@ -14,15 +14,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public bool Equals(Unit other) => true;
 
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) return false;
-      return obj is Unit unit && Equals(unit);
-    }
+    public override bool Equals(object obj) => obj is Unit;
 
-    public override int GetHashCode() => nameof(Unit).GetHashCode();
+    public override int GetHashCode() => 848053388; // just random numbers
 
-    public static bool operator ==(Unit left, Unit right) { return left.Equals(right); }
-    public static bool operator !=(Unit left, Unit right) { return !left.Equals(right); }
+    public static bool operator ==(Unit left, Unit right) => left.Equals(right);
+    public static bool operator !=(Unit left, Unit right) => !left.Equals(right);
 
     #endregion
   }
