@@ -62,12 +62,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       #endregion
 
       public static readonly ISerializedRW<UrlWithContext> serializedRW =
-        SerializedRW.uri.and(LogEntry.kvArraySerializedRw).and(LogEntry.kvArraySerializedRw)
-          .map(t => t.flatten().some(), t => t.unflatten())
-          .map(
-            t => new UrlWithContext(t._1, tags: t._2, extras: t._3).some(),
-            url => F.t(url.url, url.tags, url.extras)
-          );
+        SerializedRW.uri.and(
+          LogEntry.stringTupleArraySerializedRw, LogEntry.stringTupleArraySerializedRw,
+          (url, tags, extras) => new UrlWithContext(url, tags, extras),
+          url => url.url,
+          url => url.tags,
+          url => url.extras
+        );
     }
 
     public static Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> fetch(

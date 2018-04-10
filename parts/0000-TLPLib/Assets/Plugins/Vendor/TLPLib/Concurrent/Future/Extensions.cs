@@ -3,6 +3,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class FutureExts {
@@ -54,19 +55,33 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Option<A>> extractOpt<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(() => Future.successful(F.none<A>()), f => f.map(F.some));
 
+    [PublicAPI]
+    public static void onComplete<A, B>(
+      this Future<Either<A, B>> future,
+      Act<A> onError, Act<B> onSuccess
+    ) =>
+      future.onComplete(e => {
+        if (e.isLeft) onError(e.__unsafeGetLeft);
+        else onSuccess(e.__unsafeGetRight);
+      });
+
+    [PublicAPI]
     public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action) =>
       future.onComplete(e => {
         foreach (var b in e.rightValue) action(b);
       });
 
+    [PublicAPI]
     public static void onSuccess<A>(this Future<Try<A>> future, Act<A> action) =>
       future.onComplete(e => {
         foreach (var a in e.value) action(a);
       });
 
+    [PublicAPI]
     public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future) =>
       future.map(e => e.rightValue);
 
+    [PublicAPI]
     public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
       future.map(e => e.value);
 

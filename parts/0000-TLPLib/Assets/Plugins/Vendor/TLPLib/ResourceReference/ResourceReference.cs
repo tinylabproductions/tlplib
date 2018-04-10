@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
@@ -27,6 +28,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
   public static class ResourceReference {
 #if UNITY_EDITOR
+    [PublicAPI]
     public static SO create<SO, A>(string path, A reference)
       where SO : ResourceReference<A> where A : Object
     {
@@ -38,11 +40,11 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 #endif
 
     [PublicAPI]
-    public static Either<string, A> load<A>(PathStr loadPath) where A : Object => 
+    public static Either<ErrorMsg, A> load<A>(PathStr loadPath) where A : Object => 
       ResourceLoader.load<ResourceReference<A>>(loadPath).mapRight(_ => _.reference);
 
     [PublicAPI]
-    public static Tpl<IAsyncOperation, Future<Either<string, A>>> loadAsync<A>(
+    public static Tpl<IAsyncOperation, Future<Either<ErrorMsg, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object =>
       ResourceLoader.loadAsync<ResourceReference<A>>(loadPath)
