@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Components {
         colorGradient.Evaluate(0), ref idx, totalPositions
       );
       for (var i = 1; i < totalPositions - 1; i++) {
-        // totalPositions is always >= 2
+        // totalPositions count is always >= 2
         var progress = (float) i / (totalPositions - 1);
         var width = getWidthForProgress(progress);
         var color = colorGradient.Evaluate(progress);

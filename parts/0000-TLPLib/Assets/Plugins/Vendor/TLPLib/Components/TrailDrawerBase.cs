@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Plugins.Vendor.TLPLib.Components {
   [ExecuteInEditMode]
-  public abstract partial class TrailDrawerBase : MonoBehaviour, IMB_Update {
+  public abstract partial class TrailDrawerBase : MonoBehaviour, IMB_LateUpdate {
     [Record]
     protected partial struct PositionData {
       public readonly float time;
@@ -33,7 +33,7 @@ namespace Plugins.Vendor.TLPLib.Components {
     [PublicAPI]
     public void setForcedWorldSpeed(Vector3 speed) => forcedWorldSpeed = speed;
 
-    public virtual void Update() {
+    public virtual void LateUpdate() {
       var currentTime = Time.time;
       var deltaTime = Time.deltaTime;
       var currentPos = getTransformPosition();

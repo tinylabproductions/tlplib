@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField] float trailWidth = 3;
     [SerializeField, NotNull] Gradient color = new Gradient();
-    [SerializeField, NotNull] AnimationCurve widthMultiplierCurve;
+    [SerializeField, NotNull] AnimationCurve widthMultiplierCurve = AnimationCurve.Linear(0, 1, 1, 1);
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -33,9 +33,11 @@ namespace com.tinylabproductions.TLPLib.Components {
       );
     }
 
-    public override void Update() {
-      base.Update();
+    public override void LateUpdate() {
+      base.LateUpdate();
       lineMeshGenerator.strict.update(positions.Count, getPosFn);
+      // Trail should not be rotated with the parent
+      transform.rotation = Quaternion.identity;
     }
   }
 }
