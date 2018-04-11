@@ -11,6 +11,12 @@ namespace Plugins.Vendor.TLPLib.Components {
     protected partial struct NodeData {
       public readonly float time;
       public Vector3 position;
+
+      /*
+      ** Distance to a previous node (by index) in a node queue.
+      ** e.g. nodes[0] is previous of nodes[1]
+      ** 0 if it's the first element in the queue.
+       */
       public float distanceToPrevNode;
     }
 
@@ -58,7 +64,8 @@ namespace Plugins.Vendor.TLPLib.Components {
           var newPos = Vector3.Lerp(
             last.position, prev.position, Mathf.InverseLerp(last.time, prev.time, currentTime - duration)
           );
-          var distToPrevNode = (newPos - nodes[nodes.Count - 2].position).magnitude;
+
+          var distToPrevNode = Vector3.Distance(newPos, nodes[nodes.Count - 2].position);
 
           // We remove if distToPrevNode is ~0 because otherwise visual bugs might occur
           if (Mathf.Approximately(distToPrevNode, 0)) nodes.RemoveBack();
@@ -76,7 +83,7 @@ namespace Plugins.Vendor.TLPLib.Components {
       if (shouldAddPoint(currentPos)) {
         nodes.AddFront(new NodeData(currentTime, currentPos, 0f));
         if (nodes.Count > 1) {
-          nodes.GetRef(1).distanceToPrevNode = (nodes[1].position - nodes[0].position).magnitude;
+          nodes.GetRef(1).distanceToPrevNode = Vector3.Distance(nodes[1].position, nodes[0].position);
         }
       }
     }

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using Plugins.Vendor.TLPLib.Components;
 using UnityEngine;
@@ -41,11 +40,20 @@ namespace com.tinylabproductions.TLPLib.Components {
       base.LateUpdate();
       lineMeshGenerator.strict.update(
         totalPositions: nodes.Count,
-        totalLineLength: nodes.Aggregate(0f, (sum, pos) => sum + pos.distanceToPrevNode),
+        totalLineLength: cakculateTotalLength(),
         getNode: getNode
       );
       // Trail should not be rotated with the parent
       transform.rotation = Quaternion.identity;
+    }
+
+    float cakculateTotalLength() {
+      var sum = 0f;
+      for (var i = 0; i < nodes.Count; i++) {
+        sum += nodes[i].distanceToPrevNode;
+
+      }
+      return sum;
     }
   }
 }
