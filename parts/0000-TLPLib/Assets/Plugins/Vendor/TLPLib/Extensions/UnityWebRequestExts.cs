@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UnityWebRequestExts {
     [PublicAPI]
-    public static Future<Either<ErrorMsg, byte[]>> downloadToRam(
+    public static Future<Either<WebRequestError, byte[]>> downloadToRam(
       this UnityWebRequest req
     ) {
       var handler = 
