@@ -40,14 +40,14 @@ namespace com.tinylabproductions.TLPLib.Components {
       base.LateUpdate();
       lineMeshGenerator.strict.update(
         totalPositions: nodes.Count,
-        totalLineLength: cakculateTotalLength(),
+        totalLineLength: calculateTotalLength(),
         getNode: getNode
       );
       // Trail should not be rotated with the parent
       transform.rotation = Quaternion.identity;
     }
 
-    float cakculateTotalLength() {
+    float calculateTotalLength() {
       var sum = 0f;
       for (var i = 0; i < nodes.Count; i++) {
         sum += nodes[i].distanceToPrevNode;
