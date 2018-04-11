@@ -176,19 +176,23 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [PublicAPI]
-    public static Future<Either<ErrorMsg, UnityWebRequest>> toFuture(this UnityWebRequest req) {
-      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out var promise);
+    public static Future<OneOf<ErrorMsg, NoInternetMessage, UnityWebRequest>>
+      toFuture(this UnityWebRequest req)
+    {
+      var f = Future<OneOf<ErrorMsg, NoInternetMessage, UnityWebRequest>>.async(out var promise);
       StartCoroutine(webRequestEnumerator(req, promise));
       return f;
     }
 
     [PublicAPI]
     public static IEnumerator webRequestEnumerator(
-      UnityWebRequest req, Promise<Either<ErrorMsg, UnityWebRequest>> p
+      UnityWebRequest req, Promise<OneOf<ErrorMsg, NoInternetMessage, UnityWebRequest>> p
     ) {
       yield return req.Send();
       if (req.isError) {
-        p.complete(new ErrorMsg(req.error));
+        var msg = $"error: {req.error}, response code: {req.responseCode}";
+        if (req.responseCode == 0 && req.error == "Unknown Error") p.complete(new NoInternetMessage(msg));
+        else p.complete(new ErrorMsg(msg));
         req.Dispose();
       }
       else p.complete(req);
