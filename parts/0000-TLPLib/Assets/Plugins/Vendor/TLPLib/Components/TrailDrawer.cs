@@ -23,11 +23,14 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     #endregion
 
-    readonly LineMeshGenerator.GetPosByIndex getPosFn;
+    readonly LineMeshGenerator.GetNode getNode;
     readonly LazyVal<LineMeshGenerator> lineMeshGenerator;
 
     public TrailDrawer() {
-      getPosFn = idx => positions[idx].position - getTransformPosition();
+      getNode = idx => new LineMeshGenerator.NodeData(
+        relativePosition: nodes[idx].position - getTransformPosition(),
+        distanceToPrevNode: nodes[idx].distanceToPrevNode
+      );
       lineMeshGenerator = F.lazy(() => new LineMeshGenerator(
         trailWidth, gameObject.GetComponent<MeshFilter>(), color, widthMultiplierCurve)
       );
@@ -35,9 +38,21 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     public override void LateUpdate() {
       base.LateUpdate();
-      lineMeshGenerator.strict.update(positions.Count, getPosFn);
+      lineMeshGenerator.strict.update(
+        totalPositions: nodes.Count,
+        totalLineLength: calculateTotalLength(),
+        getNode: getNode
+      );
       // Trail should not be rotated with the parent
       transform.rotation = Quaternion.identity;
+    }
+
+    float calculateTotalLength() {
+      var sum = 0f;
+      for (var i = 0; i < nodes.Count; i++) {
+        sum += nodes[i].distanceToPrevNode;
+      }
+      return sum;
     }
   }
 }

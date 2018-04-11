@@ -18,14 +18,14 @@ namespace com.tinylabproductions.TLPLib.Components {
     public override void LateUpdate() {
       base.LateUpdate();
 
-      lineRenderer.positionCount = positions.Count;
+      lineRenderer.positionCount = nodes.Count;
       setVertexPositions();
     }
 
     void setVertexPositions() {
       var idx = 0;
-      foreach (var pos in positions) {
-        lineRenderer.SetPosition(idx, pos.position);
+      foreach (var node in nodes) {
+        lineRenderer.SetPosition(idx, node.position);
         idx++;
       }
     }
