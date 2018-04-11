@@ -51,7 +51,6 @@ namespace com.tinylabproductions.TLPLib.Components {
       var sum = 0f;
       for (var i = 0; i < nodes.Count; i++) {
         sum += nodes[i].distanceToPrevNode;
-
       }
       return sum;
     }
