@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   /** Representation of configuration path. */
@@ -45,18 +46,31 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   }
 
   /* See IConfig. */
-  public class Config : IConfig {
-    public struct ParsingError {
+  public partial class Config : IConfig {
+    [Record]
+    public partial struct ParsingError {
+      public readonly Option<Exception> exception;
       public readonly string jsonString;
 
-      public ParsingError(string jsonString) { this.jsonString = jsonString; }
+      public ImmutableArray<Tpl<string, string>> getExtras() => ImmutableArray.Create(
+        F.t("json", jsonString),
+        F.t("exception", exception.ToString())
+      );
     }
 
     public static Either<ParsingError, IConfig> parseJson(string json) {
-      var jsonDict = (Dictionary<string, object>)Json.Deserialize(json);
-      return jsonDict == null
-        ? Either<ParsingError, IConfig>.Left(new ParsingError(json))
-        : Either<ParsingError, IConfig>.Right(new Config(jsonDict));
+      if (json.isEmpty(trim: true)) 
+        return new ParsingError(Option<Exception>.None, $"<empty>('{json}')");
+      
+      try {
+        var jsonDict = (Dictionary<string, object>) Json.Deserialize(json);
+        return jsonDict == null
+          ? Either<ParsingError, IConfig>.Left(new ParsingError(Option<Exception>.None, json))
+          : Either<ParsingError, IConfig>.Right(new Config(jsonDict));
+      }
+      catch (Exception e) {
+        return new ParsingError(e.some(), json);
+      }
     }
 
     // Implementation

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -53,6 +54,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
     ISubject<TweenCallback.Event> onStart_ => __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
     ISubject<TweenCallback.Event> onEnd_ => __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
+
+    IDisposableTracker _tracker;
+    IDisposableTracker tracker => _tracker ?? (_tracker = new DisposableTracker());
 
     [PublicAPI] public IObservable<TweenCallback.Event> onStart => onStart_;
     [PublicAPI] public IObservable<TweenCallback.Event> onEnd => onEnd_;
@@ -108,6 +112,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
           stop();
         }
       }
+    }
+
+    [PublicAPI]
+    public TweenManager addOnStartCallback(Act<TweenCallback.Event> act) {
+      onStart.subscribe(tracker, act);
+      return this;
+    }
+
+    [PublicAPI]
+    public TweenManager addOnEndCallback(Act<TweenCallback.Event> act) {
+      onEnd.subscribe(tracker, act);
+      return this;
     }
 
     /// <summary>Plays a tween from the start/end.</summary>

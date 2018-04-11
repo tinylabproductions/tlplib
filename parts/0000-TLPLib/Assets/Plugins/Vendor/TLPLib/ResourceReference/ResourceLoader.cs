@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
@@ -10,24 +11,26 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   public static class ResourceLoader {
-    static string notFound<A>(string path) => $"Resource of type {typeof(A).FullName} not found at: {path}";
+    static ErrorMsg notFound<A>(string path) => new ErrorMsg(
+      $"Resource of type {typeof(A).FullName} not found at: {path}"
+    );
     
     [PublicAPI]
-    public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
+    public static Either<ErrorMsg, A> load<A>(PathStr loadPath) where A : Object {
       var path = loadPath.unityPath;
       var a = Resources.Load<A>(path);
       if (a) return a;
       return notFound<A>(path);
     }
 
-    public static Tpl<IAsyncOperation, Future<Either<string, A>>> loadAsync<A>(
+    public static Tpl<IAsyncOperation, Future<Either<ErrorMsg, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object {
       var path = loadPath.unityPath;
       IResourceRequest request = new WrappedResourceRequest(Resources.LoadAsync<A>(path));
       return F.t(
         request.upcast(default(IAsyncOperation)), 
-        Future<Either<string, A>>.async(
+        Future<Either<ErrorMsg, A>>.async(
           p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
         )
       );
@@ -40,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
 
     static IEnumerator waitForLoadCoroutine<A>(
-      IResourceRequest request, Action<Either<string, A>> whenDone, string path
+      IResourceRequest request, Action<Either<ErrorMsg, A>> whenDone, string path
     ) where A : Object {
       yield return request.yieldInstruction;
       if (request.asset is A a) {

@@ -43,8 +43,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<Return> enqueue(Params p) {
       if (running < maxTasks) return runTask(p);
 
-      Promise<Return> promise;
-      var f = Future.async(out promise);
+      var f = Future.async(out Promise<Return> promise);
       queue.Enqueue(new QueueEntry(p, promise));
       return f;
     }

@@ -175,18 +175,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
+    /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
     [PublicAPI]
-    public static Future<OneOf<ErrorMsg, NoInternetMessage, UnityWebRequest>>
-      toFuture(this UnityWebRequest req)
-    {
-      var f = Future<OneOf<ErrorMsg, NoInternetMessage, UnityWebRequest>>.async(out var promise);
-      StartCoroutine(webRequestEnumerator(req, promise));
+    public static Future<Either<ErrorMsg, A>> toFuture<A>(
+      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
+    ) {
+      var f = Future<Either<ErrorMsg, A>>.async(out var promise);
+      StartCoroutine(webRequestEnumerator(req, promise, onSuccess));
       return f;
     }
 
     [PublicAPI]
-    public static IEnumerator webRequestEnumerator(
-      UnityWebRequest req, Promise<OneOf<ErrorMsg, NoInternetMessage, UnityWebRequest>> p
+    public static IEnumerator webRequestEnumerator<A>(
+      UnityWebRequest req, Promise<Either<ErrorMsg, A>> p,
+      Fn<UnityWebRequest, A> onSuccess
     ) {
       yield return req.Send();
       if (req.isError) {
@@ -195,7 +197,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         else p.complete(new ErrorMsg(msg));
         req.Dispose();
       }
-      else p.complete(req);
+      else {
+        var a = onSuccess(req);
+        req.Dispose();
+        p.complete(a);
+      }
     }
 
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(

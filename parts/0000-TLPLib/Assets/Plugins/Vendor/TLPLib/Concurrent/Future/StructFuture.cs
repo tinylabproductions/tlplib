@@ -157,7 +157,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var fa = this;
       return Future<C>.async(p => {
         void tryComplete() {
-          foreach (var ab in fa.value.zip(fb.value, mapper)) p.tryComplete(ab);
+          foreach (var ab in fa.value.zip(fb.value, mapper)) 
+            p.tryComplete(ab);
         }
 
         fa.onComplete(a => tryComplete());

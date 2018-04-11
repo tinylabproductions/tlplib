@@ -15,8 +15,8 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     #endregion
     
-    public override void Update() {
-      base.Update();
+    public override void LateUpdate() {
+      base.LateUpdate();
 
       lineRenderer.positionCount = positions.Count;
       setVertexPositions();

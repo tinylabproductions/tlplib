@@ -43,6 +43,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Tweener<Vector3, Transform> t, Vector3 to, Ease ease, float duration
     ) => t.t.tweenPosition(t.tween.end, t.tween.end + to, ease, duration);
     
+    [PublicAPI]
     public static Tweener<Vector3, Transform> tweenLocalPosition(
       this Transform t, Vector3 start, Vector3 to, Ease ease, float duration
     ) => tweenTransformVector(t, start, to, ease, duration, TweenMutators.localPosition);
@@ -65,11 +66,35 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) => tweenScale(t, t.localScale, t.localScale * multiplier, ease, duration);
     #endregion
 
-    #region Transform Color
+    #region Transform Rotation
+    [PublicAPI]
+    public static Tweener<Vector3, Transform> tweenLocalRotation(
+      this Transform t, Vector3 from, Vector3 to, Ease ease, float duration
+    ) => tweenTransformVector(t, from, to, ease, duration, TweenMutators.localEulerAngles);
+    #endregion
+
+    #region Color
     [PublicAPI]
     public static Tweener<Color, Graphic> tweenColor(
       this Graphic g, Color from, Color to, Ease ease, float duration
     ) => a(TweenLerp.color.tween(from, to, ease, duration), g, TweenMutators.color);
+
+    [PublicAPI]
+    public static Tweener<float, Graphic> tweenColorAlpha(
+      this Graphic g, float from, float to, Ease ease, float duration
+    ) => a(TweenLerp.float_.tween(from, to, ease, duration), g, TweenMutators.colorAlpha);
+    
+    [PublicAPI]
+    public static Tweener<Color, Shadow> tweenColor(
+      this Shadow s, Color from, Color to, Ease ease, float duration
+    ) => a(TweenLerp.color.tween(from, to, ease, duration), s, TweenMutators.shadowEffectColor);
+    #endregion
+    
+    #region Image
+    [PublicAPI]
+    public static Tweener<float, Image> tweenFillAmount(
+      this Image i, float from, float to, Ease ease, float duration
+    ) => a(TweenLerp.float_.tween(from, to, ease, duration), i, TweenMutators.fillAmount);
     #endregion
     
     #region RectTransform Position

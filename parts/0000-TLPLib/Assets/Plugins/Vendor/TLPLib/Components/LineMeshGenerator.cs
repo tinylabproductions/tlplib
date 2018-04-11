@@ -9,11 +9,18 @@ namespace com.tinylabproductions.TLPLib.Components {
     readonly List<Vector3> vertices = new List<Vector3>();
     readonly List<int> triangles = new List<int>();
     readonly List<Vector2> uvs = new List<Vector2>();
-    readonly float width;
+    readonly List<Color32> colors = new List<Color32>();
+    readonly float halfWidth;
     readonly Mesh m;
+    readonly Gradient colorGradient;
+    readonly AnimationCurve curve;
 
-    public LineMeshGenerator(float width, MeshFilter mf) {
-      this.width = width;
+    public LineMeshGenerator(
+      float width, MeshFilter mf, Gradient colorGradient, AnimationCurve curve
+    ) {
+      halfWidth = width / 2;
+      this.colorGradient = colorGradient;
+      this.curve = curve;
       m = new Mesh();
       mf.sharedMesh = m;
     }
@@ -27,34 +34,44 @@ namespace com.tinylabproductions.TLPLib.Components {
       m.SetVertices(vertices);
       m.SetTriangles(triangles, 0);
       m.SetUVs(0, uvs);
+      m.SetColors(colors);
       m.RecalculateBounds();
     }
 
+    float getWidthForProgress(float progress) => curve.Evaluate(progress) * halfWidth;
+
     void fillVerticesAndUvs(int totalPositions, GetPosByIndex getPos) {
-      var leftWidth = width / 2;
       var idx = 0;
 
-      addVertsAndUvsForSegment(findCornersSimpleA(getPos(0), getPos(1), -leftWidth), ref idx, totalPositions);
+      addDataForSegment(
+        findCornersSimpleA(getPos(0), getPos(1), -getWidthForProgress(0f)),
+        colorGradient.Evaluate(0), ref idx, totalPositions
+      );
       for (var i = 1; i < totalPositions - 1; i++) {
+        // totalPositions count is always >= 2
+        var progress = (float) i / (totalPositions - 1);
+        var width = getWidthForProgress(progress);
+        var color = colorGradient.Evaluate(progress);
         var cur = getPos(i);
 
         var prev = getPos(i - 1);
         var next = getPos(i + 1);
         if (Vector2.Angle(prev - cur, next - cur) < 90) {
-          addVertsAndUvsForSegment(findCornersSimpleB(prev, cur, -leftWidth), ref idx, totalPositions);
+          addDataForSegment(findCornersSimpleB(prev, cur, -width), color, ref idx, totalPositions);
           fillTriangle(idx);
-          addVertsAndUvsForSegment(findCornersSimpleA(cur, next, -leftWidth), ref idx, totalPositions);
+          addDataForSegment(findCornersSimpleA(cur, next, -width), color, ref idx, totalPositions);
         }
         else {
-          addVertsAndUvsForSegment(
-            findCorners(prev, cur, next, -leftWidth, LINES_PARALLEL_EPS), ref idx, totalPositions
+          addDataForSegment(
+            findCorners(prev, cur, next, -width, LINES_PARALLEL_EPS), color, ref idx, totalPositions
           );
           fillTriangle(idx);
         }
       }
 
-      addVertsAndUvsForSegment(
-        findCornersSimpleB(getPos(totalPositions - 2),  getPos(totalPositions - 1), -leftWidth), ref idx, totalPositions
+      addDataForSegment(
+        findCornersSimpleB(getPos(totalPositions - 2),  getPos(totalPositions - 1), -getWidthForProgress(1f)),
+        colorGradient.Evaluate(1), ref idx, totalPositions
       );
     }
 
@@ -73,15 +90,17 @@ namespace com.tinylabproductions.TLPLib.Components {
       triangles.Add(idx - 2);
     }
 
-    void addVertsAndUvsForSegment(CornersData corners, ref int vertexIdx, int totalPositions) {
+    void addDataForSegment(CornersData corners, Color color, ref int vertexIdx, int totalPositions) {
       // ReSharper disable once PossibleLossOfFraction
       var v = vertexIdx / 2 / (float) (totalPositions - 1);
 
       setOrAdd(vertices, corners.res1, vertexIdx);
       setOrAdd(uvs, new Vector2(v, 0), vertexIdx);
+      setOrAdd(colors, color, vertexIdx);
       vertexIdx++;
       setOrAdd(vertices, corners.res2, vertexIdx);
       setOrAdd(uvs, new Vector2(v, 1), vertexIdx);
+      setOrAdd(colors, color, vertexIdx);
       vertexIdx++;
     }
 
