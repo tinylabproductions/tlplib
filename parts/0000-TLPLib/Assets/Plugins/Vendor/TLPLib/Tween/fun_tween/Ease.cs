@@ -1,8 +1,49 @@
-﻿using UnityEngine;
+﻿using System;
+using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <summary><see cref="Ease"/> is a function from x ∈ [0, 1] to y</summary>
   public delegate float Ease(float x);
+  public static class Ease_ {
+    [PublicAPI] public static Ease fromSerialized(this Eases.Serialized ease) {
+      switch (ease) {
+        case Eases.Serialized.Linear: return Eases.linear;
+        case Eases.Serialized.SineIn: return Eases.sineIn;
+        case Eases.Serialized.SineOut: return Eases.sineOut;
+        case Eases.Serialized.SineInOut: return Eases.sineInOut;
+        case Eases.Serialized.QuadIn: return Eases.quadIn;
+        case Eases.Serialized.QuadOut: return Eases.quadOut;
+        case Eases.Serialized.QuadInOut: return Eases.quadInOut;
+        case Eases.Serialized.CubicIn: return Eases.cubicIn;
+        case Eases.Serialized.CubicOut: return Eases.cubicOut;
+        case Eases.Serialized.CubicInOut: return Eases.cubicInOut;
+        case Eases.Serialized.QuartIn: return Eases.quartIn;
+        case Eases.Serialized.QuartOut: return Eases.quartOut;
+        case Eases.Serialized.QuartInOut: return Eases.quartInOut;
+        case Eases.Serialized.QuintIn: return Eases.quintIn;
+        case Eases.Serialized.QuintOut: return Eases.quintOut;
+        case Eases.Serialized.QuintInOut: return Eases.quintInOut;
+        case Eases.Serialized.CircularIn: return Eases.circularIn;
+        case Eases.Serialized.CircularOut: return Eases.circularOut;
+        case Eases.Serialized.CircularInOut: return Eases.circularInOut;
+        case Eases.Serialized.ExpoIn: return Eases.expoIn;
+        case Eases.Serialized.ExpoOut: return Eases.expoOut;
+        case Eases.Serialized.ExpoInOut: return Eases.expoInOut;
+        case Eases.Serialized.ElasticIn: return Eases.elasticIn;
+        case Eases.Serialized.ElasticOut: return Eases.elasticOut;
+        case Eases.Serialized.ElasticInOut: return Eases.elasticInOut;
+        case Eases.Serialized.BackIn: return Eases.backIn;
+        case Eases.Serialized.BackOut: return Eases.backOut;
+        case Eases.Serialized.BackInOut: return Eases.backInOut;
+        case Eases.Serialized.BounceIn: return Eases.bounceIn;
+        case Eases.Serialized.BounceOut: return Eases.bounceOut;
+        case Eases.Serialized.BounceInOut: return Eases.bounceInOut;
+        case Eases.Serialized.Punch: return Eases.punch();
+        default: throw new ArgumentOutOfRangeException(nameof(ease), ease, "unknown serialized ease");
+      }
+    }
+  }
 
   public static class Eases {
     const float HALF_PI = Mathf.PI / 2;
@@ -80,7 +121,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       bounceInOut = p => p < .5f ? 0.5f * bounceIn(p * 2) : 0.5f * bounceOut(p * 2 - 1) + 0.5f;
     // ReSharper restore CompareOfFloatsByEqualityOperator
 
-
     /// <summary>Punches a Vector3 towards the given direction and then back to the starting one
     /// as if it was connected to the starting position via an elastic.
     /// https://github.com/Demigiant/dotween/blob/develop/_DOTween.Assembly/DOTween/DOTween.cs
@@ -132,6 +172,41 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         return Mathf.Lerp(from, to, quadOut(ratio));
       };
       // ReSharper restore SuggestVarOrType_BuiltInTypes, SuggestVarOrType_Elsewhere
+    }
+    
+    public enum Serialized : byte {
+      Linear = 0,
+      SineIn = 1,
+      SineOut = 2,
+      SineInOut = 3,
+      QuadIn = 4,
+      QuadOut = 5,
+      QuadInOut = 6,
+      CubicIn = 7,
+      CubicOut = 8,
+      CubicInOut = 9,
+      QuartIn = 10,
+      QuartOut = 11,
+      QuartInOut = 12,
+      QuintIn = 13,
+      QuintOut = 14,
+      QuintInOut = 15,
+      CircularIn = 16,
+      CircularOut = 17,
+      CircularInOut = 18,
+      ExpoIn = 19,
+      ExpoOut = 20,
+      ExpoInOut = 21,
+      ElasticIn = 22,
+      ElasticOut = 23,
+      ElasticInOut = 24,
+      BackIn = 25,
+      BackOut = 26,
+      BackInOut = 27,
+      BounceIn = 28,
+      BounceOut = 29,
+      BounceInOut = 30,
+      Punch = 31
     }
   }
 }
