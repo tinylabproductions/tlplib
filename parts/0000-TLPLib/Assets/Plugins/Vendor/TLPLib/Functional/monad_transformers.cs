@@ -129,6 +129,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region LazyVal
 
+    #region of Option
+
+    [PublicAPI]
+    public static LazyVal<Option<B>> lazyMapT<A, B>(
+      this LazyVal<Option<A>> m, Fn<A, B> mapper
+    ) => m.lazyMap(_ => _.map(mapper));
+
+    [PublicAPI]
+    public static LazyVal<Option<B>> lazyFlatMapT<A, B>(
+      this LazyVal<Option<A>> m, Fn<A, Option<B>> mapper
+    ) => m.lazyMap(_ => _.flatMap(mapper));
+
+    #endregion
+
     #region of Try
 
     [PublicAPI] public static LazyVal<Try<B>> lazyMapT<A, B>(

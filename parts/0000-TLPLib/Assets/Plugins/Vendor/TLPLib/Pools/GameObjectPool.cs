@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Dispose;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -57,7 +58,12 @@ namespace com.tinylabproductions.TLPLib.Pools {
     ) => new GameObjectPool<GameObject>(init, _ => _);
 
     public static GameObjectPool<A> a<A>(Init<A> init) where A : Component =>
-      new GameObjectPool<A>(init, _ => _.gameObject);
+      new GameObjectPool<A>(init, a => {
+        if (!a) Log.d.error(
+          $"Component {typeof(A)} is destroyed in {nameof(GameObjectPool)} '{init.name}'!"
+        ); 
+        return a.gameObject;
+      });
   }
 
   public class GameObjectPool<T> {
@@ -70,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
 
     public GameObjectPool(GameObjectPool.Init<T> init, Fn<T, GameObject> toGameObject) {
       rootOpt = init.parent.map(parent => {
-        var rootParent = new GameObject(init.name).transform;
+        var rootParent = new GameObject($"{nameof(GameObjectPool)}: {init.name}").transform;
         rootParent.parent = parent;
         if (init.dontDestroyOnLoad) Object.DontDestroyOnLoad(rootParent.gameObject);
         return rootParent;
