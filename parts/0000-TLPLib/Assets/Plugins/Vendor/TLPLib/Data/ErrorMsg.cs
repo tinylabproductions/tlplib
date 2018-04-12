@@ -3,46 +3,24 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct ErrorMsg : IEquatable<ErrorMsg> {
-    public readonly string s;
-    public readonly Option<Object> context;
+  [Record(GenerateConstructor = false)]
+  public partial struct ErrorMsg {
+    [PublicAPI] public readonly string s;
+    [PublicAPI] public readonly Option<Object> context;
 
-    public ErrorMsg(string s, Object context = null) {
+    ErrorMsg(string s, Option<Object> context) {
       this.s = s;
-      this.context = context.opt();
+      this.context = context;
     }
 
-    public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
-      message: errorMsg.s,
-      tags: ImmutableArray<Tpl<string, string>>.Empty,
-      extras: ImmutableArray<Tpl<string, string>>.Empty,
-      context: errorMsg.context
-    );
+    public ErrorMsg(string s, Object context = null) : this(s, context.opt()) {}
 
-    #region Equality
-
-    public bool Equals(ErrorMsg other) => string.Equals(s, other.s) && context.Equals(other.context);
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) return false;
-      return obj is ErrorMsg && Equals((ErrorMsg) obj);
-    }
-
-    public override int GetHashCode() {
-      unchecked {
-        return ((s != null ? s.GetHashCode() : 0) * 397) ^ context.GetHashCode();
-      }
-    }
-
-    public static bool operator ==(ErrorMsg left, ErrorMsg right) => left.Equals(right);
-    public static bool operator !=(ErrorMsg left, ErrorMsg right) => !left.Equals(right);
-
-    #endregion
-
-    public override string ToString() => $"{nameof(ErrorMsg)}({s})";
+    public static implicit operator LogEntry(ErrorMsg errorMsg) => errorMsg.toLogEntry();
 
     public LogEntry toLogEntry() => new LogEntry(
       s,
@@ -51,6 +29,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       context: context
     );
     
-    public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
+    [PublicAPI] public ErrorMsg withMessage(Fn<string, string> f) => new ErrorMsg(f(s), context);
+    [PublicAPI] public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
   }
 }

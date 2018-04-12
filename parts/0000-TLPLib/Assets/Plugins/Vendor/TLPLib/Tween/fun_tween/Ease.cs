@@ -39,6 +39,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         case Eases.Serialized.BounceIn: return Eases.bounceIn;
         case Eases.Serialized.BounceOut: return Eases.bounceOut;
         case Eases.Serialized.BounceInOut: return Eases.bounceInOut;
+        case Eases.Serialized.Punch: return Eases.punch();
         default: throw new ArgumentOutOfRangeException(nameof(ease), ease, "unknown serialized ease");
       }
     }
@@ -119,6 +120,59 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       },
       bounceInOut = p => p < .5f ? 0.5f * bounceIn(p * 2) : 0.5f * bounceOut(p * 2 - 1) + 0.5f;
     // ReSharper restore CompareOfFloatsByEqualityOperator
+
+    /// <summary>Punches a Vector3 towards the given direction and then back to the starting one
+    /// as if it was connected to the starting position via an elastic.
+    /// https://github.com/Demigiant/dotween/blob/develop/_DOTween.Assembly/DOTween/DOTween.cs
+    /// <para>This tween type generates some GC allocations at startup</para></summary>
+    /// <param name="vibrato">Indicates how much will the punch vibrate</param>
+    /// <param name="elasticity">Represents how much (0 to 1) the vector will go beyond the starting position when bouncing backwards.
+    /// 1 creates a full oscillation between the direction and the opposite decaying direction,
+    /// while 0 oscillates only between the starting position and the decaying direction</param>
+    public static Ease punch(int vibrato = 10, float elasticity = 1f) {
+      // ReSharper disable SuggestVarOrType_BuiltInTypes, SuggestVarOrType_Elsewhere
+      elasticity = Mathf.Clamp01(elasticity);
+      const float direction = 1;
+      float strength = direction;
+      int totIterations = vibrato;
+      if (totIterations < 2) totIterations = 2;
+      float decayXTween = strength / totIterations;
+      // Calculate and store the duration of each tween
+      float[] tDurations = new float[totIterations];
+      float sum = 0;
+      for (int i = 0; i < totIterations; ++i) {
+        float iterationPerc = (i + 1) / (float)totIterations;
+        float tDuration = iterationPerc;
+        sum += tDuration;
+        tDurations[i] = tDuration;
+      }
+      float tDurationMultiplier = 1f / sum; // Multiplier that allows the sum of tDurations to equal the set duration
+      for (int i = 0; i < totIterations; ++i) tDurations[i] = tDurations[i] * tDurationMultiplier;
+      // Create the tween
+      float[] tos = new float[totIterations];
+      tos[0] = direction;
+      for (int i = 1; i < totIterations - 1; ++i) {
+        if (i % 2 != 0) tos[i] = -Mathf.Clamp(direction, -strength * elasticity, strength * elasticity);
+        else tos[i] = Mathf.Clamp(direction, -strength, strength);
+        strength -= decayXTween;
+      }
+      tos[totIterations-1] = 0;
+
+      return p => {
+        var idx = 0;
+        // This is not an optimal solution.
+        // But there is no need to optimize if we don't use this tween a lot.
+        while (idx < totIterations - 1 && p > tDurations[idx]) {
+          p -= tDurations[idx];
+          idx++;
+        }
+        var from = idx == 0 ? 0 : tos[idx-1];
+        var to = tos[idx];
+        var ratio = p / tDurations[idx];
+        return Mathf.Lerp(from, to, quadOut(ratio));
+      };
+      // ReSharper restore SuggestVarOrType_BuiltInTypes, SuggestVarOrType_Elsewhere
+    }
     
     public enum Serialized : byte {
       Linear = 0,
@@ -151,7 +205,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       BackInOut = 27,
       BounceIn = 28,
       BounceOut = 29,
-      BounceInOut = 30
+      BounceInOut = 30,
+      Punch = 31
     }
   }
 }

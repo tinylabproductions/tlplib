@@ -4,10 +4,11 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   public class FileCachedBlob : ICachedBlob<byte[]> {
-    public readonly PathStr path;
+    [PublicAPI] public readonly PathStr path;
 
     public FileCachedBlob(PathStr path) { this.path = path; }
 
@@ -18,14 +19,17 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public Try<Unit> store(byte[] data) => store(path, data);
     public Try<Unit> clear() => clear(path);
     
+    [PublicAPI]
     public static Option<Try<byte[]>> read(PathStr path) =>
       File.Exists(path)
         ? F.doTry(() => File.ReadAllBytes(path)).some()
         : F.none<Try<byte[]>>();
     
+    [PublicAPI] 
     public static Try<Unit> store(PathStr path, byte[] data) => 
       F.doTry(() => File.WriteAllBytes(path, data));
     
+    [PublicAPI] 
     public static Try<Unit> clear(PathStr path) => F.doTry(() => File.Delete(path));
 
     public static ICachedBlob<A> a<A>(
@@ -38,8 +42,11 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
           var deserializedOpt = rw.deserialize(bytes, 0);
           if (deserializedOpt.isNone) {
             if (log.willLog(onDeserializeFailureLogLevel))
-              log.log(onDeserializeFailureLogLevel, $"Can't deserialize {path}, deleting and returning default value.");
-            clear(path);
+              log.log(
+                onDeserializeFailureLogLevel, 
+                $"Can't deserialize {path}, deleting and returning default value."
+              );
+            clear(path).getOrLog($"Couldn't clear file: '{path}'", log: log);
             return defaultValue;
           }
           return deserializedOpt.__unsafeGetValue.value;

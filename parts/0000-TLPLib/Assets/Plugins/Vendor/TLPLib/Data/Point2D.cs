@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
-using GenerationAttributes;
+﻿using GenerationAttributes;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -10,12 +7,13 @@ namespace com.tinylabproductions.TLPLib.Data {
   public partial struct Point2D {
     public readonly int x, y;
 
-    public Point2D copy(int? x = null, int? y = null) => new Point2D(x ?? this.x, y ?? this.y);
+    [PublicAPI] public Point2D withX(int x) => new Point2D(x, y);
+    [PublicAPI] public Point2D withY(int y) => new Point2D(x, y);
 
-    public Point2D up => new Point2D(x, y+1);
-    public Point2D down => new Point2D(x, y-1);
-    public Point2D left => new Point2D(x-1, y);
-    public Point2D right => new Point2D(x+1, y);
+    [PublicAPI] public Point2D up => new Point2D(x, y+1);
+    [PublicAPI] public Point2D down => new Point2D(x, y-1);
+    [PublicAPI] public Point2D left => new Point2D(x-1, y);
+    [PublicAPI] public Point2D right => new Point2D(x+1, y);
     
     public static implicit operator Vector2(Point2D p) => new Vector2(p.x, p.y);
     public static implicit operator Vector3(Point2D p) => new Vector3(p.x, p.y);
@@ -25,10 +23,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public override string ToString() => $"({x},{y})";
 
+    [PublicAPI]
     public static readonly ISerializedRW<Point2D> rw =
-      SerializedRW.integer.and(SerializedRW.integer).map(
-        tpl => new Point2D(tpl._1, tpl._2).some(),
-        p => F.t(p.x, p.y)
-      );
+      SerializedRW.integer.and(SerializedRW.integer, (x, y) => new Point2D(x, y), _ => _.x, _ => _.y);
   }
 }

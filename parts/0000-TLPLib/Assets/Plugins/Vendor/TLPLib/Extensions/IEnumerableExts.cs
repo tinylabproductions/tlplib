@@ -11,8 +11,10 @@ using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IEnumerableExts {
-    /* This should really be used only for debugging. It is pretty slow. */
-
+    /// <summary>
+    /// This should really be used only for debugging. It is pretty slow.
+    /// </summary>
+    [PublicAPI]
     public static string asDebugString(
       this IEnumerable enumerable,
       bool newlines = true, bool fullClasses = false
@@ -61,6 +63,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       sb.Append(']');
     }
 
+    [PublicAPI]
     public static string mkString<A>(
       this IEnumerable<A> e, Act<StringBuilder> appendSeparator,
       string start = null, string end = null
@@ -89,14 +92,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       );
     }
 
+    [PublicAPI]
     public static string mkStringEnum<A>(
       this IEnumerable<A> e, string separator = ", ", string start = "[", string end = "]"
     ) => e.mkString(separator, start, end);
 
+    [PublicAPI]
     public static string mkStringEnumNewLines<A>(
       this IEnumerable<A> e, string separator = ",\n  ", string start = "[\n  ", string end = "\n]"
     ) => e.mkString(separator, start, end);
 
+    [PublicAPI]
     public static string mkString<A>(
       this IEnumerable<A> e, char separator, string start = null, string end = null
     ) {
@@ -104,6 +110,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return e.mkString(sb => sb.Append(separator), start, end);
     }
 
+    [PublicAPI]
     public static string mkString<A>(
       this IEnumerable<A> e, string separator, string start = null, string end = null
     ) {
@@ -111,15 +118,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return e.mkString(sb => sb.Append(separator), start, end);
     }
 
+    [PublicAPI]
     public static Dictionary<K, A> toDict<A, K>(
       this IEnumerable<KeyValuePair<K, A>> list
     ) => list.toDict(p => p.Key, p => p.Value);
 
+    [PublicAPI]
     public static Dictionary<K, A> toDict<A, K>(
       this IEnumerable<A> list, Fn<A, K> keyGetter
     ) => list.toDict(keyGetter, _ => _);
 
     // AOT safe version of ToDictionary.
+    [PublicAPI]
     public static Dictionary<K, V> toDict<A, K, V>(
       this IEnumerable<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
     ) {
@@ -139,10 +149,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return dict;
     }
 
+    [PublicAPI]
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.Yield());
+    [PublicAPI]
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, Option<A> aOpt) =>
       aOpt.isSome ? e.Concat(aOpt.__unsafeGetValue) : e;
 
+    [PublicAPI]
     public static IEnumerable<Base> Concat2<Child, Base>(
       this IEnumerable<Child> e1, IEnumerable<Base> e2
     ) where Child : Base {
@@ -150,6 +163,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var _base in e2) yield return _base;
     }
 
+    [PublicAPI]
     public static IEnumerable<Base> Concat3<Base, Child>(
       this IEnumerable<Base> e1, IEnumerable<Child> e2
     ) where Child : Base {
@@ -157,17 +171,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var _child in e2) yield return _child;
     }
 
+    [PublicAPI]
     public static IEnumerable<A> Yield<A>(this A any) { yield return any; }
 
-    [Obsolete("Use foreach instead.")] public static void each<A>(this IEnumerable<A> enumerable, Act<A> f) {
-      foreach (var el in enumerable) f(el);
-    }
-
+    [PublicAPI]
     public static Option<A> find<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
       foreach (var a in enumerable) if (predicate(a)) return F.some(a);
       return F.none<A>();
     }
 
+    [PublicAPI]
     public static IEnumerable<C> zip<A, B, C>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f
     ) {
@@ -181,6 +194,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       bEnum.Dispose();
     }
 
+    [PublicAPI]
     public static IEnumerable<C> zipLeft<A, B, C>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<A, int, C> generateMissing
     ) {
@@ -197,14 +211,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       bEnum.Dispose();
     }
 
+    [PublicAPI]
     public static IEnumerable<C> zipRight<A, B, C>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B, int, C> generateMissing
     ) => bEnumerable.zipLeft(aEnumerable, (b, a) => f(a, b), generateMissing);
 
+    [PublicAPI]
     public static IEnumerable<Tpl<A, B>> zip<A, B>(
       this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable
     ) => aEnumerable.zip(bEnumerable, F.t);
 
+    [PublicAPI]
     public static IEnumerable<Tpl<A, int>> zipWithIndex<A>(this IEnumerable<A> enumerable) {
       var idx = 0;
       foreach (var a in enumerable) {
@@ -212,18 +229,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         idx += 1;
       }
     }
-
+    
+    [PublicAPI]
     public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable) =>
       from aOpt in enumerable
       where aOpt.isSome
       select aOpt.__unsafeGetValue;
 
+    [PublicAPI]
     public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) =>
       enumerable.SelectMany(_ => _);
 
     /// <summary>
     /// Maps enumerable invoking mapper once per distinct A.
     /// </summary>
+    [PublicAPI]
     public static IEnumerable<B> mapDistinct<A, B>(
       this IEnumerable<A> enumerable, Fn<A, B> mapper
     ) {
@@ -239,6 +259,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
+    [PublicAPI]
     public static IEnumerable<B> collect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
@@ -248,6 +269,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
+    [PublicAPI]
     public static Option<B> collectFirst<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
@@ -258,10 +280,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<B>();
     }
 
+    [PublicAPI]
     public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) =>
       new HashSet<A>(enumerable);
 
     /// <summary>Partitions enumerable into two lists using a predicate.</summary>
+    [PublicAPI]
     public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
       var trues = ImmutableList.CreateBuilder<A>();
       var falses = ImmutableList.CreateBuilder<A>();
@@ -269,6 +293,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return Partitioned.a(trues.ToImmutable(), falses.ToImmutable());
     }
 
+    [PublicAPI]
     public static Tpl<ImmutableList<A>, ImmutableList<B>> partitionCollect<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
@@ -284,11 +309,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.t(nones.ToImmutable(), somes.ToImmutable());
     }
 
+    [PublicAPI]
     public static IOrderedEnumerable<A> OrderBySafe<A, B>(
       this IEnumerable<A> source, Func<A, B> keySelector
     ) where B : IComparable<B> => source.OrderBy(keySelector);
 
     /// <summary>Take <see cref="count"/> random unique elements from a finite enumerable.</summary>
+    [PublicAPI]
     public static ImmutableList<A> takeRandomly<A>(
       this IEnumerable<A> enumerable, int count, ref Rng rng
     ) {
@@ -299,7 +326,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return result;
     }
 
+    [PublicAPI]
     public static bool isEmpty<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
+    [PublicAPI]
     public static bool nonEmpty<A>(this IEnumerable<A> enumerable) => enumerable.Any();
 
     [PublicAPI]
