@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -29,6 +30,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       var type = UnityEditor.PrefabUtility.GetPrefabType(_prefab);
       if (type != UnityEditor.PrefabType.Prefab)
         yield return new ErrorMsg($"Expected {_prefab} to be a prefab, but it was {type}!");
+#else
+      return Enumerable.Empty<ErrorMsg>();
 #endif
     }
   }
