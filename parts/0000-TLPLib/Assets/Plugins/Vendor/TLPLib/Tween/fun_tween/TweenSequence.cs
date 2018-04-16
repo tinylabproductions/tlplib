@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -148,19 +149,29 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         insert(totalDuration, element, out elementEndsAt);
     }
 
-    public static Builder parallel(params TweenSequenceElement[] elements) {
+    [PublicAPI] 
+    public static Builder parallelEnumerable(IEnumerable<TweenSequenceElement> elements) {
       var builder = Builder.create();
       foreach (var element in elements)
         builder.insert(0, element);
       return builder;
     }
 
-    public static Builder sequential(params TweenSequenceElement[] elements) {
+    [PublicAPI] 
+    public static Builder parallel(params TweenSequenceElement[] elements) =>
+      parallelEnumerable(elements);
+
+    [PublicAPI] 
+    public static Builder sequentialEnumerable(IEnumerable<TweenSequenceElement> elements) {
       var builder = Builder.create();
       foreach (var element in elements)
         builder.append(element);
       return builder;
     }
+
+    [PublicAPI]
+    public static Builder sequential(params TweenSequenceElement[] elements) =>
+      sequentialEnumerable(elements);
   }
 
   // TODO: this fires forwards events, when playing from the end. We should fix this.
