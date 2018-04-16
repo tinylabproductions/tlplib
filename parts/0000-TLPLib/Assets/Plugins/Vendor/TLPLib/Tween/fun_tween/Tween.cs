@@ -1,4 +1,6 @@
-﻿namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
+﻿using com.tinylabproductions.TLPLib.Logger;
+
+namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tween {
     public static TweenCallback callback(TweenCallback.Act callback) =>
       new TweenCallback(callback);
@@ -16,6 +18,11 @@
     public readonly float duration;
 
     public Tween(A start, A end, Ease ease, TweenLerp<A> lerp, float duration) {
+      if (duration < 0) {
+        if (Log.d.isWarn()) Log.d.warn($"Got tween duration < 0, forcing to 0!");
+        duration = 0;
+      }
+      
       this.start = start;
       this.end = end;
       this.ease = ease;
