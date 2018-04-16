@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -183,7 +184,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
     static Option<DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
       SerializedRW.integer.deserialize(data, startIndex).filter(i => i.value % 2 != 0);
-    static ImmutableList<int> convert(ImmutableArray<int> a) => a.ToImmutableList();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(
@@ -195,7 +195,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       storage.collection(
         key,
         SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize),
-        convert, defaultVal,
+        CollectionBuilderKnownSizeFactory<int>.immutableList, defaultVal,
         onDeserializeFailure: onDeserializeFailure,
         log: log
       );
