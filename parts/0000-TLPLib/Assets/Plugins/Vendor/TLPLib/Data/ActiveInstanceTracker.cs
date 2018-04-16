@@ -18,6 +18,8 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// and then the manager can subscribe to <see cref="onEnabled"/> and <see cref="onDisabled"/>
   /// callbacks to manage the instances.
   /// 
+  /// In fact you should probably use <see cref="track"/> which does that for you.
+  /// 
   /// This way it does not matter whether the manager or the instances are first initialized.
   /// </summary>
   public class ActiveInstanceTracker<A> {
