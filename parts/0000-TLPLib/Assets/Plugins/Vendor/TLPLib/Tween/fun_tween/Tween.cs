@@ -1,4 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tween {
@@ -12,10 +13,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// Essentially a function from (time passed) -> (<see cref="A"/> value)
   /// </summary>
   public sealed class Tween<A> {
-    public readonly A start, end;
-    public readonly Ease ease;
-    public readonly TweenLerp<A> lerp;
-    public readonly float duration;
+    [PublicAPI] public readonly A start, end;
+    [PublicAPI] public readonly Ease ease;
+    [PublicAPI] public readonly TweenLerp<A> lerp;
+    [PublicAPI] public readonly float duration;
 
     public Tween(A start, A end, Ease ease, TweenLerp<A> lerp, float duration) {
       if (duration < 0) {

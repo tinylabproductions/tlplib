@@ -135,16 +135,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public readonly Tween<A> tween;
     public readonly T t;
-    readonly Act<A, T> changeState;
+    readonly Act<float, bool> _setRelativeTimePassed;
 
     public Tweener(Tween<A> tween, T t, Act<A, T> changeState) {
       this.tween = tween;
       this.t = t;
-      this.changeState = changeState;
+      _setRelativeTimePassed =
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        tween.duration == 0
+          ? new Act<float, bool>(
+            (_, playingForwards) => changeState(playingForwards ? tween.end : tween.start, t)
+          )
+          : (time, playingForwards) => changeState(tween.eval(time), t);
     }
 
-    public void setRelativeTimePassed(float t, bool playingForwards) =>
-      changeState(tween.eval(t), this.t);
+    public void setRelativeTimePassed(float t, bool playingForwards) => 
+      _setRelativeTimePassed(t, playingForwards);
 
     public override string ToString() =>
       $"{nameof(Tweener)}[on {t}, {tween}]";
