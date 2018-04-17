@@ -14,32 +14,44 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// However usually upon those callbacks you want to run some code. And if the "manager"
   /// that you want to invoke is not there yet, you have a problem.
   /// 
-  /// By using this class, you can always query the active instances when you create the manager
-  /// and then the manager can subscribe to <see cref="onEnabled"/> and <see cref="onDisabled"/>
-  /// callbacks to manage the instances.
-  /// 
-  /// In fact you should probably use <see cref="track"/> which does that for you.
+  /// By using this class, you can always run code for the active instances by using <see cref="track"/>
+  /// when you create the manager.
   /// 
   /// This way it does not matter whether the manager or the instances are first initialized.
   /// </summary>
   public class ActiveInstanceTracker<A> {
     readonly HashSet<A> _active = new HashSet<A>();
-    [PublicAPI] public IEnumerable<A> active => _active;
+    readonly List<A> pendingEnables = new List<A>(), pendingDisables = new List<A>();
     
     readonly Subject<A> 
       _onEnabled = new Subject<A>(),
       _onDisabled = new Subject<A>();
 
-    [PublicAPI] public IObservable<A> onEnabled => _onEnabled;
-    [PublicAPI] public IObservable<A> onDisabled => _onDisabled;
-
+    // We need to track whether we are iterating via active instances to prevent
+    // concurrent modifications of a mutable data structure. Immutable data structure would
+    // help us out here, but it would generate object instances on every object enable/disable,
+    // which is suboptimal.
+    bool iterating;
+    
     [PublicAPI] public void onEnable(A a) {
-      _active.Add(a);
+      if (iterating) {
+        pendingEnables.Add(a);
+      }
+      else {
+        _active.Add(a);
+      }
+
       _onEnabled.push(a);
     }
 
     [PublicAPI] public void onDisable(A a) {
-      _active.Remove(a);
+      if (iterating) {
+        pendingDisables.Add(a);
+      }
+      else {
+        _active.Remove(a);
+      }
+      
       _onDisabled.push(a);
     }
 
@@ -48,12 +60,24 @@ namespace com.tinylabproductions.TLPLib.Data {
       IDisposableTracker tracker, Act<A> runOnEnabled = null, Act<A> runOnDisabled = null
     ) {
       if (runOnEnabled != null) {
-        foreach (var block in _active) runOnEnabled(block);
-        onEnabled.subscribe(tracker, runOnEnabled);
+        // Subscribe to onEnabled before running the code on already active objects, because
+        // that code can then enable additional instances.
+        _onEnabled.subscribe(tracker, runOnEnabled);
+        try {
+          iterating = true;
+          foreach (var block in _active) runOnEnabled(block);
+        }
+        finally {
+          iterating = false;
+          foreach (var a in pendingEnables) _active.Add(a);
+          foreach (var a in pendingDisables) _active.Remove(a);
+          pendingEnables.Clear();
+          pendingDisables.Clear();
+        }
       }
 
       if (runOnDisabled != null) {
-        onDisabled.subscribe(tracker, runOnDisabled);
+        _onDisabled.subscribe(tracker, runOnDisabled);
       }
     }
 
