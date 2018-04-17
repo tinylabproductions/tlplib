@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -23,8 +23,8 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// This way it does not matter whether the manager or the instances are first initialized.
   /// </summary>
   public class ActiveInstanceTracker<A> {
-    [PublicAPI] public ImmutableHashSet<A> active { get; private set; } = 
-      ImmutableHashSet<A>.Empty;
+    readonly HashSet<A> _active = new HashSet<A>();
+    [PublicAPI] public IEnumerable<A> active => _active;
     
     readonly Subject<A> 
       _onEnabled = new Subject<A>(),
@@ -34,12 +34,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public IObservable<A> onDisabled => _onDisabled;
 
     [PublicAPI] public void onEnable(A a) {
-      active = active.Add(a);
+      _active.Add(a);
       _onEnabled.push(a);
     }
 
     [PublicAPI] public void onDisable(A a) {
-      active = active.Remove(a);
+      _active.Remove(a);
       _onDisabled.push(a);
     }
 
@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       IDisposableTracker tracker, Act<A> runOnEnabled = null, Act<A> runOnDisabled = null
     ) {
       if (runOnEnabled != null) {
-        foreach (var block in active) runOnEnabled(block);
+        foreach (var block in _active) runOnEnabled(block);
         onEnabled.subscribe(tracker, runOnEnabled);
       }
 
@@ -58,6 +58,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     static readonly string aName = typeof(A).Name; 
-    public override string ToString() => $"{active.Count} instances of {aName}";
+    public override string ToString() => $"{_active.Count} instances of {aName}";
   }
 }
