@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Tween.fun_tween;
+using JetBrains.Annotations;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Tween {
+namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public enum UnityPhase : byte { Update, LateUpdate, FixedUpdate }
+  
   /// <summary>
   /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
   /// </summary>
   public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
-    public static readonly TweenManagerRunner instance;
-    public UnityPhase phase { get; private set; }
+    [PublicAPI] public static readonly TweenManagerRunner instance;
+    [PublicAPI] public UnityPhase phase { get; private set; }
 
     static TweenManagerRunner() {
       if (instance == null) {

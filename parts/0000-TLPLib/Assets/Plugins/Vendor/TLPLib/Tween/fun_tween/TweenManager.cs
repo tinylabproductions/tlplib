@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public enum TweenTime : byte {
@@ -50,16 +47,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public readonly ITweenSequence sequence;
     [PublicAPI] public readonly TweenTime time;
 
-    // These are null intentionally. We try not to create objects if they are not needed.
-    ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
-    ISubject<TweenCallback.Event> onStart_ => __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
-    ISubject<TweenCallback.Event> onEnd_ => __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
-
     IDisposableTracker _tracker;
     IDisposableTracker tracker => _tracker ?? (_tracker = new DisposableTracker());
 
-    [PublicAPI] public IObservable<TweenCallback.Event> onStart => onStart_;
-    [PublicAPI] public IObservable<TweenCallback.Event> onEnd => onEnd_;
+    // These are null intentionally. We try not to create objects if they are not needed.
+    ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
+
+    [PublicAPI] public IObservable<TweenCallback.Event> onStart => 
+      __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
+    [PublicAPI] public IObservable<TweenCallback.Event> onEnd => 
+      __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
     
     [PublicAPI] public float timescale = 1;
     [PublicAPI] public bool forwards = true;
