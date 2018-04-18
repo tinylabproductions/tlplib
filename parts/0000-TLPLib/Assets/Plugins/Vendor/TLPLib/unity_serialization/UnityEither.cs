@@ -28,8 +28,8 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
     bool validate() {
       // ReSharper disable AssignNullToNotNullAttribute
-      if (isA) b = default(B);
-      else a = default(A);
+      if (isA) b = default;
+      else a = default;
       // ReSharper restore AssignNullToNotNullAttribute
       return true;
     }
@@ -43,10 +43,9 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
     public Either<A, B> value => isB.either(a, b);
 
-    public string[] blacklistedFields() {
-      return _isA
-        ? new [] { nameof(b) }
-        : new [] { nameof(a) };
-    }
+    public string[] blacklistedFields() => 
+      _isA
+      ? new [] { nameof(b) }
+      : new [] { nameof(a) };
   }
 }
