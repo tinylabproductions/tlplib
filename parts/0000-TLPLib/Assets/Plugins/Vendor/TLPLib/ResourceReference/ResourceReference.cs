@@ -39,22 +39,33 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     }
 #endif
 
+    static A getReferenceFromResource<A>(ResourceReference<A> resourceReference) where A : Object {
+      var reference = resourceReference.reference;
+      // When we try to load the resourceReference for the second time, we are getting a cached version 
+      // from the memory, not from the disk.
+      //
+      // To make sure that the resourceReference and all it's dependencies gets reloaded from disk,
+      // we unload resourceReference here.
+      Resources.UnloadAsset(resourceReference);
+      return reference;
+    }
+
     [PublicAPI]
     public static Either<ErrorMsg, A> load<A>(PathStr loadPath) where A : Object => 
-      ResourceLoader.load<ResourceReference<A>>(loadPath).mapRight(_ => _.reference);
+      ResourceLoader.load<ResourceReference<A>>(loadPath).mapRight(getReferenceFromResource);
 
     [PublicAPI]
     public static Tpl<IAsyncOperation, Future<Either<ErrorMsg, A>>> loadAsync<A>(
       PathStr loadPath
     ) where A : Object =>
       ResourceLoader.loadAsync<ResourceReference<A>>(loadPath)
-        .map2(future => future.mapT(_ => _.reference));
+        .map2(future => future.mapT(getReferenceFromResource));
 
     [PublicAPI]
     public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
     ) where A : Object =>
       ResourceLoader.loadAsyncIgnoreErrors<ResourceReference<A>>(loadPath, logOnError)
-        .map2(future => future.map(_ => _.reference));
+        .map2(future => future.map(getReferenceFromResource));
   }
 }
