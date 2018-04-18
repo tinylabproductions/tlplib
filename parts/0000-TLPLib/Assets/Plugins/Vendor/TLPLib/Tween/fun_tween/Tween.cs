@@ -31,13 +31,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.duration = duration;
     }
 
-    public A eval(float timePassed) => lerp(start, end, ease(timePassed / duration));
+    public A eval(float timePassed, bool playingForwards) =>
+      // ReSharper disable once CompareOfFloatsByEqualityOperator
+      duration == 0
+      ? (playingForwards ? end : start)
+      : lerp(start, end, ease(timePassed / duration));
 
     public override string ToString() =>
-      $"{nameof(Tween)}[" +
-      $"{nameof(start)}={start}, " +
-      $"{nameof(end)}={end}, " +
-      $"{nameof(duration)}={duration}" +
-      $"]";
+      $"{nameof(Tween)}[from {start} to {end} over {duration}s]";
   }
 }

@@ -131,26 +131,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
   /// </summary>
   public class Tweener<A, T> : TweenSequenceElement {
-    public float duration => tween.duration;
+    [PublicAPI] public float duration => tween.duration;
 
-    public readonly Tween<A> tween;
-    public readonly T t;
-    readonly Act<float, bool> _setRelativeTimePassed;
+    [PublicAPI] public readonly Tween<A> tween;
+    [PublicAPI] public readonly T t;
+    [PublicAPI] public readonly Act<A, T> changeState;
 
     public Tweener(Tween<A> tween, T t, Act<A, T> changeState) {
       this.tween = tween;
       this.t = t;
-      _setRelativeTimePassed =
-        // ReSharper disable once CompareOfFloatsByEqualityOperator
-        tween.duration == 0
-          ? new Act<float, bool>(
-            (_, playingForwards) => changeState(playingForwards ? tween.end : tween.start, t)
-          )
-          : (time, playingForwards) => changeState(tween.eval(time), t);
+      this.changeState = changeState;
     }
 
-    public void setRelativeTimePassed(float t, bool playingForwards) => 
-      _setRelativeTimePassed(t, playingForwards);
+    public void setRelativeTimePassed(float t, bool playingForwards) =>
+      changeState(tween.eval(t, playingForwards), this.t);
 
     public override string ToString() =>
       $"{nameof(Tweener)}[on {t}, {tween}]";
