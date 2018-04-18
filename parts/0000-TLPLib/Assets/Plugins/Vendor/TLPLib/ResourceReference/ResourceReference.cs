@@ -41,7 +41,9 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     static A getReferenceFromResource<A>(ResourceReference<A> resourceReference) where A : Object {
       var reference = resourceReference.reference;
-      // When we try to load the resourceReference for the second time, we are getting cached version.
+      // When we try to load the resourceReference for the second time, we are getting a cached version 
+      // from the memory, not from the disk.
+      //
       // To make sure that the resourceReference and all it's dependencies gets reloaded from disk,
       // we unload resourceReference here.
       Resources.UnloadAsset(resourceReference);
