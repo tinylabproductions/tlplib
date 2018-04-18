@@ -48,7 +48,11 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       PathStr loadPath
     ) where A : Object =>
       ResourceLoader.loadAsync<ResourceReference<A>>(loadPath)
-        .map2(future => future.mapT(_ => _.reference));
+        .map2(future => future.mapT(resourceReference => {
+          var reference = resourceReference.reference;
+          Resources.UnloadAsset(resourceReference);
+          return reference;
+      }));
 
     [PublicAPI]
     public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
