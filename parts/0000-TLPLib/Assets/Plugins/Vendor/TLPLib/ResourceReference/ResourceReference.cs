@@ -44,8 +44,14 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       // When we try to load the resourceReference for the second time, we are getting a cached version 
       // from the memory, not from the disk.
       //
+      // This leads to scenarios, where you unload the referenced resource from memory and expect that
+      // loading ResourceReference will reload it back to the memory. But because the ResourceReference
+      // itself is still in the memory, Unity will happily give it back to you, with the broken reference
+      // inside of it.
+      //
       // To make sure that the resourceReference and all it's dependencies gets reloaded from disk,
-      // we unload resourceReference here.
+      // we unload resourceReference here. This way, upon the next load, we are sure that it will not have
+      // a broken reference inside.
       Resources.UnloadAsset(resourceReference);
       return reference;
     }
