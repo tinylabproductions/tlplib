@@ -244,6 +244,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
+    /// <summary>Runs action forever every frame.</summary>
+    [PublicAPI]
+    public static IEnumerator everyFrameEnumerator(Action action) {
+      while (true) {
+        action();
+        yield return null;
+      }
+      // ReSharper disable once IteratorNeverReturns
+    }
+    
     public static IEnumerator NextFrameEnumerator(Action action) {
       yield return null;
       action();

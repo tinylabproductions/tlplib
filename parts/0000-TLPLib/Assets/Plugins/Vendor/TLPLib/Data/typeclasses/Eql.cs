@@ -11,15 +11,15 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   public static class Eql {
     [PublicAPI]
     public static IEqualityComparer<A> asEqualityComparer<A>(this Eql<A> eql) => new AsEqualityComparer<A>(eql);
-    
+
+    [PublicAPI]
+    public static Eql<A> lambda<A>(Fn<A, A, bool> eql) => new Lambda<A>(eql);
+
     [PublicAPI]
     public class Lambda<A> : Eql<A> {
       readonly Fn<A, A, bool> _eql;
 
-      public Lambda(Fn<A, A, bool> eql) {
-        _eql = eql;
-      }
-
+      public Lambda(Fn<A, A, bool> eql) { _eql = eql; }
       public bool eql(A a1, A a2) => _eql(a1, a2);
     }
 

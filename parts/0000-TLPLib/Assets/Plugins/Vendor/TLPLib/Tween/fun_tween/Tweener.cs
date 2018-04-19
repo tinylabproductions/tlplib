@@ -77,12 +77,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public static Tweener<Color, Graphic> tweenColor(
       this Graphic g, Color from, Color to, Ease ease, float duration
-    ) => a(TweenLerp.color.tween(from, to, ease, duration), g, TweenMutators.color);
+    ) => a(TweenLerp.color.tween(from, to, ease, duration), g, TweenMutators.graphicColor);
 
     [PublicAPI]
     public static Tweener<float, Graphic> tweenColorAlpha(
       this Graphic g, float from, float to, Ease ease, float duration
-    ) => a(TweenLerp.float_.tween(from, to, ease, duration), g, TweenMutators.colorAlpha);
+    ) => a(TweenLerp.float_.tween(from, to, ease, duration), g, TweenMutators.graphicColorAlpha);
     
     [PublicAPI]
     public static Tweener<Color, Shadow> tweenColor(
@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public static Tweener<float, Image> tweenFillAmount(
       this Image i, float from, float to, Ease ease, float duration
-    ) => a(TweenLerp.float_.tween(from, to, ease, duration), i, TweenMutators.fillAmount);
+    ) => a(TweenLerp.float_.tween(from, to, ease, duration), i, TweenMutators.imageFillAmount);
     #endregion
     
     #region RectTransform Position
@@ -131,11 +131,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
   /// </summary>
   public class Tweener<A, T> : TweenSequenceElement {
-    public float duration => tween.duration;
+    [PublicAPI] public float duration => tween.duration;
 
-    public readonly Tween<A> tween;
-    public readonly T t;
-    readonly Act<A, T> changeState;
+    [PublicAPI] public readonly Tween<A> tween;
+    [PublicAPI] public readonly T t;
+    [PublicAPI] public readonly Act<A, T> changeState;
 
     public Tweener(Tween<A> tween, T t, Act<A, T> changeState) {
       this.tween = tween;
@@ -144,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public void setRelativeTimePassed(float t, bool playingForwards) =>
-      changeState(tween.eval(t), this.t);
+      changeState(tween.eval(t, playingForwards), this.t);
 
     public override string ToString() =>
       $"{nameof(Tweener)}[on {t}, {tween}]";

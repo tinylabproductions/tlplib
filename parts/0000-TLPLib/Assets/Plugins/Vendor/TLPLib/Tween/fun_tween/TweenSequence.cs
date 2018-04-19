@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -35,11 +35,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public float duration { get; }
     readonly Effect[] effects;
 
-    bool lastDirectionWasForwards = false;
+    bool lastDirectionWasForwards;
 
     float _timePassed;
     public float timePassed {
-      get { return _timePassed; }
+      get => _timePassed;
       set {
         var diff = value - _timePassed;
         // ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -74,6 +74,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       if (playingForwards) {
         foreach (var effect in effects) {
           if (timePassed >= effect.startsAt && previousTime <= effect.endsAt) {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (previousTime == effect.endsAt) {
               if (directionChanged) effect.element.setRelativeTimePassed(effect.endsAt - effect.startsAt, playingForwards);
             }
@@ -88,6 +89,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         for (var idx = effects.Length - 1; idx >= 0; idx--) {
           var effect = effects[idx];
           if (timePassed <= effect.endsAt && previousTime >= effect.startsAt) {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (previousTime == effect.startsAt) {
               if (directionChanged) effect.element.setRelativeTimePassed(effect.startsAt - effect.endsAt, playingForwards);
             }
@@ -99,11 +101,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         }
       }
       lastDirectionWasForwards = playingForwards;
-
     }
 
     public class Builder {
-      public float totalDuration { get; private set; }
+      [PublicAPI] public float totalDuration { get; private set; }
       readonly List<Effect> effects = new List<Effect>();
 
       public TweenSequence build() => new TweenSequence(
@@ -114,6 +115,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public static Builder create() => new Builder();
 
       /// <summary>Inserts element into the sequence at specific time.</summary>
+      [PublicAPI]
       public Builder insert(float at, TweenSequenceElement element) {
         var endsAt = at + element.duration;
         totalDuration = Mathf.Max(totalDuration, endsAt);
@@ -123,6 +125,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       /// <see cref="insert(float,TweenSequenceElement)"/>
       /// <returns>Time when the given element will end.</returns>
+      [PublicAPI]
       public float insert2(float at, TweenSequenceElement element) {
         insert(at, element);
         return at + element.duration;
@@ -132,35 +135,49 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       /// <param name="at"></param>
       /// <param name="element"></param>
       /// <param name="elementEndsAt">Time when the given element will end.</param>
+      [PublicAPI]
       public Builder insert(float at, TweenSequenceElement element, out float elementEndsAt) {
         insert(at, element);
         elementEndsAt = at + element.duration;
         return this;
       }
 
+      [PublicAPI]
       public Builder append(TweenSequenceElement element) =>
         insert(totalDuration, element);
 
+      [PublicAPI]
       public float append2(TweenSequenceElement element) =>
         insert2(totalDuration, element);
 
+      [PublicAPI]
       public Builder append(TweenSequenceElement element, out float elementEndsAt) =>
         insert(totalDuration, element, out elementEndsAt);
     }
 
-    public static Builder parallel(params TweenSequenceElement[] elements) {
+    [PublicAPI] 
+    public static Builder parallelEnumerable(IEnumerable<TweenSequenceElement> elements) {
       var builder = Builder.create();
       foreach (var element in elements)
         builder.insert(0, element);
       return builder;
     }
 
-    public static Builder sequential(params TweenSequenceElement[] elements) {
+    [PublicAPI] 
+    public static Builder parallel(params TweenSequenceElement[] elements) =>
+      parallelEnumerable(elements);
+
+    [PublicAPI] 
+    public static Builder sequentialEnumerable(IEnumerable<TweenSequenceElement> elements) {
       var builder = Builder.create();
       foreach (var element in elements)
         builder.append(element);
       return builder;
     }
+
+    [PublicAPI]
+    public static Builder sequential(params TweenSequenceElement[] elements) =>
+      sequentialEnumerable(elements);
   }
 
   // TODO: this fires forwards events, when playing from the end. We should fix this.
@@ -175,8 +192,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       original.setRelativeTimePassed(original.duration - t, !playingForwards);
 
     public float timePassed {
-      get { return original.duration - original.timePassed; }
-      set { original.timePassed = original.duration - value; }
+      get => original.duration - original.timePassed;
+      set => original.timePassed = original.duration - value;
     }
   }
 
@@ -199,6 +216,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public static void update(this ITweenSequence element, float deltaTime) {
+      // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
 
       var directionForwards = Mathf.Sign(deltaTime) >= 0;
