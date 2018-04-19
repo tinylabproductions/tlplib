@@ -2,13 +2,9 @@
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
-  public interface TweenNumeric<A> {
-    A add(A a1, A a2);
-    A subtract(A a1, A a2);
-    A multiply(A a1, float y);
-  }
-
-  /// <summary>Knows how to linearly interpolate <see cref="A"/>. Should return start when y = 0 and end when y = 1.</summary>
+  /// <summary>
+  /// Knows how to linearly interpolate <see cref="A"/>. Should return start when y = 0 and end when y = 1.
+  /// </summary>
   public delegate A TweenLerp<A>(A start, A end, float y);
   public static class TweenLerp {
     [PublicAPI]
@@ -28,12 +24,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       intCeiled = (start, end, t) => Mathf.CeilToInt(float_(start, end, t));
 
     [PublicAPI]
-    public static TweenLerp<A> fromNumeric<A>(TweenNumeric<A> n) =>
+    public static TweenLerp<A> fromNumeric<A>(Numeric<A> n) =>
       (start, end, y) => n.add(start, n.multiply(n.subtract(end, start), y));
 
     [PublicAPI]
     public static Tween<A> tween<A>(
       this TweenLerp<A> lerp, A start, A end, Ease ease, float duration
     ) => new Tween<A>(start, end, ease, lerp, duration);
+    
+    public interface Numeric<A> {
+      A add(A a1, A a2);
+      A subtract(A a1, A a2);
+      A multiply(A a1, float y);
+    }
   }
 }
