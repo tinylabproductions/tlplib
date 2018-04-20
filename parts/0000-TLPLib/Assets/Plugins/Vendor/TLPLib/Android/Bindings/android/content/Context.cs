@@ -2,9 +2,12 @@
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.telephony;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
+
+  [JavaBinding("android.content.Context")]
   public class Context : Binding {
     const string
       SERVICE_TELEPHONY_MANAGER = "phone";
