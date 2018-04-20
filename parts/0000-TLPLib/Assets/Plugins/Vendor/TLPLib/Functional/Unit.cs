@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Data.serialization;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
+  [Serializable]
   public struct Unit : IEquatable<Unit> {
     public static Unit instance { get; } = new Unit();
     public override string ToString() => "()";

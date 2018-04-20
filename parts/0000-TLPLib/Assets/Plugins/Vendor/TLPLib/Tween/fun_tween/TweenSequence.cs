@@ -10,14 +10,38 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// </summary>
   public interface TweenSequenceElement {
     float duration { get; }
-    void setRelativeTimePassed(float t, bool playingForwards);
+    
+    /// <summary>
+    /// Sets how much time has passed, relative to elements duration.
+    /// 
+    /// Must be [0, duration].
+    /// </summary>
+    /// 
+    /// <param name="previousTimePassed"></param>
+    /// <param name="timePassed"></param>
+    /// <param name="playingForwards"></param>
+    /// <param name="applyEffectsForRelativeTweens">
+    /// Should we run effects for relative tweens when setting the time passed?
+    /// 
+    /// Usually you want to run them, but one case when you do not want effects to happen
+    /// is rewinding - you want for the object to stay in place even though the logical time
+    /// of the sequence changes to 0 or total duration. 
+    /// </param>
+    void setRelativeTimePassed(
+      float previousTimePassed, float timePassed, bool playingForwards, 
+      bool applyEffectsForRelativeTweens
+    );
   }
 
   /// <summary>
   /// A sequence of <see cref="TweenSequenceElement"/> arranged in time.
   /// </summary>
   public interface ITweenSequence : TweenSequenceElement {
+    /// <summary>Calls <see cref="setTimePassed"/> applying effects for relative tweens.</summary>
     float timePassed { get; set; }
+    
+    /// <see cref="TweenSequenceElement.setRelativeTimePassed"/>
+    void setTimePassed(float timePassed, bool applyEffectsForRelativeTweens);
   }
 
   public class TweenSequence : ITweenSequence {
@@ -25,10 +49,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public readonly float startsAt, endsAt;
       public readonly TweenSequenceElement element;
 
+      public readonly float duration;
+      public float relativize(float timePassed) => timePassed - startsAt;
+
       public Effect(float startsAt, float endsAt, TweenSequenceElement element) {
         this.startsAt = startsAt;
         this.endsAt = endsAt;
         this.element = element;
+        duration = endsAt - startsAt;
       }
     }
 
@@ -40,14 +68,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     float _timePassed;
     public float timePassed {
       get => _timePassed;
-      set {
-        var diff = value - _timePassed;
-        // ReSharper disable once CompareOfFloatsByEqualityOperator
-        if (diff == 0f) return;
+      set => setTimePassed(value, true);
+    }
 
-        var playingForwards = Mathf.Sign(diff) > 0;
-        setRelativeTimePassed(value, playingForwards);
-      }
+    public void setTimePassed(float value, bool applyEffectsForRelativeTweens) {
+      // ReSharper disable once CompareOfFloatsByEqualityOperator
+      if (_timePassed == value) return;
+      var playingForwards = value >= _timePassed; 
+        
+      setRelativeTimePassed(
+        previousTimePassed: _timePassed, timePassed: value, playingForwards: playingForwards, 
+        applyEffectsForRelativeTweens: applyEffectsForRelativeTweens
+      );
     }
 
     TweenSequence(float duration, Effect[] effects) {
@@ -56,47 +88,56 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     // optimized for minimal allocations
+    [PublicAPI]
     public static TweenSequence single(TweenSequenceElement sequence, float delay = 0) =>
       new TweenSequence(
         sequence.duration + delay,
         new []{ new Effect(delay, sequence.duration + delay, sequence) }
       );
 
-    public void setRelativeTimePassed(float t, bool playingForwards) {
-      var previousTime = _timePassed;
-      _timePassed = Mathf.Clamp(t, 0, duration);
+    public void setRelativeTimePassed(
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+    ) {
+      _timePassed = Mathf.Clamp(timePassed, 0, duration);
 
       // ReSharper disable once CompareOfFloatsByEqualityOperator
-      if (previousTime == _timePassed && playingForwards == lastDirectionWasForwards) return;
+      if (previousTimePassed == _timePassed && playingForwards == lastDirectionWasForwards) return;
 
       var directionChanged = playingForwards != lastDirectionWasForwards;
 
       if (playingForwards) {
         foreach (var effect in effects) {
-          if (timePassed >= effect.startsAt && previousTime <= effect.endsAt) {
+          if (timePassed >= effect.startsAt && previousTimePassed <= effect.endsAt) {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (previousTime == effect.endsAt) {
-              if (directionChanged) effect.element.setRelativeTimePassed(effect.endsAt - effect.startsAt, playingForwards);
+            if (previousTimePassed == effect.endsAt) {
+              if (directionChanged)
+                effect.element.setRelativeTimePassed(
+                  effect.duration, effect.duration, true, applyEffectsForRelativeTweens
+                );
             }
-            else if (timePassed <= effect.endsAt)
-              effect.element.setRelativeTimePassed(timePassed - effect.startsAt, playingForwards);
-            else
-              effect.element.setRelativeTimePassed(effect.endsAt - effect.startsAt, playingForwards);
+            else {
+              float t(float x) => x <= effect.endsAt ? effect.relativize(x) : effect.duration;
+              effect.element.setRelativeTimePassed(
+                t(previousTimePassed), t(timePassed), true, applyEffectsForRelativeTweens
+              );
+            }
           }
         }
       }
       else {
         for (var idx = effects.Length - 1; idx >= 0; idx--) {
           var effect = effects[idx];
-          if (timePassed <= effect.endsAt && previousTime >= effect.startsAt) {
+          if (timePassed <= effect.endsAt && previousTimePassed >= effect.startsAt) {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (previousTime == effect.startsAt) {
-              if (directionChanged) effect.element.setRelativeTimePassed(effect.startsAt - effect.endsAt, playingForwards);
+            if (previousTimePassed == effect.startsAt) {
+              if (directionChanged) effect.element.setRelativeTimePassed(0, 0, false, applyEffectsForRelativeTweens);
             }
-            else if (timePassed >= effect.startsAt)
-              effect.element.setRelativeTimePassed(timePassed - effect.startsAt, playingForwards);
-            else
-              effect.element.setRelativeTimePassed(effect.startsAt - effect.endsAt, playingForwards);
+            else {
+              float t(float x) => x >= effect.startsAt ? effect.relativize(x) : 0;
+              effect.element.setRelativeTimePassed(
+                t(previousTimePassed), t(timePassed), false, applyEffectsForRelativeTweens
+              );
+            }
           }
         }
       }
@@ -188,12 +229,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public float duration => original.duration;
 
-    public void setRelativeTimePassed(float t, bool playingForwards) =>
-      original.setRelativeTimePassed(original.duration - t, !playingForwards);
+    public void setRelativeTimePassed(
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+    ) =>
+      original.setRelativeTimePassed(
+        previousTimePassed: original.duration - previousTimePassed,
+        timePassed: original.duration - timePassed, 
+        playingForwards: !playingForwards,
+        applyEffectsForRelativeTweens: applyEffectsForRelativeTweens
+      );
+
+    public void setTimePassed(float timePassed, bool applyEffectsForRelativeTweens) =>
+      original.setTimePassed(original.duration - timePassed, applyEffectsForRelativeTweens);
 
     public float timePassed {
       get => original.duration - original.timePassed;
-      set => original.timePassed = original.duration - value;
+      set => setTimePassed(value, true);
     }
   }
 
@@ -203,12 +254,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static bool isAtDuration(this ITweenSequence ts) => ts.timePassed == ts.duration;
     // ReSharper restore CompareOfFloatsByEqualityOperator
 
+    [PublicAPI]
     public static ITweenSequence reversed(this ITweenSequence ts) {
       foreach (var r in F.opt(ts as TweenSequenceReversed))
         return r.original;
       return new TweenSequenceReversed(ts);
     }
 
+    [PublicAPI]
     public static TweenSequence.Builder singleBuilder(this TweenSequenceElement element) {
       var builder = TweenSequence.Builder.create();
       builder.append(element);
@@ -219,10 +272,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
 
-      var directionForwards = Mathf.Sign(deltaTime) >= 0;
-      element.setRelativeTimePassed(element.timePassed + deltaTime , directionForwards);
+      element.timePassed += deltaTime;
     }
 
+    [PublicAPI] 
     public static TweenSequence single(this TweenSequenceElement element) =>
       TweenSequence.single(element);
   }

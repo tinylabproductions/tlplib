@@ -10,6 +10,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <summary>
   /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
   /// </summary>
+  [AddComponentMenu("")]
   public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
     [PublicAPI] public static readonly TweenManagerRunner instance;
     [PublicAPI] public UnityPhase phase { get; private set; }

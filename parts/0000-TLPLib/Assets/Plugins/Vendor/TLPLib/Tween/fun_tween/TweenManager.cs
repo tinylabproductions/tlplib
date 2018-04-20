@@ -1,7 +1,9 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public enum TweenTime : byte {
@@ -12,25 +14,33 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// Manages a sequence, calling its <see cref="TweenSequence.setRelativeTimePassed"/> method for you on
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
-  public class TweenManager {
-    public struct Loop {
+  public partial class TweenManager {
+    [Serializable, Record(GenerateToString = false)]
+    public partial struct Loop {
       public enum Mode : byte { Normal, YoYo }
 
-      [PublicAPI] public const uint
+      [PublicAPI, HideInInspector] public const uint
         TIMES_FOREVER = 0,
         TIMES_SINGLE = 1;
 
-      [PublicAPI] public uint times_;
-      [PublicAPI] public readonly Mode mode;
+      #region Unity Serialized Fields
+
+#pragma warning disable 649
+      // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
+      [SerializeField, PublicAccessor, Tooltip("0 means loop forever")] uint _times_;
+      [SerializeField, PublicAccessor] Mode _mode;
+      // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
+#pragma warning restore 649
+
+      #endregion
+
+      public override string ToString() {
+        var timesS = _times_ == TIMES_FOREVER ? "forever" : _times_.ToString();
+        return $"Loop({_mode} x {timesS})";
+      }
 
       [PublicAPI] public bool shouldLoop(uint currentIteration) => isForever || currentIteration < times_ - 1;
       [PublicAPI] public bool isForever => times_ == TIMES_FOREVER;
-
-      [PublicAPI]
-      public Loop(uint times, Mode mode) {
-        times_ = times;
-        this.mode = mode;
-      }
 
       [PublicAPI]
       public static Loop forever(Mode mode = Mode.Normal) => new Loop(TIMES_FOREVER, mode);
@@ -80,7 +90,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
 
-      if (forwards && sequence.isAtZero() || !forwards && sequence.isAtDuration()) {
+      if (
+        currentIteration == 0 
+        && (forwards && sequence.isAtZero() || !forwards && sequence.isAtDuration())
+      ) {
         __onStartSubject?.push(new TweenCallback.Event(forwards));
       }
 
@@ -97,7 +110,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
               reverse();
               break;
             case Loop.Mode.Normal:
-              rewindTimePassed();
+              rewindTimePassed(false);
               break;
             default:
               throw new ArgumentOutOfRangeException();
@@ -130,8 +143,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       return rewind();
     }
 
-    // TODO: add an option to play backwards (and test it)
     /// <summary>Plays a tween from the start at a given position.</summary>
+    // TODO: add an option to play backwards (and test it)
     [PublicAPI]
     public TweenManager play(float startTime) {
       rewind();
@@ -139,7 +152,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       sequence.timePassed = startTime;
       return this;
     }
-
+    
     /// <summary>Resumes playback from the last position, changing the direction.</summary>
     [PublicAPI]
     public TweenManager resume(bool forwards) {
@@ -168,29 +181,33 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     [PublicAPI]
-    public TweenManager rewind() {
+    public TweenManager rewind(bool applyEffectsForRelativeTweens = false) {
       currentIteration = 0;
-      rewindTimePassed();
+      rewindTimePassed(applyEffectsForRelativeTweens);
       return this;
     }
 
-    void rewindTimePassed() =>
-      sequence.timePassed = forwards ? 0 : sequence.duration;
+    void rewindTimePassed(bool applyEffectsForRelativeTweens) =>
+      sequence.setTimePassed(forwards ? 0 : sequence.duration, applyEffectsForRelativeTweens);
   }
 
   public static class TweenManagerExts {
+    [PublicAPI]
     public static TweenManager managed(
       this ITweenSequence sequence, TweenTime time = TweenTime.OnUpdate
     ) => new TweenManager(sequence, time, TweenManager.Loop.single);
 
+    [PublicAPI]
     public static TweenManager managed(
       this ITweenSequence sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
     ) => new TweenManager(sequence, time, looping);
 
+    [PublicAPI]
     public static TweenManager managed(
       this TweenSequenceElement sequence, TweenTime time = TweenTime.OnUpdate, float delay = 0
     ) => sequence.managed(TweenManager.Loop.single, time, delay);
 
+    [PublicAPI]
     public static TweenManager managed(
       this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
       float delay = 0
