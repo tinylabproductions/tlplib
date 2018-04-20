@@ -2,7 +2,7 @@
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
   [AddComponentMenu("")]
-  public class SerializedEasePunch : ComplexSerializedEase {
+  public class Ease_Punch : ComplexSerializedEase {
     [
       SerializeField, 
       Tooltip("Indicates how much will the punch vibrate")
@@ -19,5 +19,6 @@ while 0 oscillates only between the starting position and the decaying direction
 
     Ease _ease;
     public override Ease ease => _ease ?? (_ease = Eases.punch(vibrato: _vibrato, elasticity: _elasticity));
+    public override string easeName => $"Punch(v: {_vibrato}, e: {_elasticity})";
   }
 }

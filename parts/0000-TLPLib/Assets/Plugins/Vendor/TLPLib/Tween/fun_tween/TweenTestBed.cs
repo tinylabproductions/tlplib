@@ -1,8 +1,12 @@
 ﻿using System;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -10,6 +14,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public SpriteRenderer indicator;
     public Transform obj1, obj2, obj3, obj4;
     public float duration = 5;
+    [SerializeField, CreateDerived] SerializedTweener tweener;
+    [SerializeField, CreateDerived] SerializedTweenCallback callback;
+    [SerializeField] SerializedTweenSequence sequence;
 
     TweenManager manager;
 
