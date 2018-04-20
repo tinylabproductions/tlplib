@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   /// <summary>
-  /// Manages a sequence, calling its <see cref="TweenSequence.setRelativeTimePassed"/> method for you on
+  /// Manages a sequence, calling its <see cref="TweenTimeline.setRelativeTimePassed"/> method for you on
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
   public partial class TweenManager {
@@ -54,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
 
-    [PublicAPI] public readonly ITweenSequence sequence;
+    [PublicAPI] public readonly ITweenTimeline timeline;
     [PublicAPI] public readonly TweenTime time;
 
     IDisposableTracker _tracker;
@@ -76,8 +76,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     // TODO: implement me: loop(times, forever, yoyo)
     // notice: looping needs to take into account that some duration might have passed in the
     // new iteration
-    public TweenManager(ITweenSequence sequence, TweenTime time, Loop looping) {
-      this.sequence = sequence;
+    public TweenManager(ITweenTimeline timeline, TweenTime time, Loop looping) {
+      this.timeline = timeline;
       this.time = time;
       this.looping = looping;
     }
@@ -92,19 +92,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       if (
         currentIteration == 0 
-        && (forwards && sequence.isAtZero() || !forwards && sequence.isAtDuration())
+        && (forwards && timeline.isAtZero() || !forwards && timeline.isAtDuration())
       ) {
         __onStartSubject?.push(new TweenCallback.Event(forwards));
       }
 
-      var previousTime = sequence.timePassed;
-      sequence.update(deltaTime);
+      var previousTime = timeline.timePassed;
+      timeline.update(deltaTime);
 
-      if (forwards && sequence.isAtDuration() || !forwards && sequence.isAtZero()) {
+      if (forwards && timeline.isAtDuration() || !forwards && timeline.isAtZero()) {
         if (looping.shouldLoop(currentIteration)) {
           currentIteration++;
           var unusedTime =
-            Math.Abs(previousTime + deltaTime - (forwards ? sequence.duration : 0));
+            Math.Abs(previousTime + deltaTime - (forwards ? timeline.duration : 0));
           switch (looping.mode) {
             case Loop.Mode.YoYo:
               reverse();
@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public TweenManager play(float startTime) {
       rewind();
       resume(true);
-      sequence.timePassed = startTime;
+      timeline.timePassed = startTime;
       return this;
     }
     
@@ -188,29 +188,29 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     void rewindTimePassed(bool applyEffectsForRelativeTweens) =>
-      sequence.setTimePassed(forwards ? 0 : sequence.duration, applyEffectsForRelativeTweens);
+      timeline.setTimePassed(forwards ? 0 : timeline.duration, applyEffectsForRelativeTweens);
   }
 
   public static class TweenManagerExts {
     [PublicAPI]
     public static TweenManager managed(
-      this ITweenSequence sequence, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(sequence, time, TweenManager.Loop.single);
+      this ITweenTimeline timeline, TweenTime time = TweenTime.OnUpdate
+    ) => new TweenManager(timeline, time, TweenManager.Loop.single);
 
     [PublicAPI]
     public static TweenManager managed(
-      this ITweenSequence sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(sequence, time, looping);
+      this ITweenTimeline timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
+    ) => new TweenManager(timeline, time, looping);
 
     [PublicAPI]
     public static TweenManager managed(
-      this TweenSequenceElement sequence, TweenTime time = TweenTime.OnUpdate, float delay = 0
-    ) => sequence.managed(TweenManager.Loop.single, time, delay);
+      this TweenTimelineElement timeline, TweenTime time = TweenTime.OnUpdate, float delay = 0
+    ) => timeline.managed(TweenManager.Loop.single, time, delay);
 
     [PublicAPI]
     public static TweenManager managed(
-      this TweenSequenceElement sequence, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
+      this TweenTimelineElement timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
       float delay = 0
-    ) => new TweenManager(TweenSequence.single(sequence, delay), time, looping);
+    ) => new TweenManager(TweenTimeline.single(timeline, delay), time, looping);
   }
 }

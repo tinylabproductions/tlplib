@@ -4,13 +4,13 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks {
-  public abstract class SerializedTweenCallback : SerializedTweenSequenceElement {
+  public abstract class SerializedTweenCallback : SerializedTweenTimelineElement {
     protected enum InvokeOn : byte { Both = 0, Forward = 1, Backward = 2 }
     
     [PublicAPI] public abstract TweenCallback callback { get; }
     public override float duration => 0;
 
-    public override IEnumerable<TweenSequenceElement> elements {
+    public override IEnumerable<TweenTimelineElement> elements {
       get { yield return callback; }
     }
 

@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
-  public class TweenCallback : TweenSequenceElement {
+  public class TweenCallback : TweenTimelineElement {
     public struct Event {
       [PublicAPI] public readonly bool playingForwards;
 

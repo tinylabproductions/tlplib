@@ -134,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   ///
   /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
   /// </summary>
-  public class Tweener<A, T> : TweenSequenceElement {
+  public class Tweener<A, T> : TweenTimelineElement {
     [PublicAPI] public float duration => tween.duration;
 
     [PublicAPI] public readonly Tween<A> tween;

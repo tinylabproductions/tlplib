@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.FunTween {
     static void testSingleCallbackAt(
       float insertCallbackAt, ImmutableList<float> otherPoints, ActionsToExecute actions
     ) {
-      var tsb = TweenSequence.Builder.create().insert(
+      var tsb = TweenTimeline.Builder.create().insert(
         insertCallbackAt,
         new TweenCallback(_ => stateSubject.push(_.playingForwards))
       );

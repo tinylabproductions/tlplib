@@ -9,10 +9,10 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
   /// <summary>
-  /// Serializable <see cref="TweenSequence"/>.
+  /// Serializable <see cref="TweenTimeline"/>.
   /// </summary>
   [Serializable]
-  public partial class SerializedTweenSequence {
+  public partial class SerializedTweenTimeline {
     [Serializable]
     // Can't be struct, because AdvancedInspector freaks out.
     public partial class Element {
@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       [SerializeField, NotNull] string _title = "";
       [SerializeField] At _at;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
-      [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenSequenceElement _element;
+      [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
@@ -71,12 +71,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 
     #endregion
 
-    TweenSequence _sequence;
+    TweenTimeline _timeline;
     [PublicAPI]
-    public TweenSequence sequence {
+    public TweenTimeline timeline {
       get {
-        if (_sequence == null) {
-          var builder = new TweenSequence.Builder();
+        if (_timeline == null) {
+          var builder = new TweenTimeline.Builder();
           var lastElementTime = 0f;
           var lastElementDuration = 0f;
           foreach (var element in _elements) {
@@ -88,10 +88,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
             lastElementTime = currentElementTime;
             lastElementDuration = element.element.duration;
           }
-          _sequence = builder.build();
+          _timeline = builder.build();
         }
 
-        return _sequence;
+        return _timeline;
       }
     }
   }

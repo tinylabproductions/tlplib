@@ -38,9 +38,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       var t2 = obj1.tweenPositionRelative(Vector3.up, Eases.expoOut, duration);
       var t3 = obj1.tweenPositionRelative(Vector3.down, Eases.quadInOut, duration);
       var t4 = obj1.tweenPositionRelative(Vector3.left, Eases.elasticInOut, duration);
-      var tweens = new TweenSequenceElement[] {t1/*, t2, t3, t4*/};
+      var tweens = new TweenTimelineElement[] {t1/*, t2, t3, t4*/};
 
-      var tra = TweenSequence.parallelEnumerable(tweens/*.shuffleRepeatedly(Rng.now).Take(100)*/).build();
+      var tra = TweenTimeline.parallelEnumerable(tweens/*.shuffleRepeatedly(Rng.now).Take(100)*/).build();
 //        Tween.callback(_ => print($"start {_}")),
 //        Tween.callback(_ => print($"1 {_}")),
 //        obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 //        t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
 //        Tween.callback(_ => print($"end {_}"))
       manager = tra.managed();
-      var tr = TweenSequence.sequential(
+      var tr = TweenTimeline.sequential(
         /*tra, tra.reversed(), tra.reversed().reversed(), *//*tra.reversed()*/
       ).build();
 //      manager = tr.managed()

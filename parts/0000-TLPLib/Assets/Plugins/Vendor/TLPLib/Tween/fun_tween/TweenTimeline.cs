@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <summary>
-  /// Anything that can be added into a <see cref="ITweenSequence"/>.
+  /// Anything that can be added into a <see cref="ITweenTimeline"/>.
   /// </summary>
-  public interface TweenSequenceElement {
+  public interface TweenTimelineElement {
     float duration { get; }
     
     /// <summary>
@@ -34,25 +34,25 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   /// <summary>
-  /// A sequence of <see cref="TweenSequenceElement"/> arranged in time.
+  /// <see cref="TweenTimelineElement"/>s arranged in time.
   /// </summary>
-  public interface ITweenSequence : TweenSequenceElement {
+  public interface ITweenTimeline : TweenTimelineElement {
     /// <summary>Calls <see cref="setTimePassed"/> applying effects for relative tweens.</summary>
     float timePassed { get; set; }
     
-    /// <see cref="TweenSequenceElement.setRelativeTimePassed"/>
+    /// <see cref="TweenTimelineElement.setRelativeTimePassed"/>
     void setTimePassed(float timePassed, bool applyEffectsForRelativeTweens);
   }
 
-  public class TweenSequence : ITweenSequence {
+  public class TweenTimeline : ITweenTimeline {
     struct Effect {
       public readonly float startsAt, endsAt;
-      public readonly TweenSequenceElement element;
+      public readonly TweenTimelineElement element;
 
       public readonly float duration;
       public float relativize(float timePassed) => timePassed - startsAt;
 
-      public Effect(float startsAt, float endsAt, TweenSequenceElement element) {
+      public Effect(float startsAt, float endsAt, TweenTimelineElement element) {
         this.startsAt = startsAt;
         this.endsAt = endsAt;
         this.element = element;
@@ -82,17 +82,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       );
     }
 
-    TweenSequence(float duration, Effect[] effects) {
+    TweenTimeline(float duration, Effect[] effects) {
       this.duration = duration;
       this.effects = effects;
     }
 
     // optimized for minimal allocations
     [PublicAPI]
-    public static TweenSequence single(TweenSequenceElement sequence, float delay = 0) =>
-      new TweenSequence(
-        sequence.duration + delay,
-        new []{ new Effect(delay, sequence.duration + delay, sequence) }
+    public static TweenTimeline single(TweenTimelineElement timeline, float delay = 0) =>
+      new TweenTimeline(
+        timeline.duration + delay,
+        new []{ new Effect(delay, timeline.duration + delay, timeline) }
       );
 
     public void setRelativeTimePassed(
@@ -148,7 +148,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       [PublicAPI] public float totalDuration { get; private set; }
       readonly List<Effect> effects = new List<Effect>();
 
-      public TweenSequence build() => new TweenSequence(
+      public TweenTimeline build() => new TweenTimeline(
         totalDuration,
         effects.OrderBy(_ => _.startsAt).ToArray()
       );
@@ -157,47 +157,47 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       /// <summary>Inserts element into the sequence at specific time.</summary>
       [PublicAPI]
-      public Builder insert(float at, TweenSequenceElement element) {
+      public Builder insert(float at, TweenTimelineElement element) {
         var endsAt = at + element.duration;
         totalDuration = Mathf.Max(totalDuration, endsAt);
         effects.Add(new Effect(at, endsAt, element));
         return this;
       }
 
-      /// <see cref="insert(float,TweenSequenceElement)"/>
+      /// <see cref="insert(float,TweenTimelineElement)"/>
       /// <returns>Time when the given element will end.</returns>
       [PublicAPI]
-      public float insert2(float at, TweenSequenceElement element) {
+      public float insert2(float at, TweenTimelineElement element) {
         insert(at, element);
         return at + element.duration;
       }
 
-      /// <see cref="insert(float,TweenSequenceElement)"/>
+      /// <see cref="insert(float,TweenTimelineElement)"/>
       /// <param name="at"></param>
       /// <param name="element"></param>
       /// <param name="elementEndsAt">Time when the given element will end.</param>
       [PublicAPI]
-      public Builder insert(float at, TweenSequenceElement element, out float elementEndsAt) {
+      public Builder insert(float at, TweenTimelineElement element, out float elementEndsAt) {
         insert(at, element);
         elementEndsAt = at + element.duration;
         return this;
       }
 
       [PublicAPI]
-      public Builder append(TweenSequenceElement element) =>
+      public Builder append(TweenTimelineElement element) =>
         insert(totalDuration, element);
 
       [PublicAPI]
-      public float append2(TweenSequenceElement element) =>
+      public float append2(TweenTimelineElement element) =>
         insert2(totalDuration, element);
 
       [PublicAPI]
-      public Builder append(TweenSequenceElement element, out float elementEndsAt) =>
+      public Builder append(TweenTimelineElement element, out float elementEndsAt) =>
         insert(totalDuration, element, out elementEndsAt);
     }
 
     [PublicAPI] 
-    public static Builder parallelEnumerable(IEnumerable<TweenSequenceElement> elements) {
+    public static Builder parallelEnumerable(IEnumerable<TweenTimelineElement> elements) {
       var builder = Builder.create();
       foreach (var element in elements)
         builder.insert(0, element);
@@ -205,11 +205,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     [PublicAPI] 
-    public static Builder parallel(params TweenSequenceElement[] elements) =>
+    public static Builder parallel(params TweenTimelineElement[] elements) =>
       parallelEnumerable(elements);
 
     [PublicAPI] 
-    public static Builder sequentialEnumerable(IEnumerable<TweenSequenceElement> elements) {
+    public static Builder sequentialEnumerable(IEnumerable<TweenTimelineElement> elements) {
       var builder = Builder.create();
       foreach (var element in elements)
         builder.append(element);
@@ -217,15 +217,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     [PublicAPI]
-    public static Builder sequential(params TweenSequenceElement[] elements) =>
+    public static Builder sequential(params TweenTimelineElement[] elements) =>
       sequentialEnumerable(elements);
   }
 
   // TODO: this fires forwards events, when playing from the end. We should fix this.
-  class TweenSequenceReversed : ITweenSequence {
-    public readonly ITweenSequence original;
+  class TweenTimelineReversed : ITweenTimeline {
+    public readonly ITweenTimeline original;
 
-    public TweenSequenceReversed(ITweenSequence original) { this.original = original; }
+    public TweenTimelineReversed(ITweenTimeline original) { this.original = original; }
 
     public float duration => original.duration;
 
@@ -250,25 +250,25 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
   public static class TweenSequenceExts {
     // ReSharper disable CompareOfFloatsByEqualityOperator
-    public static bool isAtZero(this ITweenSequence ts) => ts.timePassed == 0;
-    public static bool isAtDuration(this ITweenSequence ts) => ts.timePassed == ts.duration;
+    public static bool isAtZero(this ITweenTimeline ts) => ts.timePassed == 0;
+    public static bool isAtDuration(this ITweenTimeline ts) => ts.timePassed == ts.duration;
     // ReSharper restore CompareOfFloatsByEqualityOperator
 
     [PublicAPI]
-    public static ITweenSequence reversed(this ITweenSequence ts) {
-      foreach (var r in F.opt(ts as TweenSequenceReversed))
+    public static ITweenTimeline reversed(this ITweenTimeline ts) {
+      foreach (var r in F.opt(ts as TweenTimelineReversed))
         return r.original;
-      return new TweenSequenceReversed(ts);
+      return new TweenTimelineReversed(ts);
     }
 
     [PublicAPI]
-    public static TweenSequence.Builder singleBuilder(this TweenSequenceElement element) {
-      var builder = TweenSequence.Builder.create();
+    public static TweenTimeline.Builder singleBuilder(this TweenTimelineElement element) {
+      var builder = TweenTimeline.Builder.create();
       builder.append(element);
       return builder;
     }
 
-    public static void update(this ITweenSequence element, float deltaTime) {
+    public static void update(this ITweenTimeline element, float deltaTime) {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
 
@@ -276,7 +276,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     [PublicAPI] 
-    public static TweenSequence single(this TweenSequenceElement element) =>
-      TweenSequence.single(element);
+    public static TweenTimeline single(this TweenTimelineElement element) =>
+      TweenTimeline.single(element);
   }
 }

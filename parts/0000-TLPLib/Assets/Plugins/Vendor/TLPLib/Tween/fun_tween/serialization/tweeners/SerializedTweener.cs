@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
-  public abstract class SerializedTweener : SerializedTweenSequenceElement {}
+  public abstract class SerializedTweener : SerializedTweenTimelineElement {}
 
   public abstract class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
     [SerializeField] bool _isRelative = true;
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     }
 
     public override float duration => _duration;
-    public override IEnumerable<TweenSequenceElement> elements {
+    public override IEnumerable<TweenTimelineElement> elements {
       get {
         var tween = new Tween<DestinationType>(
           convert(_start), convert(_end), _isRelative, _ease.ease, ops, _duration

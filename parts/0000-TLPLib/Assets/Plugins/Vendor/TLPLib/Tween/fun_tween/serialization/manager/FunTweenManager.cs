@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [SerializeField, Tab(Tab.Fields)] bool _autoplay = true;
     [SerializeField, Tab(Tab.Fields)] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
-    [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenSequence _sequence;
+    [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenTimeline _timeline;
     [SerializeField, NotNull, CreateDerived, Tab(Tab.Fields)] SerializedTweenCallback[] _onStart, _onEnd;
 
     TweenManager _manager;
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
-          var tm = new TweenManager(_sequence.sequence, _time, _looping);
+          var tm = new TweenManager(_timeline.timeline, _time, _looping);
           foreach (var cb in _onStart) tm.addOnStartCallback(cb.callback.callback);
           foreach (var cb in _onEnd) tm.addOnEndCallback(cb.callback.callback);
           return tm;
