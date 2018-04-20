@@ -8,12 +8,12 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.FunTween {
-  using TestCases = ImmutableList<Tpl<float, bool, ICollection<bool>>>;
+  using ActionsToExecute = ImmutableList<Tpl<float, bool, ICollection<bool>>>;
   public class TweenCallbackTest {
     const float MIDDLE = 0.5f, END = 1f;
 
     static readonly TweenCallback emptyCallback = new TweenCallback(_ => { });
-    static TestCases emptyTestCases => TestCases.Empty;
+    static ActionsToExecute emptyActions => ActionsToExecute.Empty;
     static ImmutableList<float> emptyOtherPoints => ImmutableList<float>.Empty;
 
     static readonly ICollection<bool> eventForwards = ImmutableList.Create(true);
@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.FunTween {
     static readonly Subject<bool> stateSubject = new Subject<bool>();
 
     static void testSingleCallbackAt(
-      float insertCallbackAt, ImmutableList<float> otherPoints, TestCases testCases
+      float insertCallbackAt, ImmutableList<float> otherPoints, ActionsToExecute actions
     ) {
       var tsb = TweenSequence.Builder.create().insert(
         insertCallbackAt,
@@ -32,112 +32,115 @@ namespace com.tinylabproductions.TLPLib.FunTween {
       foreach (var otherPoint in otherPoints) tsb.insert(otherPoint, emptyCallback);
       var ts = tsb.build();
 
-      foreach (var testCase in testCases) {
-        var setTimeTo = testCase._1;
+      var lastInvocation = 0f;
+      
+      foreach (var action in actions) {
         // Expected result correlates to playingForwards
         // as we are using playingforwards as the state variable
-        var playingForwards = testCase._2;
-        var testResult = testCase._3;
-        Action execute = () => ts.setRelativeTimePassed(setTimeTo, playingForwards);
+        var (setTimeTo, playingForwards, testResult) = action;
+        Action execute = () => {
+          ts.setRelativeTimePassed(lastInvocation, setTimeTo, playingForwards, true);
+          lastInvocation = setTimeTo;
+        };
         execute.shouldPushTo(stateSubject).resultIn(testResult);
       }
     }
 
     [TestFixture]
     public class CallbackAtZero {
-      public void testCallbackAtTheStartZeroDuration(TestCases testCases) => testSingleCallbackAt(
+      public void testCallbackAtTheStartZeroDuration(ActionsToExecute testCases) => testSingleCallbackAt(
         insertCallbackAt: 0f,
         otherPoints: emptyOtherPoints,
-        testCases: testCases
+        actions: testCases
       );
 
-      public void testCallbackAtTheStartNonZeroDuration(TestCases testCases) => testSingleCallbackAt(
+      public void testCallbackAtTheStartNonZeroDuration(ActionsToExecute testCases) => testSingleCallbackAt(
         insertCallbackAt: 0f,
         otherPoints: emptyOtherPoints.Add(END),
-        testCases: testCases
+        actions: testCases
       );
 
       [Test]
       public void zeroDurationMoveToZero() => testCallbackAtTheStartZeroDuration(
-        emptyTestCases.Add(F.t(0f, true, eventForwards))
+        emptyActions.Add(F.t(0f, true, eventForwards))
       );
 
       [Test]
       public void zeroDurationMoveToZeroAndBackToZero() => testCallbackAtTheStartZeroDuration(
-       emptyTestCases.Add(F.t(0f, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
+       emptyActions.Add(F.t(0f, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
       );
 
       [Test]
       public void nonZeroDurationMoveToEndAndBackToZero() => testCallbackAtTheStartNonZeroDuration(
-        emptyTestCases.Add(F.t(END, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
+        emptyActions.Add(F.t(END, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
       );
 
       [Test]
       public void zeroDurationMoveTwiceForward() => testCallbackAtTheStartZeroDuration(
-        emptyTestCases.Add(F.t(0f, true, eventForwards)).Add(F.t(0f, true, noEvent))
+        emptyActions.Add(F.t(0f, true, eventForwards)).Add(F.t(0f, true, noEvent))
       );
 
       [Test]
       public void nonZeroDurationMoveToZeroAndMoveToEnd() => testCallbackAtTheStartNonZeroDuration(
-        emptyTestCases.Add(F.t(0f, true, eventForwards)).Add(F.t(END, true, noEvent))
+        emptyActions.Add(F.t(0f, true, eventForwards)).Add(F.t(END, true, noEvent))
       );
     }
 
     [TestFixture]
     public class CallbackAtEnd {
-      public void testCallbackAtTheEnd(TestCases testCases) => testSingleCallbackAt(
+      public void testCallbackAtTheEnd(ActionsToExecute testCases) => testSingleCallbackAt(
         insertCallbackAt: END,
         otherPoints: emptyOtherPoints,
-        testCases: testCases
+        actions: testCases
       );
 
       [Test]
       public void moveToEnd() => testCallbackAtTheEnd(
-        emptyTestCases.Add(F.t(END, true, eventForwards))
+        emptyActions.Add(F.t(END, true, eventForwards))
       );
 
       [Test]
       public void moveToEndAndMoveBack() => testCallbackAtTheEnd(
-        emptyTestCases.Add(F.t(END, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
+        emptyActions.Add(F.t(END, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
       );
 
       [Test]
       public void twiceMoveToEnd() => testCallbackAtTheEnd(
-        emptyTestCases.Add(F.t(END, true, eventForwards)).Add(F.t(END, true, noEvent))
+        emptyActions.Add(F.t(END, true, eventForwards)).Add(F.t(END, true, noEvent))
       );
     }
 
     [TestFixture]
     public class CallbackInTheMiddle {
-      public void testCallbackAtTheMiddle(TestCases testCases) => testSingleCallbackAt(
+      public void testCallbackAtTheMiddle(ActionsToExecute testCases) => testSingleCallbackAt(
         insertCallbackAt: MIDDLE,
         otherPoints: emptyOtherPoints.Add(END),
-        testCases: testCases
+        actions: testCases
       );
 
       [Test]
       public void moveToAndAndMoveToZero() => testCallbackAtTheMiddle(
-         emptyTestCases.Add(F.t(END, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
+         emptyActions.Add(F.t(END, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
        );
 
       [Test]
       public void moveToMiddleAndMoveToZero() => testCallbackAtTheMiddle(
-        emptyTestCases.Add(F.t(MIDDLE, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
+        emptyActions.Add(F.t(MIDDLE, true, eventForwards)).Add(F.t(0f, false, eventBackwards))
       );
 
       [Test]
       public void moveToMiddleAndMoveToEnd() => testCallbackAtTheMiddle(
-        emptyTestCases.Add(F.t(MIDDLE, true, eventForwards)).Add(F.t(END, true, noEvent))
+        emptyActions.Add(F.t(MIDDLE, true, eventForwards)).Add(F.t(END, true, noEvent))
       );
 
       [Test]
       public void twiceMoveToMiddle() => testCallbackAtTheMiddle(
-        emptyTestCases.Add(F.t(MIDDLE, true, eventForwards)).Add(F.t(MIDDLE, true, noEvent))
+        emptyActions.Add(F.t(MIDDLE, true, eventForwards)).Add(F.t(MIDDLE, true, noEvent))
       );
 
       [Test]
       public void moveToMiddleMoveBackByZeroMoveToEnd() => testCallbackAtTheMiddle(
-        emptyTestCases
+        emptyActions
         .Add(F.t(MIDDLE, true, eventForwards))
         .Add(F.t(0f, false, eventBackwards))
         .Add(F.t(END, true, eventForwards))
