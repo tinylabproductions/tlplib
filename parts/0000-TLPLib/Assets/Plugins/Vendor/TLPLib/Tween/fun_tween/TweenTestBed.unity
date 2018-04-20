@@ -191,27 +191,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 110816170}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a50908fb9e04ec79e7a7039ffe9bdda, type: 3}
+  m_Script: {fileID: 11500000, guid: 7e39ba35c4a64404a36255f8c2bca018, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: {fileID: 0}
-  _invokeOn: 0
-  _onEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 110816171}
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+  owner: {fileID: 110816175}
+  _isRelative: 0
+  _start: {r: 1, g: 1, b: 1, a: 1}
+  _end: {r: 0.11724138, g: 0, b: 1, a: 1}
+  _duration: 3
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 1046432713}
+  - {fileID: 1405230360}
+  - {fileID: 726012322}
+  - {fileID: 1046432713}
 --- !u!114 &110816174
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -220,52 +216,50 @@ MonoBehaviour:
   m_GameObject: {fileID: 110816170}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a50908fb9e04ec79e7a7039ffe9bdda, type: 3}
+  m_Script: {fileID: 11500000, guid: 1de80663f2914c2dbfa0a67422df5be3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: {fileID: 0}
-  _invokeOn: 0
-  _onEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 110816171}
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+  owner: {fileID: 110816175}
+  _isRelative: 1
+  _start: {x: 0, y: 0, z: 0}
+  _end: {x: 0, y: 0, z: 200}
+  _duration: 3
+  _ease:
+    _isComplex: 0
+    _simple: 82
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 110816172}
+  - {fileID: 726012325}
 --- !u!114 &110816175
 MonoBehaviour:
-  m_ObjectHideFlags: 2
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 110816170}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ad4864ddfb443e1b53db180854b02f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 874857abc69f43cb867a5cf037fb48cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: {fileID: 0}
-  _isRelative: 1
-  _start: {x: 0, y: 0, z: 0}
-  _end: {x: 5, y: 3, z: 0}
-  _duration: 1
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 110816172}
-  - {fileID: 1046432716}
-  - {fileID: 1405230363}
-  - {fileID: 110816172}
+  _runMode: 0
+  _autoplay: 1
+  _time: 0
+  _looping:
+    _times_: 0
+    _mode: 1
+  _sequence:
+    _elements:
+    - _title: 
+      _at: 0
+      _timeOffset: 0
+      _element: {fileID: 110816174}
+    - _title: 
+      _at: 1
+      _timeOffset: 0
+      _element: {fileID: 110816173}
+  _onStart: []
+  _onEnd: []
 --- !u!1 &726012321
 GameObject:
   m_ObjectHideFlags: 0
