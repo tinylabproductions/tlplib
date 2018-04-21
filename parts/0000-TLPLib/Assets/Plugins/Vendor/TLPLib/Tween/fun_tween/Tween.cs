@@ -71,9 +71,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public A eval(float previousTimePassed, float timePassed, bool playingForwards) {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (duration == 0) {
-        return isRelative 
-          ? (playingForwards ? end : diff(start, end))
-          : (playingForwards ? end : start);
+        return playingForwards 
+          ? end
+          : (isRelative ? diff(start, end) : start);
       }
       else {
         A evalAt(float t) => lerp(start, end, ease(t / duration));
