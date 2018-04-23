@@ -63,14 +63,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #if ENABLE_IL2CPP
       if (opt == null) return orElse();
 #endif
-      return opt.isSome ? opt.get : orElse();
+      return opt.isSome ? opt.__unsafeGetValue : orElse();
     }
 
     public static A getOrElse<A>(this Option<A> opt, A orElse) {
 #if ENABLE_IL2CPP
       if (opt == null) return orElse;
 #endif
-      return opt.isSome ? opt.get : orElse;
+      return opt.isSome ? opt.__unsafeGetValue : orElse;
     }
   }
 

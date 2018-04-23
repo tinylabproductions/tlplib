@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI] public static void shuffle<A>(this IList<A> list, ref Rng rng) {
       var n = list.Count;
-      var range = new Range(0, n);
+      var range = new Range(0, n - 1);
       while (n > 1) {
         n--;
         var k = rng.nextIntInRange(range, out rng);

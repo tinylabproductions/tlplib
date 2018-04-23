@@ -1,9 +1,13 @@
 ﻿#if UNITY_ANDROID
+using GenerationAttributes;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.os {
+
+  [JavaBinding(JAVA_CLASS)]
   public class Bundle : BaseBundle {
-    public Bundle() : base(new AndroidJavaObject("android.os.Bundle")) {}
+    const string JAVA_CLASS = "android.os.Bundle";
+    public Bundle() : base(new AndroidJavaObject(JAVA_CLASS)) {}
     public Bundle(AndroidJavaObject java) : base(java) {}
 
     public void putByte(string key, byte value) => java.Call("putByte", key, value);

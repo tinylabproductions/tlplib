@@ -7,26 +7,27 @@ using UnityEngine.UI;
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tweener {
     [PublicAPI]
-    public static Tweener<A, T> a<A, T>(Tween<A> tween, T t, Act<A, T> changeState) =>
+    public static Tweener<A, T> a<A, T>(Tween<A> tween, T t, TweenMutator<A, T> changeState) =>
       new Tweener<A, T>(tween, t, changeState);
 
     #region Helpers
+
     static Tweener<Vector3, Transform> tweenTransformVector(
       this Transform t, Vector3 start, Vector3 to, Ease ease, float duration,
-      Act<Vector3, Transform> mutator
-    ) => a(TweenLerp.vector3.tween(start, to, ease, duration), t, mutator);
+      TweenMutator<Vector3, Transform> mutator, bool relative = false
+    ) => a(TweenOps.vector3.tween(start, to, relative, ease, duration), t, mutator);
     
     static Tweener<Vector2, RectTransform> tweenRectTransformVector(
       this RectTransform t, Vector2 start, Vector2 to, Ease ease, float duration,
-      Act<Vector2, RectTransform> mutator
-    ) => a(TweenLerp.vector2.tween(start, to, ease, duration), t, mutator);
+      TweenMutator<Vector2, RectTransform> mutator
+    ) => a(TweenOps.vector2.tween(start, to, false, ease, duration), t, mutator);
     #endregion
 
     #region Transform Position
     [PublicAPI]
     public static Tweener<Vector3, Transform> tweenPosition(
-      this Transform t, Vector3 start, Vector3 to, Ease ease, float duration
-    ) => tweenTransformVector(t, start, to, ease, duration, TweenMutators.position);
+      this Transform t, Vector3 start, Vector3 to, Ease ease, float duration, bool relative = false
+    ) => tweenTransformVector(t, start, to, ease, duration, TweenMutators.position, relative);
 
     [PublicAPI]
     public static Tweener<Vector3, Transform> tweenPosition(
@@ -36,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public static Tweener<Vector3, Transform> tweenPositionRelative(
       this Transform t, Vector3 to, Ease ease, float duration
-    ) => tweenPosition(t, t.position, t.position + to, ease, duration);
+    ) => tweenPosition(t, Vector3.zero, to, ease, duration, true);
 
     [PublicAPI]
     public static Tweener<Vector3, Transform> tweenPositionRelative(
@@ -77,24 +78,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public static Tweener<Color, Graphic> tweenColor(
       this Graphic g, Color from, Color to, Ease ease, float duration
-    ) => a(TweenLerp.color.tween(from, to, ease, duration), g, TweenMutators.graphicColor);
+    ) => a(TweenOps.color.tween(from, to, false, ease, duration), g, TweenMutators.graphicColor);
 
     [PublicAPI]
     public static Tweener<float, Graphic> tweenColorAlpha(
       this Graphic g, float from, float to, Ease ease, float duration
-    ) => a(TweenLerp.float_.tween(from, to, ease, duration), g, TweenMutators.graphicColorAlpha);
+    ) => a(TweenOps.float_.tween(from, to, false, ease, duration), g, TweenMutators.graphicColorAlpha);
     
     [PublicAPI]
     public static Tweener<Color, Shadow> tweenColor(
       this Shadow s, Color from, Color to, Ease ease, float duration
-    ) => a(TweenLerp.color.tween(from, to, ease, duration), s, TweenMutators.shadowEffectColor);
+    ) => a(TweenOps.color.tween(from, to, false, ease, duration), s, TweenMutators.shadowEffectColor);
     #endregion
     
     #region Image
     [PublicAPI]
     public static Tweener<float, Image> tweenFillAmount(
       this Image i, float from, float to, Ease ease, float duration
-    ) => a(TweenLerp.float_.tween(from, to, ease, duration), i, TweenMutators.imageFillAmount);
+    ) => a(TweenOps.float_.tween(from, to, false, ease, duration), i, TweenMutators.imageFillAmount);
     #endregion
     
     #region RectTransform Position
@@ -121,8 +122,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI]
     public static Tweener<A, Ref<A>> tweenValue<A>(
-      this Ref<A> reference, Tween<A> tween
-    ) => a(tween, reference, (val, r) => r.value = val);
+      this Ref<A> reference, Tween<A> tween, Fn<A, A, A> add
+    ) => a(
+      tween, reference, 
+      (val, @ref, r) => { @ref.value = r ? add(@ref.value, val) : val; }
+    );
   }
 
   /// <summary>
@@ -130,23 +134,30 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   ///
   /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
   /// </summary>
-  public class Tweener<A, T> : TweenSequenceElement {
+  public class Tweener<A, T> : TweenTimelineElement {
     [PublicAPI] public float duration => tween.duration;
 
     [PublicAPI] public readonly Tween<A> tween;
     [PublicAPI] public readonly T t;
-    [PublicAPI] public readonly Act<A, T> changeState;
+    [PublicAPI] public readonly TweenMutator<A, T> changeState;
 
-    public Tweener(Tween<A> tween, T t, Act<A, T> changeState) {
+    public Tweener(Tween<A> tween, T t, TweenMutator<A, T> changeState) {
       this.tween = tween;
       this.t = t;
       this.changeState = changeState;
     }
 
-    public void setRelativeTimePassed(float t, bool playingForwards) =>
-      changeState(tween.eval(t, playingForwards), this.t);
+    public void setRelativeTimePassed(
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+    ) {
+      if (applyEffectsForRelativeTweens || !tween.isRelative) {
+        changeState(tween.eval(previousTimePassed, timePassed, playingForwards), t, tween.isRelative);
+      }
+    }
 
-    public override string ToString() =>
-      $"{nameof(Tweener)}[on {t}, {tween}]";
+    public override string ToString() {
+      var relativeS = tween.isRelative ? "relative " : "";
+      return $"{nameof(Tweener)}[{relativeS}on {t}, {tween}]";
+    }
   }
 }

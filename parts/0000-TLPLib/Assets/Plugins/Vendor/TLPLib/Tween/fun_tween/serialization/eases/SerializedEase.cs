@@ -42,7 +42,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 
     Ease _ease;
     [PublicAPI] public Ease ease => _ease ?? (_ease = _isComplex ? _complex.ease : _simple.toEase());
-    
+
+    public override string ToString() => _isComplex ? _complex?.easeName ?? "not set" : _simple.ToString();
+
     public string[] blacklistedFields() => 
       _isComplex
         ? new [] { nameof(_simple) }

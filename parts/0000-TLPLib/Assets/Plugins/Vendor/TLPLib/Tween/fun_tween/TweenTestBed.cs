@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Linq;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -14,32 +21,35 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     TweenManager manager;
 
     public void Start() {
-//      var obj3T = TweenLerp.vector3.tween(
+//      var obj3T = TweenOps.vector3.tween(
 //        obj3.position, obj3.position + Vector3.right * 10, Eases.linear, duration
 //      );
 //      var obj23T = obj2T
-//      var obj4T = TweenLerp.vector3.tween(
+//      var obj4T = TweenOps.vector3.tween(
 //        obj4.position, obj4.position + Vector3.right * 10, Eases.quadratic, duration
 //      );
-//      var obj4T2 = TweenLerp.vector3.tween(
+//      var obj4T2 = TweenOps.vector3.tween(
 //        obj4T.end, obj4T.end + Vector3.right * 10, Eases.quadratic, duration
 //      );
 //
 //      //
 //
-      var t1 = obj1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration);
-      var tra = TweenSequence.sequential(
-        Tween.callback(_ => print($"start {_}")),
-        t1,
-        Tween.callback(_ => print($"1 {_}")),
+      var t1 = obj1.tweenPositionRelative(Vector3.right * 5, Eases.linear, duration); 
+      var t2 = obj1.tweenPositionRelative(Vector3.up, Eases.expoOut, duration);
+      var t3 = obj1.tweenPositionRelative(Vector3.down, Eases.quadInOut, duration);
+      var t4 = obj1.tweenPositionRelative(Vector3.left, Eases.elasticInOut, duration);
+      var tweens = new TweenTimelineElement[] {t1/*, t2, t3, t4*/};
+
+      var tra = TweenTimeline.parallelEnumerable(tweens/*.shuffleRepeatedly(Rng.now).Take(100)*/).build();
+//        Tween.callback(_ => print($"start {_}")),
+//        Tween.callback(_ => print($"1 {_}")),
 //        obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
-        obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, 0f),
-        Tween.callback(_ => print($"2 {_}")),
-        t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
-        Tween.callback(_ => print($"end {_}"))
-      ).build();
+//        obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, 0f),
+//        Tween.callback(_ => print($"2 {_}")),
+//        t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
+//        Tween.callback(_ => print($"end {_}"))
       manager = tra.managed();
-      var tr = TweenSequence.sequential(
+      var tr = TweenTimeline.sequential(
         /*tra, tra.reversed(), tra.reversed().reversed(), *//*tra.reversed()*/
       ).build();
 //      manager = tr.managed()
@@ -69,6 +79,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       if (Input.GetKeyDown(KeyCode.LeftBracket)) manager.play(forwards: true);
       if (Input.GetKeyDown(KeyCode.RightBracket)) manager.play(forwards: false);
       if (Input.GetKeyDown(KeyCode.R)) manager.rewind();
+      if (Input.GetKeyDown(KeyCode.F)) manager.rewind(applyEffectsForRelativeTweens: true);
       if (Input.GetKeyDown(KeyCode.T)) manager.resume();
       if (Input.GetKeyDown(KeyCode.Y)) manager.resume(true);
       if (Input.GetKeyDown(KeyCode.U)) manager.resume(false);
