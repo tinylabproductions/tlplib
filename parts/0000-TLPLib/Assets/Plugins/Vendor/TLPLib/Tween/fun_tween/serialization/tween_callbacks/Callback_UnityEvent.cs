@@ -5,12 +5,15 @@ using UnityEngine.Events;
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks {
   [AddComponentMenu("")]
   public class Callback_UnityEvent : SerializedTweenCallback {
-    [SerializeField, NotNull] UnityEvent _event;
-    
-    public override TweenCallback callback { get; }
+    [SerializeField] InvokeOn _invokeOn;
+    [SerializeField, NotNull] UnityEvent _onEvent;
 
-    Callback_UnityEvent() {
-      callback = new TweenCallback(evt => _event.Invoke());
-    }
+    TweenCallback _callback;
+    public override TweenCallback callback => 
+      _callback ?? (_callback = new TweenCallback(evt => {
+        if (shouldInvoke(_invokeOn, evt)) _onEvent.Invoke();
+      }));
+
+    public override string ToString() => $"Unity Event @ {_invokeOn}";
   }
 }
