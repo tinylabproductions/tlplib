@@ -18,5 +18,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     public override float duration => _timeline.timeline.timeline.duration;
     public override IEnumerable<TweenTimelineElement> elements => 
       _elements ?? (_elements = _timeline.timeline.timeline.Yield<TweenTimelineElement>());
+
+    public override void invalidate() {
+      _elements = null;
+      _timeline.invalidate();
+    }
   }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.validations;
@@ -32,6 +30,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       this.convert = convert;
       _start = _end = defaultValue;
     }
+
+    public override void invalidate() => _ease.invalidate();
 
     public override float duration => _duration;
     public override IEnumerable<TweenTimelineElement> elements {
