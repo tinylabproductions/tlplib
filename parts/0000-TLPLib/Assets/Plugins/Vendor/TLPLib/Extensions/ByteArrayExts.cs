@@ -16,7 +16,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       try { return F.scs(BitConverter.ToUInt16(data, startIndex)); }
       catch (Exception e) { return F.err<ushort>(e); }
     }
-    
+
+    [PublicAPI]
+    public static ulong guidAsULong(this byte[] data) =>
+      unchecked (BitConverter.ToUInt64(data, 0) + BitConverter.ToUInt64(data, 8));
+
     /// <summary>
     /// Convert bytes to a hex string.
     /// </summary>
