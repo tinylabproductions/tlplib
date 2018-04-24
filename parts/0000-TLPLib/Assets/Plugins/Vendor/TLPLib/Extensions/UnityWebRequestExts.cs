@@ -17,5 +17,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       req.downloadHandler = handler;
       return req.toFuture(_ => handler.data);
     }
+
+    [PublicAPI]
+    public static Future<Either<ErrorMsg, byte[]>> downloadToRamSimpleError(
+      this UnityWebRequest req
+    ) => req.downloadToRam().map(_ => _.mapLeft(err => err.simplify));
   }
 }
