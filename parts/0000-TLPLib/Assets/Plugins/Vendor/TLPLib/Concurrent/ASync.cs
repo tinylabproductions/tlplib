@@ -186,6 +186,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [PublicAPI]
+    public static Future<Either<ErrorMsg, A>> toFutureSimple<A>(
+      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
+    ) => req.toFuture(onSuccess).map(_ => _.mapLeft(err => err.simplify));
+
+    [PublicAPI]
     public static IEnumerator webRequestEnumerator<A>(
       UnityWebRequest req, Promise<Either<WebRequestError, A>> p,
       Fn<UnityWebRequest, A> onSuccess
@@ -193,14 +198,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       yield return req.Send();
       if (req.isError) {
         var msg = $"error: {req.error}, response code: {req.responseCode}";
-        if (req.responseCode == 0 && req.error == "Unknown Error")
-          p.complete(new Either<WebRequestError, A>(
-            WebRequestError.noInternet(new NoInternetMessage(msg))
-          ));
-        else
-          p.complete(new Either<WebRequestError, A>(
-            WebRequestError.logEntry(new ErrorMsg(msg))
-          ));
+        p.complete(
+          req.responseCode == 0 && req.error == "Unknown Error"
+          ? new WebRequestError(new NoInternetError(msg))
+          : new WebRequestError(new ErrorMsg(msg))
+        );
         req.Dispose();
       }
       else {

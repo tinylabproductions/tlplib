@@ -1,5 +1,4 @@
-﻿using System;
-using AdvancedInspector;
+﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
@@ -12,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
   [AdvancedInspector(true)]
-  public class FunTweenManager : MonoBehaviour, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy {
+  public class FunTweenManager : MonoBehaviour, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
     enum Tab { Fields, Actions }
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
@@ -105,16 +104,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       manager.rewind(applyEffectsForRelativeTweens: true);
 
 #if UNITY_EDITOR
-    [Inspect, UsedImplicitly, Tab(Tab.Actions)]
-    void recreate() {
+    [Inspect, UsedImplicitly, Tab(Tab.Fields)]
+    // Advanced Inspector does not render a button if it implements interface method. 
+    void recreate() => invalidate();
+#endif
+    
+    public void invalidate() {
       if (_manager != null) {
         _manager.stop();
       }
       lastStateWasPlaying = false;
+      _timeline.invalidate();
       _manager = null;
       if (_autoplay) manager.play();
     }
-#endif
     
     public enum Action : byte {
       PlayForwards = 0, 

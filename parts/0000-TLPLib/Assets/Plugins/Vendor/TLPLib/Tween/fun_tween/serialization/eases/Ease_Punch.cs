@@ -17,8 +17,7 @@ while 0 oscillates only between the starting position and the decaying direction
       )
     ] float _elasticity = 1;
 
-    Ease _ease;
-    public override Ease ease => _ease ?? (_ease = Eases.punch(vibrato: _vibrato, elasticity: _elasticity));
+    protected override Ease createEase() => Eases.punch(vibrato: _vibrato, elasticity: _elasticity);
     public override string easeName => $"Punch(v: {_vibrato}, e: {_elasticity})";
   }
 }

@@ -219,6 +219,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public static Builder sequential(params TweenTimelineElement[] elements) =>
       sequentialEnumerable(elements);
+    
+    [PublicAPI] public static Builder builder() => Builder.create();
   }
 
   // TODO: this fires forwards events, when playing from the end. We should fix this.

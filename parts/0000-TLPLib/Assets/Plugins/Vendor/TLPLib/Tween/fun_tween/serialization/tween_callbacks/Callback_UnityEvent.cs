@@ -8,12 +8,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     [SerializeField] InvokeOn _invokeOn;
     [SerializeField, NotNull] UnityEvent _onEvent;
 
-    TweenCallback _callback;
-    public override TweenCallback callback => 
-      _callback ?? (_callback = new TweenCallback(evt => {
+    protected override TweenCallback createCallback() => 
+      new TweenCallback(evt => {
         if (shouldInvoke(_invokeOn, evt)) _onEvent.Invoke();
-      }));
-
+      });
+    
     public override string ToString() => $"Unity Event @ {_invokeOn}";
   }
 }

@@ -12,10 +12,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
   /// Serializable <see cref="TweenTimeline"/>.
   /// </summary>
   [Serializable]
-  public partial class SerializedTweenTimeline {
+  public partial class SerializedTweenTimeline : Invalidatable {
     [Serializable]
     // Can't be struct, because AdvancedInspector freaks out.
-    public partial class Element {
+    public partial class Element : Invalidatable {
       enum At : byte { AfterLastElement, WithLastElement, SpecificTime }
       
       #region Unity Serialized Fields
@@ -30,6 +30,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 #pragma warning restore 649
 
       #endregion
+
+      public void invalidate() => _element.invalidate();
 
       Description timeOffsetDescription => new Description(
         _at == At.SpecificTime ? "Time" : "Time Offset"
@@ -93,6 +95,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 
         return _timeline;
       }
+    }
+
+    public void invalidate() {
+      _timeline = null;
+      foreach (var element in _elements)
+        element.invalidate();
     }
   }
 }
