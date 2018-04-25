@@ -134,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   ///
   /// For example how to change <see cref="Vector3"/> of <see cref="Transform.position"/>.
   /// </summary>
-  public class Tweener<A, T> : TweenTimelineElement {
+  public class Tweener<A, T> : TweenTimelineElement, IApplyStateAt {
     [PublicAPI] public float duration => tween.duration;
 
     [PublicAPI] public readonly Tween<A> tween;
@@ -152,6 +152,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     ) {
       if (applyEffectsForRelativeTweens || !tween.isRelative) {
         changeState(tween.eval(previousTimePassed, timePassed, playingForwards), t, tween.isRelative);
+      }
+    }
+
+    public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
+      applyStateAt = this;
+      return true;
+    }
+
+    public void applyStateAt(float time) {
+      // We do not apply relative tween states, because they do not make sense in a fixed time point.
+      if (!tween.isRelative) {
+        changeState(tween.evalAt(time), t, false);
       }
     }
 
