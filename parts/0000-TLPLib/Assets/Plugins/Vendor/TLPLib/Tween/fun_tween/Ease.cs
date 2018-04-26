@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization;
+using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <summary><see cref="Ease"/> is a function from x ∈ [0, 1] to y</summary>
@@ -8,8 +10,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     const float HALF_PI = Mathf.PI / 2;
     // ReSharper disable CompareOfFloatsByEqualityOperator
 
+    /// <see cref="SimpleSerializedEase"/>
     // https://gist.github.com/gre/1650294
     // https://github.com/acron0/Easings/blob/master/Easings.cs
+    [PublicAPI]
     public static readonly Ease
       linear = p => p,
       quadIn = p => p * p,
@@ -80,15 +84,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       bounceInOut = p => p < .5f ? 0.5f * bounceIn(p * 2) : 0.5f * bounceOut(p * 2 - 1) + 0.5f;
     // ReSharper restore CompareOfFloatsByEqualityOperator
 
-
-    /// <summary>Punches a Vector3 towards the given direction and then back to the starting one
+    /// <summary>
+    /// Punches a Vector3 towards the given direction and then back to the starting one
     /// as if it was connected to the starting position via an elastic.
+    /// 
     /// https://github.com/Demigiant/dotween/blob/develop/_DOTween.Assembly/DOTween/DOTween.cs
-    /// <para>This tween type generates some GC allocations at startup</para></summary>
+    /// 
+    /// <para>This tween type generates some GC allocations at startup</para>
+    /// </summary>
     /// <param name="vibrato">Indicates how much will the punch vibrate</param>
     /// <param name="elasticity">Represents how much (0 to 1) the vector will go beyond the starting position when bouncing backwards.
     /// 1 creates a full oscillation between the direction and the opposite decaying direction,
     /// while 0 oscillates only between the starting position and the decaying direction</param>
+    [PublicAPI]
     public static Ease punch(int vibrato = 10, float elasticity = 1f) {
       // ReSharper disable SuggestVarOrType_BuiltInTypes, SuggestVarOrType_Elsewhere
       elasticity = Mathf.Clamp01(elasticity);

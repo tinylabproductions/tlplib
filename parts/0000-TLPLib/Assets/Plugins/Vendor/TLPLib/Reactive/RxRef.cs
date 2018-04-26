@@ -66,6 +66,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public static class RxRef {
-    public static IRxRef<A> a<A>(A value) => new RxRef<A>(value);
+    public static IRxRef<A> a<A>(A value, IEqualityComparer<A> comparer = null) => 
+      new RxRef<A>(value, comparer);
   }
 }

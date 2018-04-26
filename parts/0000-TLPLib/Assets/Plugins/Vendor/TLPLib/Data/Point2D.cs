@@ -1,4 +1,5 @@
-﻿using GenerationAttributes;
+﻿using System.Collections.Generic;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -20,6 +21,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Point2D operator +(Point2D a, Point2D b) => new Point2D(a.x + b.x, a.y + b.y);
     public static Point2D operator -(Point2D a, Point2D b) => new Point2D(a.x - b.x, a.y - b.y);
     public static Point2D operator -(Point2D a) => new Point2D(-a.x, -a.y);
+
+    [PublicAPI]
+    public IEnumerable<Point2D> around(uint radius) {
+      for (var i = -radius; i <= radius; i++)
+      for (var j = -radius; j <= radius; j++) {
+        yield return this + new Point2D((int) i, (int) j);
+      }
+    }
 
     public override string ToString() => $"({x},{y})";
 

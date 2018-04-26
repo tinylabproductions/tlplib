@@ -338,6 +338,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       cmp = cmp ?? EqComparer<A>.Default;
       return enumerable.Where(a => !cmp.Equals(a, except));
     }
+
+    [PublicAPI]
+    public static Option<A> headOption<A>(this IEnumerable<A> enumerable) {
+      foreach (var a in enumerable)
+        return F.some(a);
+      return F.none<A>();
+    }
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {

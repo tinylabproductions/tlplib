@@ -177,22 +177,32 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
     [PublicAPI]
-    public static Future<Either<ErrorMsg, A>> toFuture<A>(
+    public static Future<Either<WebRequestError, A>> toFuture<A>(
       this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
     ) {
-      var f = Future<Either<ErrorMsg, A>>.async(out var promise);
+      var f = Future<Either<WebRequestError, A>>.async(out var promise);
       StartCoroutine(webRequestEnumerator(req, promise, onSuccess));
       return f;
     }
 
     [PublicAPI]
+    public static Future<Either<ErrorMsg, A>> toFutureSimple<A>(
+      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
+    ) => req.toFuture(onSuccess).map(_ => _.mapLeft(err => err.simplify));
+
+    [PublicAPI]
     public static IEnumerator webRequestEnumerator<A>(
-      UnityWebRequest req, Promise<Either<ErrorMsg, A>> p,
+      UnityWebRequest req, Promise<Either<WebRequestError, A>> p,
       Fn<UnityWebRequest, A> onSuccess
     ) {
       yield return req.Send();
       if (req.isError) {
-        p.complete(new ErrorMsg(req.error));
+        var msg = $"error: {req.error}, response code: {req.responseCode}";
+        p.complete(
+          req.responseCode == 0 && req.error == "Unknown Error"
+          ? new WebRequestError(new NoInternetError(msg))
+          : new WebRequestError(new ErrorMsg(msg))
+        );
         req.Dispose();
       }
       else {
@@ -236,6 +246,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
+    /// <summary>Runs action forever every frame.</summary>
+    [PublicAPI]
+    public static IEnumerator everyFrameEnumerator(Action action) {
+      while (true) {
+        action();
+        yield return null;
+      }
+      // ReSharper disable once IteratorNeverReturns
+    }
+    
     public static IEnumerator NextFrameEnumerator(Action action) {
       yield return null;
       action();

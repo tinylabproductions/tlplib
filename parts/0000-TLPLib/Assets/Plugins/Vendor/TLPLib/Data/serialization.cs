@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data.serialization;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
@@ -197,14 +197,33 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI]
     public static ISerializedRW<ImmutableArray<A>> immutableArray<A>(
       ISerializedRW<A> rw
-    ) => a(collectionSerializer<A, ImmutableArray<A>>(rw), collectionDeserializer(rw));
+    ) => a(
+      collectionSerializer<A, ImmutableArray<A>>(rw), 
+      collectionDeserializer(rw, CollectionBuilderKnownSizeFactory<A>.immutableArray)
+    );
+
+    [PublicAPI]
+    public static ISerializedRW<ImmutableList<A>> immutableList<A>(
+      ISerializedRW<A> rw
+    ) => a(
+      collectionSerializer<A, ImmutableList<A>>(rw), 
+      collectionDeserializer(rw, CollectionBuilderKnownSizeFactory<A>.immutableList)
+    );
+
+    [PublicAPI]
+    public static ISerializedRW<ImmutableHashSet<A>> immutableHashSet<A>(
+      ISerializedRW<A> rw
+    ) => a(
+      collectionSerializer<A, ImmutableHashSet<A>>(rw), 
+      collectionDeserializer(rw, CollectionBuilderKnownSizeFactory<A>.immutableHashSet)
+    );
 
     [PublicAPI]
     public static ISerializedRW<A[]> array<A>(
       ISerializedRW<A> rw
     ) => a(
       collectionSerializer<A, A[]>(rw),
-      collectionDeserializer(rw).map(immutable => F.some(immutable.internalArray()))
+      collectionDeserializer(rw, CollectionBuilderKnownSizeFactory<A>.array)
     );
 
     [PublicAPI]
@@ -218,8 +237,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       new ICollectionSerializer<A, C>(serializer);
 
     [PublicAPI]
-    public static IDeserializer<ImmutableArray<A>> collectionDeserializer<A>(
-      IDeserializer<A> deserializer
-    ) => new ImmutableArrayDeserializer<A>(deserializer);
+    public static IDeserializer<C> collectionDeserializer<A, C>(
+      IDeserializer<A> deserializer, CollectionBuilderKnownSizeFactory<A, C> factory
+    ) => new CollectionDeserializer<A, C>(deserializer, factory);
   }
 }

@@ -1,9 +1,17 @@
 ﻿using System.Collections.Generic;
+using GenerationAttributes;
 using UnityEngine;
 using static com.tinylabproductions.TLPLib.Components.MeshGenerationHelpers;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  public class LineMeshGenerator {
+  public partial class LineMeshGenerator {
+
+    [Record]
+    public partial struct NodeData {
+      public readonly Vector3 relativePosition;
+      public readonly float distanceToPrevNode;
+    }
+
     const float LINES_PARALLEL_EPS = 0.2f;
 
     readonly List<Vector3> vertices = new List<Vector3>();
@@ -25,12 +33,14 @@ namespace com.tinylabproductions.TLPLib.Components {
       mf.sharedMesh = m;
     }
 
-    public delegate Vector3 GetPosByIndex(int idx);
+    public delegate NodeData GetNode(int nodeIdx);
 
-    public void update(int totalPositions, GetPosByIndex getPos) {
+    public void update(
+      int totalPositions, float totalLineLength, GetNode getNode
+    ) {
       if (totalPositions < 2) return;
       triangles.Clear();
-      fillVerticesAndUvs(totalPositions, getPos);
+      fillVerticesAndUvs(totalPositions, totalLineLength, getNode);
       m.SetVertices(vertices);
       m.SetTriangles(triangles, 0);
       m.SetUVs(0, uvs);
@@ -40,39 +50,48 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     float getWidthForProgress(float progress) => curve.Evaluate(progress) * halfWidth;
 
-    void fillVerticesAndUvs(int totalPositions, GetPosByIndex getPos) {
+    void fillVerticesAndUvs(
+      int totalPositions, float totalLineLength, GetNode getNode
+    ) {
       var idx = 0;
+      var lineLength = 0f;
 
       addDataForSegment(
-        findCornersSimpleA(getPos(0), getPos(1), -getWidthForProgress(0f)),
-        colorGradient.Evaluate(0), ref idx, totalPositions
+        findCornersSimpleA(getNode(0).relativePosition, getNode(1).relativePosition, -getWidthForProgress(0f)),
+        colorGradient.Evaluate(0), ref idx, 0f
       );
       for (var i = 1; i < totalPositions - 1; i++) {
-        // totalPositions count is always >= 2
-        var progress = (float) i / (totalPositions - 1);
+        var curNode = getNode(i);
+
+        lineLength += curNode.distanceToPrevNode;
+        var progress = lineLength / totalLineLength;
         var width = getWidthForProgress(progress);
         var color = colorGradient.Evaluate(progress);
-        var cur = getPos(i);
 
-        var prev = getPos(i - 1);
-        var next = getPos(i + 1);
+        var cur = curNode.relativePosition;
+        var prev = getNode(i - 1).relativePosition;
+        var next = getNode(i + 1).relativePosition;
         if (Vector2.Angle(prev - cur, next - cur) < 90) {
-          addDataForSegment(findCornersSimpleB(prev, cur, -width), color, ref idx, totalPositions);
+          addDataForSegment(findCornersSimpleB(prev, cur, -width), color, ref idx, progress);
           fillTriangle(idx);
-          addDataForSegment(findCornersSimpleA(cur, next, -width), color, ref idx, totalPositions);
+          addDataForSegment(findCornersSimpleA(cur, next, -width), color, ref idx, progress);
         }
         else {
           addDataForSegment(
-            findCorners(prev, cur, next, -width, LINES_PARALLEL_EPS), color, ref idx, totalPositions
+            findCorners(prev, cur, next, -width, LINES_PARALLEL_EPS), color, ref idx, progress
           );
           fillTriangle(idx);
         }
       }
 
       addDataForSegment(
-        findCornersSimpleB(getPos(totalPositions - 2),  getPos(totalPositions - 1), -getWidthForProgress(1f)),
-        colorGradient.Evaluate(1), ref idx, totalPositions
+        findCornersSimpleB(
+          getNode(totalPositions - 2).relativePosition,
+          getNode(totalPositions - 1).relativePosition, -getWidthForProgress(1f)
+        ),
+        colorGradient.Evaluate(1), ref idx, 1f
       );
+      fillTriangle(idx);
     }
 
     void fillTriangle(int idx) {
@@ -90,16 +109,13 @@ namespace com.tinylabproductions.TLPLib.Components {
       triangles.Add(idx - 2);
     }
 
-    void addDataForSegment(CornersData corners, Color color, ref int vertexIdx, int totalPositions) {
-      // ReSharper disable once PossibleLossOfFraction
-      var v = vertexIdx / 2 / (float) (totalPositions - 1);
-
+    void addDataForSegment(CornersData corners, Color color, ref int vertexIdx, float progress) {
       setOrAdd(vertices, corners.res1, vertexIdx);
-      setOrAdd(uvs, new Vector2(v, 0), vertexIdx);
+      setOrAdd(uvs, new Vector2(progress, 0), vertexIdx);
       setOrAdd(colors, color, vertexIdx);
       vertexIdx++;
       setOrAdd(vertices, corners.res2, vertexIdx);
-      setOrAdd(uvs, new Vector2(v, 1), vertexIdx);
+      setOrAdd(uvs, new Vector2(progress, 1), vertexIdx);
       setOrAdd(colors, color, vertexIdx);
       vertexIdx++;
     }
