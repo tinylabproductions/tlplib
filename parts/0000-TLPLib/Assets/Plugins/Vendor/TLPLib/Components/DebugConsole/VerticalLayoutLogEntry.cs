@@ -1,11 +1,12 @@
 ﻿using com.tinylabproductions.TLPLib.Components.ui;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using Smooth.Dispose;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
-  public class VerticalLayoutLogEntry : MonoBehaviour {
+  public partial class VerticalLayoutLogEntry : MonoBehaviour {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -17,13 +18,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     #endregion
 
+    [Record]
+    public partial struct Data {
+      public readonly string text;
+      public readonly Color color;
+    }
+
     public class Init : DynamicVerticalLayout.IElementView {
       readonly Disposable<VerticalLayoutLogEntry> backing;
 
-      public Init(Disposable<VerticalLayoutLogEntry> backing, string text, Color color) {
+      public Init(Disposable<VerticalLayoutLogEntry> backing, Data data) {
         this.backing = backing;
-        backing.value.text.text = text;
-        backing.value.text.color = color;
+        backing.value.text.text = data.text;
+        backing.value.text.color = data.color;
       }
 
       public void Dispose() => backing.Dispose();

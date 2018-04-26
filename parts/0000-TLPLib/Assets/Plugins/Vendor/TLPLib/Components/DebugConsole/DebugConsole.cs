@@ -38,8 +38,27 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly GameObjectPool<VerticalLayoutLogEntry> pool;
     }
 
+    [Record]
+    public partial struct LogEntry {
+      public readonly string message;
+      public readonly LogType type;
+    }
+
+    static readonly List<LogEntry> logEntries = new List<LogEntry>();
     public static DConsole instance { get; } = new DConsole();
     public static readonly ImmutableArray<bool> bools = ImmutableArray.Create(true, false);
+
+    [RuntimeInitializeOnLoadMethod]
+    static void registerLogMessages() {
+      if (!Application.isEditor) {
+        // In editor we have the editor console, so this is not really needed.
+        Application.logMessageReceivedThreaded += (message, stacktrace, type) => {
+          lock (logEntries) {
+            logEntries.Add(new LogEntry(message, type));
+          }
+        };
+      }
+    }
 
     DConsole() {
       var r = registrarFor(nameof(DConsole));
@@ -205,25 +224,28 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         () => view.logEntry.prefab.clone()
       ));
 
+      var cache = new List<VerticalLayoutLogEntry.Data>();
       var layout = new DynamicVerticalLayout.Init(
         view.dynamicLayout,
-        Enumerable.Empty<DynamicVerticalLayout.IElementData>(),
+        // ReSharper disable once InconsistentlySynchronizedField
+        logEntries
+          .SelectMany(e => createEntries(e, logEntryPool, cache, view.lineWidth))
+          .Select(_ => _.upcast(default(DynamicVerticalLayout.IElementData))),
         renderLatestItemsFirst: true
       );
 
-      var logCallback = onLogMessageReceived(layout, logEntryPool);
+      var logCallback = onLogMessageReceived(logEntryPool, cache);
       Application.logMessageReceivedThreaded += logCallback;
       view.closeButton.onClick.AddListener(destroy);
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
     }
-
+    
     // DO NOT generate comparer and hashcode - we need reference equality for dynamic vertical layout!
     [Record(GenerateComparer = false, GenerateGetHashCode = false)]
-    partial class LogElementData : DynamicVerticalLayout.IElementWithViewData {
+    partial class DynamicVerticalLayoutLogElementData : DynamicVerticalLayout.IElementWithViewData {
       readonly GameObjectPool<VerticalLayoutLogEntry> pool;
-      readonly string text;
-      readonly Color color;
+      readonly VerticalLayoutLogEntry.Data data;
       
       public float height => 20;
       public Percentage width => new Percentage(1f);
@@ -233,7 +255,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public DynamicVerticalLayout.IElementView createItem(Transform parent) {
         var logEntry = pool.BorrowDisposable();
         logEntry.value.transform.SetParent(parent, false);
-        return new VerticalLayoutLogEntry.Init(logEntry, text, color);      
+        return new VerticalLayoutLogEntry.Init(logEntry, data);      
       }
     }
 
@@ -271,66 +293,78 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return button;
     }
 
-    Application.LogCallback onLogMessageReceived(
-      DynamicVerticalLayout.Init layout, GameObjectPool<VerticalLayoutLogEntry> logEntryPool
-    ) =>
-      (message, stackTrace, type) => {
-        int oneLineCharsCount(float lineWidth, int charWidth) =>
-          Mathf.RoundToInt(lineWidth / charWidth);
-
-        void distributeText(string text, int charCount, Color color) {
-          while (true) {
-            var mod = text.Length % charCount;
-            if (text.Length > charCount) {
-              var lineLength = mod != 0 ? mod : charCount; 
-              var lineText = text.Substring(text.Length - lineLength, lineLength);
-              layout.appendDataIntoLayoutData(
-                new LogElementData(logEntryPool, lineText, color),
-                updateLayout: false
-              );
-              text = text.Substring(0, text.Length - lineLength);
-              continue;
-            }
-            else {
-              layout.appendDataIntoLayoutData(new LogElementData(logEntryPool, text, color));
-            }
-
-            break;
-          }
+    static void distributeText(
+      string text, int charCount, Color color, List<VerticalLayoutLogEntry.Data> resultsTo
+    ) {
+      resultsTo.Clear();
+      while (true) {
+        var mod = text.Length % charCount;
+        if (text.Length > charCount) {
+          var lineLength = mod != 0 ? mod : charCount; 
+          var lineText = text.Substring(text.Length - lineLength, lineLength);
+          resultsTo.Add(new VerticalLayoutLogEntry.Data(lineText, color));
+          text = text.Substring(0, text.Length - lineLength);
+          continue;
+        }
+        else {
+          resultsTo.Add(new VerticalLayoutLogEntry.Data(text, color));
         }
 
+        break;
+      }
+    }
+
+    static IEnumerable<DynamicVerticalLayoutLogElementData> createEntries(
+      LogEntry data, GameObjectPool<VerticalLayoutLogEntry> pool,
+      List<VerticalLayoutLogEntry.Data> cache, float lineWidth
+    ) {
+      string typeToString(LogType t) {
+        switch (t) {
+          case LogType.Error: return " ERROR";
+          case LogType.Assert: return " ASSERT";
+          case LogType.Warning: return " WARN";
+          case LogType.Log: return "";
+          case LogType.Exception: return " EXCEPTION";
+          default: return t.ToString();
+        }
+      }
+
+      Color typeToColor(LogType t) {
+        switch (t) {
+          case LogType.Error:
+          case LogType.Exception:
+            return Color.red;
+          case LogType.Assert: return Color.magenta;
+          case LogType.Warning: return new Color(127, 127, 0, 255);
+          case LogType.Log: return Color.black;
+          default: return Color.black;
+        }
+      }
+
+      var shortText = $"{DateTime.Now:hh:mm:ss}{typeToString(data.type)} {data.message}";
+      var charCount = Mathf.RoundToInt(lineWidth / 11);
+
+      distributeText(shortText, charCount, typeToColor(data.type), cache);
+      foreach (var e in cache) {
+        yield return new DynamicVerticalLayoutLogElementData(pool, e);
+      }
+    }
+    
+    Application.LogCallback onLogMessageReceived(
+      GameObjectPool<VerticalLayoutLogEntry> pool,
+      List<VerticalLayoutLogEntry.Data> resultsTo
+    ) {
+      return (message, stackTrace, type) => {
         foreach (var instance in current) {
           ASync.OnMainThread(() => {
-            string typeToString(LogType t) {
-              switch (t) {
-                case LogType.Error: return " ERROR";
-                case LogType.Assert: return " ASSERT";
-                case LogType.Warning: return " WARN";
-                case LogType.Log: return "";
-                case LogType.Exception: return " EXCEPTION";
-                default: return t.ToString();
-              }
-            }
-
-            Color typeToColor(LogType t) {
-              switch (t) {
-                case LogType.Error:
-                case LogType.Exception:
-                  return Color.red;
-                case LogType.Assert: return Color.magenta;
-                case LogType.Warning: return new Color(127, 127, 0, 255);
-                case LogType.Log: return Color.black;
-                default: return Color.black;
-              }
-            }
-            
-            var shortText = $"{DateTime.Now:hh:mm:ss}{typeToString(type)} {message}";
-            var charCount = oneLineCharsCount(instance.view.dynamicLayout.maskRect.rect.width, 11);
-
-            distributeText(shortText, charCount, typeToColor(type));
+            foreach (var e in createEntries(
+              new LogEntry(message, type), pool, resultsTo,
+              instance.view.lineWidth
+            )) instance.dynamicVerticalLayout.appendDataIntoLayoutData(e);
           });
         }
       };
+    }
 
     public void destroy() {
       foreach (var instance in current) {

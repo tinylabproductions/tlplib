@@ -13,6 +13,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     [NotNull] public Button closeButton;
     [NotNull] public DynamicVerticalLayout dynamicLayout;
     [NotNull] public VerticalLayoutLogEntryPrefab logEntry;
+    
+    public float lineWidth => dynamicLayout.maskRect.rect.width;
   }
 
   [Serializable]
