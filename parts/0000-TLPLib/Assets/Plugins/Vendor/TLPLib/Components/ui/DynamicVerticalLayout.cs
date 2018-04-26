@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -99,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       readonly DisposableTracker dt = new DisposableTracker();
       readonly DynamicVerticalLayout backing;
-      readonly ImmutableArray<IElementData> layoutData;
+      ImmutableArray<IElementData> layoutData;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
 
@@ -109,6 +110,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       ) {
         this.backing = backing;
         this.layoutData = layoutData;
+        
         var mask = backing._maskRect;
 
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive()
@@ -128,6 +130,12 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
       }
 
+      public void insertDataIntoLayoutData(IElementData element)
+      {       
+        layoutData = layoutData.Add(element);
+        updateLayout();
+      }
+      
       void clearLayout() {
         foreach (var kv in items) {
           foreach (var item in kv.Value) item.Dispose();
@@ -165,8 +173,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             width: width * itemWidthPerc,
             height: data.height
           );
+             
           var placementVisible = visibleRect.Overlaps(cellRect, true);
-
+          
           if (placementVisible && !items.ContainsKey(data)) {
             var instanceOpt = Option<IElementView>.None;
             foreach (var elementWithView in data.asElementWithView) {

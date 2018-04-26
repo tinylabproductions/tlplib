@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
-  public class DConsole {
+  public partial class DConsole {
     public enum Direction { Left, Up, Right, Down }
 
     public struct Command {
@@ -27,12 +30,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    struct Instance {
+    [Record]
+    partial struct Instance {
       public readonly DebugConsoleBinding view;
-
-      public Instance(DebugConsoleBinding view) {
-        this.view = view;
-      }
+      public readonly DynamicVerticalLayout.Init dynamicVerticalLayout;
+      public readonly Application.LogCallback logCallback;
+      public readonly GameObjectPool<VerticalLayoutLogEntry> pool;
     }
 
     public static DConsole instance { get; } = new DConsole();
@@ -175,7 +178,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         });
       }
     }
-
+    
     public void show(DebugConsoleBinding binding) {
       destroy();
       onShow?.Invoke(this);
@@ -196,11 +199,45 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         return button;
       }).ToImmutableList();
       setupList(view.commandGroups, () => commandGroups);
+      
+      var logEntryPool = GameObjectPool.a(GameObjectPool.Init<VerticalLayoutLogEntry>.noReparenting(
+        "log entry pool",
+        () => view.logEntry.clone()
+      ));
 
-      Application.logMessageReceivedThreaded += onLogMessageReceived;
+      var layout = new DynamicVerticalLayout.Init(
+        view.dynamicLayout,
+        ImmutableArray.Create<DynamicVerticalLayout.IElementData>(    
+      ));
+
+      var logCallback = onLogMessageReceived(layout, logEntryPool);
+      Application.logMessageReceivedThreaded += logCallback;
       view.closeButton.onClick.AddListener(destroy);
 
-      current = new Instance(view).some();
+      current = new Instance(view, layout, logCallback, logEntryPool).some();
+    }
+
+    event Action foo;
+
+    class LogElementData : DynamicVerticalLayout.IElementWithViewData {
+      readonly GameObjectPool<VerticalLayoutLogEntry> pool;
+      readonly string text;
+      
+      public float height => 20;
+      public Percentage width => new Percentage(1f);
+      public Option<DynamicVerticalLayout.IElementWithViewData> asElementWithView => 
+        this.some<DynamicVerticalLayout.IElementWithViewData>();
+      
+      public LogElementData(GameObjectPool<VerticalLayoutLogEntry> pool, string text) {
+        this.pool = pool;
+        this.text = text;
+      }
+      
+      public DynamicVerticalLayout.IElementView createItem(Transform parent) {
+        var logEntry = pool.BorrowDisposable();
+        logEntry.value.transform.SetParent(parent, false);
+        return new VerticalLayoutLogEntry.Init(logEntry, text);      
+      }
     }
 
     static void setupList(DebugConsoleListBinding listBinding, Fn<ImmutableList<ButtonBinding>> contents) {
@@ -237,24 +274,43 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return button;
     }
 
-    void onLogMessageReceived(string message, string stackTrace, LogType type) {
-      foreach (var instance in current) {
-        ASync.OnMainThread(() => {
-          var entry = instance.view.logEntryPrefab.clone();
-          var shortText = $"{DateTime.Now}  {type}  {message}";
+    Application.LogCallback onLogMessageReceived(
+      DynamicVerticalLayout.Init layout, GameObjectPool<VerticalLayoutLogEntry> logEntryPool
+    ) =>
+      (message, stackTrace, type) => {
+        int oneLineCharsCount(float lineWidth, int charWidth) =>
+          Mathf.RoundToInt(lineWidth / charWidth);
 
-          entry.text = shortText;
-          entry.GetComponent<RectTransform>().SetParent(
-            instance.view.logEntriesHolder.transform, worldPositionStays: false
-          );
-          entry.transform.SetAsFirstSibling();
-        });
-      }
-    }
+        void distributeText(string text, int charCount) {
+          while (true) {
+            if (text.Length > charCount) {
+              layout.insertDataIntoLayoutData(new LogElementData(logEntryPool, text.Substring(0, charCount)));
+              text = text.Substring(charCount, text.Length - charCount);
+              continue;
+            }
+            else {
+              layout.insertDataIntoLayoutData(new LogElementData(logEntryPool, text));
+            }
+
+            break;
+          }
+        }
+
+        foreach (var instance in current) {
+          ASync.OnMainThread(() => {
+            var shortText = $"{DateTime.Now}  {type}  {message}";
+            var charCount = oneLineCharsCount(instance.view.dynamicLayout.maskRect.rect.width, 11);
+
+            distributeText(shortText, charCount);
+          });
+        }
+      };
 
     public void destroy() {
       foreach (var instance in current) {
-        Application.logMessageReceivedThreaded -= onLogMessageReceived;
+        Application.logMessageReceivedThreaded -= instance.logCallback;
+        instance.dynamicVerticalLayout.Dispose();
+        instance.pool.dispose(Object.Destroy);
         Object.Destroy(instance.view.gameObject);
       }
       current = current.none;
