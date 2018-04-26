@@ -114,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     ) {
       Option.ensureValue(ref directionDataOpt);
 
-      binding = binding ?? Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
+      binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
 
       var mouseObs =
@@ -207,8 +207,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var layout = new DynamicVerticalLayout.Init(
         view.dynamicLayout,
-        ImmutableArray.Create<DynamicVerticalLayout.IElementData>(    
-      ));
+        Enumerable.Empty<DynamicVerticalLayout.IElementData>(),
+        renderLatestItemsFirst: true
+      );
 
       var logCallback = onLogMessageReceived(layout, logEntryPool);
       Application.logMessageReceivedThreaded += logCallback;
@@ -217,24 +218,22 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       current = new Instance(view, layout, logCallback, logEntryPool).some();
     }
 
-    class LogElementData : DynamicVerticalLayout.IElementWithViewData {
+    // DO NOT generate comparer and hashcode - we need reference equality for dynamic vertical layout!
+    [Record(GenerateComparer = false, GenerateGetHashCode = false)]
+    partial class LogElementData : DynamicVerticalLayout.IElementWithViewData {
       readonly GameObjectPool<VerticalLayoutLogEntry> pool;
       readonly string text;
+      readonly Color color;
       
       public float height => 20;
       public Percentage width => new Percentage(1f);
       public Option<DynamicVerticalLayout.IElementWithViewData> asElementWithView => 
         this.some<DynamicVerticalLayout.IElementWithViewData>();
-      
-      public LogElementData(GameObjectPool<VerticalLayoutLogEntry> pool, string text) {
-        this.pool = pool;
-        this.text = text;
-      }
-      
+
       public DynamicVerticalLayout.IElementView createItem(Transform parent) {
         var logEntry = pool.BorrowDisposable();
         logEntry.value.transform.SetParent(parent, false);
-        return new VerticalLayoutLogEntry.Init(logEntry, text);      
+        return new VerticalLayoutLogEntry.Init(logEntry, text, color);      
       }
     }
 
@@ -279,15 +278,21 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         int oneLineCharsCount(float lineWidth, int charWidth) =>
           Mathf.RoundToInt(lineWidth / charWidth);
 
-        void distributeText(string text, int charCount) {
+        void distributeText(string text, int charCount, Color color) {
           while (true) {
+            var mod = text.Length % charCount;
             if (text.Length > charCount) {
-              layout.insertDataIntoLayoutData(new LogElementData(logEntryPool, text.Substring(0, charCount)));
-              text = text.Substring(charCount, text.Length - charCount);
+              var lineLength = mod != 0 ? mod : charCount; 
+              var lineText = text.Substring(text.Length - lineLength, lineLength);
+              layout.appendDataIntoLayoutData(
+                new LogElementData(logEntryPool, lineText, color),
+                updateLayout: false
+              );
+              text = text.Substring(0, text.Length - lineLength);
               continue;
             }
             else {
-              layout.insertDataIntoLayoutData(new LogElementData(logEntryPool, text));
+              layout.appendDataIntoLayoutData(new LogElementData(logEntryPool, text, color));
             }
 
             break;
@@ -296,10 +301,33 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
         foreach (var instance in current) {
           ASync.OnMainThread(() => {
-            var shortText = $"{DateTime.Now}  {type}  {message}";
+            string typeToString(LogType t) {
+              switch (t) {
+                case LogType.Error: return " ERROR";
+                case LogType.Assert: return " ASSERT";
+                case LogType.Warning: return " WARN";
+                case LogType.Log: return "";
+                case LogType.Exception: return " EXCEPTION";
+                default: return t.ToString();
+              }
+            }
+
+            Color typeToColor(LogType t) {
+              switch (t) {
+                case LogType.Error:
+                case LogType.Exception:
+                  return Color.red;
+                case LogType.Assert: return Color.magenta;
+                case LogType.Warning: return new Color(127, 127, 0, 255);
+                case LogType.Log: return Color.black;
+                default: return Color.black;
+              }
+            }
+            
+            var shortText = $"{DateTime.Now:hh:mm:ss}{typeToString(type)} {message}";
             var charCount = oneLineCharsCount(instance.view.dynamicLayout.maskRect.rect.width, 11);
 
-            distributeText(shortText, charCount);
+            distributeText(shortText, charCount, typeToColor(type));
           });
         }
       };

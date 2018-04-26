@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
@@ -100,16 +101,19 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       readonly DisposableTracker dt = new DisposableTracker();
       readonly DynamicVerticalLayout backing;
-      ImmutableArray<IElementData> layoutData;
+      readonly List<IElementData> layoutData;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
+      readonly bool renderLatestItemsFirst;
 
       public Init(
         DynamicVerticalLayout backing,
-        ImmutableArray<IElementData> layoutData
+        IEnumerable<IElementData> layoutData,
+        bool renderLatestItemsFirst = false
       ) {
         this.backing = backing;
-        this.layoutData = layoutData;
+        this.layoutData = layoutData.ToList();
+        this.renderLatestItemsFirst = renderLatestItemsFirst;
         
         var mask = backing._maskRect;
 
@@ -130,10 +134,13 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
       }
 
-      public void insertDataIntoLayoutData(IElementData element)
-      {       
-        layoutData = layoutData.Add(element);
-        updateLayout();
+      /// <param name="element"></param>
+      /// <param name="updateLayout">
+      /// pass false and then call <see cref="updateLayout"/> manually when doing batch updates
+      /// </param>
+      public void appendDataIntoLayoutData(IElementData element, bool updateLayout = true) {       
+        layoutData.Add(element);
+        if (updateLayout) this.updateLayout();
       }
       
       void clearLayout() {
@@ -143,7 +150,12 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         items.Clear();
       }
 
-      void updateLayout() {
+      /// <summary>
+      /// You can call this after modifing the underlying data to update the layout so
+      /// it would show everything correctly.
+      /// </summary>
+      [PublicAPI]
+      public void updateLayout() {
         var visibleRect = backing._maskRect.rect.convertCoordinateSystem(
           ((Transform)backing._maskRect).some(), backing._container
         );
@@ -151,7 +163,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         var totalHeightUntilThisRow = 0f;
         var currentRowHeight = 0f;
         var currentWidthPerc = 0f;
-        foreach (var data in layoutData) {
+
+        var direction = renderLatestItemsFirst ? -1 : 1;
+        for (
+          var idx = renderLatestItemsFirst ? layoutData.Count - 1 : 0;
+          renderLatestItemsFirst ? idx >= 0 : idx < layoutData.Count;
+          idx += direction
+        ) {
+          var data = layoutData[idx];
           var itemWidthPerc = data.width.value;
           var itemLeftPerc = 0f;
           if (currentWidthPerc + itemWidthPerc > 1f + EPS) {

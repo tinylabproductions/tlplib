@@ -1,6 +1,4 @@
 ﻿using com.tinylabproductions.TLPLib.Components.ui;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using Smooth.Dispose;
 using UnityEngine;
@@ -22,12 +20,13 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public class Init : DynamicVerticalLayout.IElementView {
       readonly Disposable<VerticalLayoutLogEntry> backing;
 
-      public Init(Disposable<VerticalLayoutLogEntry> backing, string text) {
+      public Init(Disposable<VerticalLayoutLogEntry> backing, string text, Color color) {
         this.backing = backing;
         backing.value.text.text = text;
+        backing.value.text.color = color;
       }
 
-      public void Dispose() { backing.Dispose(); }
+      public void Dispose() => backing.Dispose();
       public RectTransform rectTransform => backing.value.baseTransform;
     }
   }
