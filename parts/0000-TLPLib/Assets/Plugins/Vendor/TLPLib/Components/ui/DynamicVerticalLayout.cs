@@ -120,8 +120,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive()
         // from OnRectTransformDimensionsChange()
         // oncePerFrame() performs operation in LateUpdate
-        var maskSize = mask.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>().rectDimensionsChanged
+        var maskSize = 
+          mask.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>().rectDimensionsChanged
           .oncePerFrame()
+          .filter(_ => mask) // mask can go away before late update, so double check it.
           .map(_ => mask.rect)
           .toRxVal(mask.rect);
 
