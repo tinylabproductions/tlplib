@@ -201,8 +201,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       setupList(view.commandGroups, () => commandGroups);
       
       var logEntryPool = GameObjectPool.a(GameObjectPool.Init<VerticalLayoutLogEntry>.noReparenting(
-        "log entry pool",
-        () => view.logEntry.clone()
+        nameof(DConsole) + " log entry pool",
+        () => view.logEntry.prefab.clone()
       ));
 
       var layout = new DynamicVerticalLayout.Init(
@@ -216,8 +216,6 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
     }
-
-    event Action foo;
 
     class LogElementData : DynamicVerticalLayout.IElementWithViewData {
       readonly GameObjectPool<VerticalLayoutLogEntry> pool;
