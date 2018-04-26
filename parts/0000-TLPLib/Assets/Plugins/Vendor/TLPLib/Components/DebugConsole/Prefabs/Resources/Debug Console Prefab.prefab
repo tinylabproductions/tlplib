@@ -412,13 +412,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   commandGroups: {fileID: 114574460855579646}
   commands: {fileID: 114519148264321588}
-  logEntriesHolder: {fileID: 1723560785167988}
+  logEntriesHolder: {fileID: 0}
   commandGroupLabel: {fileID: 114533643562222460}
   logEntryPrefab: {fileID: 11440990, guid: b091fb9176caf0f44b8012f56b125fe4, type: 2}
   buttonPrefab: {fileID: 11458986, guid: 502f5d03e905f33489040637229123f3, type: 2}
   closeButton: {fileID: 11453090}
   dynamicLayout: {fileID: 114978347497002484}
-  logEntry: {fileID: 114122782935304128, guid: b091fb9176caf0f44b8012f56b125fe4, type: 2}
+  logEntry:
+    _prefab: {fileID: 114122782935304128, guid: b091fb9176caf0f44b8012f56b125fe4,
+      type: 2}
 --- !u!114 &11436986
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1236,7 +1238,6 @@ RectTransform:
   m_Children:
   - {fileID: 224611167668860408}
   - {fileID: 224770077623730146}
-  - {fileID: 224818416531905616}
   m_Father: {fileID: 22446672}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1600,21 +1601,6 @@ GameObject:
   - component: {fileID: 114083890452892468}
   m_Layer: 5
   m_Name: Clear filter
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &1723560785167988
-GameObject:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 224818416531905616}
-  m_Layer: 5
-  m_Name: LogEntriesHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2879,7 +2865,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 10, y: 262.74997}
-  m_SizeDelta: {x: 649, y: 0}
+  m_SizeDelta: {x: 649, y: 525.5}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &224240405021099624
 RectTransform:
@@ -3178,24 +3164,6 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -0.5}
   m_SizeDelta: {x: -20, y: -13}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!224 &224818416531905616
-RectTransform:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1723560785167988}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 22493474}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224933838831647214
 RectTransform:
