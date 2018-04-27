@@ -1,5 +1,6 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
@@ -16,7 +17,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
     // ReSharper disable once UnusedMember.Local
-    enum AutoplayMode : byte { Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3 }
+    enum AutoplayMode : byte {
+      Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3 
+    }
 
     [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
     float timePassed => _manager == null ? -1 : _manager.timeline.timePassed;
@@ -57,6 +60,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
+          if (Log.d.isDebug()) Log.d.debug($"Creating {nameof(TweenManager)} for {this}", this);
           var tm = new TweenManager(_timeline.timeline, _time, _looping);
           foreach (var cb in _onStart) tm.addOnStartCallback(cb.callback.callback);
           foreach (var cb in _onEnd) tm.addOnEndCallback(cb.callback.callback);
@@ -69,7 +73,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
     bool lastStateWasPlaying;
 
-    public void Start() => handleStartAutoplay();
+    public void Start() {
+      // Create manager on start.
+      manager.forSideEffects();
+      handleStartAutoplay();
+    }
 
     void handleStartAutoplay() {
       if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();

@@ -4,6 +4,9 @@ using UnityEngine.UI;
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [AddComponentMenu("")]
   public class Shadow_EffectColor : SerializedTweener<Color, Shadow> {
-    public Shadow_EffectColor() : base(TweenOps.color, TweenMutators.shadowEffectColor, Defaults.color) { }
+    public Shadow_EffectColor() : base(
+      TweenOps.color, SerializedTweenerOps.Add.color, SerializedTweenerOps.Extract.shadowEffectColor, 
+      TweenMutators.shadowEffectColor, Defaults.color
+    ) { }
   }
 }
