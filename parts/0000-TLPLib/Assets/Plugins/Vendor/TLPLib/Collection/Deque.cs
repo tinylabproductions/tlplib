@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace com.tinylabproductions.TLPLib.Collection
 {
     /// <summary>
-    /// A genetic Deque class. It can be thought of as
+    /// A generic Deque class. It can be thought of as
     /// a double-ended queue, hence Deque. This allows for
     /// an O(1) AddFront, AddBack, RemoveFront, RemoveBack.
     /// The Deque also has O(1) indexed lookup, as it is backed
