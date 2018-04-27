@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
 
-    protected abstract void apply(SortingLayerReference sortingLayer);
+    public abstract void apply(SortingLayerReference sortingLayer);
     protected abstract SortingLayerAndOrder extract();
     protected abstract void recordEditorChanges();
 
