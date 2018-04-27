@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
@@ -9,6 +10,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
@@ -44,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly LogType type;
     }
 
-    static readonly List<LogEntry> logEntries = new List<LogEntry>();
+    static readonly Deque<LogEntry> logEntries = new Deque<LogEntry>();
     public static DConsole instance { get; } = new DConsole();
     public static readonly ImmutableArray<bool> bools = ImmutableArray.Create(true, false);
 
@@ -54,6 +56,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         // In editor we have the editor console, so this is not really needed.
         Application.logMessageReceivedThreaded += (message, stacktrace, type) => {
           lock (logEntries) {
+            const int MAX_COUNT = 200;
+            while (!Log.d.isDebug() && !Debug.isDebugBuild && logEntries.Count > MAX_COUNT) {
+              logEntries.RemoveFront();
+            }
             logEntries.Add(new LogEntry(message, type));
           }
         };
