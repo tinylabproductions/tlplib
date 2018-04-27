@@ -6,6 +6,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 using JetBrains.Annotations;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class Option {
@@ -168,10 +169,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public OptionEnumerator<A> GetEnumerator() => new OptionEnumerator<A>(this);
 
     [PublicAPI] public Option<B> map<B>(Fn<A, B> func) =>
-      isSome ? F.some(func(get)) : F.none<B>();
+      isSome ? F.some(func(__unsafeGetValue)) : F.none<B>();
 
     [PublicAPI] public Option<B> flatMap<B>(Fn<A, Option<B>> func) =>
-      isSome ? func(get) : F.none<B>();
+      isSome ? func(__unsafeGetValue) : F.none<B>();
+
+    [PublicAPI]
+    public Option<B> flatMapUnity<B>(Fn<A, B> func) where B : Object =>
+      isSome ? F.opt(func(__unsafeGetValue)) : F.none<B>();
 
     [PublicAPI] public Option<C> flatMap<B, C>(Fn<A, Option<B>> func, Fn<A, B, C> mapper) {
       if (isNone) return Option<C>.None;
