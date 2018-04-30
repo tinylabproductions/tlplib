@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public class PrefValStorage {
@@ -43,6 +45,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #region Collections
 
+    [PublicAPI]
     public PrefVal<ImmutableArray<A>> array<A>(
       string key, ISerializedRW<A> rw,
       ImmutableArray<A> defaultVal, bool saveOnEveryWrite = true,
@@ -50,10 +53,11 @@ namespace com.tinylabproductions.TLPLib.Data {
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
-      key, rw, a => a, defaultVal, saveOnEveryWrite,
+      key, rw, CollectionBuilderKnownSizeFactory<A>.immutableArray, defaultVal, saveOnEveryWrite,
       onDeserializeFailure, log
     );
 
+    [PublicAPI]
     public PrefVal<ImmutableList<A>> list<A>(
       string key, ISerializedRW<A> rw,
       ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = true,
@@ -61,10 +65,12 @@ namespace com.tinylabproductions.TLPLib.Data {
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
-      key, rw, a => a.ToImmutableList(), defaultVal ?? ImmutableList<A>.Empty,
+      key, rw, CollectionBuilderKnownSizeFactory<A>.immutableList, 
+      defaultVal ?? ImmutableList<A>.Empty,
       saveOnEveryWrite, onDeserializeFailure, log
     );
 
+    [PublicAPI]
     public PrefVal<ImmutableHashSet<A>> hashSet<A>(
       string key, ISerializedRW<A> rw,
       ImmutableHashSet<A> defaultVal = null, bool saveOnEveryWrite = true,
@@ -72,7 +78,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
-      key, rw, a => a.ToImmutableHashSet(), defaultVal ?? ImmutableHashSet<A>.Empty,
+      key, rw, CollectionBuilderKnownSizeFactory<A>.immutableHashSet, 
+      defaultVal ?? ImmutableHashSet<A>.Empty,
       saveOnEveryWrite, onDeserializeFailure, log
     );
 
@@ -122,7 +129,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefVal<C> collection<A, C>(
       string key,
-      ISerializedRW<A> rw, Fn<ImmutableArray<A>, C> toCollection,
+      ISerializedRW<A> rw, CollectionBuilderKnownSizeFactory<A, C> factory,
       C defaultVal, bool saveOnEveryWrite = true,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
@@ -130,9 +137,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) where C : ICollection<A> {
       var collectionRw = SerializedRW.a(
         SerializedRW.collectionSerializer<A, C>(rw),
-        SerializedRW
-          .collectionDeserializer(rw)
-          .map(arr => toCollection(arr).some())
+        SerializedRW.collectionDeserializer(rw, factory)
       );
       return collection<A, C>(
         key, collectionRw, defaultVal, saveOnEveryWrite, onDeserializeFailure, log

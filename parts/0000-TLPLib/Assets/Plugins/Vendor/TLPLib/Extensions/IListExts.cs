@@ -5,6 +5,7 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -58,12 +59,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       list[idx] = ifFound(list[idx]);
     }
 
-    public static void Shuffle<A>(this IList<A> list) {
-      var rng = new System.Random();
+    [PublicAPI] public static void shuffle<A>(this IList<A> list, ref Rng rng) {
       var n = list.Count;
+      var range = new Range(0, n - 1);
       while (n > 1) {
         n--;
-        var k = rng.Next(n + 1);
+        var k = rng.nextIntInRange(range, out rng);
         var value = list[k];
         list[k] = list[n];
         list[n] = value;
@@ -185,6 +186,25 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       throw new IllegalStateException();
     }
 
-    public static Option<A> headOption<A>(this IList<A> list) => list.Count == 0 ? F.none<A>() : list[0].some();
+    public static Option<A> headOption<A>(this IList<A> list) => 
+      list.Count == 0 ? F.none<A>() : list[0].some();
+
+    /// <summary>
+    /// Returns array with all the indexes of this list.
+    /// </summary>
+    [PublicAPI] public static int[] indexes<A>(this IList<A> list) {
+      var indexes = new int[list.Count];
+      for (var idx = 0; idx < list.Count; idx++)
+        indexes[idx] = idx;
+      return indexes;
+    }
+
+    [PublicAPI]
+    public static IEnumerable<A> randomized<A>(this IList<A> list, Rng rng) {
+      var indexes = list.indexes();
+      indexes.shuffle(ref rng);
+      foreach (var index in indexes)
+        yield return list[index];
+    }
   }
 }

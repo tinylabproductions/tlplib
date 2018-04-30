@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static ISubscription registerDefault(
       this OnError onError, IDisposableTracker tracker, Log.Level logFrom
     ) =>
-      defaultStream.get
+      defaultStream.strict
       .filter(e => e.level >= logFrom)
       .subscribe(tracker, e => onError(e));
   }

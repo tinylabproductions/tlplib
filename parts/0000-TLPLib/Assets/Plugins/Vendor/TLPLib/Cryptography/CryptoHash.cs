@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.Cryptography {
   public struct CryptoHash : IStr, IEquatable<CryptoHash> {
@@ -15,8 +15,8 @@ namespace com.tinylabproductions.Cryptography {
 
     public enum Kind : byte { MD5, SHA1, SHA256 }
 
-    public readonly ImmutableArray<byte> bytes;
-    public readonly Kind kind;
+    [PublicAPI] public readonly ImmutableArray<byte> bytes;
+    [PublicAPI] public readonly Kind kind;
 
     public CryptoHash(ImmutableArray<byte> bytes, Kind kind) {
       this.bytes = bytes;
@@ -27,21 +27,19 @@ namespace com.tinylabproductions.Cryptography {
 
     #region Equality
 
-    public bool Equals(CryptoHash other) {
-      return bytes.Equals(other.bytes) && kind == other.kind;
-    }
+    public bool Equals(CryptoHash other) => bytes.Equals(other.bytes) && kind == other.kind;
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is CryptoHash && Equals((CryptoHash) obj);
+      return obj is CryptoHash hash && Equals(hash);
     }
 
     public override int GetHashCode() {
       unchecked { return (bytes.GetHashCode() * 397) ^ (int) kind; }
     }
 
-    public static bool operator ==(CryptoHash left, CryptoHash right) { return left.Equals(right); }
-    public static bool operator !=(CryptoHash left, CryptoHash right) { return !left.Equals(right); }
+    public static bool operator ==(CryptoHash left, CryptoHash right) => left.Equals(right);
+    public static bool operator !=(CryptoHash left, CryptoHash right) => !left.Equals(right);
 
     #endregion
 
@@ -56,16 +54,7 @@ namespace com.tinylabproductions.Cryptography {
 
     public int stringLength => stringLength_(kind);
 
-    public string asString() {
-      // Convert the encrypted bytes back to a string (base 16)
-      var sb = new StringBuilder();
-
-      for (var i = 0; i < bytes.Length; i++) {
-        sb.Append(Convert.ToString(bytes[i], 16).PadLeft(2, '0'));
-      }
-
-      return sb.ToString().PadLeft(stringLength, '0');
-    }
+    public string asString() => bytes.internalArray().asHexString().PadLeft(stringLength, '0');
 
     public static CryptoHash calculate(string s, Kind kind, Encoding encoding = null) =>
       calculate((encoding ?? Encoding.UTF8).GetBytes(s), kind);

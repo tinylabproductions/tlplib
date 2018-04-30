@@ -119,6 +119,8 @@ GameObject:
   m_Component:
   - component: {fileID: 110816172}
   - component: {fileID: 110816171}
+  - component: {fileID: 110816175}
+  - component: {fileID: 110816173}
   m_Layer: 0
   m_Name: New Sprite
   m_TagString: Untagged
@@ -180,6 +182,53 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &110816173
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 110816170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de621657b5b41e6a5ece7c9bd65b9ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 110816175}
+  _isRelative: 0
+  _start: {x: 0, y: 0, z: 0}
+  _end: {x: 1, y: 1, z: 1}
+  _duration: 1
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 110816172}
+--- !u!114 &110816175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 110816170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 874857abc69f43cb867a5cf037fb48cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _runMode: 0
+  _autoplay: 2
+  _time: 0
+  _looping:
+    _times_: 1
+    _mode: 0
+  _timeline:
+    _elements:
+    - _title: 3
+      _at: 0
+      _timeOffset: 0
+      _element: {fileID: 110816173}
+  _onStart: []
+  _onEnd: []
 --- !u!1 &726012321
 GameObject:
   m_ObjectHideFlags: 0

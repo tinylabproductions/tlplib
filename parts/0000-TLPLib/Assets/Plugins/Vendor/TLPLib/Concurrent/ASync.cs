@@ -175,23 +175,41 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
+    /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
     [PublicAPI]
-    public static Future<Either<ErrorMsg, UnityWebRequest>> toFuture(this UnityWebRequest req) {
-      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out var promise);
-      StartCoroutine(webRequestEnumerator(req, promise));
+    public static Future<Either<WebRequestError, A>> toFuture<A>(
+      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
+    ) {
+      var f = Future<Either<WebRequestError, A>>.async(out var promise);
+      StartCoroutine(webRequestEnumerator(req, promise, onSuccess));
       return f;
     }
 
     [PublicAPI]
-    public static IEnumerator webRequestEnumerator(
-      UnityWebRequest req, Promise<Either<ErrorMsg, UnityWebRequest>> p
+    public static Future<Either<ErrorMsg, A>> toFutureSimple<A>(
+      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
+    ) => req.toFuture(onSuccess).map(_ => _.mapLeft(err => err.simplify));
+
+    [PublicAPI]
+    public static IEnumerator webRequestEnumerator<A>(
+      UnityWebRequest req, Promise<Either<WebRequestError, A>> p,
+      Fn<UnityWebRequest, A> onSuccess
     ) {
       yield return req.Send();
       if (req.isError) {
-        p.complete(new ErrorMsg(req.error));
+        var msg = $"error: {req.error}, response code: {req.responseCode}";
+        p.complete(
+          req.responseCode == 0 && req.error == "Unknown Error"
+          ? new WebRequestError(new NoInternetError(msg))
+          : new WebRequestError(new ErrorMsg(msg))
+        );
         req.Dispose();
       }
-      else p.complete(req);
+      else {
+        var a = onSuccess(req);
+        req.Dispose();
+        p.complete(a);
+      }
     }
 
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
@@ -228,6 +246,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
+    /// <summary>Runs action forever every frame.</summary>
+    [PublicAPI]
+    public static IEnumerator everyFrameEnumerator(Action action) {
+      while (true) {
+        action();
+        yield return null;
+      }
+      // ReSharper disable once IteratorNeverReturns
+    }
+    
     public static IEnumerator NextFrameEnumerator(Action action) {
       yield return null;
       action();

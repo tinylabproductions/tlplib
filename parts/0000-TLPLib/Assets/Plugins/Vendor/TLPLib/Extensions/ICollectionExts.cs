@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ICollectionExts {
@@ -43,6 +44,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         .ToImmutableList(); // Force to update rng.
       rng = r;
       return result;
+    }
+    
+    [PublicAPI] 
+    public static IEnumerable<A> shuffleRepeatedly<A>(this ICollection<A> collection, Rng rng) {
+      var copy = collection.ToList();
+      while (true) {
+        copy.shuffle(ref rng);
+        foreach (var item in copy) {
+          yield return item;
+        }
+      }
     }
   }
 }

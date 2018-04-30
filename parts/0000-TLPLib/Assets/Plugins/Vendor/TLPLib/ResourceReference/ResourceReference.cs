@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
@@ -27,6 +28,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
   public static class ResourceReference {
 #if UNITY_EDITOR
+    [PublicAPI]
     public static SO create<SO, A>(string path, A reference)
       where SO : ResourceReference<A> where A : Object
     {
@@ -37,41 +39,39 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     }
 #endif
 
-    static string notFound(string path) => $"Resource not found: {path}";
-
-    public static Either<string, A> load<A>(PathStr loadPath) where A : Object {
-      var path = loadPath.unityPath;
-      var csr = Resources.Load<ResourceReference<A>>(path);
-      return csr
-        ? F.right<string, A>(csr.reference)
-        : F.left<string, A>(notFound(path));
+    static A getReferenceFromResource<A>(ResourceReference<A> resourceReference) where A : Object {
+      var reference = resourceReference.reference;
+      // When we try to load the resourceReference for the second time, we are getting a cached version 
+      // from the memory, not from the disk.
+      //
+      // This leads to scenarios, where you unload the referenced resource from memory and expect that
+      // loading ResourceReference will reload it back to the memory. But because the ResourceReference
+      // itself is still in the memory, Unity will happily give it back to you, with the broken reference
+      // inside of it.
+      //
+      // To make sure that the resourceReference and all it's dependencies gets reloaded from disk,
+      // we unload resourceReference here. This way, upon the next load, we are sure that it will not have
+      // a broken reference inside.
+      Resources.UnloadAsset(resourceReference);
+      return reference;
     }
 
-    public static Tpl<ResourceRequest, Future<Either<string, A>>> loadAsync<A>(
+    [PublicAPI]
+    public static Either<ErrorMsg, A> load<A>(PathStr loadPath) where A : Object => 
+      ResourceLoader.load<ResourceReference<A>>(loadPath).mapRight(getReferenceFromResource);
+
+    [PublicAPI]
+    public static Tpl<IAsyncOperation, Future<Either<ErrorMsg, A>>> loadAsync<A>(
       PathStr loadPath
-    ) where A : Object {
-      var path = loadPath.unityPath;
-      var request = Resources.LoadAsync<ResourceReference<A>>(path);
-      return F.t(request, Future<Either<string, A>>.async(
-        p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
-      ));
-    }
+    ) where A : Object =>
+      ResourceLoader.loadAsync<ResourceReference<A>>(loadPath)
+        .map2(future => future.mapT(getReferenceFromResource));
 
-    public static Tpl<ResourceRequest, Future<A>> loadAsyncIgnoreErrors<A>(
+    [PublicAPI]
+    public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
       PathStr loadPath, bool logOnError = true
     ) where A : Object =>
-      loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
-
-    public static IEnumerator waitForLoadCoroutine<A>(
-      ResourceRequest request, Action<Either<string, A>> whenDone, string path
-    ) where A : Object {
-      yield return request;
-      var csr = (ResourceReference<A>) request.asset;
-      whenDone(
-        csr
-        ? F.right<string, A>(csr.reference)
-        : F.left<string, A>(notFound(path))
-      );
-    }
+      ResourceLoader.loadAsyncIgnoreErrors<ResourceReference<A>>(loadPath, logOnError)
+        .map2(future => future.map(getReferenceFromResource));
   }
 }
