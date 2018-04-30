@@ -28,13 +28,15 @@ namespace com.tinylabproductions.TLPLib.Platform {
 #endif
 #if !UNITY_5_4_OR_NEWER
         RuntimePlatform.OSXWebPlayer,
-        RuntimePlatform.OSXDashboardPlayer,
         RuntimePlatform.BlackBerryPlayer,
         RuntimePlatform.WindowsWebPlayer,
 #endif
 #if !UNITY_5_5_OR_NEWER
         RuntimePlatform.PS3,
         RuntimePlatform.XBOX360,
+#endif
+#if !UNITY_2017_3_OR_NEWER
+        RuntimePlatform.OSXDashboardPlayer,
 #endif
       }
     );

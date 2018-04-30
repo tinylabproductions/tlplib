@@ -52,6 +52,8 @@ namespace Smooth.Platform {
 			case RuntimePlatform.OSXPlayer:
 #if !UNITY_5_4_OR_NEWER
 			case RuntimePlatform.OSXWebPlayer:
+#endif
+#if !UNITY_2017_3_OR_NEWER
 			case RuntimePlatform.OSXDashboardPlayer:
 #endif
 				return BasePlatform.Osx;
