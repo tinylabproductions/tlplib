@@ -230,7 +230,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         () => view.logEntry.prefab.clone()
       ));
 
-      var cache = new List<VerticalLayoutLogEntry.Data>();
+      var cache = new List<string>();
       var layout = new DynamicVerticalLayout.Init(
         view.dynamicLayout,
         // ReSharper disable once InconsistentlySynchronizedField
@@ -299,30 +299,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return button;
     }
 
-    static void distributeText(
-      string text, int charCount, Color color, List<VerticalLayoutLogEntry.Data> resultsTo
-    ) {
-      resultsTo.Clear();
-      while (true) {
-        var mod = text.Length % charCount;
-        if (text.Length > charCount) {
-          var lineLength = mod != 0 ? mod : charCount; 
-          var lineText = text.Substring(text.Length - lineLength, lineLength);
-          resultsTo.Add(new VerticalLayoutLogEntry.Data(lineText, color));
-          text = text.Substring(0, text.Length - lineLength);
-          continue;
-        }
-        else {
-          resultsTo.Add(new VerticalLayoutLogEntry.Data(text, color));
-        }
-
-        break;
-      }
-    }
-
     static IEnumerable<DynamicVerticalLayoutLogElementData> createEntries(
       LogEntry data, GameObjectPool<VerticalLayoutLogEntry> pool,
-      List<VerticalLayoutLogEntry.Data> cache, float lineWidth
+      List<string> cache, float lineWidth
     ) {
       string typeToString(LogType t) {
         switch (t) {
@@ -350,15 +329,17 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var shortText = $"{DateTime.Now:hh:mm:ss}{typeToString(data.type)} {data.message}";
       var charCount = Mathf.RoundToInt(lineWidth / 11);
 
-      distributeText(shortText, charCount, typeToColor(data.type), cache);
-      foreach (var e in cache) {
-        yield return new DynamicVerticalLayoutLogElementData(pool, e);
+      var color = typeToColor(data.type);
+      shortText.distributeText(charCount, cache);
+      for (var idx = cache.Count - 1; idx >= 0; idx--) {
+        var e = cache[idx];
+        yield return new DynamicVerticalLayoutLogElementData(pool, new VerticalLayoutLogEntry.Data(e, color));
       }
     }
     
     Application.LogCallback onLogMessageReceived(
       GameObjectPool<VerticalLayoutLogEntry> pool,
-      List<VerticalLayoutLogEntry.Data> resultsTo
+      List<string> resultsTo
     ) {
       return (message, stackTrace, type) => {
         foreach (var instance in current) {

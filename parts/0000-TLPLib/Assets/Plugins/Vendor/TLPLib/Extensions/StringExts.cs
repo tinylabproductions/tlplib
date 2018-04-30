@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class StringExts {
@@ -215,5 +216,49 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var indent = idx == 0 && indentFirst || idx != 0 ? indentWith.repeat(indents) : "";
       return $"{indent}{line}";
     });
+    
+    /// <summary>
+    /// Split text into lines so that each line would be at most <see cref="charCount"/> characters long.
+    /// </summary>
+    [PublicAPI]
+    public static void distributeText(
+      this string text, int charCount, List<string> resultsTo
+    ) {
+      resultsTo.Clear();
+      if (text.isEmpty()) {
+        resultsTo.Add(text);
+        return;
+      }
+      
+      var currentIndex = 0;
+      int remainderLength() => text.Length - currentIndex;
+      while (currentIndex < text.Length) {
+        var lineLength = Math.Min(charCount, remainderLength()); 
+        switch (text.IndexOf('\n', currentIndex, lineLength)) {
+          case -1:
+            if (remainderLength() > charCount) {
+              var lineText = text.Substring(currentIndex, lineLength);
+              resultsTo.Add(lineText);
+              currentIndex += lineLength;
+            }
+            else {
+              resultsTo.Add(currentIndex == 0 ? text : text.Substring(currentIndex));
+              currentIndex = text.Length;
+            }
+            break;
+          case var idx:
+            resultsTo.Add(text.Substring(currentIndex, idx - currentIndex));
+            currentIndex = idx + 1;
+            break;
+        }
+      }
+    }
+
+    [PublicAPI]
+    public static List<string> distributeText(this string text, int charCount) {
+      var list = new List<string>();
+      text.distributeText(charCount, list);
+      return list;
+    }
   }
 }
