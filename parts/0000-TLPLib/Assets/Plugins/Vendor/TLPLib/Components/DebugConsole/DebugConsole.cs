@@ -70,6 +70,17 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var r = registrarFor(nameof(DConsole));
       r.register("Self-test", () => "self-test");
       r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s"));
+      
+      void clearVisibleLog() {
+        foreach (var i in instance.current) {
+          i.dynamicVerticalLayout.clearLayoutData();
+        }
+      }
+      r.register("Clear visible log", clearVisibleLog);
+      r.register("Clear saved log", () => {
+        logEntries.Clear();
+        clearVisibleLog();
+      });
     }
 
     public delegate void OnShow(DConsole console);

@@ -140,9 +140,16 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       /// <param name="updateLayout">
       /// pass false and then call <see cref="updateLayout"/> manually when doing batch updates
       /// </param>
+      [PublicAPI]
       public void appendDataIntoLayoutData(IElementData element, bool updateLayout = true) {       
         layoutData.Add(element);
         if (updateLayout) this.updateLayout();
+      }
+
+      [PublicAPI]
+      public void clearLayoutData() {
+        layoutData.Clear();
+        updateLayout();
       }
       
       void clearLayout() {
