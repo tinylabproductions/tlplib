@@ -14,6 +14,7 @@ using UnityEngine.EventSystems;
 namespace com.tinylabproductions.TLPLib.Components.ui {
   public class Carousel : Carousel<CarouselGameObject> {
     public enum Direction : byte { Horizontal = 0, Vertical = 1 }
+    public enum Mode : byte { Regular = 0, Loopable = 1, Immovable = 2 }
   }
 
   public interface ICarouselItem {
@@ -32,18 +33,43 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       OtherPagesItemsScale = 1,
       AdjacentToSelectedPageItemsScale = 1,
       moveCompletedEventThreshold = 0.02f;
-    public bool wrapCarouselAround, whenNotLoopableMove = true;
+    // mode1: no looping, z significant
+    // mode2: looping, z significant only if elems < _minElementsForWraparound
+    public bool wrapCarouselAround;
+    [
+      SerializeField,
+      Tooltip(
+        "If wraparound is enabled, how many elements do we have to have in the carousel " +
+        "to start wrapping around? This is needed, because if, for example, we only have 2 " +
+        "elements and they fit into the screen, user can see the wraparound moving the elements " +
+        "in the view."
+      )
+    ] int _minElementsForWraparound = 5;
+    [SerializeField] bool xujPajmioshKaCheDaro = true;
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
-    // There's still a visual issue when all items fits into selection window
-    [SerializeField] float selectionWindowWidth;
+    // FIXME: There's still a visual issue when all items fits into selection window
+    // for example when selection window width is 500 and you have 3 elements of width 100. 
+    [
+      SerializeField, 
+      Tooltip(
+        "Width of a window for selection from the center of a carousel.\n" +
+        "\n" +
+        "When a new element is selected, its center will be moved so that it is within the " +
+        "selection window. For example, if the window width is 0 then the selected element will " +
+        "always be centered. If it will be 100, the selected element center point will always be " +
+        "between x [-50; 50]."
+      )
+    ] float selectionWindowWidth;
+
+    protected override void OnValidate() {
+      selectionWindowWidth = Math.Max(selectionWindowWidth, 0);
+    }
 #pragma warning restore 649
 
     #endregion
-
-    public Option<int> maxElementsFromCenterOpt => maxElementsFromCenter.value;
 
     readonly List<A> elements = new List<A>();
 
@@ -65,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
-    bool loopable => wrapCarouselAround && elements.Count > 4;
+    bool loopable => wrapCarouselAround && elements.Count >= _minElementsForWraparound;
 
     readonly RxRef<int> _page = new RxRef<int>(0);
     public IRxVal<int> page => _page;
@@ -197,7 +223,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         var t = elements[idx].gameObject.transform;
 
-        var pivot = (loopable || whenNotLoopableMove) ? pivotState : -(elementsCount - 1) / 2f + currentPosition;
+        var pivot = loopable || xujPajmioshKaCheDaro ? pivotState : -(elementsCount - 1) / 2f + currentPosition;
 
         t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivot * SpaceBetweenSelectedAndAdjacentPages);
 
@@ -275,23 +301,36 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public void OnDrawGizmosSelected() {
       Gizmos.color = Color.blue;
-      var halfOfSelectionWindow = selectionWindowWidth / 2;
+      var rectTransform = (RectTransform) transform;
       var lineLength =
         _direction == Carousel.Direction.Horizontal
-          ? ((RectTransform)transform).rect.height
-          : ((RectTransform)transform).rect.width;
+          ? rectTransform.rect.height
+          : rectTransform.rect.width;
+      var halfOfSelectionWindow = selectionWindowWidth / 2;
       var halfLineLength = lineLength / 2;
 
       Vector3 t(Vector3 v) => transform.TransformPoint(v);
 
       switch (_direction) {
         case Carousel.Direction.Horizontal:
-          Gizmos.DrawLine(t(new Vector3(-halfOfSelectionWindow, -halfLineLength)), t(new Vector3(-halfOfSelectionWindow, halfLineLength)));
-          Gizmos.DrawLine(t(new Vector3(halfOfSelectionWindow, -halfLineLength)), t(new Vector3(halfOfSelectionWindow, halfLineLength)));
+          Gizmos.DrawLine(
+            t(new Vector3(-halfOfSelectionWindow, -halfLineLength)), 
+            t(new Vector3(-halfOfSelectionWindow, halfLineLength))
+          );
+          Gizmos.DrawLine(
+            t(new Vector3(halfOfSelectionWindow, -halfLineLength)), 
+            t(new Vector3(halfOfSelectionWindow, halfLineLength))
+          );
           break;
         case Carousel.Direction.Vertical:
-          Gizmos.DrawLine(t(new Vector3(-halfLineLength, -halfOfSelectionWindow)), t(new Vector3(halfLineLength, -halfOfSelectionWindow)));
-          Gizmos.DrawLine(t(new Vector3(-halfLineLength, halfOfSelectionWindow)), t(new Vector3(halfLineLength, halfOfSelectionWindow)));
+          Gizmos.DrawLine(
+            t(new Vector3(-halfLineLength, -halfOfSelectionWindow)), 
+            t(new Vector3(halfLineLength, -halfOfSelectionWindow))
+          );
+          Gizmos.DrawLine(
+            t(new Vector3(-halfLineLength, halfOfSelectionWindow)), 
+            t(new Vector3(halfLineLength, halfOfSelectionWindow))
+          );
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
