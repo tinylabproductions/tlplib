@@ -17,11 +17,10 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public static class IPrefValueBackendExts {
-    // uncheked because :
-    // 1. We do not store large numbers
-    // 2. Uint has the same width as int.
+    // Uint has the same width as int.
     // This way we can store large uint which is stored as negative int.
     // And when we want to get it, we just cast it back to uint.
+    // uncheked because we do not store more than MAX_UINT value.
     public static uint getUInt(
       this IPrefValueBackend backend, string name, uint defaultValue
     ) =>
