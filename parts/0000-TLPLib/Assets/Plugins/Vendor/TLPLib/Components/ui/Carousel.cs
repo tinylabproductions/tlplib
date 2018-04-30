@@ -14,7 +14,6 @@ using UnityEngine.EventSystems;
 namespace com.tinylabproductions.TLPLib.Components.ui {
   public class Carousel : Carousel<CarouselGameObject> {
     public enum Direction : byte { Horizontal = 0, Vertical = 1 }
-    public enum Mode : byte { Regular = 0, Loopable = 1, Immovable = 2 }
   }
 
   public interface ICarouselItem {
@@ -33,9 +32,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       OtherPagesItemsScale = 1,
       AdjacentToSelectedPageItemsScale = 1,
       moveCompletedEventThreshold = 0.02f;
-    // mode1: no looping, z significant
-    // mode2: looping, z significant only if elems < _minElementsForWraparound
     public bool wrapCarouselAround;
+    bool wrapableAround => wrapCarouselAround;
     [
       SerializeField,
       Tooltip(
@@ -43,9 +41,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         "to start wrapping around? This is needed, because if, for example, we only have 2 " +
         "elements and they fit into the screen, user can see the wraparound moving the elements " +
         "in the view."
-      )
+      ),
+      Inspect(nameof(wrapableAround))
     ] int _minElementsForWraparound = 5;
-    [SerializeField] bool xujPajmioshKaCheDaro = true;
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
@@ -98,6 +96,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     readonly LazyVal<IRxRef<Option<A>>> __currentElement;
     public IRxVal<Option<A>> currentElement => __currentElement.strict;
+
+    public readonly IRxRef<bool> freezeCarouselMovement = RxRef.a(false);
 
     void updateCurrentElement() {
       if (__currentElement.isCompleted) {
@@ -192,7 +192,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
       pivotState = clampedPivot;
 
-
       float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotState);
 
       for (var idx = 0; idx < elements.Count; idx++) {
@@ -223,7 +222,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         var t = elements[idx].gameObject.transform;
 
-        var pivot = loopable || xujPajmioshKaCheDaro ? pivotState : -(elementsCount - 1) / 2f + currentPosition;
+        var pivot = freezeCarouselMovement.value || !loopable ? -(elementsCount - 1) / 2f + currentPosition : pivotState;
 
         t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivot * SpaceBetweenSelectedAndAdjacentPages);
 
