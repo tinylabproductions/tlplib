@@ -7,7 +7,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
   public static class BuildTargetExts {
     public static RuntimePlatform toRuntimePlatform(this BuildTarget t) {
       switch (t) {
-        case BuildTarget.StandaloneOSXUniversal:
         case BuildTarget.StandaloneOSXIntel:
         case BuildTarget.StandaloneOSXIntel64:
           return RuntimePlatform.OSXPlayer;
@@ -43,6 +42,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.XBOX360: return RuntimePlatform.XBOX360;
         case BuildTarget.Nintendo3DS:
 #endif
+#if UNITY_2017_3_OR_NEWER
+        case BuildTarget.StandaloneOSX: return RuntimePlatform.OSXPlayer;
+#else
+        case BuildTarget.StandaloneOSXUniversal: return RuntimePlatform.OSXPlayer;
+#endif
         case BuildTarget.WSAPlayer:
           throw new ArgumentOutOfRangeException(
             nameof(t), t, $"Can't convert to {nameof(RuntimePlatform)}"
@@ -57,7 +61,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
 
     public static BuildTargetGroup toGroup(this BuildTarget t) {
       switch (t) {
-        case BuildTarget.StandaloneOSXUniversal: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneOSXIntel: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows: return BuildTargetGroup.Standalone;
         case BuildTarget.iOS: return BuildTargetGroup.iOS;
@@ -90,6 +93,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.PS3: return BuildTargetGroup.PS3;
         case BuildTarget.XBOX360: return BuildTargetGroup.XBOX360;
         case BuildTarget.Nintendo3DS: return BuildTargetGroup.Nintendo3DS;
+#endif
+#if UNITY_2017_3_OR_NEWER
+        case BuildTarget.StandaloneOSX: return BuildTargetGroup.Standalone;
+#else
+        case BuildTarget.StandaloneOSXUniversal: return BuildTargetGroup.Standalone;
 #endif
         default:
           throw new ArgumentOutOfRangeException(

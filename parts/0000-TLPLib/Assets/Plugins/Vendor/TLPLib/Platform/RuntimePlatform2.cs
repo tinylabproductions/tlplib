@@ -9,7 +9,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.OSXEditor, RuntimePlatform.OSXPlayer,
         RuntimePlatform.LinuxPlayer,
         RuntimePlatform.Android, RuntimePlatform.IPhonePlayer,
-        RuntimePlatform.OSXDashboardPlayer,
         RuntimePlatform.Android,
         RuntimePlatform.LinuxPlayer,
         RuntimePlatform.WebGLPlayer,
@@ -29,6 +28,7 @@ namespace com.tinylabproductions.TLPLib.Platform {
 #endif
 #if !UNITY_5_4_OR_NEWER
         RuntimePlatform.OSXWebPlayer,
+        RuntimePlatform.OSXDashboardPlayer,
         RuntimePlatform.BlackBerryPlayer,
         RuntimePlatform.WindowsWebPlayer,
 #endif
