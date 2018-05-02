@@ -105,7 +105,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    float currentPosition, pivotState;
+    /// Page position between previously selected page index and <see cref="targetPageValue"/>
+    float currentPosition;
+
+    float pivotFromCenter;
 
     int targetPageValue;
     public bool isMoving { get; private set; }
@@ -131,16 +134,18 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     /// <summary>Set page with smooth animations.</summary>
-    public void setPageAnimated(int page) {
+    public void setPageAnimated(int targetPage) {
       if (elements.isEmpty()) return;
-      var current = page - _page.value;
+      var current = targetPage - _page.value;
+
+      // Searches for shortest travel distance towards targetPage
       void findBestPage(int p) {
-        if (Math.Abs(p + pivotState) <= Math.Abs(current + pivotState)) {
+        if (Math.Abs(p + pivotFromCenter) <= Math.Abs(current + pivotFromCenter)) {
           current = p;
         }
       }
-      findBestPage(page - _page.value - elementsCount);
-      findBestPage(page - _page.value + elementsCount);
+      findBestPage(targetPage - _page.value - elementsCount);
+      findBestPage(targetPage - _page.value + elementsCount);
       movePagesByAnimated(current);
     }
 
@@ -177,25 +182,30 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
       var posDiff = currentPosition - prevPos;
 
-      while (currentPosition > elementsCount) {
-        currentPosition -= elementsCount;
-        targetPageValue -= elementsCount;
+      // Position is kept between 0 and elementsCount to
+      // prevent scrolling multiple times if targetPageValue is something like 100 but we only have 5 elements
+      {
+        while (currentPosition > elementsCount) {
+          currentPosition -= elementsCount;
+          targetPageValue -= elementsCount;
+        }
+
+        while (currentPosition < 0) {
+          currentPosition += elementsCount;
+          targetPageValue += elementsCount;
+        }
       }
 
-      while (currentPosition < 0) {
-        currentPosition += elementsCount;
-        targetPageValue += elementsCount;
-      }
+      var itemCountFittingToWindow = selectionWindowWidth / SpaceBetweenOtherPages;
+      pivotFromCenter = Mathf.Clamp(pivotFromCenter + posDiff, -itemCountFittingToWindow / 2, itemCountFittingToWindow / 2);
+      var pivot = freezeCarouselMovement.value ? -(elementsCount - 1) / 2f + currentPosition : pivotFromCenter;
 
-      var clampedPivot = Mathf.Clamp(pivotState + posDiff,
-        -selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages,
-        selectionWindowWidth / 2 / SpaceBetweenSelectedAndAdjacentPages);
-      pivotState = clampedPivot;
-
-      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotState);
+      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotFromCenter);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
+
+        // Calculate element's position closest to pivot
         if (loopable) {
           var best = calcDeltaPosAbs(idx, elementPos);
           void findBestElementPos(float newElementPos) {
@@ -222,9 +232,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
         var t = elements[idx].gameObject.transform;
 
-        var pivot = freezeCarouselMovement.value || !loopable ? -(elementsCount - 1) / 2f + currentPosition : pivotState;
-
-        t.localPosition = getPosition(_direction, deltaPos * sign, indexDiff, selectedPageOffset, pivot * SpaceBetweenSelectedAndAdjacentPages);
+        t.localPosition =
+          getPosition(
+            _direction,
+            deltaPos * sign,
+            indexDiff,
+            selectedPageOffset,
+            pivot * SpaceBetweenSelectedAndAdjacentPages
+          );
 
         t.localScale = Vector3.one * (indexDiff < 1
           ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
