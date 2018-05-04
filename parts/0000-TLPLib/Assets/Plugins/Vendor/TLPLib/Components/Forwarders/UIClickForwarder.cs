@@ -1,5 +1,8 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using System;
+using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
@@ -16,4 +19,6 @@ namespace com.tinylabproductions.TLPLib.Components {
       _onClick = new Subject<Unit>();
     }
   }
+
+  [Serializable, PublicAPI] public class UIClickForwarderPrefab : TagPrefab<UIClickForwarder> {}
 }
