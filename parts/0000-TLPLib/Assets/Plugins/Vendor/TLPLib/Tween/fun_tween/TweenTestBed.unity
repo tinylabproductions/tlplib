@@ -216,14 +216,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _runMode: 0
-  _autoplay: 1
+  _autoplay: 2
   _time: 0
   _looping:
     _times_: 1
     _mode: 0
   _timeline:
     _elements:
-    - _title: 
+    - _title: 3
       _at: 0
       _timeOffset: 0
       _element: {fileID: 110816173}

@@ -68,6 +68,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     /// decide this from <see cref="previousTimePassed"/> and <see cref="timePassed"/>, however
     /// we can not when they are both equal, thus we need to be passed this from the outside.
     /// </param>
+    [PublicAPI]
     public A eval(float previousTimePassed, float timePassed, bool playingForwards) {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (duration == 0) {
@@ -76,8 +77,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
           : (isRelative ? diff(start, end) : start);
       }
       else {
-        A evalAt(float t) => lerp(start, end, ease(t / duration));
-        
         var current = evalAt(timePassed);
         if (isRelative) {
           var previous = evalAt(previousTimePassed);
@@ -88,6 +87,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         }
       }
     }
+    
+    /// <summary>Evaluates absolute <see cref="A"/> value at a given time.</summary>
+    [PublicAPI]
+    public A evalAt(float time) => lerp(start, end, ease(time / duration));
 
     public override string ToString() =>
       $"{nameof(Tween)}[from {start} to {end} over {duration}s]";

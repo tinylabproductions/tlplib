@@ -1,5 +1,6 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
@@ -11,11 +12,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
   [AdvancedInspector(true)]
-  public class FunTweenManager : MonoBehaviour, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
+  public class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
     enum Tab { Fields, Actions }
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
+    // ReSharper disable once UnusedMember.Local
+    enum AutoplayMode : byte {
+      Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3 
+    }
 
+    [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
+    float timePassed => _manager == null ? -1 : _manager.timeline.timePassed;
+    [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
+    uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
+    [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
+    float timescale => _manager == null ? -1 : _manager.timescale;
+    
     [
       SerializeField, Tab(Tab.Fields),
       Help(
@@ -24,7 +36,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         "Global mode continues to run the tween even if irrespective of this game objects state."
       )
     ] RunMode _runMode = RunMode.Local;
-    [SerializeField, Tab(Tab.Fields)] bool _autoplay = true;
+    [
+      SerializeField, Tab(Tab.Fields),
+      Help(
+        HelpType.Info,
+        "Modes:\n" +
+        "- " + nameof(AutoplayMode.Disabled) + ": does nothing.\n" +
+        "- " + nameof(AutoplayMode.Enabled) + ": starts playing forwards upon enabling this game object. Pauses upon " +
+        "disabling game object, resumes when it is enabled again.\n" +
+        "- " + nameof(AutoplayMode.ApplyZeroStateOnStart) + ": when this script receives Unity Start callback, " +
+        "sets all the properties of non-relatively tweened objects like it was zeroth second in the timeline.\n" +
+        "- " + nameof(AutoplayMode.ApplyEndStateOnStart) + ": same, but sets the last second state."
+      )
+    ] AutoplayMode _autoplay = AutoplayMode.Enabled;
     [SerializeField, Tab(Tab.Fields)] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
     [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenTimeline _timeline;
@@ -36,6 +60,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
+          if (Log.d.isDebug()) Log.d.debug($"Creating {nameof(TweenManager)} for {this}", this);
           var tm = new TweenManager(_timeline.timeline, _time, _looping);
           foreach (var cb in _onStart) tm.addOnStartCallback(cb.callback.callback);
           foreach (var cb in _onEnd) tm.addOnEndCallback(cb.callback.callback);
@@ -48,8 +73,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
     bool lastStateWasPlaying;
 
+    public void Start() {
+      // Create manager on start.
+      manager.forSideEffects();
+      handleStartAutoplay();
+    }
+
+    void handleStartAutoplay() {
+      if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();
+      else if (_autoplay == AutoplayMode.ApplyEndStateOnStart) applyMaxDurationState();
+    }
+
     public void OnEnable() {
-      if (_autoplay) playForwards();
+      if (_autoplay == AutoplayMode.Enabled) playForwards();
       else if (_runMode == RunMode.Local && lastStateWasPlaying) resume();
     }
 
@@ -102,6 +138,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       manager.rewind(applyEffectsForRelativeTweens: false);
     [Inspect, Tab(Tab.Actions)] void rewindWithEffectsForRelative() => 
       manager.rewind(applyEffectsForRelativeTweens: true);
+    
+    [Inspect, Tab(Tab.Actions)] void applyZeroState() =>
+      manager.timeline.applyStateAt(0);
+    [Inspect, Tab(Tab.Actions)] void applyMaxDurationState() =>
+      manager.timeline.applyStateAt(manager.timeline.duration);
 
 #if UNITY_EDITOR
     [Inspect, UsedImplicitly, Tab(Tab.Fields)]
@@ -116,7 +157,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       lastStateWasPlaying = false;
       _timeline.invalidate();
       _manager = null;
-      if (_autoplay) manager.play();
+      handleStartAutoplay();
+      if (_autoplay == AutoplayMode.Enabled) manager.play();
     }
     
     public enum Action : byte {
@@ -128,7 +170,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       Stop = 5, 
       Reverse = 6, 
       Rewind = 7, 
-      RewindWithEffectsForRelative = 8
+      RewindWithEffectsForRelative = 8,
+      ApplyZeroState = 9,
+      ApplyMaxDurationState = 10
     }
     [PublicAPI] public void run(Action action) {
       switch (action) {
@@ -158,6 +202,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
           break;
         case Action.RewindWithEffectsForRelative:
           rewindWithEffectsForRelative();
+          break;
+        case Action.ApplyZeroState:
+          applyZeroState();
+          break;
+        case Action.ApplyMaxDurationState:
+          applyMaxDurationState();
           break;
         default:
           Log.d.error($"Unknown action {action} for {nameof(FunTweenManager)}");

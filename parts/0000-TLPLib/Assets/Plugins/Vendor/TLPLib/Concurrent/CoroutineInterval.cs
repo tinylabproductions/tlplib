@@ -39,8 +39,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return curTime <= ci.endTime;
       }
 
-      public void Reset() { }
-
       public Percentage Current =>
         new Percentage(Mathf.InverseLerp(ci.startTime.seconds, ci.endTime.seconds, curTime.seconds));
     }
