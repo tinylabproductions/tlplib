@@ -108,6 +108,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// Page position between previously selected page index and <see cref="targetPageValue"/>
     float currentPosition;
 
+    /// Pivot is measured in page units. One page width is <see cref="SpaceBetweenSelectedAndAdjacentPages"/>
     float pivotFromCenter;
 
     int targetPageValue;
