@@ -108,8 +108,21 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// Page position between previously selected page index and <see cref="targetPageValue"/>
     float currentPosition;
 
-    /// Pivot is measured in page units. One page width is <see cref="SpaceBetweenSelectedAndAdjacentPages"/>
-    float pivotFromCenter;
+    /// A <see cref="Carousel"/> has two center points.
+    /// * real one, determined by the game objects position.
+    /// * logical one, which determines around which point all the items should be positioned.
+    ///
+    /// This specifies an offset, that is measured in pages, from the real center point, where
+    /// the logical center point is. 
+    ///
+    /// If <see cref="selectionWindowWidth"/> is 0, this is always 0, as logical carousel center is always
+    /// in the same point as real carousel center point.
+    ///
+    /// Otherwise this might drift so that the logical point ends up within half of
+    /// <see cref="selectionWindowWidth"/>.
+    /// 
+    /// One page width is <see cref="SpaceBetweenSelectedAndAdjacentPages"/>
+    float centerPointOffset;
 
     int targetPageValue;
     public bool isMoving { get; private set; }
@@ -141,7 +154,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       // Searches for shortest travel distance towards targetPage
       void findBestPage(int p) {
-        if (Math.Abs(p + pivotFromCenter) <= Math.Abs(current + pivotFromCenter)) {
+        if (Math.Abs(p + centerPointOffset) <= Math.Abs(current + centerPointOffset)) {
           current = p;
         }
       }
@@ -181,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       var prevPos = currentPosition;
       currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
-      var posDiff = currentPosition - prevPos;
+      var positionDelta = currentPosition - prevPos;
 
       // Position is kept between 0 and elementsCount to
       // prevent scrolling multiple times if targetPageValue is something like 100 but we only have 5 elements
@@ -198,10 +211,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
 
       var itemCountFittingToWindow = selectionWindowWidth / SpaceBetweenOtherPages;
-      pivotFromCenter = Mathf.Clamp(pivotFromCenter + posDiff, -itemCountFittingToWindow / 2, itemCountFittingToWindow / 2);
-      var pivot = freezeCarouselMovement.value ? -(elementsCount - 1) / 2f + currentPosition : pivotFromCenter;
+      centerPointOffset = Mathf.Clamp(
+        value: centerPointOffset + positionDelta, 
+        min: -itemCountFittingToWindow / 2, 
+        max: itemCountFittingToWindow / 2
+      );
+      var pivot = freezeCarouselMovement.value ? -(elementsCount - 1) / 2f + currentPosition : centerPointOffset;
 
-      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + pivotFromCenter);
+      float calcDeltaPosAbs(int idx, float elementPos) => Mathf.Abs(idx - elementPos + centerPointOffset);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
