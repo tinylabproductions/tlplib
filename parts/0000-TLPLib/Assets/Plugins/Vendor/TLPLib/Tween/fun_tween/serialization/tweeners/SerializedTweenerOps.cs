@@ -1,4 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.targets;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,8 +17,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     }
 
     public static class Extract {
-      public static readonly Extract<Color, Unit> globalFogColor = _ => RenderSettings.fogColor;
-      public static readonly Extract<float, Unit> globalFogDensity = _ => RenderSettings.fogDensity;
+      public static readonly Extract<Color, GlobalTweenTargets> globalFogColor = _ => RenderSettings.fogColor;
+      public static readonly Extract<float, GlobalTweenTargets> globalFogDensity = _ => RenderSettings.fogDensity;
       public static readonly Extract<Color, Graphic> graphicColor = _ => _.color;
       public static readonly Extract<float, Graphic> graphicColorAlpha = _ => _.color.a;
       public static readonly Extract<float, Image> imageFillAmount = _ => _.fillAmount;

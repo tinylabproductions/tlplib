@@ -1,12 +1,12 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.targets;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [AddComponentMenu("")]
-  public class Global_FogColor : SerializedTweener<Color, Unit> {
+  public class Global_FogColor : SerializedTweener<Color, GlobalTweenTargets> {
     public Global_FogColor() : base(
       TweenOps.color, SerializedTweenerOps.Add.color, SerializedTweenerOps.Extract.globalFogColor, 
-      TweenMutators.globalFogColor, Defaults.color
+      GlobalTweenTargets.globalFogColor, Defaults.color
     ) { }
   }
 }
