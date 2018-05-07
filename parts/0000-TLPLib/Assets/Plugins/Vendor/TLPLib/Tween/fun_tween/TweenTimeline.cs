@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -31,12 +32,25 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       float previousTimePassed, float timePassed, bool playingForwards, 
       bool applyEffectsForRelativeTweens
     );
+
+    // Not an option for performance.
+    bool asApplyStateAt(out IApplyStateAt applyStateAt);
+  }
+
+  public interface IApplyStateAt {
+    /// <summary>
+    /// Applies absolute <see cref="Tweener{A,T}"/>s at a given time.
+    ///
+    /// Useful to force object states into those, which would be if tween was playing at
+    /// some time, for example - 0s.
+    /// </summary>
+    void applyStateAt(float time);
   }
 
   /// <summary>
   /// <see cref="TweenTimelineElement"/>s arranged in time.
   /// </summary>
-  public interface ITweenTimeline : TweenTimelineElement {
+  public interface ITweenTimeline : TweenTimelineElement, IApplyStateAt {
     /// <summary>Calls <see cref="setTimePassed"/> applying effects for relative tweens.</summary>
     float timePassed { get; set; }
     
@@ -144,6 +158,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       lastDirectionWasForwards = playingForwards;
     }
 
+    public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
+      applyStateAt = this;
+      return true;
+    }
+
+    public void applyStateAt(float time) {
+      foreach (var effect in effects) {
+        if (
+          time >= effect.startsAt  
+          && time <= effect.endsAt 
+          && effect.element.asApplyStateAt(out var stateEffect)
+        ) {
+          stateEffect.applyStateAt(effect.relativize(time));          
+        }
+      }
+    }
+    
     public class Builder {
       [PublicAPI] public float totalDuration { get; private set; }
       readonly List<Effect> effects = new List<Effect>();
@@ -240,6 +271,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         playingForwards: !playingForwards,
         applyEffectsForRelativeTweens: applyEffectsForRelativeTweens
       );
+
+    public bool asApplyStateAt(out IApplyStateAt applyStateAt) => original.asApplyStateAt(out applyStateAt);
+    public void applyStateAt(float time) => original.applyStateAt(original.duration - time);
 
     public void setTimePassed(float timePassed, bool applyEffectsForRelativeTweens) =>
       original.setTimePassed(original.duration - timePassed, applyEffectsForRelativeTweens);
