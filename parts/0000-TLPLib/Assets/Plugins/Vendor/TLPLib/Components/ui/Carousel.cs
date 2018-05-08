@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     GameObject gameObject { get; }
   }
 
-  public class Carousel<A> : UIBehaviour, IMB_Update, IMB_OnDrawGizmosSelected where A : ICarouselItem {
+  public class Carousel<A> : UIBehaviour, IMB_Update, IMB_OnDrawGizmosSelected, IMB_OnValidate where A : ICarouselItem {
 
     #region Unity Serialized Fields
 
@@ -77,7 +77,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       )
     ] float selectionWindowWidth;
 
-    protected override void OnValidate() {
+    /// <see cref="UIBehaviour.OnValidate"/> disappears in non-editor UnityEngine.dll.
+    /// Therefore we have our own implementation here. Amazing.
+    public new void OnValidate() {
       selectionWindowWidth = Math.Max(selectionWindowWidth, 0);
     }
 #pragma warning restore 649
