@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   public class ActiveInstanceTracker<A> {
     readonly HashSet<A> _active = new HashSet<A>();
     readonly List<A> pendingEnables = new List<A>(), pendingDisables = new List<A>();
-    
+
     readonly Subject<A> 
       _onEnabled = new Subject<A>(),
       _onDisabled = new Subject<A>();
@@ -32,7 +32,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     // help us out here, but it would generate object instances on every object enable/disable,
     // which is suboptimal.
     bool iterating;
-    
+
+    [PublicAPI] public IEnumerable<A> active => _active;
+
     [PublicAPI] public void onEnable(A a) {
       if (iterating) {
         pendingEnables.Add(a);
