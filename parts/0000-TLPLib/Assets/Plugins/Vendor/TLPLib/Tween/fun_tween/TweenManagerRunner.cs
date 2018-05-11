@@ -12,16 +12,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// </summary>
   [AddComponentMenu("")]
   public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
-    [PublicAPI] public static readonly TweenManagerRunner instance;
-    [PublicAPI] public UnityPhase phase { get; private set; }
+    static TweenManagerRunner _instance;
+    [PublicAPI] public static TweenManagerRunner instance {
+      get {
+        TweenManagerRunner create() {
+          var go = new GameObject(nameof(TweenManagerRunner));
+          DontDestroyOnLoad(go);
+          return go.AddComponent<TweenManagerRunner>();
+        }
 
-    static TweenManagerRunner() {
-      if (instance == null) {
-        var go = new GameObject(nameof(TweenManagerRunner));
-        DontDestroyOnLoad(go);
-        instance = go.AddComponent<TweenManagerRunner>();
+        return _instance ? _instance : (_instance = create());
       }
     }
+
+    [PublicAPI] public UnityPhase phase { get; private set; }
 
     class Tweens {
       readonly HashSet<TweenManager>

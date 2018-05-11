@@ -21,8 +21,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     [PublicAPI]
+    public static Option<A> GetComponentOption<A>(this GameObject o) where A : Object => 
+      F.opt(o.GetComponent<A>());
+
+    [PublicAPI]
     public static Option<A> GetComponentOption<A>(this Component c) where A : Object => 
       F.opt(c.GetComponent<A>());
+
+    [PublicAPI]
+    public static Option<A> GetComponentInChildrenOption<A>(this GameObject o) where A : Object => 
+      F.opt(o.GetComponentInChildren<A>());
 
     [PublicAPI]
     public static Option<A> GetComponentInChildrenOption<A>(this Component c) where A : Object => 

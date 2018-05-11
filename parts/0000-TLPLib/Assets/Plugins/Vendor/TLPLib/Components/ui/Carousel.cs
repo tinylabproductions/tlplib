@@ -3,24 +3,39 @@ using System.Collections.Generic;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.Swiping;
+using com.tinylabproductions.TLPLib.Data.units;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.unity_serialization;
 using com.tinylabproductions.TLPLib.Utilities;
+using GenerationAttributes;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
-  public class Carousel : Carousel<CarouselGameObject> {
+  public partial class Carousel : Carousel<CarouselGameObject> {
     public enum Direction : byte { Horizontal = 0, Vertical = 1 }
+    
+    [Record]
+    public partial struct Pages {
+      [PublicAPI] public readonly float pages;
+      
+      [PublicAPI] public static Pages a(float pages) => new Pages(pages);
+      
+      public static Pages operator +(Pages a1, float a2) => new Pages(a1.pages + a2);
+      public static Pages operator -(Pages a1, float a2) => new Pages(a1.pages - a2);
+
+      public static implicit operator float(Pages pages) => pages.pages;
+    }
   }
 
   public interface ICarouselItem {
     GameObject gameObject { get; }
   }
 
-  public class Carousel<A> : UIBehaviour, IMB_Update where A : ICarouselItem {
+  public class Carousel<A> : UIBehaviour, IMB_Update, IMB_OnDrawGizmosSelected, IMB_OnValidate where A : ICarouselItem {
 
     #region Unity Serialized Fields
 
@@ -33,15 +48,43 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       AdjacentToSelectedPageItemsScale = 1,
       moveCompletedEventThreshold = 0.02f;
     public bool wrapCarouselAround;
+    bool wrapableAround => wrapCarouselAround;
+    [
+      SerializeField,
+      Tooltip(
+        "If wraparound is enabled, how many elements do we have to have in the carousel " +
+        "to start wrapping around? This is needed, because if, for example, we only have 2 " +
+        "elements and they fit into the screen, user can see the wraparound moving the elements " +
+        "in the view."
+      ),
+      Inspect(nameof(wrapableAround))
+    ] int _minElementsForWraparound = 5;
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;
     // ReSharper disable once NotNullMemberIsNotInitialized
     [SerializeField] Carousel.Direction _direction = Carousel.Direction.Horizontal;
+    // FIXME: There's still a visual issue when all items fits into selection window
+    // for example when selection window width is 500 and you have 3 elements of width 100. 
+    [
+      SerializeField, 
+      Tooltip(
+        "Width of a window for selection from the center of a carousel.\n" +
+        "\n" +
+        "When a new element is selected, its center will be moved so that it is within the " +
+        "selection window. For example, if the window width is 0 then the selected element will " +
+        "always be centered. If it will be 100, the selected element center point will always be " +
+        "between x [-50; 50]."
+      )
+    ] float selectionWindowWidth;
+
+    /// <see cref="UIBehaviour.OnValidate"/> disappears in non-editor UnityEngine.dll.
+    /// Therefore we have our own implementation here. Amazing.
+    public new void OnValidate() {
+      selectionWindowWidth = Math.Max(selectionWindowWidth, 0);
+    }
 #pragma warning restore 649
 
     #endregion
-
-    public Option<int> maxElementsFromCenterOpt => maxElementsFromCenter.value;
 
     readonly List<A> elements = new List<A>();
 
@@ -63,13 +106,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
-    bool loopable => wrapCarouselAround && elements.Count > 4;
+    bool loopable => wrapCarouselAround && elements.Count >= _minElementsForWraparound;
 
-    readonly RxRef<int> _page = new RxRef<int>(0);
+    readonly IRxRef<int> _page = RxRef.a(0);
     public IRxVal<int> page => _page;
 
     readonly LazyVal<IRxRef<Option<A>>> __currentElement;
     public IRxVal<Option<A>> currentElement => __currentElement.strict;
+
+    [PublicAPI] public bool freezeCarouselMovement;
 
     void updateCurrentElement() {
       if (__currentElement.isCompleted) {
@@ -77,15 +122,32 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    float currentPosition;
+    /// Page position between previously selected page index and <see cref="targetPageValue"/>
+    Carousel.Pages currentPosition;
+
+    /// A <see cref="Carousel"/> has two center points.
+    /// * real one, determined by the game objects position.
+    /// * logical one, which determines around which point all the items should be positioned.
+    ///
+    /// This specifies an offset, that is measured in pages, from the real center point, where
+    /// the logical center point is. 
+    ///
+    /// If <see cref="selectionWindowWidth"/> is 0, this is always 0, as logical carousel center is always
+    /// in the same point as real carousel center point.
+    ///
+    /// Otherwise this might drift so that the logical point ends up within half of
+    /// <see cref="selectionWindowWidth"/>.
+    /// 
+    /// One page width is <see cref="SpaceBetweenSelectedAndAdjacentPages"/>
+    Carousel.Pages centerPointOffset;
 
     int targetPageValue;
     public bool isMoving { get; private set; }
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
     public IObservable<Unit> movementComplete => _movementComplete;
 
-    public void nextPage() => setPageAnimated(targetPageValue + 1);
-    public void prevPage() => setPageAnimated(targetPageValue - 1);
+    public void nextPage() => movePagesByAnimated(1);
+    public void prevPage() => movePagesByAnimated(-1);
 
     protected Carousel() {
       __currentElement = F.lazy(() => {
@@ -97,39 +159,42 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     /// <summary>Set page without any animations.</summary>
     public void setPageInstantly(int index) {
-      currentPosition = index;
+      currentPosition = Carousel.Pages.a(index);
       targetPageValue = index;
       _page.value = index;
     }
 
     /// <summary>Set page with smooth animations.</summary>
-    public void setPageAnimated(int index) {
+    public void setPageAnimated(int targetPage) {
       if (elements.isEmpty()) return;
 
-      if (!loopable) {
-        // when we increase past last page go to page 0 if wrapCarouselAround == true
-        targetPageValue = wrapCarouselAround
-          ? index.modPositive(elements.Count)
-          : Mathf.Clamp(index, 0, elements.Count - 1);
-        _page.value = targetPageValue;
+      var currentOffset = targetPage - _page.value;
+      // Searches for shortest travel distance towards targetPage
+      void findBestPage(int offset) {
+        if (Math.Abs(centerPointOffset + offset) <= Math.Abs(currentOffset + centerPointOffset)) {
+          currentOffset = offset;
+        }
+      }
+      findBestPage(targetPage - _page.value - elementsCount);
+      findBestPage(targetPage - _page.value + elementsCount);
+      movePagesByAnimated(currentOffset);
+    }
+
+    void movePagesByAnimated(int offset) {
+      if (elements.isEmpty()) return;
+
+      if (loopable) {
+        targetPageValue += offset;
+        _page.value = targetPageValue.modPositive(elements.Count);
       }
       else {
-        var diff = Mathf.Abs(index - targetPageValue);
-        if (diff < 2) {
-          targetPageValue = Mathf.Clamp(index, -1, elements.Count);
-          if (index != targetPageValue) {
-            currentPosition = (elements.Count + targetPageValue) % elements.Count;
-            targetPageValue = (elements.Count + index) % elements.Count;
-          }
-          _page.value = (elements.Count + targetPageValue) % elements.Count;
-        }
-        else {
-          if (diff > elements.Count/2f) {
-            currentPosition = targetPageValue + (targetPageValue < index ? elements.Count : -elements.Count);
-          }
-          targetPageValue = (elements.Count + index) % elements.Count;
-          _page.value = targetPageValue;
-        }
+        // when we increase past last page go to page 0 if wrapCarouselAround == true
+        var page = offset + targetPageValue;
+        targetPageValue = 
+          wrapCarouselAround
+          ? page.modPositive(elements.Count)
+          : Mathf.Clamp(page, 0, elements.Count - 1);
+        _page.value = targetPageValue;
       }
     }
 
@@ -137,67 +202,118 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       lerpPosition(Time.deltaTime * 5);
     }
 
+    UnityMeters toUnityMeters(Carousel.Pages pages) => 
+      UnityMeters.a(pages.pages * SpaceBetweenSelectedAndAdjacentPages);
+    
     void lerpPosition(float amount) {
+      if (elements.isEmpty()) return;
+
       var withinMoveCompletedThreshold =
         Math.Abs(currentPosition - targetPageValue) < moveCompletedEventThreshold;
       if (isMoving && withinMoveCompletedThreshold) _movementComplete.push(F.unit);
       isMoving = !withinMoveCompletedThreshold;
 
-      currentPosition = Mathf.Lerp(currentPosition, targetPageValue, amount);
-      var isMovingLeft = targetPageValue < currentPosition;
-      var elementsOnTheLeft = elements.Count / 2 + (isMovingLeft ? -1 : 0);
+      var prevPos = currentPosition;
+      currentPosition = Carousel.Pages.a(Mathf.Lerp(currentPosition, targetPageValue, amount));
+      var positionDelta = currentPosition - prevPos;
+
+      // Position is kept between 0 and elementsCount to
+      // prevent scrolling multiple times if targetPageValue is something like 100 but we only have 5 elements
+      {
+        while (currentPosition > elementsCount) {
+          currentPosition -= elementsCount;
+          targetPageValue -= elementsCount;
+        }
+
+        while (currentPosition < 0) {
+          currentPosition += elementsCount;
+          targetPageValue += elementsCount;
+        }
+      }
+
+      var itemCountFittingToWindow = selectionWindowWidth / SpaceBetweenOtherPages;
+      centerPointOffset = Carousel.Pages.a(Mathf.Clamp(
+        value: centerPointOffset + positionDelta, 
+        min: -itemCountFittingToWindow / 2, 
+        max: itemCountFittingToWindow / 2
+      ));
+      var centerPointInPages = 
+        freezeCarouselMovement 
+        ? currentPosition - (elementsCount - 1) / 2f 
+        : centerPointOffset;
+
+      float calculateAbsolutePositionDelta(int idx, float elementPos) => 
+        Mathf.Abs(idx - elementPos + centerPointOffset);
 
       for (var idx = 0; idx < elements.Count; idx++) {
         var elementPos = currentPosition;
+
+        // Calculate element's position closest to pivot
         if (loopable) {
-          if (targetPageValue > idx + elementsOnTheLeft) {
-            elementPos = currentPosition - elements.Count;
+          var best = calculateAbsolutePositionDelta(idx, elementPos);
+          void findBestElementPosition(Carousel.Pages newElementPosition) {
+            var current = calculateAbsolutePositionDelta(idx, newElementPosition);
+            if (current < best) {
+              best = current;
+              elementPos = newElementPosition;
+            }
           }
-          if (targetPageValue + elements.Count - 1 < idx + elementsOnTheLeft) {
-            elementPos = currentPosition + elements.Count;
-          }
+
+          findBestElementPosition(currentPosition - elements.Count);
+          findBestElementPosition(currentPosition + elements.Count);
         }
-        var absDiff = Mathf.Abs(idx - elementPos);
-        var sign = Mathf.Sign(idx - elementPos);
-        var delta = (Mathf.Clamp01(absDiff)
-          * SpaceBetweenSelectedAndAdjacentPages + Mathf.Max(0, absDiff - 1)
-          * SpaceBetweenOtherPages)
-          * sign;
+
+        var indexDiff = Mathf.Abs(idx - elementPos);
+        var deltaPos = UnityMeters.a(
+          Mathf.Clamp01(indexDiff) * SpaceBetweenSelectedAndAdjacentPages 
+          + Mathf.Max(0, indexDiff - 1) * SpaceBetweenOtherPages
+        );
 
         foreach (var distance in disableDistantElements) {
-          elements[idx].gameObject.SetActive(Mathf.Abs(delta) < distance);
+          elements[idx].gameObject.SetActive(deltaPos < distance);
         }
 
         var t = elements[idx].gameObject.transform;
-        t.localPosition = getPosition(_direction, delta, absDiff, selectedPageOffset);
 
-        t.localScale = Vector3.one * (absDiff < 1
-          ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, absDiff)
-          :
-            maxElementsFromCenter.value.fold(
-              () => Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, absDiff - 1),
-              maxElementsFromCenter => Mathf.Lerp(
-                AdjacentToSelectedPageItemsScale, 0, absDiff - maxElementsFromCenter
-              )
+        var sign = Mathf.Sign(idx - elementPos);
+        t.localPosition = getPosition(
+          carouselDirection: _direction,
+          elementDistanceFromCenter: deltaPos * sign,
+          absoluteDifference: indexDiff,
+          centralItemOffset: selectedPageOffset,
+          centerPoint: toUnityMeters(centerPointInPages)
+        );
+
+        t.localScale = Vector3.one * (
+          indexDiff < 1
+          ? Mathf.Lerp(SelectedPageItemsScale, OtherPagesItemsScale, indexDiff)
+          : (
+            maxElementsFromCenter.value.isNone
+            ? Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, indexDiff - 1)
+            : Mathf.Lerp(
+              AdjacentToSelectedPageItemsScale, 0, indexDiff - maxElementsFromCenter.value.__unsafeGetValue
             )
+          )
         );
       }
     }
 
     static Vector3 getPosition(
-      Carousel.Direction carouselDirection, float positionChange, float absDiff,
-      Option<Vector3> centralItemOffset
+      Carousel.Direction carouselDirection, UnityMeters elementDistanceFromCenter, 
+      float absoluteDifference,
+      Option<Vector3> centralItemOffset, UnityMeters centerPoint
     ) {
-      var newPos = carouselDirection == Carousel.Direction.Horizontal
-        ? new Vector3(positionChange, 0, 0)
-        : new Vector3(0, -positionChange, 0);
+      var newPosition = 
+        carouselDirection == Carousel.Direction.Horizontal
+        ? new Vector3(elementDistanceFromCenter + centerPoint, 0, 0)
+        : new Vector3(0, -elementDistanceFromCenter - centerPoint, 0);
 
-      foreach (var offset in centralItemOffset) {
-        var lerpedOffset = Vector3.Lerp(offset, Vector3.zero, absDiff);
-        return newPos + lerpedOffset;
+      if (centralItemOffset.valueOut(out var offset)) {
+        var lerpedOffset = Vector3.Lerp(offset, Vector3.zero, absoluteDifference);
+        return newPosition + lerpedOffset;
       }
 
-      return newPos;
+      return newPosition;
     }
 
     /// <summary>
@@ -237,6 +353,44 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             default:
               throw new ArgumentOutOfRangeException(nameof(swipeDirection), swipeDirection, null);
           }
+          break;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);
+      }
+    }
+
+    public void OnDrawGizmosSelected() {
+      Gizmos.color = Color.blue;
+      var rectTransform = (RectTransform) transform;
+      var lineLength =
+        _direction == Carousel.Direction.Horizontal
+          ? rectTransform.rect.height
+          : rectTransform.rect.width;
+      var halfOfSelectionWindow = selectionWindowWidth / 2;
+      var halfLineLength = lineLength / 2;
+
+      Vector3 t(Vector3 v) => transform.TransformPoint(v);
+
+      switch (_direction) {
+        case Carousel.Direction.Horizontal:
+          Gizmos.DrawLine(
+            t(new Vector3(-halfOfSelectionWindow, -halfLineLength)), 
+            t(new Vector3(-halfOfSelectionWindow, halfLineLength))
+          );
+          Gizmos.DrawLine(
+            t(new Vector3(halfOfSelectionWindow, -halfLineLength)), 
+            t(new Vector3(halfOfSelectionWindow, halfLineLength))
+          );
+          break;
+        case Carousel.Direction.Vertical:
+          Gizmos.DrawLine(
+            t(new Vector3(-halfLineLength, -halfOfSelectionWindow)), 
+            t(new Vector3(halfLineLength, -halfOfSelectionWindow))
+          );
+          Gizmos.DrawLine(
+            t(new Vector3(-halfLineLength, halfOfSelectionWindow)), 
+            t(new Vector3(halfLineLength, halfOfSelectionWindow))
+          );
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(_direction), _direction, null);

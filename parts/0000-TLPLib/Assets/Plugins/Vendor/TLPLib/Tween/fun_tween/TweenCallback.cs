@@ -18,5 +18,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
     ) => 
       callback(new Event(playingForwards));
+
+    public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
+      applyStateAt = default; 
+      return false;
+    }
   }
 }
