@@ -58,6 +58,21 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [PublicAPI]
+    public void forEach(Act<A> action) {
+      try {
+        iterating = true;
+        foreach (var a in _active) action(a);
+      }
+      finally {
+        iterating = false;
+        foreach (var a in pendingEnables) _active.Add(a);
+        foreach (var a in pendingDisables) _active.Remove(a);
+        pendingEnables.Clear();
+        pendingDisables.Clear();
+      }
+    }
+
+    [PublicAPI]
     public void track(
       IDisposableTracker tracker, Act<A> runOnEnabled = null, Act<A> runOnDisabled = null
     ) {
@@ -65,17 +80,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         // Subscribe to onEnabled before running the code on already active objects, because
         // that code can then enable additional instances.
         _onEnabled.subscribe(tracker, runOnEnabled);
-        try {
-          iterating = true;
-          foreach (var block in _active) runOnEnabled(block);
-        }
-        finally {
-          iterating = false;
-          foreach (var a in pendingEnables) _active.Add(a);
-          foreach (var a in pendingDisables) _active.Remove(a);
-          pendingEnables.Clear();
-          pendingDisables.Clear();
-        }
+        forEach(runOnEnabled);
       }
 
       if (runOnDisabled != null) {
