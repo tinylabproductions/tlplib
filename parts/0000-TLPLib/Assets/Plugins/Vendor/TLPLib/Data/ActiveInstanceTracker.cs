@@ -33,8 +33,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     // which is suboptimal.
     bool iterating;
 
-    [PublicAPI] public IEnumerable<A> active => _active;
-
     [PublicAPI] public void onEnable(A a) {
       if (iterating) {
         pendingEnables.Add(a);
