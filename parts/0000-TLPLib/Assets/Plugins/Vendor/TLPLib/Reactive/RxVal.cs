@@ -168,20 +168,35 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       baseObservableSubscription = sub;
     }
 
+    public override void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      base.subscribe(
+        tracker, onEvent, out subscription,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+      onEvent(value);
+    }
+
     public override ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
-      var subscription = base.subscribe(
+      var sub = base.subscribe(
         tracker, onEvent,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
       );
       onEvent(value);
-      return subscription;
+      return sub;
     }
 
     public ISubscription subscribeWithoutEmit(
@@ -189,13 +204,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
-    ) =>
+    ) {
       base.subscribe(
-        tracker, onEvent,
+        tracker, onEvent, out var subscription,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
       );
+      return subscription;
+    }
 
     public override string ToString() => $"RxVal({value})";
   }

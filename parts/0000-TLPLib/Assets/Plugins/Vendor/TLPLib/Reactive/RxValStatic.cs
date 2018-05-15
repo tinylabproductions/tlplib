@@ -20,6 +20,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return Subscription.empty;
     }
 
+    public void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      string callerMemberName = "", string callerFilePath = "", int callerLineNumber = 0
+    ) {
+      subscription = Subscription.empty;
+      onEvent(value);
+    }
+
     public ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
       string callerMemberName = "",

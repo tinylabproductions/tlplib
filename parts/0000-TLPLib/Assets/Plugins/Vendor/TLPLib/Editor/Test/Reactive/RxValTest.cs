@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -319,6 +320,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       dst.value.shouldBeAnySome();
       rx2.value = Option<int>.None;
       dst.value.shouldBeSome(1);
+    }
+  }
+
+  public class RxValTestSubscribeForOneEvent {
+    [Test]
+    public void Test() {
+      var rxVal = RxVal.a(false);
+      var sub = rxVal.subscribeForOneEvent(new DisposableTracker(), _ => { });
+      Assert.False(sub.isSubscribed);
     }
   }
 }

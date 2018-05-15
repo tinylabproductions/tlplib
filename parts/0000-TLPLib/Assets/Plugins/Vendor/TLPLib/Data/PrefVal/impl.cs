@@ -83,6 +83,19 @@ namespace com.tinylabproductions.TLPLib.Data {
         // ReSharper restore ExplicitCallerInfoArgument
       );
 
+    public void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) =>
+      rxRef.subscribe(
+        tracker: tracker, onEvent: onEvent, subscription: out subscription,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+
     public ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
