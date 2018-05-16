@@ -1,49 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using AdvancedInspector;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
+﻿using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
-using GenerationAttributes;
 using UnityEngine;
-using UnityEngine.Sprites;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
 
   [RequireComponent(typeof(Image))]
-  public class GradientTexture: MonoBehaviour {
+  public class GradientTexture: MonoBehaviour, IMB_Start {
 
-    [SerializeField] Texture2D texture;
     [SerializeField] int textureSize = 128;
-
-    public enum Direction {
-      Vertical, Horizontal
-    }
-
+    [SerializeField] Image textureTarget;
     [SerializeField] Gradient gradient = new Gradient();
     [SerializeField] Direction direction = Direction.Horizontal;
+
+    enum Direction { Vertical, Horizontal }
 
     [Inspect]
     void generate() {
 
-      texture = new Texture2D(textureSize, textureSize);
+      var texture = new Texture2D(textureSize, textureSize, TextureFormat.ARGB32, false);
+      var pixels = new Color[textureSize * textureSize];
+
       if (direction == Direction.Horizontal)
         for (int x = 0; x < textureSize; x++) {
+          var c = gradient.Evaluate(x / (float) textureSize);
           for (int y = 0; y < textureSize; y++) {
-            texture.SetPixel(x, y, gradient.Evaluate(x / (float)textureSize));
+            pixels[x + y * textureSize] = c;
           }
         }
       else if (direction == Direction.Vertical)
-        for (int x = 0; x < textureSize; x++) {
-          for (int y = 0; y < textureSize; y++) {
-            texture.SetPixel(x, y, gradient.Evaluate(y / (float)textureSize));
+        for (int y = 0; y < textureSize; y++) {
+          var c = gradient.Evaluate(y / (float) textureSize);
+          for (int x = 0; x < textureSize; x++) {
+            pixels[x + y * textureSize] = c;
           }
         }
 
-      GetComponent<Image>().sprite = texture.toSprite();
+      texture.SetPixels(pixels);
+      texture.Apply();
+      textureTarget.sprite = texture.toSprite();
     }
 
+    public void Start() => generate();
   }
 
 }
