@@ -189,13 +189,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
-      var sub = base.subscribe(
-        tracker, onEvent,
+      subscribe(
+        tracker, onEvent, out var sub,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
       );
-      onEvent(value);
       return sub;
     }
 

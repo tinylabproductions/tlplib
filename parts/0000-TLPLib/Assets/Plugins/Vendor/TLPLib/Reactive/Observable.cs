@@ -520,8 +520,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) {
       subscribe(
         tracker, onEvent, out var subscription,
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath,
-        callerLineNumber: callerLineNumber
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
       );
       return subscription;
     }

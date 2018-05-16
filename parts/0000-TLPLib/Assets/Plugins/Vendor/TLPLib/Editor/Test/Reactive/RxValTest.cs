@@ -190,6 +190,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         };
       };
     });
+
+    [Test] public void subscribeForOneEvent() => describe(() => {
+      var actionInvocations = 0;
+      var rx = RxVal.a(false);
+      var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
+
+      when["subscribedForOneEvent"] = () => {
+        it["should invoke action"] = () => actionInvocations.shouldEqual(1);
+        it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
+      };
+    });
   }
 
   public class RxValTestFirstThat {
@@ -320,15 +331,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       dst.value.shouldBeAnySome();
       rx2.value = Option<int>.None;
       dst.value.shouldBeSome(1);
-    }
-  }
-
-  public class RxValTestSubscribeForOneEvent {
-    [Test]
-    public void Test() {
-      var rxVal = RxVal.a(false);
-      var sub = rxVal.subscribeForOneEvent(new DisposableTracker(), _ => { });
-      Assert.False(sub.isSubscribed);
     }
   }
 }
