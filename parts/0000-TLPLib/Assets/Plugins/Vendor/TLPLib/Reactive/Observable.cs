@@ -512,7 +512,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         source.trySubscribe();
     }
 
-    public virtual ISubscription subscribe(
+    public ISubscription subscribe(
       IDisposableTracker tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",

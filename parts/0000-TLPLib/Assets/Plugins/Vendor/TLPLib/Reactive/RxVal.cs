@@ -183,21 +183,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       onEvent(value);
     }
 
-    public override ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
-      [CallerMemberName] string callerMemberName = "",
-      [CallerFilePath] string callerFilePath = "",
-      [CallerLineNumber] int callerLineNumber = 0
-    ) {
-      subscribe(
-        tracker, onEvent, out var sub,
-        // ReSharper disable ExplicitCallerInfoArgument
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
-        // ReSharper restore ExplicitCallerInfoArgument
-      );
-      return sub;
-    }
-
     public ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
