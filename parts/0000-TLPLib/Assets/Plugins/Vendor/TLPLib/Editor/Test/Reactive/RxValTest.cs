@@ -193,12 +193,18 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     [Test] public void subscribeForOneEvent() => describe(() => {
       var actionInvocations = 0;
-      var rx = RxVal.a(false);
+      var rx = RxRef.a(false);
       var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
 
-      when["subscribedForOneEvent"] = () => {
-        it["should invoke action"] = () => actionInvocations.shouldEqual(1);
-        it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
+      it["should invoke action"] = () => actionInvocations.shouldEqual(1);
+      it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
+
+      when["changing value"] = () => {
+        beforeEach += () => {
+          rx.value = true;
+        };
+
+        it["should not invoke action"] = () => actionInvocations.shouldEqual(1);
       };
     });
   }
