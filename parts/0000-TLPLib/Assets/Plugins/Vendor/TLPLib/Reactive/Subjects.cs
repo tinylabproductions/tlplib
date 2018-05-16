@@ -21,17 +21,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   public class ReplaySubject<A> : Observable<A>, ISubject<A> {
     readonly List<A> events = new List<A>();
 
-    public override ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
+    public override void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       // ReSharper disable ExplicitCallerInfoArgument
-      var subscription = base.subscribe(tracker, onEvent, callerMemberName, callerFilePath, callerLineNumber);
+      base.subscribe(tracker, onEvent, out subscription, callerMemberName, callerFilePath, callerLineNumber);
       // ReSharper restore ExplicitCallerInfoArgument
       foreach (var evt in events) onEvent(evt);
-      return subscription;
     }
 
     public void push(A value) {
