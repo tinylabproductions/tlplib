@@ -16,31 +16,31 @@ namespace com.tinylabproductions.TLPLib.Data {
     public bool hasKey(string name) => backend.hasKey(name);
 
     public PrefVal<A> create<A>(
-      string key, A defaultVal, IPrefValueRW<A> rw, bool saveOnEveryWrite = true
+      string key, A defaultVal, IPrefValueRW<A> rw, bool saveOnEveryWrite = false
     ) => new PrefValImpl<A>(key, rw, defaultVal, backend, saveOnEveryWrite);
 
-    public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.str, saveOnEveryWrite);
 
-    public PrefVal<Uri> uri(string key, Uri defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<Uri> uri(string key, Uri defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.uri, saveOnEveryWrite);
 
-    public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.integer, saveOnEveryWrite);
 
-    public PrefVal<uint> uinteger(string key, uint defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<uint> uinteger(string key, uint defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.uinteger, saveOnEveryWrite);
 
-    public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.flt, saveOnEveryWrite);
 
-    public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.boolean, saveOnEveryWrite);
 
-    public PrefVal<Duration> duration(string key, Duration defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<Duration> duration(string key, Duration defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.duration, saveOnEveryWrite);
 
-    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = true) =>
+    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = false) =>
       create(key, defaultVal, PrefValRW.dateTime, saveOnEveryWrite);
 
     #region Collections
@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI]
     public PrefVal<ImmutableArray<A>> array<A>(
       string key, ISerializedRW<A> rw,
-      ImmutableArray<A> defaultVal, bool saveOnEveryWrite = true,
+      ImmutableArray<A> defaultVal, bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI]
     public PrefVal<ImmutableList<A>> list<A>(
       string key, ISerializedRW<A> rw,
-      ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = true,
+      ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
@@ -73,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI]
     public PrefVal<ImmutableHashSet<A>> hashSet<A>(
       string key, ISerializedRW<A> rw,
-      ImmutableHashSet<A> defaultVal = null, bool saveOnEveryWrite = true,
+      ImmutableHashSet<A> defaultVal = null, bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
@@ -97,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<A> custom<A>(
       string key, A defaultVal,
       Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
-      bool saveOnEveryWrite = true,
+      bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(
@@ -108,7 +108,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<A> custom<A>(
       string key, A defaultVal,
       ISerializedRW<A> aRW,
-      bool saveOnEveryWrite = true,
+      bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(
@@ -118,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<Option<A>> opt<A>(
       string key, Option<A> defaultVal,
       ISerializedRW<A> aRW,
-      bool saveOnEveryWrite = true,
+      bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(key, defaultVal, PrefValRW.opt(aRW, onDeserializeFailure, log), saveOnEveryWrite);
@@ -130,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<C> collection<A, C>(
       string key,
       ISerializedRW<A> rw, CollectionBuilderKnownSizeFactory<A, C> factory,
-      C defaultVal, bool saveOnEveryWrite = true,
+      C defaultVal, bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
@@ -145,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public PrefVal<C> collection<A, C>(
-      string key, ISerializedRW<C> rw, C defaultVal, bool saveOnEveryWrite = true,
+      string key, ISerializedRW<C> rw, C defaultVal, bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
