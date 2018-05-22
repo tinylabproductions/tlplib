@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -178,32 +179,40 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
     [PublicAPI]
     public static Future<Either<WebRequestError, A>> toFuture<A>(
-      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
+      this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, 
+      Fn<UnityWebRequest, A> onSuccess
     ) {
       var f = Future<Either<WebRequestError, A>>.async(out var promise);
-      StartCoroutine(webRequestEnumerator(req, promise, onSuccess));
+      StartCoroutine(webRequestEnumerator(req, promise, acceptedResponseCodes, onSuccess));
       return f;
     }
 
     [PublicAPI]
     public static Future<Either<ErrorMsg, A>> toFutureSimple<A>(
-      this UnityWebRequest req, Fn<UnityWebRequest, A> onSuccess
-    ) => req.toFuture(onSuccess).map(_ => _.mapLeft(err => err.simplify));
+      this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Fn<UnityWebRequest, A> onSuccess
+    ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
 
     [PublicAPI]
     public static IEnumerator webRequestEnumerator<A>(
-      UnityWebRequest req, Promise<Either<WebRequestError, A>> p,
+      UnityWebRequest req, Promise<Either<WebRequestError, A>> p, AcceptedResponseCodes acceptedResponseCodes,
       Fn<UnityWebRequest, A> onSuccess
     ) {
       yield return req.Send();
+      var responseCode = req.responseCode;
       if (req.isError) {
-        var msg = $"error: {req.error}, response code: {req.responseCode}";
+        var msg = $"error: {req.error}, response code: {responseCode}";
         p.complete(
           req.responseCode == 0 && req.error == "Unknown Error"
           ? new WebRequestError(new NoInternetError(msg))
           : new WebRequestError(new ErrorMsg(msg))
         );
         req.Dispose();
+      }
+      else if (!acceptedResponseCodes.contains(responseCode)) {
+        req.Dispose();
+        p.complete(new WebRequestError(new ErrorMsg(
+          $"Received response code {responseCode} was not in {acceptedResponseCodes}"
+        )));
       }
       else {
         var a = onSuccess(req);
