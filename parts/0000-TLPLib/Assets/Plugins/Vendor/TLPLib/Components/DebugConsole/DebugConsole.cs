@@ -338,7 +338,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
 
       var shortText = $"{DateTime.Now:hh:mm:ss}{typeToString(data.type)} {data.message}";
-      var charCount = Mathf.RoundToInt(lineWidth / 11);
+
+      // letter width can't be smaller, tested on galaxy S5
+      const float LETTER_WIDTH = 11.3f;
+      var charCount = Mathf.RoundToInt(lineWidth / LETTER_WIDTH);
 
       var color = typeToColor(data.type);
       shortText.distributeText(charCount, cache);
