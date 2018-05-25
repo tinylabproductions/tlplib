@@ -201,16 +201,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var responseCode = req.responseCode;
       if (req.isError) {
         var msg = $"error: {req.error}, response code: {responseCode}";
+        var url = new Url(req.url);
         p.complete(
-          req.responseCode == 0 && req.error == "Unknown Error"
-          ? new WebRequestError(new NoInternetError(msg))
-          : new WebRequestError(new ErrorMsg(msg))
+          responseCode == 0 && req.error == "Unknown Error"
+          ? new WebRequestError(url, new NoInternetError(msg))
+          : new WebRequestError(url, new ErrorMsg(msg))
         );
         req.Dispose();
       }
       else if (!acceptedResponseCodes.contains(responseCode)) {
+        var url = new Url(req.url); // Capture URL before disposing
         req.Dispose();
-        p.complete(new WebRequestError(new ErrorMsg(
+        p.complete(new WebRequestError(url, new ErrorMsg(
           $"Received response code {responseCode} was not in {acceptedResponseCodes}"
         )));
       }
