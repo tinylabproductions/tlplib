@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
@@ -16,112 +15,101 @@ namespace com.tinylabproductions.TLPLib.Data {
     public bool hasKey(string name) => backend.hasKey(name);
 
     public PrefVal<A> create<A>(
-      string key, A defaultVal, IPrefValueRW<A> rw, bool saveOnEveryWrite = false
-    ) => new PrefValImpl<A>(key, rw, defaultVal, backend, saveOnEveryWrite);
+      string key, A defaultVal, IPrefValueRW<A> rw
+    ) => new PrefValImpl<A>(key, rw, defaultVal, backend);
 
-    public PrefVal<string> str(string key, string defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.str, saveOnEveryWrite);
+    public PrefVal<string> str(string key, string defaultVal) =>
+      create(key, defaultVal, PrefValRW.str);
 
-    public PrefVal<Uri> uri(string key, Uri defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.uri, saveOnEveryWrite);
+    public PrefVal<Uri> uri(string key, Uri defaultVal) =>
+      create(key, defaultVal, PrefValRW.uri);
 
-    public PrefVal<int> integer(string key, int defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.integer, saveOnEveryWrite);
+    public PrefVal<int> integer(string key, int defaultVal) =>
+      create(key, defaultVal, PrefValRW.integer);
 
-    public PrefVal<uint> uinteger(string key, uint defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.uinteger, saveOnEveryWrite);
+    public PrefVal<uint> uinteger(string key, uint defaultVal) =>
+      create(key, defaultVal, PrefValRW.uinteger);
 
-    public PrefVal<float> flt(string key, float defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.flt, saveOnEveryWrite);
+    public PrefVal<float> flt(string key, float defaultVal) =>
+      create(key, defaultVal, PrefValRW.flt);
 
-    public PrefVal<bool> boolean(string key, bool defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.boolean, saveOnEveryWrite);
+    public PrefVal<bool> boolean(string key, bool defaultVal) =>
+      create(key, defaultVal, PrefValRW.boolean);
 
-    public PrefVal<Duration> duration(string key, Duration defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.duration, saveOnEveryWrite);
+    public PrefVal<Duration> duration(string key, Duration defaultVal) =>
+      create(key, defaultVal, PrefValRW.duration);
 
-    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal, bool saveOnEveryWrite = false) =>
-      create(key, defaultVal, PrefValRW.dateTime, saveOnEveryWrite);
+    public PrefVal<DateTime> dateTime(string key, DateTime defaultVal) =>
+      create(key, defaultVal, PrefValRW.dateTime);
 
     #region Collections
 
     [PublicAPI]
     public PrefVal<ImmutableArray<A>> array<A>(
       string key, ISerializedRW<A> rw,
-      ImmutableArray<A> defaultVal, bool saveOnEveryWrite = false,
+      ImmutableArray<A> defaultVal,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
-      key, rw, CollectionBuilderKnownSizeFactory<A>.immutableArray, defaultVal, saveOnEveryWrite,
+      key, rw, CollectionBuilderKnownSizeFactory<A>.immutableArray, defaultVal,
       onDeserializeFailure, log
     );
 
     [PublicAPI]
     public PrefVal<ImmutableList<A>> list<A>(
       string key, ISerializedRW<A> rw,
-      ImmutableList<A> defaultVal = null, bool saveOnEveryWrite = false,
+      ImmutableList<A> defaultVal = null,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
       key, rw, CollectionBuilderKnownSizeFactory<A>.immutableList, 
       defaultVal ?? ImmutableList<A>.Empty,
-      saveOnEveryWrite, onDeserializeFailure, log
+      onDeserializeFailure, log
     );
 
     [PublicAPI]
     public PrefVal<ImmutableHashSet<A>> hashSet<A>(
       string key, ISerializedRW<A> rw,
-      ImmutableHashSet<A> defaultVal = null, bool saveOnEveryWrite = false,
+      ImmutableHashSet<A> defaultVal = null,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
       key, rw, CollectionBuilderKnownSizeFactory<A>.immutableHashSet, 
       defaultVal ?? ImmutableHashSet<A>.Empty,
-      saveOnEveryWrite, onDeserializeFailure, log
+      onDeserializeFailure, log
     );
 
     #endregion
 
     #region Custom
 
-    /* Provide custom mapping. It uses string representation inside and returns
-     * default value if string is empty. */
-    [Obsolete]
-    public PrefVal<A> custom__OLD<A>(
-      string key, A defaultVal, Fn<A, string> map, Fn<string, A> comap, bool saveOnEveryWrite=true
-    ) => create(key, defaultVal, PrefValRW.custom__OLD(map, comap), saveOnEveryWrite);
-
     public PrefVal<A> custom<A>(
       string key, A defaultVal,
       Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
-      bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(
-      key, defaultVal, PrefValRW.custom(serialize, deserialize, onDeserializeFailure, log),
-      saveOnEveryWrite
+      key, defaultVal, PrefValRW.custom(serialize, deserialize, onDeserializeFailure, log)
     );
 
     public PrefVal<A> custom<A>(
       string key, A defaultVal,
       ISerializedRW<A> aRW,
-      bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(
-      key, defaultVal, PrefValRW.custom(aRW, onDeserializeFailure, log), saveOnEveryWrite
+      key, defaultVal, PrefValRW.custom(aRW, onDeserializeFailure, log)
     );
 
     public PrefVal<Option<A>> opt<A>(
       string key, Option<A> defaultVal,
       ISerializedRW<A> aRW,
-      bool saveOnEveryWrite = false,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) => create(key, defaultVal, PrefValRW.opt(aRW, onDeserializeFailure, log), saveOnEveryWrite);
+    ) => create(key, defaultVal, PrefValRW.opt(aRW, onDeserializeFailure, log));
 
     #endregion
 
@@ -130,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public PrefVal<C> collection<A, C>(
       string key,
       ISerializedRW<A> rw, CollectionBuilderKnownSizeFactory<A, C> factory,
-      C defaultVal, bool saveOnEveryWrite = false,
+      C defaultVal,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
@@ -140,17 +128,17 @@ namespace com.tinylabproductions.TLPLib.Data {
         SerializedRW.collectionDeserializer(rw, factory)
       );
       return collection<A, C>(
-        key, collectionRw, defaultVal, saveOnEveryWrite, onDeserializeFailure, log
+        key, collectionRw, defaultVal, onDeserializeFailure, log
       );
     }
 
     public PrefVal<C> collection<A, C>(
-      string key, ISerializedRW<C> rw, C defaultVal, bool saveOnEveryWrite = false,
+      string key, ISerializedRW<C> rw, C defaultVal,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) where C : ICollection<A> =>
-      custom(key, defaultVal, rw, saveOnEveryWrite, onDeserializeFailure, log);
+      custom(key, defaultVal, rw, onDeserializeFailure, log);
 
     #endregion
   }
