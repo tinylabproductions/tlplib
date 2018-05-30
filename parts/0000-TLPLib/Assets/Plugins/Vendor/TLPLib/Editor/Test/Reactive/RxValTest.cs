@@ -191,29 +191,30 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       };
     });
 
-    [Test] public void subscribeForOneEventRxVal() => describe(() => {
-      var actionInvocations = 0;
-      var rx = RxVal.a(false);
-      var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
+    [Test] public void subscribeForOneEvent() => describe(() => {
+      void addCases(IObservable<bool> rx, Action change) {
+        var actionInvocations = 0;
+        var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
+        
+        it["should invoke action"] = () => actionInvocations.shouldEqual(1);
+        it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
 
-      it["should invoke action"] = () => actionInvocations.shouldEqual(1);
-      it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
-    });
+        when["changing value"] = () => {
+          beforeEach += change;
 
-    [Test] public void subscribeForOneEventRxRef() => describe(() => {
-      var actionInvocations = 0;
-      var rx = RxRef.a(false);
-      var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
-
-      it["should invoke action"] = () => actionInvocations.shouldEqual(1);
-      it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
-
-      when["changing value"] = () => {
-        beforeEach += () => {
-          rx.value = true;
+          it["should not invoke action"] = () => actionInvocations.shouldEqual(1);
         };
+      }
 
-        it["should not invoke action"] = () => actionInvocations.shouldEqual(1);
+      when[nameof(RxVal)] = () => {
+        var rxRef = RxRef.a(1);
+        var rxVal = rxRef.map(_ => _ % 2 == 0);
+        addCases(rxVal, () => rxRef.value = 2);
+      };
+
+      when[nameof(RxRef)] = () => {
+        var rx = RxRef.a(false);
+        addCases(rx, () => rx.value = true);
       };
     });
   }
