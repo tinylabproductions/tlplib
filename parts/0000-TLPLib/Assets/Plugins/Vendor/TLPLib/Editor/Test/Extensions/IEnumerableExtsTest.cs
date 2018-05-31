@@ -46,6 +46,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         invocations.shouldNotContain(kv => kv.Value != 1);
       };
     });
+    
+    [Test] public void collect() => describe(() => {
+      when["with indexes"] = () => {
+        it["should emit correct indexes"] = () => {
+          new[] {"foo", "bar", "baz"}.collect((a, idx) => F.some(idx)).shouldEqualEnum(0, 1, 2);
+        };
+        
+        it["should only keep somes"] = () => {
+          new[] {"foo", "bar", "baz"}.collect((a, idx) => (idx % 2 == 0).opt(a)).shouldEqualEnum("foo", "baz");
+        };
+      };
+    })
   }
 
   public class IEnumerableTestAsString {
