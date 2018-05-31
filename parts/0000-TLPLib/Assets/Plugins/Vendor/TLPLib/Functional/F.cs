@@ -153,6 +153,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static readonly IDisposable emptyDisposable = new EmptyDisposable();
 
+    /// <summary>Representation of ! as a function.</summary>
+    public static readonly Fn<bool, bool> invert = a => !a;
     /// <summary>Representation of && as a function.</summary>
     public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
     public static readonly Fn<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;

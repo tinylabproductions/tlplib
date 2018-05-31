@@ -103,6 +103,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     public int elementsCount => elements.Count;
+    public int indexOf(A a) => elements.IndexOf(a);
 
     // disables elements for which position from center exceeds this value
     [ReadOnly] public Option<float> disableDistantElements = F.none<float>();
