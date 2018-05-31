@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -48,6 +49,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static Tweener<Vector3, Transform> tweenLocalPosition(
       this Transform t, Vector3 start, Vector3 to, Ease ease, float duration
     ) => tweenTransformVector(t, start, to, ease, duration, TweenMutators.localPosition);
+
+    [PublicAPI]
+    public static Tweener<Vector3, Transform> tweenLocalPositionFrom(
+      this Transform t, Vector3 from, Ease ease, float duration
+    ) => tweenLocalPosition(t, from, t.localPosition, ease, duration);
     #endregion
 
     #region Transform Scale
@@ -55,6 +61,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static Tweener<Vector3, Transform> tweenScale(
       this Transform t, Vector3 from, Vector3 to, Ease ease, float duration
     ) => tweenTransformVector(t, from, to, ease, duration, TweenMutators.localScale);
+
+    [PublicAPI]
+    public static Tweener<Vector3, Transform> tweenScaleFrom(
+      this Transform t, Vector3 from, Ease ease, float duration
+    ) => tweenScale(t, from, t.localScale, ease, duration);
 
     [PublicAPI]
     public static Tweener<Vector3, Transform> tweenScaleRelative(
@@ -90,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Shadow s, Color from, Color to, Ease ease, float duration
     ) => a(TweenOps.color.tween(from, to, false, ease, duration), s, TweenMutators.shadowEffectColor);
     #endregion
-    
+
     #region Image
     [PublicAPI]
     public static Tweener<float, Image> tweenFillAmount(
@@ -119,6 +130,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Tweener<Vector2, RectTransform> t, Vector2 to, Ease ease, float duration
     ) => t.t.tweenAnchoredPosition(t.tween.end, t.tween.end + to, ease, duration);
     #endregion
+
+    [PublicAPI]
+    public static TweenTimelineElement tweenFloat(
+      float from, float to, Ease ease, float duration, Act<float> setValue
+    ) => a(TweenOps.float_.tween(from, to, false, ease, duration), F.unit, ((value, target, relative) => setValue(value)));
 
     [PublicAPI]
     public static Tweener<A, Ref<A>> tweenValue<A>(
