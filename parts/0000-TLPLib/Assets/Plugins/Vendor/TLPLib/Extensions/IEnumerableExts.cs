@@ -270,6 +270,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     [PublicAPI]
+    public static IEnumerable<B> collect<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, int, Option<B>> collector
+    ) {
+      var idx = 0;
+      foreach (var a in enumerable) {
+        var bOpt = collector(a, idx);
+        if (bOpt.isSome) yield return bOpt.__unsafeGetValue;
+        idx++;
+      }
+    }
+
+    [PublicAPI]
     public static Option<B> collectFirst<A, B>(
       this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
     ) {
