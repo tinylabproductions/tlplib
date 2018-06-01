@@ -421,10 +421,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       readonly int callerLineNumber;
 
       public bool isSubscribed { get {
+        if (haveUnsubscribed) return false;
 #if LEGACY_OBSERVABLES
         return subscription.isSubscribed;
 #else
-        if (haveUnsubscribed) return false;
         if (subscription.Target.valueOut(out var sub)) return sub.isSubscribed;
         Log.d.error(
           $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
