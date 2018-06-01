@@ -13,7 +13,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       Simple,
       Sliced,
       Tiled,
-      Filled
+      Filled,
+      TransparentEdges
     }
 
     public enum FillMethod {
@@ -306,6 +307,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         case Type.Filled:
           GenerateFilledSprite(toFill, m_PreserveAspect);
           break;
+        case Type.TransparentEdges:
+          GenerateTranparentEdgesSprite(toFill);
+          break;
       }
     }
 
@@ -331,6 +335,67 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     #region Various fill functions
+
+    void GenerateTranparentEdgesSprite(VertexHelper toFill) {
+
+      Vector4 v = GetDrawingDimensions(false);
+      var tranpColor = Color.clear;
+
+      if (m_FillMethod == FillMethod.Horizontal) {
+        var wd = (v.z - v.x) * fillAmount;
+        toFill.Clear();
+
+        AddQuad(toFill,
+          new Vector2(v.x, v.y),
+          new Vector2(v.x + wd, v.w),
+          new Color32[] {tranpColor, tranpColor, color, color},
+          new Vector2(0, 0),
+          new Vector2(fillAmount, 1)
+        );
+        AddQuad(toFill,
+          new Vector2(v.x + wd, v.y),
+          new Vector2(v.z - wd, v.w),
+          new Color32[] {color, color, color, color},
+          new Vector2(fillAmount, 0),
+          new Vector2(1 - fillAmount, 1)
+        );
+        AddQuad(toFill,
+          new Vector2(v.z - wd, v.y),
+          new Vector2(v.z, v.w),
+          new Color32[] {color, color, tranpColor, tranpColor},
+          new Vector2(1 - fillAmount, 0),
+          new Vector2(1, 1)
+        );
+      }
+
+      if (m_FillMethod == FillMethod.Vertical) {
+        var wd = (v.w - v.y) * fillAmount;
+        toFill.Clear();
+
+        AddQuad(toFill,
+          new Vector2(v.x, v.y),
+          new Vector2(v.z, v.y + wd),
+          new Color32[] {tranpColor, color, color, tranpColor},
+          new Vector2(0, 0),
+          new Vector2(1, fillAmount)
+        );
+        AddQuad(toFill,
+          new Vector2(v.x, v.y + wd),
+          new Vector2(v.z, v.w - wd),
+          new Color32[] {color, color, color, color},
+          new Vector2(0, fillAmount),
+          new Vector2(1, 1 - fillAmount)
+        );
+        AddQuad(toFill,
+          new Vector2(v.x, v.w - wd),
+          new Vector2(v.z, v.w),
+          new Color32[] {color, tranpColor, tranpColor, color},
+          new Vector2(0, 1 - fillAmount),
+          new Vector2(1, 1)
+        );
+      }
+    }
+
     /// <summary>
     /// Generate vertices for a simple Image.
     /// </summary>
@@ -646,6 +711,18 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       for (int i = 0; i < 4; ++i)
         vertexHelper.AddVert(quadPositions[i], color, quadUVs[i]);
+
+      vertexHelper.AddTriangle(startIndex, startIndex + 1, startIndex + 2);
+      vertexHelper.AddTriangle(startIndex + 2, startIndex + 3, startIndex);
+    }
+
+    static void AddQuad(VertexHelper vertexHelper, Vector2 posMin, Vector2 posMax, Color32[] color, Vector2 uvMin, Vector2 uvMax) {
+      int startIndex = vertexHelper.currentVertCount;
+
+      vertexHelper.AddVert(new Vector3(posMin.x, posMin.y, 0), color[0], new Vector2(uvMin.x, uvMin.y));
+      vertexHelper.AddVert(new Vector3(posMin.x, posMax.y, 0), color[1], new Vector2(uvMin.x, uvMax.y));
+      vertexHelper.AddVert(new Vector3(posMax.x, posMax.y, 0), color[2], new Vector2(uvMax.x, uvMax.y));
+      vertexHelper.AddVert(new Vector3(posMax.x, posMin.y, 0), color[3], new Vector2(uvMax.x, uvMin.y));
 
       vertexHelper.AddTriangle(startIndex, startIndex + 1, startIndex + 2);
       vertexHelper.AddTriangle(startIndex + 2, startIndex + 3, startIndex);
