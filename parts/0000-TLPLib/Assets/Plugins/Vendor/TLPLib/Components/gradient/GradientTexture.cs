@@ -5,20 +5,18 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
+  public class GradientTexture : MonoBehaviour, IMB_Start {
+    [SerializeField, NotNull] int textureSize = 128;
+    [SerializeField, NotNull] Image textureTarget;
+    [SerializeField, NotNull] Gradient gradient = new Gradient();
+    [SerializeField, NotNull] Direction direction = Direction.Horizontal;
 
-  [RequireComponent(typeof(Image))]
-  public class GradientTexture: MonoBehaviour, IMB_Start {
+    enum Direction : byte { Vertical, Horizontal }
 
-    [SerializeField] int textureSize = 128;
-    [SerializeField] Image textureTarget;
-    [SerializeField] Gradient gradient = new Gradient();
-    [SerializeField] Direction direction = Direction.Horizontal;
-
-    enum Direction { Vertical, Horizontal }
-
+    public void Start() => generate();
+    
     [Inspect]
     void generate() {
-
       var texture = new Texture2D(textureSize, textureSize, TextureFormat.ARGB32, false);
       var pixels = new Color[textureSize * textureSize];
 
@@ -41,8 +39,5 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
       texture.Apply();
       textureTarget.sprite = texture.toSprite();
     }
-
-    public void Start() => generate();
   }
-
 }
