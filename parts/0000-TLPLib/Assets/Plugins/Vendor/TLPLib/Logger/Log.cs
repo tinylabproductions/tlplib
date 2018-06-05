@@ -37,20 +37,17 @@ namespace com.tinylabproductions.TLPLib.Logger {
       public static readonly ISerializedRW<Option<Level>> optRw = SerializedRW.opt(rw);
     }
 
-    // ReSharper disable once UnusedMember.Local
-    static Level defaultLogLevelOnClient => Debug.isDebugBuild ? Level.DEBUG : Level.INFO;
-
-    // If we use Application.isEditor here, then tests fail on Gummy Bear with exception:
-    //   System.TypeInitializationException : An exception was thrown by the type initializer for com.tinylabproductions.TLPLib.Logger.Log
-    //   ----> UnityEngine.UnityException : get_isEditor can only be called from the main thread.
-    //   Constructors and field initializers will be executed from the loading thread when loading a scene.
-    //   Don't use this function in the constructor or field initializers, instead move initialization code to the Awake or Start function.
-    public static readonly Level defaultLogLevel =
+    // InitializeOnLoad is needed to set static variables on main thread.
+    // FKRs work without it, but on Gummy Bear repo tests fail
 #if UNITY_EDITOR
-      Level.DEBUG;
-#else
-      defaultLogLevelOnClient;
+    [UnityEditor.InitializeOnLoadMethod]
 #endif
+    [RuntimeInitializeOnLoadMethod]
+    static void init() {}
+
+    public static readonly Level defaultLogLevel =
+      Application.isEditor || Debug.isDebugBuild
+      ? Level.DEBUG : Level.INFO;
 
     static readonly bool useConsoleLog = EditorUtils.inBatchMode;
 
