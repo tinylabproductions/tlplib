@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Utilities;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
   [AddComponentMenu("UI/Effects/Gradient")]
@@ -12,10 +12,11 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
       GradientHelper.modifyVertices(vertexList, (c, t) => Color32.Lerp(bottomColor, topColor, t), type);
     }
 
+    [PublicAPI]
     public void setAlpha(float alpha) {
-      var alpha32 = alpha.remap(0f, 1f, 0f, 255f).toByteClamped();
-      topColor = topColor.with32Alpha(alpha32);
-      bottomColor = bottomColor.with32Alpha(alpha32);
+      var alpha32 = Mathf.Lerp(0, 255, alpha).roundToByteClamped();
+      topColor.a = alpha32;
+      bottomColor.a = alpha32;
       OnDidApplyAnimationProperties();
     }
   }
