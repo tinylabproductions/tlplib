@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -25,15 +26,26 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static LazyVal<B> project<A, B>(this LazyVal<A> lazy, Fn<A, B> projector) =>
       new ProjectedLazyVal<A, B>(lazy, projector);
 
-    public static LazyVal<LST> upcast<MST, LST>(this LazyVal<MST> lazy) where MST : LST =>
-      project(lazy, mst => (LST) mst);
+    [PublicAPI]
+    public static LazyVal<LessSpecific> upcast<MoreSpecific, LessSpecific>(
+      this LazyVal<MoreSpecific> lazy
+    ) where MoreSpecific : LessSpecific =>
+      project(lazy, mst => (LessSpecific) mst);
 
+    [PublicAPI]
+    public static LazyVal<LessSpecific> upcast<MoreSpecific, LessSpecific>(
+      this LazyVal<MoreSpecific> lazy, LessSpecific example
+    ) where MoreSpecific : LessSpecific => lazy.upcast<MoreSpecific, LessSpecific>();
+
+    [PublicAPI]
     public static A getOrElse<A>(this LazyVal<A> lazy, Fn<A> orElse) =>
       lazy.isCompleted ? lazy.strict : orElse();
 
+    [PublicAPI]
     public static A getOrElse<A>(this LazyVal<A> lazy, A orElse) =>
       lazy.isCompleted ? lazy.strict : orElse;
 
+    [PublicAPI]
     public static A getOrNull<A>(this LazyVal<A> lazy) where A : class =>
       lazy.getOrElse((A) null);
   }
