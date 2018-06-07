@@ -76,6 +76,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
+  public struct None {
+    public static None i => new None();
+  }
+  
   public
 #if ENABLE_IL2CPP
     sealed class
@@ -261,6 +265,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public static bool operator false(Option<A> opt) => opt.isNone;
 
     [PublicAPI] public static Option<A> operator |(Option<A> o1, Option<A> o2) => o1 ? o1 : o2;
+
+    /// <summary>Allows implicitly converting <see cref="None"/> to None <see cref="Option{A}"/>.</summary>
+    public static implicit operator Option<A>(None _) => None;
   }
 
   public struct OptionEnumerator<A> {

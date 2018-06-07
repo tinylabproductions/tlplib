@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -19,8 +20,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Option<A> opt<A>(A? value) where A : struct =>
       value == null ? Option<A>.None : some((A) value);
 
-    public static Option<A> some<A>(A value) => new Option<A>(value);
-    public static Option<A> none<A>() => Option<A>.None;
+    [PublicAPI] public static Option<A> some<A>(A value) => new Option<A>(value);
+    [PublicAPI] public static Option<A> none<A>() => Option<A>.None;
+    [PublicAPI] public static None none_ => new None();
 
     public static Either<A, B> left<A, B>(A value) { return new Either<A, B>(value); }
     public static Either<A, B> right<A, B>(B value) { return new Either<A, B>(value); }
