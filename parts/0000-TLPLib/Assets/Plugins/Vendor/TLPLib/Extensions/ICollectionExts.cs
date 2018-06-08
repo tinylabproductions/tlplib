@@ -7,6 +7,10 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class ICollectionExts {
+    [PublicAPI]
+    public static bool indexValid<A>(this ICollection<A> collection, int index) =>
+      index >= 0 && index < collection.Count;
+    
     public static B[] ToArray<A, B>(this ICollection<A> collection, Fn<A, B> mapper) {
       var bArr = new B[collection.Count];
       var idx = 0;
@@ -17,6 +21,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return bArr;
     }
 
+    [PublicAPI]
     public static Range indexRange<A>(this ICollection<A> coll) =>
       new Range(0, coll.Count - 1);
 

@@ -10,6 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class IListExts {
+    [PublicAPI]
     public static A a<A>(this IList<A> list, int index) {
       if (index < 0 || index >= list.Count) throw new ArgumentOutOfRangeException(
         nameof(index),
@@ -18,12 +19,27 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return list[index];
     }
 
+    [PublicAPI]
+    public static bool getOut<A>(this IList<A> list, int index, out A a) {
+      if (list.indexValid(index)) {
+        a = list[index];
+        return true;
+      }
+      else {
+        a = default;
+        return false;
+      }
+    }
+    
+    [PublicAPI]
     public static Option<T> get<T>(this IList<T> list, int index) =>
-      index >= 0 && index < list.Count ? F.some(list[index]) : F.none<T>();
+      list.indexValid(index) ? F.some(list[index]) : F.none<T>();
 
+    [PublicAPI]
     public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) =>
-      index >= 0 && index < list.Count ? list[index] : defaultValue;
+      list.indexValid(index) ? list[index] : defaultValue;
 
+    [PublicAPI]
     public static Option<T> last<T>(this IList<T> list) => list.get(list.Count - 1);
 
     public static List<A> reversed<A>(this List<A> list) {
