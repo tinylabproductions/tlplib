@@ -1,18 +1,21 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record]
   public partial struct WebRequestError {
-    public readonly Url url;
-    public readonly Either<ErrorMsg, NoInternetError> message;
+    [PublicAPI] public readonly Url url;
+    [PublicAPI] public readonly Either<ErrorMsg, NoInternetError> message;
 
-    public ErrorMsg simplify => message.fold(err => err, nie => new ErrorMsg($"No internet: ${nie.message}"));
+    [PublicAPI] public ErrorMsg simplify => message.fold(
+      err => err, 
+      nie => new ErrorMsg($"No internet: ${nie.message}", reportToErrorTracking: false)
+    );
   }
   
   [Record]
   public partial struct NoInternetError {
-    public readonly string message;
+    [PublicAPI] public readonly string message;
   }
 }

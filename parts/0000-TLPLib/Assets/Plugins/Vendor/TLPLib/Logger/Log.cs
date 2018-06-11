@@ -96,11 +96,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public readonly Option<Object> context;
     /// <summary>A log entry might have backtrace attached to it.</summary>
     public readonly Option<Backtrace> backtrace;
+    /// <summary>Whether this entry should be reported to any error tracking that we have.</summary>
+    public readonly bool reportToErrorTracking;
 
     public LogEntry(
       string message,
       ImmutableArray<Tpl<string, string>> tags,
       ImmutableArray<Tpl<string, string>> extras,
+      bool reportToErrorTracking = true,
       Option<Backtrace> backtrace = default,
       Option<Object> context = default
     ) {
@@ -110,6 +113,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       this.message = message;
       this.tags = tags;
       this.extras = extras;
+      this.reportToErrorTracking = reportToErrorTracking;
       this.backtrace = backtrace;
       this.context = context;
     }
@@ -124,39 +128,41 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     [PublicAPI] public static LogEntry simple(
-      string message, Option<Backtrace> backtrace = default, Object context = null
+      string message, bool reportToErrorTracking = true, 
+      Option<Backtrace> backtrace = default, Object context = null
     ) => new LogEntry(
       message: message, 
       tags: ImmutableArray<Tpl<string, string>>.Empty,
       extras: ImmutableArray<Tpl<string, string>>.Empty,
+      reportToErrorTracking: reportToErrorTracking,
       backtrace: backtrace, context: context.opt()
     );
 
     [PublicAPI] public static LogEntry tags_(
-      string message, ImmutableArray<Tpl<string, string>> tags, 
+      string message, ImmutableArray<Tpl<string, string>> tags, bool reportToErrorTracking = true, 
       Option<Backtrace> backtrace = default, Object context = null
     ) => new LogEntry(
       message: message, tags: tags, extras: ImmutableArray<Tpl<string, string>>.Empty,
-      backtrace: backtrace, context: context.opt()
+      backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
     );
 
     [PublicAPI] public static LogEntry extras_(
-      string message, ImmutableArray<Tpl<string, string>> extras, 
+      string message, ImmutableArray<Tpl<string, string>> extras, bool reportToErrorTracking = true, 
       Option<Backtrace> backtrace = default, Object context = null
     ) => new LogEntry(
       message: message, tags: ImmutableArray<Tpl<string, string>>.Empty, extras: extras,
-      backtrace: backtrace, context: context.opt()
+      backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
     );
 
     public static LogEntry fromException(
-      string message, Exception ex, Object context = null
-    ) => simple($"{message}: {ex.Message}", Backtrace.fromException(ex), context);
+      string message, Exception ex, bool reportToErrorTracking = true, Object context = null
+    ) => simple($"{message}: {ex.Message}", reportToErrorTracking, Backtrace.fromException(ex), context);
 
     public LogEntry withMessage(string message) =>
-      new LogEntry(message, tags, extras, backtrace, context);
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
 
     public LogEntry withMessage(Fn<string, string> message) =>
-      new LogEntry(message(this.message), tags, extras, backtrace, context);
+      new LogEntry(message(this.message), tags, extras, reportToErrorTracking, backtrace, context);
 
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> stringTupleArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
@@ -319,7 +325,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
           message,
           ImmutableArray<Tpl<string, string>>.Empty,
           ImmutableArray<Tpl<string, string>>.Empty,
-          backtrace, context: Option<Object>.None
+          reportToErrorTracking: true,
+          backtrace: backtrace, context: Option<Object>.None
         ));
         return F.scs(logEvent);
       }
@@ -369,6 +376,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
   }
 
+  [PublicAPI]
   public class NoOpLog : LogBase {
     public static readonly NoOpLog instance = new NoOpLog();
     NoOpLog() {}

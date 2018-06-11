@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public static class ErrorReporter {
@@ -16,19 +17,20 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
     }
 
-    public delegate void OnError(LogEvent data);
+    [PublicAPI] public delegate void OnError(LogEvent data);
 
-    public static readonly LazyVal<IObservable<LogEvent>> defaultStream =
+    [PublicAPI] public static readonly LazyVal<IObservable<LogEvent>> defaultStream =
       UnityLog.fromUnityLogMessages.lazyMap(o => o.join(Log.@default.messageLogged));
 
     /// <summary>
     /// Report warnings and errors from default logger and unity log messages.
     /// </summary>
+    [PublicAPI] 
     public static ISubscription registerDefault(
       this OnError onError, IDisposableTracker tracker, Log.Level logFrom
     ) =>
       defaultStream.strict
-      .filter(e => e.level >= logFrom)
+      .filter(e => e.entry.reportToErrorTracking && e.level >= logFrom)
       .subscribe(tracker, e => onError(e));
   }
 }
