@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Sprites;
@@ -7,6 +8,7 @@ using UnityEngine.UI;
 namespace com.tinylabproductions.TLPLib.Components.ui {
   // Copied from unity bitbucket and added spritePixelsPerUnit
   // https://bitbucket.org/Unity-Technologies/ui/src/f0c70f707cf09f959ad417049cb070f8e296ffe2/UnityEngine.UI/UI/Core/Image.cs?at=5.5&fileviewer=file-view-default
+  // also added TransparentEdges mode
   [AddComponentMenu("UI/CustomImage", 11)]
   public class CustomImage : MaskableGraphic, ISerializationCallbackReceiver, ILayoutElement, ICanvasRaycastFilter {
     public enum Type {
@@ -14,7 +16,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       Sliced,
       Tiled,
       Filled,
-      TransparentEdges
+      // TLP values
+      // These are offet on purpose, because unity may add new values to this struct
+      TransparentEdgesBoth = 100,
+      TransparentEdgesLeft = 101,
+      TransparentEdgesRight = 102
     }
 
     public enum FillMethod {
@@ -307,8 +313,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         case Type.Filled:
           GenerateFilledSprite(toFill, m_PreserveAspect);
           break;
-        case Type.TransparentEdges:
-          GenerateTranparentEdgesSprite(toFill);
+        case Type.TransparentEdgesBoth:
+          GenerateTranparentEdgesSprite(toFill, transparentLeft: true, transparentRight: true);
+          break;
+        case Type.TransparentEdgesLeft:
+          GenerateTranparentEdgesSprite(toFill, transparentLeft: true, transparentRight: false);
+          break;
+        case Type.TransparentEdgesRight:
+          GenerateTranparentEdgesSprite(toFill, transparentLeft: false, transparentRight: true);
           break;
       }
     }
@@ -336,10 +348,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     #region Various fill functions
 
-    void GenerateTranparentEdgesSprite(VertexHelper toFill) {
+    void GenerateTranparentEdgesSprite(VertexHelper toFill, bool transparentLeft, bool transparentRight) {
 
       Vector4 v = GetDrawingDimensions(false);
-      var tranpColor = Color.clear;
+      var transpColorLeft = transparentLeft ? color.withAlpha(0) : color;
+      var transpColorRight = transparentRight ? color.withAlpha(0) : color;
 
       if (m_FillMethod == FillMethod.Horizontal) {
         var wd = (v.z - v.x) * fillAmount;
@@ -348,7 +361,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         AddQuad(toFill,
           new Vector2(v.x, v.y),
           new Vector2(v.x + wd, v.w),
-          new Color32[] {tranpColor, tranpColor, color, color},
+          new Color32[] {transpColorLeft, transpColorLeft, color, color},
           new Vector2(0, 0),
           new Vector2(fillAmount, 1)
         );
@@ -362,7 +375,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         AddQuad(toFill,
           new Vector2(v.z - wd, v.y),
           new Vector2(v.z, v.w),
-          new Color32[] {color, color, tranpColor, tranpColor},
+          new Color32[] {color, color, transpColorRight, transpColorRight},
           new Vector2(1 - fillAmount, 0),
           new Vector2(1, 1)
         );
@@ -375,7 +388,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         AddQuad(toFill,
           new Vector2(v.x, v.y),
           new Vector2(v.z, v.y + wd),
-          new Color32[] {tranpColor, color, color, tranpColor},
+          new Color32[] {transpColorLeft, color, color, transpColorLeft},
           new Vector2(0, 0),
           new Vector2(1, fillAmount)
         );
@@ -389,7 +402,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         AddQuad(toFill,
           new Vector2(v.x, v.w - wd),
           new Vector2(v.z, v.w),
-          new Color32[] {color, tranpColor, tranpColor, color},
+          new Color32[] {color, transpColorRight, transpColorRight, color},
           new Vector2(0, 1 - fillAmount),
           new Vector2(1, 1)
         );
