@@ -1,5 +1,7 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -135,6 +137,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       onEnd.subscribe(tracker, act);
       return this;
     }
+
+    [PublicAPI]
+    public Future<TweenCallback.Event> onEndFtr() =>
+      Future.a<TweenCallback.Event>(p => onEnd.subscribeForOneEvent(tracker, e => p.tryComplete(e)));
 
     /// <summary>Plays a tween from the start/end.</summary>
     [PublicAPI]

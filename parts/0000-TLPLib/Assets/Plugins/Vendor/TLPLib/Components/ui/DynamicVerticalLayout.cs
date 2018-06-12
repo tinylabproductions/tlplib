@@ -103,8 +103,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly DynamicVerticalLayout backing;
       readonly List<IElementData> layoutData;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
-      readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
       readonly bool renderLatestItemsFirst;
+
+      public readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
 
       public Init(
         DynamicVerticalLayout backing,
