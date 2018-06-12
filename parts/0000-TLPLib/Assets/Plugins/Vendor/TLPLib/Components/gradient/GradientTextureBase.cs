@@ -17,23 +17,14 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     
     [Inspect]
     void generate() {
-      var texture = new Texture2D(textureSize, textureSize, TextureFormat.ARGB32, false);
-      var pixels = new Color[textureSize * textureSize];
+      var textureSizeX = direction == Direction.Horizontal ? textureSize : 1;
+      var textureSizeY = direction == Direction.Vertical ? textureSize : 1;
+      var texture = new Texture2D(textureSizeX, textureSizeY, TextureFormat.ARGB32, false);
+      var pixels = new Color[textureSize];
 
-      if (direction == Direction.Horizontal)
-        for (int x = 0; x < textureSize; x++) {
-          var c = gradient.Evaluate(x / (float) textureSize);
-          for (int y = 0; y < textureSize; y++) {
-            pixels[x + y * textureSize] = c;
-          }
-        }
-      else if (direction == Direction.Vertical)
-        for (int y = 0; y < textureSize; y++) {
-          var c = gradient.Evaluate(y / (float) textureSize);
-          for (int x = 0; x < textureSize; x++) {
-            pixels[x + y * textureSize] = c;
-          }
-        }
+      for (var x = 0; x < textureSize; x++) {
+        pixels[x] = gradient.Evaluate(x / (float) textureSize);
+      }
 
       texture.SetPixels(pixels);
       texture.Apply();
