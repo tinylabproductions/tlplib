@@ -1,20 +1,19 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
-  public class GradientTexture : MonoBehaviour, IMB_Start {
-    [SerializeField, NotNull] int textureSize = 128;
-    [SerializeField, NotNull] Image textureTarget;
+  public abstract class GradientTextureBase : MonoBehaviour, IMB_Start {
+    [SerializeField] int textureSize = 128;
     [SerializeField, NotNull] Gradient gradient = new Gradient();
-    [SerializeField, NotNull] Direction direction = Direction.Horizontal;
+    [SerializeField] Direction direction = Direction.Horizontal;
 
-    enum Direction : byte { Vertical, Horizontal }
+    enum Direction : byte { Vertical = 0, Horizontal = 1 }
 
     public void Start() => generate();
+
+    protected abstract void setTexture(Texture2D texture);
     
     [Inspect]
     void generate() {
@@ -38,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
 
       texture.SetPixels(pixels);
       texture.Apply();
-      textureTarget.sprite = texture.toSprite();
+      setTexture(texture);
     }
   }
 }
