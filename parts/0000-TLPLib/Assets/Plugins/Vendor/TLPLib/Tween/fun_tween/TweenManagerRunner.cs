@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -40,7 +41,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         // as we are running the tween, we want to set it's state to zero
         // and run on the next frame.
         if (phaseEqualsTweenTime(instance.phase, tm.time)) {
-          tm.update(0);
+          var timeline = tm.timeline;
+          timeline.applyStateAt(timeline.timePassed);
         }
 
         if (running) {
