@@ -138,10 +138,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       return this;
     }
 
-    [PublicAPI]
-    public Future<TweenCallback.Event> onEndFtr() =>
-      Future.a<TweenCallback.Event>(p => onEnd.subscribeForOneEvent(tracker, e => p.tryComplete(e)));
-
     /// <summary>Plays a tween from the start/end.</summary>
     [PublicAPI]
     public TweenManager play(bool forwards = true) {
