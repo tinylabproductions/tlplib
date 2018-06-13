@@ -367,6 +367,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this.falses = falses;
     }
 
+    public void Deconstruct(out ImmutableList<A> trues, out ImmutableList<A> falses) {
+      trues = this.trues;
+      falses = this.falses;
+    }
+
     #region Equality
 
     public bool Equals(Partitioned<A> other) {
