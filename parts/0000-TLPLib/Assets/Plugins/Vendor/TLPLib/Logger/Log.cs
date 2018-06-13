@@ -158,11 +158,21 @@ namespace com.tinylabproductions.TLPLib.Logger {
       string message, Exception ex, bool reportToErrorTracking = true, Object context = null
     ) => simple($"{message}: {ex.Message}", reportToErrorTracking, Backtrace.fromException(ex), context);
 
+    [PublicAPI]
     public LogEntry withMessage(string message) =>
       new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
 
+    [PublicAPI]
     public LogEntry withMessage(Fn<string, string> message) =>
       new LogEntry(message(this.message), tags, extras, reportToErrorTracking, backtrace, context);
+
+    [PublicAPI]
+    public LogEntry withExtras(ImmutableArray<Tpl<string, string>> extras) =>
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
+
+    [PublicAPI]
+    public LogEntry withExtras(Fn<ImmutableArray<Tpl<string, string>>, ImmutableArray<Tpl<string, string>>> extras) =>
+      new LogEntry(message, tags, extras(this.extras), reportToErrorTracking, backtrace, context);
 
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> stringTupleArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
