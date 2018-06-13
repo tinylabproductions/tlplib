@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           ? a1 < 0
             ? float.MinValue
             : float.MaxValue
-        : a1 / a2;
+          : a1 / a2;
       return new Vector2(div(v.x, v2.x), div(v.y, v2.y));
     }
 
