@@ -103,10 +103,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
       readonly bool renderLatestItemsFirst;
 
+      // If Option is None, that means there is no backing view, it is only a spacer.
       readonly Dictionary<IElementData, Option<IElementView>> _items = 
         new Dictionary<IElementData, Option<IElementView>>();
 
-      public IEnumerable<KeyValuePair<IElementData, Option<IElementView>>> items => _items;
+      public Option<Option<IElementView>> get(IElementData key) => _items.get(key);
 
       public Init(
         DynamicVerticalLayout backing,
