@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -188,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [PublicAPI]
-    public static Future<Either<ErrorMsg, A>> toFutureSimple<A>(
+    public static Future<Either<LogEntry, A>> toFutureSimple<A>(
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Fn<UnityWebRequest, A> onSuccess
     ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
 
@@ -205,15 +207,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         p.complete(
           responseCode == 0 && req.error == "Unknown Error"
           ? new WebRequestError(url, new NoInternetError(msg))
-          : new WebRequestError(url, new ErrorMsg(msg))
+          : new WebRequestError(url, LogEntry.simple(msg))
         );
         req.Dispose();
       }
       else if (!acceptedResponseCodes.contains(responseCode)) {
         var url = new Url(req.url); // Capture URL before disposing
+        var extrasB = ImmutableArray.CreateBuilder<Tpl<string, string>>();
+        foreach (var header in req.GetResponseHeaders()) {
+          extrasB.Add(F.t(header.Key, header.Value));
+        }
+        extrasB.Add(F.t("response-text", req.downloadHandler.text));
         req.Dispose();
-        p.complete(new WebRequestError(url, new ErrorMsg(
-          $"Received response code {responseCode} was not in {acceptedResponseCodes}"
+        p.complete(new WebRequestError(url, LogEntry.extras_(
+          $"Received response code {responseCode} was not in {acceptedResponseCodes}",
+          extrasB.MoveToImmutableSafe()
         )));
       }
       else {

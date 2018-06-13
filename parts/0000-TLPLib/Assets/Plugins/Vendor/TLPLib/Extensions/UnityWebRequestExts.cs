@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine.Networking;
 
@@ -20,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     [PublicAPI]
-    public static Future<Either<ErrorMsg, byte[]>> downloadToRamSimpleError(
+    public static Future<Either<LogEntry, byte[]>> downloadToRamSimpleError(
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes
     ) => req.downloadToRam(acceptedResponseCodes).map(_ => _.mapLeft(err => err.simplify));
   }
