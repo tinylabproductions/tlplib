@@ -14,6 +14,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
+using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -492,7 +493,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         });
     }
 
+    static readonly bool[] BOOLS = {true, false};
     static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
+    
+    [PublicAPI]
+    public void registerBools(string name, Ref<bool> reference, string comment = null) =>
+      registerEnum(name, reference, BOOLS, comment);
+    
+    [PublicAPI]
     public void registerBools(string name, Ref<Option<bool>> reference, string comment = null) =>
       registerEnum(name, reference, OPT_BOOLS, comment);
   }
