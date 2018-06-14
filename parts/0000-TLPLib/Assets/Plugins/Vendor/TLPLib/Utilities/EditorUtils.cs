@@ -1,7 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
-using UnityEngine;
+using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditorInternal;
@@ -41,5 +42,24 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       if (!InternalEditorUtility.inBatchMode) EditorUtility.DisplayDialog(title, body, "OK");
 #endif
     }
+
+#if UNITY_EDITOR
+    public enum DisplayDialogResult : byte { OK, Alt, Cancel }
+    public static DisplayDialogResult displayDialogComplex(
+      string title, string message, string ok, string cancel, string alt
+    ) {
+      // Alt and cancel is mixed intentionally
+      // Unity maps 'x button' and 'keyboard esc' to alt and not to cancel for some reason
+      var result = EditorUtility.DisplayDialogComplex(
+        title: title, message: message, ok: ok, cancel: alt, alt: cancel
+      );
+      switch (result) {
+        case 0: return DisplayDialogResult.OK;
+        case 1: return DisplayDialogResult.Alt;
+        case 2: return DisplayDialogResult.Cancel;
+        default: throw new ArgumentOutOfRangeException($"Unknown return value from unity: {result}");
+      }
+    }
+#endif
   }
 }
