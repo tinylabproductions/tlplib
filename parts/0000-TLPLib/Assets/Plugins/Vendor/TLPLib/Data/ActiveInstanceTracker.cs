@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   public class ActiveInstanceTracker<A> {
     readonly HashSet<A> _active = new HashSet<A>();
     readonly List<A> pendingEnables = new List<A>(), pendingDisables = new List<A>();
-
+    
     readonly Subject<A> 
       _onEnabled = new Subject<A>(),
       _onDisabled = new Subject<A>();
@@ -32,6 +32,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     // help us out here, but it would generate object instances on every object enable/disable,
     // which is suboptimal.
     bool iterating;
+
+    /// It is unsafe because when we get an enumerator of a mutable data structure, it can
+    /// be invalidated by mutation to that data structure. Make sure you dispose of the enumerator
+    /// before any mutations can happen.
+    [PublicAPI] public IEnumerable<A> __unsafe__active => _active;
 
     [PublicAPI] public void onEnable(A a) {
       if (iterating) {
