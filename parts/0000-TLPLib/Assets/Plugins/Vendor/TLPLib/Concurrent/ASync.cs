@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -17,7 +20,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static ASyncHelperBehaviour _behaviour;
 
-    static ASyncHelperBehaviour behaviour { get {
+    [PublicAPI]
+    public static ASyncHelperBehaviour behaviour { get {
       if (
 #if !UNITY_EDITOR
         // Cast to System.Object here, to avoid Unity overloaded UnityEngine.Object == operator
@@ -174,22 +178,57 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public static Future<Either<ErrorMsg, UnityWebRequest>> toFuture(this UnityWebRequest req) {
-      Promise<Either<ErrorMsg, UnityWebRequest>> promise;
-      var f = Future<Either<ErrorMsg, UnityWebRequest>>.async(out promise);
-      StartCoroutine(webRequestEnumerator(req, promise));
+    /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
+    [PublicAPI]
+    public static Future<Either<WebRequestError, A>> toFuture<A>(
+      this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, 
+      Fn<UnityWebRequest, A> onSuccess
+    ) {
+      var f = Future<Either<WebRequestError, A>>.async(out var promise);
+      StartCoroutine(webRequestEnumerator(req, promise, acceptedResponseCodes, onSuccess));
       return f;
     }
 
-    public static IEnumerator webRequestEnumerator(
-      UnityWebRequest req, Promise<Either<ErrorMsg, UnityWebRequest>> p
+    [PublicAPI]
+    public static Future<Either<LogEntry, A>> toFutureSimple<A>(
+      this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Fn<UnityWebRequest, A> onSuccess
+    ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
+
+    [PublicAPI]
+    public static IEnumerator webRequestEnumerator<A>(
+      UnityWebRequest req, Promise<Either<WebRequestError, A>> p, AcceptedResponseCodes acceptedResponseCodes,
+      Fn<UnityWebRequest, A> onSuccess
     ) {
       yield return req.Send();
+      var responseCode = req.responseCode;
       if (req.isError) {
-        p.complete(new ErrorMsg(req.error));
+        var msg = $"error: {req.error}, response code: {responseCode}";
+        var url = new Url(req.url);
+        p.complete(
+          responseCode == 0 && req.error == "Unknown Error"
+          ? new WebRequestError(url, new NoInternetError(msg))
+          : new WebRequestError(url, LogEntry.simple(msg))
+        );
         req.Dispose();
       }
-      else p.complete(req);
+      else if (!acceptedResponseCodes.contains(responseCode)) {
+        var url = new Url(req.url); // Capture URL before disposing
+        var extrasB = ImmutableArray.CreateBuilder<Tpl<string, string>>();
+        foreach (var header in req.GetResponseHeaders()) {
+          extrasB.Add(F.t(header.Key, header.Value));
+        }
+        extrasB.Add(F.t("response-text", req.downloadHandler.text));
+        req.Dispose();
+        p.complete(new WebRequestError(url, LogEntry.extras_(
+          $"Received response code {responseCode} was not in {acceptedResponseCodes}",
+          extrasB.MoveToImmutableSafe()
+        )));
+      }
+      else {
+        var a = onSuccess(req);
+        req.Dispose();
+        p.complete(a);
+      }
     }
 
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
@@ -226,6 +265,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
+    /// <summary>Runs action forever every frame.</summary>
+    [PublicAPI]
+    public static IEnumerator everyFrameEnumerator(Action action) {
+      while (true) {
+        action();
+        yield return null;
+      }
+      // ReSharper disable once IteratorNeverReturns
+    }
+    
     public static IEnumerator NextFrameEnumerator(Action action) {
       yield return null;
       action();

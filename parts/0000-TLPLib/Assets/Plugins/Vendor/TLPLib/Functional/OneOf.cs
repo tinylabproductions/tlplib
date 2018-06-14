@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using Smooth.Collections;
 
@@ -46,23 +45,25 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public bool Equals(OneOf<A, B, C> other) {
       if (whichOne != other.whichOne) return false;
-      if (isA) return EqComparer<A>.Default.Equals(_aValue, other._aValue);
-      if (isB) return EqComparer<B>.Default.Equals(_bValue, other._bValue);
-      return EqualityComparer<C>.Default.Equals(_cValue, other._cValue);
+      switch (whichOne) {
+        case OneOf.Choice.A: return EqComparer<A>.Default.Equals(_aValue, other._aValue);
+        case OneOf.Choice.B: return EqComparer<B>.Default.Equals(_bValue, other._bValue);
+        case OneOf.Choice.C: return EqComparer<C>.Default.Equals(_cValue, other._cValue);
+        default: throw new IllegalStateException("Unreachable code");
+      }
     }
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is OneOf<A, B, C> && Equals((OneOf<A, B, C>) obj);
+      return obj is OneOf<A, B, C> oneof && Equals(oneof);
     }
 
     public override int GetHashCode() {
-      unchecked {
-        var hashCode = EqComparer<A>.Default.GetHashCode(_aValue);
-        hashCode = (hashCode * 397) ^ EqComparer<B>.Default.GetHashCode(_bValue);
-        hashCode = (hashCode * 397) ^ EqComparer<C>.Default.GetHashCode(_cValue);
-        hashCode = (hashCode * 397) ^ (int) whichOne;
-        return hashCode;
+      switch (whichOne) {
+        case OneOf.Choice.A: return EqComparer<A>.Default.GetHashCode(_aValue);
+        case OneOf.Choice.B: return EqComparer<B>.Default.GetHashCode(_bValue);
+        case OneOf.Choice.C: return EqComparer<C>.Default.GetHashCode(_cValue);
+        default: throw new IllegalStateException("Unreachable code");
       }
     }
 

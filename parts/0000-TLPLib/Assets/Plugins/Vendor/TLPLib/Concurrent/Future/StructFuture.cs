@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   struct UnfulfilledFuture : IEquatable<UnfulfilledFuture> {
@@ -9,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is UnfulfilledFuture && Equals((UnfulfilledFuture) obj);
+      return obj is UnfulfilledFuture future && Equals(future);
     }
 
     public override int GetHashCode() => nameof(UnfulfilledFuture).GetHashCode();
@@ -24,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
    * Struct based future which does not generate garbage if it's actually
    * synchronous.
    **/
-  public struct Future<A> : IEquatable<Future<A>> {
+  public struct Future<A> : IEquatable<Future<A>>, HigherKind<Future.W, A> {
     /* Future with a known value|unfulfilled future|async future. */
     readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);
@@ -48,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is Future<A> && Equals((Future<A>) obj);
+      return obj is Future<A> future && Equals(future);
     }
 
     public override int GetHashCode() => value.GetHashCode();
@@ -69,8 +70,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /// <summary>Asynchronous heap based future which can be completed later.</summary>
     public static Future<A> async(Act<Promise<A>, Future<A>> body) {
-      Promise<A> promise;
-      var future = @async(out promise);
+      var future = async(out var promise);
       body(promise, future);
       return future;
     }
@@ -156,9 +156,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       var fa = this;
       return Future<C>.async(p => {
-        Action tryComplete = () => {
-          foreach (var ab in fa.value.zip(fb.value, mapper)) p.tryComplete(ab);
-        };
+        void tryComplete() {
+          foreach (var ab in fa.value.zip(fb.value, mapper)) 
+            p.tryComplete(ab);
+        }
+
         fa.onComplete(a => tryComplete());
         fb.onComplete(b => tryComplete());
       });

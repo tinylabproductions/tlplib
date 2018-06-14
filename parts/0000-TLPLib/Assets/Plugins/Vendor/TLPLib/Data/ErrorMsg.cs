@@ -3,46 +3,28 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct ErrorMsg : IEquatable<ErrorMsg> {
-    public readonly string s;
-    public readonly Option<Object> context;
+  [Record(GenerateConstructor = false)]
+  public partial struct ErrorMsg {
+    [PublicAPI] public readonly string s;
+    /// <see cref="LogEntry.reportToErrorTracking"/>
+    [PublicAPI] public readonly bool reportToErrorTracking;
+    [PublicAPI] public readonly Option<Object> context;
 
-    public ErrorMsg(string s, Object context = null) {
+    ErrorMsg(string s, bool reportToErrorTracking, Option<Object> context) {
       this.s = s;
-      this.context = context.opt();
+      this.reportToErrorTracking = reportToErrorTracking;
+      this.context = context;
     }
 
-    public static implicit operator LogEntry(ErrorMsg errorMsg) => new LogEntry(
-      message: errorMsg.s,
-      tags: ImmutableArray<Tpl<string, string>>.Empty,
-      extras: ImmutableArray<Tpl<string, string>>.Empty,
-      context: errorMsg.context
-    );
+    public ErrorMsg(string s, bool reportToErrorTracking = true, Object context = null) 
+      : this(s, reportToErrorTracking, context.opt()) {}
 
-    #region Equality
-
-    public bool Equals(ErrorMsg other) => string.Equals(s, other.s) && context.Equals(other.context);
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) return false;
-      return obj is ErrorMsg && Equals((ErrorMsg) obj);
-    }
-
-    public override int GetHashCode() {
-      unchecked {
-        return ((s != null ? s.GetHashCode() : 0) * 397) ^ context.GetHashCode();
-      }
-    }
-
-    public static bool operator ==(ErrorMsg left, ErrorMsg right) => left.Equals(right);
-    public static bool operator !=(ErrorMsg left, ErrorMsg right) => !left.Equals(right);
-
-    #endregion
-
-    public override string ToString() => $"{nameof(ErrorMsg)}({s})";
+    public static implicit operator LogEntry(ErrorMsg errorMsg) => errorMsg.toLogEntry();
 
     public LogEntry toLogEntry() => new LogEntry(
       s,
@@ -50,5 +32,9 @@ namespace com.tinylabproductions.TLPLib.Data {
       ImmutableArray<Tpl<string, string>>.Empty,
       context: context
     );
+    
+    [PublicAPI] public ErrorMsg withMessage(Fn<string, string> f) => 
+      new ErrorMsg(f(s), reportToErrorTracking, context);
+    [PublicAPI] public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
   }
 }

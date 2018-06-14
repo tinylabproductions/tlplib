@@ -191,11 +191,15 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldBeLeft<A, B>(this Either<A, B> either, string message = null) {
-      if (! either.isLeft) Assert.Fail(message ?? $"Expected {either} to be left!");
+      if (! either.isLeft) Assert.Fail(
+        message ?? 
+        $"Expected either to be left, but it was Right({either.__unsafeGetRight.asDebugString()})!"
+      );
     }
 
-    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) =>
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) {
       either.shouldEqual(F.left<A, B>(expected), message);
+    }
 
     public static void shouldBeLeftEnum<A, B>(
       this Either<A, B> either, A expected, string message = null
@@ -204,11 +208,14 @@ namespace com.tinylabproductions.TLPLib.Test {
         a.shouldEqualEnum(expected, message);
         return;
       }
-      either.shouldEqual(F.left<A, B>(expected), message);
+      either.shouldBeLeft(message);
     }
 
     public static void shouldBeRight<A, B>(this Either<A, B> either, string message = null) {
-      if (! either.isRight) Assert.Fail(message ?? $"Expected {either} to be right!");
+      if (! either.isRight) Assert.Fail(
+        message ?? 
+        $"Expected either to be right, but it was Left({either.__unsafeGetLeft.asDebugString()})!"
+      );
     }
 
     public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) =>
@@ -221,11 +228,11 @@ namespace com.tinylabproductions.TLPLib.Test {
         b.shouldEqualEnum(expected, message);
         return;
       }
-      either.shouldEqual(F.right<A, B>(expected), message);
+      either.shouldBeRight(message);
     }
 
     public static void shouldBeError<A>(this Try<A> _try, Type exceptionType=null, string message = null) {
-      Act<string> fail = msg => failWithPrefix(message, msg);
+      void fail(string msg) => failWithPrefix(message, msg);
       _try.voidFold(
         _ => fail(
           $"Expected {_try} to be an error of {F.opt(exceptionType).fold("Exception", e => e.ToString())}"

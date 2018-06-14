@@ -8,8 +8,7 @@ using com.tinylabproductions.TLPLib.Reactive;
 namespace com.tinylabproductions.TLPLib.Data {
   // Should be class (not struct) because .write mutates object.
   class PrefValImpl<A> : PrefVal<A> {
-    public readonly bool saveOnEveryWrite;
-    public readonly string key;
+    readonly string key;
 
     readonly IPrefValueBackend backend;
     readonly IPrefValueWriter<A> writer;
@@ -29,24 +28,20 @@ namespace com.tinylabproductions.TLPLib.Data {
       set => this.trySetUntyped(value);
     }
 
-    void persist(A value) {
-      writer.write(backend, key, value);
-      if (saveOnEveryWrite) backend.save();
-    }
+    void persist(A value) => writer.write(backend, key, value);
 
     public PrefValImpl(
       string key, IPrefValueRW<A> rw, A defaultVal,
-      IPrefValueBackend backend, bool saveOnEveryWrite
+      IPrefValueBackend backend
     ) {
       this.key = key;
       writer = rw;
       this.backend = backend;
-      this.saveOnEveryWrite = saveOnEveryWrite;
       rxRef = RxRef.a(rw.read(backend, key, defaultVal));
       persistSubscription = rxRef.subscribe(NoOpDisposableTracker.instance, persist);
     }
 
-    public void forceSave() => backend.save();
+    public void save() => backend.save();
 
     public override string ToString() => $"{nameof(PrefVal<A>)}({value})";
 
@@ -78,6 +73,19 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) =>
       rxRef.subscribe(
         tracker: tracker, onEvent: onEvent,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+
+    public void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) =>
+      rxRef.subscribe(
+        tracker: tracker, onEvent: onEvent, subscription: out subscription,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument

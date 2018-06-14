@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -187,6 +188,33 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           it["should invoke mapper"] = () => mapperInvocations.shouldEqual(3);
           it["should have correct value"] = () => rx.value.shouldEqual("i1_3");
         };
+      };
+    });
+
+    [Test] public void subscribeForOneEvent() => describe(() => {
+      void addCases(IObservable<bool> rx, Action change) {
+        var actionInvocations = 0;
+        var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
+        
+        it["should invoke action"] = () => actionInvocations.shouldEqual(1);
+        it["should be unsubscribed"] = () => sub.isSubscribed.shouldBeFalse();
+
+        when["changing value"] = () => {
+          beforeEach += change;
+
+          it["should not invoke action"] = () => actionInvocations.shouldEqual(1);
+        };
+      }
+
+      when[nameof(RxVal)] = () => {
+        var rxRef = RxRef.a(1);
+        var rxVal = rxRef.map(_ => _ % 2 == 0);
+        addCases(rxVal, () => rxRef.value = 2);
+      };
+
+      when[nameof(RxRef)] = () => {
+        var rx = RxRef.a(false);
+        addCases(rx, () => rx.value = true);
       };
     });
   }

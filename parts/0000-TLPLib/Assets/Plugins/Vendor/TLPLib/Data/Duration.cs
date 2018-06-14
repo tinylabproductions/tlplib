@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -77,6 +78,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     class Numeric : Numeric<Duration> {
       public Duration add(Duration a1, Duration a2) => a1 + a2;
       public Duration subtract(Duration a1, Duration a2) => a1 - a2;
+      public Duration mult(Duration a1, Duration a2) => a1 * a2.millis;
+      public Duration div(Duration a1, Duration a2) => a1 / a2.millis;
       public Duration fromInt(int i) => new Duration(i);
       public bool eql(Duration a1, Duration a2) => a1.Equals(a2);
       public CompareResult compare(Duration a1, Duration a2) => comparable.compare(a1, a2);
@@ -97,25 +100,30 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public static class DurationExts {
-    public static Duration milli(this int v) => v.millis();
-    public static Duration millis(this int v) => new Duration(v);
+    [PublicAPI] public static Duration milli(this int v) => v.millis();
+    [PublicAPI] public static Duration millis(this int v) => new Duration(v);
 
-    public static Duration second(this int v) => v.seconds();
-    public static Duration second(this float v) => v.seconds();
-    public static Duration seconds(this int v) => Duration.fromSeconds(v);
-    public static Duration seconds(this float v) => Duration.fromSeconds(v);
+    [PublicAPI] public static Duration second(this int v) => v.seconds();
+    [PublicAPI] public static Duration second(this float v) => v.seconds();
+    [PublicAPI] public static Duration seconds(this int v) => Duration.fromSeconds(v);
+    [PublicAPI] public static Duration seconds(this float v) => Duration.fromSeconds(v);
 
-    public static Duration minute(this int v) => v.minutes();
-    public static Duration minute(this float v) => v.minutes();
-    public static Duration minutes(this int v) => Duration.fromSeconds(v * 60);
-    public static Duration minutes(this float v) => Duration.fromSeconds(v * 60);
+    [PublicAPI] public static Duration minute(this int v) => v.minutes();
+    [PublicAPI] public static Duration minute(this float v) => v.minutes();
+    [PublicAPI] public static Duration minutes(this int v) => Duration.fromSeconds(v * 60);
+    [PublicAPI] public static Duration minutes(this float v) => Duration.fromSeconds(v * 60);
 
-    public static Duration hour(this int v) => v.hours();
-    public static Duration hour(this float v) => v.hours();
-    public static Duration hours(this int v) => Duration.fromSeconds(v * 3600);
-    public static Duration hours(this float v) => Duration.fromSeconds(v * 3600);
+    [PublicAPI] public static Duration hour(this int v) => v.hours();
+    [PublicAPI] public static Duration hour(this float v) => v.hours();
+    [PublicAPI] public static Duration hours(this int v) => Duration.fromSeconds(v * 3600);
+    [PublicAPI] public static Duration hours(this float v) => Duration.fromSeconds(v * 3600);
 
-    public static Duration toDuration(this TimeSpan ts) =>
+    [PublicAPI] public static Duration day(this int v) => v.days();
+    [PublicAPI] public static Duration day(this float v) => v.days();
+    [PublicAPI] public static Duration days(this int v) => Duration.fromSeconds(v * 3600 * 24);
+    [PublicAPI] public static Duration days(this float v) => Duration.fromSeconds(v * 3600 * 24);
+
+    [PublicAPI] public static Duration toDuration(this TimeSpan ts) =>
       new Duration((int) ts.TotalMilliseconds);
   }
 }

@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       F.lazy(() => hasSystemFeature("android.hardware.touchscreen"));
 
     /* Is touchscreen supported? */
-    public static bool hasTouchscreen => _hasTouchscreen.get;
+    public static bool hasTouchscreen => _hasTouchscreen.strict;
 
     #endregion
 

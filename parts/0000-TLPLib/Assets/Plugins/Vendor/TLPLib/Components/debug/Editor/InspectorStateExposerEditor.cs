@@ -1,9 +1,12 @@
-﻿using UnityEditor;
+﻿using com.tinylabproductions.TLPLib.Functional;
+using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.debug {
   [CustomEditor(typeof(InspectorStateExposer))]
   public class InspectorStateExposerEditor : UnityEditor.Editor {
+    static readonly LazyVal<GUIStyle> multilineTextStyle = F.lazy(() => new GUIStyle {wordWrap = true});
+    
     public override void OnInspectorGUI() {
       var so = (InspectorStateExposer) serializedObject.targetObject;
       var first = true;
@@ -13,8 +16,8 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
         EditorGUILayout.Space();
         foreach (var data in group) {
           data.value.voidMatch(
-            stringValue: str => EditorGUILayout.LabelField(data.name, str.value),
-            floatValue: flt => EditorGUILayout.FloatField(data.name, flt.value),
+            stringValue: str => EditorGUILayout.LabelField(data.name, str.value, multilineTextStyle.strict),
+            floatValue: flt => EditorGUILayout.FloatField(data.name, flt.value, multilineTextStyle.strict),
             objectValue: obj => EditorGUILayout.ObjectField(
               data.name, obj.value, typeof(Object), allowSceneObjects: true
             ),

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -152,7 +153,9 @@ namespace com.tinylabproductions.TLPLib.Data {
       SerializedRW.collectionSerializer(SerializedRW.integer);
 
     static readonly IDeserializer<ImmutableArray<int>> deserializer =
-      SerializedRW.collectionDeserializer(SerializedRW.integer);
+      SerializedRW.collectionDeserializer(
+        SerializedRW.integer, CollectionBuilderKnownSizeFactory<int>.immutableArray
+      );
 
     static readonly IDeserializer<int> failingDeserializer =
       SerializedRW.integer.map(i => (i % 2 == 0).opt(i));
@@ -168,7 +171,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailing() {
-      var deserializer = SerializedRW.collectionDeserializer(failingDeserializer);
+      var deserializer = SerializedRW.collectionDeserializer(
+        failingDeserializer, CollectionBuilderKnownSizeFactory<int>.immutableArray
+      );
       checkWithNoiseOpt(deserializer, serialized, Option<ImmutableArray<int>>.None);
     }
   }

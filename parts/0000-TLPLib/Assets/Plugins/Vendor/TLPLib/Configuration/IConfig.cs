@@ -160,7 +160,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public readonly Kind kind;
     public readonly LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras;
-    public ImmutableArray<Tpl<string, string>> extras => lazyExtras.get;
+    public ImmutableArray<Tpl<string, string>> extras => lazyExtras.strict;
 
     public ConfigLookupError(Kind kind, LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras) {
       this.kind = kind;

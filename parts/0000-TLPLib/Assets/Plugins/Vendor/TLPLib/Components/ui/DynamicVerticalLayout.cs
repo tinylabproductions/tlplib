@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -99,23 +101,30 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       readonly DisposableTracker dt = new DisposableTracker();
       readonly DynamicVerticalLayout backing;
-      readonly ImmutableArray<IElementData> layoutData;
+      readonly List<IElementData> layoutData;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
-      readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
+      readonly bool renderLatestItemsFirst;
+
+      public readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
 
       public Init(
         DynamicVerticalLayout backing,
-        ImmutableArray<IElementData> layoutData
+        IEnumerable<IElementData> layoutData,
+        bool renderLatestItemsFirst = false
       ) {
         this.backing = backing;
-        this.layoutData = layoutData;
+        this.layoutData = layoutData.ToList();
+        this.renderLatestItemsFirst = renderLatestItemsFirst;
+        
         var mask = backing._maskRect;
 
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive()
         // from OnRectTransformDimensionsChange()
         // oncePerFrame() performs operation in LateUpdate
-        var maskSize = mask.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>().rectDimensionsChanged
+        var maskSize = 
+          mask.gameObject.EnsureComponent<OnRectTransformDimensionsChangeForwarder>().rectDimensionsChanged
           .oncePerFrame()
+          .filter(_ => mask) // mask can go away before late update, so double check it.
           .map(_ => mask.rect)
           .toRxVal(mask.rect);
 
@@ -128,6 +137,22 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
       }
 
+      /// <param name="element"></param>
+      /// <param name="updateLayout">
+      /// pass false and then call <see cref="updateLayout"/> manually when doing batch updates
+      /// </param>
+      [PublicAPI]
+      public void appendDataIntoLayoutData(IElementData element, bool updateLayout = true) {       
+        layoutData.Add(element);
+        if (updateLayout) this.updateLayout();
+      }
+
+      [PublicAPI]
+      public void clearLayoutData() {
+        layoutData.Clear();
+        updateLayout();
+      }
+      
       void clearLayout() {
         foreach (var kv in items) {
           foreach (var item in kv.Value) item.Dispose();
@@ -135,7 +160,12 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         items.Clear();
       }
 
-      void updateLayout() {
+      /// <summary>
+      /// You can call this after modifing the underlying data to update the layout so
+      /// it would show everything correctly.
+      /// </summary>
+      [PublicAPI]
+      public void updateLayout() {
         var visibleRect = backing._maskRect.rect.convertCoordinateSystem(
           ((Transform)backing._maskRect).some(), backing._container
         );
@@ -143,7 +173,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         var totalHeightUntilThisRow = 0f;
         var currentRowHeight = 0f;
         var currentWidthPerc = 0f;
-        foreach (var data in layoutData) {
+
+        var direction = renderLatestItemsFirst ? -1 : 1;
+        for (
+          var idx = renderLatestItemsFirst ? layoutData.Count - 1 : 0;
+          renderLatestItemsFirst ? idx >= 0 : idx < layoutData.Count;
+          idx += direction
+        ) {
+          var data = layoutData[idx];
           var itemWidthPerc = data.width.value;
           var itemLeftPerc = 0f;
           if (currentWidthPerc + itemWidthPerc > 1f + EPS) {
@@ -165,8 +202,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             width: width * itemWidthPerc,
             height: data.height
           );
+             
           var placementVisible = visibleRect.Overlaps(cellRect, true);
-
+          
           if (placementVisible && !items.ContainsKey(data)) {
             var instanceOpt = Option<IElementView>.None;
             foreach (var elementWithView in data.asElementWithView) {

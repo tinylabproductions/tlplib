@@ -12,6 +12,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
+using JetBrains.Annotations;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -36,6 +37,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
       public static readonly ISerializedRW<Option<Level>> optRw = SerializedRW.opt(rw);
     }
 
+    // InitializeOnLoad is needed to set static variables on main thread.
+    // FKRs work without it, but on Gummy Bear repo tests fail
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+#endif
+    [RuntimeInitializeOnLoadMethod]
+    static void init() {}
+
     public static readonly Level defaultLogLevel =
       Application.isEditor || Debug.isDebugBuild
       ? Level.DEBUG : Level.INFO;
@@ -55,12 +64,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static ILog _default;
     public static ILog @default {
-      get {
-        return _default ?? (
-          _default = useConsoleLog ? (ILog) ConsoleLog.instance : UnityLog.instance
-        );
-      }
-      set { _default = value; }
+      get => _default ?? (
+        _default = useConsoleLog ? (ILog) ConsoleLog.instance : UnityLog.instance
+      );
+      set => _default = value;
     }
 
     /// <summary>
@@ -70,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// </summary>
     public static ILog d => @default;
 
-    [Conditional("UNITY_EDITOR")]
+    [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void editor(object o) => EditorLog.log(o);
   }
 
@@ -89,13 +96,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public readonly Option<Object> context;
     /// <summary>A log entry might have backtrace attached to it.</summary>
     public readonly Option<Backtrace> backtrace;
+    /// <summary>Whether this entry should be reported to any error tracking that we have.</summary>
+    public readonly bool reportToErrorTracking;
 
     public LogEntry(
       string message,
       ImmutableArray<Tpl<string, string>> tags,
       ImmutableArray<Tpl<string, string>> extras,
-      Option<Backtrace> backtrace = default(Option<Backtrace>),
-      Option<Object> context = default(Option<Object>)
+      bool reportToErrorTracking = true,
+      Option<Backtrace> backtrace = default,
+      Option<Object> context = default
     ) {
       Option.ensureValue(ref backtrace);
       Option.ensureValue(ref context);
@@ -103,6 +113,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       this.message = message;
       this.tags = tags;
       this.extras = extras;
+      this.reportToErrorTracking = reportToErrorTracking;
       this.backtrace = backtrace;
       this.context = context;
     }
@@ -116,26 +127,55 @@ namespace com.tinylabproductions.TLPLib.Logger {
       return sb.ToString();
     }
 
-    public static LogEntry simple(
-      string message, Option<Backtrace> backtrace = default(Option<Backtrace>), Object context = null
+    [PublicAPI] public static LogEntry simple(
+      string message, bool reportToErrorTracking = true, 
+      Option<Backtrace> backtrace = default, Object context = null
     ) => new LogEntry(
-      message, ImmutableArray<Tpl<string, string>>.Empty,
-      ImmutableArray<Tpl<string, string>>.Empty,
+      message: message, 
+      tags: ImmutableArray<Tpl<string, string>>.Empty,
+      extras: ImmutableArray<Tpl<string, string>>.Empty,
+      reportToErrorTracking: reportToErrorTracking,
       backtrace: backtrace, context: context.opt()
     );
 
+    [PublicAPI] public static LogEntry tags_(
+      string message, ImmutableArray<Tpl<string, string>> tags, bool reportToErrorTracking = true, 
+      Option<Backtrace> backtrace = default, Object context = null
+    ) => new LogEntry(
+      message: message, tags: tags, extras: ImmutableArray<Tpl<string, string>>.Empty,
+      backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
+    );
+
+    [PublicAPI] public static LogEntry extras_(
+      string message, ImmutableArray<Tpl<string, string>> extras, bool reportToErrorTracking = true, 
+      Option<Backtrace> backtrace = default, Object context = null
+    ) => new LogEntry(
+      message: message, tags: ImmutableArray<Tpl<string, string>>.Empty, extras: extras,
+      backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
+    );
+
     public static LogEntry fromException(
-      string message, Exception ex, Object context = null
-    ) => simple($"{message}: {ex.Message}", Backtrace.fromException(ex), context);
+      string message, Exception ex, bool reportToErrorTracking = true, Object context = null
+    ) => simple($"{message}: {ex.Message}", reportToErrorTracking, Backtrace.fromException(ex), context);
 
+    [PublicAPI]
     public LogEntry withMessage(string message) =>
-      new LogEntry(message, tags, extras, backtrace, context);
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
 
+    [PublicAPI]
     public LogEntry withMessage(Fn<string, string> message) =>
-      new LogEntry(message(this.message), tags, extras, backtrace, context);
+      new LogEntry(message(this.message), tags, extras, reportToErrorTracking, backtrace, context);
 
-    public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> kvArraySerializedRw =
-      SerializedRW.immutableArray(SerializedRW.str.and(SerializedRW.str));
+    [PublicAPI]
+    public LogEntry withExtras(ImmutableArray<Tpl<string, string>> extras) =>
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
+
+    [PublicAPI]
+    public LogEntry withExtras(Fn<ImmutableArray<Tpl<string, string>>, ImmutableArray<Tpl<string, string>>> extras) =>
+      new LogEntry(message, tags, extras(this.extras), reportToErrorTracking, backtrace, context);
+
+    public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> stringTupleArraySerializedRw =
+      SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
   }
 
   public struct LogEvent {
@@ -198,8 +238,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public DeferToMainThreadLog(ILog backing) { this.backing = backing; }
 
     public Log.Level level {
-      get { return backing.level; }
-      set { backing.level = value; }
+      get => backing.level;
+      set => backing.level = value;
     }
 
     public bool willLog(Log.Level l) => backing.willLog(l);
@@ -251,7 +291,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// Prefix to all messages so we could differentiate what comes from
     /// our logging framework in Unity console.
     /// </summary>
-    public const string MESSAGE_PREFIX = "[TLPLog]";
+    const string MESSAGE_PREFIX = "[TLPLog]";
 
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
@@ -295,7 +335,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
           message,
           ImmutableArray<Tpl<string, string>>.Empty,
           ImmutableArray<Tpl<string, string>>.Empty,
-          backtrace, context: Option<Object>.None
+          reportToErrorTracking: true,
+          backtrace: backtrace, context: Option<Object>.None
         ));
         return F.scs(logEvent);
       }
@@ -345,6 +386,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
   }
 
+  [PublicAPI]
   public class NoOpLog : LogBase {
     public static readonly NoOpLog instance = new NoOpLog();
     NoOpLog() {}

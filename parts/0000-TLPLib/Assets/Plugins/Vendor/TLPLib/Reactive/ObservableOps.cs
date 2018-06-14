@@ -9,12 +9,31 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using Smooth.Collections;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class ObservableOps {
     #region #subscribe
+
+    [PublicAPI] public static ISubscription subscribe<A>(
+      this IObservable<A> observable,
+      IDisposableTracker tracker,
+      Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      // ReSharper disable once AccessToModifiedClosure
+      observable.subscribe(
+        tracker: tracker, onEvent: onEvent, subscription: out var subscription,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+      return subscription;
+    }
 
     public static ISubscription subscribe<A>(
       this IObservable<A> observable,
@@ -26,8 +45,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) {
       ISubscription subscription = null;
       // ReSharper disable once AccessToModifiedClosure
-      subscription = observable.subscribe(
-        tracker: tracker, onEvent: a => onChange(a, subscription),
+      observable.subscribe(
+        tracker: tracker, onEvent: a => onChange(a, subscription), subscription: out subscription,
         // ReSharper disable ExplicitCallerInfoArgument
         callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
         // ReSharper restore ExplicitCallerInfoArgument
@@ -35,20 +54,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return subscription;
     }
 
-    public static ISubscription subscribe<A>(
-      this IObservable<A> observable, GameObject tracker, Act<A> onChange,
+    [PublicAPI] public static ISubscription subscribe<A>(
+      this IObservable<A> observable, GameObject tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) => observable.subscribe(
-      tracker: tracker.asDisposableTracker(), onEvent: onChange,
+      tracker: tracker.asDisposableTracker(), onEvent: onEvent,
       // ReSharper disable ExplicitCallerInfoArgument
       callerMemberName: callerMemberName, callerFilePath: callerFilePath,
       callerLineNumber: callerLineNumber
       // ReSharper restore ExplicitCallerInfoArgument
     );
 
-    public static void subscribeLast<A>(
+    [PublicAPI] public static void subscribeLast<A>(
       this IObservable<A> observable, ref IDisposable subscription, Act<A> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
@@ -228,7 +247,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       o.subscribe(NoOpDisposableTracker.instance, val => { if (predicate(val)) onEvent(val); })
     );
 
-    /** Emits first value to the future and unsubscribes. **/
+    /// <summary>Emits given value upon first event to the future and unsubscribes.</summary>
+    public static Future<B> toFuture<A, B>(this IObservable<A> o, B b) =>
+      Future<B>.async((p, f) => {
+        var subscription = o.subscribe(NoOpDisposableTracker.instance, _ => p.complete(b));
+        f.onComplete(_ => subscription.unsubscribe());
+      });
+
+    /// <summary>Emits first value to the future and unsubscribes.</summary>
     public static Future<A> toFuture<A>(this IObservable<A> o) =>
       Future<A>.async((p, f) => {
         var subscription = o.subscribe(NoOpDisposableTracker.instance, p.complete);
@@ -587,16 +613,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    public static IObservable<Tpl<Option<A>, A>> changesOpt<A>(
+    [PublicAPI] public static IObservable<Tpl<Option<A>, A>> changesOpt<A>(
       this IObservable<A> o, Fn<A, A, bool> areEqual = null
+    ) => o.changesOpt(F.t, areEqual);
+
+    /// <summary>
+    /// Returns pairs of (old, new) values when they are changing.
+    /// If there was no events before, old may be None.
+    /// </summary>
+    [PublicAPI] public static IObservable<B> changesOpt<A, B>(
+      this IObservable<A> o, Fn<Option<A>, A, B> zipper, Fn<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
-      return new Observable<Tpl<Option<A>, A>>(changesBase<A, Tpl<Option<A>, A>>(
+      return new Observable<B>(changesBase<A, B>(
         o,
         (onEvent, lastValue, val) => {
           var valueChanged =
             lastValue.isNone || !areEqual(lastValue.__unsafeGetValue, val);
-          if (valueChanged) onEvent(F.t(lastValue, val));
+          if (valueChanged) onEvent(zipper(lastValue, val));
         }
       ));
     }

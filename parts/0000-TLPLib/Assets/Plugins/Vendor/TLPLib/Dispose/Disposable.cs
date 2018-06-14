@@ -1,55 +1,14 @@
 using System;
-
+using JetBrains.Annotations;
 using Smooth.Pools;
 
 namespace Smooth.Dispose {
-
-#if UNITY_IOS || UNITY_PS3 || UNITY_XBOX360 || UNITY_WII
-
-	/// <summary>
-	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
-	///
-	/// On iOS, this is a struct to avoid compute_class_bitmap errors.
-	///
-	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
-	/// </summary>
-	public struct Disposable<T> : IDisposable {
-		/// <summary>
-		/// Borrows a wrapper for the specified value and disposal delegate.
-		/// </summary>
-		public static Disposable<T> Borrow(T value, Act<T> dispose) {
-			return new Disposable<T>(value, dispose);
-		}
-
-		private readonly Act<T> dispose;
-
-		/// <summary>
-		/// The wrapped value.
-		/// </summary>
-		public readonly T value;
-
-		public Disposable(T value, Act<T> dispose) {
-			this.value = value;
-			this.dispose = dispose;
-		}
-
-		/// <summary>
-		/// Relinquishes ownership of the wrapper and disposes the wrapped value.
-		/// </summary>
-		public void Dispose() {
-			dispose(value);
-		}
-
-		/// <summary>
-		/// Relinquishes ownership of the wrapper and adds it to the disposal queue.
-		/// </summary>
-		public void DisposeInBackground() {
-			DisposalQueue.Enqueue(this);
-		}
+	// Unity runtime does not like variant interfaces. They occasionally crash.
+	// ReSharper disable once TypeParameterCanBeVariant
+	public interface IDisposable<A> : IDisposable {
+		A value { get; }
 	}
-
-#else
-
+	
 	/// <summary>
 	/// Wrapper around a value that uses the IDisposable interface to dispose of the value.
 	///
@@ -57,13 +16,13 @@ namespace Smooth.Dispose {
 	///
 	/// On other platforms, it is a pooled object to avoid boxing when disposed by a using block with the Unity compiler.
 	/// </summary>
-	public class Disposable<T> : IDisposable {
-		private static readonly Pool<Disposable<T>> pool = new Pool<Disposable<T>>(
+	public class Disposable<T> : IDisposable<T> {
+		static readonly Pool<Disposable<T>> pool = new Pool<Disposable<T>>(
 			() => new Disposable<T>(),
 			wrapper => {
 				wrapper.dispose(wrapper.value);
 				wrapper.dispose = t => {};
-				wrapper.value = default(T);
+				wrapper.value = default;
 			}
 		);
 
@@ -77,30 +36,47 @@ namespace Smooth.Dispose {
 			return wrapper;
 		}
 
-		private Act<T> dispose;
+		Act<T> dispose;
 
 		/// <summary>
 		/// The wrapped value.
 		/// </summary>
 		public T value { get; private set; }
 
-		private Disposable() {}
+		Disposable() {}
+
+		public override string ToString() => $"{nameof(Disposable<T>)}({value})";
 
 		/// <summary>
 		/// Relinquishes ownership of the wrapper, disposes the wrapped value, and returns the wrapper to the pool.
 		/// </summary>
-		public void Dispose() {
-			pool.Release(this);
-		}
+		public void Dispose() => pool.Release(this);
 
 		/// <summary>
 		/// Relinquishes ownership of the wrapper and adds it to the disposal queue.
 		/// </summary>
-		public void DisposeInBackground() {
-			DisposalQueue.Enqueue(this);
-		}
+		public void DisposeInBackground() => DisposalQueue.Enqueue(this);
 	}
 
-#endif
+	class UnpooledDisposable<A> : IDisposable<A> {
+		public A value { get; }
+		readonly Act<A> dispose;
 
+		public UnpooledDisposable(A value, Act<A> dispose) {
+			this.dispose = dispose;
+			this.value = value;
+		}
+
+		public void Dispose() => dispose(value);
+	}
+	
+	public static class Disposable {
+		[PublicAPI]
+		public static IDisposable<A> pooled<A>(A value, Act<A> dispose) =>
+			Disposable<A>.Borrow(value, dispose);
+		
+		[PublicAPI]
+		public static IDisposable<A> unpooled<A>(A value, Act<A> dispose) =>
+			new UnpooledDisposable<A>(value, dispose);
+	}
 }

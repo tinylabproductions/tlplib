@@ -21,6 +21,18 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       }
     }
 
+    /// <summary>
+    /// Sometimes Unity fails to find scriptable objects using the t: selector.
+    /// 
+    /// Our known workaround:
+    /// 1. Open asset references window.
+    /// 2. Find all instances of your scriptable object.
+    /// 3. Show Actions > Set Dirty
+    /// 4. Save project.
+    /// 5. Profit!
+    /// </summary>
+    /// <typeparam name="A"></typeparam>
+    /// <returns></returns>
     public static IEnumerable<A> getScriptableObjectsOfType<A>() where A : ScriptableObject =>
       AssetDatabase.FindAssets($"t:{typeof(A).Name}")
       .Select(loadMainAssetByGuid)

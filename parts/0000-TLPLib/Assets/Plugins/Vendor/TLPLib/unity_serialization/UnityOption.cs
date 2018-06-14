@@ -11,6 +11,8 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
+  /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
+  /// to serialize it, because Unity does not serialize generic classes.
   public abstract class UnityOption<A> : ISkipObjectValidationFields, Ref<Option<A>> {
     #region Unity Serialized Fields
 
@@ -79,45 +81,49 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public override string ToString() => value.ToString();
   }
 
-  [Serializable]
+  [Serializable, PublicAPI]
   public class UnityOptionInt : UnityOption<int> {
     public UnityOptionInt() { }
     public UnityOptionInt(Option<int> value) : base(value) { }
   }
-  [Serializable] public class UnityOptionFloat : UnityOption<float> {}
-  [Serializable] public class UnityOptionBool : UnityOption<bool> {}
-  [Serializable]
+  [Serializable, PublicAPI] public class UnityOptionFloat : UnityOption<float> {}
+  [Serializable, PublicAPI] public class UnityOptionBool : UnityOption<bool> {}
+  [Serializable, PublicAPI]
   public class UnityOptionString : UnityOption<string> {
     public UnityOptionString() { }
     public UnityOptionString(Option<string> value) : base(value) { }
   }
-  [Serializable] public class UnityOptionVector2 : UnityOption<Vector2> {}
-  [Serializable] public class UnityOptionVector3 : UnityOption<Vector3> {}
-  [Serializable] public class UnityOptionVector4 : UnityOption<Vector4> {}
-  [Serializable] public class UnityOptionColor : UnityOption<Color> {}
-  [Serializable] public class UnityOptionMonoBehaviour : UnityOption<MonoBehaviour> {}
-  [Serializable] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
-  [Serializable] public class UnityOptionAudioClip : UnityOption<AudioClip> {}
-  [Serializable]
+  [Serializable, PublicAPI] public class UnityOptionByteArray : UnityOption<byte[]> {
+    public UnityOptionByteArray(Option<byte[]> value) : base(value) { }
+  }
+  [Serializable, PublicAPI] public class UnityOptionVector2 : UnityOption<Vector2> {}
+  [Serializable, PublicAPI] public class UnityOptionVector3 : UnityOption<Vector3> {}
+  [Serializable, PublicAPI] public class UnityOptionVector4 : UnityOption<Vector4> {}
+  [Serializable, PublicAPI] public class UnityOptionColor : UnityOption<Color> {}
+  [Serializable, PublicAPI] public class UnityOptionMonoBehaviour : UnityOption<MonoBehaviour> {}
+  [Serializable, PublicAPI] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
+  [Serializable, PublicAPI] public class UnityOptionAudioClip : UnityOption<AudioClip> {}
+  [Serializable, PublicAPI]
   public class UnityOptionUInt : UnityOption<uint> {
     public UnityOptionUInt() { }
     public UnityOptionUInt(Option<uint> value) : base(value) { }
   }
-  [Serializable] public class UnityOptionUIntArray : UnityOption<uint[]> { }
-  [Serializable]
+  [Serializable, PublicAPI] public class UnityOptionUIntArray : UnityOption<uint[]> { }
+  [Serializable, PublicAPI]
   public class UnityOptionULong : UnityOption<ulong> {
     public UnityOptionULong() { }
     public UnityOptionULong(Option<ulong> value) : base(value) { }
   }
-  [Serializable] public class UnityOptionULongArray : UnityOption<ulong[]> { }
-  [Serializable] public class UnityOptionGameObject : UnityOption<GameObject> {
+  [Serializable, PublicAPI] public class UnityOptionULongArray : UnityOption<ulong[]> { }
+  [Serializable, PublicAPI] public class UnityOptionGameObject : UnityOption<GameObject> {
     public UnityOptionGameObject() {}
     public UnityOptionGameObject(Option<GameObject> value) : base(value) {}
   }
-  [Serializable] public class UnityOptionRigidbody2D : UnityOption<Rigidbody2D> { }
-  [Serializable] public class UnityOptionText : UnityOption<Text> {}
-  [Serializable] public class UnityOptionUIClickForwarder : UnityOption<UIClickForwarder> { }
-  [Serializable] public class UnityOptionTransform : UnityOption<Transform> { }
-  [Serializable] public class UnityOptionImage : UnityOption<Image> { }
-  [Serializable] public class UnityOptionTexture2D : UnityOption<Texture2D> {}
+  [Serializable, PublicAPI] public class UnityOptionRigidbody2D : UnityOption<Rigidbody2D> { }
+  [Serializable, PublicAPI] public class UnityOptionText : UnityOption<Text> {}
+  [Serializable, PublicAPI] public class UnityOptionUIClickForwarder : UnityOption<UIClickForwarder> { }
+  [Serializable, PublicAPI] public class UnityOptionTransform : UnityOption<Transform> { }
+  [Serializable, PublicAPI] public class UnityOptionImage : UnityOption<Image> { }
+  [Serializable, PublicAPI] public class UnityOptionTexture2D : UnityOption<Texture2D> {}
+  [Serializable, PublicAPI] public class UnityOptionKeyCode : UnityOption<KeyCode> {}
 }

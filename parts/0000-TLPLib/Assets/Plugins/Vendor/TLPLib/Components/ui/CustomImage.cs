@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Sprites;
@@ -7,13 +8,19 @@ using UnityEngine.UI;
 namespace com.tinylabproductions.TLPLib.Components.ui {
   // Copied from unity bitbucket and added spritePixelsPerUnit
   // https://bitbucket.org/Unity-Technologies/ui/src/f0c70f707cf09f959ad417049cb070f8e296ffe2/UnityEngine.UI/UI/Core/Image.cs?at=5.5&fileviewer=file-view-default
+  // also added TransparentEdges mode
   [AddComponentMenu("UI/CustomImage", 11)]
   public class CustomImage : MaskableGraphic, ISerializationCallbackReceiver, ILayoutElement, ICanvasRaycastFilter {
     public enum Type {
       Simple,
       Sliced,
       Tiled,
-      Filled
+      Filled,
+      // TLP values
+      // These are offet on purpose, because unity may add new values to this struct
+      TransparentEdgesBoth = 100,
+      TransparentEdgesLeft = 101,
+      TransparentEdgesRight = 102
     }
 
     public enum FillMethod {
@@ -306,6 +313,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         case Type.Filled:
           GenerateFilledSprite(toFill, m_PreserveAspect);
           break;
+        case Type.TransparentEdgesBoth:
+          GenerateTranparentEdgesSprite(toFill, transparentLeft: true, transparentRight: true);
+          break;
+        case Type.TransparentEdgesLeft:
+          GenerateTranparentEdgesSprite(toFill, transparentLeft: true, transparentRight: false);
+          break;
+        case Type.TransparentEdgesRight:
+          GenerateTranparentEdgesSprite(toFill, transparentLeft: false, transparentRight: true);
+          break;
       }
     }
 
@@ -331,6 +347,68 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     #region Various fill functions
+
+    void GenerateTranparentEdgesSprite(VertexHelper toFill, bool transparentLeft, bool transparentRight) {
+
+      Vector4 v = GetDrawingDimensions(false);
+      var transpColorLeft = transparentLeft ? color.withAlpha(0) : color;
+      var transpColorRight = transparentRight ? color.withAlpha(0) : color;
+
+      if (m_FillMethod == FillMethod.Horizontal) {
+        var wd = (v.z - v.x) * fillAmount;
+        toFill.Clear();
+
+        AddQuad(toFill,
+          new Vector2(v.x, v.y),
+          new Vector2(v.x + wd, v.w),
+          new Color32[] {transpColorLeft, transpColorLeft, color, color},
+          new Vector2(0, 0),
+          new Vector2(fillAmount, 1)
+        );
+        AddQuad(toFill,
+          new Vector2(v.x + wd, v.y),
+          new Vector2(v.z - wd, v.w),
+          new Color32[] {color, color, color, color},
+          new Vector2(fillAmount, 0),
+          new Vector2(1 - fillAmount, 1)
+        );
+        AddQuad(toFill,
+          new Vector2(v.z - wd, v.y),
+          new Vector2(v.z, v.w),
+          new Color32[] {color, color, transpColorRight, transpColorRight},
+          new Vector2(1 - fillAmount, 0),
+          new Vector2(1, 1)
+        );
+      }
+
+      if (m_FillMethod == FillMethod.Vertical) {
+        var wd = (v.w - v.y) * fillAmount;
+        toFill.Clear();
+
+        AddQuad(toFill,
+          new Vector2(v.x, v.y),
+          new Vector2(v.z, v.y + wd),
+          new Color32[] {transpColorLeft, color, color, transpColorLeft},
+          new Vector2(0, 0),
+          new Vector2(1, fillAmount)
+        );
+        AddQuad(toFill,
+          new Vector2(v.x, v.y + wd),
+          new Vector2(v.z, v.w - wd),
+          new Color32[] {color, color, color, color},
+          new Vector2(0, fillAmount),
+          new Vector2(1, 1 - fillAmount)
+        );
+        AddQuad(toFill,
+          new Vector2(v.x, v.w - wd),
+          new Vector2(v.z, v.w),
+          new Color32[] {color, transpColorRight, transpColorRight, color},
+          new Vector2(0, 1 - fillAmount),
+          new Vector2(1, 1)
+        );
+      }
+    }
+
     /// <summary>
     /// Generate vertices for a simple Image.
     /// </summary>
@@ -646,6 +724,18 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       for (int i = 0; i < 4; ++i)
         vertexHelper.AddVert(quadPositions[i], color, quadUVs[i]);
+
+      vertexHelper.AddTriangle(startIndex, startIndex + 1, startIndex + 2);
+      vertexHelper.AddTriangle(startIndex + 2, startIndex + 3, startIndex);
+    }
+
+    static void AddQuad(VertexHelper vertexHelper, Vector2 posMin, Vector2 posMax, Color32[] color, Vector2 uvMin, Vector2 uvMax) {
+      int startIndex = vertexHelper.currentVertCount;
+
+      vertexHelper.AddVert(new Vector3(posMin.x, posMin.y, 0), color[0], new Vector2(uvMin.x, uvMin.y));
+      vertexHelper.AddVert(new Vector3(posMin.x, posMax.y, 0), color[1], new Vector2(uvMin.x, uvMax.y));
+      vertexHelper.AddVert(new Vector3(posMax.x, posMax.y, 0), color[2], new Vector2(uvMax.x, uvMax.y));
+      vertexHelper.AddVert(new Vector3(posMax.x, posMin.y, 0), color[3], new Vector2(uvMax.x, uvMin.y));
 
       vertexHelper.AddTriangle(startIndex, startIndex + 1, startIndex + 2);
       vertexHelper.AddTriangle(startIndex + 2, startIndex + 3, startIndex);

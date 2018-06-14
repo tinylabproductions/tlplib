@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     static readonly LazyVal<IRxVal<Size>> _screenSizeVal =
       F.lazy(() => Observable.everyFrame.map(_ => screenSize).toRxVal(screenSize));
 
-    public static IRxVal<Size> screenSizeVal => _screenSizeVal.get;
+    public static IRxVal<Size> screenSizeVal => _screenSizeVal.strict;
 
     /** Convert screen width percentage to absolute value. **/
     public static float pWidthToAbs(this float percentWidth) => Screen.width * percentWidth;

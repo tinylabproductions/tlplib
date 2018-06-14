@@ -10,7 +10,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Vector2 addY(this Vector2 v, float y) => new Vector2(v.x, v.y + y);
 
     public static Vector2 multiply(this Vector2 v, Vector2 v2) => new Vector2(v.x * v2.x, v.y * v2.y);
-    public static Vector2 divide(this Vector2 v, Vector2 v2) => new Vector2(v.x / v2.x, v.y / v2.y);
+    public static Vector2 divide(this Vector2 v, Vector2 v2) {
+      float div(float a1, float a2) =>
+        a2 == 0
+          ? a1 < 0
+            ? float.MinValue
+            : float.MaxValue
+          : a1 / a2;
+      return new Vector2(div(v.x, v2.x), div(v.y, v2.y));
+    }
 
     public static Vector3 withX(this Vector3 v, float x) => new Vector3(x, v.y, v.z);
     public static Vector3 withY(this Vector3 v, float y) => new Vector3(v.x, y, v.z);

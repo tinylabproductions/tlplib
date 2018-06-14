@@ -211,6 +211,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     );
+
+    void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    );
   }
 
   public static class Observable {
@@ -402,18 +409,29 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       public readonly bool active;
 
       readonly bool haveUnsubscribed;
+
+      // LEGACY_OBSERVABLES define makes hard references from source to subscription instead of default weak references
+      // we use this mode in Gummy Bear to avoid major refactoring
+#if LEGACY_OBSERVABLES
+      readonly Subscription subscription;
+#else
       readonly WeakReference<Subscription> subscription;
+#endif
       readonly string callerMemberName, callerFilePath;
       readonly int callerLineNumber;
 
       public bool isSubscribed { get {
         if (haveUnsubscribed) return false;
-        foreach (var sub in subscription.Target) return sub.isSubscribed;
+#if LEGACY_OBSERVABLES
+        return subscription.isSubscribed;
+#else
+        if (subscription.Target.valueOut(out var sub)) return sub.isSubscribed;
         Log.d.error(
           $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
           $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}."
         );
         return false;
+#endif
       } }
 
       public Sub withActive(bool active) => new Sub(
@@ -475,14 +493,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
-    public virtual ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
+    public virtual void subscribe(
+      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       // Hard ref from subscription to this
-      var subscription = new Subscription(() => onUnsubscribed(onEvent));
+      var sub = new Subscription(() => onUnsubscribed(onEvent));
+      subscription = sub;
       tracker.track(
         subscription,
         // ReSharper disable ExplicitCallerInfoArgument
@@ -493,7 +512,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var active = !iterating;
       subscriptions.Add(new Sub(
         onEvent: onEvent, active: active, haveUnsubscribed: false,
-        subscription: WeakReference.a(subscription),
+#if LEGACY_OBSERVABLES
+        subscription: sub,
+#else
+        subscription: WeakReference.a(sub),
+#endif
         callerMemberName: callerMemberName, callerFilePath: callerFilePath,
         callerLineNumber: callerLineNumber
       ));
@@ -502,6 +525,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // Subscribe to source if we have a first subscriber.
       foreach (var source in sourceProps)
         source.trySubscribe();
+    }
+
+    public ISubscription subscribe(
+      IDisposableTracker tracker, Act<A> onEvent,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      subscribe(
+        tracker, onEvent, out var subscription,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
       return subscription;
     }
 

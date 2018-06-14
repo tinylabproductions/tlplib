@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Utilities;
+using JetBrains.Annotations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public static class RangeExts {
-    public static Range to(this int from, int to) {
-      return new Range(from, to);
-    }
-    public static Range until(this int from, int to) {
-      return new Range(from, to - 1);
-    }
-
-    public static float lerpVal(this FRange range, float t) => Mathf.Lerp(range.from, range.to, t);
-    public static float lerpVal(this Range range, float t) => Mathf.Lerp(range.from, range.to, t);
+    [PublicAPI] public static Range to(this int from, int to) => new Range(from, to);
+    [PublicAPI] public static Range until(this int from, int to) => new Range(@from, to - 1);
+    [PublicAPI] public static float lerpVal(this FRange range, float t) => Mathf.Lerp(range.from, range.to, t);
+    [PublicAPI] public static float lerpVal(this Range range, float t) => Mathf.Lerp(range.from, range.to, t);
   }
 
   /// <summary>Integer range: [from, to].</summary>
   [Serializable]
-  public struct Range : IEnumerable<int> {
+  public struct Range : IEnumerable<int>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -41,8 +39,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     public int random => Random.Range(from, to + 1);
     public int this[Percentage p] => from + (int) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
+    
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+      if (_from > _to) yield return new ErrorMsg(
+        $"Expected from ({_from}) to be <= to ({_to})"
+      );
+    }
 
-    public RangeEnumerator GetEnumerator() => new RangeEnumerator(from, to);
+    [PublicAPI] public RangeEnumerator GetEnumerator() => new RangeEnumerator(from, to);
     IEnumerator<int> IEnumerable<int>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
   }
@@ -81,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  public struct URange : IEnumerable<uint> {
+  public struct URange : IEnumerable<uint>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -102,8 +106,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     public uint random => (uint) Random.Range(from, to + 1);
     public uint this[Percentage p] => from + (uint) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
+    
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+      if (_from > _to) yield return new ErrorMsg(
+        $"Expected from ({_from}) to be <= to ({_to})"
+      );
+    }
 
-    public URangeEnumerator GetEnumerator() => new URangeEnumerator(from, to);
+    [PublicAPI] public URangeEnumerator GetEnumerator() => new URangeEnumerator(from, to);
     IEnumerator<uint> IEnumerable<uint>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
   }
@@ -142,7 +152,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  public struct FRange {
+  public struct FRange : OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -165,10 +175,16 @@ namespace com.tinylabproductions.TLPLib.Data {
     public override string ToString() => $"({from} to {to})";
 
     public EnumerableFRange by(float step) => new EnumerableFRange(@from, to, step);
+
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+      if (_from > _to) yield return new ErrorMsg(
+        $"Expected from ({_from}) to be <= to ({_to})"
+      );
+    }
   }
 
   [Serializable]
-  public struct EnumerableFRange : IEnumerable<float> {
+  public struct EnumerableFRange : IEnumerable<float>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -192,6 +208,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     public float random => Random.Range(from, to);
     public float this[Percentage p] => from + (to - from) * p.value;
     public override string ToString() => $"({from} to {to} by {step})";
+
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+      if (_from > _to) yield return new ErrorMsg(
+        $"Expected from ({_from}) to be <= to ({_to})"
+      );
+    }
 
     public IEnumerator<float> GetEnumerator() {
       for (var i = from; i <= to; i += step)

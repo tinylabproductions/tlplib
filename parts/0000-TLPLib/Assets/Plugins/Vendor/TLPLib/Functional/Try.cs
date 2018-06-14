@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public
 #if ENABLE_IL2CPP
-	class
+	sealed class
 #else
 	struct
 #endif
@@ -26,46 +27,54 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
 
     public Try(Exception ex) {
-      _value = default(A);
+      _value = default;
       _exception = ex;
     }
 
-    public bool isSuccess => _exception == null;
-    public bool isError => _exception != null;
+    [PublicAPI] public bool isSuccess => _exception == null;
+    [PublicAPI] public bool isError => _exception != null;
 
-    public Option<A> value => isSuccess ? F.some(_value) : F.none<A>();
-    public Option<A> toOption => value;
-    public Option<Exception> exception => isSuccess ? F.none<Exception>() : F.some(_exception);
+    [PublicAPI] public Option<A> value => isSuccess ? F.some(_value) : F.none<A>();
+    [PublicAPI] public bool valueOut(out A v) {
+      v = isSuccess ? _value : default;
+      return isSuccess;
+    }
+    [PublicAPI] public Option<A> toOption => value;
+    [PublicAPI] public Option<Exception> exception => isSuccess ? F.none<Exception>() : F.some(_exception);
+    [PublicAPI] public bool exceptionOut(out Exception e) {
+      e = isError ? _exception : default;
+      return isError;
+    }
 
-    public A getOrThrow => isSuccess ? _value : F.throws<A>(_exception);
-    public A __unsafeGet => _value;
-    public Exception __unsafeException => _exception;
+    [PublicAPI] public A getOrThrow => isSuccess ? _value : F.throws<A>(_exception);
+    [PublicAPI] public A __unsafeGet => _value;
+    [PublicAPI] public Exception __unsafeException => _exception;
 
-    public A getOrElse(A a) => isSuccess ? _value : a;
-    public A getOrElse(Fn<A> a) => isSuccess ? _value : a();
+    [PublicAPI] public A getOrElse(A a) => isSuccess ? _value : a;
+    [PublicAPI] public A getOrElse(Fn<A> a) => isSuccess ? _value : a();
 
-    public Either<Exception, A> toEither =>
+    [PublicAPI] public Either<Exception, A> toEither =>
       isSuccess ? Either<Exception, A>.Right(_value) : Either<Exception, A>.Left(_exception);
 
-    public Either<string, A> toEitherStr =>
+    [PublicAPI] public Either<string, A> toEitherStr =>
       isSuccess ? Either<string, A>.Right(_value) : Either<string, A>.Left(_exception.ToString());
 
-    public Either<ImmutableList<string>, A> toValidation =>
+    [PublicAPI] public Either<ImmutableList<string>, A> toValidation =>
       isSuccess
       ? Either<ImmutableList<string>, A>.Right(_value)
       : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.ToString()));
 
-    public B fold<B>(B onValue, Fn<Exception, B> onException) =>
+    [PublicAPI] public B fold<B>(B onValue, Fn<Exception, B> onException) =>
       isSuccess ? onValue : onException(_exception);
 
-    public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) =>
+    [PublicAPI] public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) =>
       isSuccess ? onValue(_value) : onException(_exception);
 
-    public void voidFold(Act<A> onValue, Act<Exception> onException) {
+    [PublicAPI] public void voidFold(Act<A> onValue, Act<Exception> onException) {
       if (isSuccess) onValue(_value); else onException(_exception);
     }
 
-    public Try<B> map<B>(Fn<A, B> onValue) {
+    [PublicAPI] public Try<B> map<B>(Fn<A, B> onValue) {
       if (isSuccess) {
         try { return new Try<B>(onValue(_value)); }
         catch (Exception e) { return new Try<B>(e); }
@@ -73,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B>(_exception);
     }
 
-    public Try<B> flatMap<B>(Fn<A, Try<B>> onValue) {
+    [PublicAPI] public Try<B> flatMap<B>(Fn<A, Try<B>> onValue) {
       if (isSuccess) {
         try { return onValue(_value); }
         catch (Exception e) { return new Try<B>(e); }
@@ -81,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B>(_exception);
     }
 
-    public Try<B1> flatMap<B, B1>(Fn<A, Try<B>> onValue, Fn<A, B, B1> g) {
+    [PublicAPI] public Try<B1> flatMap<B, B1>(Fn<A, Try<B>> onValue, Fn<A, B, B1> g) {
       if (isSuccess) {
         try {
           var a = _value;
@@ -92,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B1>(_exception);
     }
 
-    public Option<A> getOrLog(string errorMessage, Object context = null, ILog log = null) {
+    [PublicAPI] public Option<A> getOrLog(string errorMessage, Object context = null, ILog log = null) {
       if (isError) {
         log = log ?? Log.@default;
         log.error(errorMessage, _exception, context);
@@ -100,12 +109,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return value;
     }
 
-    public override string ToString() =>
+    [PublicAPI] public override string ToString() =>
       isSuccess ? $"Success({_value})" : $"Error({_exception})";
   }
 
   public static class TryExts {
-    public static Try<ImmutableList<A>> sequence<A>(
+    [PublicAPI] public static Try<ImmutableList<A>> sequence<A>(
       this IEnumerable<Try<A>> enumerable
     ) {
       // mutable for performance

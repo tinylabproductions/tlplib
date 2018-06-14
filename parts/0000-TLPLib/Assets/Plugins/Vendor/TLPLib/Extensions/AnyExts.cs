@@ -16,6 +16,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
     public static To upcast<From, To>(this From any) where From : To => any;
+    // ReSharper disable once UnusedParameter.Global
+    /// <summary>
+    /// Safely upcasts type. Uses example parameter to infer To. 
+    /// </summary>
+    public static To upcast<From, To>(this From any, To example) where From : To => any;
     public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To
       => any.Select(_ => _.upcast<From, To>());
 
