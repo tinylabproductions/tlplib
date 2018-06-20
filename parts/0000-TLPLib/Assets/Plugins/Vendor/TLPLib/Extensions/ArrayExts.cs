@@ -98,5 +98,33 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       for (var idx = 0; idx < arr.Length; idx++)
         arr[idx] = a;
     }
+
+    [PublicAPI]
+    public static A[] clone<A>(this A[] arr) {
+      var newArr = new A[arr.LongLength];
+      for (var idx = 0L; idx < arr.LongLength; idx++) {
+        newArr[idx] = arr[idx];
+      }
+      return newArr;
+    }
+
+    /// <summary>Moves all values in array to the left by given offset.</summary>
+    ///
+    /// <example>
+    /// var arr = new []{1,2,3,4,5};
+    /// arr.shiftLeft(2);
+    /// // arr now is {3,4,5,4,5};
+    /// </example>
+    [PublicAPI]
+    public static void shiftLeft<A>(this A[] arr, uint shiftBy) {
+      if (shiftBy >= arr.LongLength) throw new ArgumentException(
+        $"Can't shift array elements by {shiftBy} when array size is {arr.LongLength}!",
+        nameof(shiftBy)
+      );
+      
+      for (var idx = 0u; idx < arr.LongLength - shiftBy; idx++) {
+        arr[idx] = arr[idx + shiftBy];
+      }
+    }
   }
 }
