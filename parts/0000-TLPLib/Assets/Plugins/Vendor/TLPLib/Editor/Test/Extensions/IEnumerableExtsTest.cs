@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public class IEnumerableSpec : ImplicitSpecification {
     [Test] public void partitionCollect() => describe(() => {
-      Fn<int, Option<string>> collector = i => (i % 2 == 0).opt(i.ToString);
+      Option<string> collector(int i) => (i % 2 == 0).opt(i.ToString);
 
       when["empty"] = () => {
         var empty = ImmutableList<int>.Empty;
@@ -56,6 +56,63 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
         it["should only keep somes"] = () => {
           new[] {"foo", "bar", "baz"}.collect((a, idx) => (idx % 2 == 0).opt(a)).shouldEqualEnum("foo", "baz");
+        };
+      };
+    });
+
+    [Test]
+    public void slidingWindow() => describe(() => {
+      when["empty"] = () => {
+        it["should return empty enumerable"] = () => Enumerable.Empty<int>().slidingWindow(2).shouldBeEmpty();
+      };
+
+      when["window size is 0"] = () => {
+        it["should throw an exception"] = () =>
+          Assert.Throws(
+            typeof(ArgumentException),
+            // We need to evaluate lazy enumerable for exception to be thrown
+            () => new[] {1, 2, 3}.slidingWindow(0).ToArray().forSideEffects()
+          );
+      };
+      
+      when["less elements than window"] = () => {
+        it["should return empty enumerable"] = () => new[] {1, 2}.slidingWindow(3).shouldBeEmpty();
+      };
+
+      when["elements == window size"] = () => {
+        it["should return single window"] = () =>
+          new[] {1, 2, 3}.slidingWindow(3).shouldEqualEnum(new[] {1, 2, 3});
+      };
+
+      when["more elements than in window"] = () => {
+        var src = new[] {1, 2, 3, 4, 5, 6, 7};
+
+        when["window size == 1"] = () => {
+          it["should return multiple windows"] = () =>
+            src.slidingWindow(1).shouldEqualEnum(
+              new[] {1}, new[] {2}, new[] {3}, new[] {4}, new[] {5}, new[] {6}, new[] {7}
+            );
+        };
+
+        when["window size == 2"] = () => {
+          it["should return multiple windows"] = () =>
+            src.slidingWindow(2).shouldEqualEnum(
+              new[] {1, 2}, new[] {2, 3}, new[] {3, 4}, new[] {4, 5}, new[] {5, 6}, new[] {6, 7}
+            );
+        };
+
+        when["window size == 3"] = () => {
+          it["should return multiple windows"] = () =>
+            src.slidingWindow(3).shouldEqualEnum(
+              new[] {1, 2, 3}, new[] {2, 3, 4}, new[] {3, 4, 5}, new[] {4, 5, 6}, new[] {5, 6, 7}
+            );
+        };
+
+        when["window size == 4"] = () => {
+          it["should return multiple windows"] = () =>
+            src.slidingWindow(4).shouldEqualEnum(
+              new[] {1, 2, 3, 4}, new[] {2, 3, 4, 5}, new[] {3, 4, 5, 6}, new[] {4, 5, 6, 7}
+            );
         };
       };
     });
