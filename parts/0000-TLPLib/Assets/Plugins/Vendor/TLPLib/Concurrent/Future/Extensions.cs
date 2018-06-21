@@ -33,6 +33,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return rx;
     }
 
+    public static IRxVal<A> toRxVal<A>(this Future<A> future, A whileNotCompleted) {
+      var rx = RxRef.a(whileNotCompleted);
+      future.onComplete(a => rx.value = a);
+      return rx;
+    }
+
+    public static IRxVal<B> toRxVal<A, B>(this Future<A> future, B whileNotCompleted, Fn<A, B> onCompletion) {
+      var rx = RxRef.a(whileNotCompleted);
+      future.onComplete(a => rx.value = onCompletion(a));
+      return rx;
+    }
+
     public static IRxVal<A> toRxVal<A>(
       this Future<IRxVal<A>> future, A whileNotCompleted
     ) => new RxVal<A>(
