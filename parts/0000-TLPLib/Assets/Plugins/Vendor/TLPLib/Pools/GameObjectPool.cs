@@ -73,6 +73,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
     readonly Fn<T, GameObject> toGameObject;
     readonly Fn<T> create;
     readonly Option<Act<T>> wakeUp, sleep;
+    readonly bool dontDestroyOnLoad;
 
     public GameObjectPool(GameObjectPool.Init<T> init, Fn<T, GameObject> toGameObject) {
       rootOpt = init.parent.map(parent => {
@@ -86,13 +87,16 @@ namespace com.tinylabproductions.TLPLib.Pools {
       create = init.create;
       wakeUp = init.wakeUp;
       sleep = init.sleep;
+      dontDestroyOnLoad = init.dontDestroyOnLoad;
     }
 
     public T borrow() {
       var result = values.Count > 0 ? values.Pop() : create();
       var go = toGameObject(result);
-      go.transform.localPosition = Vector3.zero;
-      go.transform.rotation = Quaternion.identity;
+      var t = go.transform;
+      t.localPosition = Vector3.zero;
+      t.rotation = Quaternion.identity;
+      if (dontDestroyOnLoad && !t.parent) Object.DontDestroyOnLoad(go);
       go.SetActive(true);
       if (wakeUp.isSome) wakeUp.get(result);
       return result;
