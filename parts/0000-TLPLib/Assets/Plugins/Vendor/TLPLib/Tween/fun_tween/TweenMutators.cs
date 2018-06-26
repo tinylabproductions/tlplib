@@ -1,5 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
+using DG.Tweening.Plugins.Core.PathCore;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -95,5 +97,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public static readonly TweenMutator<Color, Shadow>
       shadowEffectColor = (color, shadow, r) => { if (r) shadow.effectColor += color; else shadow.effectColor = color; };
+
+    [PublicAPI]
+    public static TweenMutator<float, Transform> path(Vector3Path path) =>
+      (percentage, transform, relative) => {
+        var point = path.evaluate(percentage, true);
+        transform.localPosition = point;
+      };
   }
 }

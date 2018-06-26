@@ -357,6 +357,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         return F.some(a);
       return F.none<A>();
     }
+
+    [PublicAPI]
+    public static B Aggregate<A, B>(
+      this IEnumerable<A> enumerable, B initial, Fn<A, B, int, B> reducer
+    ) {
+      var reduced = initial;
+      var idx = 0;
+      foreach (var a in enumerable) {
+        reduced = reducer(a, reduced, idx);
+        idx++;
+      }
+      return reduced;
+    }
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
