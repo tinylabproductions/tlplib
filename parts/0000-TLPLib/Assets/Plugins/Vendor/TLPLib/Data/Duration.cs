@@ -97,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
 
     [NonSerialized]
-    public static readonly Config.Parser<Duration> configParser =
+    public static readonly Config.Parser<object, Duration> configParser =
       Config.intParser.map(ms => new Duration(ms));
   }
 
