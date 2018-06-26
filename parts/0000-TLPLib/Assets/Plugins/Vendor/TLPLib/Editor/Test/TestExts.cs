@@ -283,7 +283,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       new Config(Json.Deserialize(json).cast().to<Dictionary<string, object>>());
 
     public static Either<ConfigLookupError, A> testParser<A>(
-      this string json, Config.Parser<A> parser
+      this string json, Config.Parser<object, A> parser
     ) =>
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
 

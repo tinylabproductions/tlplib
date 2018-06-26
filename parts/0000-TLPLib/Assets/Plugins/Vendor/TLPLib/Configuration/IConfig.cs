@@ -25,28 +25,28 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ICollection<string> keys { get; }
 
     /** Tries to parse current config object with given parser. */
-    A as_<A>(Parser<A> parser);
-    Option<A> optAs<A>(Parser<A> parser);
-    Either<ConfigLookupError, A> eitherAs<A>(Parser<A> parser);
-    Try<A> tryAs<A>(Parser<A> parser);
+    A as_<A>(Parser<object, A> parser);
+    Option<A> optAs<A>(Parser<object, A> parser);
+    Either<ConfigLookupError, A> eitherAs<A>(Parser<object, A> parser);
+    Try<A> tryAs<A>(Parser<object, A> parser);
 
     /** value if ok, ConfigFetchException if error. */
-    A get<A>(string key, Parser<A> parser);
-    Option<A> optGet<A>(string key, Parser<A> parser);
-    Either<ConfigLookupError, A> eitherGet<A>(string key, Parser<A> parser);
-    Try<A> tryGet<A>(string key, Parser<A> parser);
+    A get<A>(string key, Parser<object, A> parser);
+    Option<A> optGet<A>(string key, Parser<object, A> parser);
+    Either<ConfigLookupError, A> eitherGet<A>(string key, Parser<object, A> parser);
+    Try<A> tryGet<A>(string key, Parser<object, A> parser);
   }
 
   public static class IConfigExts {
 
     #region getters
 
-    public static A get<A>(this IConfig cfg, string key, Parser<A> parser) =>
+    public static A get<A>(this IConfig cfg, string key, Parser<object, A> parser) =>
       cfg.tryGet(key, parser).getOrThrow;
-    public static List<A> getList<A>(this IConfig cfg, string key, Parser<A> parser) =>
+    public static List<A> getList<A>(this IConfig cfg, string key, Parser<object, A> parser) =>
       cfg.tryList(key, parser).getOrThrow;
     public static Dictionary<K, V> getDict<K, V>(
-      this IConfig cfg, string key, Parser<K> keyParser, Parser<V> valueParser
+      this IConfig cfg, string key, Parser<string, K> keyParser, Parser<object, V> valueParser
     ) => cfg.tryDict(key, keyParser, valueParser).getOrThrow;
 
     public static object getObject(this IConfig cfg, string key) => cfg.get(key, objectParser);
@@ -72,11 +72,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region opt getters
 
-    public static Option<List<A>> optList<A>(this IConfig cfg, string key, Parser<A> parser) =>
+    public static Option<List<A>> optList<A>(this IConfig cfg, string key, Parser<object, A> parser) =>
       cfg.eitherList(key, parser).rightValue;
 
     public static Option<Dictionary<K, V>> optDict<K, V>(
-      this IConfig cfg, string key, Parser<K> keyParser, Parser<V> valueParser
+      this IConfig cfg, string key, Parser<string, K> keyParser, Parser<object, V> valueParser
     ) => cfg.eitherDict(key, keyParser, valueParser).rightValue;
 
     public static Option<object> optObject(this IConfig cfg, string key) => cfg.optGet(key, objectParser);
@@ -100,11 +100,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     #region either getters
 
     public static Either<ConfigLookupError, List<A>> eitherList<A>(
-      this IConfig cfg, string key, Parser<A> parser
+      this IConfig cfg, string key, Parser<object, A> parser
     ) => cfg.eitherGet(key, listParser(parser));
 
     public static Either<ConfigLookupError, Dictionary<K, V>> eitherDict<K, V>(
-      this IConfig baseCfg, string key, Parser<K> keyParser, Parser<V> valueParser
+      this IConfig baseCfg, string key, Parser<string, K> keyParser, Parser<object, V> valueParser
     ) => baseCfg.eitherGet(key, dictParser(keyParser, valueParser));
 
     public static Either<ConfigLookupError, object> eitherObject(this IConfig cfg, string key) => cfg.eitherGet(key, objectParser);
@@ -129,11 +129,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #region try getters
 
-    public static Try<List<A>> tryList<A>(this IConfig cfg, string key, Parser<A> parser) =>
+    public static Try<List<A>> tryList<A>(this IConfig cfg, string key, Parser<object, A> parser) =>
       cfg.tryGet(key, listParser(parser));
 
     public static Try<Dictionary<K, V>> tryDict<K, V>(
-      this IConfig cfg, string key, Parser<K> keyParser, Parser<V> valueParser
+      this IConfig cfg, string key, Parser<string, K> keyParser, Parser<object, V> valueParser
     ) => cfg.tryGet(key, dictParser(keyParser, valueParser));
 
     public static Try<object> tryObject(this IConfig cfg, string key) => cfg.tryGet(key, objectParser);
