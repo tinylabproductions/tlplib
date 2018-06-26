@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
-  public class ArrayExtsTest {
+  public class ArrayExtsTest : ImplicitSpecification {
     [Test]
     public void AddOneTest() {
       new[] {1}.addOne(2).shouldEqual(new [] {1, 2});
@@ -75,5 +75,56 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       a2.removeAt(0, 1000);
       a2.shouldEqualEnum(1000);
     }
+
+    [Test]
+    public void shiftLeft() => describe(() => {
+      when["shift argument is invalid"] = () => {
+        var src = new int[0];
+        beforeEach += () => src = new[] {1, 2, 3};
+        
+        it["should throw an exception"] = () => Assert.Throws(
+          typeof(ArgumentException), () => src.shiftLeft((uint) src.Length)          
+        );
+        
+        it["should not change the array state"] = () => {
+          var workOn = src.clone();
+          try { workOn.shiftLeft((uint) src.Length); }
+          catch (ArgumentException) {}
+          workOn.shouldEqualEnum(src);
+        };
+      };
+      
+      when["size = 2, shift = 0"] = () => {
+        it["should not do anything"] = () => {
+          var arr = new[] {1, 2};
+          arr.shiftLeft(0);
+          arr.shouldEqualEnum(1, 2);
+        };
+      };
+      
+      when["size = 2, shift = 1"] = () => {
+        it["should move"] = () => {
+          var arr = new[] {1, 2};
+          arr.shiftLeft(1);
+          arr.shouldEqualEnum(2, 2);
+        };
+      };
+      
+      when["size = 5, shift = 2"] = () => {
+        it["should move"] = () => {
+          var arr = new[] {1, 2, 3, 4, 5};
+          arr.shiftLeft(2);
+          arr.shouldEqualEnum(3, 4, 5, 4, 5);
+        };
+      };
+      
+      when["size = 7, shift = 3"] = () => {
+        it["should move"] = () => {
+          var arr = new[] {1, 2, 3, 4, 5, 6, 7};
+          arr.shiftLeft(3);
+          arr.shouldEqualEnum(4, 5, 6, 7, 5, 6, 7);
+        };
+      };
+    });
   }
 }
