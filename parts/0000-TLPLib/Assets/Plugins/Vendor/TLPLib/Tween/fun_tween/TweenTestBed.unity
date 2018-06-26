@@ -505,6 +505,119 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1307900660
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1307900664}
+  - component: {fileID: 1307900663}
+  - component: {fileID: 1307900662}
+  - component: {fileID: 1307900661}
+  m_Layer: 0
+  m_Name: PathTween
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1307900661
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1307900660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc89065d75cb469ca32927d266430817, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 1307900663}
+  _mode: 2
+  _start: 0
+  _end: 1
+  _duration: 10
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 828684592}
+  pathBehaviour: {fileID: 1307900662}
+--- !u!114 &1307900662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1307900660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ac75d2d8a92d8444ae45d34516781f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lockXAxis: 0
+  lockYAxis: 0
+  lockZAxis: 0
+  relative: 0
+  closed: 1
+  method: 1
+  nodeHandleSize: 0.6
+  curveSubdivisions: 268
+  pathResolution: 175
+  showDirection: 1
+  nodes:
+  - {x: -5.6502075, y: 10.950594, z: 13.844843}
+  - {x: -6.5799913, y: 3.22291, z: 13.283033}
+  - {x: -4.558563, y: -3.7824116, z: 12.159973}
+  - {x: 6.252157, y: -4.7415066, z: 13.812808}
+  - {x: 2.4446325, y: 7.1902637, z: 14.093672}
+  - {x: 8.148676, y: 10.678314, z: 13.81281}
+  - {x: 16.298649, y: 7.285581, z: 13.798618}
+  - {x: 11.458373, y: 3.2268555, z: 13.226015}
+  - {x: 15.770045, y: -1.1434264, z: 14.375757}
+  - {x: 20.140083, y: 1.8630388, z: 14.237238}
+  - {x: 20.112385, y: -7.182619, z: 13.039606}
+  - {x: -5.6502075, y: 10.950594, z: 13.844843}
+--- !u!114 &1307900663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1307900660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 874857abc69f43cb867a5cf037fb48cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _runMode: 0
+  _autoplay: 1
+  _time: 0
+  _looping:
+    _times_: 0
+    _mode: 0
+  _timeline:
+    _elements:
+    - _title: 
+      _at: 0
+      _timeOffset: 0
+      _element: {fileID: 1307900661}
+  _onStart: []
+  _onEnd: []
+--- !u!4 &1307900664
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1307900660}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 3.1008637, y: 2.252654, z: 13.812809}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1320496867
 GameObject:
   m_ObjectHideFlags: 0
@@ -517,7 +630,6 @@ GameObject:
   - component: {fileID: 1320496870}
   - component: {fileID: 1320496869}
   - component: {fileID: 1320496868}
-  - component: {fileID: 1320496873}
   - component: {fileID: 1320496874}
   m_Layer: 0
   m_Name: Main Camera
@@ -596,26 +708,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1320496873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1320496867}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4fb9a5b40ced8e479bb534a2f06364f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  indicator: {fileID: 0}
-  obj1: {fileID: 1405230363}
-  obj2: {fileID: 828684592}
-  obj3: {fileID: 726012325}
-  obj4: {fileID: 1046432716}
-  duration: 10
-  nodes: []
-  nodes2:
-  - {x: 0, y: 0}
 --- !u!114 &1320496874
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -753,6 +845,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ac75d2d8a92d8444ae45d34516781f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lockXAxis: 0
+  lockYAxis: 0
+  lockZAxis: 0
+  relative: 0
+  closed: 0
+  method: 0
+  nodeHandleSize: 0.6
+  curveSubdivisions: 100
+  pathResolution: 175
+  showDirection: 1
+  nodes:
+  - {x: -13.393452, y: 12.001402, z: 13.812809}
+  - {x: 3.6273913, y: 18.00402, z: 13.812809}
+  - {x: 31.571947, y: 9.370647, z: 13.812809}
 --- !u!4 &1714488321
 Transform:
   m_ObjectHideFlags: 0
@@ -764,5 +870,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

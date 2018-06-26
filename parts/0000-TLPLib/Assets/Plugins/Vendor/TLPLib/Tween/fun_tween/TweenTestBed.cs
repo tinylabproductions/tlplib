@@ -34,13 +34,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       positionArray.Add(new Vector3(12f, 0f, 0f));
       //      positionArray.Add(new Vector3(12f, 0f, 0f));
 
-      FunPath path = new FunPath(positionArray);
+      //FunPath path = new FunPath(positionArray);
       // FunPath path2 = new FunPath(path.convertList(lines[0].pathVerts));
 
 
-      print("path lenght test: " + path.length());
+     // print("path lenght test: " + path.length());
       //print("path nodes test: " + path.nodes);
-      print("path point test: " + path.evaluate(0.8f));
+    //  print("path point test: " + path.evaluate(0.8f));
       //      var obj3T = TweenOps.vector3.tween(
       //        obj3.position, obj3.position + Vector3.right * 10, Eases.linear, duration
       //      );
@@ -54,13 +54,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       //
       //      //
       //
-      var t1 = obj1.tweenTransformByPath(0f, 1f, path, Eases.quadInOut, duration);
+     // var t1 = obj1.tweenTransformByPath(0f, 1f, path, Eases.quadInOut, duration);
       var t2 = obj2.tweenPositionRelative(Vector3.up, Eases.expoOut, duration);
       var t3 = obj1.tweenPositionRelative(Vector3.down, Eases.quadInOut, duration);
       var t4 = obj1.tweenPositionRelative(Vector3.left, Eases.elasticInOut, duration);
-      var tweens = new TweenTimelineElement[] {t1, t2 /*, t3, t4*/};
+   //   var tweens = new TweenTimelineElement[] {t1, t2 /*, t3, t4*/};
 
-      var tra = TweenTimeline.parallelEnumerable(tweens /*.shuffleRepeatedly(Rng.now).Take(100)*/).build();
+     // var tra = TweenTimeline.parallelEnumerable(tweens /*.shuffleRepeatedly(Rng.now).Take(100)*/).build();
       //        Tween.callback(_ => print($"start {_}")),
       //        Tween.callback(_ => print($"1 {_}")),
       //        obj2.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       //        Tween.callback(_ => print($"2 {_}")),
       //        t1.tweenPositionRelative(Vector3.right * 2, Eases.linear, duration),
       //        Tween.callback(_ => print($"end {_}"))
-      manager = tra.managed();
+     // manager = tra.managed();
       var tr = TweenTimeline.sequential(
         /*tra, tra.reversed(), tra.reversed().reversed(), */ /*tra.reversed()*/
       ).build();
