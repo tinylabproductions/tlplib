@@ -1,7 +1,8 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data.scenes {
-  public struct SceneName : IEquatable<SceneName> {
+  public struct SceneName : IEquatable<SceneName>, IStr {
     public readonly string name;
 
     #region Equality
@@ -22,7 +23,9 @@ namespace com.tinylabproductions.TLPLib.Data.scenes {
 
     public SceneName(string name) { this.name = name; }
 
-    public override string ToString() => $"{nameof(SceneName)}({name})";
+    // This got released, and changing it would break prefvals. Oh well.
+    public string asString() => $"{nameof(SceneName)}({name})";
+    public override string ToString() => asString();
 
     public static implicit operator string(SceneName s) => s.name;
   }
