@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -19,6 +20,28 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       var objects = Selection.objects;
       Undo.RecordObjects(objects, "Set objects dirty");
       foreach (var o in objects) EditorUtility.SetDirty(o);
+    }
+
+    [UsedImplicitly, MenuItem("TLP/Tools/Ordering/setup children sorting order by z")]
+    static void setupChildrenSortingOrder() {
+      var o = Selection.activeGameObject;
+      var renderers = o.GetComponentsInChildren<Renderer>();
+      var ordererd = renderers.OrderBy(r => r.sortingOrder).ThenByDescending(r => r.transform.position.z).ToArray();
+      setSortingOrder(ordererd);
+    }
+
+    static void setSortingOrder(Renderer[] ordererd) {
+      Undo.RecordObjects(ordererd, "Change sorting order");
+      foreach (var (renderer, idx) in ordererd.zipWithIndex()) {
+        renderer.sortingOrder = idx;
+      }
+    }
+
+    [UsedImplicitly, MenuItem("TLP/Tools/Ordering/setup children sorting order by hierarchy")]
+    static void setupChildrenSortingOrderByHierarchy() {
+      var o = Selection.activeGameObject;
+      var renderers = o.GetComponentsInChildren<Renderer>();
+      setSortingOrder(renderers);
     }
 
     MonoScript script;
