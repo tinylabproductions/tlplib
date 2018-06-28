@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Components {
       c.comment__onlyInEditor =
         string.IsNullOrEmpty(c.comment__onlyInEditor)
         ? comment
-        : $"{c.comment__onlyInEditor}\n\n${comment}";
+        : $"{c.comment__onlyInEditor}\n\n{comment}";
 #endif
     }
 

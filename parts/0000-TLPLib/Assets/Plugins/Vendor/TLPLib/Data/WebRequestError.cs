@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [PublicAPI] public LogEntry simplify => message.fold(
       err => err, 
-      nie => new ErrorMsg($"No internet: ${nie.message}", reportToErrorTracking: false)
+      nie => new ErrorMsg($"No internet: {nie.message}", reportToErrorTracking: false)
     );
   }
   

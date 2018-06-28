@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
           if (GUILayout.Button($"Apply current {name.ToLower()} to prefab")) {
             set(prefabTransform, instanceV);
             if (Log.d.isDebug())
-              Log.d.debug($"{name} set to ${instanceV} (was ${prefabV}) on prefab.", so.prefab);
+              Log.d.debug($"{name} set to {instanceV} (was {prefabV}) on prefab.", so.prefab);
           }
         }
       }
