@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Immutable;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class InterpolationUtils {
+    public delegate Vector3 GetPoint(int index);
 
     [PublicAPI]
     public static float catmullRom(float v1, float v2, float v3, float v4, float percentage) {
@@ -18,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
 
     public static Vector3 catmullRomGetPt(
-      Fn<int, Vector3> getFromCollection, int collectionLength, int i, float percentage, bool pathClosed
+      GetPoint getFromCollection, int collectionLength, int i, float percentage, bool pathClosed
     ) {
       if (collectionLength < 4) pathClosed = false;
       var maxASegmentIndex = collectionLength - 1;
@@ -60,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   
     [PublicAPI]
     public static Vector3 cubicGetPt(
-      Fn<int, Vector3> getFromCollection, int collectionLength, int i, float percentage, bool pathClosed
+      GetPoint getFromCollection, int collectionLength, int i, float percentage, bool pathClosed
     ) {
       //Closed path has last node in the same position as first one
       if (collectionLength < 4) pathClosed = false;
@@ -91,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   
     [PublicAPI]
     public static Vector3 hermiteGetPt(
-      Fn<int, Vector3> getFromCollection, int collectionLength, int i, float aPercentage, bool aClosed, float aTension = 0, float aBias = 0
+      GetPoint getFromCollection, int collectionLength, int i, float aPercentage, bool aClosed, float aTension = 0, float aBias = 0
     ) {
       if (collectionLength < 4) aClosed = false;
       
