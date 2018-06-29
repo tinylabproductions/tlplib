@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
-  public class UIDownScale : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IMB_Awake {
+  public class UIDownScale : PointerDownUp, IMB_Awake {
     public float scale = 1.1f;
     [Header("Optional, default to this.transform")]
     public Transform target;
@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       animation = target.gameObject.GetComponentSafe<SinusoidScale>();
     }
 
-    public void OnPointerDown(PointerEventData eventData) {
+    protected override void onPointerDown(PointerEventData eventData) {
       if (eventData.button != PointerEventData.InputButton.Left) return;
       pointerDown();
     }
@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    public void OnPointerUp(PointerEventData eventData) {
+    protected override void onPointerUp(PointerEventData eventData) {
       if (eventData.button != PointerEventData.InputButton.Left) return;
       pointerUp();
     }
