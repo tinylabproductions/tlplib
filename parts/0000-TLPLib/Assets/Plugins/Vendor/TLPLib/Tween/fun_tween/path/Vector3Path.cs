@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -15,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
       Cubic,
       Hermite
     }
-    
+
     /// <summary>
     /// If a path uses non-linear <see cref="InterpolationMethod"/>, the path is curved, as you can
     /// see in this very inaccurate ASCII art depiction. 
@@ -49,23 +50,26 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     /// Constant speed table is used to calculate normalised percentage,
     /// to achieve constant speed moving along the spline
     /// </summary>
-    [Record] partial struct ConstantSpeedTable {
-      [Record] public partial struct Entry {
+    [Record]
+    partial struct ConstantSpeedTable {
+      [Record]
+      public partial struct Entry {
         /// <summary>
         /// Percentage as [0, 1] which passed to <see cref="Vector3Path.calculate"/> would
         /// give a point on the path. 
         /// </summary>
         public readonly float percentageOfPath;
+
         /// <summary>
         /// Distance from the start of the path which is calculated by adding up
         /// lengths of subdivided path segments from percentage 0 up until <see cref="percentageOfPath"/>. 
         /// </summary>
         public readonly float summedDistanceFromPathStart;
       }
-      
+
       public readonly ImmutableArray<Entry> entries;
-      
-      public ConstantSpeedTable(int subdivisions, Fn<float, Vector3> calculate) {
+
+      public  ConstantSpeedTable(int subdivisions, Fn<float, Vector3> calculate) {
         var lengthAccumulator = 0f;
         var increment = 1f / subdivisions;
         var builder = ImmutableArray.CreateBuilder<Entry>(subdivisions);
@@ -78,19 +82,30 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
           builder.Add(new Entry(percentageOfPath: percentage, summedDistanceFromPathStart: lengthAccumulator));
         }
 
-        return new ConstantSpeedTable(builder.MoveToImmutable());
+        entries = builder.MoveToImmutable();
       }
     }
 
-    [Record] public partial struct Point {
+    [Record]
+    public partial struct Point {
       public readonly Vector3 point;
+
       /// <summary>
       /// How much of the path in % [0, 1] have we traveled from the path start
       /// if we are at this point currently.
       /// </summary>
       public readonly float percentageOfPathTraveled;
+
+      public readonly float realDistanceToThisPoint;
+
+   /*   public Point(Vector3 point, float percentage, float distance) {
+        this.point = point;
+        percentageOfPathTraveled = percentage;
+        realDistanceToThisPoint = distance;
+      }*/
     }
     
+
     public readonly InterpolationMethod method;
     public readonly bool closed;
     public readonly ImmutableArray<Point> points;
@@ -104,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     readonly Option<Fn<float, int, float>> getSegmentLenFn;
 
     public Vector3Path(
-      InterpolationMethod method, bool closed, ImmutableArray<Vector3> points, Option<Transform> relativeTo,
+      InterpolationMethod method, bool closed, ImmutableArray<Vector3> positions, Option<Transform> relativeTo,
       int pathResolution
     ) {
       getPoint = idx => this.points[idx].point;
@@ -112,40 +127,42 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
       this.closed = closed;
       this.relativeTo = relativeTo;
       resolution = pathResolution;
-      var t = segmentLengthRatios();
-      this.points = t._1;
-      realLength = t._2;
+      points = segmentLengthRatios(positions);
+      realLength = points.Sum(point => point.realDistanceToThisPoint);
       constantSpeedTable = new ConstantSpeedTable(resolution, calculate);
 
       // Returns list of whole length and segment length ratios added to prev element
-      Tpl<ImmutableArray<Point>, float> segmentLengthRatios() {
+      ImmutableArray<Point> segmentLengthRatios(ImmutableArray<Vector3> nodes) {
         switch (method) {
           case InterpolationMethod.Linear: {
-            var builder = ImmutableArray.CreateBuilder<Point>(points.Length);
-            var length = points.Aggregate(0f, (node, current, idx) =>
+            var builder = ImmutableArray.CreateBuilder<Point>(nodes.Length);
+            var length = nodes.Aggregate(0f, (node, current, idx) =>
               idx == 0
                 ? current
-                : current + Vector3.Distance(points[idx - 1], node)
+                : current + Vector3.Distance(nodes[idx - 1], node)
             );
-            builder.Add(new Point(points[0], 0));
-            for (var idx = 1; idx < points.Length; idx++) {
+            builder.Add(new Point(nodes[0], 0f, 0f));
+            for (var idx = 1; idx < nodes.Length; idx++) {
               builder.Add(new Point(
-                points[idx],
-                Vector3.Distance(points[idx - 1], points[idx]) / length 
-                  + builder[idx - 1].percentageOfPathTraveled
+                nodes[idx],
+                Vector3.Distance(nodes[idx - 1], nodes[idx]) / length
+                + builder[idx - 1].percentageOfPathTraveled,
+                Vector3.Distance(nodes[idx - 1], nodes[idx])
+                + builder[idx - 1].realDistanceToThisPoint
               ));
             }
 
-            return F.t(builder.MoveToImmutable(), length);
+            return builder.MoveToImmutable();
           }
           case InterpolationMethod.Hermite:
             return getSegmentsRatios(
               index => getApproxSegmentLength(
-                resolution, 
+                resolution,
                 percentageOfPath => InterpolationUtils.hermiteGetPt(
                   getPoint, points.Length, index, percentageOfPath, closed
                 )
-              )
+              ),
+              nodes
             );
           case InterpolationMethod.Cubic:
             return getSegmentsRatios(
@@ -154,7 +171,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
                 percentageOfPath => InterpolationUtils.cubicGetPt(
                   getPoint, points.Length, index, percentageOfPath, closed
                 )
-              )
+              ),
+              nodes
             );
           case InterpolationMethod.CatmullRom: {
             return getSegmentsRatios(
@@ -163,7 +181,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
                 percentageOfPath => InterpolationUtils.catmullRomGetPt(
                   getPoint, points.Length, index, percentageOfPath, closed
                 )
-              )
+              ),
+              nodes
             );
           }
           default:
@@ -174,8 +193,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
 
     public delegate float GetSegmentLength(int index);
 
-    public Tpl<ImmutableArray<float>, float> getSegmentsRatios(GetSegmentLength getSegmentLength) {
-      var builder = ImmutableArray.CreateBuilder<float>(points.Length);
+    public ImmutableArray<Point> getSegmentsRatios(GetSegmentLength getSegmentLength, ImmutableArray<Vector3> nodes) {
+      var builder = ImmutableArray.CreateBuilder<Point>(points.Length);
       var length = 0f;
       var lengths = new List<float>();
       for (var idx = 0; idx < points.Length - 1; idx++) {
@@ -183,20 +202,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
         length += segLength;
         lengths.Add(segLength);
       }
+      //TODO: Try to make one loop
       
-      builder.Add(0);
+      builder.Add(new Point(nodes[0], 0f, 0f));
       for (var idx = 1; idx < points.Length; idx++) {
-        builder.Add(lengths[idx - 1] / length + builder[idx - 1]);
+        builder.Add(new Point(nodes[idx], lengths[idx] / length, lengths[idx]));
       }
 
-      return F.t(builder.MoveToImmutable(), length);
+      return builder.MoveToImmutable();
     }
 
     public delegate Vector3 GetPoint(float percentageInPath);
-    
+
     float getApproxSegmentLength(int resolution, GetPoint getPt) {
       var oldPoint = getPt(0f);
-      var splineLength = 0f;  
+      var splineLength = 0f;
       for (var i = 1; i <= resolution; i++) {
         var percentage = (float) i / resolution;
         var newPoint = getPt(percentage);
@@ -204,27 +224,27 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
         splineLength += dist;
         oldPoint = newPoint;
       }
+
       return splineLength;
     }
-    
+
     float recalculatePercentage(float percentage) {
-      var fractionsTable = constantSpeedTable._1;
-      var lengthsTable = constantSpeedTable._2;
+
       if (method == InterpolationMethod.Linear) return percentage;
       if (percentage > 0 && percentage < 1) {
         var tLen = realLength * percentage;
         float t0 = 0, le0 = 0, t1 = 0, le1 = 0;
-        var count = lengthsTable.Length;
+        var count = constantSpeedTable.entries.Length;
         //TODO: Optimize search
         for (var idx = 0; idx < count; ++idx) {
-          if (lengthsTable[idx] > tLen) {
-            t1 = fractionsTable[idx];
-            le1 = lengthsTable[idx];
-            if (idx > 0) le0 = lengthsTable[idx - 1];
+          if (constantSpeedTable.entries[idx].summedDistanceFromPathStart > tLen) {
+            t1 = constantSpeedTable.entries[idx].percentageOfPath;
+            le1 = constantSpeedTable.entries[idx].summedDistanceFromPathStart;
+            if (idx > 0) le0 = constantSpeedTable.entries[idx - 1].summedDistanceFromPathStart;
             break;
           }
 
-          t0 = fractionsTable[idx];
+          t0 = constantSpeedTable.entries[idx].percentageOfPath;
         }
 
         percentage = t0 + (tLen - le0) / (le1 - le0) * (t1 - t0);
@@ -234,7 +254,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
 
       return percentage;
     }
-    
+
     /// <summary>
     /// Evaluate a point on a path given a percentage from [0, 1]
     /// </summary>
@@ -243,8 +263,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     /// <returns></returns>
     public Vector3 evaluate(float percentage, bool constantSpeed) {
       // Recalculating percentage to achieve constant movement speed
-      if (constantSpeed) percentage = recalculatePercentage(percentage); 
-      
+      if (constantSpeed) percentage = recalculatePercentage(percentage);
+
       return relativeTo.valueOut(out var transform)
         ? transform.TransformPoint(calculate(percentage))
         : calculate(percentage);
@@ -263,8 +283,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
         }
       }
 
-      var segmentPercentage = 
-        (percentage - points[low].percentageOfPathTraveled) 
+      var segmentPercentage =
+        (percentage - points[low].percentageOfPathTraveled)
         / (points[low + 1].percentageOfPathTraveled - points[low].percentageOfPathTraveled);
 
       Vector3 returnValue;
