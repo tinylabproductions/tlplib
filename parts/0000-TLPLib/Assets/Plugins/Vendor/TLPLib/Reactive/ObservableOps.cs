@@ -247,7 +247,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       o.subscribe(NoOpDisposableTracker.instance, val => { if (predicate(val)) onEvent(val); })
     );
 
-    /** Emits first value to the future and unsubscribes. **/
+    /// <summary>Emits given value upon first event to the future and unsubscribes.</summary>
+    public static Future<B> toFuture<A, B>(this IObservable<A> o, B b) =>
+      Future<B>.async((p, f) => {
+        var subscription = o.subscribe(NoOpDisposableTracker.instance, _ => p.complete(b));
+        f.onComplete(_ => subscription.unsubscribe());
+      });
+
+    /// <summary>Emits first value to the future and unsubscribes.</summary>
     public static Future<A> toFuture<A>(this IObservable<A> o) =>
       Future<A>.async((p, f) => {
         var subscription = o.subscribe(NoOpDisposableTracker.instance, p.complete);

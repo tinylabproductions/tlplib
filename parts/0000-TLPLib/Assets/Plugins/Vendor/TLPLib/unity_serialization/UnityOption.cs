@@ -126,4 +126,5 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionImage : UnityOption<Image> { }
   [Serializable, PublicAPI] public class UnityOptionTexture2D : UnityOption<Texture2D> {}
   [Serializable, PublicAPI] public class UnityOptionKeyCode : UnityOption<KeyCode> {}
+  [Serializable, PublicAPI] public class UnityOptionDuration: UnityOption<Duration> {}
 }

@@ -53,6 +53,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       new Duration(d1.millis - d2.millis);
     public static Duration operator *(Duration d, int multiplier) =>
       new Duration(d.millis * multiplier);
+    public static Duration operator *(Duration d, float multiplier) =>
+      new Duration((int) (d.millis * multiplier));
     public static Duration operator /(Duration d, float divider) =>
       new Duration((int) (d.millis / divider));
 
@@ -95,7 +97,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
 
     [NonSerialized]
-    public static readonly Config.Parser<Duration> configParser =
+    public static readonly Config.Parser<object, Duration> configParser =
       Config.intParser.map(ms => new Duration(ms));
   }
 

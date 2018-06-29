@@ -27,8 +27,15 @@ namespace com.tinylabproductions.TLPLib.Components.dispose {
     );
   }
 
+  public class GameObjectOnDisableDisposeTracker : GameObjectDisposeTracker, IMB_OnDisable {
+    public void OnDisable() => Dispose();
+  }
+
   public static class GameObjectDisposeTrackerOps {
     public static IDisposableTracker asDisposableTracker(this GameObject o) =>
       o.EnsureComponent<GameObjectDisposeTracker>();
+
+    public static IDisposableTracker asOnDisableDisposableTracker(this GameObject o) =>
+      o.EnsureComponent<GameObjectOnDisableDisposeTracker>();
   }
 }

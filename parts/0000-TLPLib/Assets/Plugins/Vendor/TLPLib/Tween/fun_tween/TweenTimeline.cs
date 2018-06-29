@@ -219,6 +219,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         insert(totalDuration, element);
 
       [PublicAPI]
+      public Builder append(Option<TweenTimelineElement> element) =>
+        element.isSome ? append(element.__unsafeGetValue) : this;
+
+      [PublicAPI]
       public float append2(TweenTimelineElement element) =>
         insert2(totalDuration, element);
 

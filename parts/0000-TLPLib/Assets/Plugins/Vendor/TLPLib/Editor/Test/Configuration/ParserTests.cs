@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   class ConfigOptParserTest {
-    readonly Config.Parser<Option<string>> parser = Config.opt(Config.stringParser);
+    readonly Config.Parser<object, Option<string>> parser = Config.opt(Config.stringParser);
 
     [Test]
     public void WhenNull() =>

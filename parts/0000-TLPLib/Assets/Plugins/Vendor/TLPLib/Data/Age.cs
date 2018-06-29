@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         age--;
       return age >= 0
         ? Either<string, Age>.Right(new Age((uint) age))
-        : $"Player age is negative: ${age}";
+        : $"Player age is negative: {age}";
     }
   }
 }

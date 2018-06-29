@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -31,11 +30,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       if (type != UnityEditor.PrefabType.Prefab)
         yield return new ErrorMsg($"Expected {_prefab} to be a prefab, but it was {type}!");
 #else
-      return Enumerable.Empty<ErrorMsg>();
+      return System.Linq.Enumerable.Empty<ErrorMsg>();
 #endif
     }
   }
   public static class TagPrefab {
     public static TagPrefab<A> a<A>(A prefab) where A : Object => new TagPrefab<A>(prefab);
   }
+  [Serializable, PublicAPI] public class GameObjectPrefab : TagPrefab<GameObject> { }
+  [Serializable, PublicAPI] public class TransformPrefab : TagPrefab<Transform> { }
+  [Serializable, PublicAPI] public class RectTransformPrefab : TagPrefab<RectTransform> { }
 }

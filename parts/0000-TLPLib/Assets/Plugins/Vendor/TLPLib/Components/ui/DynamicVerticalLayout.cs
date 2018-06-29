@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -103,8 +101,13 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly DynamicVerticalLayout backing;
       readonly List<IElementData> layoutData;
       readonly IRxRef<float> containerHeight = RxRef.a(0f);
-      readonly Dictionary<IElementData, Option<IElementView>> items = new Dictionary<IElementData, Option<IElementView>>();
       readonly bool renderLatestItemsFirst;
+
+      // If Option is None, that means there is no backing view, it is only a spacer.
+      readonly Dictionary<IElementData, Option<IElementView>> _items = 
+        new Dictionary<IElementData, Option<IElementView>>();
+
+      public Option<Option<IElementView>> get(IElementData key) => _items.get(key);
 
       public Init(
         DynamicVerticalLayout backing,
@@ -153,10 +156,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
       
       void clearLayout() {
-        foreach (var kv in items) {
+        foreach (var kv in _items) {
           foreach (var item in kv.Value) item.Dispose();
         }
-        items.Clear();
+        _items.Clear();
       }
 
       /// <summary>
@@ -204,7 +207,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
              
           var placementVisible = visibleRect.Overlaps(cellRect, true);
           
-          if (placementVisible && !items.ContainsKey(data)) {
+          if (placementVisible && !_items.ContainsKey(data)) {
             var instanceOpt = Option<IElementView>.None;
             foreach (var elementWithView in data.asElementWithView) {
               var instance = elementWithView.createItem(backing._container);
@@ -214,11 +217,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
               rectTrans.anchoredPosition = cellRect.center;
               instanceOpt = instance.some();
             }
-            items.Add(data, instanceOpt);
+            _items.Add(data, instanceOpt);
           }
-          else if (!placementVisible && items.ContainsKey(data)) {
-            var itemOpt = items[data];
-            items.Remove(data);
+          else if (!placementVisible && _items.ContainsKey(data)) {
+            var itemOpt = _items[data];
+            _items.Remove(data);
             foreach (var item in itemOpt) {
               item.Dispose();
             }

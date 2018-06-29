@@ -182,13 +182,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI]
     public static IEnumerable<C> zip<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> zipper
     ) {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
 
       while (aEnum.MoveNext() && bEnum.MoveNext())
-        yield return f(aEnum.Current, bEnum.Current);
+        yield return zipper(aEnum.Current, bEnum.Current);
 
       aEnum.Dispose();
       bEnum.Dispose();
@@ -196,7 +196,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI]
     public static IEnumerable<C> zipLeft<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<A, int, C> generateMissing
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> zipper, Fn<A, int, C> generateMissing
     ) {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
@@ -204,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var idx = -1;
       while (aEnum.MoveNext()) {
         idx++;
-        yield return bEnum.MoveNext() ? f(aEnum.Current, bEnum.Current) : generateMissing(aEnum.Current, idx);
+        yield return bEnum.MoveNext() ? zipper(aEnum.Current, bEnum.Current) : generateMissing(aEnum.Current, idx);
       }
 
       aEnum.Dispose();
@@ -213,8 +213,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI]
     public static IEnumerable<C> zipRight<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> f, Fn<B, int, C> generateMissing
-    ) => bEnumerable.zipLeft(aEnumerable, (b, a) => f(a, b), generateMissing);
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> zipper, Fn<B, int, C> generateMissing
+    ) => bEnumerable.zipLeft(aEnumerable, (b, a) => zipper(a, b), generateMissing);
 
     [PublicAPI]
     public static IEnumerable<Tpl<A, B>> zip<A, B>(
@@ -357,7 +357,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         return F.some(a);
       return F.none<A>();
     }
-
     /// <summary>
     /// Aggregate with index passed into reducer.
     /// </summary>
@@ -371,7 +370,40 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         reduced = reducer(a, reduced, idx);
         idx++;
       }
+
       return reduced;
+    }
+
+    /// <summary>
+    /// Given an enumerable yield elements in groups of <see cref="windowSize"/>. 
+    /// </summary>
+    /// <example>
+    /// new []{1,2,3,4}.slidingWindow(3)
+    ///
+    /// Will result in:
+    ///
+    /// new []{ new[]{1,2,3}, new []{2,3,4} }
+    /// </example>
+    [PublicAPI]
+    public static IEnumerable<A[]> slidingWindow<A>(
+      this IEnumerable<A> enumerable, uint windowSize
+    ) {
+      if (windowSize == 0) 
+        throw new ArgumentException("Window size can't be 0!", nameof(windowSize));
+      
+      var window = new A[windowSize];
+      var idx = 0;
+      foreach (var a in enumerable) {
+        if (windowSize > 1) {
+          window.shiftLeft(1);
+        }
+        window[windowSize - 1] = a;
+
+        if (idx >= windowSize - 1) {
+          yield return window.clone();
+        }
+        idx++;
+      }
     }
   }
 
@@ -381,6 +413,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public Partitioned(ImmutableList<A> trues, ImmutableList<A> falses) {
       this.trues = trues;
       this.falses = falses;
+    }
+
+    public void Deconstruct(out ImmutableList<A> trues, out ImmutableList<A> falses) {
+      trues = this.trues;
+      falses = this.falses;
     }
 
     #region Equality

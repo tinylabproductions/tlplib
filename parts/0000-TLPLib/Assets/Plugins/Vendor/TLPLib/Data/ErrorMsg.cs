@@ -30,11 +30,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       s,
       ImmutableArray<Tpl<string, string>>.Empty,
       ImmutableArray<Tpl<string, string>>.Empty,
-      context: context
+      context: context,
+      reportToErrorTracking: reportToErrorTracking
     );
     
     [PublicAPI] public ErrorMsg withMessage(Fn<string, string> f) => 
       new ErrorMsg(f(s), reportToErrorTracking, context);
-    [PublicAPI] public ErrorMsg withContext(Object context) => new ErrorMsg(s, context);
+    
+    [PublicAPI] public ErrorMsg withContext(Object context) => 
+      new ErrorMsg(s, reportToErrorTracking, context);
   }
 }

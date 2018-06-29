@@ -153,19 +153,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
       public void Dispose() { }
     }
 
-    public static readonly IDisposable emptyDisposable = new EmptyDisposable();
+    [PublicAPI] public static readonly IDisposable emptyDisposable = new EmptyDisposable();
 
     /// <summary>Representation of ! as a function.</summary>
-    public static readonly Fn<bool, bool> invert = a => !a;
+    [PublicAPI] public static readonly Fn<bool, bool> invert = a => !a;
     /// <summary>Representation of && as a function.</summary>
-    public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
-    public static readonly Fn<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;
-    public static readonly Fn<bool, bool, bool, bool, bool> and4 = (a, b, c, d) => a && b && c && d;
+    [PublicAPI] public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
+    [PublicAPI] public static readonly Fn<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;
+    [PublicAPI] public static readonly Fn<bool, bool, bool, bool, bool> and4 = (a, b, c, d) => a && b && c && d;
 
     /// <summary>Representation of || as a function.</summary>
-    public static readonly Fn<bool, bool, bool> or2 = (a, b) => a || b;
+    [PublicAPI] public static readonly Fn<bool, bool, bool> or2 = (a, b) => a || b;
 
     /// <summary>Representation of + as a function.</summary>
-    public static readonly Fn<float, float, float> add2F = (a, b) => a + b;
+    [PublicAPI] public static readonly Fn<float, float, float> add2F = (a, b) => a + b;
   }
 }
