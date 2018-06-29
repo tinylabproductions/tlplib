@@ -20,9 +20,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     protected readonly List<PointerEventData> pointerData = new List<PointerEventData>();
 
     public void OnPointerDown(PointerEventData eventData) {
-      // There exists a bug
-      // when you release and then press at the same frame, OnPointerUp doesn't fire,
-      // so we skip OnPointerDown event, to not corrupt pointerData
+      // Theoretically for every pointer down there should be a pointer up.
+      //
+      // However sometimes unity dispatches two pointer downs and one pointer up.
+      // So far we only noticed this behaviour in unity editor at low frame rates.
+      //
+      // Our hypothesis is that user clicks and releases the mouse within single frame.
+      //
+      // So the workaround is to double-check if this event has been dispatched by unity
+      // before and ignore it if has.
       if (pointerData.Contains(eventData)) return;
 
       pointerData.Add(eventData);
