@@ -358,6 +358,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<A>();
     }
 
+    /// <summary>
+    /// Aggregate with index passed into reducer.
+    /// </summary>
     [PublicAPI]
     public static B Aggregate<A, B>(
       this IEnumerable<A> enumerable, B initial, Fn<A, B, int, B> reducer
