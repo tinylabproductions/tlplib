@@ -23,7 +23,8 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
       isPathClosed,
       lockXAxisPressed,
       lockYAxisPressed,
-      lockZAxisPressed;
+      lockZAxisPressed,
+      controlHandlesMoved = true;
 
     void OnSceneGUI() {
       updateLockAxisPressedStates();
@@ -249,7 +250,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         return behaviour.relative ? transformList(behaviour.nodes, false) : behaviour.nodes;
       }
 
-      if (behaviour.path.points != behaviour.nodes.ToImmutableArray()) {
+      if (controlHandlesMoved) {
         behaviour.invalidate();
         points = new List<Vector3>();
         for (float i = 0; i < behaviour.curveSubdivisions; i++) {
@@ -257,7 +258,9 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         }
 
         points.Add(behaviour.path.evaluate(1, false)); //Adding last point
+        controlHandlesMoved = false;
       }
+        
 
       return points;
     }
@@ -290,8 +293,9 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         if (behaviour.relative) {
           newPos = behaviour.transform.InverseTransformPoint(newPos);
           currentNode = behaviour.transform.InverseTransformPoint(currentNode);
+          
         }
-
+        controlHandlesMoved = true;
         Undo.RecordObject(behaviour, "Move point");
         behaviour.nodes[idx] = calculateNewNodePosition(newPos, currentNode);
         //If path closed check if we are moving last node, if true move first node identicaly
