@@ -9,7 +9,7 @@ using GenerationAttributes;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
-  [Serializable, Record(GenerateConstructor = false, GenerateToString = false)]
+  [Serializable, Record(GenerateConstructor = GeneratedContructor.None, GenerateToString = false)]
   public partial struct PathStr : IComparable<PathStr>, IStr {
     #region Unity Serialized Fields
 

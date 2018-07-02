@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
@@ -147,7 +148,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       IDisposableTracker tracker,
       DebugSequenceMouseData mouseData=null,
       Option<DebugSequenceDirectionData> directionDataOpt=default,
-      DebugConsoleBinding binding=null
+      DebugConsoleBinding binding=null,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
       Option.ensureValue(ref directionDataOpt);
 
@@ -156,7 +160,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var mouseObs =
         new RegionClickObservable(mouseData.width, mouseData.height)
-        .sequenceWithinTimeframe(tracker, mouseData.sequence, 3);
+        .sequenceWithinTimeframe(
+          tracker, mouseData.sequence, 3,
+          // ReSharper disable ExplicitCallerInfoArgument
+          callerMemberName: callerMemberName,
+          callerFilePath: callerFilePath,
+          callerLineNumber: callerLineNumber
+          // ReSharper restore ExplicitCallerInfoArgument
+        );
 
       var directionObs = directionDataOpt.fold(
         Observable<Unit>.empty,

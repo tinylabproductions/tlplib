@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
@@ -49,7 +50,10 @@ namespace com.tinylabproductions.TLPLib.Components {
     /// Emits event when a particular region index sequence is executed within X seconds.
     /// </summary>
     public IObservable<Unit> sequenceWithinTimeframe(
-      IDisposableTracker tracker, IList<int> sequence, float timeS
+      IDisposableTracker tracker, IList<int> sequence, float timeS,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
       // Specific implementation to reduce garbage.
       var s = new Subject<Unit>();
@@ -62,17 +66,25 @@ namespace com.tinylabproductions.TLPLib.Components {
         }
         return true;
       }
-      regionIndex.subscribe(tracker, region => {
-        // Clear up one item if the queue is full.
-        if (regions.Count == sequence.Count) regions.Dequeue();
-        regions.Enqueue(new SeqEntry(Time.realtimeSinceStartup, region));
-        // Emit event if the conditions check out
-        if (
-          regions.Count == sequence.Count
-          && Time.realtimeSinceStartup - regions.Peek().time <= timeS
-          && isEqual()
-        ) s.push(F.unit);
-      });
+      regionIndex.subscribe(
+        tracker, 
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName,
+        callerFilePath: callerFilePath,
+        callerLineNumber: callerLineNumber,
+        // ReSharper restore ExplicitCallerInfoArgument
+        onEvent: region => {
+          // Clear up one item if the queue is full.
+          if (regions.Count == sequence.Count) regions.Dequeue();
+          regions.Enqueue(new SeqEntry(Time.realtimeSinceStartup, region));
+          // Emit event if the conditions check out
+          if (
+            regions.Count == sequence.Count
+            && Time.realtimeSinceStartup - regions.Peek().time <= timeS
+            && isEqual()
+          ) s.push(F.unit);
+        }
+      );
       return s;
     }
 
