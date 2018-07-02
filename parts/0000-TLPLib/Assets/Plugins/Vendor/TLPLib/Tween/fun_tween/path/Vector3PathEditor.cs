@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
       lockXAxisPressed,
       lockYAxisPressed,
       lockZAxisPressed,
-      controlHandlesMoved = true;
+      pathChanged = true;
 
     void OnSceneGUI() {
       updateLockAxisPressedStates();
@@ -154,12 +154,14 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
           if (behaviour.nodes[behaviour.nodes.Count - 1] != behaviour.nodes[0])
             behaviour.nodes.Add(behaviour.nodes[0]);
           isPathClosed = true;
+          pathChanged = true;
         }
       }
       //Opening path
       if (!behaviour.closed && isPathClosed) {
         behaviour.nodes.RemoveAt(behaviour.nodes.Count - 1);
         isPathClosed = false;
+        pathChanged = true;
       }
     }
     
@@ -236,6 +238,8 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         behaviour.relative = isRelative;
         isRecalculatedToLocal = isRelative;
       }
+
+      pathChanged = true;
     }
     
     List<Vector3> transformList(IEnumerable<Vector3> nodes, bool toLocal) => 
@@ -250,7 +254,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         return behaviour.relative ? transformList(behaviour.nodes, false) : behaviour.nodes;
       }
 
-      if (controlHandlesMoved) {
+      if (pathChanged) {
         behaviour.invalidate();
         points = new List<Vector3>();
         for (float i = 0; i < behaviour.curveSubdivisions; i++) {
@@ -258,7 +262,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         }
 
         points.Add(behaviour.path.evaluate(1, false)); //Adding last point
-        controlHandlesMoved = false;
+        pathChanged = false;
       }
         
 
@@ -295,7 +299,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
           currentNode = behaviour.transform.InverseTransformPoint(currentNode);
           
         }
-        controlHandlesMoved = true;
+        pathChanged = true;
         Undo.RecordObject(behaviour, "Move point");
         behaviour.nodes[idx] = calculateNewNodePosition(newPos, currentNode);
         //If path closed check if we are moving last node, if true move first node identicaly
