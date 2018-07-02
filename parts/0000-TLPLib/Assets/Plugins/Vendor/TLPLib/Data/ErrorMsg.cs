@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  [Record(GenerateConstructor = false)]
+  [Record(GenerateConstructor = GeneratedContructor.None)]
   public partial struct ErrorMsg {
     [PublicAPI] public readonly string s;
     /// <see cref="LogEntry.reportToErrorTracking"/>

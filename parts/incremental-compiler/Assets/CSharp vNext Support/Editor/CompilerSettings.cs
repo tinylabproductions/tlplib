@@ -188,7 +188,7 @@ public class CompilerSettings : EditorWindow
         if (!File.Exists(UcLogFilePath)) {
             return _ucLastBuildLog;
         }
-
+        
         try
         {
             var lines = File.ReadAllLines(UcLogFilePath);
