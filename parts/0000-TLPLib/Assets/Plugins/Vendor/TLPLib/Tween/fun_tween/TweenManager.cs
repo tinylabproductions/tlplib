@@ -1,7 +1,5 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -16,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// Manages a sequence, calling its <see cref="TweenTimeline.setRelativeTimePassed"/> method for you on
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
-  public partial class TweenManager {
+  public partial class TweenManager : IDisposable {
     [Serializable, Record(GenerateToString = false)]
     public partial struct Loop {
       public enum Mode : byte { Normal, YoYo }
@@ -67,9 +65,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public IObservable<TweenCallback.Event> onStart => 
       __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
-    [PublicAPI] public IObservable<TweenCallback.Event> onEnd => 
+    [PublicAPI] public IObservable<TweenCallback.Event> onEnd =>
       __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
-    
+
     [PublicAPI] public float timescale = 1;
     [PublicAPI] public bool forwards = true;
     [PublicAPI] public Loop looping;
@@ -191,6 +189,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     void rewindTimePassed(bool applyEffectsForRelativeTweens) =>
       timeline.setTimePassed(forwards ? 0 : timeline.duration, applyEffectsForRelativeTweens);
+
+    public void Dispose() {
+      stop();
+      _tracker?.Dispose();
+    }
   }
 
   public static class TweenManagerExts {

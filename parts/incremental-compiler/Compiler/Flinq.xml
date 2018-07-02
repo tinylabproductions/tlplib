@@ -1,0 +1,498 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Flinq</name>
+    </assembly>
+    <members>
+        <member name="T:Flinq.Enumerable">
+            <summary>
+            LINQ query operators inspired by Scala
+            </summary>
+        </member>
+        <member name="M:Flinq.Enumerable.Map``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
+            <summary>
+             Builds a new collection by applying a function to all elements of this list (same as Select).
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <typeparam name="B">The element type of the returned collection.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="f">The function to apply to each element.</param>
+            <returns>The output sequence.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.FlatMap``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Collections.Generic.IEnumerable{``1}})">
+            <summary>
+            Builds a new collection by applying a function to all elements of this list and using the elements of the resulting collections (same as SelectMany).
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <typeparam name="B">The element type of the returned collection.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="f">The function to apply to each element.</param>
+            <returns>The output sequence.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.FoldLeft``2(System.Collections.Generic.IEnumerable{``0},``1,System.Func{``1,``0,``1})">
+            <summary>
+            Applies a binary operator to a start value and all elements of this list, going left to right.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <typeparam name="B">The type of the elements in the output sequence and the result type of the binary operator.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="z">The start value.</param>
+            <param name="op">The binary operator.</param>
+            <returns>The result of inserting <paramref name="op" /> between consecutive elements of this list, going left to right with the start value <paramref name="z" /> on the left.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.FoldRight``2(System.Collections.Generic.IEnumerable{``0},``1,System.Func{``0,``1,``1})">
+            <summary>
+            Applies a binary operator to all elements of this list and a start value, going right to left.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <typeparam name="B">The type of the elements in the output sequence and the result type of the binary operator.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="z">The start value.</param>
+            <param name="op">The binary operator.</param>
+            <returns>The result of inserting <paramref name="op" /> between consecutive elements of this list, going right to left with the start value <paramref name="z" /> on the right.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            Applies a function f to all elements of this list.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="f">The function that is applied for its side-effect to every element.</param>
+        </member>
+        <member name="M:Flinq.Enumerable.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0,System.Int32})">
+            <summary>
+            Applies a function f to all elements of this list. Also passes an element index (int) to function f.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="f">The function that is applied for its side-effect to every element.</param>
+        </member>
+        <member name="M:Flinq.Enumerable.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0,System.Int64})">
+            <summary>
+            Applies a function f to all elements of this list. Also passes an element index (long) to function f.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="f">The function that is applied for its side-effect to every element.</param>
+        </member>
+        <member name="M:Flinq.Enumerable.Indices``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Produces the range of all indices (int) of this sequence.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <returns>A range of values from 0 to one less than the length of this list.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndicesLong``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Produces the range of all indices (long) of this sequence.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <returns>A range of values from 0 to one less than the length of this list.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.ReduceLeft``2(System.Collections.Generic.IEnumerable{``0},System.Func{``1,``0,``1})">
+            <summary>
+            Applies a binary operator to all elements of this sequence, going left to right.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <typeparam name="B">The type of the elements in the output sequence and the result type of the binary operator.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="op">The binary operator.</param>
+            <returns>The result of inserting <paramref name="op"/> between consecutive elements of this sequence, going left to right.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when the input sequence is empty.</exception>
+        </member>
+        <member name="M:Flinq.Enumerable.ReduceRight``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1,``1})">
+            <summary>
+            Applies a binary operator to all elements of this sequence, going right to left.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <typeparam name="B">The type of the elements in the output sequence and the result type of the binary operator.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="op">The binary operator.</param>
+            <returns>The result of inserting <paramref name="op"/> between consecutive elements of this sequence, going right to left.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when the input sequence is empty.</exception>
+        </member>
+        <member name="M:Flinq.Enumerable.Slice``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32)">
+            <summary>
+            Selects an interval of elements.
+            </summary>
+            <typeparam name="A">The type of the elements of source.</typeparam>
+            <param name="source">The sequence of elements.</param>
+            <param name="from">The index of the first element in the slice.</param>
+            <param name="until">The index of one beyond the last element in the slice.</param>
+            <returns>The output sequence.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.Patch``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Collections.Generic.IEnumerable{``0},System.Int32)">
+            <summary>
+            Produces a new sequence where a slice of elements in this sequence is replaced by another sequence.
+            </summary>
+            <typeparam name="A">The type of the elements of source.</typeparam>
+            <param name="source">The original sequence of elements.</param>
+            <param name="from">The index of the first replaced element.</param>
+            <param name="patch">The sequence of elements to replace a slice in the original sequence.</param>
+            <param name="replaced">The number of elements to drop in the original sequence.</param>
+            <returns>The output sequence.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IsEmpty``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Tests whether this sequence is empty.
+            </summary>
+            <typeparam name="A">The type of the elements of source.</typeparam>
+            <param name="source">The sequence of elements.</param>
+            <returns><c>true</c> if the sequence contain no elements, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.MkString``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Displays all elements of this sequence in a string.
+            </summary>
+            <typeparam name="A">The type of the elements of source.</typeparam>
+            <param name="source">The sequence of elements to display.</param>
+            <returns>A string representation of this sequence. In the resulting string the string representations (w.r.t. the method <c>ToString</c>) of all elements of this sequence follow each other without any separator string.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.MkString``1(System.Collections.Generic.IEnumerable{``0},System.String)">
+            <summary>
+            Displays all elements of this sequence in a string using a separator string.
+            </summary>
+            <typeparam name="A">The type of the elements of source.</typeparam>
+            <param name="source">The sequence of elements to display.</param>
+            <param name="sep">The separator string.</param>
+            <returns>A string representation of this sequence. In the resulting string the string representations (w.r.t. the method <c>ToString</c>) of all elements of this sequence are separated by the string <paramref name="sep" />.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.MkString``1(System.Collections.Generic.IEnumerable{``0},System.String,System.String,System.String)">
+            <summary>
+            Displays all elements of this sequence in a string using start, end, and separator strings.
+            </summary>
+            <typeparam name="A">The type of the elements of source.</typeparam>
+            <param name="source">The sequence of elements to display.</param>
+            <param name="start">The starting string.</param>
+            <param name="sep">The separator string.</param>
+            <param name="end">The ending string.</param>
+            <returns>A string representation of this sequence. The resulting string begins with the string <paramref name="start" /> and ends with the string <paramref name="end" />. Inside, the string representations (w.r.t. the method <c>ToString</c>) of all elements of this sequence are separated by the string <paramref name="sep" />.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.StartsWith``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Tests whether this list starts with the given sequence.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <returns><c>true</c> if this collection has <paramref name="that" /> as a prefix, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.StartsWith``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Tests whether this list starts with the given sequence.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns><c>true</c> if this collection has <paramref name="that" /> as a prefix, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.EndsWith``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Tests whether this list ends with the given sequence.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <returns><c>true</c> if this collection has <paramref name="that" /> as a suffix, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.EndsWith``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Tests whether this list ends with the given sequence.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns><c>true</c> if this collection has <paramref name="that" /> as a suffix, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.Contains``1(System.Collections.Generic.IEnumerable{``0},``0)">
+            <summary>
+            Tests whether this list contains a given value as an element.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element to test.</param>
+            <returns><c>true</c> if this list has an element that is equal (as determined by <c>EqualityComparer&lt;A&gt;.Default</c>) to <paramref name="elem" />, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.Contains``1(System.Collections.Generic.IEnumerable{``0},``0,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Tests whether this list contains a given value as an element.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element to test.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns><c>true</c> if this list has an element that is equal (as determined by <paramref name="comparer" />) to <paramref name="elem" />, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.ContainsSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Tests whether this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <returns><c>true</c> if this list contains a slice with the same elements as <paramref name="that" />, otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.ContainsSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Tests whether this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns><c>true</c> if this list contains a slice with the same elements as <paramref name="that" />, otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexWhere``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Finds index of first element satisfying some predicate.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="p">The predicate used to test elements.</param>
+            <returns>The index of the first element of this list that satisfies the predicate <paramref name="p" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexWhere``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean},System.Int32)">
+            <summary>
+            Finds index of the first element satisfying some predicate after or at some start index.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="p">The predicate used to test elements.</param>
+            <param name="from">The start index.</param>
+            <returns>The index &gt;= <paramref name="from" /> of the first element of this list that satisfies the predicate <paramref name="p" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexWhere``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Finds index of last element satisfying some predicate.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="p">The predicate used to test elements.</param>
+            <returns>The index of the last element of this list that satisfies the predicate <paramref name="p" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexWhere``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean},System.Int32)">
+            <summary>
+            Finds index of last element satisfying some predicate before or at given end index.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="p">The predicate used to test elements.</param>
+            <param name="end">The end index.</param>
+            <returns>The index &lt;= <paramref name="end" /> of the last element of this list that satisfies the predicate p, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0)">
+            <summary>
+            Finds index of first occurrence of some value in this list.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <returns>The index of the first element of this list that is equal (as determined by <c>EqualityComparer&lt;A&gt;.Default</c>) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds index of first occurrence of some value in this list.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The index of the first element of this list that is equal (as determined by <paramref name="comparer" />) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0,System.Int32)">
+            <summary>
+            Finds index of first occurrence of some value in this list after or at some start index.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <param name="from">The start index.</param>
+            <returns>The index &gt;= <paramref name="from" /> of the first element of this list that is equal (as determined by <c>EqualityComparer&lt;A&gt;.Default</c>) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0,System.Int32,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds index of first occurrence of some value in this list after or at some start index.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <param name="from">The start index.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The index &gt;= <paramref name="from" /> of the first element of this list that is equal (as determined by <paramref name="comparer" />) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOf``1(System.Collections.Generic.IEnumerable{``0},``0)">
+            <summary>
+            Finds index of last occurrence of some value in this list.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <returns>The index of the last element of this list that is equal (as determined by <c>EqualityComparer&lt;A&gt;.Default</c>) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOf``1(System.Collections.Generic.IEnumerable{``0},``0,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds index of last occurrence of some value in this list.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The index of the last element of this list that is equal (as determined by <paramref name="comparer" />) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOf``1(System.Collections.Generic.IEnumerable{``0},``0,System.Int32)">
+            <summary>
+            Finds index of last occurrence of some value in this list before or at a given end index.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <param name="end">The end index.</param>
+            <returns>The index &lt;= <paramref name="end" /> of the last element of this list that is equal (as determined by <c>EqualityComparer&lt;A&gt;.Default</c>) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOf``1(System.Collections.Generic.IEnumerable{``0},``0,System.Int32,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds index of last occurrence of some value in this list before or at a given end index.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="elem">The element value to search for.</param>
+            <param name="end">The end index.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The index &lt;= <paramref name="end" /> of the last element of this list that is equal (as determined by <paramref name="comparer" />) to <paramref name="elem" />, or -1, if none exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Finds first index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <returns>The first index such that the elements of this list starting at this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds first index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The first index such that the elements of this list starting at this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Int32)">
+            <summary>
+            Finds first index after or at a start index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="from">The start index.</param>
+            <returns>The first index >= <paramref name="from" /> such that the elements of this list starting at this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.IndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Int32,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds first index after or at a start index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="from">The start index.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The first index >= <paramref name="from" /> such that the elements of this list starting at this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Finds last index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <returns>The last index such that the elements of this list starting a this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds last index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The last index such that the elements of this list starting a this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Int32)">
+            <summary>
+            Finds last index before or at a given end index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="end">The end index.</param>
+            <returns>The last index &lt;= <paramref name="end" /> such that the elements of this list starting at this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.LastIndexOfSlice``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Int32,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Finds last index before or at a given end index where this list contains a given sequence as a slice.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="that">The sequence to test.</param>
+            <param name="end">The end index.</param>
+            <param name="comparer">
+            An <c>IEqualityComparer&lt;A&gt;</c> to use to compare elements.
+            If <paramref name="comparer" /> is <c>null</c>, the default equality comparer, <c>EqualityComparer&lt;A&gt;.Default</c>, is used to compare elements.
+            </param>
+            <returns>The last index &lt;= <paramref name="end" /> such that the elements of this list starting at this index match the elements of sequence <paramref name="that" />, or -1 of no such subsequence exists.</returns>
+        </member>
+        <member name="M:Flinq.Enumerable.SplitAt``1(System.Collections.Generic.IEnumerable{``0},System.Int32)">
+            <summary>
+            Splits this list into two at a given position.
+            </summary>
+            <typeparam name="A">The type of the elements in the input sequence.</typeparam>
+            <param name="source">The input sequence.</param>
+            <param name="n">The position at which to split.</param>
+            <returns>A pair of lists consisting of the first <paramref name="n" /> elements of this list, and the other elements.</returns>
+        </member>
+        <member name="T:Flinq.NamespaceDoc">
+            <summary>
+            The <see cref="N:Flinq"/> namespace supports LINQ operators inspired by Scala.
+            </summary>
+        </member>
+    </members>
+</doc>
