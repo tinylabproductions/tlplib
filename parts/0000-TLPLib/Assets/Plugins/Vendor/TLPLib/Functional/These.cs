@@ -131,13 +131,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public static class These {
-    public static Option<These<A, B>> a<A, B>(Option<A> aOpt, Option<B> bOpt) {
-      if (aOpt.isNone && bOpt.isNone) return F.none<These<A, B>>();
-      if (aOpt.isSome && bOpt.isSome) return F.these(aOpt.get, bOpt.get).some();
-      if (aOpt.isSome) return F.thiz<A, B>(aOpt.get).some();
-      if (bOpt.isSome) return F.that<A, B>(bOpt.get).some();
+    public static Option<C> a<A, B, C>(Option<A> aOpt, Option<B> bOpt, Fn<These<A, B>, C> mapper) {
+      if (aOpt.isNone && bOpt.isNone) return F.none_;
+      if (aOpt.isSome && bOpt.isSome) return mapper(F.these(aOpt.__unsafeGetValue, bOpt.__unsafeGetValue)).some();
+      if (aOpt.isSome) return mapper(F.thiz<A, B>(aOpt.get)).some();
+      if (bOpt.isSome) return mapper(F.that<A, B>(bOpt.get)).some();
       throw new IllegalStateException();
     }
+
+    public static Option<These<A, B>> a<A, B>(Option<A> aOpt, Option<B> bOpt) =>
+      a(aOpt, bOpt, _ => _);
 
     // TODO: test
     public static Tpl<A, Option<A>> asTuple<A>(this These<A, A> t) {
