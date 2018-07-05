@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
 
     [Range(0.01f, 1.5f)] public float nodeHandleSize = 0.6f;
     [Range(10, 500)] public int curveSubdivisions = 100;
-    [Range(20, 50)] public int pathResolution = 20;
+    [Range(20, 50)] public int pathResolution = 30;
     public bool showDirection = true;
 #endif
 
