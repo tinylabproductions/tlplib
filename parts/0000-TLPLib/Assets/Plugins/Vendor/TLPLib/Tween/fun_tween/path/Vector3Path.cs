@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Functional.Matching;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
   public partial class Vector3Path {
-    public enum InterpolationMethod : byte {
-      Linear,
-      CatmullRom,
-      Cubic,
-      Hermite
-    }
+    public enum InterpolationMethod : byte { Linear, CatmullRom, Cubic, Hermite }
 
     /// <summary>
     /// If a path uses non-linear <see cref="InterpolationMethod"/>, the path is curved, as you can
@@ -224,7 +216,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
         splineLength += dist;
         oldPoint = newPoint;
       }
-
+      
       return splineLength;
     }
 
@@ -233,7 +225,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
       if (percentage > 0 && percentage < 1) {
         var tLen = realLength * percentage;
         var count = constantSpeedTable.entries.Length;
-        
         //Binary search to find lower bound
         var L = 0;
         var R = count - 2;

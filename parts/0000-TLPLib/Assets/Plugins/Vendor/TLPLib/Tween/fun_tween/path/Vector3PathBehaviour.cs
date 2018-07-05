@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
+
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
   public class Vector3PathBehaviour : MonoBehaviour, IMB_OnValidate {

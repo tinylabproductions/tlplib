@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -82,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         }
       }
       
-      // Drawing white lines
+      // Prepearing to draw white lines
       var secondIsLast = true;
       var closestIsFirst = false;
 
@@ -153,8 +152,8 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         if (behaviour.closed && !isPathClosed) {
           if (behaviour.nodes[behaviour.nodes.Count - 1] != behaviour.nodes[0])
             behaviour.nodes.Add(behaviour.nodes[0]);
-          isPathClosed = true;
-          pathChanged = true;
+            isPathClosed = true;
+            pathChanged = true;
         }
       }
       //Opening path
