@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     protected override void recordEditorChanges() =>
       canvas.recordEditorChanges("Canvas sorting layer changed");
 
-    public override void apply(SortingLayerReference sortingLayer) =>
+    protected override void apply(SortingLayerReference sortingLayer) =>
       sortingLayer.applyTo(canvas);
 
     protected override SortingLayerAndOrder extract() {

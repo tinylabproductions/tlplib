@@ -1,5 +1,7 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -25,7 +27,13 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
 
-    [PublicAPI] public abstract void apply(SortingLayerReference sortingLayer);
+    Option<SortingLayerReference> sortingLayerOverride = F.none_;
+    public void setSortingLayerOverride(SortingLayerReference sortingLayer) {
+      sortingLayerOverride = sortingLayer.some();
+      apply(sortingLayer);
+    }
+
+    [PublicAPI] protected abstract void apply(SortingLayerReference sortingLayer);
     protected abstract SortingLayerAndOrder extract();
     protected abstract void recordEditorChanges();
 
@@ -36,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
       if (!Application.isPlaying) return;
 #endif
 
-      apply(sortingLayer);
+      apply(sortingLayerOverride.getOrElse(sortingLayer));
     }
   }
 }
