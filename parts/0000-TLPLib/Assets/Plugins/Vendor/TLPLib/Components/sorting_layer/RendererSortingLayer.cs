@@ -1,5 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Utilities;
+﻿using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
@@ -10,10 +9,8 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     protected override void recordEditorChanges() =>
       renderer.recordEditorChanges("Renderer sorting layer changed");
 
-    public override void apply(SortingLayerReference sortingLayer) {
-      sortingLayerOverride = sortingLayer.some();
+    protected override void apply(SortingLayerReference sortingLayer) =>
       sortingLayer.applyTo(renderer);
-    }
 
     protected override SortingLayerAndOrder extract() {
       var renderer = this.renderer;
