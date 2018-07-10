@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     "Sets the sorting layer on this game object to the one specified in" +
     "this component."
   )]
-  public abstract partial class SortingLayerSetter : MonoBehaviour, IMB_Awake {
+  public abstract partial class SortingLayerSetter : MonoBehaviour, IMB_Awake, IMB_OnEnable {
     public struct SortingLayerAndOrder {
       public readonly int layerId, order;
 
@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
 
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
-    [SerializeField, NotNull] SortingLayerReference sortingLayer;
+    [SerializeField, NotNull] protected SortingLayerReference sortingLayer;
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
 
@@ -38,5 +38,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
 
       apply(sortingLayer);
     }
+
+    public void OnEnable() => apply(sortingLayer);
   }
 }
