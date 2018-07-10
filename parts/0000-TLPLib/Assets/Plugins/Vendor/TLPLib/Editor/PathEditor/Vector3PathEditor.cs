@@ -39,6 +39,8 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         behaviour.invalidate();
         refreshPath();
       }
+      
+      if (behaviour.transform.hasChanged) refreshPath();
     }
 
     void updateLockAxisPressedStates() {
@@ -242,6 +244,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         behaviour.nodes = recalculateRelativePosition(behaviour.nodes, isRelative);
         behaviour.relative = isRelative;
         isRecalculatedToLocal = isRelative;
+        refreshPath();
       }
     }
     
