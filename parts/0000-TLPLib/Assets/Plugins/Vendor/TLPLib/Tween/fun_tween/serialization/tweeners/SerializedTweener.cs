@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
@@ -22,22 +21,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     [SerializeField, NotNull] SerializedEase _ease;
     [SerializeField, NotNull, NonEmpty] Target[] _targets = new Target[1];
 
-    readonly TweenMutator<DestinationType, Target> mutator;
     readonly Tween<DestinationType>.Ops ops;
     readonly SerializedTweenerOps.Add<DestinationType> add;
     readonly SerializedTweenerOps.Extract<DestinationType, Target> extract;
-    readonly Fn<SourceType, DestinationType> convert;
+    protected abstract TweenMutator<DestinationType, Target> mutator { get; }
+    protected abstract DestinationType convert(SourceType value);
 
     protected SerializedTweener(
       Tween<DestinationType>.Ops ops, 
       SerializedTweenerOps.Add<DestinationType> add, 
       SerializedTweenerOps.Extract<DestinationType, Target> extract, 
-      TweenMutator<DestinationType, Target> mutator,
-      Fn<SourceType, DestinationType> convert, SourceType defaultValue
+      SourceType defaultValue
     ) {
       this.ops = ops;
-      this.mutator = mutator;
-      this.convert = convert;
       this.add = add;
       this.extract = extract;
       _start = _end = defaultValue;
@@ -78,9 +74,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
 
   public abstract class SerializedTweener<Value, Target> : SerializedTweener<Value, Value, Target> {
+    protected override TweenMutator<Value, Target> mutator { get; }
+    protected override Value convert(Value value) => value;
+
     protected SerializedTweener(
       Tween<Value>.Ops ops, SerializedTweenerOps.Add<Value> add, SerializedTweenerOps.Extract<Value, Target> extract,
       TweenMutator<Value, Target> mutator, Value defaultValue
-    ) : base(ops, add, extract, mutator, _ => _, defaultValue) {}
+    ) : base(ops, add, extract, defaultValue) {
+      this.mutator = mutator;
+    }
   }
 }

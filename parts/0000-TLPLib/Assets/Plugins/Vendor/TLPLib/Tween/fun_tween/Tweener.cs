@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,6 +23,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this RectTransform t, Vector2 start, Vector2 to, Ease ease, float duration,
       TweenMutator<Vector2, RectTransform> mutator
     ) => a(TweenOps.vector2.tween(start, to, false, ease, duration), t, mutator);
+        
     #endregion
 
     #region Transform Position
@@ -77,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Transform t, float multiplier, Ease ease, float duration
     ) => tweenScale(t, t.localScale, t.localScale * multiplier, ease, duration);
     #endregion
-
+    
     #region Transform Rotation
     [PublicAPI]
     public static Tweener<Vector3, Transform> tweenLocalRotation(
@@ -130,7 +132,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this Tweener<Vector2, RectTransform> t, Vector2 to, Ease ease, float duration
     ) => t.t.tweenAnchoredPosition(t.tween.end, t.tween.end + to, ease, duration);
     #endregion
-
+    
+    #region Transform Path
+    [PublicAPI]
+    public static Tweener<float, Transform> tweenTransformByPath(
+      this Transform t, float from, float to, Vector3Path path, Ease ease, float duration
+      ) => a(TweenOps.float_.tween(from, to, false, ease, duration), t, TweenMutators.path(path));
+    #endregion
+    
     [PublicAPI]
     public static TweenTimelineElement tweenFloat(
       float from, float to, Ease ease, float duration, Act<float> setValue
