@@ -1,5 +1,6 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     "Sets the sorting layer on this game object to the one specified in" +
     "this component."
   )]
-  public abstract partial class SortingLayerSetter : MonoBehaviour, IMB_Awake, IMB_OnEnable {
+  public abstract partial class SortingLayerSetter : MonoBehaviour, IMB_Awake {
     public struct SortingLayerAndOrder {
       public readonly int layerId, order;
 
@@ -21,9 +22,11 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
 
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
-    [SerializeField, NotNull] protected SortingLayerReference sortingLayer;
+    [SerializeField, NotNull] SortingLayerReference sortingLayer;
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
+
+    protected Option<SortingLayerReference> sortingLayerOverride = F.none_;
 
     [PublicAPI] public abstract void apply(SortingLayerReference sortingLayer);
     protected abstract SortingLayerAndOrder extract();
@@ -36,9 +39,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
       if (!Application.isPlaying) return;
 #endif
 
-      apply(sortingLayer);
+      apply(sortingLayerOverride.getOrElse(sortingLayer));
     }
-
-    public void OnEnable() => apply(sortingLayer);
   }
 }
