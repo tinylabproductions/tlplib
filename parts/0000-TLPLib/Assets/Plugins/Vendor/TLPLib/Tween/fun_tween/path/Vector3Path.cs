@@ -57,19 +57,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
 
       public readonly ImmutableArray<Entry> entries;
 
-      public  ConstantSpeedTable(int subdivisions, Fn<float, Vector3> calculate) {
+      public ConstantSpeedTable(int subdivisions, Fn<float, Vector3> getPointOnPath) {
         var lengthAccumulator = 0f;
         var increment = 1f / subdivisions;
         var builder = ImmutableArray.CreateBuilder<Entry>(subdivisions);
-        var oldPoint = calculate(0);
+        var prevPoint = getPointOnPath(0);
         for (var idx = 1; idx < subdivisions + 1; idx++) {
           var percentage = increment * idx;
-          var newPoint = calculate(percentage);
-          lengthAccumulator += Vector3.Distance(newPoint, oldPoint);
-          oldPoint = newPoint;
+          var currentPoint = getPointOnPath(percentage);
+          lengthAccumulator += Vector3.Distance(currentPoint, prevPoint);
+          prevPoint = currentPoint;
           builder.Add(new Entry(percentageOfPath: percentage, summedDistanceFromPathStart: lengthAccumulator));
         }
-
+        
         entries = builder.MoveToImmutable();
       }
     }
@@ -105,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
       this.method = method;
       this.closed = closed;
       this.relativeTo = relativeTo;
-      resolution = pathResolution * 10;
+      resolution = pathResolution;
       points = segmentLengthRatios();
 
       //Distance to the last node is the whole path distance
@@ -193,19 +193,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
       return builder.MoveToImmutable();
     }
 
-    delegate Vector3 X(int segmentIndex, float percentageOfPath);
-    ImmutableArray<Point> getSegmentRatios(ImmutableArray<Vector3> positions, X x) {
-      return getSegmentRatios(
+    delegate Vector3 GetSegmentPoint(int segmentIndex, float percentageOfPath);
+    delegate Vector3 GetPoint(float percentageInPath);
+    
+    ImmutableArray<Point> getSegmentRatios(ImmutableArray<Vector3> positions, GetSegmentPoint getSegmentPoint) =>
+      getSegmentRatios(
         segmentIndex => getApproxSegmentLength(
           resolution,
-          percentageOfPath => x(segmentIndex, percentageOfPath)
+          percentageOfPath => getSegmentPoint(segmentIndex, percentageOfPath)
         ),
         positions
       );
-    }
-
-    public delegate Vector3 GetPoint(float percentageInPath);
-
+    
     static float getApproxSegmentLength(int resolution, GetPoint getPt) {
       var oldPoint = getPt(0f);
       var splineLength = 0f;
@@ -286,40 +285,33 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
         (percentage - points[low].percentageOfPathTraveled)
         / (points[low + 1].percentageOfPathTraveled - points[low].percentageOfPathTraveled);
 
-      Vector3 returnValue;
       switch (method) {
         case InterpolationMethod.Linear:
-          returnValue = Vector3.Lerp(
+          return Vector3.Lerp(
             points[low].point, points[low + 1].point,
             segmentPercentage
           );
-          break;
         case InterpolationMethod.Cubic:
-          returnValue = InterpolationUtils.cubicGetPt(
+          return InterpolationUtils.cubicGetPt(
             idx => points[idx].point, points.Length, low,
             segmentPercentage,
             closed
           );
-          break;
         case InterpolationMethod.Hermite:
-          returnValue = InterpolationUtils.hermiteGetPt(
+          return InterpolationUtils.hermiteGetPt(
             idx => points[idx].point, points.Length, low,
             segmentPercentage,
             closed
           );
-          break;
         case InterpolationMethod.CatmullRom:
-          returnValue = InterpolationUtils.catmullRomGetPt(
+          return InterpolationUtils.catmullRomGetPt(
             idx => points[idx].point, points.Length, low,
             segmentPercentage,
             closed
           );
-          break;
         default:
           throw new ArgumentOutOfRangeException();
       }
-
-      return returnValue;
     }
   }
 }

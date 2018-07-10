@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
@@ -8,7 +10,10 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.path {
   [CustomEditor(typeof(Vector3PathBehaviour))]
-  public class Vector3PathEditor : UnityEditor.Editor {
+  public class Vector3PathEditor : UnityEditor.Editor, IMB_OnDisable, IMB_OnEnable {
+    
+    DisposableTracker dt = new DisposableTracker();
+
     public const KeyCode
       xAxisLockKey = KeyCode.G,
       yAxisLockKey = KeyCode.H,
@@ -22,8 +27,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
       isPathClosed,
       lockXAxisPressed,
       lockYAxisPressed,
-      lockZAxisPressed,
-      pathChanged = true;
+      lockZAxisPressed;
 
     void OnSceneGUI() {
       updateLockAxisPressedStates();
@@ -33,14 +37,17 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
 
       if (GUI.changed) {
         behaviour.invalidate();
+        refreshPath();
       }
     }
 
     void updateLockAxisPressedStates() {
       var guiEvent = Event.current;
+      var isKey = guiEvent.isKey;
+      var keyCode = guiEvent.keyCode;
 
       void update(ref bool keyIsDown, KeyCode key) {
-        if (guiEvent.isKey && guiEvent.keyCode == key) {
+        if (isKey && keyCode == key) {
           switch (guiEvent.type) {
             case EventType.KeyDown:
               keyIsDown = true;
@@ -61,23 +68,33 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     bool yLocked => lockYAxisPressed || behaviour.lockYAxis;
     bool zLocked => lockZAxisPressed || behaviour.lockZAxis;
     
-    void OnEnable() {
+    public void OnEnable() {
       behaviour = (Vector3PathBehaviour) target;
+      behaviour.onValidate.subscribe(dt, _ => refreshPath());
       isRecalculatedToLocal = behaviour.relative;
+      refreshPath();
     }
- 
+
+    public void OnDisable() {
+      dt.Dispose();
+    }
+    
+    Vector3 getWorldPos(Vector3 position) => 
+      behaviour.relative ? behaviour.transform.TransformPoint(position) : position;
+    
+    Vector3 getLocalPos(Vector3 position) => 
+      behaviour.relative ? behaviour.transform.InverseTransformPoint(position) : position;
+
     void input() {
       var guiEvent = Event.current;
       var transform = behaviour.transform;
-      var mousePos = getMousePos(Event.current.mousePosition, transform);
-      if (behaviour.relative) mousePos = behaviour.transform.InverseTransformPoint(mousePos);
+      var mousePos = getLocalPos(getMousePos(Event.current.mousePosition, transform));
       
       //Removing nodes
-      if (guiEvent.type == EventType.MouseDown && ( guiEvent.button == 1 || guiEvent.button == 0 && guiEvent.alt) ) {
-        Option<int> maybeNode = nodeAtPos(mousePos);
-        if (maybeNode.isSome) {
+      if (guiEvent.type == EventType.MouseDown && (guiEvent.button == 1 || guiEvent.button == 0 && guiEvent.alt) ) {
+        foreach (var node in nodeAtPos(mousePos)) {
           Undo.RecordObject(behaviour, "Delete point");
-          deleteNode(maybeNode.get);
+          deleteNode(node);
         }
       }
       
@@ -92,35 +109,35 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         Handles.color = Color.white;
 
         if (closestNodeID.isSome) {
-          var closestID = closestNodeID.get;
-          secondNodeID = closestID + 1 >= behaviour.nodes.Count ? F.none_ : (closestID + 1).some();
+          var closestID = closestNodeID.__unsafeGetValue;
+          secondNodeID = (closestID + 1 < behaviour.nodes.Count).opt(closestID + 1);
           
           if (0 == closestID) closestIsFirst = true;
 
           var firstDist = Vector2.Distance(mousePos, behaviour.nodes[closestID]);
-          var secondDist = secondNodeID.isSome ? F.some(Vector2.Distance(mousePos, behaviour.nodes[secondNodeID.get])) : F.none_;
+          
           var pt = secondNodeID.isSome
-            ? GetClosetPointOnLine(closestID, secondNodeID.get, mousePos, true, behaviour.nodes)
+            ? GetClosetPointOnLine(closestID, secondNodeID.__unsafeGetValue, mousePos, true, behaviour.nodes)
             : (Vector2) behaviour.nodes[closestID];
 
           // Checks if distance to nodes are the closest distance to whole path
           if (firstDist > Vector2.Distance(mousePos, pt))
             closestIsFirst = false;
-          if (secondDist.isSome) {
-            if (behaviour.nodes.Count - 1 != secondNodeID.get || secondDist.get > Vector2.Distance(mousePos, pt))
-              secondIsLast = false; 
+          
+          foreach (var nodeID in secondNodeID) {
+            var secondDist = Vector2.Distance(mousePos, behaviour.nodes[nodeID]);
+            if (behaviour.nodes.Count - 1 != nodeID || secondDist > Vector2.Distance(mousePos, pt))
+              secondIsLast = false;
+            
+            if (!closestIsFirst) drawLine(nodeID, mousePos);
+          }
+          
+          //Draws line between closest node and mouse position
+          if (!secondIsLast || behaviour.nodes.Count == 1) {
+            drawLine(closestID, mousePos);
           }
         }
-               
-        //Draws line between closest node and mouse position
-        if (closestNodeID.isSome && !secondIsLast || behaviour.nodes.Count == 1 ) {
-          drawLine(closestNodeID.get, mousePos);
-        }
-        //Draws line between next to closest node and mouse position
-        if (secondNodeID.isSome && !closestIsFirst) {
-          drawLine(secondNodeID.get, mousePos);
-        }
-
+       
         SceneView.RepaintAll();
       }
 
@@ -133,41 +150,42 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         }
         
         Undo.RecordObject(behaviour, "Add node");
-        if (!closestIsFirst && !secondIsLast && secondNodeID.isSome)
-          behaviour.nodes.Insert(secondNodeID.get, mousePos);
-        else if (closestIsFirst && secondNodeID.isSome && !secondIsLast)
-          behaviour.nodes.Insert(closestNodeID.get, mousePos);
-        else {
+        if (!secondIsLast && secondNodeID.isSome) 
+          behaviour.nodes.Insert(closestIsFirst ? closestNodeID.get : secondNodeID.get, mousePos);
+        else 
           behaviour.nodes.Add(mousePos);
-        }
+        
+        refreshPath();
       }
     }
     
     void recalculate() {
       //Recalculating to world or local space
-      recalculateCoordinates(behaviour.relative);
+      recalculateCoordinates();
 
       //Closing path
       if (behaviour.nodes.Count > 2) {
         if (behaviour.closed && !isPathClosed) {
-          if (behaviour.nodes[behaviour.nodes.Count - 1] != behaviour.nodes[0])
-            behaviour.nodes.Add(behaviour.nodes[0]);
-            isPathClosed = true;
-            pathChanged = true;
+          var firstNode = behaviour.nodes[0];
+          if (behaviour.nodes[behaviour.nodes.Count - 1] != firstNode) 
+            behaviour.nodes.Add(firstNode);
+          
+          isPathClosed = true;
+          refreshPath();
         }
       }
       //Opening path
       if (!behaviour.closed && isPathClosed) {
         behaviour.nodes.RemoveAt(behaviour.nodes.Count - 1);
         isPathClosed = false;
-        pathChanged = true;
+        refreshPath();
       }
     }
     
     void draw() {
       if (behaviour.nodes.Count > 1) {
         Handles.color = Color.red;
-        drawCurve(subdividePath());
+        drawCurve();
       }
 
       Handles.color = Color.yellow;
@@ -181,11 +199,13 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     Option<int> nodeAtPos(Vector3 pos) {
       if (behaviour.nodes.isEmpty()) return F.none_;
       
-      var minDist = HandleUtility.GetHandleSize(behaviour.nodes[0]) / (1 / behaviour.nodeHandleSize) / 2;
-      Option<int> closestNodeIDX = F.none_; 
+      var minDist = HandleUtility.GetHandleSize(behaviour.nodes[0]) * behaviour.nodeHandleSize;
+      var closestNodeIDX = Option<int>.None; 
+      
       for (var i = 0; i < behaviour.nodes.Count; i++) {
-        var dist = Vector2.Distance(pos, behaviour.nodes[i]);
-        var radius = HandleUtility.GetHandleSize(behaviour.nodes[i]);
+        var node = behaviour.nodes[i];
+        var dist = Vector2.Distance(pos, node);
+        var radius = HandleUtility.GetHandleSize(node);
         if (dist < minDist && dist < radius) {
           minDist = dist;
           closestNodeIDX = F.some(i);
@@ -195,65 +215,47 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
       return closestNodeIDX;
     }
 
-    void drawLine(int nodeIDX, Vector3 mousePos) {
-      if (behaviour.relative) mousePos = behaviour.transform.TransformPoint(mousePos);
-      Handles.DrawLine(behaviour.relative
-          ? behaviour.transform.TransformPoint(behaviour.nodes[nodeIDX])
-          : behaviour.nodes[nodeIDX],
-        mousePos);
-    }
+    void drawLine(int nodeIDX, Vector3 mousePos) => 
+      Handles.DrawLine(getWorldPos(behaviour.nodes[nodeIDX]), getWorldPos(mousePos));
 
     public Vector3 getMousePos(Vector2 aMousePos, Transform aTransform) {
-      var ray = SceneView.lastActiveSceneView.camera.ScreenPointToRay(new Vector3(aMousePos.x, aMousePos.y, 0));
-      var plane = new Plane(aTransform.TransformDirection(new Vector3(0, 0, -1)), aTransform.position);
-      float dist = 0;
-      var result = new Vector3(0, 0, 0);
-
-      ray = HandleUtility.GUIPointToWorldRay(aMousePos);
-      if (plane.Raycast(ray, out dist)) {
-        result = ray.GetPoint(dist);
-      }
-
-      return result;
+      var plane = new Plane(aTransform.TransformDirection(Vector3.back), aTransform.position);
+      var ray = HandleUtility.GUIPointToWorldRay(aMousePos);
+      return plane.Raycast(ray, out var dist) ? ray.GetPoint(dist) : Vector3.zero; 
     }
     
-    List<Vector3>  recalculateRelativePosition(
-      List<Vector3> points, bool toLocal
-    ) {
-      for (var idx = 0; idx < points.Count; idx++) {
-        var point = points[idx];
-        points[idx] =
+    List<Vector3> recalculateRelativePosition(List<Vector3> nodes, bool toLocal) {
+      for (var idx = 0; idx < nodes.Count; idx++) {
+        var point = nodes[idx];
+        nodes[idx] =
           toLocal
             ? behaviour.transform.InverseTransformPoint(point)
             : behaviour.transform.TransformPoint(point);
       }
 
-      return points;
+      return nodes;
     }
 
-    void recalculateCoordinates(bool isRelative) {
+    void recalculateCoordinates() {
+      var isRelative = behaviour.relative;
       if (!isRecalculatedToLocal == isRelative) {
         behaviour.nodes = recalculateRelativePosition(behaviour.nodes, isRelative);
         behaviour.relative = isRelative;
         isRecalculatedToLocal = isRelative;
       }
-
-      pathChanged = true;
     }
     
     List<Vector3> transformList(IEnumerable<Vector3> nodes, bool toLocal) => 
       nodes.Select(x => toLocal
         ? behaviour.transform.InverseTransformPoint(x)
-        : behaviour.transform.TransformPoint(x))
-        .ToList();
-
-    List<Vector3> subdividePath() {
-      //If path is linear we don't need to subdivide it, returning the nodes
+        : behaviour.transform.TransformPoint(x)
+      ).ToList();
+   
+    void refreshPath() {
       if (behaviour.method == Vector3Path.InterpolationMethod.Linear) {
-        return behaviour.relative ? transformList(behaviour.nodes, false) : behaviour.nodes;
+        points = behaviour.relative ? transformList(behaviour.nodes, false) : behaviour.nodes;
       }
-
-      if (pathChanged) {
+      else {
         behaviour.invalidate();
         points = new List<Vector3>();
         for (float i = 0; i < behaviour.curveSubdivisions; i++) {
@@ -261,62 +263,55 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         }
 
         points.Add(behaviour.path.evaluate(1, false)); //Adding last point
-        pathChanged = false;
-      }
-        
-
-      return points;
-    }
-
-    static void drawCurve(IList<Vector3> subdividedPath) {
-      for (var idx = 1; idx < subdividedPath.Count; idx++) {
-        Handles.DrawLine(subdividedPath[idx - 1], subdividedPath[idx]);
       }
     }
 
+    void drawCurve() {
+      for (var idx = 1; idx < points.Count; idx++) {
+        Handles.DrawLine(points[idx - 1], points[idx]);
+      }
+    }
+    
     void moveAndDrawHandles(int idx, int length) {
-      
-      if (idx > 0) Handles.color = Color.magenta;
-      if (idx == 0) Handles.color = Color.green;
-      if (idx == length - 1) Handles.color = Color.red;
-      if (idx == length - 1 && behaviour.closed) Handles.color = Color.green;
-      
-      var currentNode = behaviour.relative
-        ? behaviour.transform.TransformPoint(behaviour.nodes[idx])
-        : behaviour.nodes[idx];
-      //Setting handlesize
-      var handleSize = HandleUtility.GetHandleSize(currentNode) / (1 / behaviour.nodeHandleSize) / 2;
+      Color getHandleColor() {
+        if (idx == 0 || idx == length - 1 && behaviour.closed) return Color.green;
+        if (idx == length - 1) return Color.red;
+        return Color.magenta;
+      }
 
-      var newPos = Handles.FreeMoveHandle(currentNode, Quaternion.identity, handleSize, Vector3.zero,
-        Handles.SphereHandleCap);
+      Handles.color = getHandleColor();
+
+      var currentNode = getWorldPos(behaviour.nodes[idx]);
+      //Setting handlesize
+      var handleSize = HandleUtility.GetHandleSize(currentNode) * behaviour.nodeHandleSize;
+
+      var newPos = Handles.FreeMoveHandle(
+        currentNode, Quaternion.identity, handleSize, Vector3.zero, Handles.SphereHandleCap
+      );
       if (behaviour.showDirection)
-        drawDirectionHandles(currentNode, idx, handleSize);
+        drawArrows(currentNode, idx, handleSize * 1.5f);
 
       if (currentNode != newPos) {
-        if (behaviour.relative) {
-          newPos = behaviour.transform.InverseTransformPoint(newPos);
-          currentNode = behaviour.transform.InverseTransformPoint(currentNode);
-          
-        }
-        pathChanged = true;
+        refreshPath();
         Undo.RecordObject(behaviour, "Move point");
-        behaviour.nodes[idx] = calculateNewNodePosition(newPos, currentNode);
+        var calculatedNode = calculateNewNodePosition(getLocalPos(newPos), behaviour.nodes[idx]);
+        behaviour.nodes[idx] = calculatedNode;
         //If path closed check if we are moving last node, if true move first node identicaly
         if (behaviour.closed && idx == behaviour.nodes.Count - 1) {
-          behaviour.nodes[0] = calculateNewNodePosition(newPos, currentNode);
+          behaviour.nodes[0] = calculatedNode;
         }
-        
       } 
     }
 
-    void drawDirectionHandles(Vector3 currentNode, int idx, float size) {
+    void drawArrows(Vector3 currentNode, int idx, float size) {
       if (idx != behaviour.nodes.Count - 1) {
-        Vector3 nextNode = behaviour.relative ? behaviour.transform.TransformPoint(behaviour.nodes[idx + 1]) : behaviour.nodes[idx + 1];
-        Handles.ArrowHandleCap(0, currentNode, Quaternion.LookRotation(nextNode - currentNode), size * 1.5f,
-          EventType.Repaint);
+        var nextNode = getWorldPos(behaviour.nodes[idx + 1]);
+        Handles.ArrowHandleCap(
+          0, currentNode, Quaternion.LookRotation(nextNode - currentNode), size, EventType.Repaint
+        );
       }
     }
-
+    
     public void deleteNode(int idx) {
       //If we remove starting point - open path
       if (behaviour.closed && (behaviour.nodes.Count - 1 == idx || idx == 0)) {
@@ -369,7 +364,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         if (t < 0.0f) t = 0.0f;
         else if (t > 1.0f) t = 1.0f;
       }
-      Vector2 Closest = points[aStart] + AB * t;
+      var Closest = points[aStart] + AB * t;
       return Closest;
     }
     
