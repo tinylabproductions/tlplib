@@ -16,24 +16,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     [Serializable]
     // Can't be struct, because AdvancedInspector freaks out.
     public partial class Element : Invalidatable {
-      enum At : byte {
-        AfterLastElement,
-        WithLastElement,
-        SpecificTime
-      }
-
+      enum At : byte { AfterLastElement, WithLastElement, SpecificTime }
+      
       #region Unity Serialized Fields
 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
       [SerializeField] At _at;
-
-      [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))]
-      float _timeOffset;
-
-      [SerializeField, NotNull, CreateDerived, PublicAccessor]
-      SerializedTweenTimelineElement _element;
+      [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
+      [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
@@ -56,21 +48,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 
       public override string ToString() {
         var titleS = _title.isEmpty() ? "" : $"{_title} | ";
-        var atS =
+        var atS = 
           _at == At.SpecificTime
-            ? $"@ {_timeOffset}s"
-            : (
-              // ReSharper disable once CompareOfFloatsByEqualityOperator
-              _timeOffset == 0
-                ? _at.ToString()
-                : _timeOffset > 0
-                  ? $"{_at} + {_timeOffset}s"
-                  : $"{_at} - {-_timeOffset}s"
-            );
+          ? $"@ {_timeOffset}s"
+          : (
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            _timeOffset == 0 
+            ? _at.ToString() 
+            : _timeOffset > 0 
+              ? $"{_at} + {_timeOffset}s"
+              : $"{_at} - {-_timeOffset}s"
+          );
         return $"{titleS}{atS}: {_element}";
       }
     }
-
+    
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -82,7 +74,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     #endregion
 
     TweenTimeline _timeline;
-
     [PublicAPI]
     public TweenTimeline timeline {
       get {
@@ -96,11 +87,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
             foreach (var elem in element.element.elements) {
               builder.insert(currentElementTime, elem);
             }
-
             lastElementTime = currentElementTime;
             lastElementDuration = element.element.duration;
           }
-
           _timeline = builder.build();
         }
 
