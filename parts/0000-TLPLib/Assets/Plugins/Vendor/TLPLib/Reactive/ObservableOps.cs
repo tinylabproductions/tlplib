@@ -693,5 +693,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       initial,
       setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(a))
     );
+
+    public static IRxVal<B> toRxVal<A, B>(this IObservable<A> o, B initial, Fn<A, B> mapper) => new RxVal<B>(
+      initial,
+      setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(mapper(a)))
+    );
   }
 }
