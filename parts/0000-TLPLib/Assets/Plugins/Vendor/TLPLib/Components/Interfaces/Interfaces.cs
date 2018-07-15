@@ -79,12 +79,6 @@ namespace com.tinylabproductions.TLPLib.Components.Interfaces {
   // This function is called when the behaviour becomes disabled or inactive
   public interface IMB_OnDisable { void OnDisable(); }
 
-  // Called on the client when the connection was lost or you disconnected from the master server
-  public interface IMB_OnDisconnectedFromMasterServer { void OnDisconnectedFromMasterServer(NetworkDisconnection info); }
-
-  // Called on the client when the connection was lost or you disconnected from the server
-  public interface IMB_OnDisconnectedFromServer { void OnDisconnectedFromServer(NetworkDisconnection info); }
-
   // Implement this OnDrawGizmosSelected if you want to draw gizmos only if the object is selected
   public interface IMB_OnDrawGizmos { void OnDrawGizmos(); }
 
@@ -93,12 +87,6 @@ namespace com.tinylabproductions.TLPLib.Components.Interfaces {
 
   // This function is called when the object becomes enabled and active
   public interface IMB_OnEnable { void OnEnable(); }
-
-  // Called on the client when a connection attempt fails for some reason
-  public interface IMB_OnFailedToConnect { void OnFailedToConnect(NetworkConnectionError error); }
-
-  // Called on clients or servers when there is a problem connecting to the MasterServer
-  public interface IMB_OnFailedToConnectToMasterServer { void OnFailedToConnectToMasterServer(NetworkConnectionError error); }
 
   // OnGUI is called for rendering and handling GUI events
   public interface IMB_OnGUI { void OnGUI(); }
@@ -111,9 +99,6 @@ namespace com.tinylabproductions.TLPLib.Components.Interfaces {
 
   // This function is called after a new level was loaded
   public interface IMB_OnLevelWasLoaded { void OnLevelWasLoaded(int level); }
-
-  // Called on clients or servers when reporting events from the MasterServer
-  public interface IMB_OnMasterServerEvent { void OnMasterServerEvent(MasterServerEvent msEvent); }
 
   // OnMouseDown is called when the user has pressed the mouse button while over the GUIElement or Collider
   public interface IMB_OnMouseDown { void OnMouseDown(); }
@@ -136,20 +121,11 @@ namespace com.tinylabproductions.TLPLib.Components.Interfaces {
   // OnMouseUpAsButton is only called when the mouse is released over the same GUIElement or Collider as it was pressed
   public interface IMB_OnMouseUpAsButton { void OnMouseUpAsButton(); }
 
-  // Called on objects which have been network instantiated with Network.Instantiate
-  public interface IMB_OnNetworkInstantiate { void OnNetworkInstantiate(NetworkMessageInfo info); }
-
   // OnParticleCollision is called when a particle hits a collider
   public interface IMB_OnParticleCollision { void OnParticleCollision(GameObject other); }
 
   // Called when any particles in a particle system meet the conditions in the trigger module
   public interface IMB_OnParticleTrigger { void OnParticleTrigger(); }
-
-  // Called on the server whenever a new player has successfully connected
-  public interface IMB_OnPlayerConnected { void OnPlayerConnected(NetworkPlayer player); }
-
-  // Called on the server whenever a player disconnected from the server
-  public interface IMB_OnPlayerDisconnected { void OnPlayerDisconnected(NetworkPlayer player); }
 
   // OnPostRender is called after a camera finished rendering the scene
   public interface IMB_OnPostRender { void OnPostRender(); }
@@ -171,9 +147,6 @@ namespace com.tinylabproductions.TLPLib.Components.Interfaces {
 
   // OnRenderObject is called after camera has rendered the scene
   public interface IMB_OnRenderObject { void OnRenderObject(); }
-
-  // Used to customize synchronization of variables in a script watched by a network view
-  public interface IMB_OnSerializeNetworkView { void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info); }
 
   // Called on the server whenever a Network.InitializeServer was invoked and has completed
   public interface IMB_OnServerInitialized { void OnServerInitialized(); }
@@ -216,4 +189,33 @@ namespace com.tinylabproductions.TLPLib.Components.Interfaces {
 
   // Update is called every frame, if the MonoBehaviour is enabled
   public interface IMB_Update { void Update(); }
+
+#if !UNITY_2018_2_OR_NEWER
+  // Called on the client when the connection was lost or you disconnected from the master server
+  public interface IMB_OnDisconnectedFromMasterServer { void OnDisconnectedFromMasterServer(NetworkDisconnection info); }
+
+  // Called on the client when the connection was lost or you disconnected from the server
+  public interface IMB_OnDisconnectedFromServer { void OnDisconnectedFromServer(NetworkDisconnection info); }
+
+  // Called on the client when a connection attempt fails for some reason
+  public interface IMB_OnFailedToConnect { void OnFailedToConnect(NetworkConnectionError error); }
+
+  // Called on clients or servers when there is a problem connecting to the MasterServer
+  public interface IMB_OnFailedToConnectToMasterServer { void OnFailedToConnectToMasterServer(NetworkConnectionError error); }
+
+  // Called on clients or servers when reporting events from the MasterServer
+  public interface IMB_OnMasterServerEvent { void OnMasterServerEvent(MasterServerEvent msEvent); }
+
+  // Called on objects which have been network instantiated with Network.Instantiate
+  public interface IMB_OnNetworkInstantiate { void OnNetworkInstantiate(NetworkMessageInfo info); }
+
+  // Called on the server whenever a new player has successfully connected
+  public interface IMB_OnPlayerConnected { void OnPlayerConnected(NetworkPlayer player); }
+
+  // Called on the server whenever a player disconnected from the server
+  public interface IMB_OnPlayerDisconnected { void OnPlayerDisconnected(NetworkPlayer player); }
+
+  // Used to customize synchronization of variables in a script watched by a network view
+  public interface IMB_OnSerializeNetworkView { void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info); }
+#endif
 }
