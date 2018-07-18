@@ -21,7 +21,13 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
         prefabType == PrefabType.ModelPrefabInstance;
 
       if (isPrefabInstance) {
-        source = PrefabUtility.GetPrefabParent(source);
+        source =
+          #if UNITY_2018_2_OR_NEWER
+            PrefabUtility.GetCorrespondingObjectFromSource(source)
+          #else
+            PrefabUtility.GetPrefabParent(source)
+          #endif
+        ;
         if (!source) throw new Exception(
           $"Can't look up prefab object (type: {prefabType}) from source {source}"
         );
