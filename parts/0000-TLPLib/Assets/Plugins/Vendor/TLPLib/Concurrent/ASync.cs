@@ -201,10 +201,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) {
       yield return req.Send();
       var responseCode = req.responseCode;
-#pragma warning disable 618
-      // Unity 5 does not have isNetworkError
-      if (req.isError) {
-#pragma warning restore 618
+      if (
+#if UNITY_2018_2_OR_NEWER
+        req.isNetworkError
+#else
+        req.isError
+#endif
+      ) {
+
         var msg = $"error: {req.error}, response code: {responseCode}";
         var url = new Url(req.url);
         p.complete(
