@@ -5,6 +5,7 @@ namespace UnityEngine.UI {
   public class SuperOutline : Shadow {
     protected SuperOutline() { }
 
+    public Vector2 offset = Vector2.zero;
     public int count = 8;
 
 #if UNITY_5_0 || UNITY_5_1
@@ -19,7 +20,7 @@ namespace UnityEngine.UI {
       var end = verts.Count;
       for (var i = 0; i < count; i++) {
         var angle = diff * i;
-        ApplyShadow(verts, effectColor, start, verts.Count, Mathf.Cos(angle) * effectDistance.x, Mathf.Sin(angle) * effectDistance.y);
+        ApplyShadow(verts, effectColor, start, verts.Count, offset.x + Mathf.Cos(angle) * effectDistance.x, offset.y + Mathf.Sin(angle) * effectDistance.y);
         start = end;
         end = verts.Count;
       }
@@ -39,7 +40,7 @@ namespace UnityEngine.UI {
       var end = verts.Count;
       for (var i = 0; i < count; i++) {
         var angle = diff * i;
-        ApplyShadow(verts, effectColor, start, verts.Count, Mathf.Cos(angle) * effectDistance.x, Mathf.Sin(angle) * effectDistance.y);
+        ApplyShadow(verts, effectColor, start, verts.Count, offset.x + Mathf.Cos(angle) * effectDistance.x, offset.y + Mathf.Sin(angle) * effectDistance.y);
         start = end;
         end = verts.Count;
       }
