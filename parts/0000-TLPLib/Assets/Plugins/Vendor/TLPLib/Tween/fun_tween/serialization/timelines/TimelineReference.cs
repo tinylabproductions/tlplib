@@ -11,7 +11,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
   /// </summary>
   [AddComponentMenu("")]
   public partial class TimelineReference : SerializedTweenTimelineElement {
+#pragma warning disable 649
+    // ReSharper disable FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local, NotNullMemberIsNotInitialized
     [SerializeField, PublicAccessor, NotNull] FunTweenTimeline _timeline;
+    // ReSharper restore FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local, NotNullMemberIsNotInitialized
+#pragma warning restore 649
 
     IEnumerable<TweenTimelineElement> _elements;
 

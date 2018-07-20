@@ -4,10 +4,14 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [AddComponentMenu("")]
-  public class Path_Transfrom_Position : SerializedTweener<float, float, Transform> {
+  public class Path_Transform_Position : SerializedTweener<float, float, Transform> {
+#pragma warning disable 649
+// ReSharper disable FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local, NotNullMemberIsNotInitialized
     [SerializeField, NotNull] Vector3PathBehaviour pathBehaviour;
+// ReSharper restore FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local, NotNullMemberIsNotInitialized
+#pragma warning restore 649
 
-    public Path_Transfrom_Position() : base(
+    public Path_Transform_Position() : base (
       TweenOps.float_, SerializedTweenerOps.Add.float_,
       // Paths do not have current state, so their current state is 0.
       extract: _ => 0f,
