@@ -22,8 +22,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public List<Vector3> nodes;
     public List<Vector2> nodes2;
 
-
+#pragma warning disable 649
     TweenManager manager;
+#pragma warning restore 649
 
     public void Start() {
       List<Vector3> positionArray = new List<Vector3>();

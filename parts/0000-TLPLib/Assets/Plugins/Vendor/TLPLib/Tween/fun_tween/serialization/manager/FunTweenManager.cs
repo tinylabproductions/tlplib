@@ -22,16 +22,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
-    float timePassed => _manager == null ? -1 : _manager.timeline.timePassed;
+    float timePassed => _manager?.timeline.timePassed ?? -1;
     [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
-    uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
+    uint currentIteration => _manager?.currentIteration ?? 0;
     [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
-    float timescale => _manager == null ? -1 : _manager.timescale;
-    
+    float timescale => _manager?.timescale ?? -1;
+
+#pragma warning disable 649
+    // ReSharper disable FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local, NotNullMemberIsNotInitialized
     [
       SerializeField, Tab(Tab.Fields),
       Help(
-        HelpType.Info, 
+        HelpType.Info,
         "Local mode pauses tweens when this game object is disabled and resumes when it is enabled.\n" +
         "Global mode continues to run the tween even if irrespective of this game objects state."
       )
@@ -53,6 +55,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
     [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenTimeline _timeline;
     [SerializeField, NotNull, CreateDerived, Tab(Tab.Fields)] SerializedTweenCallback[] _onStart, _onEnd;
+    // ReSharper restore FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local, NotNullMemberIsNotInitialized
+#pragma warning restore 649
 
     TweenManager _manager;
 
