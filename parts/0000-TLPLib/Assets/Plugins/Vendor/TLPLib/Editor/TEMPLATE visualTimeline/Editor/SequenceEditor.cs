@@ -1,15 +1,15 @@
-﻿using System;
+﻿using UnityEngine;
+using UnityEditor;
+using System;
+using System.Reflection;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate;
-using UnityEditor;
-using UnityEngine;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 
-namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
-  public class TimelineEditor : EditorWindow {
-   private Timeline timeline;
+namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
+	public class SequenceEditor : EditorWindow {
+		private Timeline timeline;
 		private GameObject selectedGameObject;
 		private TweenerTemp tweenerTemp;
 
@@ -57,9 +57,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			}
 		}
 
-		[MenuItem("TLP/VisualTweenTimeline", false)]
+		[MenuItem("Window/Zerano Assets/Visual Tween", false)]
 		public static void ShowWindow() {
-			TimelineEditor window = EditorWindow.GetWindow<TimelineEditor>(false, "FunTween Timeline");
+			SequenceEditor window = EditorWindow.GetWindow<SequenceEditor>(false, "TweenerTemp");
 			window.wantsMouseMove = true;
 			UnityEngine.Object.DontDestroyOnLoad(window);
 		}
