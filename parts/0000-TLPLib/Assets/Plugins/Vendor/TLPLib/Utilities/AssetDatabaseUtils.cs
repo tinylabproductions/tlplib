@@ -40,6 +40,22 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static Object loadMainAssetByGuid(string guid) =>
       AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+
+    static bool _assetsAreBeingEdited;
+    public static bool assetsAreBeingEdited => _assetsAreBeingEdited;
+
+    public static void startAssetEditing() {
+      if (!_assetsAreBeingEdited)
+        AssetDatabase.StartAssetEditing();
+      _assetsAreBeingEdited = true;
+    }
+    public static void stopAssetEditing() {
+      if (_assetsAreBeingEdited)
+        AssetDatabase.StopAssetEditing();
+      _assetsAreBeingEdited = false;
+    }
+    
+
   }
 }
 #endif

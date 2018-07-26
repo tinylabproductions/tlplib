@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
+  [ExecuteInEditMode]
   public abstract class GradientTextureBase : MonoBehaviour, IMB_Start {
     [SerializeField] int textureSize = 128;
     [SerializeField, NotNull] Gradient gradient = new Gradient();
@@ -12,6 +13,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     enum Direction : byte { Vertical = 0, Horizontal = 1 }
 
     public void Start() => generate();
+    public void Awake() => generate();
 
     protected abstract void setTexture(Texture2D texture);
     
