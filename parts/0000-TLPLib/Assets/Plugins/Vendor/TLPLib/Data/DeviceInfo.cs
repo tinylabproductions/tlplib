@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public readonly string manufacturer, modelCode;
 
     public static Option<DeviceInfo> create() {
-#if UNITY_ANDROID && UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
       return F.some(new DeviceInfo(manufacturer: Build.MANUFACTURER, modelCode: Build.DEVICE));
 #endif
       return F.none<DeviceInfo>();
