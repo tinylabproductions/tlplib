@@ -1,4 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -73,5 +74,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
       return new Vector2(cos * tx - sin * ty, sin * tx + cos * ty);
     }
+
+    [PublicAPI] public static float segmentAngle(this Vector2 from, Vector2 to) =>
+      Mathf.Atan2(to.y - from.y, to.x - from.x);
+    [PublicAPI] public static float segmentAngle(this Vector3 from, Vector3 to) =>
+      Mathf.Atan2(to.y - from.y, to.x - from.x);
   }
 }
