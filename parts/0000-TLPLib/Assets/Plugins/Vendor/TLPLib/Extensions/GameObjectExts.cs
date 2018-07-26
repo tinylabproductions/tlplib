@@ -25,7 +25,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static void setLayerRecursively(this GameObject go, int layer) {
-      go.doRecursively(o => o.layer = layer);
+      void setLayer(Transform t) {
+        t.gameObject.layer = layer;
+        var childCount = t.childCount;
+        for (var idx = 0; idx < childCount; idx++) {
+          setLayer(t.GetChild(idx));
+        }
+      }
+      
+      setLayer(go.transform);
     }
 
     [PublicAPI]
