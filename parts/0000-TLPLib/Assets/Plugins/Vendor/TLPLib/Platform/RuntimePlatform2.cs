@@ -15,16 +15,13 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.WSAPlayerX86,
         RuntimePlatform.WSAPlayerX64,
         RuntimePlatform.WSAPlayerARM,
-        RuntimePlatform.TizenPlayer,
         RuntimePlatform.PSP2,
         RuntimePlatform.PS4,
-        RuntimePlatform.PSM,
         RuntimePlatform.XboxOne,
-        RuntimePlatform.SamsungTVPlayer,
-        RuntimePlatform.WiiU,
         RuntimePlatform.tvOS,
 #if !UNITY_5_3_OR_NEWER
         RuntimePlatform.WP8Player,
+        RuntimePlatform.PSM,
 #endif
 #if !UNITY_5_4_OR_NEWER
         RuntimePlatform.OSXWebPlayer,
@@ -37,6 +34,11 @@ namespace com.tinylabproductions.TLPLib.Platform {
 #endif
 #if !UNITY_2017_3_OR_NEWER
         RuntimePlatform.OSXDashboardPlayer,
+        RuntimePlatform.TizenPlayer,
+        RuntimePlatform.SamsungTVPlayer,
+#endif
+#if !UNITY_2018_1_OR_NEWER
+        RuntimePlatform.WiiU,
 #endif
       }
     );

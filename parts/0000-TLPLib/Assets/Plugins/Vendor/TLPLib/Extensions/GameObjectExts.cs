@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 using UnityEngine;
 using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 using Object = UnityEngine.Object;
@@ -24,15 +25,28 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static void setLayerRecursively(this GameObject go, int layer) {
-      go.doRecursively(o => o.layer = layer);
+      void setLayer(Transform t) {
+        t.gameObject.layer = layer;
+        var childCount = t.childCount;
+        for (var idx = 0; idx < childCount; idx++) {
+          setLayer(t.GetChild(idx));
+        }
+      }
+      
+      setLayer(go.transform);
     }
 
+    [PublicAPI]
     public static void replaceWith(this GameObject go, GameObject replacement) {
-      replacement.transform.parent = go.transform.parent;
-      replacement.transform.position = go.transform.position;
-      replacement.transform.rotation = go.transform.rotation;
-      replacement.transform.localScale = go.transform.localScale;
+      var gt = go.transform;
+      var rt = replacement.transform;
+      var siblingIndex = gt.GetSiblingIndex();
+      rt.parent = gt.parent;
+      rt.position = gt.position;
+      rt.rotation = gt.rotation;
+      rt.localScale = gt.localScale;
       Object.Destroy(go);
+      rt.SetSiblingIndex(siblingIndex);
     }
 
     public static Coroutine everyFrame(this GameObject go, Fn<bool> f) => ASync.EveryFrame(go, f);

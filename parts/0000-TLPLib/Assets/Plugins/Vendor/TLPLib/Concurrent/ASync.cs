@@ -201,7 +201,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) {
       yield return req.Send();
       var responseCode = req.responseCode;
-      if (req.isError) {
+      if (
+#if UNITY_2018_2_OR_NEWER
+        req.isNetworkError
+#else
+        req.isError
+#endif
+      ) {
+
         var msg = $"error: {req.error}, response code: {responseCode}";
         var url = new Url(req.url);
         p.complete(
