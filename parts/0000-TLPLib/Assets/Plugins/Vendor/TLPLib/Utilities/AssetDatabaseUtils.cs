@@ -54,8 +54,6 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         AssetDatabase.StopAssetEditing();
       _assetsAreBeingEdited = false;
     }
-    
-
   }
 }
 #endif
