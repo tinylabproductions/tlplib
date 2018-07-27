@@ -72,6 +72,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
         case SerializedPropertyType.Quaternion:
           property.quaternionValue = default;
           break;
+#if UNITY_2017_2_OR_NEWER
         case SerializedPropertyType.Vector2Int:
           property.vector2IntValue = default;
           break;
@@ -84,8 +85,11 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
         case SerializedPropertyType.BoundsInt:
           property.boundsIntValue = default;
           break;
+#endif
         case SerializedPropertyType.Generic:
+#if UNITY_2017_2_OR_NEWER
         case SerializedPropertyType.FixedBufferSize:
+#endif
           throw new ArgumentOutOfRangeException(nameof(property.propertyType), property.propertyType, "Unknown type");
         default:
           throw new ArgumentOutOfRangeException(nameof(property.propertyType), property.propertyType, "Unknown type");
