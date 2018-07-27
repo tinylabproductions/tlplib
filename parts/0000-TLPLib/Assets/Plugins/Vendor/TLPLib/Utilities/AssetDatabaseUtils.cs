@@ -42,7 +42,6 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
 
     static bool _assetsAreBeingEdited;
-    public static bool assetsAreBeingEdited => _assetsAreBeingEdited;
 
     public static void startAssetEditing() {
       if (!_assetsAreBeingEdited)
