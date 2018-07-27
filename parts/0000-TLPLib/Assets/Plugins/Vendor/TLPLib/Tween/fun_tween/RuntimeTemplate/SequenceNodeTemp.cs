@@ -3,9 +3,9 @@ using System.Collections;
 using System;
 using System.Reflection;
 
-namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
+namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 	[System.Serializable]
-	public class SequenceNode {
+	public class SequenceNodeTemp {
 		[HideInInspector] public Component target;
 		[HideInInspector] public string property;
 
@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 		public float startTime;
 		public float duration = 5;
-		public EasingCurve.EaseType ease = EasingCurve.EaseType.Linear;
+		public EasingCurveTemp.EaseType ease = EasingCurveTemp.EaseType.Linear;
 		public int channel;
 
 		public float fromFloat;
@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 		private bool update;
 
-		public SequenceNode(Component target, string property) {
+		public SequenceNodeTemp(Component target, string property) {
 			this.target = target;
 			this.property = property;
 		}
@@ -172,30 +172,30 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 		public Vector3 GetValue(Vector3 from, Vector3 to, float t) {
 			Vector3 vector3 = new Vector3();
-			vector3.x = EasingCurve.GetValue(this.ease, from.x, to.x, t);
-			vector3.y = EasingCurve.GetValue(this.ease, from.y, to.y, t);
-			vector3.z = EasingCurve.GetValue(this.ease, from.z, to.z, t);
+			vector3.x = EasingCurveTemp.GetValue(this.ease, from.x, to.x, t);
+			vector3.y = EasingCurveTemp.GetValue(this.ease, from.y, to.y, t);
+			vector3.z = EasingCurveTemp.GetValue(this.ease, from.z, to.z, t);
 			return vector3;
 		}
 
 		public Vector2 GetValue(Vector2 from, Vector2 to, float t) {
 			Vector2 vector2 = new Vector2();
-			vector2.x = EasingCurve.GetValue(this.ease, from.x, to.x, t);
-			vector2.y = EasingCurve.GetValue(this.ease, from.y, to.y, t);
+			vector2.x = EasingCurveTemp.GetValue(this.ease, from.x, to.x, t);
+			vector2.y = EasingCurveTemp.GetValue(this.ease, from.y, to.y, t);
 			return vector2;
 		}
 
 		public Color GetValue(Color from, Color to, float t) {
 			Color color = new Color();
-			color.r = EasingCurve.GetValue(this.ease, from.r, to.r, t);
-			color.g = EasingCurve.GetValue(this.ease, from.g, to.g, t);
-			color.b = EasingCurve.GetValue(this.ease, from.b, to.b, t);
-			color.a = EasingCurve.GetValue(this.ease, from.a, to.a, t);
+			color.r = EasingCurveTemp.GetValue(this.ease, from.r, to.r, t);
+			color.g = EasingCurveTemp.GetValue(this.ease, from.g, to.g, t);
+			color.b = EasingCurveTemp.GetValue(this.ease, from.b, to.b, t);
+			color.a = EasingCurveTemp.GetValue(this.ease, from.a, to.a, t);
 			return color;
 		}
 
 		public float GetValue(float from, float to, float t) {
-			float value = EasingCurve.GetValue(this.ease, from, to, t);
+			float value = EasingCurveTemp.GetValue(this.ease, from, to, t);
 			return value;
 		}
 	}

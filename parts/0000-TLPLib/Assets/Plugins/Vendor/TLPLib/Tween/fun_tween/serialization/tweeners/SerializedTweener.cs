@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using com.tinylabproductions.TLPGame.FacebookCore;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
@@ -41,7 +42,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     public override void invalidate() => _ease.invalidate();
 
+#if UNITY_EDITOR
+    public override void setDuration(float dur) { _duration = dur; }
+#endif
+    
     public override float duration => _duration;
+    
     public override IEnumerable<TweenTimelineElement> elements {
       get {
         Tween<DestinationType> _tween = null;
@@ -69,7 +75,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
         _mode == Mode.Relative ? ops.diff(convert(_end), convert(_start)).ToString()
         : _mode == Mode.RelativeFromCreation ? $"current + ({_start} to {_end})"
         : $"{_start} to {_end}";
-      return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
+      //Description too long for external window
+//      return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
+      return "";
     }
   }
 

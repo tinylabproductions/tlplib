@@ -4,14 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
-	[Serializable]
-	public class EventNode {
+namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
+	[System.Serializable]
+	public class EventNodeTemp {
 		//public Component target;
 		public string method;
-		public List<MethodArgument> arguments;
+		public List<MethodArgumentTemp> arguments;
 		public float time = 3;
-		[SerializeField] string type;
+		[SerializeField] private string type;
 
 		public Type SerializedType {
 			get {
@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				List<Type> paramTypes = new List<Type>();
 				List<object> args1 = new List<object>();
 
-				foreach (MethodArgument arg in arguments) {
+				foreach (MethodArgumentTemp arg in arguments) {
 					paramTypes.Add(arg.SerializedType);
 					args1.Add(arg.Get());
 				}

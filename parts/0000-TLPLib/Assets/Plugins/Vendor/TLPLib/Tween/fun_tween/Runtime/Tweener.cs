@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 
-namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
-  public class TweenerTemp : MonoBehaviour {
+namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
+  public class Tweener : MonoBehaviour {
     public List<Sequence> sequences;
+    public SerializedTweenTimeline serializedTweenTimeline;
 
 
     private void Start(){

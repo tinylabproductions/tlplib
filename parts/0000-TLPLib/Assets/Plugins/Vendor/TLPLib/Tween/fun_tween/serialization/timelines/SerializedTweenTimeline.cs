@@ -16,50 +16,74 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     [Serializable]
     // Can't be struct, because AdvancedInspector freaks out.
     public partial class Element : Invalidatable {
-      enum At : byte { AfterLastElement, WithLastElement, SpecificTime }
+      public enum At : byte { AfterLastElement, WithLastElement, SpecificTime }
       
       #region Unity Serialized Fields
 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
-      [SerializeField] At _at;
+      [SerializeField] At _startAt;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
       [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
       #endregion
+      
+#if UNITY_EDITOR
+      [SerializeField, HideInInspector] int _timelineChannelIdx;
+      
+      public int timelineChannelIdx {
+        get => _timelineChannelIdx;
+        set => _timelineChannelIdx = value;
+      }
+      
+      public string title {
+        get => _title;
+        set => _title = value;
+      }
+
+      public At startAt {
+        get => _startAt;
+        set => _startAt = value;
+      }
+
+      public float timeOffset {
+        get => _timeOffset;
+        set => _timeOffset = value;
+      }
+#endif
 
       public void invalidate() => _element.invalidate();
 
       Description timeOffsetDescription => new Description(
-        _at == At.SpecificTime ? "Time" : "Time Offset"
+        _startAt == At.SpecificTime ? "Time" : "Time Offset"
       );
 
       public float at(float lastElementTime, float lastElementDuration) {
-        switch (_at) {
+        switch (_startAt) {
           case At.AfterLastElement: return lastElementTime + lastElementDuration + _timeOffset;
           case At.WithLastElement: return lastElementTime + _timeOffset;
           case At.SpecificTime: return _timeOffset;
-          default: throw new ArgumentOutOfRangeException(nameof(_at), _at.ToString(), "Unknown mode");
+          default: throw new ArgumentOutOfRangeException(nameof(_startAt), _startAt.ToString(), "Unknown mode");
         }
       }
 
       public override string ToString() {
         var titleS = _title.isEmpty() ? "" : $"{_title} | ";
         var atS = 
-          _at == At.SpecificTime
+          _startAt == At.SpecificTime
           ? $"@ {_timeOffset}s"
           : (
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             _timeOffset == 0 
-            ? _at.ToString() 
+            ? _startAt.ToString() 
             : _timeOffset > 0 
-              ? $"{_at} + {_timeOffset}s"
-              : $"{_at} - {-_timeOffset}s"
+              ? $"{_startAt} + {_timeOffset}s"
+              : $"{_startAt} - {-_timeOffset}s"
           );
-        return $"{titleS}{atS}: {_element}";
+        return $"{titleS}{atS} {_element}";
       }
     }
     
@@ -96,7 +120,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
         return _timeline;
       }
     }
-
+    
+#if UNITY_EDITOR
+    public Element[] elements {
+      get => _elements;
+      set => _elements = value;
+    }
+#endif
+    
     public void invalidate() {
       _timeline = null;
       foreach (var element in _elements)

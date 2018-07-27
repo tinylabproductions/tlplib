@@ -23,5 +23,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       _elements = null;
       _timeline.invalidate();
     }
+
+#if UNITY_EDITOR
+    public override void setDuration(float dur) { throw new System.NotImplementedException(); }
+#endif
   }
 }

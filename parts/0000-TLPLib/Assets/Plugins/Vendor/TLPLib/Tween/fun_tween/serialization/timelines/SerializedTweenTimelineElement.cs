@@ -10,5 +10,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     [PublicAPI] public abstract float duration { get; }
     [PublicAPI] public abstract IEnumerable<TweenTimelineElement> elements { get; }
     public abstract void invalidate();
+    #if UNITY_EDITOR
+    public abstract void setDuration(float dur);
+    #endif
   }
 }

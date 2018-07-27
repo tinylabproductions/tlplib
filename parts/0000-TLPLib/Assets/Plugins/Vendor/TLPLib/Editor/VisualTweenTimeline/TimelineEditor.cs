@@ -1,56 +1,66 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate;
+using System.Runtime.InteropServices;
+using AdvancedInspector;
+using com.tinylabproductions.TLPGame.AdNetworks.waterfall_controller;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Tween.fun_tween;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
+using com.tinylabproductions.TLPLib.Utilities;
+using NUnit.Framework.Interfaces;
 using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
-  public class TimelineEditor : EditorWindow {
-   private Timeline timeline;
-		private GameObject selectedGameObject;
-		private TweenerTemp tweenerTemp;
+  public class TimelineEditor : EditorWindow, IDataChanged {
+    Timeline timelineVisuals;
+		Option<GameObject> selectedGameObject;
+		Tweener tweener;
+	  Option<FunTweenManager> funTweenManager;
+	  Option<List<FunSequenceNode>> funNodes;
+	  
+	  int selectedSequenceIndex;
+	  int selectedTimelineIndex;
+	  SequenceWrap wrap;
 
-		private Sequence sequence {
+		Option<Sequence> sequence {
 			get {
-				if (tweenerTemp != null && selectedSequenceIndex < tweenerTemp.sequences.Count) {
-					return tweenerTemp.sequences[selectedSequenceIndex];
+				if (tweener != null && selectedSequenceIndex < tweener.sequences.Count) {
+					return tweener.sequences[0].some();
 				}
 
-				return null;
+				return F.none_;
 			}
 		}
 
-		private int selectedNodeIndex;
+		int selectedNodeIndex;
 
-		private SequenceNode selectedNode {
+	  Option<SequenceNode> selectedNodeOpt => sequence.map(seq => seq.nodes[selectedNodeIndex]);
+	  Option<FunSequenceNode> selectedFunNodeOpt => funNodes.map(nodes => nodes[selectedNodeIndex]);
+
+	  bool isPlaying;
+		bool isRecording;
+	  float playStartTime;
+	  bool resizeNodeStart;
+		bool resizeNodeEnd;
+		bool dragNode;
+		float timeClickOffset;
+		Vector2 settingsScroll;
+	  GameObject backupGameObject;
+		int selectedEventIndex;
+
+		 EventNode selectedEvent {
 			get {
-				if (sequence != null && selectedNodeIndex < sequence.nodes.Count) {
-					return sequence.nodes[selectedNodeIndex];
-				}
-
-				return null;
-			}
-		}
-
-
-		private bool isPlaying;
-		private bool isRecording;
-		private float playStartTime;
-		private bool resizeNodeStart;
-		private bool resizeNodeEnd;
-		private bool dragNode;
-		private float timeClickOffset;
-		private Vector2 settingsScroll;
-		private GameObject backupGameObject;
-		private int selectedEventIndex;
-
-		private EventNode selectedEvent {
-			get {
-				if (sequence != null && selectedEventIndex < sequence.events.Count) {
-					return sequence.events[selectedEventIndex];
+				if (sequence != null && selectedEventIndex < sequence.get.events.Count) {
+					return sequence.get.events[selectedEventIndex];
 				}
 
 				return null;
@@ -59,39 +69,46 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 		[MenuItem("TLP/VisualTweenTimeline", false)]
 		public static void ShowWindow() {
-			TimelineEditor window = EditorWindow.GetWindow<TimelineEditor>(false, "FunTween Timeline");
+			var window = GetWindow<TimelineEditor>(false, "VisualTweenTimeline");
 			window.wantsMouseMove = true;
-			UnityEngine.Object.DontDestroyOnLoad(window);
+			DontDestroyOnLoad(window);
 		}
 
-		private void OnEnable() {
-			if (timeline == null) {
-				timeline = new Timeline();
+	  ExternalEditor advancedEditor;
+	  
+		void OnEnable() {
+			if (timelineVisuals == null) {
+				timelineVisuals = new Timeline();
 			}
 
-			timeline.onRecord = OnRecord;
-			timeline.onPlay = OnPlay;
-			timeline.onSettingsGUI = OnSettings;
-			timeline.onTimelineGUI = DrawNodes;
-			timeline.onTimelineClick = OnTimelineClick;
-			timeline.onAddEvent = OnAddEvent;
-			timeline.onEventGUI = OnEventGUI;
+			advancedEditor = CreateInstance<ExternalEditor>();
+			funTweenManager = selectedGameObject.map(selected => selected.GetComponent<FunTweenManager>());
+			
+			if (funTweenManager.isSome) refreshTimeline();
+			timelineVisuals.onRecord = OnRecord;
+			timelineVisuals.onPlay = OnPlay;
+			timelineVisuals.onSettingsGUI = OnSettings;
+			timelineVisuals.onTimelineGUI = drawFunNodes;
+			timelineVisuals.onTimelineClick = OnTimelineClick;
+			timelineVisuals.onAddEvent = OnAddEvent;
+			timelineVisuals.onEventGUI = OnEventGUI;
 			selectedEventIndex = int.MaxValue;
 			selectedNodeIndex = int.MaxValue;
-			if (selectedGameObject == null)
+			if (selectedGameObject.isNone)
 				OnSelectionChange();
 
 			EditorApplication.playmodeStateChanged += OnPlayModeStateChange;
 		}
 
-		private void OnAddEvent() {
-			AddTweener(Selection.activeGameObject);
-			if (sequence == null) {
-				AddSequence(tweenerTemp);
+		void OnAddEvent() {
+			addTweenerComponent(Selection.activeGameObject);
+			if (sequence.isNone) {
+				AddSequence(tweener);
+				addTimeline(tweener.opt());
 			}
 
-			if (sequence.events == null) {
-				sequence.events = new List<EventNode>();
+			if (sequence.get.events == null) {
+				sequence.get.events = new List<EventNode>();
 			}
 
 			GenericMenu menu = new GenericMenu();
@@ -102,11 +119,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			foreach (Type type in types) {
 				List<MethodInfo> functions = GetValidFunctions(type,
 					!(type.IsSubclassOf(typeof(Component)) || type.IsSubclassOf(typeof(MonoBehaviour))) ||
-					selectedGameObject.GetComponent(type) == null);
+					selectedGameObject.get.GetComponent(type) == null);
 				foreach (MethodInfo mi in functions) {
 					if (mi != null) {
 						EventNode node = new EventNode();
-						node.time = timeline.CurrentTime;
+						node.time = timelineVisuals.CurrentTime;
 						node.SerializedType = type;
 						node.method = mi.Name;
 						node.arguments = GetMethodArguments(mi);
@@ -209,14 +226,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 		private void AddEvent(object data) {
 			EventNode node = data as EventNode;
-			sequence.events.Add(node);
-			EditorUtility.SetDirty(tweenerTemp);
+			sequence.get.events.Add(node);
+			EditorUtility.SetDirty(tweener);
 		}
 
-		private void OnEventGUI(Rect rect) {
-			if (sequence != null) {
-				for (int i = 0; i < sequence.events.Count; i++) {
-					Rect rect1 = new Rect(timeline.SecondsToGUI(sequence.events[i].time) - timeline.scroll.x + rect.x - 5f, rect.y, 17,
+		void OnEventGUI(Rect rect) {
+			foreach (var seq in sequence) {
+				for (int i = 0; i < seq.events.Count; i++) {
+					Rect rect1 = new Rect(timelineVisuals.SecondsToGUI(seq.events[i].time) - timelineVisuals.scroll.x + rect.x - 5f, rect.y, 17,
 						20);
 					if (rect1.x + 6f > rect.x) {
 						Color color = GUI.color;
@@ -232,29 +249,30 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			}
 		}
 
-		private void OnPlayModeStateChange() { timeline.Stop(); }
+		void OnPlayModeStateChange() { timelineVisuals.Stop(); }
 
-		private void OnDestroy() { UndoObject(); }
+		void OnDestroy() { UndoObject(); }
 
-		private void OnSelectionChange() {
-			timeline.Stop();
-			selectedGameObject = Selection.activeGameObject;
-			if (selectedGameObject != null) {
-				tweenerTemp = selectedGameObject.GetComponent<TweenerTemp>();
-			}
-			else {
-				tweenerTemp = null;
-			}
+		void OnSelectionChange() {
+			timelineVisuals.Stop();
+			selectedGameObject = Selection.activeGameObject.opt();
+			selectedGameObject.voidFold(
+				() => tweener = null,
+				selected => {
+					tweener = selected.GetComponent<Tweener>();
+					funTweenManager = selected.GetComponent<FunTweenManager>().opt();
+					if (funTweenManager.isSome) refreshTimeline();
+				});
 
 			selectedNodeIndex = 0;
 			Repaint();
 		}
 
-		private bool playForward;
-		private float time;
-		private bool stop;
+		bool playForward;
+		float time;
+		bool stop;
 
-		private void Update() {
+		void Update() {
 			if (!Application.isPlaying) {
 				if (isPlaying && !stop) {
 					if ((float) EditorApplication.timeSinceStartup > time) {
@@ -263,59 +281,62 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 								playForward = !playForward;
 								time = (float) EditorApplication.timeSinceStartup + GetSequenceEnd();
 								if (playForward) {
-									timeline.CurrentTime = 0;
+									timelineVisuals.CurrentTime = 0;
 									playStartTime = (float) EditorApplication.timeSinceStartup;
 								}
 
 								break;
 							case SequenceWrap.Once:
-								sequence.Stop(false);
+								sequence.get.Stop(false);
 								playStartTime = (float) EditorApplication.timeSinceStartup;
-								timeline.CurrentTime = 0;
+								timelineVisuals.CurrentTime = 0;
 								stop = true;
 								break;
 							case SequenceWrap.ClampForever:
-								sequence.Stop(true);
+								sequence.get.Stop(true);
 								stop = true;
 								break;
 							case SequenceWrap.Loop:
-								sequence.Stop(false);
+								sequence.get.Stop(false);
 								playStartTime = (float) EditorApplication.timeSinceStartup;
-								timeline.CurrentTime = 0;
+								timelineVisuals.CurrentTime = 0;
 								stop = false;
 								time = (float) EditorApplication.timeSinceStartup + GetSequenceEnd();
 								break;
 						}
 					}
 
-					timeline.CurrentTime = (playForward
+					timelineVisuals.CurrentTime = (playForward
 						? ((float) EditorApplication.timeSinceStartup - playStartTime)
 						: time - (float) EditorApplication.timeSinceStartup);
 					//->
-					//timeline.CurrentTime = (float)EditorApplication.timeSinceStartup - playStartTime;
-					EditorUpdate(timeline.CurrentTime);
+					//timelineVisuals.CurrentTime = (float)EditorApplication.timeSinceStartup - playStartTime;
+					EditorUpdate(timelineVisuals.CurrentTime);
 					Repaint();
 				}
 
 				if (isRecording) {
-					EditorUpdate(timeline.CurrentTime);
+					EditorUpdate(timelineVisuals.CurrentTime);
 				}
 			}
 			else {
-				if (tweenerTemp != null && sequence != null && tweenerTemp.IsPlaying(sequence.name)) {
-					timeline.CurrentTime = sequence.passedTime;
-					Repaint();
+				foreach (var seq in sequence) {
+					if (tweener != null && tweener.IsPlaying(seq.name)) {
+						timelineVisuals.CurrentTime = seq.passedTime;
+						Repaint();
+					}
 				}
+				
 			}
 		}
 
 		public float GetSequenceEnd() {
-			if (sequence == null) {
+			if (sequence.isNone) {
 				return Mathf.Infinity;
 			}
 
 			float sequenceEnd = 0;
-			foreach (SequenceNode node in sequence.nodes) {
+			foreach (var node in sequence.get.nodes) {
 				if (sequenceEnd < (node.startTime + node.duration)) {
 					sequenceEnd = node.startTime + node.duration;
 				}
@@ -324,77 +345,88 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			return sequenceEnd;
 		}
 
-		private void OnGUI() {
-			bool enabled = GUI.enabled;
-			GUI.enabled = selectedGameObject != null && !Application.isPlaying;
-			timeline.DoTimeline(new Rect(0, 0, this.position.width, this.position.height));
+	  void OnGUI() {
+			var enabled = GUI.enabled;
+			GUI.enabled = selectedGameObject.isSome && !Application.isPlaying;
+			timelineVisuals.DoTimeline(new Rect(0, 0, position.width, position.height));
 			GUI.enabled = enabled;
-		}
+			if (funTweenManager.valueOut(out var ftm)
+				&& advancedEditor.Instances.Length > 0
+				&& advancedEditor.Draw(new Rect(0, 20, settingsWidth, settingsWidth))
+			) {
+				Undo.RecordObject(ftm, "Tween Manager Changes");
+				 Repaint(); 
+			}
 
-		private void EditorUpdate(float time) {
-			if (sequence != null) {
-				sequence.nodes = sequence.nodes.OrderBy(x => x.startTime).ToList();
-				foreach (SequenceNode node in sequence.nodes) {
+		  if (GUI.changed) {
+			  refreshNodeChannelInfo();
+			  Log.d.warn("editor gui changed aliooo");
+		  }
+
+		  
+	  }
+
+		void EditorUpdate(float time) {
+			foreach (var seq in sequence) {
+				seq.nodes = seq.nodes.OrderBy(x => x.startTime).ToList();
+				foreach (SequenceNode node in seq.nodes) {
 					node.UpdateTween(time);
 				}
-
 				//Canvas.ForceUpdateCanvases();
-				EditorUtility.SetDirty(tweenerTemp);
+				EditorUtility.SetDirty(tweener);
 			}
 		}
 
-		private void OnTimelineClick(float time) {
-			if (sequence == null) {
-				return;
-			}
+		void OnTimelineClick(float time) {
+			foreach (var seq in sequence) {
+				foreach (SequenceNode node in seq.nodes) {
+					if (time < node.startTime) {
+						node.UpdateValue(0.0f);
+					}
 
-			foreach (SequenceNode node in sequence.nodes) {
-				if (time < node.startTime) {
-					node.UpdateValue(0.0f);
-				}
-
-				if (time > node.startTime + node.duration) {
-					node.UpdateValue(1.0f);
+					if (time > node.startTime + node.duration) {
+						node.UpdateValue(1.0f);
+					}
 				}
 			}
 		}
 
-		private void DrawNodes(Rect position) {
-			if (sequence == null) {
-				return;
-			}
+	  void drawFunNodes(Rect position) {
+		  foreach (var seq in funNodes) {
+			  
+			  
+				  foreach (var funNode in seq) {
+					  EditorGUIUtility.AddCursorRect(
+						  new Rect(timelineVisuals.SecondsToGUI(funNode.startTime) - 5, funNode.channel * 20, 10, 20),
+						  MouseCursor.ResizeHorizontal);
+					  EditorGUIUtility.AddCursorRect(
+						  new Rect(timelineVisuals.SecondsToGUI(funNode.startTime + funNode.duration) - 5, funNode.channel * 20, 10, 20),
+						  MouseCursor.ResizeHorizontal);
+					  EditorGUIUtility.AddCursorRect(
+						  new Rect(timelineVisuals.SecondsToGUI(funNode.startTime), funNode.channel * 20,
+							  timelineVisuals.SecondsToGUI(funNode.duration), 20),
+						  MouseCursor.Pan);
+				  }
+				  foreach (var node in seq) {
+					  Rect boxRect = new Rect(timelineVisuals.SecondsToGUI(node.startTime), node.channel * 20,
+						  timelineVisuals.SecondsToGUI(node.duration), 20);
+					  GUI.Box(boxRect, "", "TL LogicBar 0");
 
-			foreach (SequenceNode node in sequence.nodes) {
-				EditorGUIUtility.AddCursorRect(new Rect(timeline.SecondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20),
-					MouseCursor.ResizeHorizontal);
-				EditorGUIUtility.AddCursorRect(
-					new Rect(timeline.SecondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20),
-					MouseCursor.ResizeHorizontal);
-				EditorGUIUtility.AddCursorRect(
-					new Rect(timeline.SecondsToGUI(node.startTime), node.channel * 20, timeline.SecondsToGUI(node.duration), 20),
-					MouseCursor.Pan);
-			}
+					  GUIStyle style = new GUIStyle("Label");
+					  style.fontSize = (selectedFunNodeOpt.get == node ? 12 : style.fontSize);
+					  style.fontStyle = (selectedFunNodeOpt.get == node ? FontStyle.Bold : FontStyle.Normal);
+					  Color color = style.normal.textColor;
+					  color.a = (selectedFunNodeOpt.get == node ? 1.0f : 0.7f);
+					  style.normal.textColor = color;
+					  Vector3 size = style.CalcSize(new GUIContent($"content: {node.name}"));
+					  Rect rect1 = new Rect(boxRect.x + boxRect.width * 0.5f - size.x * 0.2f,
+						  boxRect.y + boxRect.height * 0.5f - size.y * 0.5f, size.x, size.y);
+					  GUI.Label(rect1, $"{node.name}", style);
+				  }
 
-			foreach (SequenceNode node in sequence.nodes) {
-				Rect boxRect = new Rect(timeline.SecondsToGUI(node.startTime), node.channel * 20,
-					timeline.SecondsToGUI(node.duration), 20);
-				GUI.Box(boxRect, "", "TL LogicBar 0");
-
-				GUIStyle style = new GUIStyle("Label");
-				style.fontSize = (selectedNode == node ? 12 : style.fontSize);
-				style.fontStyle = (selectedNode == node ? FontStyle.Bold : FontStyle.Normal);
-				Color color = style.normal.textColor;
-				color.a = (selectedNode == node ? 1.0f : 0.7f);
-				style.normal.textColor = color;
-				Vector3 size = style.CalcSize(new GUIContent(node.target.GetType().Name + "." + node.property));
-				Rect rect1 = new Rect(boxRect.x + boxRect.width * 0.5f - size.x * 0.5f,
-					boxRect.y + boxRect.height * 0.5f - size.y * 0.5f, size.x, size.y);
-				GUI.Label(rect1, node.target.GetType().Name + "." + node.property, style);
-			}
-
-			DoEvents();
-		}
-
+			  DoEvents();
+		  }
+	  }
 
 		private bool dragEvent;
 
@@ -402,8 +434,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			Event ev = Event.current;
 			switch (ev.rawType) {
 				case EventType.MouseDown:
-					for (int j = 0; j < sequence.events.Count; j++) {
-						Rect rect1 = new Rect(timeline.SecondsToGUI(sequence.events[j].time) - 5f, -15, 17, 20);
+					for (int j = 0; j < sequence.__unsafeGetValue.events.Count; j++) {
+						Rect rect1 = new Rect(timelineVisuals.SecondsToGUI(sequence.__unsafeGetValue.events[j].time) - 5f, -15, 17, 20);
 						if (rect1.Contains(Event.current.mousePosition)) {
 							selectedEventIndex = j;
 							selectedNodeIndex = int.MaxValue;
@@ -414,7 +446,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							if (ev.button == 1) {
 								GenericMenu genericMenu = new GenericMenu();
 								genericMenu.AddItem(new GUIContent("Remove"), false,
-									delegate() { sequence.events.RemoveAt(selectedEventIndex); });
+									delegate() { sequence.__unsafeGetValue.events.RemoveAt(selectedEventIndex); });
 								genericMenu.ShowAsContext();
 							}
 
@@ -422,10 +454,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						}
 					}
 
-					for (int i = 0; i < sequence.nodes.Count; i++) {
-						SequenceNode node = sequence.nodes[i];
+					for (var i = 0; i < funNodes.get.Count; i++) {
+						var node = funNodes.get[i];
 
-						if (new Rect(timeline.SecondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20).Contains(Event.current
+						if (new Rect(timelineVisuals.SecondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20).Contains(Event.current
 							.mousePosition)) {
 							selectedNodeIndex = i;
 							selectedEventIndex = int.MaxValue;
@@ -434,7 +466,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							ev.Use();
 						}
 
-						if (new Rect(timeline.SecondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20).Contains(
+						if (new Rect(timelineVisuals.SecondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20).Contains(
 							Event.current.mousePosition)) {
 							selectedNodeIndex = i;
 							selectedEventIndex = int.MaxValue;
@@ -443,10 +475,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							ev.Use();
 						}
 
-						if (new Rect(timeline.SecondsToGUI(node.startTime), node.channel * 20, timeline.SecondsToGUI(node.duration), 20)
+						if (new Rect(timelineVisuals.SecondsToGUI(node.startTime), node.channel * 20, timelineVisuals.SecondsToGUI(node.duration), 20)
 							.Contains(Event.current.mousePosition)) {
 							if (ev.button == 0) {
-								timeClickOffset = node.startTime - timeline.GUIToSeconds(Event.current.mousePosition.x);
+								timeClickOffset = node.startTime - timelineVisuals.GUIToSeconds(Event.current.mousePosition.x);
 								dragNode = true;
 								selectedNodeIndex = i;
 								selectedEventIndex = int.MaxValue;
@@ -455,7 +487,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 							if (ev.button == 1) {
 								GenericMenu genericMenu = new GenericMenu();
-								genericMenu.AddItem(new GUIContent("Remove"), false, this.RemoveTween, node);
+								genericMenu.AddItem(new GUIContent("Remove"), false, RemoveTween, node);
 								genericMenu.ShowAsContext();
 							}
 
@@ -466,41 +498,74 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					break;
 				case EventType.MouseDrag:
 					if (dragEvent) {
-						selectedEvent.time = timeline.GUIToSeconds(Event.current.mousePosition.x);
+						selectedEvent.time = timelineVisuals.GUIToSeconds(Event.current.mousePosition.x);
 						selectedEvent.time = Mathf.Clamp(selectedEvent.time, 0, float.MaxValue);
 						ev.Use();
 					}
 
-					if (resizeNodeStart) {
-						selectedNode.startTime = timeline.GUIToSeconds(Event.current.mousePosition.x);
-						selectedNode.startTime = Mathf.Clamp(selectedNode.startTime, 0, float.MaxValue);
-						if (selectedNode.startTime > 0) {
-							selectedNode.duration -= timeline.GUIToSeconds(ev.delta.x);
-							selectedNode.duration = Mathf.Clamp(selectedNode.duration, 0.01f, float.MaxValue);
+					foreach (var selectedFunNode in selectedFunNodeOpt) {
+						if (resizeNodeStart) {
+							selectedFunNode.startTime = timelineVisuals.GUIToSeconds(Event.current.mousePosition.x);
+							selectedFunNode.startTime = Mathf.Clamp(selectedFunNode.startTime, 0, float.MaxValue);
+							if (selectedFunNode.startTime > 0) {
+								selectedFunNode.duration -= timelineVisuals.GUIToSeconds(ev.delta.x);
+								selectedFunNode.duration = Mathf.Clamp(selectedFunNode.duration, 0.01f, float.MaxValue);
+							}
+							selectedFunNode.changeDuration();
+							selectedFunNode.element.startAt = SerializedTweenTimeline.Element.At.SpecificTime;
+							selectedFunNode.setSpecificTimeStart();
+							ev.Use();
 						}
 
-						ev.Use();
+						if (resizeNodeEnd) {
+							selectedFunNode.duration = (timelineVisuals.GUIToSeconds(Event.current.mousePosition.x) - selectedFunNode.startTime);
+							selectedFunNode.duration = Mathf.Clamp(selectedFunNode.duration, 0.01f, float.MaxValue);
+							selectedFunNode.changeDuration();
+							ev.Use();
+						}
+
+						if (dragNode && !resizeNodeStart && !resizeNodeEnd) {
+							selectedFunNode.startTime = timelineVisuals.GUIToSeconds(Event.current.mousePosition.x) + timeClickOffset;
+							selectedFunNode.startTime = Mathf.Clamp(selectedFunNode.startTime, 0, float.MaxValue);
+							if (Event.current.mousePosition.y > selectedFunNode.channel * 20 + 25) {
+								selectedFunNode.channel += 1;
+							}
+
+							if (Event.current.mousePosition.y < selectedFunNode.channel * 20 - 5) {
+								selectedFunNode.channel -= 1;
+							}
+
+							selectedFunNode.channel = Mathf.Clamp(selectedFunNode.channel, 0, int.MaxValue);
+							selectedFunNode.element.timelineChannelIdx = selectedFunNode.channel;
+
+							funNodes.voidFold(
+								() => { },
+								nodes =>
+									nodes.Where(node => node.channel == selectedFunNode.channel
+										&& node.startTime + node.duration < selectedFunNode.startTime
+									).noneIfEmpty().voidFold(
+										() => {
+											selectedFunNode.element.startAt = SerializedTweenTimeline.Element.At.SpecificTime;
+											Log.d.warn($"channel is empty");
+											selectedFunNode.setTimeOffset(selectedFunNode.startTime);
+										},
+										channelNodes => {
+											var latestNode = channelNodes.OrderBy(channelNode => channelNode.startTime).Last();
+											//selectedFunNode.element.startAt = SerializedTweenTimeline.Element.At.AfterLastElement;
+											Log.d.warn($"found nodes: {channelNodes.Count()}");
+											selectedFunNode.setTimeOffset( selectedFunNode.element.startAt == SerializedTweenTimeline.Element.At.SpecificTime ?
+												selectedFunNode.startTime :
+												selectedFunNode.startTime - (latestNode.startTime + latestNode.duration)
+											);
+										}
+									)
+							);
+
+
+							refreshTimeline();
+							ev.Use();
 					}
 
-					if (resizeNodeEnd) {
-						selectedNode.duration = (timeline.GUIToSeconds(Event.current.mousePosition.x) - selectedNode.startTime);
-						selectedNode.duration = Mathf.Clamp(selectedNode.duration, 0.01f, float.MaxValue);
-						ev.Use();
-					}
-
-					if (dragNode && !resizeNodeStart && !resizeNodeEnd) {
-						selectedNode.startTime = timeline.GUIToSeconds(Event.current.mousePosition.x) + timeClickOffset;
-						selectedNode.startTime = Mathf.Clamp(selectedNode.startTime, 0, float.MaxValue);
-						if (Event.current.mousePosition.y > selectedNode.channel * 20 + 25) {
-							selectedNode.channel += 1;
-						}
-
-						if (Event.current.mousePosition.y < selectedNode.channel * 20 - 5) {
-							selectedNode.channel -= 1;
-						}
-
-						selectedNode.channel = Mathf.Clamp(selectedNode.channel, 0, int.MaxValue);
-						ev.Use();
 					}
 
 					break;
@@ -513,14 +578,52 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			}
 		}
 
-		private bool backup;
+		bool backup;
 
-		private void OnRecord(bool isRecording) {
-			if (tweenerTemp == null && selectedGameObject != null && isRecording) {
-				tweenerTemp = selectedGameObject.AddComponent<TweenerTemp>();
-				AddSequence(tweenerTemp);
-				//sequence.nodes = new List<SequenceNode>();
-				EditorUtility.SetDirty(tweenerTemp);
+	  void refreshNodeChannelInfo() {
+		  foreach (var selectedNode in selectedFunNodeOpt) {
+	
+				  
+					  funNodes.voidFold(
+						  () => { },
+						  nodes =>
+							  nodes.Where(node => node.channel == selectedNode.channel
+								  && node.startTime + node.duration < selectedNode.startTime
+							  ).noneIfEmpty().voidFold(
+								  () => {
+									  selectedNode.element.startAt = SerializedTweenTimeline.Element.At.SpecificTime;
+									  Log.d.warn($"channel is empty");
+									  selectedNode.setTimeOffset(selectedNode.startTime);
+								  },
+								  channelNodes => {
+									  var latestNode = channelNodes.OrderBy(channelNode => channelNode.startTime).Last();
+									  //selectedFunNode.element.startAt = SerializedTweenTimeline.Element.At.AfterLastElement;
+									  Log.d.warn($"found nodes: {channelNodes.Count()}");
+									  selectedNode.setTimeOffset( selectedNode.element.startAt == SerializedTweenTimeline.Element.At.SpecificTime ?
+										  selectedNode.startTime :
+										  selectedNode.startTime - (latestNode.startTime + latestNode.duration)
+									  );
+								  }
+							  )
+					  );
+				  
+			  
+			  
+
+			  
+		  }
+
+		  
+	  }
+
+		void OnRecord(bool isRecording) {
+			if (tweener == null && isRecording) {
+				foreach (var selected in selectedGameObject) {
+					tweener = selected.AddComponent<Tweener>();
+					AddSequence(tweener);
+					//sequence.nodes = new List<SequenceNodeTemp>();
+					EditorUtility.SetDirty(tweener);
+				}
 			}
 
 			this.isRecording = isRecording;
@@ -537,7 +640,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		private void OnPlay(bool isPlaying) {
 			playStartTime = (float) EditorApplication.timeSinceStartup;
 			time = (float) EditorApplication.timeSinceStartup + GetSequenceEnd();
-			timeline.CurrentTime = 0;
+			timelineVisuals.CurrentTime = 0;
 
 			this.isPlaying = isPlaying;
 			if (!isPlaying) {
@@ -556,9 +659,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				return;
 			}
 
-			backupGameObject = (GameObject) Instantiate(selectedGameObject);
-			backupGameObject.transform.SetParent(selectedGameObject.transform.parent, false);
-			backupGameObject.name = selectedGameObject.name;
+			backupGameObject = (GameObject) Instantiate(selectedGameObject.get);
+			backupGameObject.transform.SetParent(selectedGameObject.get.transform.parent, false);
+			backupGameObject.name = selectedGameObject.get.name;
 			backupGameObject.SetActive(false);
 			backupGameObject.hideFlags = HideFlags.HideInHierarchy;
 			backup = true;
@@ -569,235 +672,179 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				return;
 			}
 
-			TweenerTemp mTweenerTemp = backupGameObject.GetComponent<TweenerTemp>();
-			mTweenerTemp.sequences = tweenerTemp.sequences;
-			for (int i = 0; i < tweenerTemp.sequences.Count; i++) {
-				for (int j = 0; j < tweenerTemp.sequences[i].nodes.Count; j++) {
-					SequenceNode node = tweenerTemp.sequences[i].nodes[j];
-					mTweenerTemp.sequences[i].nodes[j].target = mTweenerTemp.GetComponent(node.target.GetType());
+			Tweener mTweener = backupGameObject.GetComponent<Tweener>();
+			mTweener.sequences = tweener.sequences;
+			for (int i = 0; i < tweener.sequences.Count; i++) {
+				for (int j = 0; j < tweener.sequences[i].nodes.Count; j++) {
+					SequenceNode node = tweener.sequences[i].nodes[j];
+					mTweener.sequences[i].nodes[j].target = mTweener.GetComponent(node.target.GetType());
 				}
 			}
 
-			DestroyImmediate(selectedGameObject);
-			selectedGameObject = backupGameObject;
-			selectedGameObject.hideFlags = HideFlags.None;
-			selectedGameObject.SetActive(true);
-			Selection.activeGameObject = selectedGameObject;
+			DestroyImmediate(selectedGameObject.get);
+			selectedGameObject = backupGameObject.some();
+			selectedGameObject.get.hideFlags = HideFlags.None;
+			selectedGameObject.get.SetActive(true);
+			Selection.activeGameObject = selectedGameObject.get;
 			backup = false;
 		}
 
-		private int selectedSequenceIndex;
-		private SequenceWrap wrap;
+	  float settingsWidth;
 
-		private void OnSettings(float width) {
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button(sequence != null ? sequence.name : "[None Selected]", EditorStyles.toolbarDropDown,
-				GUILayout.Width(width * 0.5f))) {
-				GenericMenu toolsMenu = new GenericMenu();
-				if (tweenerTemp != null) {
-					for (int i = 0; i < tweenerTemp.sequences.Count; i++) {
-						int mIndex = i;
-						toolsMenu.AddItem(new GUIContent(tweenerTemp.sequences[mIndex].name), false,
-							delegate() { selectedSequenceIndex = mIndex; });
-					}
-				}
+	  void OnSettings(float width) {
 
-				toolsMenu.AddItem(new GUIContent("[New Sequence]"), false, delegate() {
-					AddTweener(Selection.activeGameObject);
-					AddSequence(tweenerTemp);
-				});
-				GUIUtility.keyboardControl = 0;
-				toolsMenu.DropDown(new Rect(3, 37, 0, 0));
-				EditorGUIUtility.ExitGUI();
-			}
+		  if (funTweenManager.isNone) {
+			  GUILayout.BeginHorizontal();
+			  if (GUILayout.Button("[Add manager]")) {
+				  addTweenerComponent(Selection.activeGameObject);
+				  addFunTweenManagerComponent(Selection.activeGameObject);
+				  AddSequence(tweener);
+				  addTimeline(tweener.opt());
+				  EditorGUIUtility.ExitGUI();
+			  }
+			  GUILayout.EndHorizontal();
+		  }
 
-			if (sequence != null) {
-				wrap = sequence.wrap;
-			}
-
-			wrap = (SequenceWrap) EditorGUILayout.EnumPopup(wrap, EditorStyles.toolbarDropDown, GUILayout.Width(width * 0.5f));
-			if (sequence != null) {
-				sequence.wrap = wrap;
-			}
-
-			GUILayout.EndHorizontal();
-
-			//-->
+		  //-->
 			GUILayout.BeginVertical();
 			settingsScroll = GUILayout.BeginScrollView(settingsScroll);
-			if (tweenerTemp != null) {
-				DoSequence();
+			if (tweener != null) {
+				drawElementSettings();
 			}
-
+		  
 			GUILayout.EndScrollView();
-
+		  settingsWidth = width;
 			GUILayout.FlexibleSpace();
-			bool enabled = GUI.enabled;
-			GUI.enabled = sequence != null;
-			if (GUILayout.Button("Add Tween")) {
-				GenericMenu genericMenu = new GenericMenu();
-				Component[] components = selectedGameObject.GetComponents<Component>();
-				for (int i = 0; i < components.Length; i++) {
-					PropertyInfo[] properties = components[i].GetType().GetProperties();
-					for (int j = 0; j < properties.Length; j++) {
-						if (properties[j].CanWrite) {
-							if (IsSupportedType(properties[j].PropertyType)) {
-								genericMenu.AddItem(new GUIContent(components[i].GetType().Name + "/" + properties[j].Name), false, AddTween,
-									new SequenceNode(components[i], properties[j].Name));
-							}
-						}
-					}
+			var enabled = GUI.enabled;
+			GUI.enabled = sequence.isSome;
 
-					FieldInfo[] fields = components[i].GetType().GetFields();
-					for (int j = 0; j < fields.Length; j++) {
-						if (IsSupportedType(fields[j].FieldType)) {
-							genericMenu.AddItem(new GUIContent(components[i].GetType().Name + "/" + fields[j].Name), false, AddTween,
-								new SequenceNode(components[i], fields[j].Name));
-						}
-					}
-				}
-
-				genericMenu.ShowAsContext();
+		  if (GUILayout.Button("Add Tween")) {
+			  foreach (var manager in funTweenManager) {
+				  var oneMore = manager.timeline.elements.addOne(new SerializedTweenTimeline.Element());
+				  manager.timeline.elements = oneMore;
+				  refreshTimeline();
+				  selectedNodeIndex = manager.timeline.elements.Length - 1;
+			  }
 			}
+		  
+		  if (GUILayout.Button("Refresh Timeline")) {
+			  refreshTimeline();
+		  }
 
 			GUI.enabled = enabled;
 			GUILayout.EndVertical();
 		}
-
-		private void DoSequence() {
-			EditorGUIUtility.labelWidth = 63;
-			SerializedObject serializedObject = new SerializedObject(tweenerTemp);
-			serializedObject.Update();
-			SerializedProperty sequenceArray = serializedObject.FindProperty("sequences");
-
-			if (selectedSequenceIndex < sequenceArray.arraySize) {
-				SerializedProperty sequenceProperty = sequenceArray.GetArrayElementAtIndex(selectedSequenceIndex);
-				SerializedProperty sequenceName = sequenceProperty.FindPropertyRelative("name");
-				SerializedProperty playAutomatically = sequenceProperty.FindPropertyRelative("playAutomatically");
-				EditorGUILayout.PropertyField(sequenceName);
-				EditorGUILayout.PropertyField(playAutomatically);
-				SerializedProperty nodesArray = sequenceProperty.FindPropertyRelative("nodes");
-				if (selectedNodeIndex < nodesArray.arraySize) {
-					SerializedProperty nodeProperty = nodesArray.GetArrayElementAtIndex(selectedNodeIndex);
-					EditorGUILayout.PropertyField(nodeProperty.FindPropertyRelative("startTime"));
-					EditorGUILayout.PropertyField(nodeProperty.FindPropertyRelative("duration"));
-					SerializedProperty fromProperty = null;
-					SerializedProperty toProperty = null;
-					if (selectedNode.PropertyType == typeof(float)) {
-						fromProperty = nodeProperty.FindPropertyRelative("fromFloat");
-						toProperty = nodeProperty.FindPropertyRelative("toFloat");
-					}
-					else if (selectedNode.PropertyType == typeof(Vector2)) {
-						fromProperty = nodeProperty.FindPropertyRelative("fromVector2");
-						toProperty = nodeProperty.FindPropertyRelative("toVector2");
-					}
-					else if (selectedNode.PropertyType == typeof(Vector3)) {
-						fromProperty = nodeProperty.FindPropertyRelative("fromVector3");
-						toProperty = nodeProperty.FindPropertyRelative("toVector3");
-					}
-					else if (selectedNode.PropertyType == typeof(Color)) {
-						fromProperty = nodeProperty.FindPropertyRelative("fromColor");
-						toProperty = nodeProperty.FindPropertyRelative("toColor");
-					}
-
-					if (fromProperty != null && toProperty != null) {
-						EditorGUILayout.PropertyField(fromProperty, new GUIContent("From"));
-						EditorGUILayout.PropertyField(toProperty, new GUIContent("To"));
-					}
-
-					EditorGUILayout.PropertyField(nodeProperty.FindPropertyRelative("ease"));
-				}
-
-				SerializedProperty eventsArray = sequenceProperty.FindPropertyRelative("events");
-				if (selectedEventIndex < eventsArray.arraySize) {
-					SerializedProperty eventProperty = eventsArray.GetArrayElementAtIndex(selectedEventIndex);
-					SerializedProperty methodProperty = eventProperty.FindPropertyRelative("method");
-					//SerializedProperty typeProperty=eventProperty.FindPropertyRelative("type");
-					SerializedProperty argumentsArray = eventProperty.FindPropertyRelative("arguments");
-
-					EventNode eventNode = sequence.events[selectedEventIndex];
-
-					if (GUILayout.Button(eventNode.SerializedType.Name + "." + methodProperty.stringValue, "DropDown")) {
-						GenericMenu menu = new GenericMenu();
-						Component[] components = selectedGameObject.GetComponents<Component>();
-						List<Type> types = new List<Type>();
-						types.AddRange(components.Select(x => x.GetType()));
-						types.AddRange(GetSupportedTypes());
-						foreach (Type type in types) {
-							List<MethodInfo> functions = GetValidFunctions(type,
-								!(type.IsSubclassOf(typeof(Component)) || type.IsSubclassOf(typeof(MonoBehaviour))) ||
-								selectedGameObject.GetComponent(type) == null);
-							foreach (MethodInfo mi in functions) {
-								if (mi != null) {
-									EventNode node = new EventNode();
-									node.time = timeline.CurrentTime;
-									node.SerializedType = type;
-									node.method = mi.Name;
-									node.arguments = GetMethodArguments(mi);
-									node.time = eventNode.time;
-									menu.AddItem(new GUIContent(type.Name + "/" + mi.Name), false, delegate() {
-										sequence.events[selectedEventIndex] = node;
-										EditorUtility.SetDirty(tweenerTemp);
-									});
-								}
-							}
+	  
+	  void refreshTimeline() {
+		  advancedEditor.Instances = new object[] { };
+		  foreach (var manager in funTweenManager) {
+				var elements = manager.timeline.elements;
+			  var channelIdx = 0;
+				funNodes = elements.Select(
+					(element, idx) => {
+						if (idx != 0 && element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement ) {
+							element.timelineChannelIdx = elements[idx - 1].timelineChannelIdx;
 						}
-
-						menu.ShowAsContext();
-					}
-
-					for (int i = 0; i < argumentsArray.arraySize; i++) {
-						SerializedProperty argumentProperty = argumentsArray.GetArrayElementAtIndex(i);
-						EditorGUILayout.PropertyField(argumentProperty.FindPropertyRelative(eventNode.arguments[i].GetValueName()),
-							new GUIContent("Parameter"));
-					}
-
+						
+						//TODO channel indexes
+						return new FunSequenceNode(element, whereToStart(idx), element.title);
+					}).ToList().some();
+			  
+			  
+				
+				float whereToStart(int idx) {
+					return idx == 0
+						? elements[idx].at(0, 0)
+						: elements[idx].at(
+							whereToStart(idx - 1),
+							elements[idx - 1].element == null ? 0 : elements[idx - 1].element.duration
+						);
 				}
 			}
-
-			serializedObject.ApplyModifiedProperties();
 		}
 
-		private void AddTween(object node) {
+		void drawElementSettings() {
+			foreach (var manager in funTweenManager) {
+				if (selectedNodeIndex < manager.timeline.elements.Length) {
+					advancedEditor.unityObjects = new UnityEngine.Object[] {manager};
+					advancedEditor.Instances = new object[] {
+						manager.timeline.elements[selectedNodeIndex]
+					};
+				}
+			}
+		}
+
+		void AddTween(object node) {
 			SequenceNode mNode = node as SequenceNode;
-			sequence.nodes.Add(mNode);
+			sequence.get.nodes.Add(mNode);
 			mNode.SetDefaultValue();
-			EditorUtility.SetDirty(tweenerTemp);
+			EditorUtility.SetDirty(tweener);
 		}
 
-		private void RemoveTween(object node) {
-			SequenceNode mNode = node as SequenceNode;
-			sequence.nodes.Remove(mNode);
-			EditorUtility.SetDirty(tweenerTemp);
+		void RemoveTween(object node) {
+			var mNode = node as FunSequenceNode;
+			funNodes.get.Remove(mNode);
+			funTweenManager.get.timeline.elements = funNodes.get.Select(funNode => funNode.element).ToArray();
+			selectedNodeIndex = 0;
+			refreshTimeline();
+			EditorUtility.SetDirty(tweener);
 		}
 
-		private void AddTweener(GameObject gameObject) {
-			if (gameObject.GetComponent<TweenerTemp>() == null) {
-				tweenerTemp = gameObject.AddComponent<TweenerTemp>();
-				tweenerTemp.sequences = new List<Sequence>();
-				EditorUtility.SetDirty(gameObject);
+		void addTweenerComponent(GameObject gameObject) {
+			gameObject.GetComponent<Tweener>().opt().voidFold(
+				() => {
+					tweener = gameObject.AddComponent<Tweener>();
+					tweener.sequences = new List<Sequence>();
+					//tweener.serializedTweenTimeline = new SerializedTweenTimeline();
+					EditorUtility.SetDirty(gameObject);
+				},
+				_ => { }
+			);
+		}
+
+	  void addFunTweenManagerComponent(GameObject gameObject) {
+		  gameObject.GetComponent<FunTweenManager>().opt().voidFold(
+			  () => {
+				  funTweenManager = gameObject.AddComponent<FunTweenManager>().some();
+				  refreshTimeline();
+				  EditorUtility.SetDirty(gameObject);
+			  },
+			  fun => { funTweenManager = fun.some();} 
+			);
+	  }
+
+		void addTimeline(Option<Tweener> tweenerTempOpt) {
+			foreach (var tweenerTemp in tweenerTempOpt) {
+				if (tweenerTemp.serializedTweenTimeline == null) {
+					//tweenerTemp.serializedTweenTimeline = new SerializedTweenTimeline();
+				}
+				//tweenerTemp.serializedTweenTimeline = new SerializedTweenTimeline();
+				Log.d.warn("timelineVisuals added");
 			}
 		}
+	
 
-		private void AddSequence(TweenerTemp tweenerTemp) {
-			if (tweenerTemp != null) {
-				if (tweenerTemp.sequences == null) {
-					tweenerTemp.sequences = new List<Sequence>();
-				}
+	  void AddSequence(Tweener tweener) {
+		  if (tweener != null) {
+			  if (tweener.sequences == null) {
+				  tweener.sequences = new List<Sequence>();
+			  }
 
-				Sequence sequence = new Sequence();
-				sequence.nodes = new List<SequenceNode>();
-				sequence.events = new List<EventNode>();
-				int cnt = 0;
-				while (tweenerTemp.sequences.Find(x => x.name == "New Sequence " + cnt.ToString()) != null) {
-					cnt++;
-				}
+			  Sequence sequence = new Sequence();
+			  sequence.nodes = new List<SequenceNode>();
+			  sequence.events = new List<EventNode>();
+			  int cnt = 0;
+			  while (tweener.sequences.Find(x => x.name == "New SequenceTemp " + cnt.ToString()) != null) {
+				  cnt++;
+			  }
 
-				sequence.name = "New Sequence " + cnt.ToString();
-				tweenerTemp.sequences.Add(sequence);
-				selectedSequenceIndex = tweenerTemp.sequences.Count - 1;
-			}
-		}
+			  sequence.name = "New SequenceTemp " + cnt.ToString();
+			  tweener.sequences.Add(sequence);
+			  selectedSequenceIndex = tweener.sequences.Count - 1;
+		  }
+		  Log.d.warn("sequence added");
+		  
+	  }
 
 		private bool IsSupportedType(Type type) {
 			if (type == typeof(float) || type == typeof(Vector3) || type == typeof(Vector2) || type == typeof(Color)) {
@@ -806,5 +853,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 			return false;
 		}
-	}
+
+	  public void DataChanged() { Log.d.warn("editor window has been changed"); }
+	  public event GenericEventHandler OnDataChanged;
+  }
 }

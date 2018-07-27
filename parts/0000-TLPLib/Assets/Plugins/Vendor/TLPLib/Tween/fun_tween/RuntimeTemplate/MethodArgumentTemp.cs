@@ -2,9 +2,9 @@
 using System.Collections;
 using System;
 
-namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
+namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 	[Serializable]
-	public class MethodArgument {
+	public class MethodArgumentTemp {
 		[SerializeField] private string type;
 
 		public Type SerializedType {
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		public Quaternion quaternionParam;
 		public SendMessageOptions sendMessageOptionsParam;
 
-		public MethodArgument(string name, string type) {
+		public MethodArgumentTemp(string name, string type) {
 			this.type = type;
 			this.name = name;
 			this.valueName = GetValueName();

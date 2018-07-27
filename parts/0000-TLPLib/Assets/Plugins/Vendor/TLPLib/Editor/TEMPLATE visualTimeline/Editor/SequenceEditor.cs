@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		private GameObject selectedGameObject;
 		private TweenerTemp tweenerTemp;
 
-		private Sequence sequence {
+		private SequenceTemp SequenceTemp {
 			get {
 				if (tweenerTemp != null && selectedSequenceIndex < tweenerTemp.sequences.Count) {
 					return tweenerTemp.sequences[selectedSequenceIndex];
@@ -25,10 +25,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 		private int selectedNodeIndex;
 
-		private SequenceNode selectedNode {
+		private SequenceNodeTemp SelectedNodeTemp {
 			get {
-				if (sequence != null && selectedNodeIndex < sequence.nodes.Count) {
-					return sequence.nodes[selectedNodeIndex];
+				if (SequenceTemp != null && selectedNodeIndex < SequenceTemp.nodes.Count) {
+					return SequenceTemp.nodes[selectedNodeIndex];
 				}
 
 				return null;
@@ -47,10 +47,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		private GameObject backupGameObject;
 		private int selectedEventIndex;
 
-		private EventNode selectedEvent {
+		private EventNodeTemp selectedEvent {
 			get {
-				if (sequence != null && selectedEventIndex < sequence.events.Count) {
-					return sequence.events[selectedEventIndex];
+				if (SequenceTemp != null && selectedEventIndex < SequenceTemp.events.Count) {
+					return SequenceTemp.events[selectedEventIndex];
 				}
 
 				return null;
@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 		[MenuItem("Window/Zerano Assets/Visual Tween", false)]
 		public static void ShowWindow() {
-			SequenceEditor window = EditorWindow.GetWindow<SequenceEditor>(false, "TweenerTemp");
+			SequenceEditor window = EditorWindow.GetWindow<SequenceEditor>(false, "Tweener");
 			window.wantsMouseMove = true;
 			UnityEngine.Object.DontDestroyOnLoad(window);
 		}
@@ -86,12 +86,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 		private void OnAddEvent() {
 			AddTweener(Selection.activeGameObject);
-			if (sequence == null) {
+			if (SequenceTemp == null) {
 				AddSequence(tweenerTemp);
 			}
 
-			if (sequence.events == null) {
-				sequence.events = new List<EventNode>();
+			if (SequenceTemp.events == null) {
+				SequenceTemp.events = new List<EventNodeTemp>();
 			}
 
 			GenericMenu menu = new GenericMenu();
@@ -105,12 +105,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					selectedGameObject.GetComponent(type) == null);
 				foreach (MethodInfo mi in functions) {
 					if (mi != null) {
-						EventNode node = new EventNode();
-						node.time = timeline.CurrentTime;
-						node.SerializedType = type;
-						node.method = mi.Name;
-						node.arguments = GetMethodArguments(mi);
-						menu.AddItem(new GUIContent(type.Name + "/" + mi.Name), false, AddEvent, node);
+						EventNodeTemp nodeTemp = new EventNodeTemp();
+						nodeTemp.time = timeline.CurrentTime;
+						nodeTemp.SerializedType = type;
+						nodeTemp.method = mi.Name;
+						nodeTemp.arguments = GetMethodArguments(mi);
+						menu.AddItem(new GUIContent(type.Name + "/" + mi.Name), false, AddEvent, nodeTemp);
 					}
 				}
 			}
@@ -183,11 +183,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 			return true;
 		}
 
-		private List<MethodArgument> GetMethodArguments(MethodInfo mi) {
+		private List<MethodArgumentTemp> GetMethodArguments(MethodInfo mi) {
 			ParameterInfo[] pi = mi.GetParameters();
-			List<MethodArgument> args = new List<MethodArgument>();
+			List<MethodArgumentTemp> args = new List<MethodArgumentTemp>();
 			foreach (ParameterInfo info in pi) {
-				MethodArgument arg = new MethodArgument(info.Name, info.ParameterType.ToString());
+				MethodArgumentTemp arg = new MethodArgumentTemp(info.Name, info.ParameterType.ToString());
 				args.Add(arg);
 			}
 
@@ -208,15 +208,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		}
 
 		private void AddEvent(object data) {
-			EventNode node = data as EventNode;
-			sequence.events.Add(node);
+			EventNodeTemp nodeTemp = data as EventNodeTemp;
+			SequenceTemp.events.Add(nodeTemp);
 			EditorUtility.SetDirty(tweenerTemp);
 		}
 
 		private void OnEventGUI(Rect rect) {
-			if (sequence != null) {
-				for (int i = 0; i < sequence.events.Count; i++) {
-					Rect rect1 = new Rect(timeline.SecondsToGUI(sequence.events[i].time) - timeline.scroll.x + rect.x - 5f, rect.y, 17,
+			if (SequenceTemp != null) {
+				for (int i = 0; i < SequenceTemp.events.Count; i++) {
+					Rect rect1 = new Rect(timeline.SecondsToGUI(SequenceTemp.events[i].time) - timeline.scroll.x + rect.x - 5f, rect.y, 17,
 						20);
 					if (rect1.x + 6f > rect.x) {
 						Color color = GUI.color;
@@ -269,17 +269,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 								break;
 							case SequenceWrap.Once:
-								sequence.Stop(false);
+								SequenceTemp.Stop(false);
 								playStartTime = (float) EditorApplication.timeSinceStartup;
 								timeline.CurrentTime = 0;
 								stop = true;
 								break;
 							case SequenceWrap.ClampForever:
-								sequence.Stop(true);
+								SequenceTemp.Stop(true);
 								stop = true;
 								break;
 							case SequenceWrap.Loop:
-								sequence.Stop(false);
+								SequenceTemp.Stop(false);
 								playStartTime = (float) EditorApplication.timeSinceStartup;
 								timeline.CurrentTime = 0;
 								stop = false;
@@ -302,20 +302,20 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 				}
 			}
 			else {
-				if (tweenerTemp != null && sequence != null && tweenerTemp.IsPlaying(sequence.name)) {
-					timeline.CurrentTime = sequence.passedTime;
+				if (tweenerTemp != null && SequenceTemp != null && tweenerTemp.IsPlaying(SequenceTemp.name)) {
+					timeline.CurrentTime = SequenceTemp.passedTime;
 					Repaint();
 				}
 			}
 		}
 
 		public float GetSequenceEnd() {
-			if (sequence == null) {
+			if (SequenceTemp == null) {
 				return Mathf.Infinity;
 			}
 
 			float sequenceEnd = 0;
-			foreach (SequenceNode node in sequence.nodes) {
+			foreach (SequenceNodeTemp node in SequenceTemp.nodes) {
 				if (sequenceEnd < (node.startTime + node.duration)) {
 					sequenceEnd = node.startTime + node.duration;
 				}
@@ -332,9 +332,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		}
 
 		private void EditorUpdate(float time) {
-			if (sequence != null) {
-				sequence.nodes = sequence.nodes.OrderBy(x => x.startTime).ToList();
-				foreach (SequenceNode node in sequence.nodes) {
+			if (SequenceTemp != null) {
+				SequenceTemp.nodes = SequenceTemp.nodes.OrderBy(x => x.startTime).ToList();
+				foreach (SequenceNodeTemp node in SequenceTemp.nodes) {
 					node.UpdateTween(time);
 				}
 
@@ -344,11 +344,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		}
 
 		private void OnTimelineClick(float time) {
-			if (sequence == null) {
+			if (SequenceTemp == null) {
 				return;
 			}
 
-			foreach (SequenceNode node in sequence.nodes) {
+			foreach (SequenceNodeTemp node in SequenceTemp.nodes) {
 				if (time < node.startTime) {
 					node.UpdateValue(0.0f);
 				}
@@ -360,11 +360,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		}
 
 		private void DrawNodes(Rect position) {
-			if (sequence == null) {
+			if (SequenceTemp == null) {
 				return;
 			}
 
-			foreach (SequenceNode node in sequence.nodes) {
+			foreach (SequenceNodeTemp node in SequenceTemp.nodes) {
 				EditorGUIUtility.AddCursorRect(new Rect(timeline.SecondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20),
 					MouseCursor.ResizeHorizontal);
 				EditorGUIUtility.AddCursorRect(
@@ -375,16 +375,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					MouseCursor.Pan);
 			}
 
-			foreach (SequenceNode node in sequence.nodes) {
+			foreach (SequenceNodeTemp node in SequenceTemp.nodes) {
 				Rect boxRect = new Rect(timeline.SecondsToGUI(node.startTime), node.channel * 20,
 					timeline.SecondsToGUI(node.duration), 20);
 				GUI.Box(boxRect, "", "TL LogicBar 0");
 
 				GUIStyle style = new GUIStyle("Label");
-				style.fontSize = (selectedNode == node ? 12 : style.fontSize);
-				style.fontStyle = (selectedNode == node ? FontStyle.Bold : FontStyle.Normal);
+				style.fontSize = (SelectedNodeTemp == node ? 12 : style.fontSize);
+				style.fontStyle = (SelectedNodeTemp == node ? FontStyle.Bold : FontStyle.Normal);
 				Color color = style.normal.textColor;
-				color.a = (selectedNode == node ? 1.0f : 0.7f);
+				color.a = (SelectedNodeTemp == node ? 1.0f : 0.7f);
 				style.normal.textColor = color;
 				Vector3 size = style.CalcSize(new GUIContent(node.target.GetType().Name + "." + node.property));
 				Rect rect1 = new Rect(boxRect.x + boxRect.width * 0.5f - size.x * 0.5f,
@@ -402,8 +402,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 			Event ev = Event.current;
 			switch (ev.rawType) {
 				case EventType.MouseDown:
-					for (int j = 0; j < sequence.events.Count; j++) {
-						Rect rect1 = new Rect(timeline.SecondsToGUI(sequence.events[j].time) - 5f, -15, 17, 20);
+					for (int j = 0; j < SequenceTemp.events.Count; j++) {
+						Rect rect1 = new Rect(timeline.SecondsToGUI(SequenceTemp.events[j].time) - 5f, -15, 17, 20);
 						if (rect1.Contains(Event.current.mousePosition)) {
 							selectedEventIndex = j;
 							selectedNodeIndex = int.MaxValue;
@@ -414,7 +414,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 							if (ev.button == 1) {
 								GenericMenu genericMenu = new GenericMenu();
 								genericMenu.AddItem(new GUIContent("Remove"), false,
-									delegate() { sequence.events.RemoveAt(selectedEventIndex); });
+									delegate() { SequenceTemp.events.RemoveAt(selectedEventIndex); });
 								genericMenu.ShowAsContext();
 							}
 
@@ -422,10 +422,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 						}
 					}
 
-					for (int i = 0; i < sequence.nodes.Count; i++) {
-						SequenceNode node = sequence.nodes[i];
+					for (int i = 0; i < SequenceTemp.nodes.Count; i++) {
+						SequenceNodeTemp nodeTemp = SequenceTemp.nodes[i];
 
-						if (new Rect(timeline.SecondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20).Contains(Event.current
+						if (new Rect(timeline.SecondsToGUI(nodeTemp.startTime) - 5, nodeTemp.channel * 20, 10, 20).Contains(Event.current
 							.mousePosition)) {
 							selectedNodeIndex = i;
 							selectedEventIndex = int.MaxValue;
@@ -434,7 +434,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 							ev.Use();
 						}
 
-						if (new Rect(timeline.SecondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20).Contains(
+						if (new Rect(timeline.SecondsToGUI(nodeTemp.startTime + nodeTemp.duration) - 5, nodeTemp.channel * 20, 10, 20).Contains(
 							Event.current.mousePosition)) {
 							selectedNodeIndex = i;
 							selectedEventIndex = int.MaxValue;
@@ -443,10 +443,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 							ev.Use();
 						}
 
-						if (new Rect(timeline.SecondsToGUI(node.startTime), node.channel * 20, timeline.SecondsToGUI(node.duration), 20)
+						if (new Rect(timeline.SecondsToGUI(nodeTemp.startTime), nodeTemp.channel * 20, timeline.SecondsToGUI(nodeTemp.duration), 20)
 							.Contains(Event.current.mousePosition)) {
 							if (ev.button == 0) {
-								timeClickOffset = node.startTime - timeline.GUIToSeconds(Event.current.mousePosition.x);
+								timeClickOffset = nodeTemp.startTime - timeline.GUIToSeconds(Event.current.mousePosition.x);
 								dragNode = true;
 								selectedNodeIndex = i;
 								selectedEventIndex = int.MaxValue;
@@ -455,7 +455,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 							if (ev.button == 1) {
 								GenericMenu genericMenu = new GenericMenu();
-								genericMenu.AddItem(new GUIContent("Remove"), false, this.RemoveTween, node);
+								genericMenu.AddItem(new GUIContent("Remove"), false, this.RemoveTween, nodeTemp);
 								genericMenu.ShowAsContext();
 							}
 
@@ -472,34 +472,34 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					}
 
 					if (resizeNodeStart) {
-						selectedNode.startTime = timeline.GUIToSeconds(Event.current.mousePosition.x);
-						selectedNode.startTime = Mathf.Clamp(selectedNode.startTime, 0, float.MaxValue);
-						if (selectedNode.startTime > 0) {
-							selectedNode.duration -= timeline.GUIToSeconds(ev.delta.x);
-							selectedNode.duration = Mathf.Clamp(selectedNode.duration, 0.01f, float.MaxValue);
+						SelectedNodeTemp.startTime = timeline.GUIToSeconds(Event.current.mousePosition.x);
+						SelectedNodeTemp.startTime = Mathf.Clamp(SelectedNodeTemp.startTime, 0, float.MaxValue);
+						if (SelectedNodeTemp.startTime > 0) {
+							SelectedNodeTemp.duration -= timeline.GUIToSeconds(ev.delta.x);
+							SelectedNodeTemp.duration = Mathf.Clamp(SelectedNodeTemp.duration, 0.01f, float.MaxValue);
 						}
 
 						ev.Use();
 					}
 
 					if (resizeNodeEnd) {
-						selectedNode.duration = (timeline.GUIToSeconds(Event.current.mousePosition.x) - selectedNode.startTime);
-						selectedNode.duration = Mathf.Clamp(selectedNode.duration, 0.01f, float.MaxValue);
+						SelectedNodeTemp.duration = (timeline.GUIToSeconds(Event.current.mousePosition.x) - SelectedNodeTemp.startTime);
+						SelectedNodeTemp.duration = Mathf.Clamp(SelectedNodeTemp.duration, 0.01f, float.MaxValue);
 						ev.Use();
 					}
 
 					if (dragNode && !resizeNodeStart && !resizeNodeEnd) {
-						selectedNode.startTime = timeline.GUIToSeconds(Event.current.mousePosition.x) + timeClickOffset;
-						selectedNode.startTime = Mathf.Clamp(selectedNode.startTime, 0, float.MaxValue);
-						if (Event.current.mousePosition.y > selectedNode.channel * 20 + 25) {
-							selectedNode.channel += 1;
+						SelectedNodeTemp.startTime = timeline.GUIToSeconds(Event.current.mousePosition.x) + timeClickOffset;
+						SelectedNodeTemp.startTime = Mathf.Clamp(SelectedNodeTemp.startTime, 0, float.MaxValue);
+						if (Event.current.mousePosition.y > SelectedNodeTemp.channel * 20 + 25) {
+							SelectedNodeTemp.channel += 1;
 						}
 
-						if (Event.current.mousePosition.y < selectedNode.channel * 20 - 5) {
-							selectedNode.channel -= 1;
+						if (Event.current.mousePosition.y < SelectedNodeTemp.channel * 20 - 5) {
+							SelectedNodeTemp.channel -= 1;
 						}
 
-						selectedNode.channel = Mathf.Clamp(selectedNode.channel, 0, int.MaxValue);
+						SelectedNodeTemp.channel = Mathf.Clamp(SelectedNodeTemp.channel, 0, int.MaxValue);
 						ev.Use();
 					}
 
@@ -519,7 +519,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 			if (tweenerTemp == null && selectedGameObject != null && isRecording) {
 				tweenerTemp = selectedGameObject.AddComponent<TweenerTemp>();
 				AddSequence(tweenerTemp);
-				//sequence.nodes = new List<SequenceNode>();
+				//sequenceTemp.nodes = new List<SequenceNodeTemp>();
 				EditorUtility.SetDirty(tweenerTemp);
 			}
 
@@ -573,8 +573,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 			mTweenerTemp.sequences = tweenerTemp.sequences;
 			for (int i = 0; i < tweenerTemp.sequences.Count; i++) {
 				for (int j = 0; j < tweenerTemp.sequences[i].nodes.Count; j++) {
-					SequenceNode node = tweenerTemp.sequences[i].nodes[j];
-					mTweenerTemp.sequences[i].nodes[j].target = mTweenerTemp.GetComponent(node.target.GetType());
+					SequenceNodeTemp nodeTemp = tweenerTemp.sequences[i].nodes[j];
+					mTweenerTemp.sequences[i].nodes[j].target = mTweenerTemp.GetComponent(nodeTemp.target.GetType());
 				}
 			}
 
@@ -591,7 +591,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 		private void OnSettings(float width) {
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button(sequence != null ? sequence.name : "[None Selected]", EditorStyles.toolbarDropDown,
+			if (GUILayout.Button(SequenceTemp != null ? SequenceTemp.name : "[None Selected]", EditorStyles.toolbarDropDown,
 				GUILayout.Width(width * 0.5f))) {
 				GenericMenu toolsMenu = new GenericMenu();
 				if (tweenerTemp != null) {
@@ -602,7 +602,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					}
 				}
 
-				toolsMenu.AddItem(new GUIContent("[New Sequence]"), false, delegate() {
+				toolsMenu.AddItem(new GUIContent("[New SequenceTemp]"), false, delegate() {
 					AddTweener(Selection.activeGameObject);
 					AddSequence(tweenerTemp);
 				});
@@ -611,13 +611,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 				EditorGUIUtility.ExitGUI();
 			}
 
-			if (sequence != null) {
-				wrap = sequence.wrap;
+			if (SequenceTemp != null) {
+				wrap = SequenceTemp.wrap;
 			}
 
 			wrap = (SequenceWrap) EditorGUILayout.EnumPopup(wrap, EditorStyles.toolbarDropDown, GUILayout.Width(width * 0.5f));
-			if (sequence != null) {
-				sequence.wrap = wrap;
+			if (SequenceTemp != null) {
+				SequenceTemp.wrap = wrap;
 			}
 
 			GUILayout.EndHorizontal();
@@ -633,7 +633,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 			GUILayout.FlexibleSpace();
 			bool enabled = GUI.enabled;
-			GUI.enabled = sequence != null;
+			GUI.enabled = SequenceTemp != null;
 			if (GUILayout.Button("Add Tween")) {
 				GenericMenu genericMenu = new GenericMenu();
 				Component[] components = selectedGameObject.GetComponents<Component>();
@@ -643,7 +643,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 						if (properties[j].CanWrite) {
 							if (IsSupportedType(properties[j].PropertyType)) {
 								genericMenu.AddItem(new GUIContent(components[i].GetType().Name + "/" + properties[j].Name), false, AddTween,
-									new SequenceNode(components[i], properties[j].Name));
+									new SequenceNodeTemp(components[i], properties[j].Name));
 							}
 						}
 					}
@@ -652,7 +652,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					for (int j = 0; j < fields.Length; j++) {
 						if (IsSupportedType(fields[j].FieldType)) {
 							genericMenu.AddItem(new GUIContent(components[i].GetType().Name + "/" + fields[j].Name), false, AddTween,
-								new SequenceNode(components[i], fields[j].Name));
+								new SequenceNodeTemp(components[i], fields[j].Name));
 						}
 					}
 				}
@@ -683,19 +683,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					EditorGUILayout.PropertyField(nodeProperty.FindPropertyRelative("duration"));
 					SerializedProperty fromProperty = null;
 					SerializedProperty toProperty = null;
-					if (selectedNode.PropertyType == typeof(float)) {
+					if (SelectedNodeTemp.PropertyType == typeof(float)) {
 						fromProperty = nodeProperty.FindPropertyRelative("fromFloat");
 						toProperty = nodeProperty.FindPropertyRelative("toFloat");
 					}
-					else if (selectedNode.PropertyType == typeof(Vector2)) {
+					else if (SelectedNodeTemp.PropertyType == typeof(Vector2)) {
 						fromProperty = nodeProperty.FindPropertyRelative("fromVector2");
 						toProperty = nodeProperty.FindPropertyRelative("toVector2");
 					}
-					else if (selectedNode.PropertyType == typeof(Vector3)) {
+					else if (SelectedNodeTemp.PropertyType == typeof(Vector3)) {
 						fromProperty = nodeProperty.FindPropertyRelative("fromVector3");
 						toProperty = nodeProperty.FindPropertyRelative("toVector3");
 					}
-					else if (selectedNode.PropertyType == typeof(Color)) {
+					else if (SelectedNodeTemp.PropertyType == typeof(Color)) {
 						fromProperty = nodeProperty.FindPropertyRelative("fromColor");
 						toProperty = nodeProperty.FindPropertyRelative("toColor");
 					}
@@ -715,9 +715,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 					//SerializedProperty typeProperty=eventProperty.FindPropertyRelative("type");
 					SerializedProperty argumentsArray = eventProperty.FindPropertyRelative("arguments");
 
-					EventNode eventNode = sequence.events[selectedEventIndex];
+					EventNodeTemp eventNodeTemp = SequenceTemp.events[selectedEventIndex];
 
-					if (GUILayout.Button(eventNode.SerializedType.Name + "." + methodProperty.stringValue, "DropDown")) {
+					if (GUILayout.Button(eventNodeTemp.SerializedType.Name + "." + methodProperty.stringValue, "DropDown")) {
 						GenericMenu menu = new GenericMenu();
 						Component[] components = selectedGameObject.GetComponents<Component>();
 						List<Type> types = new List<Type>();
@@ -729,14 +729,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 								selectedGameObject.GetComponent(type) == null);
 							foreach (MethodInfo mi in functions) {
 								if (mi != null) {
-									EventNode node = new EventNode();
-									node.time = timeline.CurrentTime;
-									node.SerializedType = type;
-									node.method = mi.Name;
-									node.arguments = GetMethodArguments(mi);
-									node.time = eventNode.time;
+									EventNodeTemp nodeTemp = new EventNodeTemp();
+									nodeTemp.time = timeline.CurrentTime;
+									nodeTemp.SerializedType = type;
+									nodeTemp.method = mi.Name;
+									nodeTemp.arguments = GetMethodArguments(mi);
+									nodeTemp.time = eventNodeTemp.time;
 									menu.AddItem(new GUIContent(type.Name + "/" + mi.Name), false, delegate() {
-										sequence.events[selectedEventIndex] = node;
+										SequenceTemp.events[selectedEventIndex] = nodeTemp;
 										EditorUtility.SetDirty(tweenerTemp);
 									});
 								}
@@ -748,7 +748,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 
 					for (int i = 0; i < argumentsArray.arraySize; i++) {
 						SerializedProperty argumentProperty = argumentsArray.GetArrayElementAtIndex(i);
-						EditorGUILayout.PropertyField(argumentProperty.FindPropertyRelative(eventNode.arguments[i].GetValueName()),
+						EditorGUILayout.PropertyField(argumentProperty.FindPropertyRelative(eventNodeTemp.arguments[i].GetValueName()),
 							new GUIContent("Parameter"));
 					}
 
@@ -759,22 +759,22 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		}
 
 		private void AddTween(object node) {
-			SequenceNode mNode = node as SequenceNode;
-			sequence.nodes.Add(mNode);
-			mNode.SetDefaultValue();
+			SequenceNodeTemp mNodeTemp = node as SequenceNodeTemp;
+			SequenceTemp.nodes.Add(mNodeTemp);
+			mNodeTemp.SetDefaultValue();
 			EditorUtility.SetDirty(tweenerTemp);
 		}
 
 		private void RemoveTween(object node) {
-			SequenceNode mNode = node as SequenceNode;
-			sequence.nodes.Remove(mNode);
+			SequenceNodeTemp mNodeTemp = node as SequenceNodeTemp;
+			SequenceTemp.nodes.Remove(mNodeTemp);
 			EditorUtility.SetDirty(tweenerTemp);
 		}
 
 		private void AddTweener(GameObject gameObject) {
 			if (gameObject.GetComponent<TweenerTemp>() == null) {
 				tweenerTemp = gameObject.AddComponent<TweenerTemp>();
-				tweenerTemp.sequences = new List<Sequence>();
+				tweenerTemp.sequences = new List<SequenceTemp>();
 				EditorUtility.SetDirty(gameObject);
 			}
 		}
@@ -782,19 +782,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		private void AddSequence(TweenerTemp tweenerTemp) {
 			if (tweenerTemp != null) {
 				if (tweenerTemp.sequences == null) {
-					tweenerTemp.sequences = new List<Sequence>();
+					tweenerTemp.sequences = new List<SequenceTemp>();
 				}
 
-				Sequence sequence = new Sequence();
-				sequence.nodes = new List<SequenceNode>();
-				sequence.events = new List<EventNode>();
+				SequenceTemp sequenceTemp = new SequenceTemp();
+				sequenceTemp.nodes = new List<SequenceNodeTemp>();
+				sequenceTemp.events = new List<EventNodeTemp>();
 				int cnt = 0;
-				while (tweenerTemp.sequences.Find(x => x.name == "New Sequence " + cnt.ToString()) != null) {
+				while (tweenerTemp.sequences.Find(x => x.name == "New SequenceTemp " + cnt.ToString()) != null) {
 					cnt++;
 				}
 
-				sequence.name = "New Sequence " + cnt.ToString();
-				tweenerTemp.sequences.Add(sequence);
+				sequenceTemp.name = "New SequenceTemp " + cnt.ToString();
+				tweenerTemp.sequences.Add(sequenceTemp);
 				selectedSequenceIndex = tweenerTemp.sequences.Count - 1;
 			}
 		}

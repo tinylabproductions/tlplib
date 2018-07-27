@@ -342,6 +342,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isEmpty<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
     [PublicAPI]
     public static bool nonEmpty<A>(this IEnumerable<A> enumerable) => enumerable.Any();
+    [PublicAPI]
+    public static Option<IEnumerable<A>> noneIfEmpty<A>(this IEnumerable<A> enumerable) =>
+      enumerable.isEmpty() ? F.none_ : enumerable.some();
 
     [PublicAPI]
     public static IEnumerable<A> Except<A>(

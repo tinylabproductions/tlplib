@@ -22,20 +22,13 @@ public class Timeline {
 	private Rect timeRect;
 	private Rect drawRect;
 	public Rect eventRect;
-	private float timelineOffset=170;
-	private int[] timeFactor=new int[]{1,5,10,30,60,300,600,1800,3600,7200};
-	public int TimeFactor{
-		get{
-			return timeFactor[timeIndexFactor];
-		}
-	}
+	private float timelineOffset = 170;
+	private readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
+	public int TimeFactor => timeFactor[timeIndexFactor];
+
 	public float CurrentTime{
-		get{
-			return GUIToSeconds(timePosition-timelineOffset);
-		}
-		set{
-			timePosition = SecondsToGUI (value)+timelineOffset;	
-		}
+		get => GUIToSeconds(timePosition-timelineOffset);
+		set => timePosition = SecondsToGUI (value)+timelineOffset;
 	}
 	
 	private int timeIndexFactor=1;

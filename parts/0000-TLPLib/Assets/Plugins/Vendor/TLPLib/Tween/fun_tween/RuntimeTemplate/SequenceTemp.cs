@@ -1,17 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Functional;
 
-namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
+namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
   [System.Serializable]
-  public class Sequence {
+  public class SequenceTemp {
     public string name = "New SequenceTemp";
     public SequenceWrap wrap = SequenceWrap.ClampForever;
     public bool playAutomatically = true;
-    public List<FunSequenceNode> funNodes;
-    public List<SequenceNode> nodes;
-    public List<EventNode> events;
+    public List<SequenceNodeTemp> nodes;
+    public List<EventNodeTemp> events;
 
     public float passedTime;
     private bool playForward = true;
@@ -46,12 +44,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       else {
         passedTime += Time.deltaTime * (playForward ? 1.0f : -1.0f);
 
-        foreach (SequenceNode node in nodes) {
+        foreach (SequenceNodeTemp node in nodes) {
           node.UpdateTween(passedTime);
         }
       }
 
-      foreach (EventNode node in events) {
+      foreach (EventNodeTemp node in events) {
         if (passedTime >= node.time) {
           node.Invoke(go);
         }
@@ -61,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void Play() {
       stop = false;
       passedTime = 0;
-      foreach (SequenceNode node in nodes) {
+      foreach (SequenceNodeTemp node in nodes) {
         if (sequenceEnd < (node.startTime + node.duration)) {
           sequenceEnd = node.startTime + node.duration;
         }
@@ -76,12 +74,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void Stop(bool forward) {
       stop = true;
       for (int i = 0; i < nodes.Count; i++) {
-        SequenceNode node = nodes[i];
+        SequenceNodeTemp nodeTemp = nodes[i];
         if (forward) {
-          node.UpdateValue(1.0f);
+          nodeTemp.UpdateValue(1.0f);
         }
         else {
-          node.UpdateValue(0.0f);
+          nodeTemp.UpdateValue(0.0f);
           passedTime = 0;
         }
       }
@@ -93,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     private void ResetEvents() {
-      foreach (EventNode node in events) {
+      foreach (EventNodeTemp node in events) {
         node.finished = false;
       }
     }

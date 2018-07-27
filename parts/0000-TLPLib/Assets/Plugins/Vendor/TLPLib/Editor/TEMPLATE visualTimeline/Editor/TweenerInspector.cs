@@ -9,12 +9,26 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 		public override void OnInspectorGUI() {
 			serializedObject.Update();
 			SerializedProperty sequenceArray = serializedObject.FindProperty("sequences");
+			SerializedProperty timelineArray = serializedObject.FindProperty("serializedTweenTimeline");
+			
 			EditorGUIUtility.labelWidth = 60;
 			for (int i = 0; i < sequenceArray.arraySize; i++) {
 				SerializedProperty sequenceProperty = sequenceArray.GetArrayElementAtIndex(i);
 				GUILayout.BeginHorizontal("box");
 
 				EditorGUILayout.PropertyField(sequenceProperty.FindPropertyRelative("name"));
+				if (GUILayout.Button(EditorGUIUtility.FindTexture("toolbar minus"), "label", GUILayout.Width(20))) {
+					sequenceArray.DeleteArrayElementAtIndex(i);
+				}
+
+				GUILayout.EndHorizontal();
+			}
+			
+			for (int i = 0; i < sequenceArray.arraySize; i++) {
+//				SerializedProperty timelineProperty = timelineArray.GetArrayElementAtIndex(i);
+				GUILayout.BeginHorizontal("box");
+
+				EditorGUILayout.PropertyField(sequenceArray.FindPropertyRelative("name"));
 				if (GUILayout.Button(EditorGUIUtility.FindTexture("toolbar minus"), "label", GUILayout.Width(20))) {
 					sequenceArray.DeleteArrayElementAtIndex(i);
 				}
