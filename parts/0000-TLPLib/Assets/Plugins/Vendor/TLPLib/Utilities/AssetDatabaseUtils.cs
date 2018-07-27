@@ -1,8 +1,13 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Filesystem;
+using com.tinylabproductions.TLPLib.Logger;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class AssetDatabaseUtils {
@@ -40,6 +45,17 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static Object loadMainAssetByGuid(string guid) =>
       AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+    
+    public static string copyAssetAndGetPath<T>(T obj, PathStr path) where T: Object {
+      var originalPath = AssetDatabase.GetAssetPath(obj);
+      var newPath = path.unityPath + "/" + obj.name + Path.GetExtension(originalPath);
+      if (Log.d.isDebug())
+        Log.d.debug($"{nameof(AssetDatabaseUtils)}#{nameof(copyAssetAndGetPath)}: " +
+          $"copying asset from {originalPath} to {newPath}");
+      if (!AssetDatabase.CopyAsset(originalPath, newPath))
+        throw new Exception($"Couldn't copy asset from {originalPath} to {newPath}");
+      return newPath;
+    }
 
     static bool _assetsAreBeingEdited;
 
