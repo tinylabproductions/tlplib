@@ -13,7 +13,6 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     enum Direction : byte { Vertical = 0, Horizontal = 1 }
 
     public void Start() => generate();
-    public void Awake() => generate();
 
     protected abstract void setTexture(Texture2D texture);
     
