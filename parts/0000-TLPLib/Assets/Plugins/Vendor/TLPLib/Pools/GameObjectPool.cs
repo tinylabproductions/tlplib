@@ -3,12 +3,29 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using Smooth.Dispose;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Pools {
   public static class GameObjectPool {
+    public static class Init {
+      [PublicAPI]
+      public static Init<T> withReparenting<T>(
+        string name, Fn<T> create,
+        Act<T> wakeUp = null, Act<T> sleep = null,
+        bool dontDestroyOnLoad = true, Transform parent = null
+      ) => Init<T>.withReparenting(name, create, wakeUp, sleep, dontDestroyOnLoad, parent);
+
+      [PublicAPI]
+      public static Init<T> noReparenting<T>(
+        string name, Fn<T> create,
+        Act<T> wakeUp = null, Act<T> sleep = null,
+        bool dontDestroyOnLoad = true
+      ) => Init<T>.noReparenting(name, create, wakeUp, sleep, dontDestroyOnLoad);
+    }
+    
     public struct Init<T> {
       public readonly string name;
       public readonly Fn<T> create;
@@ -32,6 +49,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
         this.parent = parent;
       }
 
+      [PublicAPI]
       public static Init<T> withReparenting(
         string name, Fn<T> create,
         Act<T> wakeUp = null, Act<T> sleep = null,
@@ -40,6 +58,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
         name, create, parent.some(), wakeUp, sleep, dontDestroyOnLoad
       );
 
+      [PublicAPI]
       public static Init<T> noReparenting(
         string name, Fn<T> create,
         Act<T> wakeUp = null, Act<T> sleep = null,
