@@ -15,6 +15,7 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Utilities;
+using Harmony;
 using NUnit.Framework.Interfaces;
 using UnityEditor;
 using UnityEngine;
@@ -359,7 +360,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			}
 
 		  if (GUI.changed) {
-			  refreshNodeChannelInfo();
+			  //refreshNodeChannelInfo();
 			  Log.d.warn("editor gui changed aliooo");
 		  }
 
@@ -740,6 +741,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		  foreach (var manager in funTweenManager) {
 				var elements = manager.timeline.elements;
 			  var channelIdx = 0;
+
+			  
+
 				funNodes = elements.Select(
 					(element, idx) => {
 						if (idx != 0 && element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement ) {
@@ -749,6 +753,31 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						//TODO channel indexes
 						return new FunSequenceNode(element, whereToStart(idx), element.title);
 					}).ToList().some();
+			  
+			  var maxChannelIdx = funNodes.map(nodes => nodes.Max(node => node.channel));
+			  if (maxChannelIdx.isSome) Log.d.warn($"max channel id {maxChannelIdx.get}");
+			  foreach (var maxChannel in maxChannelIdx)
+			  {
+				  var arr = new List<FunSequenceNode>();
+				  for (int i = 0; i < maxChannel; i++)
+				  {
+					  var x = funNodes.map(nodes =>
+						  nodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime));
+					  foreach (var someNodes in x)
+					  {
+						  arr.AddRange(someNodes);  
+					  }
+					  
+				  }
+
+				  manager.timeline.elements = arr.Select(elem => elem.element).ToArray();
+			  }
+			  
+			  
+			  /*foreach (var node in funNodes)
+			  {
+				  if (!node.isEmpty()) manager.timeline.elements = new SerializedTweenTimeline.Element[] {node[0].element};				  
+			  }*/
 			  
 			  
 				
