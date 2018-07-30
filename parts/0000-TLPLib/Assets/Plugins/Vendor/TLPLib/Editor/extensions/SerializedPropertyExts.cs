@@ -1,29 +1,41 @@
 ﻿using System;
-using System.Reflection;
+using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.extensions {
   public static class SerializedPropertyExts {
-    [PublicAPI] public static FieldInfo GetFieldInfo(this SerializedProperty property) {
-      var parentType = property.serializedObject.targetObject.GetType();
-      var field = parentType.GetField(
-        property.propertyPath, 
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-      );
-      return field;
-    }
-
     [PublicAPI] public static object GetObject(this SerializedProperty property) {
-      var field = property.GetFieldInfo();
-      return field.GetValue(property.serializedObject.targetObject);
+      // property.propertyPath can be something like 'foo.bar.baz'
+      var path = property.propertyPath.Split('.');
+      object @object = property.serializedObject.targetObject;
+      for (var idx = 0; idx < path.Length; idx++) {
+        var part = path[idx];
+        if (@object.GetType().GetFieldInHierarchy(part).valueOut(out var field)) {
+          if (idx == path.Length - 1) {
+            return field.GetValue(@object);
+          }
+          else {
+            @object = field.GetValue(@object);
+          }
+        }
+        else {
+          throw new ArgumentException($"Can't find property '{part}' in {@object.GetType()} ({@object})!");
+        }
+      }
+      throw new ArgumentException(
+        $"Can't find property with path '{property.propertyPath}' in " +
+        $"{property.serializedObject.targetObject.GetType()}!"
+      );
     }
     
-    [PublicAPI] public static Type getSerializedObjectType(this SerializedProperty property) => 
-      property.GetFieldInfo().FieldType;
-
     [PublicAPI]
     public static void setToDefaultValue(this SerializedProperty property) {
+      ArgumentException exception(string extra = null) => new ArgumentOutOfRangeException(
+        $"Unknown property type '{property.propertyType}' for variable {property.propertyPath} " +
+        $"in {property.serializedObject.targetObject.GetType()}" + (extra ?? "")
+      );
+
       switch (property.propertyType) {
         case SerializedPropertyType.Character:
         case SerializedPropertyType.Integer:
@@ -90,9 +102,9 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
 #if UNITY_2017_2_OR_NEWER
         case SerializedPropertyType.FixedBufferSize:
 #endif
-          throw new ArgumentOutOfRangeException(nameof(property.propertyType), property.propertyType, "Unknown type");
+          throw exception();
         default:
-          throw new ArgumentOutOfRangeException(nameof(property.propertyType), property.propertyType, "Unknown type");
+          throw exception();
       }
     }
   }
