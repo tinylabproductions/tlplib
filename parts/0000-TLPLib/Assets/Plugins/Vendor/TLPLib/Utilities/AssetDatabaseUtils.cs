@@ -49,25 +49,27 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static string copyAssetAndGetPath<T>(T obj, PathStr path) where T: Object {
       var originalPath = AssetDatabase.GetAssetPath(obj);
       var newPath = path.unityPath + "/" + obj.name + Path.GetExtension(originalPath);
-      if (Log.d.isDebug())
-        Log.d.debug($"{nameof(AssetDatabaseUtils)}#{nameof(copyAssetAndGetPath)}: " +
+      if (Log.d.isVerbose())
+        Log.d.verbose($"{nameof(AssetDatabaseUtils)}#{nameof(copyAssetAndGetPath)}: " +
           $"copying asset from {originalPath} to {newPath}");
       if (!AssetDatabase.CopyAsset(originalPath, newPath))
         throw new Exception($"Couldn't copy asset from {originalPath} to {newPath}");
       return newPath;
     }
 
-    static bool _assetsAreBeingEdited;
+    // Calling stopAssetEditing without starting or stopping multiple times causes exceptions.
+    // These are used to track how many start calls there been to properly stop editing at the last stop call.
+    static uint _assetsAreBeingEditedCount;
 
     public static void startAssetEditing() {
-      if (!_assetsAreBeingEdited)
+      if (_assetsAreBeingEditedCount++ == 0)
         AssetDatabase.StartAssetEditing();
-      _assetsAreBeingEdited = true;
     }
     public static void stopAssetEditing() {
-      if (_assetsAreBeingEdited)
+      if (_assetsAreBeingEditedCount == 1)
         AssetDatabase.StopAssetEditing();
-      _assetsAreBeingEdited = false;
+      if (_assetsAreBeingEditedCount > 0)
+       _assetsAreBeingEditedCount--;
     }
   }
 }
