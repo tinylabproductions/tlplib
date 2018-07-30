@@ -59,17 +59,23 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     // Calling stopAssetEditing without starting or stopping multiple times causes exceptions.
     // These are used to track how many start calls there been to properly stop editing at the last stop call.
-    static uint _assetsAreBeingEditedCount;
+    static int _assetsAreBeingEditedCount;
 
     public static void startAssetEditing() {
-      if (_assetsAreBeingEditedCount++ == 0)
+      if (_assetsAreBeingEditedCount == 0)
         AssetDatabase.StartAssetEditing();
+      _assetsAreBeingEditedCount++;
+      if (Log.d.isVerbose()) 
+        Log.d.verbose($"{nameof(AssetDatabaseUtils)}#{nameof(startAssetEditing)}: count: {_assetsAreBeingEditedCount}");
     }
     public static void stopAssetEditing() {
-      if (_assetsAreBeingEditedCount == 1)
+      _assetsAreBeingEditedCount--;
+      if (Log.d.isVerbose()) 
+        Log.d.verbose($"{nameof(AssetDatabaseUtils)}#{nameof(stopAssetEditing)}: count: {_assetsAreBeingEditedCount}");
+      if (_assetsAreBeingEditedCount == 0)
         AssetDatabase.StopAssetEditing();
-      if (_assetsAreBeingEditedCount > 0)
-       _assetsAreBeingEditedCount--;
+      else if (_assetsAreBeingEditedCount < 0)
+        throw new Exception($"{nameof(stopAssetEditing)} was called more times than {nameof(startAssetEditing)}!");
     }
   }
 }
