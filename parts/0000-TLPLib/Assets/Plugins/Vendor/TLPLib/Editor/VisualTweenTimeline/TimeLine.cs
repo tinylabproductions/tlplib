@@ -43,6 +43,8 @@ public class Timeline {
 	private float timePosition;
 	private bool changeTime;
 	private float clickOffset;
+
+	public float lastNodeTime;
 	
 	
 	public void DoTimeline(Rect position){
@@ -53,11 +55,18 @@ public class Timeline {
 		DoCursor ();
 		DoToolbarGUI (position);
 		DoTicksGUI ();
-
 		DoEvents ();
 	
 
-		scroll = GUI.BeginScrollView(new Rect(position.x+timelineOffset, timeRect.height+eventRect.height, position.width-timelineOffset, position.height-timeRect.height-eventRect.height), scroll, new Rect(0,0,position.width+expandView.x-timelineOffset,position.height-40+expandView.y),true,true);
+		scroll = GUI.BeginScrollView(
+			new Rect(position.x+timelineOffset,
+				timeRect.height+eventRect.height,
+				position.width-timelineOffset,
+				position.height-timeRect.height-eventRect.height),
+			scroll,
+			new Rect(0, 0 , position.width + lastNodeTime + expandView.x - timelineOffset, position.height + 400 + expandView.y), true, true
+		);
+		
 		DoLines ();
 		if (onTimelineGUI != null) {
 			onTimelineGUI(new Rect(scroll.x,scroll.y,position.width-timelineOffset-15+scroll.x,drawRect.height+scroll.y));			
@@ -283,14 +292,12 @@ public class Timeline {
 	}
 
 	public float SecondsToGUI(float seconds){
-		float guiSecond = (seconds/timeFactor[timeIndexFactor]) * zoom * timeZoomFactor*5.0f;
-		return guiSecond;
+		return seconds / timeFactor[timeIndexFactor] * zoom * timeZoomFactor * 5.0f;
 	}
 	
 	public float GUIToSeconds(float x){
-		float guiSecond = zoom * timeZoomFactor*5.0f/timeFactor[timeIndexFactor];
-		float res = (x)/guiSecond;
-		return res;
+		var guiSecond = zoom * timeZoomFactor * 5.0f / timeFactor[timeIndexFactor];
+		return x / guiSecond;
 	}
 }
 

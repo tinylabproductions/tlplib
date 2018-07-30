@@ -4,8 +4,8 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
-  [System.Serializable]
-  public class FunSequenceNode : Comparable {
+  [Serializable]
+  public class FunSequenceNode {
     public SerializedTweenTimeline.Element element;
     
     public float startTime, duration;
@@ -15,6 +15,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     bool update;
 
     public void changeDuration() => element.element.setDuration(duration);
+    public float getEnd() => startTime + duration;
 
     public void setSpecificTimeStart() {
       if (element.startAt == SerializedTweenTimeline.Element.At.SpecificTime) {
