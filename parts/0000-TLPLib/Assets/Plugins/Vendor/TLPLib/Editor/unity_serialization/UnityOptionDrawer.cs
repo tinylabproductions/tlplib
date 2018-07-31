@@ -29,11 +29,7 @@
        var isSome = isSomeProp.boolValue = EditorGUI.ToggleLeft(firstRect, label, unityOption.isSome);
        var someChanged = EditorGUI.EndChangeCheck();
        if (isSome) {
-         Log.d.debug($"{valueProp.propertyPath}: {valueProp.propertyType}");
-         var ee = ScriptableObject.CreateInstance<ExternalEditor>();
-         ee.Instances = new[] { valueProp.GetObject() };
-         ee.Draw(secondRect);
-//         EditorGUI.PropertyField(secondRect, valueProp, GUIContent.none);
+         EditorGUI.PropertyField(secondRect, valueProp, GUIContent.none);
        }
        else {
          if (someChanged) valueProp.setToDefaultValue();
