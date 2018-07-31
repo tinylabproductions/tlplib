@@ -204,6 +204,7 @@ GameObject:
   - component: {fileID: 56325783}
   - component: {fileID: 56325784}
   - component: {fileID: 56325782}
+  - component: {fileID: 56325787}
   - component: {fileID: 56325786}
   m_Layer: 0
   m_Name: GameObject
@@ -231,36 +232,16 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _title: 
+    - _title: labas
       _startAt: 2
-      _timeOffset: 14.071426
-      _element: {fileID: 0}
-      _timelineChannelIdx: 0
-    - _title: 
+      _timeOffset: 1.8548374
+      _element: {fileID: 56325787}
+      _timelineChannelIdx: 4
+    - _title: as krabas
       _startAt: 2
-      _timeOffset: 2.1428568
-      _element: {fileID: 0}
-      _timelineChannelIdx: 1
-    - _title: 
-      _startAt: 2
-      _timeOffset: 6.5714273
-      _element: {fileID: 0}
-      _timelineChannelIdx: 1
-    - _title: 
-      _startAt: 2
-      _timeOffset: 10.714285
-      _element: {fileID: 0}
-      _timelineChannelIdx: 1
-    - _title: 
-      _startAt: 2
-      _timeOffset: 0.9999998
+      _timeOffset: 6.653225
       _element: {fileID: 56325786}
-      _timelineChannelIdx: 3
-    - _title: 
-      _startAt: 2
-      _timeOffset: 5.785713
-      _element: {fileID: 0}
-      _timelineChannelIdx: 3
+      _timelineChannelIdx: 4
   _onStart: []
   _onEnd: []
 --- !u!114 &56325783
@@ -329,20 +310,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 56325781}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 414208439dcc4708ba6ba6c001e5beac, type: 3}
+  m_Script: {fileID: 11500000, guid: c0e252eec12e40d0972306fb46286090, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 56325782}
   _mode: 2
-  _start: {x: 0, y: 0}
-  _end: {x: 0, y: 0}
-  _duration: 1
+  _start: {r: 1, g: 1, b: 1, a: 1}
+  _end: {r: 1, g: 1, b: 1, a: 1}
+  _duration: 5.120969
   _ease:
     _isComplex: 0
     _simple: 0
     _complex: {fileID: 0}
   _targets:
   - {fileID: 0}
+--- !u!114 &56325787
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 56325781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a489cc4184f6c9c729493d029a92b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 56325782}
+  _mode: 2
+  _start: 1
+  _end: 1
+  _duration: 4.7983875
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
   - {fileID: 0}
 --- !u!1 &201892295
 GameObject:
@@ -1003,6 +1005,8 @@ GameObject:
   - component: {fileID: 1409543647}
   - component: {fileID: 1409543646}
   - component: {fileID: 1409543645}
+  - component: {fileID: 1409543655}
+  - component: {fileID: 1409543654}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -1025,7 +1029,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 54.00002
+  _duration: 57.81819
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1161,36 +1165,46 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _title: f
-      _startAt: 2
-      _timeOffset: 107.88452
-      _element: {fileID: 1409543646}
-      _timelineChannelIdx: 4
-    - _title: 4
-      _startAt: 2
-      _timeOffset: 172.49985
-      _element: {fileID: 1409543650}
-      _timelineChannelIdx: 4
-    - _title: khj
-      _startAt: 2
-      _timeOffset: 14.423073
-      _element: {fileID: 1409543647}
-      _timelineChannelIdx: 5
-    - _title: as
-      _startAt: 2
-      _timeOffset: 48.426445
-      _element: {fileID: 1409543648}
-      _timelineChannelIdx: 8
     - _title: 
       _startAt: 2
-      _timeOffset: 145.96143
+      _timeOffset: 61.090893
+      _element: {fileID: 1409543654}
+      _timelineChannelIdx: 3
+    - _title: f
+      _startAt: 2
+      _timeOffset: 97.541885
+      _element: {fileID: 1409543646}
+      _timelineChannelIdx: 3
+    - _title: as
+      _startAt: 2
+      _timeOffset: 65.011536
+      _element: {fileID: 1409543648}
+      _timelineChannelIdx: 6
+    - _title: 
+      _startAt: 2
+      _timeOffset: 136.58499
       _element: {fileID: 1409543645}
-      _timelineChannelIdx: 9
+      _timelineChannelIdx: 6
     - _title: aasas
       _startAt: 2
-      _timeOffset: 23.217388
+      _timeOffset: 11.7997055
       _element: {fileID: 1409543649}
-      _timelineChannelIdx: 13
+      _timelineChannelIdx: 7
+    - _title: 4
+      _startAt: 2
+      _timeOffset: 199.21664
+      _element: {fileID: 1409543650}
+      _timelineChannelIdx: 9
+    - _title: khj
+      _startAt: 2
+      _timeOffset: 51.598076
+      _element: {fileID: 1409543647}
+      _timelineChannelIdx: 15
+    - _title: 
+      _startAt: 2
+      _timeOffset: 214.36357
+      _element: {fileID: 1409543655}
+      _timelineChannelIdx: 15
   _onStart: []
   _onEnd: []
 --- !u!114 &1409543652
@@ -1250,3 +1264,47 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1409543654
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1409543644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5852037b706442aabc76edbec38808de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 1409543651}
+  _mode: 2
+  _start: 0
+  _end: 0
+  _duration: 20
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 0}
+--- !u!114 &1409543655
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1409543644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a489cc4184f6c9c729493d029a92b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 1409543651}
+  _mode: 2
+  _start: 10
+  _end: 1
+  _duration: 50
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 0}
