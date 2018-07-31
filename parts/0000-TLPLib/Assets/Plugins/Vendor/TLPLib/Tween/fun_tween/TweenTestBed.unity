@@ -1025,7 +1025,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 44.109993
+  _duration: 54.00002
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1047,7 +1047,7 @@ MonoBehaviour:
   _mode: 2
   _start: 0
   _end: 0
-  _duration: 25.193813
+  _duration: 52.484764
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1069,7 +1069,7 @@ MonoBehaviour:
   _mode: 2
   _start: 1
   _end: 1
-  _duration: 51.05835
+  _duration: 75.57686
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1091,7 +1091,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 29.500006
+  _duration: 71.573456
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1135,7 +1135,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 32.27659
+  _duration: 107.30763
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1161,36 +1161,36 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
+    - _title: f
+      _startAt: 2
+      _timeOffset: 107.88452
+      _element: {fileID: 1409543646}
+      _timelineChannelIdx: 4
     - _title: 4
       _startAt: 2
-      _timeOffset: 47.985664
+      _timeOffset: 172.49985
       _element: {fileID: 1409543650}
-      _timelineChannelIdx: 5
+      _timelineChannelIdx: 4
     - _title: khj
-      _startAt: 0
-      _timeOffset: 28.937737
+      _startAt: 2
+      _timeOffset: 14.423073
       _element: {fileID: 1409543647}
       _timelineChannelIdx: 5
     - _title: as
       _startAt: 2
-      _timeOffset: 104.10002
+      _timeOffset: 48.426445
       _element: {fileID: 1409543648}
-      _timelineChannelIdx: 7
-    - _title: aasas
-      _startAt: 2
-      _timeOffset: 12.900017
-      _element: {fileID: 1409543649}
-      _timelineChannelIdx: 10
+      _timelineChannelIdx: 8
     - _title: 
       _startAt: 2
-      _timeOffset: 98.20002
+      _timeOffset: 145.96143
       _element: {fileID: 1409543645}
-      _timelineChannelIdx: 10
-    - _title: f
+      _timelineChannelIdx: 9
+    - _title: aasas
       _startAt: 2
-      _timeOffset: 50.82341
-      _element: {fileID: 1409543646}
-      _timelineChannelIdx: 16
+      _timeOffset: 23.217388
+      _element: {fileID: 1409543649}
+      _timelineChannelIdx: 13
   _onStart: []
   _onEnd: []
 --- !u!114 &1409543652
