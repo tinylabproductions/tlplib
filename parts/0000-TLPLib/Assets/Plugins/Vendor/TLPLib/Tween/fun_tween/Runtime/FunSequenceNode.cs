@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   [Serializable]
   public class FunSequenceNode {
     public SerializedTweenTimeline.Element element;
-    
+    public SerializedTweenTimeline.Element.At startType;
     public float startTime, duration;
     public int channel;
     public string name;
@@ -30,6 +30,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public FunSequenceNode(SerializedTweenTimeline.Element element,  float startTime, string name) {
       this.element = element;
       channel = element.timelineChannelIdx;
+      startType = element.startAt;
       //TODO not sure about this
       duration = element.element ? element.element.duration : 2;
       this.startTime = startTime;
