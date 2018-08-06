@@ -25,7 +25,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static void setLayerRecursively(this GameObject go, int layer) {
-      go.doRecursively(o => o.layer = layer);
+      void setLayer(Transform t) {
+        t.gameObject.layer = layer;
+        var childCount = t.childCount;
+        for (var idx = 0; idx < childCount; idx++) {
+          setLayer(t.GetChild(idx));
+        }
+      }
+      
+      setLayer(go.transform);
     }
 
     [PublicAPI]
@@ -55,8 +63,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IObservable<A> onEvent<A, Forwarder>(this GameObject go) where Forwarder : EventForwarder<A> =>
       go.EnsureComponent<Forwarder>().onEvent;
 
-    public static A EnsureComponent<A>(this GameObject go) where A : Component =>
-      go.GetComponent<A>() ?? go.AddComponent<A>();
+    public static A EnsureComponent<A>(this GameObject go) where A : Component {
+      // We can't use ?? operator here, because this operator is not overloaded in Unity Object and
+      // it does not check if the object exists on the native side like the == operator does.
+      var comp = go.GetComponent<A>();
+      return comp ? comp : go.AddComponent<A>();
+    }
 
     public static Option<A> GetComponentSafe<A>(this GameObject go) where A : Component =>
       go.GetComponent<A>().opt();

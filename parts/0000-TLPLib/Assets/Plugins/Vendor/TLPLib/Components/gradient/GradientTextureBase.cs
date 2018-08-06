@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
+  [ExecuteInEditMode]
   public abstract class GradientTextureBase : MonoBehaviour, IMB_Start {
     [SerializeField] int textureSize = 128;
     [SerializeField, NotNull] Gradient gradient = new Gradient();

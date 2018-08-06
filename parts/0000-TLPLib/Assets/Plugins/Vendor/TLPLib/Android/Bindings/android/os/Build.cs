@@ -11,6 +11,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.os {
 
       public const int MARSHMALLOW_SDK_INT = 23;
     }
+
+    static readonly AndroidJavaClass klass = new AndroidJavaClass("android.os.Build");
+    public static readonly string MANUFACTURER = klass.GetStatic<string>("MANUFACTURER");
+    public static readonly string DEVICE = klass.GetStatic<string>("DEVICE");
   }
 }
 #endif
