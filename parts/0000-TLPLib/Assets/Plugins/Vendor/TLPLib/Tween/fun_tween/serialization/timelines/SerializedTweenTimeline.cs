@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Data.serialization;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
@@ -23,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
-      [SerializeField] At _startAt;
+      [SerializeField, ReadOnly] At _startAt;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
       [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
@@ -32,6 +33,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       #endregion
       
 #if UNITY_EDITOR
+    
       [SerializeField, HideInInspector] int _timelineChannelIdx;
       
       public int timelineChannelIdx {

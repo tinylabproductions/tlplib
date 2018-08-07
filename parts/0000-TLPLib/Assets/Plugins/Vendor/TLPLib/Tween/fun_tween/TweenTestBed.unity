@@ -1139,7 +1139,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 107.30763
+  _duration: 88.48102
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1165,46 +1165,46 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _title: 
-      _startAt: 2
-      _timeOffset: 61.090893
-      _element: {fileID: 1409543654}
-      _timelineChannelIdx: 3
     - _title: f
       _startAt: 2
-      _timeOffset: 97.541885
+      _timeOffset: 24.21875
       _element: {fileID: 1409543646}
-      _timelineChannelIdx: 3
+      _timelineChannelIdx: 2
     - _title: as
       _startAt: 2
-      _timeOffset: 65.011536
+      _timeOffset: 76.703514
       _element: {fileID: 1409543648}
-      _timelineChannelIdx: 6
+      _timelineChannelIdx: 2
     - _title: 
+      _startAt: 0
+      _timeOffset: 0
+      _element: {fileID: 1409543654}
+      _timelineChannelIdx: 2
+    - _title: 4444
       _startAt: 2
-      _timeOffset: 136.58499
+      _timeOffset: 39.213066
+      _element: {fileID: 1409543655}
+      _timelineChannelIdx: 5
+    - _title: ghjghjgjh
+      _startAt: 2
+      _timeOffset: 74.613434
       _element: {fileID: 1409543645}
-      _timelineChannelIdx: 6
-    - _title: aasas
-      _startAt: 2
-      _timeOffset: 11.7997055
-      _element: {fileID: 1409543649}
-      _timelineChannelIdx: 7
-    - _title: 4
-      _startAt: 2
-      _timeOffset: 199.21664
-      _element: {fileID: 1409543650}
-      _timelineChannelIdx: 9
+      _timelineChannelIdx: 5
     - _title: khj
       _startAt: 2
-      _timeOffset: 51.598076
+      _timeOffset: 40.816833
       _element: {fileID: 1409543647}
-      _timelineChannelIdx: 15
-    - _title: 
+      _timelineChannelIdx: 8
+    - _title: aasas
       _startAt: 2
-      _timeOffset: 214.36357
-      _element: {fileID: 1409543655}
-      _timelineChannelIdx: 15
+      _timeOffset: 128.54558
+      _element: {fileID: 1409543649}
+      _timelineChannelIdx: 8
+    - _title: 4
+      _startAt: 2
+      _timeOffset: 183.5456
+      _element: {fileID: 1409543650}
+      _timelineChannelIdx: 8
   _onStart: []
   _onEnd: []
 --- !u!114 &1409543652
@@ -1301,7 +1301,7 @@ MonoBehaviour:
   _mode: 2
   _start: 10
   _end: 1
-  _duration: 50
+  _duration: 25.943195
   _ease:
     _isComplex: 0
     _simple: 0

@@ -1,7 +1,6 @@
-﻿using System;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
+﻿#if UNITY_EDITOR
+using System;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
-using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   [Serializable]
@@ -23,6 +22,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
 
+  
+
     public void setTimeOffset(float time) { element.timeOffset = time; }
 
     public void resetTimeOffset() => element.timeOffset = 0f;
@@ -38,3 +39,4 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
   }
 }
+#endif
