@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.dispose;
+using Smooth.Dispose;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /* Execute asynchronous things one at a time. Useful for wrapping not
@@ -17,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     );
   }
 
-  public class ASyncNAtATimeQueue<Params, Return> {
+  public class ASyncNAtATimeQueue<Params, Return> : IDisposable {
     struct QueueEntry {
       public readonly Params p;
       public readonly Promise<Return> promise;
@@ -28,6 +30,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
+    readonly DisposableTracker tracker = new DisposableTracker();
     readonly Queue<QueueEntry> queue = new Queue<QueueEntry>();
     readonly uint maxTasks;
     readonly Fn<Params, Future<Return>> execute;
@@ -52,14 +55,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       running--;
       if (queued == 0) return;
       var entry = queue.Dequeue();
-      runTask(entry.p).onComplete(entry.promise.complete);
+      tracker.track(runTask(entry.p).onCompleteCancellable(entry.promise.complete));
     }
 
     Future<Return> runTask(Params p) {
       running++;
       var f = execute(p);
-      f.onComplete(_ => taskCompleted());
+      tracker.track(f.onCompleteCancellable(_ => taskCompleted()));
       return f;
     }
+
+    public void Dispose() => tracker.Dispose();
   }
 }
