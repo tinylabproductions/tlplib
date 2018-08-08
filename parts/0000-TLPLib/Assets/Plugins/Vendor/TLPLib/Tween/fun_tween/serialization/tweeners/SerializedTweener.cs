@@ -76,8 +76,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
         : _mode == Mode.RelativeFromCreation ? $"current + ({_start} to {_end})"
         : $"{_start} to {_end}";
       //Description too long for external window
-//      return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
-      return "";
+      //return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
+      return $"";
     }
   }
 
