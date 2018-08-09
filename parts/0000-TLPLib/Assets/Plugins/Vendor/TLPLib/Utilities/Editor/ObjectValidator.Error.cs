@@ -144,11 +144,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error customError(
-        Object o, FieldHierarchyStr hierarchy, ErrorMsg error, CheckContext context
+        Object o, FieldHierarchyStr hierarchy, ErrorMsg error, CheckContext context, bool useErrorMessageContext
       ) => new Error(
         Type.CustomValidation,
         $"{context}. Property: {hierarchy.s}. Error: {error}",
-        error.context.getOrElse(o)
+        useErrorMessageContext ? error.context.getOrElse(o) : o
       );
       
       public static Error duplicateUniqueValueError(
