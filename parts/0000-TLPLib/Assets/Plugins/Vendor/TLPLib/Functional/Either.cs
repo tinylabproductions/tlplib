@@ -228,11 +228,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
 
     [PublicAPI] public Option<B> getOrLog(
-      string errorMessage, UnityEngine.Object context = null, ILog log = null
+      string errorMessage = null, UnityEngine.Object context = null, ILog log = null
     ) {
       if (isLeft) {
         log = log ?? Log.@default;
-        log.error($"{errorMessage}: {__unsafeGetLeft}", context);
+        log.error(errorMessage == null ? __unsafeGetLeft.ToString() : $"{errorMessage}: {__unsafeGetLeft}", context);
       }
       return rightValue;
     }
