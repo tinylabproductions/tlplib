@@ -11,8 +11,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
   /// </summary>
   [AddComponentMenu("")]
   public partial class TimelineReference : SerializedTweenTimelineElement {
+#pragma warning disable 649
     [SerializeField, PublicAccessor, NotNull] FunTweenTimeline _timeline;
-
+#pragma warning restore 649
     IEnumerable<TweenTimelineElement> _elements;
 
     public override float duration => _timeline.timeline.timeline.duration;

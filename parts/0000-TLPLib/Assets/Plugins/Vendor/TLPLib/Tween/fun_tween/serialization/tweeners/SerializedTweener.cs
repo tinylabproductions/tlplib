@@ -15,12 +15,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
   public abstract class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
     
+#pragma warning disable 649
     [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.RelativeFromCreation;
     [SerializeField, NotNull] SourceType _start, _end;
     [SerializeField, Tooltip("in seconds")] float _duration = 1;
     [SerializeField, NotNull] SerializedEase _ease;
     [SerializeField, NotNull, NonEmpty] Target[] _targets = new Target[1];
-
+#pragma warning restore 649
+    
     readonly Tween<DestinationType>.Ops ops;
     readonly SerializedTweenerOps.Add<DestinationType> add;
     readonly SerializedTweenerOps.Extract<DestinationType, Target> extract;

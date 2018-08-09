@@ -21,9 +21,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public float duration = 5;
     public List<Vector3> nodes;
     public List<Vector2> nodes2;
-
-
-    TweenManager manager;
+    public TweenManager manager;
 
     public void Start() {
       List<Vector3> positionArray = new List<Vector3>();
