@@ -27,7 +27,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
     [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
     float timescale => _manager == null ? -1 : _manager.timescale;
-    
+
+    #region Unity Serialized Fields
+#pragma warning disable 649
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
     [
       SerializeField, Tab(Tab.Fields),
       Help(
@@ -53,6 +56,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
     [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenTimeline _timeline;
     [SerializeField, NotNull, CreateDerived, Tab(Tab.Fields)] SerializedTweenCallback[] _onStart, _onEnd;
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
+#pragma warning restore 649
+    #endregion
 
     TweenManager _manager;
 
