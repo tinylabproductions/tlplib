@@ -1,6 +1,4 @@
-﻿ using AdvancedInspector;
- using com.tinylabproductions.TLPLib.Editor.extensions;
- using com.tinylabproductions.TLPLib.Logger;
+﻿ using com.tinylabproductions.TLPLib.Editor.extensions;
  using com.tinylabproductions.TLPLib.unity_serialization;
  using UnityEditor;
  using UnityEngine;

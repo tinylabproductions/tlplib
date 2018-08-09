@@ -11,9 +11,15 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
+  // Base class for property drawer.
+  public abstract class UnityOption {
+    [PublicAPI] public abstract bool isSome { get; }
+    [PublicAPI] public bool isNone => !isSome;
+  }
+  
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
   /// to serialize it, because Unity does not serialize generic classes.
-  public abstract class UnityOption<A> : ISkipObjectValidationFields, Ref<Option<A>> {
+  public abstract class UnityOption<A> : UnityOption, ISkipObjectValidationFields, Ref<Option<A>> {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -35,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       foreach (var v in value) _value = v;
     }
 
-    public bool isSome { get {
+    public override bool isSome { get {
       if (_isSome) {
         if (Application.isPlaying && _value == null) {
           Log.d.error(
@@ -49,13 +55,16 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       return false;
     } }
 
-    public bool isNone => !isSome;
-
     public A __unsafeGetValue => _value;
+
+    public bool valueOut(out A a) {
+      a = _value;
+      return _isSome;
+    }
 
     bool inspectValue() {
       // ReSharper disable once AssignNullToNotNullAttribute
-      if (!_isSome) _value = default(A);
+      if (!_isSome) _value = default;
       return _isSome;
     }
 
@@ -128,4 +137,5 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionKeyCode : UnityOption<KeyCode> {}
   [Serializable, PublicAPI] public class UnityOptionDuration: UnityOption<Duration> {}
   [Serializable, PublicAPI] public class UnityOptionSprite : UnityOption<Sprite> {}
+  [Serializable, PublicAPI] public class UnityOptionParticleSystem : UnityOption<ParticleSystem> {}
 }
