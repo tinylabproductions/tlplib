@@ -17,6 +17,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 	  
 	  bool isStartSnapped;
 	  bool isEndSnapped;
+	  Option<GameObject> selectedGameObjectOpt;
 	  
 	  [Record]
 	  partial struct nodeSnappedTo {
@@ -25,10 +26,31 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 	  }
 
 	  Option<nodeSnappedTo> nodeSnappedToOpt;
+
+	  Either<FunSequenceNode, List<FunSequenceNode>> nodeSelection;
+
+/*	  Option<List<FunSequenceNode>> selectedNodesListOpt => funNodes.flatMap(nodes => 
+		  selectedNodeIndexes.map(indexes => {
+				  var acc = new List<FunSequenceNode>();
+				  foreach (var index in indexes) {
+					  if (nodes.Count > index)
+					  acc.Add(nodes[index]);
+				  }
+				  return acc.noneIfEmpty();
+			})
+		);*/
+
+	  Option<List<int>> selectedNodeIndexes = new List<int>(0).some();
 	  
-		Option<GameObject> selectedGameObjectOpt;
-	  Option<FunTweenManager> funTweenManager = F.none_;
-	  Option<List<FunSequenceNode>> funNodes;
+	  
+		Option<FunTweenManager> funTweenManager = F.none_;
+	  Option<List<FunSequenceNode>> _funNodes;
+	  Option<List<FunSequenceNode>> funNodes {
+		  get => _funNodes;
+		  set => _funNodes = value.valueOut(out var nodesList) && nodesList.nonEmpty() ? value : F.none_;
+	  }
+
+
 	  Option<FunSequenceNode> selectedNodeOpt => funNodes.flatMap(nodes =>
 		  nodes.Count > selectedNodeIndex
 		  	? nodes[selectedNodeIndex].some()
@@ -74,15 +96,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				Log.d.warn($"yes selection {selected.name}");
 				return selected.GetComponent<FunTweenManager>().opt();
 			});
+			
 			funTweenManager.voidFold(
-				() => {
-					Log.d.warn($"no ftm");
-					funNodes = F.none_;
-				},
-				_ => {
-					Log.d.warn($"yes ftm");
-					refreshTimeline();
-				}
+				() => funNodes = F.none_,
+				_  => refreshTimeline()
 			);
 			
 			selectedNodeIndex = 0;
@@ -95,7 +112,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 		  if (GUI.changed) {
 			  refreshTimeline();
-			  Log.d.warn("editor gui changed aliooo");
 		  }
 	  }
 
@@ -266,6 +282,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							isEndSnapped = false;
 							isStartSnapped = false;
 
+							snapDrag(selectedNode);
+
 							if (Event.current.mousePosition.y > selectedNode.channel * 20 + 25) {
 								selectedNode.channel += 1;
 							}
@@ -310,7 +328,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						() => snap(earlierNode),
 						nodeSnapped => snap(nodeSnapped.node)
 					));
-				
+
 				void snap(FunSequenceNode laterNode){
 					//Snapping selected end with node start
 					if ( isInRangeOfSnap(timelineVisuals.SecondsToGUI(laterNode.startTime),
@@ -343,17 +361,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					else {
 						nodeSnappedToOpt = F.none_;
 					}
-					
 				}
-	}
+			}
 
-	bool isInRangeOfSnap(float snapPivot, float positionToCheck) =>
-		positionToCheck < snapPivot + snappingPower && positionToCheck > snapPivot - snappingPower;
-
-	void setSnapping(float resultToSet, ref bool sideToSnap) {
-			selectedNode.startTime = resultToSet;
-			sideToSnap = true;
-	}
+			bool isInRangeOfSnap(float snapPivot, float positionToCheck) =>
+				positionToCheck < snapPivot + snappingPower && positionToCheck > snapPivot - snappingPower;
+		
+			void setSnapping(float resultToSet, ref bool sideToSnap) {
+					selectedNode.startTime = resultToSet;
+					sideToSnap = true;
+			}
 	  }
 
 	  void snapEnd(FunSequenceNode selectedNode) {
@@ -470,12 +487,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			  nodes =>
 				  nodes.Where(node => node.channel == selectedNode.channel
 					  && node.startTime < selectedNode.startTime
-				  ).noneIfEmpty().map(
+				  ).ToList().noneIfEmpty().map(
 					  channelNodes => channelNodes.OrderBy(channelNode => channelNode.startTime).Last()
 					)
 		  )
 		);
-	  Option<FunSequenceNode> getRightOfSelectedNode() => selectedNodeOpt.flatMap(
+/*	  Option<FunSequenceNode> getRightOfSelectedNode() => selectedNodeOpt.flatMap(
 		  selectedNode => funNodes.flatMap(
 			  nodes =>
 				  nodes.Where(node => node.channel == selectedNode.channel
@@ -484,7 +501,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					  channelNodes => channelNodes.OrderBy(channelNode => channelNode.startTime).First()
 				  )
 		  )
-	  );
+	  );*/
 
 	  void refreshChannelNodes() {
 		  if (selectedNodeOpt.valueOut(out var selected)) {
@@ -494,21 +511,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			  );
 		  }
 	  }
-
+	  
 	  void exportTimelineToTweenManager() {
-		  if (funTweenManager.valueOut(out var manager) && funNodes.valueOut(out var nodes))
-					nodes.OrderBy(node => node.channel).noneIfEmpty().map(ordered => ordered.Last().channel).voidFold(
-						() => manager.timeline.elements = new SerializedTweenTimeline.Element[0],
-						channel => {
-							var arr = new List<FunSequenceNode>();
-							for (var i = 0; i <= channel; i++) {
-								arr.AddRange(
-									nodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
-								);
-							}
-							manager.timeline.elements = arr.Select(elem => elem.element).ToArray();
-						}
-					);
+		  if (funTweenManager.valueOut(out var manager) && funNodes.valueOut(out var nodes)) {
+			  var arr = new List<FunSequenceNode>();
+			  for (var i = 0; i <= nodes.OrderBy(node => node.channel).Last().channel; i++) {
+				  arr.AddRange(
+					  nodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
+				  );
+			  }
+			  manager.timeline.elements = arr.Select(elem => elem.element).ToArray();
+		  }
+
+		  if (funNodes.isNone) manager.timeline.elements = new SerializedTweenTimeline.Element[0];
 			//We need to find new selected node index after importing our elements into FunTweenManager
 			if (selectedNodeOpt.valueOut(out var selectedNode)){
 				foreach (var idx in manager.timeline.elements.indexWhere(element => element == selectedNode.element)) {
@@ -579,6 +594,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				  }
 
 				  GUI.backgroundColor = Color.white;
+				  
+		/*		  if (GUILayout.Button("DEBUG BUTTON")) {
+					  selectedNodeIndexes = new List<int>{0,1,2,3}.some();
+					  if (selectedNodesListOpt.valueOut(out var selectedNodes)) {
+						  foreach (var selected in selectedNodes) {
+							  Log.d.warn($"{selected.name}");
+						  }
+					  }
+					  
+				  }*/
 				  GUILayout.EndHorizontal();
 				  GUILayout.BeginHorizontal();
 				  if (selectedNode.element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement) {
@@ -621,7 +646,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		  }
 			GUILayout.Space(10);
 		  GUI.enabled = true;
-		  GUILayout.BeginScrollView(settingsScroll);
+		  settingsScroll = GUILayout.BeginScrollView(settingsScroll);
 		  if (funTweenManager.isSome) {
 			  drawElementSettings();
 			  if (funTweenManager.valueOut(out var ftm)
