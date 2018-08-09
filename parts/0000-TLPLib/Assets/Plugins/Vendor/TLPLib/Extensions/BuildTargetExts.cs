@@ -7,9 +7,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
   public static class BuildTargetExts {
     public static RuntimePlatform toRuntimePlatform(this BuildTarget t) {
       switch (t) {
-        case BuildTarget.StandaloneOSXIntel:
-        case BuildTarget.StandaloneOSXIntel64:
-          return RuntimePlatform.OSXPlayer;
         case BuildTarget.StandaloneWindows:
         case BuildTarget.StandaloneWindows64:
           return RuntimePlatform.WindowsPlayer;
@@ -20,14 +17,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.iOS: return RuntimePlatform.IPhonePlayer;
         case BuildTarget.Android: return RuntimePlatform.Android;
         case BuildTarget.WebGL: return RuntimePlatform.WebGLPlayer;
-        case BuildTarget.Tizen: return RuntimePlatform.TizenPlayer;
         case BuildTarget.PSP2: return RuntimePlatform.PSP2;
         case BuildTarget.PS4: return RuntimePlatform.PS4;
-        case BuildTarget.PSM: return RuntimePlatform.PSM;
         case BuildTarget.XboxOne: return RuntimePlatform.XboxOne;
-        case BuildTarget.SamsungTV: return RuntimePlatform.SamsungTVPlayer;
-        case BuildTarget.WiiU: return RuntimePlatform.WiiU;
         case BuildTarget.tvOS: return RuntimePlatform.tvOS;
+#if !UNITY_5_3_OR_NEWER
+        case BuildTarget.PSM: return RuntimePlatform.PSM;
+#endif
 #if !UNITY_5_4_OR_NEWER
         case BuildTarget.WP8Player: return RuntimePlatform.WP8Player;
         case BuildTarget.BlackBerry: return RuntimePlatform.BlackBerryPlayer;
@@ -45,7 +41,15 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
 #if UNITY_2017_3_OR_NEWER
         case BuildTarget.StandaloneOSX: return RuntimePlatform.OSXPlayer;
 #else
+        case BuildTarget.SamsungTV: return RuntimePlatform.SamsungTVPlayer;
+        case BuildTarget.Tizen: return RuntimePlatform.TizenPlayer;
         case BuildTarget.StandaloneOSXUniversal: return RuntimePlatform.OSXPlayer;
+        case BuildTarget.StandaloneOSXIntel:
+        case BuildTarget.StandaloneOSXIntel64:
+          return RuntimePlatform.OSXPlayer;
+#endif
+#if !UNITY_2018_1_OR_NEWER
+        case BuildTarget.WiiU: return RuntimePlatform.WiiU;
 #endif
         case BuildTarget.WSAPlayer:
           throw new ArgumentOutOfRangeException(
@@ -61,7 +65,6 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
 
     public static BuildTargetGroup toGroup(this BuildTarget t) {
       switch (t) {
-        case BuildTarget.StandaloneOSXIntel: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneWindows: return BuildTargetGroup.Standalone;
         case BuildTarget.iOS: return BuildTargetGroup.iOS;
         case BuildTarget.Android: return BuildTargetGroup.Android;
@@ -71,15 +74,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.WSAPlayer: return BuildTargetGroup.WSA;
         case BuildTarget.StandaloneLinux64: return BuildTargetGroup.Standalone;
         case BuildTarget.StandaloneLinuxUniversal: return BuildTargetGroup.Standalone;
-        case BuildTarget.StandaloneOSXIntel64: return BuildTargetGroup.Standalone;
-        case BuildTarget.Tizen: return BuildTargetGroup.Tizen;
         case BuildTarget.PSP2: return BuildTargetGroup.PSP2;
         case BuildTarget.PS4: return BuildTargetGroup.PS4;
-        case BuildTarget.PSM: return BuildTargetGroup.PSM;
         case BuildTarget.XboxOne: return BuildTargetGroup.XboxOne;
-        case BuildTarget.SamsungTV: return BuildTargetGroup.SamsungTV;
-        case BuildTarget.WiiU: return BuildTargetGroup.WiiU;
         case BuildTarget.tvOS: return BuildTargetGroup.tvOS;
+#if !UNITY_5_3_OR_NEWER
+        case BuildTarget.PSM: return BuildTargetGroup.PSM;
+#endif
 #if !UNITY_5_4_OR_NEWER
         case BuildTarget.StandaloneGLESEmu: return BuildTargetGroup.Standalone;
         case BuildTarget.WebPlayer: return BuildTargetGroup.WebPlayer;
@@ -98,6 +99,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
         case BuildTarget.StandaloneOSX: return BuildTargetGroup.Standalone;
 #else
         case BuildTarget.StandaloneOSXUniversal: return BuildTargetGroup.Standalone;
+        case BuildTarget.SamsungTV: return BuildTargetGroup.SamsungTV;
+        case BuildTarget.Tizen: return BuildTargetGroup.Tizen;
+        case BuildTarget.StandaloneOSXIntel64: return BuildTargetGroup.Standalone;
+        case BuildTarget.StandaloneOSXIntel: return BuildTargetGroup.Standalone;
+#endif
+#if !UNITY_2018_1_OR_NEWER
+        case BuildTarget.WiiU: return BuildTargetGroup.WiiU;
 #endif
         default:
           throw new ArgumentOutOfRangeException(

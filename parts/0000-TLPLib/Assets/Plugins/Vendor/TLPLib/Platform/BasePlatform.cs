@@ -83,11 +83,13 @@ namespace Smooth.Platform {
 #if !UNITY_5_4_OR_NEWER
       case RuntimePlatform.BlackBerryPlayer: return BasePlatform.BlackBerry;
 #endif
-      case RuntimePlatform.TizenPlayer: return BasePlatform.Tizen;
 #endif
 #if !UNITY_5_5_OR_NEWER
 			case RuntimePlatform.XBOX360: return BasePlatform.Xbox360;
 			case RuntimePlatform.PS3: return BasePlatform.Ps3;
+#endif
+#if !UNITY_2017_3_OR_NEWER
+      case RuntimePlatform.TizenPlayer: return BasePlatform.Tizen;
 #endif
         default:
 				return BasePlatform.None;

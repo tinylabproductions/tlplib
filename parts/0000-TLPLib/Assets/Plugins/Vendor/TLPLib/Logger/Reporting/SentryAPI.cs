@@ -261,10 +261,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 #endif
       };
 
-    public static Dictionary<string, string> dynamicExtras() => new Dictionary<string, string> {
-      {"App:StreamedBytes", s(Application.streamedBytes)},
-    };
-
     public static Dictionary<string, string> staticExtras = new Dictionary<string, string>();
 
     public static LogLevel asSentry(this Log.Level type) {
@@ -400,9 +396,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       extraData.addTagsToDictionary(tags);
 
       // Extra contextual data is limited to 4096 characters.
-      var extras =
-        SentryAPI.dynamicExtras()
-        .addAll(SentryAPI.convertExtras(data.entry.extras));
+      var extras = SentryAPI.convertExtras(data.entry.extras).toDict();
       extraData.addExtrasToDictionary(extras);
 
       var json = new Dictionary<string, object> {
