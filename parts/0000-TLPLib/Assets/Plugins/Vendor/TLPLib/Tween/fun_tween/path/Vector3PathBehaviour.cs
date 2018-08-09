@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Functional;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
