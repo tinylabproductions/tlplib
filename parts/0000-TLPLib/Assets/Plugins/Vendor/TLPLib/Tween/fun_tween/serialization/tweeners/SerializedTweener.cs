@@ -14,7 +14,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
 
   public abstract class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
-    
 #pragma warning disable 649
     [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.RelativeFromCreation;
     [SerializeField, NotNull] SourceType _start, _end;

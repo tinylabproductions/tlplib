@@ -27,7 +27,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
     [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
     float timescale => _manager == null ? -1 : _manager.timescale;
-    
 #pragma warning disable 0649
     [
       SerializeField, Tab(Tab.Fields),
@@ -57,7 +56,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #pragma warning restore 649
     
     TweenManager _manager;
-    
 
     [PublicAPI]
     public TweenManager manager {
