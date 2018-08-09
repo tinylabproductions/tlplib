@@ -233,15 +233,15 @@ MonoBehaviour:
   _timeline:
     _elements:
     - _title: labas
-      _startAt: 2
+      _startAt: 0
       _timeOffset: 1.8548374
       _element: {fileID: 56325787}
-      _timelineChannelIdx: 4
+      _timelineChannelIdx: 0
     - _title: as krabas
-      _startAt: 2
+      _startAt: 0
       _timeOffset: 6.653225
       _element: {fileID: 56325786}
-      _timelineChannelIdx: 4
+      _timelineChannelIdx: 0
   _onStart: []
   _onEnd: []
 --- !u!114 &56325783
@@ -477,6 +477,34 @@ RectTransform:
   m_AnchoredPosition: {x: -5.919722, y: -1.0097485}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &535820672
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 535820673}
+  m_Layer: 0
+  m_Name: GameObject (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &535820673
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 535820672}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.7697518, y: 1.9863168, z: 17.915981}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &726012321
 GameObject:
   m_ObjectHideFlags: 0
@@ -1029,7 +1057,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 57.81819
+  _duration: 391.87585
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1073,7 +1101,7 @@ MonoBehaviour:
   _mode: 2
   _start: 1
   _end: 1
-  _duration: 75.57686
+  _duration: 370.72485
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1117,7 +1145,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 55.000008
+  _duration: 441.81293
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1167,44 +1195,44 @@ MonoBehaviour:
     _elements:
     - _title: f
       _startAt: 2
-      _timeOffset: 24.21875
+      _timeOffset: 19.933037
       _element: {fileID: 1409543646}
-      _timelineChannelIdx: 2
+      _timelineChannelIdx: 0
     - _title: as
       _startAt: 2
-      _timeOffset: 76.703514
+      _timeOffset: 340.23544
       _element: {fileID: 1409543648}
-      _timelineChannelIdx: 2
-    - _title: 
-      _startAt: 0
-      _timeOffset: 0
+      _timelineChannelIdx: 1
+    - _title: Global_FogDensity
+      _startAt: 2
+      _timeOffset: 1033.5303
       _element: {fileID: 1409543654}
-      _timelineChannelIdx: 2
+      _timelineChannelIdx: 1
     - _title: 4444
       _startAt: 2
-      _timeOffset: 39.213066
+      _timeOffset: 340.23544
       _element: {fileID: 1409543655}
       _timelineChannelIdx: 5
     - _title: ghjghjgjh
       _startAt: 2
-      _timeOffset: 74.613434
+      _timeOffset: 19.933037
       _element: {fileID: 1409543645}
-      _timelineChannelIdx: 5
-    - _title: khj
-      _startAt: 2
-      _timeOffset: 40.816833
-      _element: {fileID: 1409543647}
-      _timelineChannelIdx: 8
+      _timelineChannelIdx: 7
     - _title: aasas
       _startAt: 2
-      _timeOffset: 128.54558
+      _timeOffset: 411.8089
       _element: {fileID: 1409543649}
-      _timelineChannelIdx: 8
+      _timelineChannelIdx: 7
+    - _title: khj
+      _startAt: 2
+      _timeOffset: 1081.4027
+      _element: {fileID: 1409543647}
+      _timelineChannelIdx: 7
     - _title: 4
       _startAt: 2
-      _timeOffset: 183.5456
+      _timeOffset: 554.67633
       _element: {fileID: 1409543650}
-      _timelineChannelIdx: 8
+      _timelineChannelIdx: 10
   _onStart: []
   _onEnd: []
 --- !u!114 &1409543652
@@ -1279,7 +1307,7 @@ MonoBehaviour:
   _mode: 2
   _start: 0
   _end: 0
-  _duration: 20
+  _duration: 100
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1301,7 +1329,7 @@ MonoBehaviour:
   _mode: 2
   _start: 10
   _end: 1
-  _duration: 25.943195
+  _duration: 600.9431
   _ease:
     _isComplex: 0
     _simple: 0
