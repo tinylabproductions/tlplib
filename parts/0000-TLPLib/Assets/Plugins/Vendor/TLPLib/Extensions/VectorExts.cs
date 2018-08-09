@@ -79,5 +79,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       Mathf.Atan2(to.y - from.y, to.x - from.x);
     [PublicAPI] public static float segmentAngle(this Vector3 from, Vector3 to) =>
       Mathf.Atan2(to.y - from.y, to.x - from.x);
+      
+    public static float signedAngle(Vector2 from, Vector2 to) {
+      var degrees = Vector2.Angle(from, to);
+      return from.cross(to) < 0 ? -degrees : degrees;
+    }
   }
 }

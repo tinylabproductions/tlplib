@@ -1,4 +1,5 @@
 ﻿using System;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
@@ -10,26 +11,23 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
-  // Base class for property drawer.
-  public abstract class UnityOption {
-    [PublicAPI] public abstract bool isSome { get; }
-    [PublicAPI] public bool isNone => !isSome;
-  }
-
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
   /// to serialize it, because Unity does not serialize generic classes.
-  public abstract class UnityOption<A> : UnityOption, ISkipObjectValidationFields, Ref<Option<A>> {
+  public abstract class UnityOption<A> : ISkipObjectValidationFields, Ref<Option<A>> {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
-    [SerializeField, FormerlySerializedAs("isSome")] bool _isSome;
-    [SerializeField, NotNull] A _value;
+    [
+      SerializeField, Inspect, FormerlySerializedAs("isSome"),
+      Descriptor(nameof(isSomeDescription))
+    ] bool _isSome;
+    [SerializeField, Inspect(nameof(inspectValue)), Descriptor(nameof(description)), NotNull] A _value;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     #endregion
-    
+
     protected UnityOption() {}
 
     protected UnityOption(Option<A> value) {
@@ -37,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       foreach (var v in value) _value = v;
     }
 
-    [PublicAPI] public override bool isSome { get {
+    public bool isSome { get {
       if (_isSome) {
         if (Application.isPlaying && _value == null) {
           Log.d.error(
@@ -51,22 +49,23 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       return false;
     } }
 
-    [PublicAPI] public A __unsafeGetValue => _value;
+    public bool isNone => !isSome;
 
-    [PublicAPI] public bool valueOut(out A a) {
-      if (isSome) {
-        a = _value;
-        return true;
-      }
+    public A __unsafeGetValue => _value;
 
-      a = default;
-      return false;
+    bool inspectValue() {
+      // ReSharper disable once AssignNullToNotNullAttribute
+      if (!_isSome) _value = default(A);
+      return _isSome;
     }
+
+    protected virtual Description isSomeDescription { get; } = new Description("Set?");
+    protected virtual Description description { get; } = new Description("Value");
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
     public Option<A> value => isSome ? F.some(_value) : Option<A>.None;
     Option<A> Ref<Option<A>>.value {
-      get => value;
+      get { return value; }
       set {
         _isSome = value.isSome;
         // ReSharper disable once AssignNullToNotNullAttribute
@@ -127,6 +126,6 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionImage : UnityOption<Image> { }
   [Serializable, PublicAPI] public class UnityOptionTexture2D : UnityOption<Texture2D> {}
   [Serializable, PublicAPI] public class UnityOptionKeyCode : UnityOption<KeyCode> {}
-  [Serializable, PublicAPI] public class UnityOptionDuration : UnityOption<Duration> {}
-  [Serializable, PublicAPI] public class UnityOptionParticleSystem : UnityOption<ParticleSystem> {}
+  [Serializable, PublicAPI] public class UnityOptionDuration: UnityOption<Duration> {}
+  [Serializable, PublicAPI] public class UnityOptionSprite : UnityOption<Sprite> {}
 }
