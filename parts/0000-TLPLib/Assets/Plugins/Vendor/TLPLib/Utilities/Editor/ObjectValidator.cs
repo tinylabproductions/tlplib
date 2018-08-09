@@ -303,7 +303,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         );
         if (validateResult.isSuccess) {
           foreach (var error in validateResult.__unsafeGet) {
-            yield return createError.custom(fieldHierarchy.asString(), error);
+            yield return createError.custom(fieldHierarchy.asString(), error, true);
           }
         }
         else {
@@ -319,7 +319,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       foreach (var customValidator in customObjectValidatorOpt) {
         foreach (var _err in customValidator(containingComponent, objectBeingValidated)) {
-          yield return createError.custom(fieldHierarchy.asString(), _err);
+          yield return createError.custom(fieldHierarchy.asString(), _err, true);
         }
       }
 
