@@ -148,7 +148,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       ) => new Error(
         Type.CustomValidation,
         $"{context}. Property: {hierarchy.s}. Error: {error}",
-        o
+        error.context.getOrElse(o)
       );
       
       public static Error duplicateUniqueValueError(
