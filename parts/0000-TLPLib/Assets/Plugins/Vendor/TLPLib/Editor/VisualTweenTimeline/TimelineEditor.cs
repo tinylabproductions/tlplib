@@ -28,6 +28,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 	  Option<nodeSnappedTo> nodeSnappedToOpt;
 
+	  //Todo rethink the option
 	  Option<List<FunSequenceNode>> selectedNodesListOpt = F.none_;
 
 		Option<FunTweenManager> funTweenManager = F.none_;
@@ -94,6 +95,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		  if (GUI.changed) {
 			  refreshTimeline();
 		  }
+		  
 	  }
 
 	  void undoCalback() {
@@ -270,7 +272,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 					if (selectedNodesListOpt.valueOut(out var selectedNodesList)) {
 						foreach (var selectedNode in selectedNodesList) {
-							//							var selectedNode = selectedNodesList.First();
 
 							if (resizeNodeStart) {
 								var selectedNodeEnd = selectedNode.getEnd();
@@ -335,6 +336,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					resizeNodeStart = false;
 					resizeNodeEnd = false;
 					recalculateTimelineWidth();
+					exportTimelineToTweenManager();
+					refreshTimeline();
 
 					break;
 			}
@@ -493,7 +496,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 					  if (element.title == "") element.title = element.element == null ? "" : element.element.GetType().Name;
 
-					  return new FunSequenceNode(element, whereToStart(idx), element.title);
+					  var newNode = new FunSequenceNode(element, whereToStart(idx), element.title);
+					  //Might have unwanted consequences
+					  if (funNodes.valueOut(out var nodes) && nodes.find(x => x.Equals(newNode)).valueOut(out var foundNode)) {
+						  return foundNode;
+					  }
+					  else return newNode;
+					  
+//					  return new FunSequenceNode(element, whereToStart(idx), element.title);
 				  }
 			  ).ToList().some();
 
@@ -626,10 +636,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				  GUI.backgroundColor = Color.white;
 				  
 				  if (GUILayout.Button("DEBUG BUTTON")) {
-//					  selectedNodeIndexes = new ImmutableArray<int>{0,1}.some();
-					  foreach (var nodes in funNodes) {
-						  selectedNodesListOpt = new List<FunSequenceNode>{nodes[0], nodes[1]}.some();
-					  }
+
 					  if (selectedNodesListOpt.valueOut(out var selectedNodess)) {
 						  foreach (var selected in selectedNodess) {
 							  Log.d.warn($"{selected.name}");

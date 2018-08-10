@@ -10,8 +10,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public float startTime, duration;
     public int channel;
     public string name;
-    
-    bool update;
 
     public void changeDuration() => element.element.setDuration(duration);
     public float getEnd() => startTime + duration;
@@ -22,7 +20,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
 
-  
+    public override bool Equals(object obj) {
+      if (!(obj is FunSequenceNode comparable)) return false;
+      
+      return comparable.element == element
+        && comparable.startType == startType
+        && comparable.startTime == startTime
+        && comparable.duration == duration
+        && comparable.channel == channel
+        && comparable.name == name;
+    }
 
     public void setTimeOffset(float time) { element.timeOffset = time; }
 
