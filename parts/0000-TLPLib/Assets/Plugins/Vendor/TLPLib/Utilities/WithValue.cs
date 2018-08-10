@@ -24,6 +24,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     [PublicAPI]
     public static readonly 
       Fn<Color, WithValue<Color>> handlesColor = color => new WithValue<Color>(handlesColorRef, color);
+    
+    [PublicAPI] public static readonly Ref<Matrix4x4>
+      handlesMatrixRef = new LambdaRef<Matrix4x4>(
+        () => UnityEditor.Handles.matrix, v => UnityEditor.Handles.matrix = v
+      );
+    [PublicAPI] public static readonly 
+      Fn<Matrix4x4, WithValue<Matrix4x4>> handlesMatrix = v => new WithValue<Matrix4x4>(handlesMatrixRef, v);
 #endif
   }
   
