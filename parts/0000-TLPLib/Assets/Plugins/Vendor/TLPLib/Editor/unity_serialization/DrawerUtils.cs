@@ -47,6 +47,16 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       firstField = new Rect(position.x, position.y, first, position.height);
       secondField = new Rect(position.x + first, position.y, second, position.height);
     }
+
+    /// <summary>Two fields, where first field takes up label width.</summary>
+    [PublicAPI]
+    public static void twoFieldsLabel(Rect position, out Rect firstField, out Rect secondField) {
+      firstField = new Rect(position.x, position.y, EditorGUIUtility.labelWidth, position.height);
+      secondField = new Rect(
+        position.x + EditorGUIUtility.labelWidth, position.y,
+        position.width - EditorGUIUtility.labelWidth, position.height
+      );
+    }
   }
 
   [PublicAPI]

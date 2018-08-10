@@ -18,7 +18,7 @@
          secondRect = new Rect(position.x + TOGGLE_WIDTH, position.y, position.width - TOGGLE_WIDTH, position.height);
        }
        else {
-         DrawerUtils.twoFields(EditorGUI.IndentedRect(position), out firstRect, out secondRect);
+         DrawerUtils.twoFieldsLabel(EditorGUI.IndentedRect(position), out firstRect, out secondRect);
        }
 
        var isSomeProp = property.FindPropertyRelative("_isSome");
