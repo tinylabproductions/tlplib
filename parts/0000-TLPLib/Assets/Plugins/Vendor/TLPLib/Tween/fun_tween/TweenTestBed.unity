@@ -233,15 +233,15 @@ MonoBehaviour:
   _timeline:
     _elements:
     - _title: labas
-      _startAt: 0
-      _timeOffset: 1.8548374
+      _startAt: 2
+      _timeOffset: 9.195068
       _element: {fileID: 56325787}
-      _timelineChannelIdx: 0
+      _timelineChannelIdx: 3
     - _title: as krabas
-      _startAt: 0
-      _timeOffset: 6.653225
+      _startAt: 2
+      _timeOffset: 18.710436
       _element: {fileID: 56325786}
-      _timelineChannelIdx: 0
+      _timelineChannelIdx: 3
   _onStart: []
   _onEnd: []
 --- !u!114 &56325783
@@ -477,34 +477,6 @@ RectTransform:
   m_AnchoredPosition: {x: -5.919722, y: -1.0097485}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &535820672
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 535820673}
-  m_Layer: 0
-  m_Name: GameObject (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &535820673
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 535820672}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.7697518, y: 1.9863168, z: 17.915981}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 10
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &726012321
 GameObject:
   m_ObjectHideFlags: 0
@@ -1027,14 +999,10 @@ GameObject:
   - component: {fileID: 1409543653}
   - component: {fileID: 1409543652}
   - component: {fileID: 1409543651}
-  - component: {fileID: 1409543650}
-  - component: {fileID: 1409543649}
   - component: {fileID: 1409543648}
   - component: {fileID: 1409543647}
   - component: {fileID: 1409543646}
   - component: {fileID: 1409543645}
-  - component: {fileID: 1409543655}
-  - component: {fileID: 1409543654}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -1050,14 +1018,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1409543644}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fe7614b88954297a39cb3e38ac6b1d0, type: 3}
+  m_Script: {fileID: 11500000, guid: 8346553225484c9dac908c92355c1046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 1409543651}
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 391.87585
+  _duration: 15.921048
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1072,14 +1040,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1409543644}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5852037b706442aabc76edbec38808de, type: 3}
+  m_Script: {fileID: 11500000, guid: c0e252eec12e40d0972306fb46286090, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 1409543651}
   _mode: 2
-  _start: 0
-  _end: 0
-  _duration: 52.484764
+  _start: {r: 1, g: 1, b: 1, a: 1}
+  _end: {r: 1, g: 1, b: 1, a: 1}
+  _duration: 11.447365
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1094,14 +1062,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1409543644}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc3a489cc4184f6c9c729493d029a92b, type: 3}
+  m_Script: {fileID: 11500000, guid: c0e252eec12e40d0972306fb46286090, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 1409543651}
   _mode: 2
-  _start: 1
-  _end: 1
-  _duration: 370.72485
+  _start: {r: 1, g: 1, b: 1, a: 1}
+  _end: {r: 1, g: 1, b: 1, a: 1}
+  _duration: 11.710523
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1116,50 +1084,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1409543644}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0e252eec12e40d0972306fb46286090, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 1409543651}
-  _mode: 2
-  _start: {r: 1, g: 1, b: 1, a: 1}
-  _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 71.573456
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 0}
---- !u!114 &1409543649
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1409543644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0e252eec12e40d0972306fb46286090, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 1409543651}
-  _mode: 2
-  _start: {r: 1, g: 1, b: 1, a: 1}
-  _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 441.81293
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 0}
---- !u!114 &1409543650
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1409543644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8346553225484c9dac908c92355c1046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1167,7 +1091,7 @@ MonoBehaviour:
   _mode: 2
   _start: {r: 1, g: 1, b: 1, a: 1}
   _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 88.48102
+  _duration: 16.44941
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1193,46 +1117,26 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _title: f
+    - _title: Light_Color
       _startAt: 2
-      _timeOffset: 19.933037
-      _element: {fileID: 1409543646}
-      _timelineChannelIdx: 0
-    - _title: as
-      _startAt: 2
-      _timeOffset: 340.23544
-      _element: {fileID: 1409543648}
-      _timelineChannelIdx: 1
-    - _title: Global_FogDensity
-      _startAt: 2
-      _timeOffset: 1033.5303
-      _element: {fileID: 1409543654}
-      _timelineChannelIdx: 1
-    - _title: 4444
-      _startAt: 2
-      _timeOffset: 340.23544
-      _element: {fileID: 1409543655}
-      _timelineChannelIdx: 5
-    - _title: ghjghjgjh
-      _startAt: 2
-      _timeOffset: 19.933037
+      _timeOffset: 18.026245
       _element: {fileID: 1409543645}
-      _timelineChannelIdx: 7
-    - _title: aasas
+      _timelineChannelIdx: 1
+    - _title: Graphic_Color
       _startAt: 2
-      _timeOffset: 411.8089
-      _element: {fileID: 1409543649}
-      _timelineChannelIdx: 7
-    - _title: khj
-      _startAt: 2
-      _timeOffset: 1081.4027
+      _timeOffset: 18.684189
       _element: {fileID: 1409543647}
       _timelineChannelIdx: 7
-    - _title: 4
+    - _title: Graphic_Color
       _startAt: 2
-      _timeOffset: 554.67633
-      _element: {fileID: 1409543650}
-      _timelineChannelIdx: 10
+      _timeOffset: 36.052624
+      _element: {fileID: 1409543646}
+      _timelineChannelIdx: 13
+    - _title: Light_Color
+      _startAt: 2
+      _timeOffset: 29.078941
+      _element: {fileID: 1409543648}
+      _timelineChannelIdx: 19
   _onStart: []
   _onEnd: []
 --- !u!114 &1409543652
@@ -1292,47 +1196,3 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1409543654
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1409543644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5852037b706442aabc76edbec38808de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 1409543651}
-  _mode: 2
-  _start: 0
-  _end: 0
-  _duration: 100
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 0}
---- !u!114 &1409543655
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1409543644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc3a489cc4184f6c9c729493d029a92b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 1409543651}
-  _mode: 2
-  _start: 10
-  _end: 1
-  _duration: 600.9431
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 0}
