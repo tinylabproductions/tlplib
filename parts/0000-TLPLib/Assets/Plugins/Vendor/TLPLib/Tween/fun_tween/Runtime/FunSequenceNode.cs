@@ -19,17 +19,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         element.timeOffset = startTime;
       }
     }
-
+/*
     public override bool Equals(object obj) {
       if (!(obj is FunSequenceNode comparable)) return false;
       
       return comparable.element == element
         && comparable.startType == startType
-        && comparable.startTime == startTime
-        && comparable.duration == duration
-        && comparable.channel == channel
         && comparable.name == name;
-    }
+    }*/
 
     public void setTimeOffset(float time) { element.timeOffset = time; }
 

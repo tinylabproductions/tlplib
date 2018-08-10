@@ -5,19 +5,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 [System.Serializable]
 public class Timeline {
 	public delegate void PlayCallback(bool isPlaying);
-	public Timeline.PlayCallback onPlay;
+	public PlayCallback onPlay;
 	public delegate void RecordCallback(bool isRecording);
-	public Timeline.RecordCallback onRecord;
+	public RecordCallback onRecord;
 	public delegate void TimelineGUICallback(Rect position);
-	public Timeline.TimelineGUICallback onTimelineGUI;
+	public TimelineGUICallback onTimelineGUI;
 	public delegate void SettingsGUICallback(float width);
-	public Timeline.SettingsGUICallback onSettingsGUI;
+	public SettingsGUICallback onSettingsGUI;
 	public delegate void OnTimelineClick(float time);
-	public Timeline.OnTimelineClick onTimelineClick;
+	public OnTimelineClick onTimelineClick;
 	public delegate void AddEventCallback();
-	public Timeline.AddEventCallback onAddEvent;
+	public AddEventCallback onAddEvent;
 	public delegate void EventGUICallback(Rect position);
-	public Timeline.EventGUICallback onEventGUI;
+	public EventGUICallback onEventGUI;
 
 	private Rect timeRect;
 	private Rect drawRect;
