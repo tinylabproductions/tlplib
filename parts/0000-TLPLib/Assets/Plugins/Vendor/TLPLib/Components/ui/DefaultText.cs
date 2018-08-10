@@ -37,12 +37,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui.DefaultValuesText {
       DestroyImmediate(this);
     }
     
-    void setText(Text text, bool overwrite) => 
-      text.text = overwrite ? "Placeholder" : text.text;
-
     void handleSetValues(Text text, bool newlyCreated) {
       void set() {
-        setText(text, newlyCreated);
+        if (newlyCreated) text.text = "Placeholder";
         setDefaultValues(text);
       }
 
