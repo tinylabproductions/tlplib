@@ -15,14 +15,14 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public readonly bool reportToErrorTracking;
     [PublicAPI] public readonly Option<Object> context;
 
-    ErrorMsg(string s, bool reportToErrorTracking, Option<Object> context) {
+    ErrorMsg(string s, Option<Object> context, bool reportToErrorTracking) {
       this.s = s;
-      this.reportToErrorTracking = reportToErrorTracking;
       this.context = context;
+      this.reportToErrorTracking = reportToErrorTracking;
     }
 
-    public ErrorMsg(string s, bool reportToErrorTracking = true, Object context = null) 
-      : this(s, reportToErrorTracking, context.opt()) {}
+    public ErrorMsg(string s, Object context = null, bool reportToErrorTracking = true)
+      : this(s, context.opt(), reportToErrorTracking) {}
 
     public static implicit operator LogEntry(ErrorMsg errorMsg) => errorMsg.toLogEntry();
 
@@ -35,9 +35,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     );
     
     [PublicAPI] public ErrorMsg withMessage(Fn<string, string> f) => 
-      new ErrorMsg(f(s), reportToErrorTracking, context);
+      new ErrorMsg(f(s), context, reportToErrorTracking);
     
     [PublicAPI] public ErrorMsg withContext(Object context) => 
-      new ErrorMsg(s, reportToErrorTracking, context);
+      new ErrorMsg(s, context, reportToErrorTracking);
   }
 }
