@@ -5,12 +5,15 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class WithValue {
-    [PublicAPI]
-    public static readonly Ref<Color>
+    [PublicAPI] public static readonly Ref<Color>
       gizmosColorRef = new LambdaRef<Color>(() => Gizmos.color, v => Gizmos.color = v);
-    [PublicAPI]
-    public static readonly 
-      Fn<Color, WithValue<Color>> gizmosColor = color => new WithValue<Color>(gizmosColorRef, color);
+    [PublicAPI] public static readonly 
+      Fn<Color, WithValue<Color>> gizmosColor = v => new WithValue<Color>(gizmosColorRef, v);
+    
+    [PublicAPI] public static readonly Ref<Matrix4x4>
+      gizmosMatrixRef = new LambdaRef<Matrix4x4>(() => Gizmos.matrix, v => Gizmos.matrix = v);
+    [PublicAPI] public static readonly 
+      Fn<Matrix4x4, WithValue<Matrix4x4>> gizmosMatrix = v => new WithValue<Matrix4x4>(gizmosMatrixRef, v);
 
 #if UNITY_EDITOR
     [PublicAPI]
