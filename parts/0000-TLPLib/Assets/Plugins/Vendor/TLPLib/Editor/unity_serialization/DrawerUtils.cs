@@ -30,20 +30,22 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
     }
     
     [PublicAPI]
-    public static void twoFields(Rect position, GUIContent label, out Rect firstField, out Rect secondField) {
+    public static void twoFields(
+      Rect position, GUIContent label, out Rect firstField, out Rect secondField, float ratio = 0.5f
+    ) {
       position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
-      var half = position.width / 2;
-      firstField = new Rect(position.x, position.y, half, position.height);
-      secondField = new Rect(position.x + half, position.y, half, position.height);
+      var first = position.width * ratio;
+      var second = position.width * (1f - ratio);
+      firstField = new Rect(position.x, position.y, first, position.height);
+      secondField = new Rect(position.x + first, position.y, second, position.height);
     }
 
     [PublicAPI]
-    public static void twoFields(Rect position, out Rect firstField, out Rect secondField) {
-      firstField = new Rect(position.x, position.y, EditorGUIUtility.labelWidth, position.height);
-      secondField = new Rect(
-        position.x + EditorGUIUtility.labelWidth, position.y,
-        position.width - EditorGUIUtility.labelWidth, position.height
-      );
+    public static void twoFields(Rect position, out Rect firstField, out Rect secondField, float ratio = 0.5f) {
+      var first = position.width * ratio;
+      var second = position.width * (1f - ratio);
+      firstField = new Rect(position.x, position.y, first, position.height);
+      secondField = new Rect(position.x + first, position.y, second, position.height);
     }
   }
 
