@@ -9,8 +9,6 @@
      public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
        EditorGUI.BeginProperty(position, label, property);
 
-       var unityOption = (UnityOption) property.GetObject();
-
        Rect firstRect, secondRect;
        if (label.text == "" && label.image == null) {
          const float TOGGLE_WIDTH = 16;
@@ -24,7 +22,7 @@
        var isSomeProp = property.FindPropertyRelative("_isSome");
        var valueProp = property.FindPropertyRelative("_value");
        EditorGUI.BeginChangeCheck();
-       var isSome = isSomeProp.boolValue = EditorGUI.ToggleLeft(firstRect, label, unityOption.isSome);
+       var isSome = isSomeProp.boolValue = EditorGUI.ToggleLeft(firstRect, label, isSomeProp.boolValue);
        var someChanged = EditorGUI.EndChangeCheck();
        if (isSome) {
          EditorGUI.PropertyField(secondRect, valueProp, GUIContent.none);
