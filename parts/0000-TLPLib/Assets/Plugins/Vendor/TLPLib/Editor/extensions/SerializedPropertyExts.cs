@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -137,12 +138,42 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
           break;
 #endif
         case SerializedPropertyType.Generic:
+          // Generic means a serializable data structure. We need to traverse it and set default
+          // for all entries.
+          foreach (var children in property.GetChildren()) {
+            children.setToDefaultValue();
+          }
+          break;
 #if UNITY_2017_2_OR_NEWER
         case SerializedPropertyType.FixedBufferSize:
 #endif
           throw exception();
         default:
           throw exception();
+      }
+    }
+
+    public static IEnumerable<SerializedProperty> GetChildren(this SerializedProperty property) {
+      // https://forum.unity.com/threads/loop-through-serializedproperty-children.435119/#post-2814895
+      property = property.Copy();
+      var nextElement = property.Copy();
+      var hasNextElement = nextElement.NextVisible(false);
+      if (!hasNextElement) {
+        nextElement = null;
+      }
+
+      property.NextVisible(true);
+      while (true) {
+        if (SerializedProperty.EqualContents(property, nextElement)) {
+          yield break;
+        }
+
+        yield return property;
+
+        var hasNext = property.NextVisible(false);
+        if (!hasNext) {
+          break;
+        }
       }
     }
   }
