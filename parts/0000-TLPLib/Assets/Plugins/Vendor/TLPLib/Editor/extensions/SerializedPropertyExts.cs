@@ -1,26 +1,64 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.extensions {
-  public static class SerializedPropertyExts {
+  public static partial class SerializedPropertyExts {
+    [Record] partial struct GetObjectData {
+      public readonly Either<string, int> fieldNameOrArrayIndex;
+
+      public Option<object> get(object source) {
+        if (fieldNameOrArrayIndex.leftValueOut(out var fieldName)) {
+          return source.GetType().GetFieldInHierarchy(fieldName).map(field => field.GetValue(source));
+        }
+        else {
+          var arrayIndex = fieldNameOrArrayIndex.__unsafeGetRight;
+          return F.some(source.cast().to<Array>().GetValue(arrayIndex));
+        }
+      }
+    }
+    
+    static readonly Regex ARRAY_PART_RE = new Regex(@"\[(\d+)\]$");
+    
     [PublicAPI] public static object GetObject(this SerializedProperty property) {
       // property.propertyPath can be something like 'foo.bar.baz'
       var path = property.propertyPath.Split('.');
       object @object = property.serializedObject.targetObject;
       for (var idx = 0; idx < path.Length; idx++) {
         var part = path[idx];
-        if (@object.GetType().GetFieldInHierarchy(part).valueOut(out var field)) {
-          if (idx == path.Length - 1) {
-            return field.GetValue(@object);
+        
+        GetObjectData getObjectData() {
+          // unity encodes arrays like this: 'foobar.Array.data[1]' means foobar[1].
+          if (part == "Array") {
+            var arrayPart = path[idx + 1];
+            idx++;
+            var match = ARRAY_PART_RE.Match(arrayPart);
+            var arrayIndex = match.Groups[1].Value.parseInt().rightOrThrow;
+            return new GetObjectData(arrayIndex);
           }
           else {
-            @object = field.GetValue(@object);
+            return new GetObjectData(part);
+          }
+        }
+
+        var objData = getObjectData();
+        if (objData.get(@object).valueOut(out var fieldValue)) {
+          if (idx == path.Length - 1) {
+            return fieldValue;
+          }
+          else {
+            @object = fieldValue;
           }
         }
         else {
-          throw new ArgumentException($"Can't find property '{part}' in {@object.GetType()} ({@object})!");
+          throw new ArgumentException(
+            $"Can't find property '{objData}' from path '{property.propertyPath}' " +
+            $"in {@object.GetType()} ({@object})!"
+          );
         }
       }
       throw new ArgumentException(
