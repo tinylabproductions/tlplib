@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using JetBrains.Annotations;
@@ -24,9 +25,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
         case InvokeOn.Both: return true;
         case InvokeOn.Forward: return evt.playingForwards;
         case InvokeOn.Backward: return !evt.playingForwards;
-        default:
-          Log.d.error($"Unknown value for {nameof(InvokeOn)}: {on}");
-          return false;
+        default: throw new Exception($"Unknown value for {nameof(InvokeOn)}: {on}");
       }
     }
   }

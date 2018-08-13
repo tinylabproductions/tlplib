@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Logger;
+﻿using System;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
@@ -70,9 +71,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
         case SimpleSerializedEase.BounceIn: return Eases.bounceIn;
         case SimpleSerializedEase.BounceOut: return Eases.bounceOut;
         case SimpleSerializedEase.BounceInOut: return Eases.bounceInOut;
-        default:
-          Log.d.error($"Unknown ease {simple}, returning linear!");
-          return Eases.linear;
+        default: throw new Exception($"Unknown ease {simple}, returning linear!");
       }
     }
   }
