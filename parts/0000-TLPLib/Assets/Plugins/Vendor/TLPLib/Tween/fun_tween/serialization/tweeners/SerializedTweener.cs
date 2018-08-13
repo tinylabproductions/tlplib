@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     // ReSharper disable FieldCanBeMadeReadOnly.Local
     [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.RelativeFromCreation;
     [SerializeField, NotNull] SourceType _start, _end;
-    [SerializeField, Tooltip("in seconds")] float _duration = 1;
+    [SerializeField, Tooltip("in seconds")] float _duration = 10;
     [SerializeField, NotNull] SerializedEase _ease;
     [SerializeField, NotNull, NonEmpty] Target[] _targets = new Target[1];
     // ReSharper restore FieldCanBeMadeReadOnly.Local
