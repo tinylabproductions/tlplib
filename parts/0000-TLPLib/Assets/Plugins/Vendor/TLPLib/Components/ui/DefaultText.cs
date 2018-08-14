@@ -1,9 +1,8 @@
-using System;
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -97,3 +96,4 @@ namespace com.tinylabproductions.TLPLib.Components.ui.DefaultValuesText {
     }
   }
 }
+#endif
