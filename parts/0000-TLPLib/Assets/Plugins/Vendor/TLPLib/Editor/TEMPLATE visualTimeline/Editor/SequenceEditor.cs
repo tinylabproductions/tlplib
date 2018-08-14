@@ -292,7 +292,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTimelineTemplate {
 						? ((float) EditorApplication.timeSinceStartup - playStartTime)
 						: time - (float) EditorApplication.timeSinceStartup);
 					//->
-					//timeline.CurrentTime = (float)EditorApplication.timeSinceStartup - playStartTime;
+					//timeline.currentTime = (float)EditorApplication.timeSinceStartup - playStartTime;
 					EditorUpdate(timeline.CurrentTime);
 					Repaint();
 				}

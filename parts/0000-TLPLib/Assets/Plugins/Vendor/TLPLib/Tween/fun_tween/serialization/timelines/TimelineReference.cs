@@ -30,7 +30,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     }
 
 #if UNITY_EDITOR
-    public override void setDuration(float dur) { throw new System.NotImplementedException(); }
+    public override void setDuration(float dur) { }
+    public override Object[] getTargets() { return new Object[]{}; }
 #endif
   }
 }

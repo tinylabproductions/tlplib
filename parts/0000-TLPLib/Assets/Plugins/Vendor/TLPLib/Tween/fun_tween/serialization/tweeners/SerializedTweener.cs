@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPGame.FacebookCore;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
+using Prime31;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -50,6 +52,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
 #if UNITY_EDITOR
     public override void setDuration(float dur) { _duration = dur; }
+    public override Object[] getTargets() { return _targets as Object[]; }
 #endif
     
     public override float duration => _duration;

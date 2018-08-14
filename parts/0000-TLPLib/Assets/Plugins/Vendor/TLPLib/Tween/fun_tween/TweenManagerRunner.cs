@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -11,15 +13,25 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <summary>
   /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
   /// </summary>
-  [AddComponentMenu("")]
+  [AddComponentMenu(""), ExecuteInEditMode]
   public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
     static TweenManagerRunner _instance;
     [PublicAPI] public static TweenManagerRunner instance {
       get {
         TweenManagerRunner create() {
-          var go = new GameObject(nameof(TweenManagerRunner));
-          DontDestroyOnLoad(go);
-          return go.AddComponent<TweenManagerRunner>();
+          var tweenManagerRunnerComp = GameObject.Find("TweenManagerRunner").opt().fold(
+            createRunner,
+            tweenRunner => tweenRunner.GetComponent<TweenManagerRunner>().opt().fold(
+              createRunner,
+              runnerComponent => runnerComponent
+            )
+          );
+
+          TweenManagerRunner createRunner() => 
+            new GameObject(nameof(TweenManagerRunner)).AddComponent<TweenManagerRunner>();
+          
+          if (Application.isPlaying) DontDestroyOnLoad(tweenManagerRunnerComp.gameObject);
+          return tweenManagerRunnerComp;
         }
 
         return _instance ? _instance : (_instance = create());

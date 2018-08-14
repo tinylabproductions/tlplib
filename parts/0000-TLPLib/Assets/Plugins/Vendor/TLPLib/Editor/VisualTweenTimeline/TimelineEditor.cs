@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 	  void OnGUI() {
 			GUI.enabled = selectedGameObjectOpt.isSome;
 
-		  timelineVisuals.DoTimeline(new Rect(0, 0, position.width, position.height), funTweenManager);
+		  timelineVisuals.doTimeline(new Rect(0, 0, position.width, position.height), funTweenManager);
 
 		  if (GUI.changed) {
 			  importTimeline();

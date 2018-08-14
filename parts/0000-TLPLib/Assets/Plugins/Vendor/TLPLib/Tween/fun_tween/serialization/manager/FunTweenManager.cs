@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
   [AdvancedInspector(true)]
-  public partial class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable, IDataChanged {
+  public partial class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
     enum Tab { Fields, Actions }
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
@@ -154,7 +154,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #if UNITY_EDITOR
     [Inspect, UsedImplicitly, Tab(Tab.Fields)]
     // Advanced Inspector does not render a button if it implements interface method. 
-    void recreate() => invalidate();
+    public void recreate() => invalidate();
+
+    public float currentTime => timePassed;
 #endif
     
     public void invalidate() {
@@ -222,7 +224,5 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       }
     }
 
-    public void DataChanged() { Log.d.warn("Fun tween manager has been changed"); }
-    public event GenericEventHandler OnDataChanged;
   }
 }

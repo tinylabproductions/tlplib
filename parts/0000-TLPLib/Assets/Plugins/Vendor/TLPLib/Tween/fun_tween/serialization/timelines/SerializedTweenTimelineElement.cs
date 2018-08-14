@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AdvancedInspector;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
   /// <summary>
@@ -12,6 +13,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     public abstract void invalidate();
     #if UNITY_EDITOR
     public abstract void setDuration(float dur);
-    #endif
+    public abstract Object[] getTargets();
+#endif
   }
 }

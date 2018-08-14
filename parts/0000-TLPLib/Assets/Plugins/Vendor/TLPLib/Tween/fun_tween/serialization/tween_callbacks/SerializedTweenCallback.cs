@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks {
   public abstract class SerializedTweenCallback : SerializedTweenTimelineElement {
@@ -16,7 +17,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public override float duration => 0;
     
 #if UNITY_EDITOR
-    public override void setDuration(float dur) {}
+    public override void setDuration(float dur) { }
+    public override Object[] getTargets() { return new Object[]{};}
 #endif
 
     public override IEnumerable<TweenTimelineElement> elements {
