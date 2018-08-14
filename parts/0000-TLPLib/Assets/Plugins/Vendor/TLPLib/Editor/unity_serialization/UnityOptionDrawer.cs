@@ -4,7 +4,7 @@
  using UnityEngine;
 
  namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
-   [CustomPropertyDrawer(typeof(UnityOption), useForChildren: true)]
+   [CustomPropertyDrawer(typeof(UnityOption), useForChildren: true), CanEditMultipleObjects]
    public class UnityOptionDrawer : PropertyDrawer {
      public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
        EditorGUI.BeginProperty(position, label, property);
@@ -22,15 +22,18 @@
        var isSomeProp = property.FindPropertyRelative("_isSome");
        var valueProp = property.FindPropertyRelative("_value");
        EditorGUI.BeginChangeCheck();
-       var isSome = isSomeProp.boolValue = EditorGUI.ToggleLeft(firstRect, label, isSomeProp.boolValue);
+       EditorGUI.showMixedValue = isSomeProp.hasMultipleDifferentValues;
+       var isSome = EditorGUI.ToggleLeft(firstRect, label, isSomeProp.boolValue);
        var someChanged = EditorGUI.EndChangeCheck();
+       if (someChanged) isSomeProp.boolValue = isSome;
        if (isSome) {
+         EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
          EditorGUI.PropertyField(secondRect, valueProp, GUIContent.none);
        }
        else {
          if (someChanged) valueProp.setToDefaultValue();
        }
-       
+
        EditorGUI.EndProperty();
      }
    }
