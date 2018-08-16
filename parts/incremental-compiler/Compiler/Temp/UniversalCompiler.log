@@ -1,0 +1,88 @@
+********************************************************************************
+*                     Thursday, August 16, 2018 5:47:26 PM                     *
+********************************************************************************
+CSharpCompilerWrapper.exe version: 1.2.9
+Platform: Windows
+Target assembly: Assembly-CSharp-firstpass.dll
+Project directory: C:\work\unity\funkidracing\unity
+Target profile directory: C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api
+Unity 'Data' or 'Frameworks' directory: C:/Program Files/Unity/Editor/Data
+Compiler: Incremental C# Compiler 6.0
+
+- Compilation -----------------------------------------------
+
+Process: C:\work\unity\funkidracing\unity\Compiler\IncrementalCompiler.exe
+Arguments: -nostdlib+ -noconfig -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\mscorlib.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Core.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Xml.dll" @Temp/UnityTempFile-7a7dc6f0ed9f97649ac3a8712f03b24c
+Exit code: 0
+Elapsed time: 12.00 sec
+
+- Compiler output (1 line):
+0: Compile succeeded. (Duration=11,3250981sec)
+
+- Compiler errors (0 lines):
+********************************************************************************
+*                     Thursday, August 16, 2018 5:47:39 PM                     *
+********************************************************************************
+CSharpCompilerWrapper.exe version: 1.2.9
+Platform: Windows
+Target assembly: Assembly-CSharp.dll
+Project directory: C:\work\unity\funkidracing\unity
+Target profile directory: C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api
+Unity 'Data' or 'Frameworks' directory: C:/Program Files/Unity/Editor/Data
+Compiler: Incremental C# Compiler 6.0
+
+- Compilation -----------------------------------------------
+
+Process: C:\work\unity\funkidracing\unity\Compiler\IncrementalCompiler.exe
+Arguments: -nostdlib+ -noconfig -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\mscorlib.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Core.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Xml.dll" @Temp/UnityTempFile-638baf0c6a32a3148b67973f02d1d620
+Exit code: 0
+Elapsed time: 8.17 sec
+
+- Compiler output (1 line):
+0: Compile succeeded. (Duration=7,7649426sec)
+
+- Compiler errors (0 lines):
+********************************************************************************
+*                     Thursday, August 16, 2018 5:47:39 PM                     *
+********************************************************************************
+CSharpCompilerWrapper.exe version: 1.2.9
+Platform: Windows
+Target assembly: Assembly-CSharp-Editor-firstpass.dll
+Project directory: C:\work\unity\funkidracing\unity
+Target profile directory: C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api
+Unity 'Data' or 'Frameworks' directory: C:/Program Files/Unity/Editor/Data
+Compiler: Incremental C# Compiler 6.0
+
+- Compilation -----------------------------------------------
+
+Process: C:\work\unity\funkidracing\unity\Compiler\IncrementalCompiler.exe
+Arguments: -nostdlib+ -noconfig -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\mscorlib.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Core.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Xml.dll" @Temp/UnityTempFile-70907b4efd887e7459ded1a4ee2a66fb
+Exit code: 0
+Elapsed time: 11.97 sec
+
+- Compiler output (1 line):
+0: Compile succeeded. (Duration=11,5612042sec)
+
+- Compiler errors (0 lines):
+********************************************************************************
+*                     Thursday, August 16, 2018 5:47:52 PM                     *
+********************************************************************************
+CSharpCompilerWrapper.exe version: 1.2.9
+Platform: Windows
+Target assembly: Assembly-CSharp-Editor.dll
+Project directory: C:\work\unity\funkidracing\unity
+Target profile directory: C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api
+Unity 'Data' or 'Frameworks' directory: C:/Program Files/Unity/Editor/Data
+Compiler: Incremental C# Compiler 6.0
+
+- Compilation -----------------------------------------------
+
+Process: C:\work\unity\funkidracing\unity\Compiler\IncrementalCompiler.exe
+Arguments: -nostdlib+ -noconfig -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\mscorlib.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Core.dll" -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\2.0-api\System.Xml.dll" @Temp/UnityTempFile-aa3dc4f0c248bef4b99db9245119fa61
+Exit code: 0
+Elapsed time: 1.86 sec
+
+- Compiler output (1 line):
+0: Compile succeeded. (Duration=1,5647842sec)
+
+- Compiler errors (0 lines):
