@@ -7,6 +7,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     interface IErrorFactory {
       Error nullField(FieldHierarchyStr hierarchy);
       Error emptyCollection(FieldHierarchyStr hierarchy);
+      Error emptyString(FieldHierarchyStr hierarchy);
       Error badTextFieldTag(FieldHierarchyStr hierarchy);
       Error unityEventInvalid(FieldHierarchyStr hierarchy, int index);
       Error unityEventInvalidMethod(FieldHierarchyStr hierarchy, int index);
@@ -28,6 +29,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       public Error emptyCollection(FieldHierarchyStr hierarchy) =>
         Error.emptyCollection(o: component, hierarchy: hierarchy, context: context);
+
+      public Error emptyString(FieldHierarchyStr hierarchy) =>
+        Error.emptyString(o: component, hierarchy: hierarchy, context: context);
 
       public Error badTextFieldTag(FieldHierarchyStr hierarchy) =>
         Error.badTextFieldTag(o: component, hierarchy: hierarchy, context: context);
