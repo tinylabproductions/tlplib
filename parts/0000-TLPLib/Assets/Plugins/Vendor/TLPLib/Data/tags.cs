@@ -36,6 +36,12 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
   public static class TagPrefab {
     [PublicAPI] public static TagPrefab<A> a<A>(A prefab) where A : Object => new TagPrefab<A>(prefab);
+
+    [PublicAPI]
+    public static TagPrefab<B> upcastPrefab<A, B>(this TagPrefab<A> aPrefab, B example)
+      where A : B 
+      where B : Object => 
+      a<B>(aPrefab.prefab);
   }
   [Serializable, PublicAPI] public class GameObjectPrefab : TagPrefab<GameObject> { }
   [Serializable, PublicAPI] public class TransformPrefab : TagPrefab<Transform> { }
