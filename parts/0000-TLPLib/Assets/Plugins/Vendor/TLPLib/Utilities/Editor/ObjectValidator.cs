@@ -326,34 +326,33 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var fields = getFilteredFields(objectBeingValidated);
       foreach (var fi in fields) {
         fieldHierarchy.stack.Push(fi.Name);
+        var fieldValue = fi.GetValue(objectBeingValidated);
+        var hasNonEmpty = fi.hasAttribute<NonEmptyAttribute>();
+        
         foreach (var cache in uniqueValuesCache) {
           foreach (var attribute in fi.getAttributes<UniqueValue>()) {
-            var fieldValue = fi.GetValue(objectBeingValidated);
             cache.addCheckedField(attribute.category, fieldValue, containingComponent);
           }
         }
-        if (fi.FieldType == typeof(string)) {
+        if (fieldValue is string s) {
           if (fi.getAttributes<TextFieldAttribute>().Any(a => a.Type == TextFieldType.Tag)) {
-            var fieldValue = (string)fi.GetValue(objectBeingValidated);
-            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(fieldValue)) {
+            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(s)) {
               yield return createError.badTextFieldTag(fieldHierarchy.asString());
             }
           }
+          
+          if (s.isEmpty() && hasNonEmpty)
+            yield return createError.emptyString(fieldHierarchy.asString());
         }
         if (fi.isSerializable()) {
-          var fieldValue = fi.GetValue(objectBeingValidated);
           var hasNotNull = fi.hasAttribute<NotNullAttribute>();
           // Sometimes we get empty unity object. Equals catches that
           if (fieldValue == null || fieldValue.Equals(null)) {
             if (hasNotNull) yield return createError.nullField(fieldHierarchy.asString());
           }
           else {
-            if (fieldValue is string s) {
-              if (s.Length == 0 && fi.hasAttribute<NonEmptyAttribute>())
-                yield return createError.emptyString(fieldHierarchy.asString());
-            }
-            else if (fieldValue is IList list) {
-              if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
+            if (fieldValue is IList list) {
+              if (list.Count == 0 && hasNonEmpty) {
                 yield return createError.emptyCollection(fieldHierarchy.asString());
               }
               var fieldValidationResults = validateListElementsFields(

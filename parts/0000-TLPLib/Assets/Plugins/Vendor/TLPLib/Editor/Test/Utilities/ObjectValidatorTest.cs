@@ -67,6 +67,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     class ArrayWithNulls : MonoBehaviour {
       public GameObject[] field;
     }
+    
+    class StringNonEmpty : MonoBehaviour {
+      [NonEmpty] public string str = "";
+    }
 
     class ListNotEmpty : MonoBehaviour {
       [NonEmpty] public List<InnerNotNull> field;
@@ -245,6 +249,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         it["should catch it"] = () => shouldFindErrors<OnObjectValidateThrowLazyException>(
           ErrorType.CustomValidationException
         );
+      };
+    });
+
+    [Test]
+    public void objectValidatorNonEmptyString() => describe(() => {
+      when["string is empty"] = () => {
+        it["should find errors"] = () => shouldFindErrors<StringNonEmpty>(ErrorType.EmptyString);
+      };
+      when["string is not empty"] = () => {
+        it["should not find errors"] = () => shouldNotFindErrors<StringNonEmpty>(a => a.str = "test");
       };
     });
 
