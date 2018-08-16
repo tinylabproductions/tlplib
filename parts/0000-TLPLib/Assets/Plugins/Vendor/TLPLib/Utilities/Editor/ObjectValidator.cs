@@ -348,9 +348,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             if (hasNotNull) yield return createError.nullField(fieldHierarchy.asString());
           }
           else {
-            var listOpt = F.opt(fieldValue as IList);
-            if (listOpt.isSome) {
-              var list = listOpt.get;
+            if (fieldValue is string s) {
+              if (s.Length == 0 && fi.hasAttribute<NonEmptyAttribute>())
+                yield return createError.emptyString(fieldHierarchy.asString());
+            }
+            else if (fieldValue is IList list) {
               if (list.Count == 0 && fi.hasAttribute<NonEmptyAttribute>()) {
                 yield return createError.emptyCollection(fieldHierarchy.asString());
               }
