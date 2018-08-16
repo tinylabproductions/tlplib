@@ -1,0 +1,27 @@
+2018-08-16 17:47:27.2127 INFO|Client|Started|
+2018-08-16 17:47:27.2518 INFO|Client|CurrentDir: C:\work\unity\funkidracing\unity|
+2018-08-16 17:47:27.2518 INFO|Client|Output: Temp/Assembly-CSharp-firstpass.dll|
+2018-08-16 17:47:27.2679 INFO|Client|Parent process ID: 12368|
+2018-08-16 17:47:27.2679 INFO|Client|Request to server|
+2018-08-16 17:47:27.2970 INFO|Client|Spawn server|
+2018-08-16 17:47:27.4756 INFO|Client|Request to server|
+2018-08-16 17:47:27.5869 INFO|Client|Request to server|
+2018-08-16 17:47:38.9124 INFO|Client|Done: Succeeded=True. Duration=11,3250981sec.|
+2018-08-16 17:47:40.2310 INFO|Client|Started|
+2018-08-16 17:47:40.2804 INFO|Client|CurrentDir: C:\work\unity\funkidracing\unity|
+2018-08-16 17:47:40.2804 INFO|Client|Output: Temp/Assembly-CSharp.dll|
+2018-08-16 17:47:40.2591 INFO|Client|Started|
+2018-08-16 17:47:40.2962 INFO|Client|Parent process ID: 12368|
+2018-08-16 17:47:40.2962 INFO|Client|Request to server|
+2018-08-16 17:47:40.3219 INFO|Client|CurrentDir: C:\work\unity\funkidracing\unity|
+2018-08-16 17:47:40.3289 INFO|Client|Output: Temp/Assembly-CSharp-Editor-firstpass.dll|
+2018-08-16 17:47:40.3289 INFO|Client|Parent process ID: 12368|
+2018-08-16 17:47:40.3450 INFO|Client|Request to server|
+2018-08-16 17:47:48.0762 INFO|Client|Done: Succeeded=True. Duration=7,7649426sec.|
+2018-08-16 17:47:51.9070 INFO|Client|Done: Succeeded=True. Duration=11,5612042sec.|
+2018-08-16 17:47:53.1868 INFO|Client|Started|
+2018-08-16 17:47:53.2334 INFO|Client|CurrentDir: C:\work\unity\funkidracing\unity|
+2018-08-16 17:47:53.2334 INFO|Client|Output: Temp/Assembly-CSharp-Editor.dll|
+2018-08-16 17:47:53.2495 INFO|Client|Parent process ID: 12368|
+2018-08-16 17:47:53.2495 INFO|Client|Request to server|
+2018-08-16 17:47:54.8213 INFO|Client|Done: Succeeded=True. Duration=1,5647842sec.|
