@@ -25,13 +25,18 @@ public class Timeline  {
 	public delegate void EventGUICallback(Rect position);
 	public EventGUICallback onEventGUI;
 
-	Rect timeRect, drawRect, eventRect;
+	Rect _timeRect, drawRect, eventRect;
 	const float ZOOM = 20;
 	readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
+	
+	public Rect timeRect {
+		get => _timeRect;
+		private set => _timeRect = value;
+	}
 
-	public float currentTime {
+	float currentTime {
 		get => GUIToSeconds(timePosition - timelineOffset);
-		set => timePosition = SecondsToGUI (value) + timelineOffset;
+		set => timePosition = secondsToGUI (value) + timelineOffset;
 	}
 
 	float timelineOffset = 170;
@@ -51,7 +56,7 @@ public class Timeline  {
 			currentTime = ftm.currentTime;
 		}
 
-		isPlaying = isPlaying && !Application.isPlaying;
+		isPlaying = isPlaying && Application.isPlaying;
 
 		doCursor ();
 		DoToolbarGUI (position, funTweenManager);
@@ -69,7 +74,11 @@ public class Timeline  {
 		
 		doLines ();
 		if (onTimelineGUI != null) {
-			onTimelineGUI(new Rect(scroll.x,scroll.y,position.width-timelineOffset-15+scroll.x,drawRect.height+scroll.y));			
+			onTimelineGUI(
+				new Rect(scroll.x, scroll.y,
+					position.width - timelineOffset - 15 + scroll.x,
+					drawRect.height + scroll.y)
+			);			
 		}
 		GUI.EndScrollView();
 		DoEventsGUI ();
@@ -91,6 +100,15 @@ public class Timeline  {
 			var color = Color.red;
 			color.a = Application.isPlaying ? 0.6f : 1.0f;
 			Handles.color = color;
+
+			var style = new GUIStyle("Label") {
+				fontSize = 12,
+				fontStyle = FontStyle.Bold,
+				normal = {textColor = color}
+			};
+			Vector3 size = style.CalcSize(new GUIContent($"content: {currentTime:F2}s"));
+			var rect1 = new Rect(timePosition - scroll.x, 19, size.x, size.y);
+			GUI.Label(rect1, $"{currentTime:F2}s", style);
 			Handles.DrawLine (new Vector3 (timePosition - scroll.x, 0, 0), new Vector3 (timePosition - scroll.x, drawRect.height - 15, 0));
 			Handles.color = Color.white;
 		}
@@ -107,73 +125,75 @@ public class Timeline  {
 		GUILayout.BeginHorizontal (EditorStyles.toolbar);
 
 		GUI.enabled = Application.isPlaying;
-
-		if (GUILayout.Button (EditorGUIUtility.FindTexture( "d_beginButton" ), EditorStyles.toolbarButton)) {
-			if (funTweenManager.valueOut(out var ftm)) {
-				ftm.run(FunTweenManager.Action.ApplyZeroState);
+		if (funTweenManager.valueOut(out var ftm)) {
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_beginButton"), EditorStyles.toolbarButton)) {
+				ftm.run(FunTweenManager.Action.Stop);
+				ftm.timeline.timeline.timePassed = 0;
+				isPlaying = false;
 			}
-		}
-		
-		GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
-		if (GUILayout.Button ( EditorGUIUtility.FindTexture( "d_StepButton" ), EditorStyles.toolbarButton)) {
-			if (funTweenManager.valueOut(out var ftm)) {
+
+			GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepButton"), EditorStyles.toolbarButton)) {
 				ftm.run(FunTweenManager.Action.PlayForwards);
+				isPlaying = true;
 			}
-			isPlaying = true;
-		}
-		GUI.backgroundColor = Color.white;
-	
-		if (GUILayout.Button (
-			!isPlaying
-				? EditorGUIUtility.FindTexture("d_PlayButton")
-				: EditorGUIUtility.FindTexture("d_PlayButton On"), EditorStyles.toolbarButton
-			)) {
-					isPlaying = true;
-					if (funTweenManager.valueOut(out var ftm)) {
-						ftm.run(FunTweenManager.Action.ResumeForwards);
-					}
-		}
 
-		if (GUILayout.Button(isPlaying
-			? EditorGUIUtility.FindTexture("d_PauseButton")
-			: EditorGUIUtility.FindTexture("d_PauseButton On"), EditorStyles.toolbarButton)) {
-			isPlaying = false;
-			if (funTweenManager.valueOut(out var ftm)) {
+			GUI.backgroundColor = Color.white;
+
+			if (GUILayout.Button(
+				!isPlaying
+					? EditorGUIUtility.FindTexture("d_PlayButton")
+					: EditorGUIUtility.FindTexture("d_PlayButton On"), EditorStyles.toolbarButton)
+			) {
+				if (isPlaying) {
+					ftm.run(FunTweenManager.Action.Stop);
+					isPlaying = false;
+				}
+				else {
+					ftm.run(FunTweenManager.Action.ResumeForwards);
+					isPlaying = true;
+				}
+				
+			}
+
+			if (GUILayout.Button(isPlaying
+				? EditorGUIUtility.FindTexture("d_PauseButton")
+				: EditorGUIUtility.FindTexture("d_PauseButton On"), EditorStyles.toolbarButton)
+			) {
+				isPlaying = false;
 				ftm.run(FunTweenManager.Action.Stop);
 			}
-		}
-		
-		GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
-		if (GUILayout.Button ( EditorGUIUtility.FindTexture( "d_StepLeftButton" ), EditorStyles.toolbarButton)) {
-			if (funTweenManager.valueOut(out var ftm)) {
+
+			GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepLeftButton"), EditorStyles.toolbarButton)) {
 				ftm.run(FunTweenManager.Action.PlayBackwards);
+
+				isPlaying = true;
 			}
-			isPlaying = true;
-		}
-		GUI.backgroundColor = Color.white;
-		
-		if (GUILayout.Button (EditorGUIUtility.FindTexture( "d_endButton" ),EditorStyles.toolbarButton)) {
-			if (funTweenManager.valueOut(out var ftm)) {
-				ftm.run(FunTweenManager.Action.ApplyMaxDurationState);
+
+			GUI.backgroundColor = Color.white;
+
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_endButton"), EditorStyles.toolbarButton)) {
+				ftm.run(FunTweenManager.Action.Stop);
+				ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
+				isPlaying = false;
 			}
-		}
-		GUILayout.Space(10f);
-		
-		if (GUILayout.Button (EditorGUIUtility.FindTexture( "d_playLoopOff" ),EditorStyles.toolbarButton)) {
-			if (funTweenManager.valueOut(out var ftm)) {
+
+			GUILayout.Space(10f);
+
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_playLoopOff"), EditorStyles.toolbarButton)) {
 				ftm.run(FunTweenManager.Action.Reverse);
 			}
-		}
-		
-		GUILayout.FlexibleSpace ();
 
-		GUI.enabled = true;
-		GUI.backgroundColor = new Color(0, 1, 0.5f, 0.5f);
-		if (GUILayout.Button ( EditorGUIUtility.FindTexture( "d_Refresh" ), EditorStyles.toolbarButton)) {
-			if (funTweenManager.valueOut(out var ftm)) {
+			GUILayout.FlexibleSpace();
+
+			GUI.enabled = true;
+			GUI.backgroundColor = new Color(0, 1, 0.5f, 0.5f);
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_Refresh"), EditorStyles.toolbarButton)) {
 				ftm.recreate();
 			}
 		}
+
 		GUI.backgroundColor = Color.white;
 		GUILayout.EndHorizontal ();
 		
@@ -195,7 +215,6 @@ public class Timeline  {
 		if (onEventGUI != null) {
 			onEventGUI(eventRect);
 		}
-
 	}
 	
 	void drawTicksGUI(){
@@ -224,7 +243,7 @@ public class Timeline  {
 		Handles.color = Color.white;
 	}
 
-	public Option<Object[]> getTimelineTargets(FunTweenManager ftm) =>
+	Option<Object[]> getTimelineTargets(FunTweenManager ftm) =>
 		ftm.timeline.elements.opt().map( elements =>
 				elements
 					.map(elem => elem.element.getTargets())
@@ -255,6 +274,7 @@ public class Timeline  {
 
 				if (funTweenManager.valueOut(out var ftm)) {
 					if (!Application.isPlaying) {
+						ftm.recreate();
 						foreach (var data in getTimelineTargets(ftm)) {
 							Undo.RegisterCompleteObjectUndo(data, "targets saved");
 						}
@@ -306,12 +326,12 @@ public class Timeline  {
 				break;
 			case 2:
 				scroll -= ev.delta;
-				scroll.x=Mathf.Clamp(scroll.x,0f,Mathf.Infinity);
-				scroll.y=Mathf.Clamp(scroll.y,0f,Mathf.Infinity);
+				scroll.x = Mathf.Clamp(scroll.x, 0f, Mathf.Infinity);
+				scroll.y = Mathf.Clamp(scroll.y, 0f, Mathf.Infinity);
 				
-				expandView-=ev.delta;
-				expandView.x=Mathf.Clamp(expandView.x,20f,Mathf.Infinity);
-				expandView.y=Mathf.Clamp(expandView.y,20f,Mathf.Infinity);
+				expandView -= ev.delta;
+				expandView.x = Mathf.Clamp(expandView.x, 20f, Mathf.Infinity);
+				expandView.y = Mathf.Clamp(expandView.y, 20f, Mathf.Infinity);
 				ev.Use();
 				break;
 			}
@@ -340,7 +360,7 @@ public class Timeline  {
 		
 	}
 
-	public float SecondsToGUI(float seconds){
+	public float secondsToGUI(float seconds){
 		return seconds / timeFactor[timeIndexFactor] * ZOOM * timeZoomFactor * 5.0f;
 	}
 	

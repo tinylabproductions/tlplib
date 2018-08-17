@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     
     public override string ToString() => $"Unity Event @ {_invokeOn}";
     #if UNITY_EDITOR
-    public override void setDuration(float dur) { throw new System.NotImplementedException(); }
+    public override void setDuration(float dur) {  }
     #endif
   }
 }

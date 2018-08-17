@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   [Serializable]
@@ -10,8 +11,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public float startTime, duration;
     public int channel;
     public string name;
+    public bool isCallback;
 
-    public void changeDuration() => element.element.setDuration(duration);
+    public void changeDuration() {
+      if (!isCallback) { element.element.setDuration(duration);}
+    }
+    
     public float getEnd() => startTime + duration;
 
     public void setSpecificTimeStart() {
@@ -19,25 +24,23 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         element.timeOffset = startTime;
       }
     }
-/*
-    public override bool Equals(object obj) {
-      if (!(obj is FunSequenceNode comparable)) return false;
-      
-      return comparable.element == element
-        && comparable.startType == startType
-        && comparable.name == name;
-    }*/
 
     public void setTimeOffset(float time) { element.timeOffset = time; }
 
     public void resetTimeOffset() => element.timeOffset = 0f;
  
     public FunSequenceNode(SerializedTweenTimeline.Element element,  float startTime, string name) {
+      if (element.element && element.element is SerializedTweenCallback) {
+        isCallback = true;
+        duration = 0;
+      }
+      else {
+        isCallback = false;
+        duration = element.element ? element.element.duration : 10;
+      }
       this.element = element;
       channel = element.timelineChannelIdx;
       startType = element.startAt;
-      //TODO not sure about this
-      duration = element.element ? element.element.duration : 2;
       this.startTime = startTime;
       this.name = name;
     }
