@@ -39,11 +39,9 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
         if (isSome) {
           EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
           if (valueProp.propertyType == SerializedPropertyType.Generic) {
-            using (new EditorIndent(EditorGUI.indentLevel + 2)) {
-              foreach (var child in valueProp.GetChildren()) {
-                EditorGUI.showMixedValue = child.hasMultipleDifferentValues;
-                EditorGUILayout.PropertyField(child, includeChildren: true);
-              }
+            using (new EditorIndent(EditorGUI.indentLevel + 1)) {
+              EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
+              EditorGUILayout.PropertyField(valueProp, includeChildren: true);
             }
           }
           else {
