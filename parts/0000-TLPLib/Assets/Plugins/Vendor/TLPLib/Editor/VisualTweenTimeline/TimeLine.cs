@@ -2,6 +2,7 @@
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using UnityEditor;
 using UnityEngine;
@@ -25,13 +26,18 @@ public class Timeline  {
 	public delegate void EventGUICallback(Rect position);
 	public EventGUICallback onEventGUI;
 
-	Rect _timeRect, drawRect, eventRect;
+	Rect _timeRect, _drawRect, eventRect;
 	const float ZOOM = 20;
 	readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
 	
 	public Rect timeRect {
 		get => _timeRect;
 		private set => _timeRect = value;
+	}
+	
+	public Rect drawRect {
+		get => _drawRect;
+		private set => _drawRect = value;
 	}
 
 	float currentTime {
@@ -265,23 +271,27 @@ public class Timeline  {
 			}
 			
 			if (new Rect (timelineOffset, 0, drawRect.width, 37).Contains(Event.current.mousePosition) && Event.current.button == 0) {
-				timePosition = Event.current.mousePosition.x + scroll.x;
-				changeTime = true;
 
-				if (onTimelineClick != null){
-					onTimelineClick(currentTime);
-				}
+				if (funTweenManager.valueOut(out var ftm) && getTimelineTargets(ftm).valueOut(out var data) &&
+				data.All(target => target != null)) {
+					
+					timePosition = Event.current.mousePosition.x + scroll.x;
+					changeTime = true;
 
-				if (funTweenManager.valueOut(out var ftm)) {
+					if (onTimelineClick != null){
+						onTimelineClick(currentTime);
+					}
+					
 					if (!Application.isPlaying) {
 						ftm.recreate();
-						foreach (var data in getTimelineTargets(ftm)) {
 							Undo.RegisterCompleteObjectUndo(data, "targets saved");
-						}
 					}
 					
 					ftm.timeline.timeline.timePassed = currentTime;
 					ftm.run(FunTweenManager.Action.Stop);
+				}
+				else {
+					Log.d.warn($"Set targets before evaluating!");
 				}
 
 				ev.Use();

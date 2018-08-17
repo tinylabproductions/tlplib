@@ -889,6 +889,8 @@ GameObject:
   - component: {fileID: 2044119770}
   - component: {fileID: 2044119769}
   - component: {fileID: 2044119768}
+  - component: {fileID: 2044119776}
+  - component: {fileID: 2044119775}
   - component: {fileID: 2044119774}
   m_Layer: 0
   m_Name: Animations
@@ -956,7 +958,7 @@ MonoBehaviour:
   _mode: 2
   _start: {x: 0, y: 0, z: 0}
   _end: {x: 0, y: -3, z: 0}
-  _duration: 10
+  _duration: 9
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1004,26 +1006,31 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
+    - _title: Callback_CodeEvent
+      _startAt: 2
+      _timeOffset: 17.9
+      _element: {fileID: 2044119776}
+      _timelineChannelIdx: 2
+    - _title: Callback_CodeEvent
+      _startAt: 2
+      _timeOffset: 20.349998
+      _element: {fileID: 2044119774}
+      _timelineChannelIdx: 2
     - _title: Transform_LocalScal3
       _startAt: 2
-      _timeOffset: 0
+      _timeOffset: 38.500343
       _element: {fileID: 2044119768}
-      _timelineChannelIdx: 2
+      _timelineChannelIdx: 5
     - _title: Transform_Position
-      _startAt: 2
-      _timeOffset: 13.798829
+      _startAt: 0
+      _timeOffset: 5.486332
       _element: {fileID: 2044119770}
-      _timelineChannelIdx: 3
-    - _title: Callback_UnityEvent
-      _startAt: 2
-      _timeOffset: 23.798828
-      _element: {fileID: 2044119774}
       _timelineChannelIdx: 5
     - _title: Transform_LocalScale
-      _startAt: 2
-      _timeOffset: 12.762244
+      _startAt: 0
+      _timeOffset: 8.63979
       _element: {fileID: 2044119769}
-      _timelineChannelIdx: 9
+      _timelineChannelIdx: 5
     - _title: tweenas
       _startAt: 2
       _timeOffset: 0
@@ -1052,24 +1059,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 2044119767}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a50908fb9e04ec79e7a7039ffe9bdda, type: 3}
+  m_Script: {fileID: 11500000, guid: 691cf1edfa7246c8b323959d4a0e43e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 2044119772}
+  _invokeOn: 0
+  _onEvent: []
+--- !u!114 &2044119775
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2044119767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1db6798a9fdf49f40a21760c0cf139de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 2044119776}
+  Level: 20
+  Message: HELLOGAIS
+--- !u!114 &2044119776
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2044119767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 691cf1edfa7246c8b323959d4a0e43e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 2044119772}
   _invokeOn: 0
   _onEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 35812185}
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+  - {fileID: 2044119775}
