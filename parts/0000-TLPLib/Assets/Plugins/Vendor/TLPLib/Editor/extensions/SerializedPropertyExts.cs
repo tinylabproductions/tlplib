@@ -176,5 +176,8 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
         }
       }
     }
+
+    public static string debugStr(this SerializedProperty property) =>
+      $"SerializedProperty[{property.propertyType} @ {property.propertyPath}]";
   }
 }
