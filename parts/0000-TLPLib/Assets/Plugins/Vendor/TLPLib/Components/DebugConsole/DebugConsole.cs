@@ -333,7 +333,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           case LogType.Warning: return " WARN";
           case LogType.Log: return "";
           case LogType.Exception: return " EXCEPTION";
-          default: return t.ToString();
+          default: throw new Exception(t.ToString());
         }
       }
 
@@ -345,7 +345,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           case LogType.Assert: return Color.magenta;
           case LogType.Warning: return new Color(127, 127, 0, 255);
           case LogType.Log: return Color.black;
-          default: return Color.black;
+          default: throw new Exception();
         }
       }
 

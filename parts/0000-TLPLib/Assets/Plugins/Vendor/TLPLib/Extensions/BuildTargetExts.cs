@@ -6,6 +6,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Editor.Extensions {
   public static class BuildTargetExts {
     public static RuntimePlatform toRuntimePlatform(this BuildTarget t) {
+      #pragma warning disable SwitchEnumAnalyzer
       switch (t) {
         case BuildTarget.StandaloneWindows:
         case BuildTarget.StandaloneWindows64:
@@ -61,9 +62,11 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
             nameof(t), t, $"Are you using obsolete {nameof(BuildTarget)}?"
           );
       }
+      #pragma warning restore SwitchEnumAnalyzer
     }
 
     public static BuildTargetGroup toGroup(this BuildTarget t) {
+      #pragma warning disable SwitchEnumAnalyzer
       switch (t) {
         case BuildTarget.StandaloneWindows: return BuildTargetGroup.Standalone;
         case BuildTarget.iOS: return BuildTargetGroup.iOS;
@@ -112,6 +115,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Extensions {
             nameof(t), t, $"Are you using obsolete {nameof(BuildTarget)}?"
           );
       }
+      #pragma warning restore SwitchEnumAnalyzer
     }
   }
 }

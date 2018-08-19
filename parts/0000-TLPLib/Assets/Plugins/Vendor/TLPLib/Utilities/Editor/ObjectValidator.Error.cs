@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    [Record(GenerateConstructor = GeneratedContructor.None, GenerateToString = false)]
+    [Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)]
     public partial struct Error {
       public enum Type : byte {
         MissingComponent,
@@ -18,6 +18,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         MissingReference,
         NullReference,
         EmptyCollection,
+        EmptyString,
         UnityEventInvalidMethod,
         UnityEventInvalid,
         TextFieldBadTag,
@@ -88,6 +89,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         o
       );
 
+      public static Error emptyString(
+        Object o, FieldHierarchyStr hierarchy, CheckContext context
+      ) => new Error(
+        Type.EmptyString,
+        $"{context}. Property: {hierarchy.s}",
+        o
+      );
+
       public static Error missingReference(
         Object o, string property, CheckContext context
       ) => new Error(
@@ -144,11 +153,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
       public static Error customError(
-        Object o, FieldHierarchyStr hierarchy, ErrorMsg error, CheckContext context
+        Object o, FieldHierarchyStr hierarchy, ErrorMsg error, CheckContext context, bool useErrorMessageContext
       ) => new Error(
         Type.CustomValidation,
         $"{context}. Property: {hierarchy.s}. Error: {error}",
-        o
+        useErrorMessageContext ? error.context.getOrElse(o) : o
       );
       
       public static Error duplicateUniqueValueError(

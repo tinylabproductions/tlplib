@@ -11,8 +11,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
   /// </summary>
   [AddComponentMenu("")]
   public partial class TimelineReference : SerializedTweenTimelineElement {
+    #region Unity Serialized Fields
+#pragma warning disable 649
+    // ReSharper disable FieldCanBeMadeReadOnly.Local
     [SerializeField, PublicAccessor, NotNull] FunTweenTimeline _timeline;
-
+    // ReSharper restore FieldCanBeMadeReadOnly.Local
+#pragma warning restore 649
+    #endregion
     IEnumerable<TweenTimelineElement> _elements;
 
     public override float duration => _timeline.timeline.timeline.duration;

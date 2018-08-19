@@ -27,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
         pixels[x] = gradient.Evaluate(x / (float) textureSize);
       }
 
+      texture.wrapMode = TextureWrapMode.Clamp;
       texture.SetPixels(pixels);
       texture.Apply();
       setTexture(texture);
