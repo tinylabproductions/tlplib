@@ -85,6 +85,8 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       EditorGUI.indentLevel = wantedLevel;
     }
     
+    public static EditorIndent plus(int howMuch = 1) => new EditorIndent(EditorGUI.indentLevel + howMuch);
+    
     public void Dispose() { EditorGUI.indentLevel = initialLevel; }
   }
 }
