@@ -50,6 +50,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
 
       void update(ref bool keyIsDown, KeyCode key) {
         if (isKey && keyCode == key) {
+          #pragma warning disable SwitchEnumAnalyzer
           switch (guiEvent.type) {
             case EventType.KeyDown:
               keyIsDown = true;
@@ -58,6 +59,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
               keyIsDown = false;
               break;
           }
+          #pragma warning restore SwitchEnumAnalyzer
         }
       }
 
