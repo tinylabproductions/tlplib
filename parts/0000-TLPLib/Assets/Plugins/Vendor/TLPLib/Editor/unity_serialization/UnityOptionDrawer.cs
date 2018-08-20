@@ -8,13 +8,19 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
   [CustomPropertyDrawer(typeof(UnityOption), useForChildren: true), CanEditMultipleObjects]
   public class UnityOptionDrawer : PropertyDrawer {
-    static SerializedProperty getSomeProp(SerializedProperty property) =>
-      property.FindPropertyRelative("_isSome");
+    static SerializedProperty getSomeProp(SerializedProperty property, string propName) =>
+      property.FindPropertyRelative(propName);
 
-    static Option<SerializedProperty> getValueProp(SerializedProperty property) =>
-      property.FindPropertyRelative("_value").opt();
+    static Option<SerializedProperty> getValueProp(SerializedProperty property, string propName) =>
+      property.FindPropertyRelative(propName).opt();
 
-    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) =>
+      OnGUI_(position, property, label, "_isSome", "_value");
+
+    public static void OnGUI_(
+      Rect position, SerializedProperty property, GUIContent label,
+      string somePropertyName, string valuePropertyName
+    ) {
       EditorGUI.BeginProperty(position, label, property);
 
       Rect firstRect, secondRect;
@@ -27,8 +33,8 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
         DrawerUtils.twoFieldsLabel(EditorGUI.IndentedRect(position), out firstRect, out secondRect);
       }
 
-      var isSomeProp = getSomeProp(property);
-      var maybeValueProp = getValueProp(property);
+      var isSomeProp = getSomeProp(property, somePropertyName);
+      var maybeValueProp = getValueProp(property, valuePropertyName);
 
       EditorGUI.BeginChangeCheck();
       EditorGUI.showMixedValue = isSomeProp.hasMultipleDifferentValues;
