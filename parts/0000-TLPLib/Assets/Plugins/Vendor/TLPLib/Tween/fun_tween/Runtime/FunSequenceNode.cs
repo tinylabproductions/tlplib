@@ -15,19 +15,23 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public string name;
     public bool isCallback;
 
-    Option<FunSequenceNode> _iIsLinkedToNode;
+    Option<FunSequenceNode> _linkedNode;
 
-    public Option<FunSequenceNode> iIsLinkedToNode {
-      get => _iIsLinkedToNode;
-      private set => _iIsLinkedToNode = value;
+    public Option<FunSequenceNode> linkedNode {
+      get => _linkedNode;
+      private set => _linkedNode = value;
     }
 
     public void changeDuration() {
       if (!isCallback) { element.element.setDuration(duration);}
     }
 
-    public void linkNodeTo(FunSequenceNode linkTo) { iIsLinkedToNode = linkTo.some(); }
-    public void unlink() { iIsLinkedToNode = F.none_; }
+    public void linkNodeTo(FunSequenceNode linkTo) { linkedNode = linkTo.some(); }
+
+    public void unlink() {
+      linkedNode = F.none_;
+      setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.SpecificTime);
+    }
     
     public float getEnd() => startTime + duration;
 
@@ -61,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (element.element != null) {
         switch (newStartType) {
           case SerializedTweenTimeline.Element.At.AfterLastElement: {
-            if (iIsLinkedToNode.valueOut(out var linkedNode)) {
+            if (this.linkedNode.valueOut(out var linkedNode)) {
               setTimeOffset(startTime - linkedNode.getEnd());
               element.startAt = newStartType;
               element.element.setDuration(duration);
@@ -70,14 +74,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             break;
           }
           case SerializedTweenTimeline.Element.At.SpecificTime: {
-            unlink();
             setTimeOffset(startTime);
             element.startAt = newStartType;
             element.element.setDuration(duration);
             break;
           }
           case SerializedTweenTimeline.Element.At.WithLastElement: {
-            if (iIsLinkedToNode.valueOut(out var linkedNode)) {
+            if (this.linkedNode.valueOut(out var linkedNode)) {
               setTimeOffset(startTime - linkedNode.startTime);
               element.startAt = newStartType;
               element.element.setDuration(duration);

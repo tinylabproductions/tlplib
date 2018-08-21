@@ -236,7 +236,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 					  if (node.element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement) {
 						  drawOutline(boxRect, Color.green);
-						  if (getLeftNode(node).valueOut(out var leftNode) && node.iIsLinkedToNode.valueOut(out var linkedTo) && leftNode == linkedTo) {
+						  if (getLeftNode(node).valueOut(out var leftNode) && node.linkedNode.valueOut(out var linkedTo) && leftNode == linkedTo) {
 							  EditorGUI.DrawRect(
 								  new Rect(timelineVisuals.secondsToGUI(leftNode.getEnd()),
 									  node.channel * 20 + 10, timelineVisuals.secondsToGUI(node.startTime - leftNode.getEnd()), 2),
@@ -491,6 +491,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 										if (Event.current.mousePosition.y > selectedNode.channel * 20 + 25) {
 											foreach (var node in selectedNodesList) {
 												updateLinkedNodeChannels(node, _ => _.channel += 1);
+												if (node == rootSelected) {
+													node.unlink();
+												}
 											}
 										}
 
@@ -498,6 +501,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 											&& selectedNodesList.find(node => node.channel == 0).isNone) {
 											foreach (var node in selectedNodesList) {
 												updateLinkedNodeChannels(node, _ => _.channel -= 1);
+												if (node == rootSelected) {
+													node.unlink();
+												}
 											}
 										}
 
@@ -521,6 +527,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 						break;
 					case EventType.MouseUp:
+						unlinkNodesWithBrokenLink();
+
 						if (dragNode || resizeNodeEnd || resizeNodeStart) {
 							foreach (var ftm in funTweenManager) {
 								Undo.RegisterFullObjectHierarchyUndo(ftm, "Node changes");
@@ -541,26 +549,36 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				}
 			}
 		}
+
+	  void unlinkNodesWithBrokenLink() {
+		  if (funNodes.valueOut(out var nodes)) {
+			  foreach (var node in nodes) {
+				  if (node.linkedNode.valueOut(out var linkedNode)
+					  && getLeftNode(node).valueOut(out var leftNode)
+					  && linkedNode != leftNode
+				  ) {
+					  node.unlink();
+				  }
+			  }
+		  }
+	  }
 	  
 	  void updateLinkedNodeStartTimes(FunSequenceNode node) {
 		  getLinkedRightNode(node).voidFold(
 			  () => { },
 			  rightNode => {
-				  if (rightNode.iIsLinkedToNode.valueOut(out var nodeLinkedTo) && nodeLinkedTo == node)  {
+				  if (rightNode.linkedNode.valueOut(out var nodeLinkedTo) && nodeLinkedTo == node)  {
 					  rightNode.startTime = node.getEnd() + rightNode.element.timeOffset;
-					  
 				  }
-				  else {
-					  rightNode.unlink();
-					  rightNode.setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.SpecificTime);
-				  }
+
 				  updateLinkedNodeStartTimes(rightNode);
 			  });
 	  }
 	  
 	  Option<FunSequenceNode> getLinkedRightNode(FunSequenceNode node) =>
 		  getRightNode(node).flatMap(rightNode =>
-			  rightNode.element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement
+			  rightNode.linkedNode.valueOut(out var linkedNode)
+				&& linkedNode == node
 			  && selectedNodesList.find(x => x == rightNode).isNone
 				  ? rightNode.some()
 				  : F.none_
@@ -710,7 +728,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						  element.element == null
 							  ? "" :
 							  element.element.GetType().Name;
-
+					  
 					  var newNode = new FunSequenceNode(element, whereToStart(idx), element.title);
 					  //Might have unwanted consequences
 					  if (funNodes.valueOut(out var nodes) && nodes.find(x => x.element == element).valueOut(out var foundNode)) {
@@ -736,6 +754,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					  );
 			  }
 	  	}
+		  
+		  //TODO LINK IMPORTED NODES
 	  }
 
 	  Option<FunSequenceNode> getLeftNode(FunSequenceNode selectedNode) => 
@@ -763,7 +783,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			  foreach (var selected in selectedNodesList) {
 				  getLeftNode(selected).voidFold(
 					  () => selected.setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.SpecificTime),
-					  _ => selected.setSelectedNodeElementFields(selected.element.startAt));
+					  leftNode => {
+						  if (selected.linkedNode.valueOut(out var linkedNode) && linkedNode == leftNode) {
+							  selected.setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.AfterLastElement);
+						  }
+						  else {
+							  selected.setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.SpecificTime);
+						  }
+					  });
 			  }
 		  }
 	  }
@@ -839,7 +866,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 					  if (!selectedNodesList.isEmpty()) {
 						  foreach (var selected in selectedNodesList) {
-							  Log.d.warn($"{selected.name} linkedTo {selected.iIsLinkedToNode.get.name}");
+							  Log.d.warn($"{selected.name} linkedTo {selected.linkedNode.get.name}");
 						  }
 					  }
 				  }
@@ -851,18 +878,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					  var unlinkButtonText = "UNLINK";
 					  GUILayout.BeginHorizontal();
 					  
-					  if (selectedNode.element.startAt == SerializedTweenTimeline.Element.At.SpecificTime) {
+					  if (selectedNode.linkedNode.isNone) {
 						  GUI.enabled = false;
 						  unlinkButtonText = "UNLINKED";
 					  }
 
 					  if (GUILayout.Button(unlinkButtonText)) {
-						  selectedNode.setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.SpecificTime);
 						  selectedNode.unlink();
 					  }
 					  GUI.enabled = guiEnabled;
 					  
-					  if (selectedNode.iIsLinkedToNode) {
+					  if (selectedNode.linkedNode.isSome) {
 						  GUI.enabled = false;
 						  linkButtonText = "LINKED";
 					  }

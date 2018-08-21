@@ -1020,10 +1020,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2044119773}
   - component: {fileID: 2044119772}
-  - component: {fileID: 2044119768}
   - component: {fileID: 2044119771}
   - component: {fileID: 2044119770}
-  - component: {fileID: 2044119769}
   m_Layer: 0
   m_Name: Animations
   m_TagString: Untagged
@@ -1031,50 +1029,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &2044119768
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2044119767}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d00199aa8fd4988902fbd2d8ebc401f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 2044119772}
-  _mode: 0
-  _start: {x: 0, y: 0, z: 0}
-  _end: {x: 0, y: 5, z: 0}
-  _duration: 2.4499993
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 828684592}
---- !u!114 &2044119769
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2044119767}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8346553225484c9dac908c92355c1046, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 2044119772}
-  _mode: 0
-  _start: {r: 1, g: 1, b: 1, a: 1}
-  _end: {r: 1, g: 1, b: 1, a: 1}
-  _duration: 2.25
-  _ease:
-    _isComplex: 0
-    _simple: 0
-    _complex: {fileID: 0}
-  _targets:
-  - {fileID: 0}
 --- !u!114 &2044119770
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -1089,14 +1043,14 @@ MonoBehaviour:
   owner: {fileID: 2044119772}
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
-  _end: {x: 0, y: 0, z: 0}
-  _duration: 1.4999995
+  _end: {x: 0, y: 5, z: 0}
+  _duration: 1.8819752
   _ease:
     _isComplex: 0
     _simple: 0
     _complex: {fileID: 0}
   _targets:
-  - {fileID: 0}
+  - {fileID: 726012325}
 --- !u!114 &2044119771
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -1111,14 +1065,14 @@ MonoBehaviour:
   owner: {fileID: 2044119772}
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
-  _end: {x: 0, y: 0, z: 0}
+  _end: {x: 5, y: 5, z: 5}
   _duration: 10
   _ease:
     _isComplex: 0
     _simple: 0
     _complex: {fileID: 0}
   _targets:
-  - {fileID: 0}
+  - {fileID: 828684592}
 --- !u!114 &2044119772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1138,26 +1092,16 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _title: Light_Color
+    - _title: Transform_LocalPosition
       _startAt: 2
-      _timeOffset: 3.0076928
-      _element: {fileID: 2044119769}
-      _timelineChannelIdx: 5
+      _timeOffset: 2.75
+      _element: {fileID: 2044119770}
+      _timelineChannelIdx: 3
     - _title: Transform_LocalScale
       _startAt: 0
-      _timeOffset: 4.2105823
+      _timeOffset: 6.855652
       _element: {fileID: 2044119771}
-      _timelineChannelIdx: 5
-    - _title: aa
-      _startAt: 2
-      _timeOffset: 1.6931067
-      _element: {fileID: 2044119768}
-      _timelineChannelIdx: 9
-    - _title: Transform_LocalPosition
-      _startAt: 0
-      _timeOffset: 8.333502
-      _element: {fileID: 2044119770}
-      _timelineChannelIdx: 9
+      _timelineChannelIdx: 3
   _onStart: []
   _onEnd: []
 --- !u!4 &2044119773
