@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -11,22 +12,14 @@ using Object = UnityEngine.Object;
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 [Serializable]
 public class Timeline  {
-	public delegate void PlayCallback(bool isPlaying);
-	public PlayCallback onPlay;
-	public delegate void RecordCallback(bool isRecording);
-	public RecordCallback onRecord;
 	public delegate void TimelineGUICallback(Rect position);
 	public TimelineGUICallback onTimelineGUI;
 	public delegate void SettingsGUICallback(float width);
 	public SettingsGUICallback onSettingsGUI;
 	public delegate void OnTimelineClick(float time);
 	public OnTimelineClick onTimelineClick;
-	public delegate void AddEventCallback();
-	public AddEventCallback onAddEvent;
-	public delegate void EventGUICallback(Rect position);
-	public EventGUICallback onEventGUI;
 
-	Rect _timeRect, _drawRect, eventRect;
+	Rect _timeRect, _drawRect, blackBarRect;
 	const float ZOOM = 20;
 	readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
 	
@@ -45,40 +38,48 @@ public class Timeline  {
 		set => timePosition = secondsToGUI (value) + timelineOffset;
 	}
 
-	float timelineOffset = 170;
+	public bool visualizationMode {
+		get => _visualizationMode;
+		private set => _visualizationMode = value;
+	}
+
+	float timelineOffset = 300;
 	int timeIndexFactor = 1;
 	Vector2 scroll, expandView;
-	bool isPlaying, changeTime, changeOffset;
-	float timePosition, clickOffset, timeZoomFactor = 1;
+	bool isAnimationPlaying, changeTime, changeOffset, isInPlayMode, _visualizationMode;
+	float timePosition, clickOffset, timeZoomFactor = 1, lastNodeTime;
+	double lastSeconds;
+	
+	Option<EditorApplication.CallbackFunction> updateDelegateOpt;
 
-	public float lastNodeTime;
 
-	public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager){
+	public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager) {
+		isInPlayMode = Application.isPlaying;
 		drawRect = position;
 		timeRect = new Rect (position.x + timelineOffset, position.y, position.width - 15, 20);
-		eventRect = new Rect (position.x + timelineOffset - 1, position.y + 19, position.width, 16);
+		blackBarRect = new Rect (position.x + timelineOffset - 1, position.y + 19, position.width, 16);
 
 		if (funTweenManager.valueOut(out var ftm)) {
 			currentTime = ftm.currentTime;
 		}
 
-		isPlaying = isPlaying && Application.isPlaying;
 
 		doCursor ();
-		DoToolbarGUI (position, funTweenManager);
+		doToolbarGUI (position, funTweenManager);
 		drawTicksGUI ();
 		doEvents (funTweenManager);
 	
 		scroll = GUI.BeginScrollView(
-			new Rect(position.x+timelineOffset,
-				timeRect.height+eventRect.height,
-				position.width-timelineOffset,
-				position.height-timeRect.height-eventRect.height),
+			new Rect(position.x + timelineOffset,
+				timeRect.height + blackBarRect.height,
+				position.width - timelineOffset,
+				position.height - timeRect.height - blackBarRect.height),
 			scroll,
 			new Rect(0, 0, position.width + lastNodeTime + expandView.x - timelineOffset, position.height + 400 + expandView.y), true, true
 		);
 		
 		doLines ();
+		
 		if (onTimelineGUI != null) {
 			onTimelineGUI(
 				new Rect(scroll.x, scroll.y,
@@ -86,10 +87,10 @@ public class Timeline  {
 					drawRect.height + scroll.y)
 			);			
 		}
-		GUI.EndScrollView();
-		DoEventsGUI ();
-		DoTimelineGUI ();
 
+		GUI.EndScrollView();
+		doBlackBar ();
+		doTimelineGUI ();
 	}
 
 	void doLines(){
@@ -100,13 +101,13 @@ public class Timeline  {
 		Handles.color = Color.white;
 	}
 	
-	void DoTimelineGUI(){
-		if ((changeTime || isPlaying || Application.isPlaying)
-			&& timePosition - scroll.x >= timelineOffset && timePosition - scroll.x < drawRect.width-15) {
+	void doTimelineGUI(){
+		if ((changeTime || isAnimationPlaying || Application.isPlaying || visualizationMode)
+			&& timePosition - scroll.x >= timelineOffset && timePosition - scroll.x < drawRect.width - 15) {
 			var color = Color.red;
 			color.a = Application.isPlaying ? 0.6f : 1.0f;
 			Handles.color = color;
-
+			
 			var style = new GUIStyle("Label") {
 				fontSize = 12,
 				fontStyle = FontStyle.Bold,
@@ -120,69 +121,150 @@ public class Timeline  {
 		}
 	}
 	
+	public static double currentRealSeconds() {
+		var epochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		var currentSeconds = (DateTime.UtcNow - epochStart).TotalSeconds;
+ 
+		return currentSeconds;
+	}
+	
 	void doCursor(){
 		EditorGUIUtility.AddCursorRect(new Rect(timelineOffset - 5, 37, 10, drawRect.height), MouseCursor.ResizeHorizontal);
 	}
 	
-	void DoToolbarGUI(Rect position, Option<FunTweenManager> funTweenManager){
+	void doBlackBar(){
+		if (Event.current.type == EventType.Repaint) {
+			((GUIStyle)"AnimationEventBackground").Draw(blackBarRect, GUIContent.none, 0);
+		}
+	}
+
+	void updateAnimation(FunTweenManager ftm) {
+		var currentSeconds = currentRealSeconds();
+		//Log.d.warn($"current time {currentSeconds} last time {lastSeconds}");
+		if (lastSeconds < 1) lastSeconds = currentSeconds;
+		var timeDiff = (float)(currentSeconds - lastSeconds);
+		lastSeconds = currentSeconds;
+		ftm.manager.update(timeDiff);
+	}
+
+	void startUpdatingTime(FunTweenManager ftm) {
+		ftm.recreate();
+		startVisualization(ftm);
+		lastSeconds = currentRealSeconds();
+		updateDelegateOpt.voidFold(
+			() => {
+				EditorApplication.CallbackFunction updateDelegate = () => updateAnimation(ftm);
+				EditorApplication.update += updateDelegate;
+				updateDelegateOpt = updateDelegate.some();
+			},
+			updateDelegate => EditorApplication.update += updateDelegate
+		);
+	}
+
+	void stopTimeUpdate() {
+		updateDelegateOpt.map(updateDelegate => EditorApplication.update -= updateDelegate);
+	}
+
+	void startVisualization(FunTweenManager ftm) {
+		if (!visualizationMode && getTimelineTargets(ftm).valueOut(out var data)) {
+			
+			visualizationMode = true;
+			Undo.RegisterCompleteObjectUndo(data, "Animating targets");
+		}
+	}
+
+	public void stopVisualization() {
+		if (visualizationMode) {
+			stopTimeUpdate();
+			Undo.PerformUndo();
+			visualizationMode = false;
+		}
+	}
+	
+	void doToolbarGUI(Rect position, Option<FunTweenManager> funTweenManager){
 		var style = new GUIStyle("ProgressBarBack") {padding = new RectOffset(0, 0, 0, 0)};
 		GUILayout.BeginArea (new Rect (position.x, position.y, timelineOffset, position.height), GUIContent.none, style);
 		
 		GUILayout.BeginHorizontal (EditorStyles.toolbar);
 
-		GUI.enabled = Application.isPlaying;
+		GUI.enabled = true;
 		if (funTweenManager.valueOut(out var ftm)) {
+			
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_beginButton"), EditorStyles.toolbarButton)) {
+				if (!isInPlayMode) {
+					stopTimeUpdate();
+					startVisualization(ftm);
+				}
 				ftm.run(FunTweenManager.Action.Stop);
 				ftm.timeline.timeline.timePassed = 0;
-				isPlaying = false;
+				isAnimationPlaying = false;
 			}
 
 			GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepButton"), EditorStyles.toolbarButton)) {
+				if (!isInPlayMode && !isAnimationPlaying) {
+					startUpdatingTime(ftm);
+				}
 				ftm.run(FunTweenManager.Action.PlayForwards);
-				isPlaying = true;
+				isAnimationPlaying = true;
 			}
-
 			GUI.backgroundColor = Color.white;
 
 			if (GUILayout.Button(
-				!isPlaying
+				!isAnimationPlaying
 					? EditorGUIUtility.FindTexture("d_PlayButton")
 					: EditorGUIUtility.FindTexture("d_PlayButton On"), EditorStyles.toolbarButton)
 			) {
-				if (isPlaying) {
+				if (isAnimationPlaying) {
+					if (!isInPlayMode) { stopTimeUpdate(); } 
 					ftm.run(FunTweenManager.Action.Stop);
-					isPlaying = false;
+					isAnimationPlaying = false;
 				}
 				else {
-					ftm.run(FunTweenManager.Action.ResumeForwards);
-					isPlaying = true;
+					if (!isInPlayMode) {
+						startUpdatingTime(ftm);
+					}
+					
+					ftm.run(FunTweenManager.Action.Resume);
+					isAnimationPlaying = true;
 				}
-				
 			}
 
-			if (GUILayout.Button(isPlaying
+			if (GUILayout.Button(isAnimationPlaying
 				? EditorGUIUtility.FindTexture("d_PauseButton")
 				: EditorGUIUtility.FindTexture("d_PauseButton On"), EditorStyles.toolbarButton)
 			) {
-				isPlaying = false;
-				ftm.run(FunTweenManager.Action.Stop);
+				if (!isInPlayMode){
+					stopTimeUpdate();
+					startVisualization(ftm);
+				}
+				else {
+					ftm.run(FunTweenManager.Action.Stop);
+				}
+				isAnimationPlaying = false;
+
 			}
 
 			GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepLeftButton"), EditorStyles.toolbarButton)) {
-				ftm.run(FunTweenManager.Action.PlayBackwards);
+				if (!isInPlayMode && !isAnimationPlaying) {
+					startUpdatingTime(ftm);
+				}
 
-				isPlaying = true;
+				ftm.run(FunTweenManager.Action.PlayBackwards);
+				isAnimationPlaying = true;
 			}
 
 			GUI.backgroundColor = Color.white;
 
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_endButton"), EditorStyles.toolbarButton)) {
+				if (!isInPlayMode) {
+					stopTimeUpdate();
+					startVisualization(ftm);
+				}
 				ftm.run(FunTweenManager.Action.Stop);
 				ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
-				isPlaying = false;
+				isAnimationPlaying = false;
 			}
 
 			GUILayout.Space(10f);
@@ -192,11 +274,13 @@ public class Timeline  {
 			}
 
 			GUILayout.FlexibleSpace();
-
-			GUI.enabled = true;
-			GUI.backgroundColor = new Color(0, 1, 0.5f, 0.5f);
-			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_Refresh"), EditorStyles.toolbarButton)) {
-				ftm.recreate();
+			
+			if (isInPlayMode || !visualizationMode) GUI.enabled = false;
+			GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
+			if (GUILayout.Button(EditorGUIUtility.FindTexture("P4_DeletedLocal"), EditorStyles.toolbarButton)) {
+				stopVisualization();
+				isAnimationPlaying = false;
+				return;
 			}
 		}
 
@@ -206,21 +290,12 @@ public class Timeline  {
 		GUILayout.BeginHorizontal ();
 		GUILayout.BeginVertical ();
 		if (onSettingsGUI != null) {
-			onSettingsGUI(timelineOffset-1.5f);			
+			onSettingsGUI(timelineOffset - 1.5f);			
 		}
 		GUILayout.EndVertical ();
 		GUILayout.Space (1.5f);
 		GUILayout.EndHorizontal ();
 		GUILayout.EndArea ();
-	}
-
-	void DoEventsGUI(){
-		if (Event.current.type == EventType.Repaint) {
-			((GUIStyle)"AnimationEventBackground").Draw(eventRect,GUIContent.none,0);
-		}
-		if (onEventGUI != null) {
-			onEventGUI(eventRect);
-		}
 	}
 	
 	void drawTicksGUI(){
@@ -249,7 +324,7 @@ public class Timeline  {
 		Handles.color = Color.white;
 	}
 
-	Option<Object[]> getTimelineTargets(FunTweenManager ftm) =>
+	static Option<Object[]> getTimelineTargets(FunTweenManager ftm) =>
 		ftm.timeline.elements.opt().map( elements =>
 				elements
 					.map(elem => elem.element.getTargets())
@@ -282,13 +357,18 @@ public class Timeline  {
 						onTimelineClick(currentTime);
 					}
 					
-					if (!Application.isPlaying) {
+					if (!Application.isPlaying && !visualizationMode) {
 						ftm.recreate();
-							Undo.RegisterCompleteObjectUndo(data, "targets saved");
+						Undo.RegisterCompleteObjectUndo(data, "targets saved");
+					}
+
+					if (!isInPlayMode) {
+						stopTimeUpdate();
+						isAnimationPlaying = false;
 					}
 					
 					ftm.timeline.timeline.timePassed = currentTime;
-					ftm.run(FunTweenManager.Action.Stop);
+					//ftm.run(FunTweenManager.Action.Stop);
 				}
 				else {
 					Log.d.warn($"Set targets before evaluating!");
@@ -312,7 +392,7 @@ public class Timeline  {
 
 				if (funTweenManager.valueOut(out var ftm)) {
 					ftm.timeline.timeline.timePassed = currentTime;
-					ftm.run(FunTweenManager.Action.Stop);
+				//	ftm.run(FunTweenManager.Action.Stop);
 				}
 			}
 			switch (ev.button) {
@@ -378,6 +458,13 @@ public class Timeline  {
 		var guiSecond = ZOOM * timeZoomFactor * 5.0f / timeFactor[timeIndexFactor];
 		return x / guiSecond;
 	}
+	
+	public void recalculateTimelineWidth(Option<List<FunSequenceNode>> funNodes) => lastNodeTime = secondsToGUI(
+		funNodes.fold(
+			() => 0,
+			nodes => nodes.Max(node => node.getEnd())
+		)
+	);
 }
 
 }

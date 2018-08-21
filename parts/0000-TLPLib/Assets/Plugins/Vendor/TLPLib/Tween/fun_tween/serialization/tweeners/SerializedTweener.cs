@@ -2,6 +2,7 @@
 using System.Linq;
 using com.tinylabproductions.TLPGame.FacebookCore;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.validations;
@@ -21,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
-    [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.RelativeFromCreation;
+    [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.Absolute;
     [SerializeField, NotNull] SourceType _start, _end;
     [SerializeField, Tooltip("in seconds")] float _duration = 10;
     [SerializeField, NotNull] SerializedEase _ease;
@@ -72,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
             ));
           }
         }
-        
+
         return _targets.map(target => 
           new Tweener<DestinationType, Target>(getTween(extract(target)), target, mutator)
         );
