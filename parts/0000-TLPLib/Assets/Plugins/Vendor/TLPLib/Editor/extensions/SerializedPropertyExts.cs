@@ -140,7 +140,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
         case SerializedPropertyType.Generic:
           // Generic means a serializable data structure. We need to traverse it and set default
           // for all entries.
-          foreach (var children in property.GetChildren()) {
+          foreach (var children in property.GetImmediateChildren()) {
             children.setToDefaultValue();
           }
           break;
@@ -152,32 +152,70 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
           throw exception();
       }
     }
+    
+    [PublicAPI]
+    public static bool next(this SerializedProperty sp, bool enterChildren, bool onlyVisible = true) =>
+      onlyVisible ? sp.NextVisible(enterChildren) : sp.Next(enterChildren);
 
-    public static IEnumerable<SerializedProperty> GetChildren(this SerializedProperty property) {
-      // https://forum.unity.com/threads/loop-through-serializedproperty-children.435119/#post-2814895
-      property = property.Copy();
-      var nextElement = property.Copy();
-      var hasNextElement = nextElement.NextVisible(false);
-      if (!hasNextElement) {
-        nextElement = null;
+    [PublicAPI]
+    public static IEnumerable<SerializedProperty> GetImmediateChildren(
+      this SerializedProperty property, bool onlyVisible = true
+    ) {
+      var nextPotentiallyChild = property.Copy();
+      next(nextPotentiallyChild, enterChildren: true, onlyVisible: onlyVisible);
+      var nextSibling = property.Copy();
+      next(nextSibling, enterChildren: false, onlyVisible: onlyVisible);
+
+      if (SerializedProperty.EqualContents(nextSibling, nextPotentiallyChild)) {
+        // no children
+      }
+      else {
+        yield return nextPotentiallyChild;
+        while (next(nextPotentiallyChild, enterChildren: false, onlyVisible: onlyVisible)) {
+          if (SerializedProperty.EqualContents(nextPotentiallyChild, nextSibling)) {
+            // end of children            
+          }
+          else {
+            yield return nextPotentiallyChild;
+          }
+        }
       }
 
-      property.NextVisible(true);
-      while (true) {
-        if (SerializedProperty.EqualContents(property, nextElement)) {
-          yield break;
-        }
-
-        yield return property;
-
-        var hasNext = property.NextVisible(false);
-        if (!hasNext) {
-          break;
-        }
-      }
+       // // https://forum.unity.com/threads/loop-through-serializedproperty-children.435119/#post-2814895
+       // property = property.Copy();
+       // var nextElement = property.Copy();
+       // var hasNextElement = nextElement.NextVisible(false);
+       // if (!hasNextElement) {
+       //   nextElement = null;
+       // }
+       //
+       // property.NextVisible(true);
+       // while (true) {
+       //   if (SerializedProperty.EqualContents(property, nextElement)) {
+       //     yield break;
+       //   }
+       //
+       //   yield return property;
+       //
+       //   var hasNext = property.NextVisible(false);
+       //   if (!hasNext) {
+       //     break;
+       //   }
+       // }
     }
 
-    public static string debugStr(this SerializedProperty property) =>
-      $"SerializedProperty[{property.propertyType} @ {property.propertyPath}]";
+    [PublicAPI]
+    public static string debugStr(this SerializedProperty p) =>
+      $"SerializedProperty[{p.propertyType} @ '{p.propertyPath}']";
+
+    [PublicAPI]
+    public static void drawInspector(this SerializedProperty property, bool onlyVisible = true) {
+      foreach (var child in property.GetImmediateChildren(onlyVisible: onlyVisible)) {
+        EditorGUILayout.PropertyField(child, includeChildren: true);
+      }
+
+      var obj = property.serializedObject;
+      obj.ApplyModifiedProperties();
+    }
   }
 }
