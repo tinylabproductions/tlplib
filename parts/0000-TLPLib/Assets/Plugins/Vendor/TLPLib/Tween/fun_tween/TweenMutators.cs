@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static TweenMutator<float, Transform> path(Vector3Path path) =>
       (percentage, transform, relative) => {
         var point = path.evaluate(percentage, constantSpeed: true);
-        transform.localPosition = point;
+        transform.position = point;
       };
   }
 }
