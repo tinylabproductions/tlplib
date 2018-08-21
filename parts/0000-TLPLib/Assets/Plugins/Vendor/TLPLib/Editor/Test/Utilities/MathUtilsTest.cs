@@ -1,9 +1,11 @@
-﻿using NUnit.Framework;
+﻿using System;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Test;
+using NUnit.Framework;
 using com.tinylabproductions.TLPLib.Utilities;
 
 namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
-  [TestFixture]
-  public class MathUtilsTest {
+  public class MathUtilsTest : ImplicitSpecification {
     [Test]
     public void StartOfTheRange() {
       var actual = 5f.remap(5, 6, 0, 1);
@@ -87,5 +89,33 @@ namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
       var expected = 3f;
       Assert.AreEqual(expected, actual);
     }
+
+    [Test]
+    public void modPositive() => describe(() => {
+      void test(int mod, Tpl<int, int>[] values) {
+        foreach (var t in values) {
+          var (num, expected) = t;
+          it[$"should {num} % {mod} == {expected}"] = () => num.modPositive(mod).shouldEqual(expected);
+        }
+      }
+      
+      test(3, new [] {
+        F.t(-7, 2),
+        F.t(-6, 0),
+        F.t(-5, 1),
+        F.t(-4, 2),
+        F.t(-3, 0),
+        F.t(-2, 1),
+        F.t(-1, 2),
+        F.t(0, 0),
+        F.t(1, 1),
+        F.t(2, 2),
+        F.t(3, 0),
+        F.t(4, 1),
+        F.t(5, 2),
+        F.t(6, 0),
+        F.t(7, 1)
+      });
+    });
   }
 }

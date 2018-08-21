@@ -42,12 +42,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [PublicAPI]
     public static Option<T> last<T>(this IList<T> list) => list.get(list.Count - 1);
 
+    [PublicAPI]
     public static List<A> reversed<A>(this List<A> list) {
       var reversed = new List<A>(list);
       reversed.Reverse();
       return reversed;
     }
 
+    [PublicAPI]
     public static T updateOrAdd<T>(
       this IList<T> list, Fn<T, bool> finder, Fn<T> ifNotFound, Fn<T, T> ifFound
     ) {

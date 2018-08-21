@@ -152,9 +152,9 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static float remap01(this float value, FRange fromTo) =>
       value.remap(fromTo.from, fromTo.to, 0f, 1f);
 
-    // a % b gives non positive result on negative numbersn
+    // a % b gives non positive result on negative numbers
     // this always gives positive
     // http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
-    public static int modPositive(this int value, int mod) => ((value % mod) + mod) % mod;
+    public static int modPositive(this int value, int mod) => (value % mod + mod) % mod;
   }
 }
