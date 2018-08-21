@@ -11,6 +11,7 @@ namespace com.tinylabproductions.Cryptography {
     // http://stackoverflow.com/a/33568064/935259
     static readonly MD5 md5 = new MD5CryptoServiceProvider();
     static readonly SHA1 sha1 = new SHA1CryptoServiceProvider();
+    // If this doesn't compile change 'Api Compatibility Level' to '.NET 2.0' in Player Settings
     static readonly SHA256 sha256 = new SHA256CryptoServiceProvider();
 
     public enum Kind : byte { MD5, SHA1, SHA256 }
