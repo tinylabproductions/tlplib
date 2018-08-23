@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		public static void ShowWindow() {
 			var window = GetWindow<TimelineEditor>(false, "Tween Timeline");
 			window.wantsMouseMove = true;
-		//	DontDestroyOnLoad(window);
+			//DontDestroyOnLoad(window);
 		}
 	 
 
@@ -146,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 	  }
 
 	  void drawFunNodes(Rect position) {
-		  GUI.enabled = !timelineVisuals.visualizationMode;
+		  //GUI.enabled = !timelineVisuals.visualizationMode;
 
 		  if (funNodes.valueOut(out var nodes) && funTweenManager.isSome) {
 			  Option<Rect> snapIndicatorOpt = F.none_;
@@ -259,7 +259,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					  var style = new GUIStyle("Label");
 					  style.fontSize = currentNodeIsSelected ? 12 : style.fontSize;
 					  style.fontStyle = FontStyle.Bold;
-					  var color = currentNodeIsSelected ? Color.magenta : Color.white;
+					  var color = currentNodeIsSelected ? Color.magenta : node.nodeTextColor;
 					  color.a = currentNodeIsSelected ? 1.0f : 0.7f;
 					  style.normal.textColor = color;
 					  Vector3 size = style.CalcSize(new GUIContent($"content: {node.name}"));
@@ -319,7 +319,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		void doEvents() {
 			var currEvent = Event.current;
 			var snappingEnabled = !Event.current.shift && snapping;
-			if (currEvent.control && currEvent.keyCode == KeyCode.A && currEvent.type == EventType.KeyUp) {
+			if (currEvent.control && currEvent.keyCode == KeyCode.A && currEvent.type == EventType.keyUp) {
 				selectedNodesList.Clear();
 				foreach (var nodes in funNodes) {
 					foreach (var node in nodes) {
@@ -328,9 +328,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				}
 			}
 
+			if (currEvent.keyCode == KeyCode.Delete && currEvent.type == EventType.keyDown) {
+				removeoAllSelectedNodes();
+				selectedNodesList.Clear();
+				importTimeline();
+			}
+
 			if (!timelineVisuals.visualizationMode) {
 				switch (currEvent.rawType) {
 					case EventType.MouseDown:
+						//Clearing up nodes list from nodes without element.element
+						funNodes = funNodes.map(nodes => nodes.Where(node => node.element.element != null).ToList());
 
 						foreach (var nodes in funNodes) {
 							for (var i = 0; i < nodes.Count; i++) {
@@ -389,7 +397,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 									&& !dragNode && !resizeNodeStart && !resizeNodeEnd && !currEvent.control
 									&& timelineVisuals.drawRect.Contains(Event.current.mousePosition)
 								) {
-									removeNodeIfHasNoElement(node);
+//									removeNodeIfHasNoElement(node);
 									selectedNodesList.Clear();
 									currEvent.Use();
 								}
@@ -544,7 +552,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						resizeNodeStart = false;
 						resizeNodeEnd = false;
 						nodeSnappedToOpt = F.none_;
-
 						break;
 				}
 			}
@@ -711,7 +718,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		  }
 	  }
 
-	  //imports element info from FunTweenManager element array
+	  //creates nodeList from elements info
 	  void importTimeline() {
 		  advancedEditor.Instances = new object[] { };
 		  if (funTweenManager.valueOut(out var manager) && manager.timeline != null) {
@@ -731,7 +738,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					  
 					  var newNode = new FunSequenceNode(element, whereToStart(idx), element.title);
 					  //Might have unwanted consequences
-					  if (funNodes.valueOut(out var nodes) && nodes.find(x => x.element == element).valueOut(out var foundNode)) {
+					  if (funNodes.flatMap(nodes => nodes.find(x => x.element == element)).valueOut(out var foundNode)) {
 						  foundNode.duration = newNode.duration;
 						  foundNode.startTime = newNode.startTime;
 						  foundNode.name = newNode.name;
@@ -745,6 +752,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				  }
 			  ).ToList().some();
 
+			  //Relinking linked nodes, since we dont serialize nodeLinkedTo
+			  foreach (var nodes in funNodes) {
+					foreach (var node in nodes) {
+						if (getLeftNode(node).valueOut(out var leftNode)) {
+							node.reLink(leftNode);
+							node.refreshColor();							
+						}
+					}
+			  }
+
 			  float whereToStart(int idx) {
 				  return idx == 0
 					  ? elements[idx].at(0, 0)
@@ -754,8 +771,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					  );
 			  }
 	  	}
-		  
-		  //TODO LINK IMPORTED NODES
 	  }
 
 	  Option<FunSequenceNode> getLeftNode(FunSequenceNode selectedNode) => 
@@ -819,31 +834,34 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		  importTimeline();
 	  }
 	  
-
-
 	  void onSettings(float width) {
-		  if (funTweenManager.valueOut(out var manager)) {
+		  if (funTweenManager.isSome) {
 			  GUILayout.BeginVertical();
 			  GUI.enabled = !timelineVisuals.visualizationMode;
-			  if (funNodes.valueOut(out var nodes)) {
+			  
+			  foreach (var nodes in funNodes) {
 				  nodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
 			  }
-		  
+
 			  if (GUILayout.Button("Add Tween")) {
 				  var newElement = new SerializedTweenTimeline.Element {
 					  startAt = SerializedTweenTimeline.Element.At.SpecificTime
 				  };
-				  manager.timeline.elements = manager.timeline.elements.addOne(newElement);
-				  importTimeline();
-				  if (funNodes.valueOut(out var refreshedNodes)) {
-					  foreach (var foundNode in refreshedNodes.find(x => x.element.element == null)) {
-						  addSelectedNode(foundNode, Event.current);
-					  }
-					  exportTimelineToTweenManager();
+				  var newNode = new FunSequenceNode(newElement, 0, "");
+				  
+				  if (funNodes.valueOut(out var nodes)) {
+					  nodes.Insert(0, newNode);
 				  }
+				  else {
+					  funNodes = new List<FunSequenceNode>{newNode}.some();
+				  }
+				  selectedNodesList.Clear();
+				  selectedNodesList.Add(newNode);
+				  exportTimelineToTweenManager();
 			  }
 			  GUILayout.EndVertical();
 		  }
+		  
 		  var guiEnabled = GUI.enabled;
 		  var oneNodeSelected = selectedNodesList.Count == 1;
 
@@ -898,7 +916,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							  selectedNode.linkNodeTo(leftNode);
 							  selectedNode.setSelectedNodeElementFields(SerializedTweenTimeline.Element.At.AfterLastElement);
 						  }
-						  
 					  }
 
 					  GUI.enabled = guiEnabled;
@@ -907,13 +924,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
 			  }
 			}
-		  else {
+		  
+		  if (funTweenManager.isNone) {
 			  GUI.enabled = selectedGameObjectOpt.isSome;
 			  if (GUILayout.Button("[Add manager]")) {
 				  addFunTweenManagerComponent(Selection.activeGameObject);
 				  EditorGUIUtility.ExitGUI();
 			  }
 		  }
+		  
 			GUILayout.Space(10);
 		  GUI.enabled = !timelineVisuals.visualizationMode;
 		  settingsScroll = GUILayout.BeginScrollView(settingsScroll);
@@ -939,42 +958,34 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						advancedEditor.Instances = new object[] {
 							manager.timeline.elements[selectedNodeIndex]
 						};
-					}}
+					}
+				}
 		}
 
 	  void deselect(object obj) {
-		  var nawd = obj as FunSequenceNode;
-		  selectedNodesList.Remove(nawd);
+		  var node = obj as FunSequenceNode;
+		  selectedNodesList.Remove(node);
 		  Repaint();
 	  }
 	  
 		void removeSelectedNode(object obj) {
 			var nawd = obj as FunSequenceNode;
-			if (funNodes.valueOut(out var nodes)) {
-				if (nodes.Count == 1) {
-					funNodes = new List<FunSequenceNode>().some();
-				}
-				else {
-						nodes.Remove(nawd);
-				}
-				exportTimelineToTweenManager();
-				selectedNodeIndex = 0;
-			}
+			funNodes = funNodes.flatMap(nodes =>
+				nodes.Where(node => node != nawd).ToList().noneIfEmpty()
+			);
+			
+			exportTimelineToTweenManager();
+			selectedNodeIndex = 0;
 		}
 
 	  void removeoAllSelectedNodes() {
-		  if (funNodes.valueOut(out var nodes)) {
-			  foreach (var selectedNode in selectedNodesList) {
-				  if (nodes.Count == 1) {
-					  funNodes = new List<FunSequenceNode>().some();
-				  }
-				  else {
-					  nodes.Remove(selectedNode);
-				  }
-			  }
-			  exportTimelineToTweenManager();
-			  selectedNodeIndex = 0;
-		  }
+			funNodes = funNodes.flatMap(nodes =>
+				nodes.Where(
+					node => selectedNodesList.find(selectedNode => node == selectedNode).isNone).ToList().noneIfEmpty()
+			);
+			exportTimelineToTweenManager();
+			selectedNodesList.Clear();
+		  selectedNodeIndex = 0;
 	  }
 
 	  void removeNodeIfHasNoElement(FunSequenceNode node) {

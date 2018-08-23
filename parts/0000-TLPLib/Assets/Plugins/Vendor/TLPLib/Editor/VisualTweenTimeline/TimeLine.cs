@@ -43,13 +43,13 @@ public class Timeline  {
 		private set => _visualizationMode = value;
 	}
 
-	float timelineOffset = 300;
+	float timelineOffset = 450;
 	int timeIndexFactor = 1;
 	Vector2 scroll, expandView;
-	bool isAnimationPlaying, changeTime, changeOffset, isInPlayMode, _visualizationMode;
+	bool isAnimationPlaying, changeTime, changeOffset, isInPlayMode, _visualizationMode, playingBackwards;
 	float timePosition, clickOffset, timeZoomFactor = 1, lastNodeTime;
 	double lastSeconds;
-	
+
 	Option<EditorApplication.CallbackFunction> updateDelegateOpt;
 
 
@@ -59,15 +59,15 @@ public class Timeline  {
 		timeRect = new Rect (position.x + timelineOffset, position.y, position.width - 15, 20);
 		blackBarRect = new Rect (position.x + timelineOffset - 1, position.y + 19, position.width, 16);
 
-		if (funTweenManager.valueOut(out var ftm)) {
-			currentTime = ftm.currentTime;
+		if (funTweenManager.valueOut(out var ftm) && !isInPlayMode && visualizationMode) {
+			currentTime = ftm.timeline.timeline.timePassed;
 		}
 
 
 		doCursor ();
 		doToolbarGUI (position, funTweenManager);
 		drawTicksGUI ();
-		doEvents (funTweenManager);
+		doTimelineEvents (funTweenManager);
 	
 		scroll = GUI.BeginScrollView(
 			new Rect(position.x + timelineOffset,
@@ -140,15 +140,14 @@ public class Timeline  {
 
 	void updateAnimation(FunTweenManager ftm) {
 		var currentSeconds = currentRealSeconds();
-		//Log.d.warn($"current time {currentSeconds} last time {lastSeconds}");
 		if (lastSeconds < 1) lastSeconds = currentSeconds;
 		var timeDiff = (float)(currentSeconds - lastSeconds);
 		lastSeconds = currentSeconds;
-		ftm.manager.update(timeDiff);
+		
+		ftm.timeline.timeline.timePassed += timeDiff * (playingBackwards ? -1 : 1);
 	}
 
 	void startUpdatingTime(FunTweenManager ftm) {
-		ftm.recreate();
 		startVisualization(ftm);
 		lastSeconds = currentRealSeconds();
 		updateDelegateOpt.voidFold(
@@ -167,7 +166,7 @@ public class Timeline  {
 
 	void startVisualization(FunTweenManager ftm) {
 		if (!visualizationMode && getTimelineTargets(ftm).valueOut(out var data)) {
-			
+			ftm.recreate();
 			visualizationMode = true;
 			Undo.RegisterCompleteObjectUndo(data, "Animating targets");
 		}
@@ -191,21 +190,33 @@ public class Timeline  {
 		if (funTweenManager.valueOut(out var ftm)) {
 			
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_beginButton"), EditorStyles.toolbarButton)) {
+				ftm.timeline.timeline.timePassed = 0;
 				if (!isInPlayMode) {
 					stopTimeUpdate();
 					startVisualization(ftm);
 				}
-				ftm.run(FunTweenManager.Action.Stop);
-				ftm.timeline.timeline.timePassed = 0;
+				else {
+					ftm.run(FunTweenManager.Action.Stop);
+				}
 				isAnimationPlaying = false;
 			}
 
 			GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepButton"), EditorStyles.toolbarButton)) {
-				if (!isInPlayMode && !isAnimationPlaying) {
-					startUpdatingTime(ftm);
+				if (!isInPlayMode) {
+					if (!isAnimationPlaying) {
+						ftm.timeline.timeline.timePassed = 0;
+						startUpdatingTime(ftm);
+					}
+
+					if (!visualizationMode) {
+						startVisualization(ftm);
+					}
+					playingBackwards = false;
 				}
-				ftm.run(FunTweenManager.Action.PlayForwards);
+				else {
+					ftm.run(FunTweenManager.Action.PlayForwards);
+				}
 				isAnimationPlaying = true;
 			}
 			GUI.backgroundColor = Color.white;
@@ -216,16 +227,27 @@ public class Timeline  {
 					: EditorGUIUtility.FindTexture("d_PlayButton On"), EditorStyles.toolbarButton)
 			) {
 				if (isAnimationPlaying) {
-					if (!isInPlayMode) { stopTimeUpdate(); } 
-					ftm.run(FunTweenManager.Action.Stop);
+					if (!isInPlayMode) {
+						stopTimeUpdate();
+						playingBackwards = false;
+					}
+					else {
+						ftm.run(FunTweenManager.Action.Stop);
+					}
 					isAnimationPlaying = false;
 				}
 				else {
 					if (!isInPlayMode) {
+						
+						if (!visualizationMode) {
+							startVisualization(ftm);
+						}
 						startUpdatingTime(ftm);
+						playingBackwards = false;
 					}
-					
-					ftm.run(FunTweenManager.Action.Resume);
+					else {
+						ftm.run(FunTweenManager.Action.Resume);
+					}
 					isAnimationPlaying = true;
 				}
 			}
@@ -236,7 +258,6 @@ public class Timeline  {
 			) {
 				if (!isInPlayMode){
 					stopTimeUpdate();
-					startVisualization(ftm);
 				}
 				else {
 					ftm.run(FunTweenManager.Action.Stop);
@@ -247,11 +268,15 @@ public class Timeline  {
 
 			GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepLeftButton"), EditorStyles.toolbarButton)) {
-				if (!isInPlayMode && !isAnimationPlaying) {
-					startUpdatingTime(ftm);
+				if (!isInPlayMode) {
+					if (!visualizationMode)  { startVisualization(ftm); }
+					ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
+					if (!isAnimationPlaying) { startUpdatingTime(ftm);  }
+					playingBackwards = true;
 				}
-
-				ftm.run(FunTweenManager.Action.PlayBackwards);
+				else {
+					ftm.run(FunTweenManager.Action.PlayBackwards);
+				}
 				isAnimationPlaying = true;
 			}
 
@@ -259,18 +284,27 @@ public class Timeline  {
 
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_endButton"), EditorStyles.toolbarButton)) {
 				if (!isInPlayMode) {
+					if (!visualizationMode) {
+						startVisualization(ftm);
+					}
+					ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
 					stopTimeUpdate();
-					startVisualization(ftm);
 				}
-				ftm.run(FunTweenManager.Action.Stop);
-				ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
+				else {
+					ftm.run(FunTweenManager.Action.Stop);
+				}
 				isAnimationPlaying = false;
 			}
 
 			GUILayout.Space(10f);
 
 			if (GUILayout.Button(EditorGUIUtility.FindTexture("d_playLoopOff"), EditorStyles.toolbarButton)) {
-				ftm.run(FunTweenManager.Action.Reverse);
+				if (!isInPlayMode) {
+					playingBackwards = !playingBackwards;
+				}
+				else {
+					ftm.run(FunTweenManager.Action.Reverse);
+				}
 			}
 
 			GUILayout.FlexibleSpace();
@@ -331,8 +365,8 @@ public class Timeline  {
 					.Aggregate((acc, curr) => acc.concat(curr))
 		);
 
-	void doEvents(Option<FunTweenManager> funTweenManager){
-		if (!GUI.enabled) {
+	void doTimelineEvents(Option<FunTweenManager> funTweenManager){
+		if (!GUI.enabled && !visualizationMode) {
 			return;
 		}
 		var ev = Event.current;
@@ -356,19 +390,21 @@ public class Timeline  {
 					if (onTimelineClick != null){
 						onTimelineClick(currentTime);
 					}
-					
-					if (!Application.isPlaying && !visualizationMode) {
-						ftm.recreate();
-						Undo.RegisterCompleteObjectUndo(data, "targets saved");
-					}
 
 					if (!isInPlayMode) {
-						stopTimeUpdate();
-						isAnimationPlaying = false;
+						if (visualizationMode) {
+							stopTimeUpdate();
+						}
+						else {
+							ftm.recreate();
+							Undo.RegisterCompleteObjectUndo(data, "targets saved");
+						}
+					}
+					else {
+						ftm.run(FunTweenManager.Action.Stop);	
 					}
 					
 					ftm.timeline.timeline.timePassed = currentTime;
-					//ftm.run(FunTweenManager.Action.Stop);
 				}
 				else {
 					Log.d.warn($"Set targets before evaluating!");
@@ -378,10 +414,9 @@ public class Timeline  {
 			}
 			break;
 		case EventType.MouseUp:
-			if (changeTime) {
+			if (changeTime && !visualizationMode) {
 				Undo.RevertAllInCurrentGroup();
 			}
-
 			changeTime = false;
 			changeOffset = false;
 
@@ -391,8 +426,8 @@ public class Timeline  {
 				timePosition = Event.current.mousePosition.x + scroll.x;
 
 				if (funTweenManager.valueOut(out var ftm)) {
-					ftm.timeline.timeline.timePassed = currentTime;
-				//	ftm.run(FunTweenManager.Action.Stop);
+					ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
+					ftm.run(FunTweenManager.Action.Stop);
 				}
 			}
 			switch (ev.button) {
@@ -403,12 +438,6 @@ public class Timeline  {
 					timelineOffset = Mathf.Clamp (timelineOffset, 170, drawRect.width - 170);
 					timePosition = timelineOffset + clickOffset;
 					timePosition = Mathf.Clamp(timePosition, timelineOffset, Mathf.Infinity);
-					ev.Use();
-				}
-		
-				if(changeTime){
-					timePosition = Event.current.mousePosition.x+scroll.x;
-					timePosition=Mathf.Clamp(timePosition,timelineOffset,Mathf.Infinity);
 					ev.Use();
 				}
 				break;
