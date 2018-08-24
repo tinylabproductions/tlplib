@@ -381,7 +381,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &631183780
 MonoBehaviour:
@@ -578,7 +578,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &828684588
 GameObject:
@@ -661,7 +661,7 @@ Transform:
   m_Children:
   - {fileID: 30236508}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1046432712
 GameObject:
@@ -1021,6 +1021,8 @@ GameObject:
   - component: {fileID: 2044119773}
   - component: {fileID: 2044119772}
   - component: {fileID: 2044119768}
+  - component: {fileID: 2044119770}
+  - component: {fileID: 2044119769}
   m_Layer: 0
   m_Name: Animations
   m_TagString: Untagged
@@ -1043,7 +1045,47 @@ MonoBehaviour:
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
   _end: {x: 0, y: 90, z: 90}
-  _duration: 10
+  _duration: 4.8
+  _ease:
+    _isComplex: 0
+    _simple: 0
+    _complex: {fileID: 0}
+  _targets:
+  - {fileID: 828684592}
+--- !u!114 &2044119769
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2044119767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a50908fb9e04ec79e7a7039ffe9bdda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 2044119772}
+  _invokeOn: 0
+  _onEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+--- !u!114 &2044119770
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2044119767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ad4864ddfb443e1b53db180854b02f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 2044119772}
+  _mode: 1
+  _start: {x: 0, y: 0, z: 0}
+  _end: {x: 0, y: 5, z: 0}
+  _duration: 3.6499958
   _ease:
     _isComplex: 0
     _simple: 0
@@ -1071,9 +1113,19 @@ MonoBehaviour:
     _elements:
     - _title: Transform_LocalEulerAngles
       _startAt: 2
-      _timeOffset: 0
+      _timeOffset: 5.4500003
       _element: {fileID: 2044119768}
-      _timelineChannelIdx: 5
+      _timelineChannelIdx: 4
+    - _title: Callback_UnityEvent
+      _startAt: 2
+      _timeOffset: 18.349995
+      _element: {fileID: 2044119769}
+      _timelineChannelIdx: 4
+    - _title: Transform_Position
+      _startAt: 2
+      _timeOffset: 14.699999
+      _element: {fileID: 2044119770}
+      _timelineChannelIdx: 9
   _onStart: []
   _onEnd: []
 --- !u!4 &2044119773
@@ -1087,5 +1139,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

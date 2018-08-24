@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     
 #if UNITY_EDITOR
     public override void setDuration(float dur) { }
-    public override Object[] getTargets() { return new Object[]{};}
+    public override UnityEngine.Object[] getTargets() { return new UnityEngine.Object[]{};}
 #endif
 
     public override IEnumerable<TweenTimelineElement> elements {
