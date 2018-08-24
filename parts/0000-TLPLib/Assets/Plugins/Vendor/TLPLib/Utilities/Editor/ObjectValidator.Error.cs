@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    [Record(GenerateConstructor = GeneratedContructor.None, GenerateToString = false)]
+    [Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)]
     public partial struct Error {
       public enum Type : byte {
         MissingComponent,
@@ -18,6 +18,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         MissingReference,
         NullReference,
         EmptyCollection,
+        EmptyString,
         UnityEventInvalidMethod,
         UnityEventInvalid,
         TextFieldBadTag,
@@ -84,6 +85,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         Object o, FieldHierarchyStr hierarchy, CheckContext context
       ) => new Error(
         Type.EmptyCollection,
+        $"{context}. Property: {hierarchy.s}",
+        o
+      );
+
+      public static Error emptyString(
+        Object o, FieldHierarchyStr hierarchy, CheckContext context
+      ) => new Error(
+        Type.EmptyString,
         $"{context}. Property: {hierarchy.s}",
         o
       );

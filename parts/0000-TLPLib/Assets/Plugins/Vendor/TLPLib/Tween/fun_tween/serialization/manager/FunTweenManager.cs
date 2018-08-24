@@ -1,4 +1,5 @@
-﻿using AdvancedInspector;
+﻿using System;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
@@ -218,9 +219,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         case Action.ApplyMaxDurationState:
           applyMaxDurationState();
           break;
-        default:
-          Log.d.error($"Unknown action {action} for {nameof(FunTweenManager)}");
-          break;
+        default: throw new Exception($"Unknown action {action} for {nameof(FunTweenManager)}");
       }
     }
 

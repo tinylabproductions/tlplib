@@ -128,4 +128,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionKeyCode : UnityOption<KeyCode> {}
   [Serializable, PublicAPI] public class UnityOptionDuration: UnityOption<Duration> {}
   [Serializable, PublicAPI] public class UnityOptionSprite : UnityOption<Sprite> {}
+  [Serializable, PublicAPI] public class UnityOptionParticleSystem : UnityOption<ParticleSystem> {}
+  [Serializable, PublicAPI] public class UnityOptionTrailRenderer : UnityOption<TrailRenderer> {}
+  [Serializable, PublicAPI] public class UnityOptionLayerMask : UnityOption<LayerMask> {}
 }
