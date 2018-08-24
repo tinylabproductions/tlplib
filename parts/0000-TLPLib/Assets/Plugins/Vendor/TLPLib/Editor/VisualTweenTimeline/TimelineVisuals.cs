@@ -5,23 +5,26 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
+using GenerationAttributes;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
-[Serializable]
-public class Timeline  {
+
+public class TimelineVisuals  {
 	public delegate void TimelineGUICallback(Rect position);
 	public TimelineGUICallback onTimelineGUI;
 	public delegate void SettingsGUICallback(float width);
 	public SettingsGUICallback onSettingsGUI;
 	public delegate void OnTimelineClick(float time);
 	public OnTimelineClick onTimelineClick;
+	
 
 	Rect _timeRect, _drawRect, blackBarRect;
 	const float ZOOM = 20;
-	readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
+	readonly int[] timeFactor;
 	
 	public Rect timeRect {
 		get => _timeRect;
@@ -50,7 +53,15 @@ public class Timeline  {
 	float timePosition, clickOffset, timeZoomFactor = 1, lastNodeTime;
 	double lastSeconds;
 
+	TimelineEditor timelineEditor;
+
 	Option<EditorApplication.CallbackFunction> updateDelegateOpt;
+
+	public TimelineVisuals(TimelineEditor timelineEditor) {
+		this.timelineEditor = timelineEditor;
+		timeFactor = new []{1,5,10,30,60,300,600,1800,3600,7200};
+		timeIndexFactor = 1;
+	}
 
 
 	public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager) {
@@ -62,7 +73,6 @@ public class Timeline  {
 		if (funTweenManager.valueOut(out var ftm) && !isInPlayMode && visualizationMode) {
 			currentTime = ftm.timeline.timeline.timePassed;
 		}
-
 
 		doCursor ();
 		doToolbarGUI (position, funTweenManager);
@@ -91,7 +101,157 @@ public class Timeline  {
 		GUI.EndScrollView();
 		doBlackBar ();
 		doTimelineGUI ();
+		
 	}
+	
+	
+	
+/*		  void drawFunNodes(Rect position) {
+		  GUI.enabled = !visualizationMode;
+
+		  if (timelineEditor.funTweenManager.isSome) {
+			  Option<Rect> snapIndicatorOpt = F.none_;
+			  callbackVisualsList.Clear();
+			  var indicatorColor = Color.green;
+
+			  foreach (var node in funNodes) {
+				  if (node.element.element != null) {
+					  if (!node.isCallback) {
+						  EditorGUIUtility.AddCursorRect(
+							  new Rect(timelineVisuals.secondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20),
+							  MouseCursor.ResizeHorizontal);
+						  EditorGUIUtility.AddCursorRect(
+							  new Rect(timelineVisuals.secondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20),
+							  MouseCursor.ResizeHorizontal);
+					  }
+					  EditorGUIUtility.AddCursorRect(
+						  new Rect(
+							  timelineVisuals.secondsToGUI(node.startTime - (node.isCallback ? 0.5f : 0)),
+							  node.channel * 20,
+							  timelineVisuals.secondsToGUI(node.isCallback ? 1 : node.duration), 20
+						  ),
+						  MouseCursor.Pan);
+
+					  var boxRect = new Rect(timelineVisuals.secondsToGUI(node.startTime), node.channel * 20,
+						  timelineVisuals.secondsToGUI(node.duration), 20);
+
+					  var currentNodeIsSelected = !selectedNodesList.isEmpty() &&
+						  selectedNodesList.find(x => x == node).isSome;
+
+					  var iconRect = new Rect(boxRect.x - 10, boxRect.y, 20, boxRect.height);
+					  var tooltip = new GUIContent(EditorGUIUtility.FindTexture("tranp"), node.name);
+
+					  void drawOutline(Rect aroundRect, Color outlineColor) {
+							  
+						  if (!node.isCallback) {
+							  EditorGUI.DrawRect(aroundRect, outlineColor);
+							  GUI.Box(new Rect(
+								  aroundRect.x + OUTLINE_WIDTH,
+								  aroundRect.y + OUTLINE_WIDTH,
+								  aroundRect.width - OUTLINE_WIDTH * 2,
+								  aroundRect.height - OUTLINE_WIDTH * 2
+							  ), "", "TL LogicBar 0");
+						  }
+						  else {
+								EditorGUI.DrawRect(iconRect, outlineColor);
+								drawCallbackIcon(new callbackVisuals(boxRect, tooltip));
+						  }
+					  }
+
+					  if (!selectedNodesList.isEmpty() &&
+						  selectedNodesList.find(x => x == node).valueOut(out var selectedNode)
+					  ) {
+						  drawOutline(boxRect, Color.magenta);
+						  
+						  if ( (isEndSnapped || isStartSnapped)
+							  && rootSelectedNodeOpt.valueOut(out var rootNode)
+							  && rootNode == node
+							  ) {
+							  foreach (var nodeSnappedTo in nodeSnappedToOpt) {
+								  var selectedIsHigher = selectedNode.channel < nodeSnappedTo.node.channel;
+								  var distance = (Mathf.Abs(selectedNode.channel - nodeSnappedTo.node.channel) + 2) * 20;
+								  snapIndicatorOpt =
+									  selectedIsHigher
+										  ? getIndicatorRect(selectedNode, isStartSnapped, distance).some()
+										  : getIndicatorRect(nodeSnappedTo.node, nodeSnappedTo.snappedToStart, distance).some();
+
+								  Rect getIndicatorRect(FunSequenceNode nawd, bool isSnappedToStart, float dist) =>
+									  new Rect(timelineVisuals.secondsToGUI(
+											  isSnappedToStart
+												  ? nawd.startTime
+												  : nawd.getEnd()),
+										  nawd.channel * 20 - 10, 2, dist
+									  );
+							  }
+
+							  indicatorColor = isEndSnapped ? Color.yellow : Color.cyan;
+						  }
+					  }
+					  else if (!node.isCallback) {
+						  GUI.Box(boxRect, "", "TL LogicBar 0");
+					  }
+					  
+					  if (node.isCallback) {
+						  callbackVisualsList.Add(new callbackVisuals(boxRect, tooltip));
+					  }
+
+					  if (node.element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement) {
+						  drawOutline(boxRect, Color.green);
+						  if (getLeftNode(node).valueOut(out var leftNode) && node.linkedNode.valueOut(out var linkedTo) && leftNode == linkedTo) {
+							  EditorGUI.DrawRect(
+								  new Rect(timelineVisuals.secondsToGUI(leftNode.getEnd()),
+									  node.channel * 20 + 10, timelineVisuals.secondsToGUI(node.startTime - leftNode.getEnd()), 2),
+								  Color.green
+							  );
+							  EditorGUI.DrawRect(
+								  new Rect(timelineVisuals.secondsToGUI(leftNode.getEnd()),
+									  node.channel * 20, 3, 20),
+								  Color.green
+							  );
+						  }
+					  }
+					  
+					  if ( (node.element.element.getTargets().Length == 0
+							  || node.element.element.getTargets().Any(target => target == null)) && !node.isCallback
+					  ) {
+						  drawOutline(boxRect, Color.red);
+					  }
+
+					  var style = new GUIStyle("Label");
+					  style.fontSize = currentNodeIsSelected ? 12 : style.fontSize;
+					  style.fontStyle = FontStyle.Bold;
+					  var color = currentNodeIsSelected ? Color.magenta : node.nodeTextColor;
+					  color.a = currentNodeIsSelected ? 1.0f : 0.7f;
+					  style.normal.textColor = color;
+					  Vector3 size = style.CalcSize(new GUIContent($"content: {node.name}"));
+					  var labelPosX = Mathf.Clamp(boxRect.x + boxRect.width / 2 - size.x / 3 , boxRect.x, boxRect.x + boxRect.width);
+					  var rect1 = new Rect(labelPosX,
+						  boxRect.y + boxRect.height * 0.5f - size.y * 0.5f, Mathf.Clamp(size.x, 0, boxRect.width + (boxRect.x - labelPosX)), size.y);
+
+					  GUI.Label(rect1, $"{node.name}", style);
+				  }
+
+				  if (snapIndicatorOpt.valueOut(out var snapIndicator)) {
+					  EditorGUI.DrawRect(snapIndicator, indicatorColor);
+				  }
+
+				  foreach (var callbackVisual in callbackVisualsList) {
+					  drawCallbackIcon(callbackVisual);
+				  }
+				  
+				  void drawCallbackIcon(callbackVisuals visuals) {
+					  GUI.color = Color.yellow;
+					  GUI.DrawTexture(visuals.iconRect,
+						  EditorGUIUtility.FindTexture("d_animationkeyframe"));
+					  GUI.Label(visuals.labelRect, visuals.labelContent);
+					  GUI.color = Color.white;
+				  }
+
+				  doEvents();
+			  }
+		  }
+	  }*/
+
 
 	void doLines(){
 		Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
@@ -432,8 +592,7 @@ public class Timeline  {
 			}
 			switch (ev.button) {
 			case 0:
-				
-				if(changeOffset){
+				if (changeOffset) {
 					timelineOffset = ev.mousePosition.x;
 					timelineOffset = Mathf.Clamp (timelineOffset, 170, drawRect.width - 170);
 					timePosition = timelineOffset + clickOffset;
@@ -456,7 +615,7 @@ public class Timeline  {
 			}
 			break;
 		case EventType.ScrollWheel:
-			float f = timeZoomFactor;
+			var f = timeZoomFactor;
 			if (timeIndexFactor == timeFactor.Length - 1 && f < 0.5f) {
 				f = 0.5f;
 			} else {
