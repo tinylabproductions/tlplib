@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
   /// to serialize it, because Unity does not serialize generic classes.
   [Record]
-  public partial class TagPrefab<A> : OnObjectValidate where A : Object {
+  public partial class TagPrefab<A> : TagPrefab, OnObjectValidate where A : Object {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -34,15 +34,19 @@ namespace com.tinylabproductions.TLPLib.Data {
 #endif
     }
   }
-  public static class TagPrefab {
+  
+  public abstract class TagPrefab {
     [PublicAPI] public static TagPrefab<A> a<A>(A prefab) where A : Object => new TagPrefab<A>(prefab);
+  }
 
+  public static class TagPrefabExts {
     [PublicAPI]
     public static TagPrefab<B> upcastPrefab<A, B>(this TagPrefab<A> aPrefab, B example)
       where A : B 
       where B : Object => 
-      a<B>(aPrefab.prefab);
+      TagPrefab.a<B>(aPrefab.prefab);
   }
+  
   [Serializable, PublicAPI] public class GameObjectPrefab : TagPrefab<GameObject> { }
   [Serializable, PublicAPI] public class TransformPrefab : TagPrefab<Transform> { }
   [Serializable, PublicAPI] public class RectTransformPrefab : TagPrefab<RectTransform> { }
