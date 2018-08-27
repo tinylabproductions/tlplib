@@ -222,6 +222,5 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         default: throw new Exception($"Unknown action {action} for {nameof(FunTweenManager)}");
       }
     }
-
   }
 }

@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   public class TweenTimeline : ITweenTimeline {
-    public struct Effect {
+    struct Effect {
       public readonly float startsAt, endsAt;
       public readonly TweenTimelineElement element;
 
@@ -75,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     public float duration { get; }
-    public readonly Effect[] effects;
+    readonly Effect[] effects;
 
     bool lastDirectionWasForwards;
 

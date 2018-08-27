@@ -1,19 +1,14 @@
 ﻿using System.Collections.Generic;
 using AdvancedInspector;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
   /// <summary>
   /// Everything that can go into <see cref="SerializedTweenTimeline"/>.
   /// </summary>
-  public abstract class SerializedTweenTimelineElement : ComponentMonoBehaviour, Invalidatable {
+  public abstract partial class SerializedTweenTimelineElement : ComponentMonoBehaviour, Invalidatable {
     [PublicAPI] public abstract float duration { get; }
     [PublicAPI] public abstract IEnumerable<TweenTimelineElement> elements { get; }
     public abstract void invalidate();
-    #if UNITY_EDITOR
-    public abstract void setDuration(float dur);
-    public abstract Object[] getTargets();
-#endif
   }
 }

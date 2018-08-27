@@ -1,23 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using com.tinylabproductions.TLPGame.FacebookCore;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
-using Prime31;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
-  public abstract class SerializedTweener : SerializedTweenTimelineElement {
+  public abstract partial class SerializedTweener : SerializedTweenTimelineElement {
     // ReSharper disable once UnusedMember.Global
     protected enum Mode { Absolute = 0, Relative = 1, RelativeFromCreation = 2 }
   }
 
-  public abstract class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
+  public abstract partial class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
 
     #region Unity Serialized Fields
 #pragma warning disable 649
@@ -51,11 +47,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     public override void invalidate() => _ease.invalidate();
 
-#if UNITY_EDITOR
-    public override void setDuration(float dur) { _duration = dur; }
-    public override Object[] getTargets() { return _targets as Object[]; }
-#endif
-    
     public override float duration => _duration;
     
     public override IEnumerable<TweenTimelineElement> elements {
@@ -81,12 +72,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     }
 
     public override string ToString() {
-      var changeS =
-        _mode == Mode.Relative ? ops.diff(convert(_end), convert(_start)).ToString()
-        : _mode == Mode.RelativeFromCreation ? $"current + ({_start} to {_end})"
-        : $"{_start} to {_end}";
       //Description too long for external window
-      //return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
+
+//      var changeS =
+//        _mode == Mode.Relative ? ops.diff(convert(_end), convert(_start)).ToString()
+//        : _mode == Mode.RelativeFromCreation ? $"current + ({_start} to {_end})"
+//        : $"{_start} to {_end}";
+      
+//      return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
       return $"";
     }
   }

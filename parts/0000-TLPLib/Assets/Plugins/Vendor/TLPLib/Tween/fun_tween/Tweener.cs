@@ -1,7 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -177,7 +176,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
     ) {
       if (applyEffectsForRelativeTweens || !tween.isRelative) {
-//        Log.d.warn($"INST ID {this.GetHashCode()}");
         changeState(tween.eval(previousTimePassed, timePassed, playingForwards), t, tween.isRelative);
       }
     }

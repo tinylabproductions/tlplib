@@ -24,38 +24,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
-      [SerializeField, ReadOnly] At _startAt;
+      [SerializeField] At _startAt;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
       [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
       #endregion
-      
-#if UNITY_EDITOR
-    
-      [SerializeField, HideInInspector] int _timelineChannelIdx;
-      
-      public int timelineChannelIdx {
-        get => _timelineChannelIdx;
-        set => _timelineChannelIdx = value;
-      }
-      
-      public string title {
-        get => _title;
-        set => _title = value;
-      }
-
-      public At startAt {
-        get => _startAt;
-        set => _startAt = value;
-      }
-
-      public float timeOffset {
-        get => _timeOffset;
-        set => _timeOffset = value;
-      }
-#endif
 
       public void invalidate() => _element.invalidate();
 
@@ -122,13 +97,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
         return _timeline;
       }
     }
-    
-#if UNITY_EDITOR
-    public Element[] elements {
-      get => _elements;
-      set => _elements = value;
-    }
-#endif
     
     public void invalidate() {
       _timeline = null;
