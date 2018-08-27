@@ -9,7 +9,6 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   public class TimelineNode {
     public SerializedTweenTimeline.Element element;
-    public SerializedTweenTimeline.Element.At startType;
     public float startTime, duration;
     public int channel;
     public string name;
@@ -49,7 +48,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
       this.element = element;
       channel = element.timelineChannelIdx;
-      startType = element.startAt;
       this.startTime = startTime;
       this.name = name;
       nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
