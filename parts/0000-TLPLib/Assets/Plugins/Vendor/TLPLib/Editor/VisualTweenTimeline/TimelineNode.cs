@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if ADV_INS_CHANGES
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;

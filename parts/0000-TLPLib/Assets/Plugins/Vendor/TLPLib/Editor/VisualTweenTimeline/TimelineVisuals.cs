@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ADV_INS_CHANGES
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -20,7 +21,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		}
 		
 		public delegate void SettingsGUICallback(float width, bool isVisualiisation);
-		public SettingsGUICallback onSettingsGUI;
+
+		readonly SettingsGUICallback onSettingsGUI;
 		
 		[Record]
 		partial struct callbackVisuals {
@@ -655,3 +657,4 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		);
 	}
 }
+#endif
