@@ -233,7 +233,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					GUI.Label(visuals.labelRect, visuals.labelContent);
 					GUI.color = Color.white;
 				}
-	
 			}
 		}
 	
@@ -292,16 +291,18 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 		}
 	
 		void startUpdatingTime(FunTweenManager ftm) {
-			startVisualization(ftm);
-			lastSeconds = currentRealSeconds();
-			updateDelegateOpt.voidFold(
-				() => {
-					EditorApplication.CallbackFunction updateDelegate = () => updateAnimation(ftm);
-					EditorApplication.update += updateDelegate;
-					updateDelegateOpt = updateDelegate.some();
-				},
-				updateDelegate => EditorApplication.update += updateDelegate
-			);
+			if (!EditorApplication.isCompiling) {
+				startVisualization(ftm);
+				lastSeconds = currentRealSeconds();
+				updateDelegateOpt.voidFold(
+					() => {
+						EditorApplication.CallbackFunction updateDelegate = () => updateAnimation(ftm);
+						EditorApplication.update += updateDelegate;
+						updateDelegateOpt = updateDelegate.some();
+					},
+					updateDelegate => EditorApplication.update += updateDelegate
+				);
+			}
 		}
 	
 		void stopTimeUpdate() {
@@ -310,9 +311,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 	
 		void startVisualization(FunTweenManager ftm) {
 			if (!visualizationMode && getTimelineTargets(ftm).valueOut(out var data)) {
+				Undo.RegisterCompleteObjectUndo(data, "Animating targets");
 				ftm.recreate();
 				visualizationMode = true;
-				Undo.RegisterCompleteObjectUndo(data, "Animating targets");
 			}
 		}
 	
@@ -329,8 +330,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			GUILayout.BeginArea (new Rect (position.x, position.y, timelineOffset, position.height), GUIContent.none, style);
 			
 			GUILayout.BeginHorizontal (EditorStyles.toolbar);
-	
-			GUI.enabled = true;
+
+			GUI.enabled = !EditorApplication.isCompiling;
 			if (funTweenManager.valueOut(out var ftm)) {
 				
 				if (GUILayout.Button(EditorGUIUtility.FindTexture("d_beginButton"), EditorStyles.toolbarButton)) {
@@ -537,8 +538,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 								stopTimeUpdate();
 							}
 							else {
-								ftm.recreate();
 								Undo.RegisterCompleteObjectUndo(data, "targets saved");
+								ftm.recreate();
 							}
 						}
 						else {
@@ -567,8 +568,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					timePosition = Event.current.mousePosition.x + scroll.x;
 	
 					if (funTweenManager.valueOut(out var ftm)) {
-						ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
-						ftm.run(FunTweenManager.Action.Stop);
+						if (!applicationPlaying) {
+							ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
+						}
+						else {
+							ftm.run(FunTweenManager.Action.Stop);
+						}
 					}
 				}
 				switch (ev.button) {
@@ -617,7 +622,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				break;
 			default: break;
 			}
-			
 		}
 	
 		public float secondsToGUI(float seconds){

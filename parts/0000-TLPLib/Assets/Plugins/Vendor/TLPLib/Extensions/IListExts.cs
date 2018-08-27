@@ -74,6 +74,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var idx = idxOpt.get;
       list[idx] = ifFound(list[idx]);
     }
+    
+    [PublicAPI]
+    public static Option<IList<A>> noneIfEmpty<A>(this IList<A> enumerable) =>
+      enumerable.isEmpty() ? F.none<IList<A>>() : F.some(enumerable);
 
     [PublicAPI] public static void shuffle<A>(this IList<A> list, ref Rng rng) {
       var n = list.Count;

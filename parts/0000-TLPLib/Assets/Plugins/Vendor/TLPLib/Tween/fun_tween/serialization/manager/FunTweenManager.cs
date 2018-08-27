@@ -168,7 +168,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       _timeline.invalidate();
       _manager = null;
       handleStartAutoplay();
-      if (_autoplay == AutoplayMode.Enabled) manager.play();
     }
     
     public enum Action : byte {
