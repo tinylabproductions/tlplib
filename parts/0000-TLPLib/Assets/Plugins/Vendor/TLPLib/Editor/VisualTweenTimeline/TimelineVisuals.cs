@@ -164,7 +164,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 										? getIndicatorRect(selectedNode, timelineEditor.isStartSnapped, distance).some()
 										: getIndicatorRect(nodeSnappedTo.node, nodeSnappedTo.snappedToStart, distance).some();
 	
-								Rect getIndicatorRect(FunSequenceNode nawd, bool isSnappedToStart, float dist) =>
+								Rect getIndicatorRect(TimelineNode nawd, bool isSnappedToStart, float dist) =>
 									new Rect(secondsToGUI(
 											isSnappedToStart
 												? nawd.startTime
@@ -629,7 +629,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			return x / guiSecond;
 		}
 		
-		public void recalculateTimelineWidth(Option<List<FunSequenceNode>> funNodes) => lastNodeTime = secondsToGUI(
+		public void recalculateTimelineWidth(Option<List<TimelineNode>> funNodes) => lastNodeTime = secondsToGUI(
 			funNodes.fold(
 				() => 0,
 				nodes => nodes.Max(node => node.getEnd())
