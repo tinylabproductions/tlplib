@@ -69,6 +69,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			if (funTweenManager.valueOut(out var ftm) && (visualizationMode || applicationPlaying)) {
 				currentTime = ftm.timeline.timeline.timePassed;
 			}
+			
+			if (Event.current.isKey && !applicationPlaying) {
+				stopVisualization();
+				isAnimationPlaying = false;
+				return;
+			}
 	
 			doCursor ();
 			doToolbarGUI (position, funTweenManager);
@@ -522,7 +528,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				return;
 			}
 			var ev = Event.current;
-			
+
 			switch (ev.rawType) {
 			case EventType.MouseDown:
 				
@@ -581,6 +587,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
 							ftm.run(FunTweenManager.Action.Stop);
 						}
+						isAnimationPlaying = false;
 					}
 				}
 				switch (ev.button) {
