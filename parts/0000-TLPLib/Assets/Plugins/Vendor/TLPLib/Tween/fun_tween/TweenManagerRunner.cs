@@ -19,19 +19,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public static TweenManagerRunner instance {
       get {
         TweenManagerRunner create() {
-          var tweenManagerRunnerComp = GameObject.Find("TweenManagerRunner").opt().fold(
-            createRunner,
-            tweenRunner => tweenRunner.GetComponent<TweenManagerRunner>().opt().fold(
-              createRunner,
-              runnerComponent => runnerComponent
-            )
-          );
-
-          TweenManagerRunner createRunner() => 
-            new GameObject(nameof(TweenManagerRunner)).AddComponent<TweenManagerRunner>();
-          
-          if (Application.isPlaying) DontDestroyOnLoad(tweenManagerRunnerComp.gameObject);
-          return tweenManagerRunnerComp;
+          var go = new GameObject(nameof(TweenManagerRunner));
+          DontDestroyOnLoad(go);
+          return go.AddComponent<TweenManagerRunner>();
         }
 
         return _instance ? _instance : (_instance = create());

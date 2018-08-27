@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 			timeRect = new Rect (position.x + timelineOffset, position.y, position.width - 15, 20);
 			blackBarRect = new Rect (position.x + timelineOffset - 1, position.y + 19, position.width, 16);
 	
-			if (funTweenManager.valueOut(out var ftm) && !applicationPlaying && visualizationMode) {
+			if (funTweenManager.valueOut(out var ftm) && (visualizationMode || applicationPlaying)) {
 				currentTime = ftm.timeline.timeline.timePassed;
 			}
 	
@@ -81,7 +81,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 					position.width - timelineOffset,
 					position.height - timeRect.height - blackBarRect.height),
 				scroll,
-				new Rect(0, 0, position.width + lastNodeTime + expandView.x - timelineOffset, position.height + 400 + expandView.y), true, true
+				new Rect(0, 0,
+					position.width + lastNodeTime + expandView.x - timelineOffset,
+					position.height + 400 + expandView.y),
+				true, true
 			);
 			
 			doLines ();
@@ -259,7 +262,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				Vector3 size = style.CalcSize(new GUIContent($"content: {currentTime:F2}s"));
 				var rect1 = new Rect(timePosition - scroll.x, 19, size.x, size.y);
 				GUI.Label(rect1, $"{currentTime:F2}s", style);
-				Handles.DrawLine (new Vector3 (timePosition - scroll.x, 0, 0), new Vector3 (timePosition - scroll.x, _drawRect.height - 15, 0));
+				Handles.DrawLine(new Vector3(timePosition - scroll.x, 0, 0),
+					new Vector3(timePosition - scroll.x, _drawRect.height - 15, 0)
+				);
 				Handles.color = Color.white;
 			}
 		}
@@ -437,6 +442,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 						stopTimeUpdate();
 					}
 					else {
+						ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
 						ftm.run(FunTweenManager.Action.Stop);
 					}
 					isAnimationPlaying = false;
@@ -572,6 +578,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 							ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
 						}
 						else {
+							ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
 							ftm.run(FunTweenManager.Action.Stop);
 						}
 					}
@@ -580,7 +587,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 				case 0:
 					if (changeOffset) {
 						timelineOffset = ev.mousePosition.x;
-						timelineOffset = Mathf.Clamp (timelineOffset, 170, _drawRect.width - 170);
+						timelineOffset = Mathf.Clamp(timelineOffset, 170, _drawRect.width - 170);
 						timePosition = timelineOffset + clickOffset;
 						timePosition = Mathf.Clamp(timePosition, timelineOffset, Mathf.Infinity);
 						ev.Use();
