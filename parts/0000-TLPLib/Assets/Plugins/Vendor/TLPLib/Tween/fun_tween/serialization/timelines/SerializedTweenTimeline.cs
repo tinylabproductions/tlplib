@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
-      [SerializeField] At _startAt;
+      [SerializeField, HideInInspector] At _startAt;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
       [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
