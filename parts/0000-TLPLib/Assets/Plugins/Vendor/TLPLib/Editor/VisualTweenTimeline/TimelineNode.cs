@@ -5,15 +5,17 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 using UnityEngine;
+using Element = com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences.SerializedTweenTimeline.Element;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   public class TimelineNode {
-    public SerializedTweenTimeline.Element element;
-    public float startTime, duration;
-    public int channel;
-    public string name;
-    public bool isCallback;
-    public Color nodeTextColor;
+    public Element element { get; set; }
+    public float startTime { get; set; }
+    public float duration { get; set; }
+    public int channel { get; set; }
+    public string name { get; set; }
+    public bool isCallback { get; set; }
+    public Color nodeTextColor { get; private set; }
 
     public Option<TimelineNode> linkedNode { get; private set; }
 
@@ -22,14 +24,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void link(TimelineNode linkTo) { linkedNode = linkTo.some(); }
 
     public void reLink(TimelineNode linkTo) {
-      if (element.startAt == SerializedTweenTimeline.Element.At.AfterLastElement) {
+      if (element.startAt == Element.At.AfterLastElement) {
         link(linkTo);
       }
     }
     
     public void unlink() {
       linkedNode = F.none_;
-      convert(SerializedTweenTimeline.Element.At.SpecificTime);
+      convert(Element.At.SpecificTime);
     }
 
     public void refreshColor() =>
@@ -37,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     void setTimeOffset(float time) { element.timeOffset = time; }
 
-    public TimelineNode(SerializedTweenTimeline.Element element,  float startTime, string name) {
+    public TimelineNode(Element element,  float startTime, string name) {
       if (element.element && element.element is SerializedTweenCallback) {
         isCallback = true;
         duration = 0;
@@ -77,10 +79,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    public void convert(SerializedTweenTimeline.Element.At newStartType) {
+    public void convert(Element.At newStartType) {
       if (element.element != null) {
         switch (newStartType) {
-          case SerializedTweenTimeline.Element.At.AfterLastElement: {
+          case Element.At.AfterLastElement: {
             if (linkedNode.valueOut(out var linked)) {
               setTimeOffset(startTime - linked.getEnd());
               element.startAt = newStartType;
@@ -89,14 +91,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
             break;
           }
-          case SerializedTweenTimeline.Element.At.SpecificTime: {
+          case Element.At.SpecificTime: {
             setTimeOffset(startTime);
             element.startAt = newStartType;
             element.element.setDuration(duration);
             
             break;
           }
-          case SerializedTweenTimeline.Element.At.WithLastElement: {
+          case Element.At.WithLastElement: {
             if (linkedNode.valueOut(out var linked)) {
               setTimeOffset(startTime - linked.startTime);
               element.startAt = newStartType;
