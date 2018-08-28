@@ -144,7 +144,7 @@ MonoBehaviour:
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
   _end: {x: 0, y: 90, z: 90}
-  _duration: 4.447794
+  _duration: 9.799998
   _ease:
     _isComplex: 0
     _simple: 0
@@ -166,7 +166,7 @@ MonoBehaviour:
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
   _end: {x: 0, y: 4, z: 0}
-  _duration: 10.702206
+  _duration: 6.000002
   _ease:
     _isComplex: 0
     _simple: 0
@@ -206,20 +206,20 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _timelineChannelIdx: 2
+    - _timelineChannelIdx: 1
       _title: Transform_Rotation
       _startAt: 2
-      _timeOffset: 10.702206
+      _timeOffset: 6.000002
       _element: {fileID: 29821408}
     - _timelineChannelIdx: 5
       _title: Transform_Position
       _startAt: 2
       _timeOffset: 0
       _element: {fileID: 29821409}
-    - _timelineChannelIdx: 11
+    - _timelineChannelIdx: 10
       _title: Callback_CodeEvent
       _startAt: 2
-      _timeOffset: 15.15
+      _timeOffset: 6.0000005
       _element: {fileID: 29821410}
   _onStart: []
   _onEnd: []
