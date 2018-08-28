@@ -1,6 +1,7 @@
 ﻿#if ADV_INS_CHANGES
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Functional.Matching;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
@@ -56,26 +57,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     static Color elementToColor(SerializedTweenTimelineElement element) {
-      switch ( (object)element ) {
-        case Transform_Position _:
-          return Color.yellow;
-        case Path_Transfrom_Position _:
-          return Color.cyan;
-        case Transform_LocalEulerAngles _:
-          return new Color(1f, 0.75f, 1f);
-        case Transform_Rotation _:
-          return Color.green;
-        case Transform_LocalScale _:
-          return new Color(0.75f, 0.25f, 1);
-        case Light_Color _:
-          return new Color(0.75f, 1, 1);
-        case Light_Intensity _:
-          return new Color(1, 1, 0.75f);
-        case Graphic_ColorAlpha _:
-          return new Color(0.25f, 0.75f, 1f);
-        case Graphic_Color _:
-          return new Color(1f, 0.5f, 0f);
-        default: return Color.white;
+      switch ((object) element) {
+        case Transform_Position _:         return Color.yellow;
+        case Path_Transfrom_Position _:    return Color.cyan;
+        case Transform_LocalEulerAngles _: return new Color(1f, 0.75f, 1f);
+        case Transform_Rotation _:         return Color.green;
+        case Transform_LocalScale _:       return new Color(0.75f, 0.25f, 1);
+        case Light_Color _:                return new Color(0.75f, 1, 1);
+        case Light_Intensity _:            return new Color(1, 1, 0.75f);
+        case Graphic_ColorAlpha _:         return new Color(0.25f, 0.75f, 1f);
+        case Graphic_Color _:              return new Color(1f, 0.5f, 0f);
+        default:                           return Color.white;
       }
     }
     

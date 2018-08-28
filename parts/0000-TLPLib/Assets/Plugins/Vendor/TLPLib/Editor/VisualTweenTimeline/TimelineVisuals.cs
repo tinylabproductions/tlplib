@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using SnapType = com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline.TimelineEditor.SnapType;
@@ -16,7 +17,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   public partial class TimelineVisuals {
     
     public TimelineVisuals(TimelineEditor timelineEditor) {
-      timeFactor = new []{1,5,10,30,60,300,600,1800,3600,7200};
       onSettingsGUI = timelineEditor.doSettings;
     }
     
@@ -42,12 +42,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     Rect blackBarRect;
     const float ZOOM = 20;
     const int OUTLINE_WIDTH = 3;
-    readonly int[] timeFactor;
+    static readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
+    
     int timeIndexFactor = 1;
-
     Rect timeRect;
     
-    [PublicAccessor] Rect _drawRect;
+    [PublicAccessor] Rect _timelineRect;
     [PublicAccessor] Vector2 _scroll;
     [PublicAccessor] bool _visualizationMode;
 
@@ -60,17 +60,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     bool isAnimationPlaying, changeTime, changeOffset, applicationPlaying, playingBackwards;
     float timePosition, clickOffset, timeZoomFactor = 1, lastNodeTime, timelineOffset = 450;
     double lastSeconds;
-
   
     Option<EditorApplication.CallbackFunction> updateDelegateOpt;
   
-    public void doTimeline(
-      Rect position, Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes,
-      List<TimelineNode> selectedNodes, Option<TimelineNode> rootNode,
-      Option<TimelineEditor.NodeSnappedTo> nodeSnappedTo
-      ) {
+    public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes) {
       applicationPlaying = Application.isPlaying;
-      _drawRect = position;
+      _timelineRect = position;
       timeRect = new Rect (position.x + timelineOffset, position.y, position.width - 15, 20);
       blackBarRect = new Rect (position.x + timelineOffset - 1, position.y + 19, position.width, 16);
   
@@ -84,24 +79,24 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         return;
       }
   
-      doCursor ();
+      doCursor(funNodes);
       doToolbarGUI (position, funTweenManager);
       drawTicksGUI ();
-      doTimelineEvents (funTweenManager);
+      doTimelineEvents (funTweenManager, funNodes);
     }
 
     public void endScrollView() => GUI.EndScrollView();
 
     public Vector2 startScrollView() =>
       _scroll = GUI.BeginScrollView(
-        new Rect(_drawRect.x + timelineOffset,
+        new Rect(_timelineRect.x + timelineOffset,
           timeRect.height + blackBarRect.height,
-          _drawRect.width - timelineOffset,
-          _drawRect.height - timeRect.height - blackBarRect.height),
+          _timelineRect.width - timelineOffset,
+          _timelineRect.height - timeRect.height - blackBarRect.height),
         _scroll,
         new Rect(0, 0,
-          _drawRect.width + lastNodeTime + expandView.x - timelineOffset,
-          _drawRect.height + 400 + expandView.y),
+          _timelineRect.width + lastNodeTime + expandView.x - timelineOffset,
+          _timelineRect.height + 400 + expandView.y),
         true, true
       );
     
@@ -253,15 +248,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
     public void doLines(){
       Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
-      for (var y = 0; y < (int)_drawRect.height + _scroll.y; y += 20) {
-        Handles.DrawLine(new Vector3(0, y, 0), new Vector3(_drawRect.width+_scroll.x, y, 0));	
+      for (var y = 0; y < (int)_timelineRect.height + _scroll.y; y += 20) {
+        Handles.DrawLine(new Vector3(0, y, 0), new Vector3(_timelineRect.width+_scroll.x, y, 0));	
       }
       Handles.color = Color.white;
     }
     
     public void doTimelineGUI(){
       if ((changeTime || isAnimationPlaying || Application.isPlaying || _visualizationMode)
-        && timePosition - _scroll.x >= timelineOffset && timePosition - _scroll.x < _drawRect.width - 15) {
+        && timePosition - _scroll.x >= timelineOffset && timePosition - _scroll.x < _timelineRect.width - 15) {
         var color = Color.red;
         color.a = Application.isPlaying ? 0.6f : 1.0f;
         Handles.color = color;
@@ -275,7 +270,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         var rect1 = new Rect(timePosition - _scroll.x, 19, size.x, size.y);
         GUI.Label(rect1, $"{currentTime:F2}s", style);
         Handles.DrawLine(new Vector3(timePosition - _scroll.x, 0, 0),
-          new Vector3(timePosition - _scroll.x, _drawRect.height - 15, 0)
+          new Vector3(timePosition - _scroll.x, _timelineRect.height - 15, 0)
         );
         Handles.color = Color.white;
       }
@@ -286,8 +281,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       return (DateTime.UtcNow - epochStart).TotalSeconds;
     }
     
-    void doCursor(){
-      EditorGUIUtility.AddCursorRect(new Rect(timelineOffset - 5, 37, 10, _drawRect.height), MouseCursor.ResizeHorizontal);
+    void doCursor(List<TimelineNode> funNodes){
+      if (funNodes.find(node =>
+        new Rect(timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(Event.current.mousePosition)
+        && node.startTime < 1f).isNone
+      ) {
+        EditorGUIUtility.AddCursorRect(new Rect(timelineOffset - 5, 37, 10, _timelineRect.height), MouseCursor.ResizeHorizontal);
+      }
     }
     
     public void doBlackBar(){
@@ -340,7 +340,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    void doToolbarGUI(Rect position, Option<FunTweenManager> funTweenManager){
+    public void doToolbarGUI(Rect position, Option<FunTweenManager> funTweenManager){
       var style = new GUIStyle("ProgressBarBack") {padding = new RectOffset(0, 0, 0, 0)};
       GUILayout.BeginArea (new Rect (position.x, position.y, timelineOffset, position.height), GUIContent.none, style);
       
@@ -527,7 +527,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             .Aggregate((acc, curr) => acc.concat(curr))
       );
   
-    void doTimelineEvents(Option<FunTweenManager> funTweenManager){
+    void doTimelineEvents(Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes){
       if (!GUI.enabled && !_visualizationMode) {
         return;
       }
@@ -536,12 +536,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       switch (ev.rawType) {
       case EventType.MouseDown:
         
-        if (new Rect(timelineOffset - 5, 37, 10, _drawRect.height).Contains(ev.mousePosition)){
+        if (new Rect(timelineOffset - 5, 37, 10, _timelineRect.height).Contains(ev.mousePosition)
+          && funNodes.find(node => 
+               new Rect(timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(ev.mousePosition)
+               && node.startTime < 1f ).isNone
+        ) {
           changeOffset = true;
           clickOffset = timePosition - timelineOffset;
         }
         
-        if (new Rect (timelineOffset, 0, _drawRect.width, 37).Contains(Event.current.mousePosition) && Event.current.button == 0) {
+        if (new Rect (timelineOffset, 0, _timelineRect.width, 37).Contains(Event.current.mousePosition) && Event.current.button == 0) {
   
           if (funTweenManager.valueOut(out var ftm) && getTimelineTargets(ftm).valueOut(out var data) &&
           data.All(target => target != null)) {
@@ -598,7 +602,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         case 0:
           if (changeOffset) {
             timelineOffset = ev.mousePosition.x;
-            timelineOffset = Mathf.Clamp(timelineOffset, 170, _drawRect.width - 170);
+            timelineOffset = Mathf.Clamp(timelineOffset, 170, _timelineRect.width - 170);
             timePosition = timelineOffset + clickOffset;
             timePosition = Mathf.Clamp(timePosition, timelineOffset, Mathf.Infinity);
             ev.Use();

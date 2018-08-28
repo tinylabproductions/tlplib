@@ -26,11 +26,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       public readonly SnapType snapType;
     }
 
-    List<TimelineNode> _funNodes = new List<TimelineNode>();
-    Option<FunTweenManager> _funTweenManager = F.none_;
-    bool _isStartSnapped, _isEndSnapped;
-    Option<TimelineNode> _rootSelectedNodeOpt = F.none_;
-    Option<NodeSnappedTo> _nodeSnappedToOpt;
+    List<TimelineNode> funNodes = new List<TimelineNode>();
+    Option<FunTweenManager> funTweenManager = F.none_;
+    bool isStartSnapped, isEndSnapped;
+    Option<TimelineNode> rootSelectedNodeOpt = F.none_;
+    Option<NodeSnappedTo> nodeSnappedToOpt;
 
     const int SNAPPING_POWER = 10;
     float timeClickOffset;
@@ -66,55 +66,52 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       
       timelineVisuals = new TimelineVisuals(this);
       
-      _isStartSnapped = false;
-      _isEndSnapped = false;
-      _funNodes.Clear();
+      isStartSnapped = false;
+      isEndSnapped = false;
+      funNodes.Clear();
 
       advancedEditor = CreateInstance<ExternalEditor>();
-      _funTweenManager = selectedGameObjectOpt.flatMap(selected => selected.GetComponent<FunTweenManager>().opt());
+      funTweenManager = selectedGameObjectOpt.flatMap(selected => selected.GetComponent<FunTweenManager>().opt());
       
-      if (_funTweenManager.isSome)       { importTimeline();    }
+      if (funTweenManager.isSome)       { importTimeline();    }
       if (selectedGameObjectOpt.isNone) { OnSelectionChange(); }
     }
 
     void EditorSceneManagerOnSceneSaving(Scene scene, string path) {
-      _funNodes.Clear();
+      funNodes.Clear();
       timelineVisuals.stopVisualization();
     }
 
     void OnSelectionChange() {
       selectedGameObjectOpt = Selection.activeGameObject.opt();
-      _funTweenManager = selectedGameObjectOpt.flatMap(selected => selected.GetComponent<FunTweenManager>().opt());
+      funTweenManager = selectedGameObjectOpt.flatMap(selected => selected.GetComponent<FunTweenManager>().opt());
       
-      _funTweenManager.voidFold(
-        () => _funNodes.Clear(),
+      funTweenManager.voidFold(
+        () => funNodes.Clear(),
         manager => {
           timelineVisuals = new TimelineVisuals(this);
           advancedEditor = CreateInstance<ExternalEditor>();
           advancedEditor.unityObjects = new UnityEngine.Object[] {manager};
-          _funNodes.Clear();
+          funNodes.Clear();
           importTimeline();
         }
       );
 
-      _rootSelectedNodeOpt = F.none_;
+      rootSelectedNodeOpt = F.none_;
       Repaint();
     }
     
     void OnGUI() {
       GUI.enabled = selectedGameObjectOpt.isSome;
 
-      timelineVisuals.doTimeline(new Rect(0, 0, position.width, position.height), _funTweenManager,
-        _funNodes, selectedNodesList, _rootSelectedNodeOpt, _nodeSnappedToOpt);
-
-      timelineVisuals.startScrollView();
+      timelineVisuals.doTimeline(new Rect(0, 0, position.width, position.height), funTweenManager, funNodes);
       
+      timelineVisuals.startScrollView();
       timelineVisuals.doLines();
-      timelineVisuals.drawNodes(_funNodes, selectedNodesList, _rootSelectedNodeOpt, _nodeSnappedToOpt);
+      timelineVisuals.drawNodes(funNodes, selectedNodesList, rootSelectedNodeOpt, nodeSnappedToOpt);
       doEvents();
       
       timelineVisuals.endScrollView();
-      
       timelineVisuals.doBlackBar();
       timelineVisuals.doTimelineGUI();
 
@@ -160,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var snappingEnabled = !Event.current.shift && snapping;
       if (currEvent.control && currEvent.keyCode == KeyCode.A && currEvent.type == EventType.keyUp) {
         selectedNodesList.Clear();
-          foreach (var node in _funNodes) {
+          foreach (var node in funNodes) {
             selectedNodesList.Add(node);
         }
       }
@@ -174,17 +171,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       switch (currEvent.rawType) {
         case EventType.MouseDown:
           //Cleaning up nodes list from nodes without element.element
-          _funNodes = _funNodes.Where(node => node.element.element != null).ToList();
+          funNodes = funNodes.Where(node => node.element.element != null).ToList();
           
-            foreach (var node in _funNodes) {
+            foreach (var node in funNodes) {
               if (new Rect(timelineVisuals.secondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20)
                 .Contains(Event.current.mousePosition) && !node.isCallback
                 ) {
-                foreach (var rootSelectedNode in _rootSelectedNodeOpt) {
+                foreach (var rootSelectedNode in rootSelectedNodeOpt) {
                   removeNodeIfHasNoElement(rootSelectedNode);
                 }
                 manageSelectedNode(node, Event.current);
-                _rootSelectedNodeOpt = node.some();
+                rootSelectedNodeOpt = node.some();
                 resizeNodeStart = true;
                 EditorGUI.FocusTextInControl("");
                 currEvent.Use();
@@ -193,11 +190,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               if (new Rect(timelineVisuals.secondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20)
                 .Contains(
                   Event.current.mousePosition) && !node.isCallback) {
-                foreach (var rootSelectedNode in _rootSelectedNodeOpt) {
+                foreach (var rootSelectedNode in rootSelectedNodeOpt) {
                   removeNodeIfHasNoElement(rootSelectedNode);
                 }
                 manageSelectedNode(node, Event.current);
-                _rootSelectedNodeOpt = node.some();
+                rootSelectedNodeOpt = node.some();
                 resizeNodeEnd = true;
                 EditorGUI.FocusTextInControl("");
                 currEvent.Use();
@@ -211,17 +208,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
                 switch (currEvent.button) {
                   case 0:
-                    foreach (var rootSelectedNode in _rootSelectedNodeOpt) {
+                    foreach (var rootSelectedNode in rootSelectedNodeOpt) {
                       removeNodeIfHasNoElement(rootSelectedNode);
                     }
                     timeClickOffset = node.startTime - timelineVisuals.GUIToSeconds(Event.current.mousePosition.x);
                     dragNode = true;
-                    _rootSelectedNodeOpt = node.some();
+                    rootSelectedNodeOpt = node.some();
                     manageSelectedNode(node, Event.current);
                     EditorGUI.FocusTextInControl("");
                     break;
                   case 1:
-                    _rootSelectedNodeOpt = node.some();
+                    rootSelectedNodeOpt = node.some();
                     var genericMenu = new GenericMenu();
                     genericMenu.AddItem(new GUIContent("Remove"), false, removeSelectedNode, node);
                     genericMenu.AddItem(new GUIContent("Unselect"), false, deselect, node);
@@ -235,7 +232,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           //Deselect by clicking away
           if (!dragNode && !resizeNodeStart && !resizeNodeEnd && !currEvent.control
-            && timelineVisuals.drawRect.Contains(Event.current.mousePosition)
+            && timelineVisuals.timelineRect.Contains(Event.current.mousePosition)
           ) {
             selectedNodesList.Clear();
             currEvent.Use();
@@ -248,13 +245,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             foreach (var selectedNode in selectedNodesList) {
 
               if (resizeNodeStart) {
-                if (_rootSelectedNodeOpt.valueOut(out var rootSelected) && selectedNode == rootSelected) {
+                if (rootSelectedNodeOpt.valueOut(out var rootSelected) && selectedNode == rootSelected) {
                   var selectedNodeEnd = selectedNode.getEnd();
                   
                   selectedNode.startTime = timelineVisuals.GUIToSeconds(Event.current.mousePosition.x);
                   selectedNode.startTime = Mathf.Clamp(selectedNode.startTime, 0, float.MaxValue);
                   
-                  if (selectedNode.startTime > 0 && !_isStartSnapped) {
+                  if (selectedNode.startTime > 0 && !isStartSnapped) {
                     selectedNode.duration = selectedNodeEnd - selectedNode.startTime;
                     selectedNode.duration = Mathf.Clamp(selectedNode.duration, 0.01f, float.MaxValue);
                   }
@@ -276,7 +273,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               }
 
               if (resizeNodeEnd) {
-                if (_rootSelectedNodeOpt.valueOut(out var rootSelected) && selectedNode == rootSelected) {
+                if (rootSelectedNodeOpt.valueOut(out var rootSelected) && selectedNode == rootSelected) {
                   
                   selectedNode.duration =
                     timelineVisuals.GUIToSeconds(Event.current.mousePosition.x) - selectedNode.startTime;
@@ -292,7 +289,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                     updateLinkedNodeStartTimes(node);
                   }
 
-                  timelineVisuals.recalculateTimelineWidth(_funNodes.opt());
+                  timelineVisuals.recalculateTimelineWidth(funNodes.opt());
 
                   currEvent.Use();
                 }
@@ -300,7 +297,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
               //Draging the node
               if (dragNode && !resizeNodeStart && !resizeNodeEnd || resizeNodeEnd && resizeNodeStart) {
-                if (_rootSelectedNodeOpt.valueOut(out var rootSelected) && selectedNode == rootSelected) {
+                if (rootSelectedNodeOpt.valueOut(out var rootSelected) && selectedNode == rootSelected) {
 
                   
                   foreach (var selected in selectedNodesList) {
@@ -316,8 +313,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                     timelineVisuals.GUIToSeconds(Event.current.mousePosition.x) + timeClickOffset;
                   selectedNode.startTime = Mathf.Clamp(selectedNode.startTime, clampLimit, float.MaxValue);
 
-                  _isEndSnapped = false;
-                  _isStartSnapped = false;
+                  isEndSnapped = false;
+                  isStartSnapped = false;
 
                   if (snappingEnabled) {
                     snapDrag(selectedNode, selectedNodesList);
@@ -375,7 +372,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           unlinkNodesWithBrokenLink();
 
           if (dragNode || resizeNodeEnd || resizeNodeStart) {
-            foreach (var ftm in _funTweenManager) {
+            foreach (var ftm in funTweenManager) {
               Undo.RegisterFullObjectHierarchyUndo(ftm, "Node changes");
               refreshChannelNodes();
               exportTimelineToTweenManager();
@@ -383,13 +380,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
           }
 
-          _isEndSnapped = false;
-          _isStartSnapped = false;
+          isEndSnapped = false;
+          isStartSnapped = false;
           dragNode = false;
           resizeNodeStart = false;
           resizeNodeEnd = false;
-          _nodeSnappedToOpt = F.none_;
-          timelineVisuals.recalculateTimelineWidth(_funNodes.some());
+          nodeSnappedToOpt = F.none_;
+          timelineVisuals.recalculateTimelineWidth(funNodes.some());
           break;
         
         default: break;
@@ -397,7 +394,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     void unlinkNodesWithBrokenLink() {
-        foreach (var node in _funNodes) {
+        foreach (var node in funNodes) {
           if (
             node.linkedNode.valueOut(out var linkedNode)
             && getLeftNode(node).valueOut(out var leftNode)
@@ -430,25 +427,25 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       );
 
     void snapDrag(TimelineNode rootNode, List<TimelineNode> selectedNodes) {
-        var nonSelectedNodes = _funNodes.Except(selectedNodes).ToList();
+        var nonSelectedNodes = funNodes.Except(selectedNodes).ToList();
       
-        nonSelectedNodes.ForEach(earlierNode => _nodeSnappedToOpt.voidFold(
+        nonSelectedNodes.ForEach(earlierNode => nodeSnappedToOpt.voidFold(
             () => snap(earlierNode),
             nodeSnapped => snap(nodeSnapped.node)
           ));
       
         void snap(TimelineNode nodeToSnapTo) {
-          _nodeSnappedToOpt =	getSnapType(nodeToSnapTo).map(
+          nodeSnappedToOpt =	getSnapType(nodeToSnapTo).map(
             snapType => {
               switch (snapType) {
                 case SnapType.StartWithStart:
-                  return setSnapping(nodeToSnapTo, true, nodeToSnapTo.startTime, ref _isStartSnapped);
+                  return setSnapping(nodeToSnapTo, true, nodeToSnapTo.startTime, ref isStartSnapped);
                 case SnapType.StartWithEnd:
-                  return setSnapping(nodeToSnapTo, false, nodeToSnapTo.getEnd(), ref _isStartSnapped);
+                  return setSnapping(nodeToSnapTo, false, nodeToSnapTo.getEnd(), ref isStartSnapped);
                 case SnapType.EndWithStart:
-                  return setSnapping(nodeToSnapTo, true, nodeToSnapTo.startTime - rootNode.duration, ref _isEndSnapped);
+                  return setSnapping(nodeToSnapTo, true, nodeToSnapTo.startTime - rootNode.duration, ref isEndSnapped);
                 case SnapType.EndWithEnd:
-                  return setSnapping(nodeToSnapTo, false, nodeToSnapTo.getEnd() - rootNode.duration, ref _isEndSnapped);
+                  return setSnapping(nodeToSnapTo, false, nodeToSnapTo.getEnd() - rootNode.duration, ref isEndSnapped);
                 default:
                   throw new ArgumentOutOfRangeException(nameof(snapType), snapType, null);
               }
@@ -471,7 +468,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           }
         }
 
-          return new NodeSnappedTo(nodeToSnapTo, getsnapType(_isStartSnapped, snappedToNodeStart));
+          return new NodeSnappedTo(nodeToSnapTo, getsnapType(isStartSnapped, snappedToNodeStart));
       }
 
       Option<SnapType> getSnapType(TimelineNode nodeSnapTo) {
@@ -492,11 +489,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     delegate bool CompareFloats(float a, float b);
 
     void manageSnap(float selectedNodePoint, GetNodePoint nodePoint, CompareFloats cmpr, Act<TimelineNode> snap) =>
-      _funNodes
+      funNodes
         .Except(selectedNodesList)
         .Where(node => cmpr( selectedNodePoint, nodePoint(node) ))
         .ToList()
-        .ForEach(earlierNode => _nodeSnappedToOpt.voidFold(
+        .ForEach(earlierNode => nodeSnappedToOpt.voidFold(
           () => snap(earlierNode),
           nodeSnapped => snap(nodeSnapped.node)
         ));
@@ -512,19 +509,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           var nodeEndPos = timelineVisuals.secondsToGUI(selectedNode.getEnd());
           if ( isInRangeOfSnap(snapPoint, nodeEndPos) ) {
             selectedNode.duration = nodeToSnapTo.startTime - selectedNode.startTime;
-            _isEndSnapped = true;
-            _nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.EndWithStart).some();
+            isEndSnapped = true;
+            nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.EndWithStart).some();
           }
           else {
             snapPoint = timelineVisuals.secondsToGUI(nodeToSnapTo.getEnd());
             if ( isInRangeOfSnap(snapPoint, nodeEndPos) ) {
               selectedNode.duration = nodeToSnapTo.getEnd() - selectedNode.startTime;
-              _isEndSnapped = true;
-              _nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.EndWithEnd).some();
+              isEndSnapped = true;
+              nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.EndWithEnd).some();
             }
             else {
-              _isEndSnapped = false;
-              _nodeSnappedToOpt = F.none_;
+              isEndSnapped = false;
+              nodeSnappedToOpt = F.none_;
             }
           }
         }
@@ -541,26 +538,26 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         
           if ( isInRangeOfSnap(snapPoint, nodeStartPos) ) {
             selectedNode.startTime = nodeToSnapTo.startTime;
-            if (!_isStartSnapped) {
+            if (!isStartSnapped) {
               selectedNode.duration = end - selectedNode.startTime;
-              _nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.StartWithStart).some();
-              _isStartSnapped = true;
+              nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.StartWithStart).some();
+              isStartSnapped = true;
             }
           }
           else {
             snapPoint = timelineVisuals.secondsToGUI(nodeToSnapTo.getEnd());
             if ( isInRangeOfSnap(snapPoint, nodeStartPos) ) {
               selectedNode.startTime = nodeToSnapTo.getEnd();
-              if (!_isStartSnapped) {
+              if (!isStartSnapped) {
                 selectedNode.duration = end - selectedNode.startTime;
-                _nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.StartWithEnd).some();
-                _isStartSnapped = true;
+                nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.StartWithEnd).some();
+                isStartSnapped = true;
               }
             }
-            else if (_isStartSnapped) {
+            else if (isStartSnapped) {
               selectedNode.duration = initialEnd - selectedNode.startTime;
-              _nodeSnappedToOpt = F.none_;
-              _isStartSnapped = false;
+              nodeSnappedToOpt = F.none_;
+              isStartSnapped = false;
             }
           }
         }
@@ -570,10 +567,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     //creates nodeList from elements info
     void importTimeline() {
       advancedEditor.Instances = new object[] { };
-      if (_funTweenManager.valueOut(out var manager) && manager.timeline != null) {
+      if (funTweenManager.valueOut(out var manager) && manager.timeline != null) {
         var elements = manager.timeline.elements;
 
-        _funNodes = manager.timeline.elements.Select(
+        funNodes = manager.timeline.elements.Select(
           (element, idx) => {
             if (idx != 0 && element.startAt == Element.At.AfterLastElement
             ) {
@@ -602,7 +599,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         ).ToList();
 
         //Relinking linked nodes, since we dont serialize nodeLinkedTo
-          foreach (var node in _funNodes) {
+          foreach (var node in funNodes) {
             if (getLeftNode(node).valueOut(out var leftNode)) {
               node.reLink(leftNode);
             }
@@ -621,14 +618,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     public Option<TimelineNode> getLeftNode(TimelineNode selectedNode) =>
-      _funNodes.Where(node => node.channel == selectedNode.channel
+      funNodes.Where(node => node.channel == selectedNode.channel
         && node.startTime < selectedNode.startTime
       ).ToList().noneIfEmpty().map(
         channelNodes => channelNodes.OrderBy(channelNode => channelNode.startTime).Last()
       );
 
     Option<TimelineNode> getRightNode(TimelineNode selectedNode) =>
-      _funNodes.Where(node => node.channel == selectedNode.channel
+      funNodes.Where(node => node.channel == selectedNode.channel
         && node.startTime > selectedNode.getEnd()
       ).ToList().noneIfEmpty().map(
         channelNodes => channelNodes.OrderBy(channelNode => channelNode.startTime).First()
@@ -653,11 +650,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     void exportTimelineToTweenManager() {
-      if (_funTweenManager.valueOut(out var manager) && !_funNodes.isEmpty()) {
+      if (funTweenManager.valueOut(out var manager) && !funNodes.isEmpty()) {
         var arr = new List<TimelineNode>();
-        for (var i = 0; i <= _funNodes.Max(x => x.channel); i++) {
+        for (var i = 0; i <= funNodes.Max(x => x.channel); i++) {
           arr.AddRange(
-            _funNodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
+            funNodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
           );
         }
         manager.timeline.elements = arr.Select(elem => {
@@ -666,15 +663,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         }).ToArray();
       }
 
-      if (_funNodes.isEmpty()) manager.timeline.elements = new Element[0];
+      if (funNodes.isEmpty()) manager.timeline.elements = new Element[0];
     }
     
     public void doSettings(float width, bool isVisualisation) {
-      if (_funTweenManager.isSome) {
+      if (funTweenManager.isSome) {
         GUILayout.BeginVertical();
         GUI.enabled = !isVisualisation;
         
-          _funNodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
+          funNodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
 
         if (GUILayout.Button("Add Tween")) {
           var newElement = new Element {
@@ -682,16 +679,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           };
           var newNode = new TimelineNode(newElement, 0, "");
           
-          if (!_funNodes.isEmpty()) {
-            _funNodes.Insert(0, newNode);
+          if (!funNodes.isEmpty()) {
+            funNodes.Insert(0, newNode);
           }
           else {
-            _funNodes = new List<TimelineNode>{newNode};
+            funNodes = new List<TimelineNode>{newNode};
           }
           
           selectedNodesList.Clear();
           selectedNodesList.Add(newNode);
-          _rootSelectedNodeOpt = newNode.some();
+          rootSelectedNodeOpt = newNode.some();
 
           exportTimelineToTweenManager();
           importTimeline();
@@ -702,7 +699,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var guiEnabled = GUI.enabled;
       var oneNodeSelected = selectedNodesList.Count == 1;
 
-      if (_funTweenManager.isSome) {
+      if (funTweenManager.isSome) {
         if (!selectedNodesList.isEmpty()) {
           GUILayout.BeginHorizontal();
 
@@ -728,7 +725,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           GUILayout.EndHorizontal();
 
-          if (oneNodeSelected && _rootSelectedNodeOpt.valueOut(out var selectedNode)) {
+          if (oneNodeSelected && rootSelectedNodeOpt.valueOut(out var selectedNode)) {
             var linkButtonText = "LINK";
             var unlinkButtonText = "UNLINK";
             GUILayout.BeginHorizontal();
@@ -762,7 +759,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         }
       }
       
-      if (_funTweenManager.isNone) {
+      if (funTweenManager.isNone) {
         GUI.enabled = selectedGameObjectOpt.isSome;
         if (GUILayout.Button("[Add manager]")) {
           addFunTweenManagerComponent(Selection.activeGameObject);
@@ -773,27 +770,26 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       GUILayout.Space(10);
       GUI.enabled = !isVisualisation;
       settingsScroll = GUILayout.BeginScrollView(settingsScroll);
-      if (_funTweenManager.valueOut(out var ftm) && oneNodeSelected && !isVisualisation) {
-        drawElementSettings(ftm);
-        if (advancedEditor.Instances.Length > 0
-          && advancedEditor.Draw(new Rect(0, 0, width, position.height - 100))
-          ) {
-          Undo.RecordObject(ftm, "Tween Manager Changes");
-          Repaint(); 
-        }
+      if (funTweenManager.valueOut(out var ftm) && oneNodeSelected && !isVisualisation) {
+        drawElementSettings(ftm, width);
       }
       
       GUILayout.EndScrollView();
     }
 
-    void drawElementSettings(FunTweenManager manager) {
-      foreach (var rootSelectedObject in _rootSelectedNodeOpt) {
-        if (manager.timeline.elements != null
-          && advancedEditor.Instances.isEmpty()
-          || advancedEditor.Instances[0] != rootSelectedObject.element
+    void drawElementSettings(FunTweenManager manager, float width) {
+      foreach (var rootSelectedObject in rootSelectedNodeOpt) {
+        if ( manager.timeline.elements != null
+          && (advancedEditor.Instances.isEmpty() || advancedEditor.Instances[0] != rootSelectedObject.element)
           ) { 
           advancedEditor.Instances = new object[] { rootSelectedObject.element };
         }
+      }
+      if (advancedEditor.Instances.Length > 0
+        && advancedEditor.Draw(new Rect(0, 0, width, position.height - 100))
+      ) {
+        Undo.RecordObject(manager, "Tween Manager Changes");
+        Repaint(); 
       }
     }
 
@@ -805,39 +801,39 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     void removeSelectedNode(object obj) {
       var nawd = obj as TimelineNode;
-      _funNodes = _funNodes.Where(node => node != nawd).ToList();
+      funNodes = funNodes.Where(node => node != nawd).ToList();
       
       exportTimelineToTweenManager();
       importTimeline();
-      _rootSelectedNodeOpt = F.none_;
+      rootSelectedNodeOpt = F.none_;
     }
 
     void removeoAllSelectedNodes() {
-      _funNodes = _funNodes.Where( node => 
+      funNodes = funNodes.Where( node => 
         selectedNodesList.find(selectedNode => node == selectedNode).isNone).ToList();
       exportTimelineToTweenManager();
       importTimeline();
       selectedNodesList.Clear();
-      _rootSelectedNodeOpt = F.none_;
+      rootSelectedNodeOpt = F.none_;
     }
 
     void removeNodeIfHasNoElement(TimelineNode node) {
-      if (node.element.element == null && !_funNodes.isEmpty()) {
-        _funNodes.Remove(node);
+      if (node.element.element == null && !funNodes.isEmpty()) {
+        funNodes.Remove(node);
         exportTimelineToTweenManager();
         importTimeline();
-        _rootSelectedNodeOpt = F.none_;
+        rootSelectedNodeOpt = F.none_;
       }
     }
 
     void addFunTweenManagerComponent(GameObject gameObject) {
       gameObject.GetComponent<FunTweenManager>().opt().voidFold(
         () => {
-          _funTweenManager = Undo.AddComponent<FunTweenManager>(gameObject).some();
+          funTweenManager = Undo.AddComponent<FunTweenManager>(gameObject).some();
           importTimeline();
           EditorUtility.SetDirty(gameObject);
         },
-        fun => _funTweenManager = fun.some()
+        fun => funTweenManager = fun.some()
       );
     }
   }
