@@ -370,7 +370,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         
         case EventType.MouseUp:
           unlinkNodesWithBrokenLink();
-
           if (dragNode || resizeNodeEnd || resizeNodeStart) {
             foreach (var ftm in funTweenManager) {
               Undo.RegisterFullObjectHierarchyUndo(ftm, "Node changes");
@@ -566,7 +565,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     //creates nodeList from elements info
     void importTimeline() {
-      Log.d.warn($"importing");
       advancedEditor.Instances = new object[] { };
       if (funTweenManager.valueOut(out var manager) && manager.timeline != null) {
         var elements = manager.timeline.elements;
@@ -651,7 +649,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     void exportTimelineToTweenManager() {
-      Log.d.warn($"exporting");
       if (funTweenManager.valueOut(out var manager) && !funNodes.isEmpty()) {
         var arr = new List<TimelineNode>();
         for (var i = 0; i <= funNodes.Max(x => x.channel); i++) {
@@ -790,7 +787,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (advancedEditor.Instances.Length > 0
         && advancedEditor.Draw(new Rect(0, 0, width, position.height - 100))
       ) {
-        Log.d.warn($"drawing settings");
         Undo.RecordObject(manager, "Tween Manager Changes");
         Repaint(); 
       }

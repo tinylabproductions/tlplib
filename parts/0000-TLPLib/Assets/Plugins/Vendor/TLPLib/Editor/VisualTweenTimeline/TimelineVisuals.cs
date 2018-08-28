@@ -73,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         currentTime = ftm.timeline.timeline.timePassed;
       }
       
-      if (Event.current.isKey && !applicationPlaying) {
+      if (Event.current.isKey && !applicationPlaying && visualizationMode) {
         stopVisualization();
         isAnimationPlaying = false;
         return;
