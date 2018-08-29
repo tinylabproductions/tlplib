@@ -1,4 +1,5 @@
-﻿using AdvancedInspector;
+﻿using System.Diagnostics;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -6,12 +7,19 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
+  [AdvancedInspector(false)]
   public abstract class UnityEither<A, B> : ISkipObjectValidationFields {
 #pragma warning disable 649
     // protected is only needed for tests
-    [SerializeField, Inspect(nameof(validate)), Descriptor(nameof(isADescription))] bool _isA;
-    [SerializeField, Inspect(nameof(isA)), Descriptor(nameof(aDescription)), NotNull] A a;
-    [SerializeField, Inspect(nameof(isB)), Descriptor(nameof(bDescription)), NotNull] B b;
+    [SerializeField,
+//     Inspect(nameof(validate)), Descriptor(nameof(isADescription))
+    ] bool _isA;
+    [SerializeField, ConditionalHide("b", _isA),
+//     Inspect(nameof(isA)), Descriptor(nameof(aDescription)),
+     NotNull] A a;
+    [SerializeField,
+     Inspect(nameof(isB)), Descriptor(nameof(bDescription)),
+     NotNull] B b;
 #pragma warning restore 649
 
     // ReSharper disable once NotNullMemberIsNotInitialized
