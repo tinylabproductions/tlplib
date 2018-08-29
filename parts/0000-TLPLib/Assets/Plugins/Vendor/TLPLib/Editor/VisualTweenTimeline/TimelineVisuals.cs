@@ -2,42 +2,77 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
 using UnityEditor;
-using UnityEditor.Graphs;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using SnapType = com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline.TimelineEditor.SnapType;
+using AnimationPlaybackEvent = com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline.TweenPlaybackController.AnimationPlaybackEvent;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   public partial class TimelineVisuals {
     
-    public TimelineVisuals(TimelineEditor timelineEditor) {
-      onSettingsGUI = timelineEditor.doSettings;
+    public TimelineVisuals(
+      SettingsGUICallback settingsGuiCallback, PlaybackControllerCallback playbackControllerCallback,
+      TimelineCursorLineCallback cursorLineCallback, NodeEventsCallback nodeEventsCallback,
+      Val<bool> visualizaitonMode
+    ) {
+      visualizationMode = visualizaitonMode;
+      onSettingsGUI = settingsGuiCallback;
+      onPlaybackControllerButton = playbackControllerCallback;
+      onTimelineCursorLine = cursorLineCallback;
+      onNodeEvent = nodeEventsCallback;
+      
+      toStartButtonTexture = EditorGUIUtility.FindTexture("d_beginButton");
+      startButtonTexture = EditorGUIUtility.FindTexture("d_StepButton");
+      playButtonTexture = EditorGUIUtility.FindTexture("d_PlayButton");
+      pauseButtonTexture = EditorGUIUtility.FindTexture("d_PauseButton");
+      playFromEndButtonTexture = EditorGUIUtility.FindTexture("d_StepLeftButton");
+      toEndButtonTexture = EditorGUIUtility.FindTexture("d_endButton");
+      reverseButtonTexture = EditorGUIUtility.FindTexture("d_playLoopOff");
+      exitButtonTexture = EditorGUIUtility.FindTexture("P4_DeletedLocal");
     }
     
     public delegate void SettingsGUICallback(float width, bool isVisualiisation);
+    public delegate void TimelineCursorLineCallback(bool isStart, float time = 0f);
+    public delegate void PlaybackControllerCallback(AnimationPlaybackEvent animationEvent);
+
+    public delegate void NodeEventsCallback(TimelineEditor.NodeEvents nodeEvent, TimelineNode node);
 
     readonly SettingsGUICallback onSettingsGUI;
+    readonly PlaybackControllerCallback onPlaybackControllerButton;
+    readonly TimelineCursorLineCallback onTimelineCursorLine;
+    readonly NodeEventsCallback onNodeEvent;
+
+    readonly Texture toStartButtonTexture,
+      startButtonTexture,
+      playButtonTexture,
+      pauseButtonTexture,
+      playFromEndButtonTexture,
+      toEndButtonTexture,
+      reverseButtonTexture,
+      exitButtonTexture;
+
+    readonly GUIStyle toolbarStyle;
     
     [Record]
-    partial struct callbackVisuals {
+    partial struct CallbackVisuals {
       public readonly Rect iconRect;
       public readonly Rect labelRect;
       public readonly GUIContent labelContent;
   
-      public callbackVisuals (Rect boxRect, GUIContent labelContent) {
+      public CallbackVisuals (Rect boxRect, GUIContent labelContent) {
         iconRect = new Rect(boxRect.x - 10, boxRect.y, 20, boxRect.height);
         labelRect = new Rect(boxRect.x - 30, boxRect.y, 60, boxRect.height);
         this.labelContent = labelContent;
       }
     }
     
-    readonly List<callbackVisuals> callbackVisualsList = new List<callbackVisuals>();
+    readonly List<CallbackVisuals> callbackVisualsList = new List<CallbackVisuals>();
   
     Rect blackBarRect;
     const float ZOOM = 20;
@@ -46,10 +81,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     int timeIndexFactor = 1;
     Rect timeRect;
+    readonly Val<bool> visualizationMode;
+    Vector2 _scroll;
     
     [PublicAccessor] Rect _timelineRect;
-    [PublicAccessor] Vector2 _scroll;
-    [PublicAccessor] bool _visualizationMode;
 
     float currentTime {
       get => GUIToSeconds(timePosition - timelineOffset);
@@ -57,9 +92,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     Vector2 expandView;
-    bool isAnimationPlaying, changeTime, changeOffset, applicationPlaying, playingBackwards;
+    bool changeTime, changeOffset, applicationPlaying, playingBackwards;
     float timePosition, clickOffset, timeZoomFactor = 1, lastNodeTime, timelineOffset = 450;
-    double lastSeconds;
   
     Option<EditorApplication.CallbackFunction> updateDelegateOpt;
   
@@ -69,20 +103,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       timeRect = new Rect (position.x + timelineOffset, position.y, position.width - 15, 20);
       blackBarRect = new Rect (position.x + timelineOffset - 1, position.y + 19, position.width, 16);
   
-      if (funTweenManager.valueOut(out var ftm) && (_visualizationMode || applicationPlaying)) {
+      if (funTweenManager.valueOut(out var ftm) && (visualizationMode.value || applicationPlaying)) {
         currentTime = ftm.timeline.timeline.timePassed;
       }
       
-      if (Event.current.isKey && !applicationPlaying && visualizationMode) {
-        stopVisualization();
-        isAnimationPlaying = false;
-        return;
-      }
-  
       doCursor(funNodes);
-      doToolbarGUI (position, funTweenManager);
-      drawTicksGUI ();
-      doTimelineEvents (funTweenManager, funNodes);
+      doToolbarGUI(position, funTweenManager);
+      drawTicksGUI();
+      //doTimelineEvents(funNodes);
     }
 
     public void endScrollView() => GUI.EndScrollView();
@@ -105,7 +133,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       List<TimelineNode> funNodes, List<TimelineNode> selectedNodes, Option<TimelineNode> root,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt
       ) {
-      GUI.enabled = !_visualizationMode;
+      GUI.enabled = !visualizationMode.value;
   
       Option<Rect> snapIndicatorOpt = F.none_;
       callbackVisualsList.Clear();
@@ -150,7 +178,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
             else {
               EditorGUI.DrawRect(iconRect, outlineColor);
-              drawCallbackIcon(new callbackVisuals(boxRect, tooltip));
+              drawCallbackIcon(new CallbackVisuals(boxRect, tooltip));
             }
           }
   
@@ -191,7 +219,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           }
           
           if (currNode.isCallback) {
-            callbackVisualsList.Add(new callbackVisuals(boxRect, tooltip));
+            callbackVisualsList.Add(new CallbackVisuals(boxRect, tooltip));
           }
   
           if (currNode.linkedNode.valueOut(out var linkedNode)) {
@@ -236,7 +264,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           drawCallbackIcon(callbackVisual);
         }
         
-        void drawCallbackIcon(callbackVisuals visuals) {
+        void drawCallbackIcon(CallbackVisuals visuals) {
           GUI.color = Color.yellow;
           GUI.DrawTexture(visuals.iconRect,
             EditorGUIUtility.FindTexture("d_animationkeyframe"));
@@ -255,7 +283,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     public void doTimelineGUI(){
-      if ((changeTime || isAnimationPlaying || Application.isPlaying || _visualizationMode)
+      if ((changeTime || Application.isPlaying || visualizationMode.value)
         && timePosition - _scroll.x >= timelineOffset && timePosition - _scroll.x < _timelineRect.width - 15) {
         var color = Color.red;
         color.a = Application.isPlaying ? 0.6f : 1.0f;
@@ -276,17 +304,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    public static double currentRealSeconds() {
-      var epochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-      return (DateTime.UtcNow - epochStart).TotalSeconds;
-    }
     
     void doCursor(List<TimelineNode> funNodes){
       if (funNodes.find(node =>
         new Rect(timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(Event.current.mousePosition)
         && node.startTime < 1f).isNone
       ) {
-        EditorGUIUtility.AddCursorRect(new Rect(timelineOffset - 5, 37, 10, _timelineRect.height), MouseCursor.ResizeHorizontal);
+        EditorGUIUtility.AddCursorRect(new Rect(timelineOffset - 5, 37, 10, _timelineRect.height),
+          MouseCursor.ResizeHorizontal);
       }
     }
     
@@ -295,187 +320,127 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         ((GUIStyle)"AnimationEventBackground").Draw(blackBarRect, GUIContent.none, 0);
       }
     }
-  
-    void updateAnimation(FunTweenManager ftm) {
-      var currentSeconds = currentRealSeconds();
-      if (lastSeconds < 1) lastSeconds = currentSeconds;
-      var timeDiff = (float)(currentSeconds - lastSeconds);
-      lastSeconds = currentSeconds;
-      
-      ftm.timeline.timeline.timePassed += timeDiff * (playingBackwards ? -1 : 1);
-    }
-  
-    void startUpdatingTime(FunTweenManager ftm) {
-      if (!EditorApplication.isCompiling) {
-        startVisualization(ftm);
-        lastSeconds = currentRealSeconds();
-        updateDelegateOpt.voidFold(
-          () => {
-            EditorApplication.CallbackFunction updateDelegate = () => updateAnimation(ftm);
-            EditorApplication.update += updateDelegate;
-            updateDelegateOpt = updateDelegate.some();
-          },
-          updateDelegate => EditorApplication.update += updateDelegate
-        );
+    
+    void doEvents(List<TimelineNode> funNodes) {
+        var currEvent = Event.current;
+/*        var snappingEnabled = !Event.current.shift && snapping;
+        if (currEvent.control && currEvent.keyCode == KeyCode.A && currEvent.type == EventType.keyUp) {
+          selectedNodesList.Clear();
+          foreach (var node in funNodes) {
+            selectedNodesList.Add(node);
+          }
+        }
+
+        if (currEvent.keyCode == KeyCode.Delete && currEvent.type == EventType.keyDown) {
+          removeoAllSelectedNodes();
+          selectedNodesList.Clear();
+          importTimeline();
+        }*/
+
+        switch (currEvent.rawType) {
+          case EventType.MouseDown:
+
+            foreach (var node in funNodes) {
+              if (new Rect(secondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20)
+                  .Contains(Event.current.mousePosition) && !node.isCallback
+              ) {
+                onNodeEvent(TimelineEditor.NodeEvents.ResizeStart, node);
+                
+                EditorGUI.FocusTextInControl("");
+                currEvent.Use();
+              }
+
+              if (new Rect(secondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20)
+                .Contains(Event.current.mousePosition) && !node.isCallback
+              ) {
+                onNodeEvent(TimelineEditor.NodeEvents.ResizeEnd, node);
+                
+                EditorGUI.FocusTextInControl("");
+                currEvent.Use();
+              }
+
+              if (new Rect(
+                secondsToGUI(node.startTime - (node.isCallback ? 0.5f : 0)),
+                node.channel * 20,
+                secondsToGUI(node.isCallback ? 1 : node.duration), 20
+              ).Contains(Event.current.mousePosition)) {
+
+                switch (currEvent.button) {
+                  case 0:
+                    
+                    onNodeEvent(TimelineEditor.NodeEvents.NodeClicked_MB1, node);
+
+                    EditorGUI.FocusTextInControl("");
+                    break;
+                  case 1:
+                    onNodeEvent(TimelineEditor.NodeEvents.NodeClicked_MB2, node);
+                    break;
+                }
+
+                currEvent.Use();
+              }
+            }
+            break;
+          
+          case EventType.MouseDrag:
+            break;
+
+          case EventType.MouseUp:
+            break;
+
+          default: break;
+        }
       }
-    }
-  
-    void stopTimeUpdate() {
-      updateDelegateOpt.map(updateDelegate => EditorApplication.update -= updateDelegate);
-    }
-  
-    void startVisualization(FunTweenManager ftm) {
-      if (!_visualizationMode && getTimelineTargets(ftm).valueOut(out var data)) {
-        Undo.RegisterCompleteObjectUndo(data, "Animating targets");
-        ftm.recreate();
-        _visualizationMode = true;
-      }
-    }
-  
-    public void stopVisualization() {
-      if (_visualizationMode) {
-        stopTimeUpdate();
-        Undo.PerformUndo();
-        _visualizationMode = false;
-      }
-    }
     
     public void doToolbarGUI(Rect position, Option<FunTweenManager> funTweenManager){
-      var style = new GUIStyle("ProgressBarBack") {padding = new RectOffset(0, 0, 0, 0)};
-      GUILayout.BeginArea (new Rect (position.x, position.y, timelineOffset, position.height), GUIContent.none, style);
+      
+      GUILayout.BeginArea (new Rect (position.x, position.y, timelineOffset, position.height), GUIContent.none);
       
       GUILayout.BeginHorizontal (EditorStyles.toolbar);
 
       GUI.enabled = !EditorApplication.isCompiling;
-      if (funTweenManager.valueOut(out var ftm)) {
         
-        if (GUILayout.Button(EditorGUIUtility.FindTexture("d_beginButton"), EditorStyles.toolbarButton)) {
-          ftm.timeline.timeline.timePassed = 0;
-          if (!applicationPlaying) {
-            stopTimeUpdate();
-            startVisualization(ftm);
-          }
-          else {
-            ftm.run(FunTweenManager.Action.Stop);
-          }
-          isAnimationPlaying = false;
-        }
-  
-        GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
-        if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepButton"), EditorStyles.toolbarButton)) {
-          if (!applicationPlaying) {
-            if (!isAnimationPlaying) {
-              startUpdatingTime(ftm);
-            }
-            
-            ftm.timeline.timeline.timePassed = 0;
-  
-            if (!_visualizationMode) {
-              startVisualization(ftm);
-            }
-            playingBackwards = false;
-          }
-          else {
-            ftm.run(FunTweenManager.Action.PlayForwards);
-          }
-          isAnimationPlaying = true;
-        }
-        GUI.backgroundColor = Color.white;
-  
-        if (GUILayout.Button(
-          !isAnimationPlaying
-            ? EditorGUIUtility.FindTexture("d_PlayButton")
-            : EditorGUIUtility.FindTexture("d_PlayButton On"), EditorStyles.toolbarButton)
-        ) {
-          if (isAnimationPlaying) {
-            if (!applicationPlaying) {
-              stopTimeUpdate();
-              playingBackwards = false;
-            }
-            else {
-              ftm.run(FunTweenManager.Action.Stop);
-            }
-            isAnimationPlaying = false;
-          }
-          else {
-            if (!applicationPlaying) {
-              
-              if (!_visualizationMode) {
-                startVisualization(ftm);
-              }
-              startUpdatingTime(ftm);
-              playingBackwards = false;
-            }
-            else {
-              ftm.run(FunTweenManager.Action.Resume);
-            }
-            isAnimationPlaying = true;
-          }
-        }
-  
-        if (GUILayout.Button(isAnimationPlaying
-          ? EditorGUIUtility.FindTexture("d_PauseButton")
-          : EditorGUIUtility.FindTexture("d_PauseButton On"), EditorStyles.toolbarButton)
-        ) {
-          if (!applicationPlaying){
-            stopTimeUpdate();
-          }
-          else {
-            ftm.run(FunTweenManager.Action.Stop);
-          }
-          isAnimationPlaying = false;
-  
-        }
-  
+      if (GUILayout.Button(toStartButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.GoToStart);
+      }
+
+      GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
+      if (GUILayout.Button(startButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.PlayFromStart);
+      }
+      GUI.backgroundColor = Color.white;
+
+      if (GUILayout.Button(playButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.PlayFromCurrentTime);
+      }
+
+      if (GUILayout.Button(pauseButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.Pause);
+      }
+
+      GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
+      if (GUILayout.Button(playFromEndButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.PlayFromEnd);
+      }
+
+      GUI.backgroundColor = Color.white;
+
+      if (GUILayout.Button(toEndButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.GoToEnd);
+      }
+
+      GUILayout.Space(10f);
+
+      if (GUILayout.Button(reverseButtonTexture, EditorStyles.toolbarButton)) {
+        onPlaybackControllerButton(AnimationPlaybackEvent.Reverse);
+      }
+
+      GUILayout.FlexibleSpace();
+
+      if (!Application.isPlaying) {
         GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
-        if (GUILayout.Button(EditorGUIUtility.FindTexture("d_StepLeftButton"), EditorStyles.toolbarButton)) {
-          if (!applicationPlaying) {
-            if (!_visualizationMode)  { startVisualization(ftm); }
-            ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
-            if (!isAnimationPlaying) { startUpdatingTime(ftm);  }
-            playingBackwards = true;
-          }
-          else {
-            ftm.run(FunTweenManager.Action.PlayBackwards);
-          }
-          isAnimationPlaying = true;
-        }
-  
-        GUI.backgroundColor = Color.white;
-  
-        if (GUILayout.Button(EditorGUIUtility.FindTexture("d_endButton"), EditorStyles.toolbarButton)) {
-          if (!applicationPlaying) {
-            if (!_visualizationMode) {
-              startVisualization(ftm);
-            }
-            ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
-            stopTimeUpdate();
-          }
-          else {
-            ftm.timeline.timeline.timePassed = ftm.timeline.timeline.duration;
-            ftm.run(FunTweenManager.Action.Stop);
-          }
-          isAnimationPlaying = false;
-        }
-  
-        GUILayout.Space(10f);
-  
-        if (GUILayout.Button(EditorGUIUtility.FindTexture("d_playLoopOff"), EditorStyles.toolbarButton)) {
-          if (!applicationPlaying) {
-            playingBackwards = !playingBackwards;
-          }
-          else {
-            ftm.run(FunTweenManager.Action.Reverse);
-          }
-        }
-  
-        GUILayout.FlexibleSpace();
-        
-        if (applicationPlaying || !_visualizationMode) GUI.enabled = false;
-        GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
-        if (GUILayout.Button(EditorGUIUtility.FindTexture("P4_DeletedLocal"), EditorStyles.toolbarButton)) {
-          stopVisualization();
-          isAnimationPlaying = false;
+        if (GUILayout.Button(exitButtonTexture, EditorStyles.toolbarButton)) {
+          onPlaybackControllerButton(AnimationPlaybackEvent.Exit);
           return;
         }
       }
@@ -485,9 +450,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       
       GUILayout.BeginHorizontal ();
       GUILayout.BeginVertical ();
-      if (onSettingsGUI != null) {
-        onSettingsGUI(timelineOffset - 1.5f, _visualizationMode);			
-      }
+      onSettingsGUI(timelineOffset - 1.5f, visualizationMode.value);			
       GUILayout.EndVertical ();
       GUILayout.Space (1.5f);
       GUILayout.EndHorizontal ();
@@ -520,83 +483,93 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       Handles.color = Color.white;
     }
   
-    static Option<Object[]> getTimelineTargets(FunTweenManager ftm) =>
-      ftm.timeline.elements.opt().map( elements =>
-          elements
-            .map(elem => elem.element.getTargets())
-            .Aggregate((acc, curr) => acc.concat(curr))
-      );
-  
-    void doTimelineEvents(Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes){
-      if (!GUI.enabled && !_visualizationMode) {
+    public void doTimelineEvents(List<TimelineNode> funNodes){
+      
+      if (!GUI.enabled && !visualizationMode.value) {
         return;
       }
       var ev = Event.current;
 
       switch (ev.rawType) {
       case EventType.MouseDown:
+        foreach (var node in funNodes) {
+
+          if (new Rect(secondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20)
+              .Contains(Event.current.mousePosition) && !node.isCallback
+          ) {
+            onNodeEvent(TimelineEditor.NodeEvents.ResizeStart, node);
+                
+            EditorGUI.FocusTextInControl("");
+            ev.Use();
+          }
+
+          if (new Rect(secondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20)
+              .Contains(Event.current.mousePosition) && !node.isCallback
+          ) {
+            onNodeEvent(TimelineEditor.NodeEvents.ResizeEnd, node);
+                
+            EditorGUI.FocusTextInControl("");
+            ev.Use();
+          }
+
+          if (new Rect(
+            secondsToGUI(node.startTime - (node.isCallback ? 0.5f : 0)),
+            node.channel * 20,
+            secondsToGUI(node.isCallback ? 1 : node.duration), 20
+          ).Contains(Event.current.mousePosition)) {
+
+            switch (ev.button) {
+              case 0:
+                    
+                onNodeEvent(TimelineEditor.NodeEvents.NodeClicked_MB1, node);
+
+                EditorGUI.FocusTextInControl("");
+                break;
+              case 1:
+                onNodeEvent(TimelineEditor.NodeEvents.NodeClicked_MB2, node);
+                break;
+            }
+
+            ev.Use();
+          }
+        }
         
         if (new Rect(timelineOffset - 5, 37, 10, _timelineRect.height).Contains(ev.mousePosition)
           && funNodes.find(node => 
-               new Rect(timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(ev.mousePosition)
-               && node.startTime < 1f ).isNone
+            new Rect(timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(ev.mousePosition)
+            && node.startTime < 1f ).isNone
         ) {
           changeOffset = true;
           clickOffset = timePosition - timelineOffset;
         }
         
-        if (new Rect (timelineOffset, 0, _timelineRect.width, 37).Contains(Event.current.mousePosition) && Event.current.button == 0) {
-  
-          if (funTweenManager.valueOut(out var ftm) && getTimelineTargets(ftm).valueOut(out var data) &&
-          data.All(target => target != null)) {
-            
-            timePosition = Event.current.mousePosition.x + _scroll.x;
-            changeTime = true;
-  
-            if (!applicationPlaying) {
-              if (_visualizationMode) {
-                stopTimeUpdate();
-              }
-              else {
-                Undo.RegisterCompleteObjectUndo(data, "targets saved");
-                ftm.recreate();
-              }
-            }
-            else {
-              ftm.run(FunTweenManager.Action.Stop);	
-            }
-            
-            ftm.timeline.timeline.timePassed = currentTime;
-          }
-          else {
-            Log.d.warn($"Set targets before evaluating!");
-          }
+        if (new Rect (timelineOffset, 0, _timelineRect.width, 37).Contains(Event.current.mousePosition)
+          && Event.current.button == 0
+        ) {
+          timePosition = Event.current.mousePosition.x + _scroll.x;
+          changeTime = true;
+
+          onTimelineCursorLine(true, currentTime);
   
           ev.Use();
         }
+        
         break;
+      
       case EventType.MouseUp:
-        if (changeTime && !_visualizationMode) {
-          Undo.RevertAllInCurrentGroup();
+        if (changeTime) {
+          onTimelineCursorLine(false);
         }
         changeTime = false;
         changeOffset = false;
   
         break;
+      
       case EventType.MouseDrag:
         if (changeTime && Event.current.button == 0) {
           timePosition = Event.current.mousePosition.x + _scroll.x;
   
-          if (funTweenManager.valueOut(out var ftm)) {
-            if (!applicationPlaying) {
-              ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
-            }
-            else {
-              ftm.timeline.timeline.timePassed = Mathf.Clamp(currentTime, 0, ftm.timeline.timeline.duration);
-              ftm.run(FunTweenManager.Action.Stop);
-            }
-            isAnimationPlaying = false;
-          }
+          onTimelineCursorLine(true, currentTime);
         }
         switch (ev.button) {
         case 0:
@@ -637,7 +610,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           timeIndexFactor--;
           f = 1;
         }
-        
+
+        recalculateTimelineWidth(funNodes.some());
         timeZoomFactor = f;
         
         ev.Use ();

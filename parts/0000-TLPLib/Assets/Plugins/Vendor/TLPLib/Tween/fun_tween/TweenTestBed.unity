@@ -119,7 +119,6 @@ GameObject:
   m_Component:
   - component: {fileID: 29821412}
   - component: {fileID: 29821411}
-  - component: {fileID: 29821410}
   - component: {fileID: 29821409}
   - component: {fileID: 29821408}
   m_Layer: 0
@@ -137,14 +136,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 29821407}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1de80663f2914c2dbfa0a67422df5be3, type: 3}
+  m_Script: {fileID: 11500000, guid: 2ad4864ddfb443e1b53db180854b02f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 29821411}
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
-  _end: {x: 0, y: 90, z: 90}
-  _duration: 9.799998
+  _end: {x: 0, y: 5, z: 0}
+  _duration: 10
   _ease:
     _isComplex: 0
     _simple: 0
@@ -159,34 +158,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 29821407}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ad4864ddfb443e1b53db180854b02f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1de80663f2914c2dbfa0a67422df5be3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 29821411}
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
-  _end: {x: 0, y: 4, z: 0}
-  _duration: 6.000002
+  _end: {x: 0, y: 90, z: 90}
+  _duration: 10
   _ease:
     _isComplex: 0
     _simple: 0
     _complex: {fileID: 0}
   _targets:
   - {fileID: 828684592}
---- !u!114 &29821410
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 29821407}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 691cf1edfa7246c8b323959d4a0e43e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  owner: {fileID: 29821411}
-  _invokeOn: 0
-  _onEvent: []
 --- !u!114 &29821411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,21 +191,16 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _timelineChannelIdx: 1
-      _title: Transform_Rotation
-      _startAt: 2
-      _timeOffset: 6.000002
-      _element: {fileID: 29821408}
     - _timelineChannelIdx: 5
       _title: Transform_Position
       _startAt: 2
       _timeOffset: 0
-      _element: {fileID: 29821409}
-    - _timelineChannelIdx: 10
-      _title: Callback_CodeEvent
+      _element: {fileID: 29821408}
+    - _timelineChannelIdx: 8
+      _title: Transform_Rotation
       _startAt: 2
-      _timeOffset: 6.0000005
-      _element: {fileID: 29821410}
+      _timeOffset: 15.35
+      _element: {fileID: 29821409}
   _onStart: []
   _onEnd: []
 --- !u!4 &29821412
@@ -489,8 +469,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 0.774542, z: 14.325865}
+  m_Center: {x: 0, y: -0.112729296, z: -4.470481}
 --- !u!33 &828684591
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -504,8 +484,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 828684588}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.94, y: 2.3020945, z: 0}
+  m_LocalRotation: {x: 0.10233072, y: 0.10233072, z: 0.10233072, w: 0.98416734}
+  m_LocalPosition: {x: -13.5, y: 3.05, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
