@@ -56,6 +56,32 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       firstField = new Rect(position.x, position.y, first, position.height);
       secondField = new Rect(position.x + first, position.y, second, position.height);
     }
+    
+    [PublicAPI]
+    public static void fourFields(
+      Rect position, out Rect firstField, out Rect secondField, out Rect thirdField, out Rect fourthField 
+    ) {
+      const float ratio = 0.25f;
+      var width = position.width * ratio;
+      firstField = new Rect(position.x, position.y, width, position.height);
+      secondField = new Rect(position.x + width, position.y, width, position.height);
+      thirdField = new Rect(position.x + width * 2, position.y, width, position.height);
+      fourthField = new Rect(position.x + width * 3, position.y, width, position.height);
+    }
+    
+    [PublicAPI]
+    public static void fourFields(
+      Rect position, GUIContent label, 
+      out Rect firstField, out Rect secondField, out Rect thirdField, out Rect fourthField 
+    ) {
+      position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+      const float ratio = 0.25f;
+      var width = position.width * ratio;
+      firstField = new Rect(position.x, position.y, width, position.height);
+      secondField = new Rect(position.x + width, position.y, width, position.height);
+      thirdField = new Rect(position.x + width * 2, position.y, width, position.height);
+      fourthField = new Rect(position.x + width * 3, position.y, width, position.height);
+    }
 
     [PublicAPI]
     public static void twoFields(Rect position, out Rect firstField, out Rect secondField, float ratio = 0.5f) {
