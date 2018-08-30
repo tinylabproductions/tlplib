@@ -212,9 +212,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         var msg = $"error: {req.error}, response code: {responseCode}";
         var url = new Url(req.url);
         p.complete(
-          responseCode == 0 && req.error == "Unknown Error"
-          ? new WebRequestError(url, new NoInternetError(msg))
-          : new WebRequestError(url, LogEntry.simple(msg))
+          responseCode == 0 && (req.error == "Unknown Error"
+          || Application.internetReachability == NetworkReachability.NotReachable)
+            ? new WebRequestError(url, new NoInternetError(msg))
+            : new WebRequestError(url, LogEntry.simple(msg))
         );
         req.Dispose();
       }
