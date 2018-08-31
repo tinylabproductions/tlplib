@@ -74,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Duration duration, Action action, ITimeContext timeContext,
       MonoBehaviour behaviour = null
     ) {
-      behaviour = behaviour ?? ASync.behaviour;
+      behaviour = behaviour ? behaviour : ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeContext);
       return new UnityCoroutine(behaviour, enumerator);
     }
@@ -193,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var future = Future<bool>.async(out var promise);
       
       IEnumerator checkCoroutine(){
-        var www = new UnityWebRequest("http://google.com");
+        var www = UnityWebRequest.Get("http://google.com");
         yield return www.Send();
         promise.complete(www.error == null);
       }
