@@ -20,6 +20,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
     [PublicAPI] 
     public static Option<NonEmpty<A[]>> toNonEmpty<A>(this A[] c) =>
       NonEmpty<A[]>.__unsafeApply(c, _ => _.isEmpty());
+    
+    [PublicAPI] 
+    public static Option<NonEmpty<List<A>>> toNonEmpty<A>(this List<A> c) =>
+      NonEmpty<List<A>>.__unsafeApply(c, _ => _.isEmpty());
 
     [PublicAPI] 
     public static Option<NonEmpty<ImmutableHashSet<A>>> toNonEmpty<A>(this ImmutableHashSet<A> c) =>
@@ -66,6 +70,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     [PublicAPI] public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
     [PublicAPI] public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
     [PublicAPI] public static A head<A>(this NonEmpty<A[]> ne) => ne.a[0];
+    [PublicAPI] public static A head<A>(this NonEmpty<List<A>> ne) => ne.a[0];
 
     [PublicAPI]
     public static NonEmpty<IEnumerable<B>> map<A, B, C>(

@@ -75,10 +75,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       list[idx] = ifFound(list[idx]);
     }
     
-    [PublicAPI]
-    public static Option<IList<A>> noneIfEmpty<A>(this IList<A> enumerable) =>
-      enumerable.isEmpty() ? F.none<IList<A>>() : F.some(enumerable);
-
     [PublicAPI] public static void shuffle<A>(this IList<A> list, ref Rng rng) {
       var n = list.Count;
       var range = new Range(0, n - 1);

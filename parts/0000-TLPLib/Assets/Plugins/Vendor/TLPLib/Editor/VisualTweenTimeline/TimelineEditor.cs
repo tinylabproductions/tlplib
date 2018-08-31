@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -648,15 +649,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       Option<TimelineNode> getLeftNode(TimelineNode selectedNode) =>
         funNodes.Where(node => node.channel == selectedNode.channel
           && node.startTime < selectedNode.startTime
-        ).ToList().noneIfEmpty().map(
-          channelNodes => channelNodes.OrderBy(channelNode => channelNode.startTime).Last()
+        ).ToList().toNonEmpty().map(
+          channelNodes => channelNodes.a.OrderBy(channelNode => channelNode.startTime).Last()
         );
 
       Option<TimelineNode> getRightNode(TimelineNode selectedNode) =>
         funNodes.Where(node => node.channel == selectedNode.channel
           && node.startTime > selectedNode.getEnd()
-        ).ToList().noneIfEmpty().map(
-          channelNodes => channelNodes.OrderBy(channelNode => channelNode.startTime).First()
+        ).ToList().toNonEmpty().map(
+          channelNodes => channelNodes.a.OrderBy(channelNode => channelNode.startTime).First()
         );
 
       void refreshChannelNodes() => selectedNodesList.ForEach(

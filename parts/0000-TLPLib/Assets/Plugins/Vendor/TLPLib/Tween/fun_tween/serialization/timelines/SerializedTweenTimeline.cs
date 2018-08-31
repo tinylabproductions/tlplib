@@ -98,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
         return _timeline;
       }
     }
-    
+
     public void invalidate() {
       _timeline = null;
       foreach (var element in _elements)

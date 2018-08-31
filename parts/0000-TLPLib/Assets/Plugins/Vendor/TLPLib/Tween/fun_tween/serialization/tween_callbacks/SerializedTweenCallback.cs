@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public override void invalidate() => _callback = null;
 
     public override float duration => 0;
-    
+
     public override IEnumerable<TweenTimelineElement> elements {
       get { yield return callback; }
     }

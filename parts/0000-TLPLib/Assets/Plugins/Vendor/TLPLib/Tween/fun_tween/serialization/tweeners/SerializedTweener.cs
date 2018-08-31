@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
-  public abstract partial class SerializedTweener : SerializedTweenTimelineElement {
+  public abstract class SerializedTweener : SerializedTweenTimelineElement {
     // ReSharper disable once UnusedMember.Global
     protected enum Mode { Absolute = 0, Relative = 1, RelativeFromCreation = 2 }
   }
@@ -71,17 +71,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       }
     }
 
-    public override string ToString() {
-      //Description too long for external window
-
-//      var changeS =
-//        _mode == Mode.Relative ? ops.diff(convert(_end), convert(_start)).ToString()
-//        : _mode == Mode.RelativeFromCreation ? $"current + ({_start} to {_end})"
-//        : $"{_start} to {_end}";
-      
-//      return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
-      return $"";
-    }
   }
 
   public abstract class SerializedTweener<Value, Target> : SerializedTweener<Value, Value, Target> {
