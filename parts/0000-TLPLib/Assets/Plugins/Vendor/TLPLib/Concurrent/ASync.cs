@@ -188,6 +188,19 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       StartCoroutine(webRequestEnumerator(req, promise, acceptedResponseCodes, onSuccess));
       return f;
     }
+    
+    public static Future<bool> checkForInternetConnection() {
+      var future = Future<bool>.async(out var promise);
+      
+      IEnumerator checkCoroutine(){
+        var www = new UnityWebRequest("http://google.com");
+        yield return www.Send();
+        promise.complete(www.error == null);
+      }
+      
+      StartCoroutine(checkCoroutine());
+      return future;
+    }
 
     [PublicAPI]
     public static Future<Either<LogEntry, A>> toFutureSimple<A>(
@@ -211,11 +224,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
         var msg = $"error: {req.error}, response code: {responseCode}";
         var url = new Url(req.url);
-        p.complete(
-          responseCode == 0 && req.error == "Unknown Error"
-          ? new WebRequestError(url, new NoInternetError(msg))
-          : new WebRequestError(url, LogEntry.simple(msg))
-        );
+        // no internet check
+        if (responseCode == 0 && (req.error == "Unknown Error" || req.error == "Cannot resolve destination host")) {
+          checkForInternetConnection().onComplete(hasInternet => {
+            p.complete(hasInternet
+              ? new WebRequestError(url, LogEntry.simple(msg))
+              : new WebRequestError(url, new NoInternetError(msg)));
+          });
+        }
+        else p.complete(new WebRequestError(url, LogEntry.simple(msg)));
         req.Dispose();
       }
       else if (!acceptedResponseCodes.contains(responseCode)) {
