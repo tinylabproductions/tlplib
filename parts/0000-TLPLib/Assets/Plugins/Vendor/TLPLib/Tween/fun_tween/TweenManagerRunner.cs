@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 
