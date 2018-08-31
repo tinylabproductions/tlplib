@@ -193,8 +193,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var future = Future<bool>.async(out var promise);
       
       IEnumerator checkCoroutine(){
-        var www = UnityWebRequest.Get("http://google.com");
-        yield return www.Send();
+        var www = new WWW("http://google.com");
+        yield return www;
         promise.complete(www.error == null);
       }
       
