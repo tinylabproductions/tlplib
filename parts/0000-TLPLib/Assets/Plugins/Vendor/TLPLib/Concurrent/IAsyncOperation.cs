@@ -3,11 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public interface IAsyncOperation {
     [PublicAPI] int priority { get; set; }
+    [PublicAPI] float progress { get; }
+    [PublicAPI] bool isDone { get; }
     [PublicAPI] IEnumerator yieldInstruction { get; }
+  }
+
+  [PublicAPI]
+  public class WrappedAsyncOperation : IAsyncOperation {
+    public readonly AsyncOperation op;
+    
+    public WrappedAsyncOperation(AsyncOperation op) { this.op = op; }
+    public int priority { get => op.priority; set => op.priority = value; }
+    public float progress => op.isDone ? 1f : op.progress;
+    public bool isDone => op.isDone;
+    public IEnumerator yieldInstruction { get { yield return op; } }
   }
   
   /// <summary>
@@ -19,7 +33,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ASyncOperationFake() {}
     
     public int priority { get => 0; set { } }
-    public IEnumerator yieldInstruction { get { yield return null; } }
+    public float progress => 1;
+    public bool isDone => true;
+    public IEnumerator yieldInstruction { get { yield break; } }
   }
 
   public static class IAsyncOperationExts {
@@ -33,6 +49,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI]
   public class JoinedAsyncOperation : IAsyncOperation {
     readonly IList<IAsyncOperation> operations;
+    public float progress => operations.Sum(_ => _.isDone ? 1 : _.progress) / operations.Count;
+    public bool isDone => operations.All(_ => _.isDone);
     public IEnumerator yieldInstruction { get; }
 
     public JoinedAsyncOperation(IList<IAsyncOperation> operations) {

@@ -1,5 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Components.ui;
-using com.tinylabproductions.TLPLib.Extensions;
+﻿using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
 

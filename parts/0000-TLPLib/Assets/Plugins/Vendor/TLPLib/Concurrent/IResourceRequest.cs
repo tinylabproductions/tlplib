@@ -17,6 +17,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       set => request.priority = value;
     }
 
+    public float progress => request.progress;
+    public bool isDone => request.isDone;
+
     public Object asset => request.asset;
     public IEnumerator yieldInstruction { get { yield return request; } }
   }

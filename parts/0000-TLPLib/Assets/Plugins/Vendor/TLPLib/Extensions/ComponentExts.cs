@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -18,6 +19,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (siblingIndex != null) cloned.transform.SetSiblingIndex((int) siblingIndex);
       if (setActive != null) cloned.gameObject.SetActive((bool) setActive);
       return cloned;
+    }
+
+    [PublicAPI]
+    public static A clone<A, Data>(
+      this A self, Data data, Vector3? position = null, Quaternion? rotation = null, Transform parent = null,
+      int? siblingIndex = null, bool? setActive = null
+    ) where A : Component, ISetupableComponent<Data> {
+      var a = self.clone(position, rotation, parent, siblingIndex, setActive);
+      a.setup(data);
+      return a;
     }
 
     [PublicAPI]

@@ -126,5 +126,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         arr[idx] = arr[idx + shiftBy];
       }
     }
+
+    [PublicAPI]
+    public static void setValues<A>(this A[] target, A[] source) {
+      if (target.LongLength != source.LongLength) throw new ArgumentException(
+        $"target size {target.LongLength} does not match source size {source.LongLength}"
+      );
+
+      for (var idx = 0L; idx < target.LongLength; idx++) {
+        target[idx] = source[idx];
+      }
+    }
   }
 }

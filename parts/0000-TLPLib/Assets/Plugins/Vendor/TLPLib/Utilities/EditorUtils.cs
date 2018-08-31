@@ -2,6 +2,7 @@
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -25,6 +26,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 #endif
       ;
 
+    [PublicAPI]
     public static void userInfo(string title, string body, Log.Level level = Log.Level.INFO) {
       var log = Log.@default;
       if (log.willLog(level)) log.log(
@@ -41,6 +43,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       if (lines.Length > lineCount) body = $"{lines.Take(lineCount).mkString('\n')}\n... [Full message in logs]";
       if (!InternalEditorUtility.inBatchMode) EditorUtility.DisplayDialog(title, body, "OK");
 #endif
+    }
+
+    [PublicAPI]
+    public static Exception userException(string title, string body) {
+      userInfo(title, body, Log.Level.ERROR);
+      return new Exception("Aborting.");
     }
 
 #if UNITY_EDITOR

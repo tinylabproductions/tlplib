@@ -30,15 +30,70 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
     }
     
     [PublicAPI]
-    public static void twoFields(Rect position, GUIContent label, out Rect firstField, out Rect secondField) {
+    public static void twoFieldsStatic(
+      Rect position, GUIContent label, out Rect firstField, out Rect secondField, 
+      float fieldWidth, bool widthSpecifiedForFirstField = true
+    ) {
       position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
-      var half = position.width / 2;
-      firstField = new Rect(position.x, position.y, half, position.height);
-      secondField = new Rect(position.x + half, position.y, half, position.height);
+      var first = fieldWidth;
+      var second = position.width - fieldWidth;
+      if (!widthSpecifiedForFirstField) {
+        var tmp = first;
+        first = second;
+        second = tmp;
+      }
+      firstField = new Rect(position.x, position.y, first, position.height);
+      secondField = new Rect(position.x + first, position.y, second, position.height);
+    }
+    
+    [PublicAPI]
+    public static void twoFields(
+      Rect position, GUIContent label, out Rect firstField, out Rect secondField, float ratio = 0.5f
+    ) {
+      position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+      var first = position.width * ratio;
+      var second = position.width * (1f - ratio);
+      firstField = new Rect(position.x, position.y, first, position.height);
+      secondField = new Rect(position.x + first, position.y, second, position.height);
+    }
+    
+    [PublicAPI]
+    public static void fourFields(
+      Rect position, out Rect firstField, out Rect secondField, out Rect thirdField, out Rect fourthField 
+    ) {
+      const float ratio = 0.25f;
+      var width = position.width * ratio;
+      firstField = new Rect(position.x, position.y, width, position.height);
+      secondField = new Rect(position.x + width, position.y, width, position.height);
+      thirdField = new Rect(position.x + width * 2, position.y, width, position.height);
+      fourthField = new Rect(position.x + width * 3, position.y, width, position.height);
+    }
+    
+    [PublicAPI]
+    public static void fourFields(
+      Rect position, GUIContent label, 
+      out Rect firstField, out Rect secondField, out Rect thirdField, out Rect fourthField 
+    ) {
+      position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+      const float ratio = 0.25f;
+      var width = position.width * ratio;
+      firstField = new Rect(position.x, position.y, width, position.height);
+      secondField = new Rect(position.x + width, position.y, width, position.height);
+      thirdField = new Rect(position.x + width * 2, position.y, width, position.height);
+      fourthField = new Rect(position.x + width * 3, position.y, width, position.height);
     }
 
     [PublicAPI]
-    public static void twoFields(Rect position, out Rect firstField, out Rect secondField) {
+    public static void twoFields(Rect position, out Rect firstField, out Rect secondField, float ratio = 0.5f) {
+      var first = position.width * ratio;
+      var second = position.width * (1f - ratio);
+      firstField = new Rect(position.x, position.y, first, position.height);
+      secondField = new Rect(position.x + first, position.y, second, position.height);
+    }
+
+    /// <summary>Two fields, where first field takes up label width.</summary>
+    [PublicAPI]
+    public static void twoFieldsLabel(Rect position, out Rect firstField, out Rect secondField) {
       firstField = new Rect(position.x, position.y, EditorGUIUtility.labelWidth, position.height);
       secondField = new Rect(
         position.x + EditorGUIUtility.labelWidth, position.y,
@@ -55,6 +110,8 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       initialLevel = EditorGUI.indentLevel;
       EditorGUI.indentLevel = wantedLevel;
     }
+    
+    public static EditorIndent plus(int howMuch = 1) => new EditorIndent(EditorGUI.indentLevel + howMuch);
     
     public void Dispose() { EditorGUI.indentLevel = initialLevel; }
   }

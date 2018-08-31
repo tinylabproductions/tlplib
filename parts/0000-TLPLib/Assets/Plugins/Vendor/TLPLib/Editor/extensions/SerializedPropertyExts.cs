@@ -1,29 +1,80 @@
 ﻿using System;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.extensions {
-  public static class SerializedPropertyExts {
-    [PublicAPI] public static FieldInfo GetFieldInfo(this SerializedProperty property) {
-      var parentType = property.serializedObject.targetObject.GetType();
-      var field = parentType.GetField(
-        property.propertyPath, 
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-      );
-      return field;
-    }
+  public static partial class SerializedPropertyExts {
+    [Record] partial struct GetObjectData {
+      public readonly Either<string, int> fieldNameOrArrayIndex;
 
-    [PublicAPI] public static object GetObject(this SerializedProperty property) {
-      var field = property.GetFieldInfo();
-      return field.GetValue(property.serializedObject.targetObject);
+      public Option<object> get(object source) {
+        if (fieldNameOrArrayIndex.leftValueOut(out var fieldName)) {
+          return source.GetType().GetFieldInHierarchy(fieldName).map(field => field.GetValue(source));
+        }
+        else {
+          var arrayIndex = fieldNameOrArrayIndex.__unsafeGetRight;
+          return F.some(source.cast().to<Array>().GetValue(arrayIndex));
+        }
+      }
     }
     
-    [PublicAPI] public static Type getSerializedObjectType(this SerializedProperty property) => 
-      property.GetFieldInfo().FieldType;
+    static readonly Regex ARRAY_PART_RE = new Regex(@"\[(\d+)\]$");
+    
+    [PublicAPI] public static object GetObject(this SerializedProperty property) {
+      // property.propertyPath can be something like 'foo.bar.baz'
+      var path = property.propertyPath.Split('.');
+      object @object = property.serializedObject.targetObject;
+      for (var idx = 0; idx < path.Length; idx++) {
+        var part = path[idx];
+        
+        GetObjectData getObjectData() {
+          // unity encodes arrays like this: 'foobar.Array.data[1]' means foobar[1].
+          if (part == "Array") {
+            var arrayPart = path[idx + 1];
+            idx++;
+            var match = ARRAY_PART_RE.Match(arrayPart);
+            var arrayIndex = match.Groups[1].Value.parseInt().rightOrThrow;
+            return new GetObjectData(arrayIndex);
+          }
+          else {
+            return new GetObjectData(part);
+          }
+        }
 
+        var objData = getObjectData();
+        if (objData.get(@object).valueOut(out var fieldValue)) {
+          if (idx == path.Length - 1) {
+            return fieldValue;
+          }
+          else {
+            @object = fieldValue;
+          }
+        }
+        else {
+          throw new ArgumentException(
+            $"Can't find property '{objData}' from path '{property.propertyPath}' " +
+            $"in {@object.GetType()} ({@object})!"
+          );
+        }
+      }
+      throw new ArgumentException(
+        $"Can't find property with path '{property.propertyPath}' in " +
+        $"{property.serializedObject.targetObject.GetType()}!"
+      );
+    }
+    
     [PublicAPI]
     public static void setToDefaultValue(this SerializedProperty property) {
+      ArgumentException exception(string extra = null) => new ArgumentOutOfRangeException(
+        $"Unknown property type '{property.propertyType}' for variable {property.propertyPath} " +
+        $"in {property.serializedObject.targetObject.GetType()}" + (extra ?? "")
+      );
+
       switch (property.propertyType) {
         case SerializedPropertyType.Character:
         case SerializedPropertyType.Integer:
@@ -87,13 +138,84 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
           break;
 #endif
         case SerializedPropertyType.Generic:
+          // Generic means a serializable data structure. We need to traverse it and set default
+          // for all entries.
+          foreach (var children in property.GetImmediateChildren()) {
+            children.setToDefaultValue();
+          }
+          break;
 #if UNITY_2017_2_OR_NEWER
         case SerializedPropertyType.FixedBufferSize:
 #endif
-          throw new ArgumentOutOfRangeException(nameof(property.propertyType), property.propertyType, "Unknown type");
+          throw exception();
         default:
-          throw new ArgumentOutOfRangeException(nameof(property.propertyType), property.propertyType, "Unknown type");
+          throw exception();
       }
+    }
+    
+    [PublicAPI]
+    public static bool next(this SerializedProperty sp, bool enterChildren, bool onlyVisible = true) =>
+      onlyVisible ? sp.NextVisible(enterChildren) : sp.Next(enterChildren);
+
+    [PublicAPI]
+    public static IEnumerable<SerializedProperty> GetImmediateChildren(
+      this SerializedProperty property, bool onlyVisible = true
+    ) {
+      var nextPotentiallyChild = property.Copy();
+      next(nextPotentiallyChild, enterChildren: true, onlyVisible: onlyVisible);
+      var nextSibling = property.Copy();
+      next(nextSibling, enterChildren: false, onlyVisible: onlyVisible);
+
+      if (SerializedProperty.EqualContents(nextSibling, nextPotentiallyChild)) {
+        // no children
+      }
+      else {
+        yield return nextPotentiallyChild;
+        while (next(nextPotentiallyChild, enterChildren: false, onlyVisible: onlyVisible)) {
+          if (SerializedProperty.EqualContents(nextPotentiallyChild, nextSibling)) {
+            // end of children            
+          }
+          else {
+            yield return nextPotentiallyChild;
+          }
+        }
+      }
+
+       // // https://forum.unity.com/threads/loop-through-serializedproperty-children.435119/#post-2814895
+       // property = property.Copy();
+       // var nextElement = property.Copy();
+       // var hasNextElement = nextElement.NextVisible(false);
+       // if (!hasNextElement) {
+       //   nextElement = null;
+       // }
+       //
+       // property.NextVisible(true);
+       // while (true) {
+       //   if (SerializedProperty.EqualContents(property, nextElement)) {
+       //     yield break;
+       //   }
+       //
+       //   yield return property;
+       //
+       //   var hasNext = property.NextVisible(false);
+       //   if (!hasNext) {
+       //     break;
+       //   }
+       // }
+    }
+
+    [PublicAPI]
+    public static string debugStr(this SerializedProperty p) =>
+      $"SerializedProperty[{p.propertyType} @ '{p.propertyPath}']";
+
+    [PublicAPI]
+    public static void drawInspector(this SerializedProperty property, bool onlyVisible = true) {
+      foreach (var child in property.GetImmediateChildren(onlyVisible: onlyVisible)) {
+        EditorGUILayout.PropertyField(child, includeChildren: true);
+      }
+
+      var obj = property.serializedObject;
+      obj.ApplyModifiedProperties();
     }
   }
 }

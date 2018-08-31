@@ -179,7 +179,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isSome ? func(__unsafeGetValue) : F.none<B>();
 
     [PublicAPI]
-    public Option<B> flatMapUnity<B>(Fn<A, B> func) where B : Object =>
+    public Option<B> flatMapUnity<B>(Fn<A, B> func) where B : class =>
       isSome ? F.opt(func(__unsafeGetValue)) : F.none<B>();
 
     [PublicAPI] public Option<C> flatMap<B, C>(Fn<A, Option<B>> func, Fn<A, B, C> mapper) {

@@ -56,11 +56,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public CastBuilder(From from) { this.from = from; }
 
-    public Either<string, To> toE<To>() where To : class, From {
-      var to = from as To;
-      return to == null
-        ? Either<string, To>.Left(errorMsg<To>())
-        : Either<string, To>.Right(to);
+    public Either<string, To> toE<To>() where To : From {
+      if (from is To to) return to;
+      else return errorMsg<To>();
     }
 
     string errorMsg<To>() => $"Can't cast {from.GetType()} to {typeof(To)}";
