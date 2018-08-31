@@ -1,7 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace Plugins.Vendor.TLPLib.Editor.CustomEditors {
   [CustomPropertyDrawer(typeof(ConditionalHideAttribute))]
   public class ConditionalHidePropertyDrawer : PropertyDrawer {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -51,4 +50,3 @@ namespace Plugins.Vendor.TLPLib.Editor.CustomEditors {
       return enabled;
     }
   }
-}
