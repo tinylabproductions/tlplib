@@ -27,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public TweenPlaybackController(FunTweenManager ftm, Ref<bool> visualizationMode) {
       manager = ftm;
       this.visualizationMode = visualizationMode;
+      beforeCursorDataIsSaved = false;
     }
 
     readonly FunTweenManager manager;
@@ -66,9 +67,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
   
-    void stopTimeUpdate() {
+    void stopTimeUpdate() =>
       updateDelegateOpt.map(updateDelegate => EditorApplication.update -= updateDelegate);
-    }
   
     void startVisualization() {
       if (!visualizationMode.value && getTimelineTargets(manager).valueOut(out var data)) {
@@ -118,7 +118,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     public void stopCursorEvaluation() {
       if (!visualizationMode.value && beforeCursorDataIsSaved && !Application.isPlaying) {
-        Log.d.warn("reverting undoing");
         Undo.RevertAllInCurrentGroup();
         beforeCursorDataIsSaved = false;
       }
@@ -235,6 +234,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             manager.run(FunTweenManager.Action.Reverse);
           }
           break;
+        
         case AnimationPlaybackEvent.Exit:
           stopVisualization();
           isAnimationPlaying = false;

@@ -121,6 +121,7 @@ GameObject:
   - component: {fileID: 29821411}
   - component: {fileID: 29821409}
   - component: {fileID: 29821408}
+  - component: {fileID: 29821410}
   m_Layer: 0
   m_Name: Animations
   m_TagString: Untagged
@@ -143,7 +144,7 @@ MonoBehaviour:
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
   _end: {x: 0, y: 5, z: 0}
-  _duration: 10
+  _duration: 7.4000006
   _ease:
     _isComplex: 0
     _simple: 0
@@ -165,13 +166,31 @@ MonoBehaviour:
   _mode: 0
   _start: {x: 0, y: 0, z: 0}
   _end: {x: 0, y: 90, z: 90}
-  _duration: 10
+  _duration: 7.700001
   _ease:
     _isComplex: 0
     _simple: 0
     _complex: {fileID: 0}
   _targets:
   - {fileID: 828684592}
+--- !u!114 &29821410
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 29821407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a50908fb9e04ec79e7a7039ffe9bdda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 29821411}
+  _invokeOn: 0
+  _onEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!114 &29821411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,15 +210,20 @@ MonoBehaviour:
     _mode: 0
   _timeline:
     _elements:
-    - _timelineChannelIdx: 5
+    - _timelineChannelIdx: 3
+      _title: Callback_UnityEvent
+      _startAt: 2
+      _timeOffset: 14.900004
+      _element: {fileID: 29821410}
+    - _timelineChannelIdx: 7
       _title: Transform_Position
       _startAt: 2
-      _timeOffset: 0
+      _timeOffset: 6.3000035
       _element: {fileID: 29821408}
-    - _timelineChannelIdx: 8
+    - _timelineChannelIdx: 7
       _title: Transform_Rotation
-      _startAt: 2
-      _timeOffset: 15.35
+      _startAt: 0
+      _timeOffset: 5.700001
       _element: {fileID: 29821409}
   _onStart: []
   _onEnd: []

@@ -30,8 +30,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       }
   
       public At startAt {
-        get => _startAt;
-        set => _startAt = value;
+        get => _at;
+        set => _at = value;
       }
   
       public float timeOffset {

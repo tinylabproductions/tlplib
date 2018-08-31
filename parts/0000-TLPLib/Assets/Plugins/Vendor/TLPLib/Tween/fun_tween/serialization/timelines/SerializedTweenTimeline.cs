@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
   /// <summary>
@@ -24,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
-      [SerializeField, HideInInspector] At _startAt;
+      [SerializeField, HideInInspector] At _at;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
       [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
@@ -35,30 +36,30 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       public void invalidate() => _element.invalidate();
 
       Description timeOffsetDescription => new Description(
-        _startAt == At.SpecificTime ? "Time" : "Time Offset"
+        _at == At.SpecificTime ? "Time" : "Time Offset"
       );
 
       public float at(float lastElementTime, float lastElementDuration) {
-        switch (_startAt) {
+        switch (_at) {
           case At.AfterLastElement: return lastElementTime + lastElementDuration + _timeOffset;
           case At.WithLastElement: return lastElementTime + _timeOffset;
           case At.SpecificTime: return _timeOffset;
-          default: throw new ArgumentOutOfRangeException(nameof(_startAt), _startAt.ToString(), "Unknown mode");
+          default: throw new ArgumentOutOfRangeException(nameof(_at), _at.ToString(), "Unknown mode");
         }
       }
 
       public override string ToString() {
         var titleS = _title.isEmpty() ? "" : $"{_title} | ";
         var atS = 
-          _startAt == At.SpecificTime
+          _at == At.SpecificTime
           ? $"@ {_timeOffset}s"
           : (
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             _timeOffset == 0 
-            ? _startAt.ToString() 
+            ? _at.ToString() 
             : _timeOffset > 0 
-              ? $"{_startAt} + {_timeOffset}s"
-              : $"{_startAt} - {-_timeOffset}s"
+              ? $"{_at} + {_timeOffset}s"
+              : $"{_at} - {-_timeOffset}s"
           );
         return $"{titleS}{atS} {_element}";
       }

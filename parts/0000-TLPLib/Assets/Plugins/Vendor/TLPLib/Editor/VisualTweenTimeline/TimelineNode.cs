@@ -1,4 +1,4 @@
-﻿#if ADV_INS_CHANGES
+﻿#if ADV_INS_CHANGES && UNITY_EDITOR
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Functional.Matching;
