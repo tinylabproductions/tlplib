@@ -1,19 +1,20 @@
-﻿using System.Diagnostics;
-using AdvancedInspector;
-using com.tinylabproductions.TLPLib.Components.sorting_layer;
+﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
-using Plugins.Vendor.TLPLib.Editor.CustomEditors;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
-  [AdvancedInspector(false)]
-  public abstract class UnityEither<A, B> : GenericUnityEitherParent, ISkipObjectValidationFields {
+  // Base class for property drawer.
+  public abstract class UnityEither {
+    [PublicAPI] public abstract bool isA { get; }
+    [PublicAPI] public abstract bool isB { get; }
+  }
+  public abstract class UnityEither<A, B> : UnityEither, ISkipObjectValidationFields {
 #pragma warning disable 649
     // protected is only needed for tests
-    [SerializeField, 
+    [SerializeField,
 //     Inspect(nameof(validate)), Descriptor(nameof(isADescription))
     ] bool _isA;
     [SerializeField,
@@ -44,8 +45,11 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       return true;
     }
 
-    public bool isA => _isA;
-    public bool isB => !_isA;
+    public override bool isA => _isA;
+    public override bool isB => !_isA;
+
+    //public bool isA => _isA;
+    //public bool isB => !_isA;
 
     protected virtual Description isADescription { get; } = new Description($"Is {typeof(A).Name}");
     protected virtual Description aDescription { get; } = new Description(typeof(A).Name);
