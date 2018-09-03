@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
   [AdvancedInspector(true)]
-  public class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
+  public partial class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
     enum Tab { Fields, Actions }
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
@@ -55,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     ] AutoplayMode _autoplay = AutoplayMode.Enabled;
     [SerializeField, Tab(Tab.Fields)] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
-    [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenTimeline _timeline;
+    [SerializeField, NotNull, Tab(Tab.Fields), PublicAccessor] SerializedTweenTimeline _timeline;
     [SerializeField, NotNull, CreateDerived, Tab(Tab.Fields)] SerializedTweenCallback[] _onStart, _onEnd;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
@@ -154,7 +155,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #if UNITY_EDITOR
     [Inspect, UsedImplicitly, Tab(Tab.Fields)]
     // Advanced Inspector does not render a button if it implements interface method. 
-    void recreate() => invalidate();
+    public void recreate() => invalidate();
+
+    public float currentTime => timePassed;
 #endif
     
     public void invalidate() {
@@ -165,7 +168,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       _timeline.invalidate();
       _manager = null;
       handleStartAutoplay();
-      if (_autoplay == AutoplayMode.Enabled) manager.play();
     }
     
     public enum Action : byte {

@@ -13,14 +13,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected enum Mode { Absolute = 0, Relative = 1, RelativeFromCreation = 2 }
   }
 
-  public abstract class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
+  public abstract partial class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
 
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
-    [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.RelativeFromCreation;
+    [SerializeField, FormerlySerializedAs("_isRelative")] Mode _mode = Mode.Absolute;
     [SerializeField, NotNull] SourceType _start, _end;
-    [SerializeField, Tooltip("in seconds")] float _duration = 1;
+    [SerializeField, Tooltip("in seconds")] float _duration = 10;
     [SerializeField, NotNull] SerializedEase _ease;
     [SerializeField, NotNull, NonEmpty] Target[] _targets = new Target[1];
     // ReSharper restore FieldCanBeMadeReadOnly.Local
@@ -48,6 +48,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     public override void invalidate() => _ease.invalidate();
 
     public override float duration => _duration;
+    
     public override IEnumerable<TweenTimelineElement> elements {
       get {
         Tween<DestinationType> _tween = null;
@@ -63,20 +64,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
             ));
           }
         }
-        
+
         return _targets.map(target => 
           new Tweener<DestinationType, Target>(getTween(extract(target)), target, mutator)
         );
       }
     }
 
-    public override string ToString() {
-      var changeS =
-        _mode == Mode.Relative ? ops.diff(convert(_end), convert(_start)).ToString()
-        : _mode == Mode.RelativeFromCreation ? $"current + ({_start} to {_end})"
-        : $"{_start} to {_end}";
-      return $"{changeS} over {_duration}s with {_ease} on {_targets.Length} targets";
-    }
   }
 
   public abstract class SerializedTweener<Value, Target> : SerializedTweener<Value, Value, Target> {
