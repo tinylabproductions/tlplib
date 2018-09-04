@@ -1,18 +1,14 @@
 ﻿using com.tinylabproductions.TLPLib.Editor.extensions;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.unity_serialization;
 using UnityEditor;
 using UnityEngine;
+using static com.tinylabproductions.TLPLib.Editor.unity_serialization.SerializedPropertyUtils;
 
 namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
   [CustomPropertyDrawer(typeof(UnityOption), useForChildren: true), CanEditMultipleObjects]
   public class UnityOptionDrawer : PropertyDrawer {
     static SerializedProperty getSomeProp(SerializedProperty property, string propName) =>
       property.FindPropertyRelative(propName);
-
-    static Option<SerializedProperty> getValueProp(SerializedProperty property, string propName) =>
-      property.FindPropertyRelative(propName).opt();
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) =>
       OnGUI_(position, property, label, "_isSome", "_value");

@@ -1,4 +1,4 @@
-﻿using AdvancedInspector;
+﻿using System.ComponentModel;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -10,19 +10,16 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   public abstract class UnityEither {
     [PublicAPI] public abstract bool isA { get; }
     [PublicAPI] public abstract bool isB { get; }
+
+    public virtual string aDescription { get; } = "A";
+    public virtual string bDescription { get; } = "B";
   }
   public abstract class UnityEither<A, B> : UnityEither, ISkipObjectValidationFields {
 #pragma warning disable 649
     // protected is only needed for tests
-    [SerializeField,
-//     Inspect(nameof(validate)), Descriptor(nameof(isADescription))
-    ] bool _isA;
-    [SerializeField,
-//     Inspect(nameof(isA)), Descriptor(nameof(aDescription)),
-     NotNull] A a;
-    [SerializeField,
-//     Inspect(nameof(isB)), Descriptor(nameof(bDescription)),
-     NotNull] B b;
+    [SerializeField] bool _isA;
+    [SerializeField, NotNull] A a;
+    [SerializeField, NotNull] B b;
 #pragma warning restore 649
 
     // ReSharper disable once NotNullMemberIsNotInitialized
@@ -47,13 +44,9 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
     public override bool isA => _isA;
     public override bool isB => !_isA;
-
-    //public bool isA => _isA;
-    //public bool isB => !_isA;
-
-    protected virtual Description isADescription { get; } = new Description($"Is {typeof(A).Name}");
-    protected virtual Description aDescription { get; } = new Description(typeof(A).Name);
-    protected virtual Description bDescription { get; } = new Description(typeof(B).Name);
+    
+    public override string aDescription { get; } = typeof(A).Name;
+    public override string bDescription { get; } = typeof(B).Name;
 
     public Either<A, B> value => isB.either(a, b);
 

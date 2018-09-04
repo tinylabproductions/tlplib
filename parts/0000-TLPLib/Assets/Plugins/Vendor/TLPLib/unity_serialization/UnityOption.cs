@@ -1,5 +1,4 @@
 ﻿using System;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
@@ -15,6 +14,8 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   public abstract class UnityOption {
     [PublicAPI] public abstract bool isSome { get; }
     [PublicAPI] public bool isNone => !isSome;
+    
+    [PublicAPI] public virtual string description { get; } = "Value";
   }
   
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
@@ -25,10 +26,9 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
     [
-      SerializeField, Inspect, FormerlySerializedAs("isSome"),
-      Descriptor(nameof(isSomeDescription))
+      SerializeField, FormerlySerializedAs("isSome"),
     ] bool _isSome;
-    [SerializeField, Inspect(nameof(inspectValue)), Descriptor(nameof(description)), NotNull] A _value;
+    [SerializeField, NotNull] A _value;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -68,8 +68,10 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       return _isSome;
     }
 
-    protected virtual Description isSomeDescription { get; } = new Description("Set?");
-    protected virtual Description description { get; } = new Description("Value");
+    public override string description { get; } = typeof(A).Name;
+
+//    protected virtual Description isSomeDescription { get; } = new Description("Set?");
+//    protected virtual Description description { get; } = new Description("Value");
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
     public Option<A> value => isSome ? F.some(_value) : Option<A>.None;
