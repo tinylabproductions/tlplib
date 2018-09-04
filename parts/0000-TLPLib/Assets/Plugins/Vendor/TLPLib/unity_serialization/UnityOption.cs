@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     [PublicAPI] public abstract bool isSome { get; }
     [PublicAPI] public bool isNone => !isSome;
     
-    [PublicAPI] public virtual string description { get; } = "Value";
+    [PublicAPI] public virtual string description { get; } = "";
   }
   
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
@@ -25,9 +25,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
-    [
-      SerializeField, FormerlySerializedAs("isSome"),
-    ] bool _isSome;
+    [SerializeField, FormerlySerializedAs("isSome")] bool _isSome;
     [SerializeField, NotNull] A _value;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
@@ -69,9 +67,6 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     }
 
     public override string description { get; } = typeof(A).Name;
-
-//    protected virtual Description isSomeDescription { get; } = new Description("Set?");
-//    protected virtual Description description { get; } = new Description("Value");
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
     public Option<A> value => isSome ? F.some(_value) : Option<A>.None;

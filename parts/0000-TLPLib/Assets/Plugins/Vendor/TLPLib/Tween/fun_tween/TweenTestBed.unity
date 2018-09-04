@@ -220,13 +220,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72ee1d8b136d43c7a1ad773a12accd89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zdarova:
-    _isA: 0
-    a: 0
-    b: 
+  EitherName:
+    _isA: 1
+    a: 
+    b:
+      a: 0
+      b: 0
+      c: 0
+      mul:
+        e: 0
+        f: 0
+        g: 0
   optionas:
-    _isSome: 1
-    _value: 0
+    _isSome: 0
+    _value:
+      a: 0
+      b: 0
+      c: 0
+      mul:
+        e: 0
+        f: 0
+        g: 0
 --- !u!4 &44774973
 Transform:
   m_ObjectHideFlags: 0

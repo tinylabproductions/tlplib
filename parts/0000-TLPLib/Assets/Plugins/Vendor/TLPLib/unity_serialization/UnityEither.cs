@@ -11,15 +11,15 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     [PublicAPI] public abstract bool isA { get; }
     [PublicAPI] public abstract bool isB { get; }
 
-    public virtual string aDescription { get; } = "A";
-    public virtual string bDescription { get; } = "B";
+    [PublicAPI] public virtual string aDescription { get; } = "A";
+    [PublicAPI] public virtual string bDescription { get; } = "B";
   }
   public abstract class UnityEither<A, B> : UnityEither, ISkipObjectValidationFields {
 #pragma warning disable 649
     // protected is only needed for tests
     [SerializeField] bool _isA;
-    [SerializeField, NotNull] A a;
-    [SerializeField, NotNull] B b;
+    [SerializeField,  NotNull] A a;
+    [SerializeField,  NotNull] B b;
 #pragma warning restore 649
 
     // ReSharper disable once NotNullMemberIsNotInitialized

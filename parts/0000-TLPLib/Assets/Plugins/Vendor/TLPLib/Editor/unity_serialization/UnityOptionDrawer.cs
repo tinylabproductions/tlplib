@@ -1,8 +1,10 @@
 ﻿using com.tinylabproductions.TLPLib.Editor.extensions;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.unity_serialization;
 using UnityEditor;
 using UnityEngine;
-using static com.tinylabproductions.TLPLib.Editor.unity_serialization.SerializedPropertyUtils;
+using static com.tinylabproductions.TLPLib.unity_serialization.SerializedPropertyUtils;
 
 namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
   [CustomPropertyDrawer(typeof(UnityOption), useForChildren: true), CanEditMultipleObjects]
@@ -30,10 +32,11 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       }
 
       var isSomeProp = getSomeProp(property, somePropertyName);
-      var maybeValueProp = getValueProp(property, valuePropertyName);
+      var maybeValueProp = getValuePropRelative(property, valuePropertyName);
 
       EditorGUI.BeginChangeCheck();
       EditorGUI.showMixedValue = isSomeProp.hasMultipleDifferentValues;
+      
       var isSome = EditorGUI.ToggleLeft(firstRect, label, isSomeProp.boolValue);
       var someChanged = EditorGUI.EndChangeCheck();
       if (someChanged) isSomeProp.boolValue = isSome;
@@ -43,7 +46,12 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
           if (valueProp.propertyType == SerializedPropertyType.Generic) {
             using (new EditorIndent(EditorGUI.indentLevel + 1)) {
               EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
-              EditorGUILayout.PropertyField(valueProp, includeChildren: true);
+
+              var field = (UnityOption) property.findFieldValueInObject(property.serializedObject.targetObject).get;
+              EditorGUILayout.PropertyField(
+                valueProp, new GUIContent(field.description), includeChildren: true
+              );
+
             }
           }
           else {
