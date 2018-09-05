@@ -67,7 +67,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public static readonly ISerializedRW<bool> boolean = new boolRW();
     [PublicAPI] public static readonly ISerializedRW<float> flt = new floatRW();
     [PublicAPI] public static readonly ISerializedRW<long> lng = new longRW();
-    [PublicAPI] public static readonly ISerializedRW<DateTime> dateTime = new DateTimeRW();
+    [PublicAPI] public static readonly ISerializedRW<DateTime> 
+      dateTime = new DateTimeRW(),
+      dateTimeMillisTimestamp = new DateTimeMillisTimestampRW();
 
     [PublicAPI] public static readonly ISerializedRW<Vector2> vector2 =
       flt.and(flt, (x, y) => new Vector2(x, y), _ => _.x, _ => _.y);
