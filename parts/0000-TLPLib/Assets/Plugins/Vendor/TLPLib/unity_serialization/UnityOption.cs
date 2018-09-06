@@ -110,6 +110,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionVector4 : UnityOption<Vector4> {}
   [Serializable, PublicAPI] public class UnityOptionColor : UnityOption<Color> {}
   [Serializable, PublicAPI] public class UnityOptionMonoBehaviour : UnityOption<MonoBehaviour> {}
+  [Serializable, PublicAPI] public class UnityOptionMonoBehaviours : UnityOption<MonoBehaviour[]> {}
   [Serializable, PublicAPI] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
   [Serializable, PublicAPI] public class UnityOptionAudioClip : UnityOption<AudioClip> {}
   [Serializable, PublicAPI]
@@ -128,6 +129,9 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public UnityOptionGameObject() {}
     public UnityOptionGameObject(Option<GameObject> value) : base(value) {}
   }
+  [Serializable, PublicAPI] public class UnityOptionGameObjects : UnityOption<GameObject[]> {}
+  [Serializable, PublicAPI] public class UnityOptionComponent : UnityOption<Component> {}
+  [Serializable, PublicAPI] public class UnityOptionComponents : UnityOption<Component[]> {}
   [Serializable, PublicAPI] public class UnityOptionRigidbody2D : UnityOption<Rigidbody2D> { }
   [Serializable, PublicAPI] public class UnityOptionText : UnityOption<Text> {}
   [Serializable, PublicAPI] public class UnityOptionUIClickForwarder : UnityOption<UIClickForwarder> { }
