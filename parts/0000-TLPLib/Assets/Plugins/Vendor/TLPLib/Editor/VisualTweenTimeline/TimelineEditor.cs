@@ -885,7 +885,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       void toggleLock() {
         isLocked.value = !isLocked.value;
-        backing.OnEnable();
+        var maybeSelectedGameObject = Selection.activeGameObject.opt();
+        
+        if (maybeSelectedGameObject.isSome && maybeSelectedGameObject == selectedGameObjectOpt) {
+          backing.refreshInit(funTweenManager, rootSelectedNodeOpt);
+        }
+        else {
+          backing.refreshInit(F.none_, F.none_);
+        }
       }
 
       void selectNewFunTweenManager(int index) {
