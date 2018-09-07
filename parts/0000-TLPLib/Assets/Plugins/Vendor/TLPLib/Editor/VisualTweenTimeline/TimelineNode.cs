@@ -1,7 +1,6 @@
 ﻿#if ADV_INS_CHANGES && UNITY_EDITOR
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Functional.Matching;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
@@ -30,9 +29,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    public void unlink() {
+    public TimelineNode unlink() {
       linkedNode = F.none_;
       convert(Element.At.SpecificTime);
+      return this;
     }
 
     public void refreshColor() =>
