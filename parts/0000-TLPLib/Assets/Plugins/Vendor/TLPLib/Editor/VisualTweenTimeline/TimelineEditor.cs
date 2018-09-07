@@ -65,7 +65,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     public void OnEnable() {
-
         if (init != null) {
           if (!init.isLocked.value) {
 

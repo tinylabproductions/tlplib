@@ -15,6 +15,35 @@ using AnimationPlaybackEvent = com.tinylabproductions.TLPLib.Editor.VisualTweenT
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   public partial class TimelineVisuals {
+    
+    [Record]
+    partial struct CallbackVisuals {
+      public readonly Rect iconRect;
+      public readonly Rect labelRect;
+      public readonly GUIContent labelContent;
+  
+      public CallbackVisuals (Rect boxRect, GUIContent labelContent) {
+        iconRect = new Rect(boxRect.x - 10, boxRect.y, 20, boxRect.height);
+        labelRect = new Rect(boxRect.x - 30, boxRect.y, 60, boxRect.height);
+        this.labelContent = labelContent;
+      }
+    }
+    
+    [Record]
+    public partial struct TimelineVisualsSettings {
+      public int timeIndexFactor, selectedFTMindex;
+      public Vector2 scroll;
+      public float timeZoomFactor, timelineOffset, lastNodeTime;
+
+      public TimelineVisualsSettings(int selectedFTMindex) {
+        timeIndexFactor = 1;
+        timeZoomFactor = 1;
+        timelineOffset = 450;
+        lastNodeTime = 0;
+        this.selectedFTMindex = selectedFTMindex;
+        scroll = Vector2.zero;
+      }
+    }
 
     public TimelineVisuals(
       PlaybackControllerCallback playbackControllerCallback, LockButtonCallback onLockButton,
@@ -70,10 +99,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     readonly NodeEventsCallback onNodeEvent;
     readonly SettingsEventsCallback onNewSettings;
     readonly LockButtonCallback onLockButton;
-    
     readonly ExternalEditor advancedEditor;
     readonly FTMSelectedCallback onFTMselectionChange;
-
     readonly Texture toStartButtonTexture,
       startButtonTexture,
       playButtonTexture,
@@ -86,71 +113,35 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       lockOnTexture;
 
     readonly GUIStyle toolbarStyle;
-
     readonly string[] ftmsLabels;
-
-    [Record]
-    partial struct CallbackVisuals {
-      public readonly Rect iconRect;
-      public readonly Rect labelRect;
-      public readonly GUIContent labelContent;
-  
-      public CallbackVisuals (Rect boxRect, GUIContent labelContent) {
-        iconRect = new Rect(boxRect.x - 10, boxRect.y, 20, boxRect.height);
-        labelRect = new Rect(boxRect.x - 30, boxRect.y, 60, boxRect.height);
-        this.labelContent = labelContent;
-      }
-    }
-    
     readonly List<CallbackVisuals> callbackVisualsList = new List<CallbackVisuals>();
-  
+    readonly Val<bool> visualizationMode;
+    readonly Val<bool> isLocked;
+    
+    [PublicAccessor] TimelineVisualsSettings _visualsSettings;
+
+    Rect timeRect;
+    Rect timelineRect;
     Rect blackBarRect;
     const float ZOOM = 20;
     const int OUTLINE_WIDTH = 3;
     static readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
 
-    Rect timeRect;
-    readonly Val<bool> visualizationMode;
-    readonly Val<bool> isLocked;
-    
-    [PublicAccessor] Rect _timelineRect;
-
     float currentTime {
       get => GUIToSeconds(timePosition - _visualsSettings.timelineOffset);
       set => timePosition = secondsToGUI (value) + _visualsSettings.timelineOffset;
     }
-    
-    [Record]
-    public partial struct TimelineVisualsSettings {
-      public int timeIndexFactor, selectedFTMindex;
-      public Vector2 scroll;
-      public float timeZoomFactor, timelineOffset, lastNodeTime;
 
-      public TimelineVisualsSettings(int selectedFTMindex) {
-        timeIndexFactor = 1;
-        timeZoomFactor = 1;
-        timelineOffset = 450;
-        lastNodeTime = 0;
-        this.selectedFTMindex = selectedFTMindex;
-        scroll = Vector2.zero;
-      }
-    }
-
-    [PublicAccessor] TimelineVisualsSettings _visualsSettings;
-
-    Vector2 expandView;
+    Vector2 expandView, settingsScroll;
     bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
     float timePosition, clickOffset;
-    Vector2 settingsScroll;
-  
-    Option<EditorApplication.CallbackFunction> updateDelegateOpt;
   
     public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes,
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootNode,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt
       ) {
       applicationPlaying = Application.isPlaying;
-      _timelineRect = position;
+      timelineRect = position;
       timeRect = new Rect (position.x + _visualsSettings.timelineOffset, position.y, position.width - 15, 20);
       blackBarRect = new Rect (position.x + _visualsSettings.timelineOffset - 1, position.y + 19, position.width, 16);
   
@@ -179,14 +170,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public Vector2 startScrollView() =>
       _visualsSettings.scroll = GUI.BeginScrollView(
         new Rect(
-          _timelineRect.x + _visualsSettings.timelineOffset,
+          timelineRect.x + _visualsSettings.timelineOffset,
           timeRect.height + blackBarRect.height,
-          _timelineRect.width - _visualsSettings.timelineOffset,
-          _timelineRect.height - timeRect.height - blackBarRect.height),
+          timelineRect.width - _visualsSettings.timelineOffset,
+          timelineRect.height - timeRect.height - blackBarRect.height),
         _visualsSettings.scroll,
         new Rect(0, 0,
-          _timelineRect.width + _visualsSettings.lastNodeTime + expandView.x - _visualsSettings.timelineOffset,
-          _timelineRect.height + 400 + expandView.y),
+          timelineRect.width + _visualsSettings.lastNodeTime + expandView.x - _visualsSettings.timelineOffset,
+          timelineRect.height + 400 + expandView.y),
         true, true
       );
     
@@ -332,15 +323,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
     public void doLines(){
       Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
-      for (var y = 0; y < (int)_timelineRect.height + _visualsSettings.scroll.y; y += 20) {
-        Handles.DrawLine(new Vector3(0, y, 0), new Vector3(_timelineRect.width+_visualsSettings.scroll.x, y, 0));	
+      for (var y = 0; y < (int)timelineRect.height + _visualsSettings.scroll.y; y += 20) {
+        Handles.DrawLine(new Vector3(0, y, 0), new Vector3(timelineRect.width+_visualsSettings.scroll.x, y, 0));	
       }
       Handles.color = Color.white;
     }
     
     public void doTimelineGUI(){
       if ((changeTime || Application.isPlaying || visualizationMode.value)
-        && timePosition - _visualsSettings.scroll.x >= _visualsSettings.timelineOffset && timePosition - _visualsSettings.scroll.x < _timelineRect.width - 15) {
+        && timePosition - _visualsSettings.scroll.x >= _visualsSettings.timelineOffset && timePosition - _visualsSettings.scroll.x < timelineRect.width - 15) {
         var color = Color.red;
         color.a = Application.isPlaying ? 0.6f : 1.0f;
         Handles.color = color;
@@ -354,7 +345,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         var rect1 = new Rect(timePosition - _visualsSettings.scroll.x, 19, size.x, size.y);
         GUI.Label(rect1, $"{currentTime:F2}s", style);
         Handles.DrawLine(new Vector3(timePosition - _visualsSettings.scroll.x, 0, 0),
-          new Vector3(timePosition - _visualsSettings.scroll.x, _timelineRect.height - 15, 0)
+          new Vector3(timePosition - _visualsSettings.scroll.x, timelineRect.height - 15, 0)
         );
         Handles.color = Color.white;
       }
@@ -365,7 +356,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(Event.current.mousePosition)
         && node.startTime < 1f).isNone
       ) {
-        EditorGUIUtility.AddCursorRect(new Rect(_visualsSettings.timelineOffset - 5, 37, 10, _timelineRect.height),
+        EditorGUIUtility.AddCursorRect(new Rect(_visualsSettings.timelineOffset - 5, 37, 10, timelineRect.height),
           MouseCursor.ResizeHorizontal);
       }
     }
@@ -560,7 +551,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       if (advancedEditor.Instances.Length > 0
-        && advancedEditor.Draw(new Rect(0, 0, width, _timelineRect.height - 100))
+        && advancedEditor.Draw(new Rect(0, 0, width, timelineRect.height - 100))
       ) {
         Undo.RecordObject(manager, "Tween Manager Changes");
       }
@@ -703,7 +694,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       switch (ev.rawType) {
         
         case EventType.MouseDown:
-          if (new Rect(_visualsSettings.timelineOffset - 5, 37, 10, _timelineRect.height).Contains(ev.mousePosition)
+          if (new Rect(_visualsSettings.timelineOffset - 5, 37, 10, timelineRect.height).Contains(ev.mousePosition)
             && funNodes.find(node => 
               new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(ev.mousePosition)
               && node.startTime < 1f ).isNone
@@ -712,7 +703,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             clickOffset = timePosition - _visualsSettings.timelineOffset;
           }
           
-          if (new Rect (_visualsSettings.timelineOffset, 0, _timelineRect.width, 37).Contains(Event.current.mousePosition)
+          if (new Rect (_visualsSettings.timelineOffset, 0, timelineRect.width, 37).Contains(Event.current.mousePosition)
             && Event.current.button == 0
           ) {
             timePosition = Event.current.mousePosition.x + _visualsSettings.scroll.x;
@@ -744,7 +735,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             case 0:
               if (changeOffset) {
                 _visualsSettings.timelineOffset = ev.mousePosition.x;
-                _visualsSettings.timelineOffset = Mathf.Clamp(_visualsSettings.timelineOffset, 170, _timelineRect.width - 170);
+                _visualsSettings.timelineOffset = Mathf.Clamp(_visualsSettings.timelineOffset, 170, timelineRect.width - 170);
                 timePosition = _visualsSettings.timelineOffset + clickOffset;
                 timePosition = Mathf.Clamp(timePosition, _visualsSettings.timelineOffset, Mathf.Infinity);
                 ev.Use();
