@@ -460,8 +460,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           case NodeEvents.Refresh:
             unlinkNodesWithBrokenLink();
-            //selectedNodesList.ForEach(moveDownIfOverlaping);
-
             if (dragNode || resizeNodeEnd || resizeNodeStart) {
               foreach (var ftm in funTweenManager) {
                 Undo.RegisterFullObjectHierarchyUndo(ftm, "Node changes");
