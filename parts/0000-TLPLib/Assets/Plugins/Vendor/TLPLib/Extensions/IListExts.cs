@@ -74,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var idx = idxOpt.get;
       list[idx] = ifFound(list[idx]);
     }
-
+    
     [PublicAPI] public static void shuffle<A>(this IList<A> list, ref Rng rng) {
       var n = list.Count;
       var range = new Range(0, n - 1);
