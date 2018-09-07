@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         "sets all the properties of non-relatively tweened objects like it was zeroth second in the timeline.\n" +
         "- " + nameof(AutoplayMode.ApplyEndStateOnStart) + ": same, but sets the last second state."
       )
-    ] AutoplayMode _autoplay = AutoplayMode.Disabled;
+    ] AutoplayMode _autoplay = AutoplayMode.Enabled;
     [SerializeField, Tab(Tab.Fields)] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
     [SerializeField, NotNull, Tab(Tab.Fields), PublicAccessor] SerializedTweenTimeline _timeline;
