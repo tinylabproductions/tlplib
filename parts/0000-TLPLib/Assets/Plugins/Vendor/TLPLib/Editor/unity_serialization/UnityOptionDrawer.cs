@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
         secondRect = new Rect(position.x + TOGGLE_WIDTH, position.y, position.width - TOGGLE_WIDTH, position.height);
       }
       else {
-        DrawerUtils.twoFieldsLabel(EditorGUI.IndentedRect(position), out firstRect, out secondRect);
+        DrawerUtils.twoFieldsLabel(position, out firstRect, out secondRect);
       }
 
       var isSomeProp = getSomeProp(property, somePropertyName);
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
         if (isSome) {
           EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
           if (valueProp.propertyType == SerializedPropertyType.Generic) {
-            using (new EditorIndent(EditorGUI.indentLevel + 1)) {
+            using (EditorIndent.plus()) {
               EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
               EditorGUILayout.PropertyField(valueProp, includeChildren: true);
             }
