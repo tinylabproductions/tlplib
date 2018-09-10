@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
 using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -15,29 +16,29 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #endif
     OneOf<A, B, C> : IEquatable<OneOf<A, B, C>>
   {
-    readonly A _aValue;
-    readonly B _bValue;
-    readonly C _cValue;
+    public readonly A __unsafeGetA;
+    public readonly B __unsafeGetB;
+    public readonly C __unsafeGetC;
     public readonly OneOf.Choice whichOne;
 
     public OneOf(A a) {
-      _aValue = a;
-      _bValue = default(B);
-      _cValue = default(C);
+      __unsafeGetA = a;
+      __unsafeGetB = default(B);
+      __unsafeGetC = default(C);
       whichOne = OneOf.Choice.A;
     }
 
     public OneOf(B b) {
-      _aValue = default(A);
-      _bValue = b;
-      _cValue = default(C);
+      __unsafeGetA = default(A);
+      __unsafeGetB = b;
+      __unsafeGetC = default(C);
       whichOne = OneOf.Choice.B;
     }
 
     public OneOf(C c) {
-      _aValue = default(A);
-      _bValue = default(B);
-      _cValue = c;
+      __unsafeGetA = default(A);
+      __unsafeGetB = default(B);
+      __unsafeGetC = c;
       whichOne = OneOf.Choice.C;
     }
 
@@ -46,9 +47,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public bool Equals(OneOf<A, B, C> other) {
       if (whichOne != other.whichOne) return false;
       switch (whichOne) {
-        case OneOf.Choice.A: return EqComparer<A>.Default.Equals(_aValue, other._aValue);
-        case OneOf.Choice.B: return EqComparer<B>.Default.Equals(_bValue, other._bValue);
-        case OneOf.Choice.C: return EqComparer<C>.Default.Equals(_cValue, other._cValue);
+        case OneOf.Choice.A: return EqComparer<A>.Default.Equals(__unsafeGetA, other.__unsafeGetA);
+        case OneOf.Choice.B: return EqComparer<B>.Default.Equals(__unsafeGetB, other.__unsafeGetB);
+        case OneOf.Choice.C: return EqComparer<C>.Default.Equals(__unsafeGetC, other.__unsafeGetC);
         default: throw new IllegalStateException("Unreachable code");
       }
     }
@@ -60,9 +61,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public override int GetHashCode() {
       switch (whichOne) {
-        case OneOf.Choice.A: return EqComparer<A>.Default.GetHashCode(_aValue);
-        case OneOf.Choice.B: return EqComparer<B>.Default.GetHashCode(_bValue);
-        case OneOf.Choice.C: return EqComparer<C>.Default.GetHashCode(_cValue);
+        case OneOf.Choice.A: return EqComparer<A>.Default.GetHashCode(__unsafeGetA);
+        case OneOf.Choice.B: return EqComparer<B>.Default.GetHashCode(__unsafeGetB);
+        case OneOf.Choice.C: return EqComparer<C>.Default.GetHashCode(__unsafeGetC);
         default: throw new IllegalStateException("Unreachable code");
       }
     }
@@ -81,43 +82,52 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
 #endregion
 
-    public bool isA => whichOne == OneOf.Choice.A;
-    public Option<A> aValue => isA.opt(_aValue);
-    internal A __unsafeGetA => _aValue;
+    [PublicAPI] public bool isA => whichOne == OneOf.Choice.A;
+    [PublicAPI] public Option<A> aValue => isA.opt(__unsafeGetA);
+    [PublicAPI] public bool aValueOut(out A value) {
+      value = __unsafeGetA;
+      return isA;
+    }
 
-    public bool isB => whichOne == OneOf.Choice.B;
-    public Option<B> bValue => isB.opt(_bValue);
-    internal B __unsafeGetB => _bValue;
+    [PublicAPI] public bool isB => whichOne == OneOf.Choice.B;
+    [PublicAPI] public Option<B> bValue => isB.opt(__unsafeGetB);
+    [PublicAPI] public bool bValueOut(out B value) {
+      value = __unsafeGetB;
+      return isB;
+    }
 
-    public bool isC => whichOne == OneOf.Choice.C;
-    public Option<C> cValue => isC.opt(_cValue);
-    internal C __unsafeGetC => _cValue;
+    [PublicAPI] public bool isC => whichOne == OneOf.Choice.C;
+    [PublicAPI] public Option<C> cValue => isC.opt(__unsafeGetC);
+    [PublicAPI] public bool cValueOut(out C value) {
+      value = __unsafeGetC;
+      return isC;
+    }
 
     public override string ToString() =>
-        isA ? $"OneOf[{typeof(A)}]({_aValue})"
-      : isB ? $"OneOf[{typeof(B)}]({_bValue})"
-            : $"OneOf[{typeof(C)}]({_cValue})";
+        isA ? $"OneOf[{typeof(A)}]({__unsafeGetA})"
+      : isB ? $"OneOf[{typeof(B)}]({__unsafeGetB})"
+            : $"OneOf[{typeof(C)}]({__unsafeGetC})";
 
-    public void voidFold(Act<A> onA, Act<B> onB, Act<C> onC) {
+    [PublicAPI] public void voidFold(Act<A> onA, Act<B> onB, Act<C> onC) {
       switch (whichOne) {
         case OneOf.Choice.A:
-          onA(_aValue);
+          onA(__unsafeGetA);
           return;
         case OneOf.Choice.B:
-          onB(_bValue);
+          onB(__unsafeGetB);
           return;
         case OneOf.Choice.C:
-          onC(_cValue);
+          onC(__unsafeGetC);
           return;
       }
       throw new IllegalStateException("Unreachable code");
     }
 
-    public R fold<R>(Fn<A, R> onA, Fn<B, R> onB, Fn<C, R> onC) {
+    [PublicAPI] public R fold<R>(Fn<A, R> onA, Fn<B, R> onB, Fn<C, R> onC) {
       switch (whichOne) {
-        case OneOf.Choice.A: return onA(_aValue);
-        case OneOf.Choice.B: return onB(_bValue);
-        case OneOf.Choice.C: return onC(_cValue);
+        case OneOf.Choice.A: return onA(__unsafeGetA);
+        case OneOf.Choice.B: return onB(__unsafeGetB);
+        case OneOf.Choice.C: return onC(__unsafeGetC);
       }
       throw new IllegalStateException("Unreachable code");
     }
