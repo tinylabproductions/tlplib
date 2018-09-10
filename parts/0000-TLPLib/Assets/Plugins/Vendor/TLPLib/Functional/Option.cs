@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional.higher_kinds;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
@@ -146,6 +147,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public bool valueOut(out A a) {
       a = isSome ? __unsafeGetValue : default;
       return isSome;
+    }
+
+    [PublicAPI]
+    public bool getOrLog(out A a, LogEntry msg, ILog log = null, Log.Level level = Log.Level.ERROR) {
+      if (!valueOut(out a)) {
+        log = log ?? Log.d;
+        if (log.willLog(level)) log.log(level, msg);
+        return false;
+      }
+      return true;
     }
 
     #region Equality
