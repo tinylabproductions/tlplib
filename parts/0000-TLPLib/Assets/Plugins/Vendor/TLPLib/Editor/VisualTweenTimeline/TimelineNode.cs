@@ -29,10 +29,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    public TimelineNode unlink() {
+    public void unlink() {
       linkedNode = F.none_;
       convert(Element.At.SpecificTime);
-      return this;
     }
 
     public void refreshColor() =>

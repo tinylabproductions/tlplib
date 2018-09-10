@@ -18,8 +18,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     [Record]
     partial struct CallbackVisuals {
-      public readonly Rect iconRect;
-      public readonly Rect labelRect;
+      public readonly Rect iconRect, labelRect;
       public readonly GUIContent labelContent;
   
       public CallbackVisuals (Rect boxRect, GUIContent labelContent) {
@@ -45,46 +44,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
 
-    public TimelineVisuals(
-      PlaybackControllerCallback playbackControllerCallback, LockButtonCallback onLockButton,
-      TimelineCursorLineCallback cursorLineCallback, NodeEventsCallback nodeEventsCallback,
-      SettingsEventsCallback settingsEventsCallback, FTMSelectedCallback FTMSelectedCallback,
-      Val<bool> visualizationMode, Val<bool> isLocked, ExternalEditor advancedEditor, ImmutableArray<FunTweenManager> ftms,
-      int selectedFTMindex, Option<TimelineVisualsSettings> visualsSettings
-    ) {
-      this.visualizationMode = visualizationMode;
-      onPlaybackControllerButton = playbackControllerCallback;
-      onTimelineCursorLine = cursorLineCallback;
-      onNodeEvent = nodeEventsCallback;
-
-      onNewSettings = settingsEventsCallback;
-      onFTMselectionChange = FTMSelectedCallback;
-      this.isLocked = isLocked;
-      this.onLockButton = onLockButton;
-
-      toStartButtonTexture = EditorGUIUtility.FindTexture("d_beginButton");
-      startButtonTexture = EditorGUIUtility.FindTexture("d_StepButton");
-      playButtonTexture = EditorGUIUtility.FindTexture("d_PlayButton");
-      pauseButtonTexture = EditorGUIUtility.FindTexture("d_PauseButton");
-      playFromEndButtonTexture = EditorGUIUtility.FindTexture("d_StepLeftButton");
-      toEndButtonTexture = EditorGUIUtility.FindTexture("d_endButton");
-      reverseButtonTexture = EditorGUIUtility.FindTexture("d_playLoopOff");
-      exitButtonTexture = EditorGUIUtility.FindTexture("P4_DeletedLocal");
-      lockTexture = EditorGUIUtility.FindTexture("LockIcon");
-      lockOnTexture = EditorGUIUtility.FindTexture("LockIcon-On");
-
-      this.advancedEditor = advancedEditor;
-      _visualsSettings = visualsSettings.fold(
-        () => new TimelineVisualsSettings(selectedFTMindex),
-        settings => {
-          settings.selectedFTMindex = selectedFTMindex;
-          return settings;
-        }
-      );
-
-      ftmsLabels = ftms.Select((ftm, idx) => $"{idx}: {ftm.title}").ToArray();
-    }
-
+    const float ZOOM = 20;
+    const int OUTLINE_WIDTH = 3;
+    static readonly int[] timeFactor = {1,2,3,4,5,10,30,60,300,600,1800,3600,7200};
     public delegate void TimelineCursorLineCallback(bool isStart, float time = 0f);
     public delegate void PlaybackControllerCallback(AnimationPlaybackEvent animationEvent);
     public delegate void SettingsEventsCallback(TimelineEditor.SettingsEvents settingsEvent);
@@ -115,26 +77,53 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     readonly GUIStyle toolbarStyle;
     readonly string[] ftmsLabels;
     readonly List<CallbackVisuals> callbackVisualsList = new List<CallbackVisuals>();
-    readonly Val<bool> visualizationMode;
-    readonly Val<bool> isLocked;
+    readonly Val<bool> visualizationMode, isLocked;
     
     [PublicAccessor] TimelineVisualsSettings _visualsSettings;
 
-    Rect timeRect;
-    Rect timelineRect;
-    Rect blackBarRect;
-    const float ZOOM = 20;
-    const int OUTLINE_WIDTH = 3;
-    static readonly int[] timeFactor = {1,5,10,30,60,300,600,1800,3600,7200};
+    Rect timeRect, timelineRect, blackBarRect;
+    Vector2 expandView, settingsScroll;
+    bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
+    float timePosition, clickOffset;
+    
+    public TimelineVisuals(
+      PlaybackControllerCallback playbackControllerCallback, LockButtonCallback onLockButton,
+      TimelineCursorLineCallback cursorLineCallback, NodeEventsCallback nodeEventsCallback,
+      SettingsEventsCallback settingsEventsCallback, FTMSelectedCallback FTMSelectedCallback,
+      Val<bool> visualizationMode, Val<bool> isLocked, ExternalEditor advancedEditor, ImmutableArray<FunTweenManager> ftms,
+      TimelineVisualsSettings visualsSettings
+    ) {
+      this.visualizationMode = visualizationMode;
+      onPlaybackControllerButton = playbackControllerCallback;
+      onTimelineCursorLine = cursorLineCallback;
+      onNodeEvent = nodeEventsCallback;
+      onNewSettings = settingsEventsCallback;
+      onFTMselectionChange = FTMSelectedCallback;
+      this.isLocked = isLocked;
+      this.onLockButton = onLockButton;
+      this.advancedEditor = advancedEditor;
+      _visualsSettings = visualsSettings;
+      ftmsLabels = ftms.Select((ftm, idx) => $"{idx}: {ftm.title}").ToArray();
 
+      toStartButtonTexture = EditorGUIUtility.FindTexture("d_beginButton");
+      startButtonTexture = EditorGUIUtility.FindTexture("d_StepButton");
+      playButtonTexture = EditorGUIUtility.FindTexture("d_PlayButton");
+      pauseButtonTexture = EditorGUIUtility.FindTexture("d_PauseButton");
+      playFromEndButtonTexture = EditorGUIUtility.FindTexture("d_StepLeftButton");
+      toEndButtonTexture = EditorGUIUtility.FindTexture("d_endButton");
+      reverseButtonTexture = EditorGUIUtility.FindTexture("d_playLoopOff");
+      exitButtonTexture = EditorGUIUtility.FindTexture("P4_DeletedLocal");
+      lockTexture = EditorGUIUtility.FindTexture("LockIcon");
+      lockOnTexture = EditorGUIUtility.FindTexture("LockIcon-On");
+    }
+
+    
     float currentTime {
       get => GUIToSeconds(timePosition - _visualsSettings.timelineOffset);
       set => timePosition = secondsToGUI (value) + _visualsSettings.timelineOffset;
     }
 
-    Vector2 expandView, settingsScroll;
-    bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
-    float timePosition, clickOffset;
+ 
   
     public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes,
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootNode,
@@ -372,7 +361,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       ){
       
       GUILayout.BeginArea (new Rect (position.x, position.y, _visualsSettings.timelineOffset, position.height), GUIContent.none);
-      
+
       GUILayout.BeginHorizontal (EditorStyles.toolbar);
       var guiEnabled = GUI.enabled;
 
