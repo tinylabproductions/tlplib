@@ -170,11 +170,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       _to = to;
     }
 
-    public float random => Random.Range(from, to);
-    public float this[Percentage p] => from + (to - from) * p.value;
+    [PublicAPI] public float random => Random.Range(from, to);
+    [PublicAPI] public float this[Percentage p] => from + (to - from) * p.value;
+    [PublicAPI] public bool contains(float f) => f >= _from && f <= _to;         
+
     public override string ToString() => $"({from} to {to})";
 
-    public EnumerableFRange by(float step) => new EnumerableFRange(@from, to, step);
+    [PublicAPI] public EnumerableFRange by(float step) => new EnumerableFRange(@from, to, step);
 
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       if (_from > _to) yield return new ErrorMsg(
