@@ -179,6 +179,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in enumerable) if (predicate(a)) return F.some(a);
       return F.none<A>();
     }
+    
+    [PublicAPI]
+    public static Option<A> find<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
+    ) {
+      comparer = comparer ?? EqComparer<B>.Default;
+      foreach (var a in enumerable) {
+        var b = mapper(a);
+        if (comparer.Equals(b, toFind)) return F.some(a);
+      }
+      return F.none<A>();
+    }
 
     [PublicAPI]
     public static IEnumerable<C> zip<A, B, C>(
@@ -288,6 +300,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
         if (bOpt.isSome) return bOpt;
+      }
+      return F.none<B>();
+    }
+
+    [PublicAPI]
+    public static Option<B> collectFirst<A, B>(
+      this IEnumerable<A> enumerable, Fn<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
+    ) {
+      comparer = comparer ?? EqComparer<B>.Default;
+      foreach (var a in enumerable) {
+        var b = mapper(a);
+        if (comparer.Equals(b, toFind)) return F.some(b);
       }
       return F.none<B>();
     }
@@ -404,7 +428,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         }
         idx++;
       }
-    }
+    } 
   }
 
   public struct Partitioned<A> : IEquatable<Partitioned<A>> {
