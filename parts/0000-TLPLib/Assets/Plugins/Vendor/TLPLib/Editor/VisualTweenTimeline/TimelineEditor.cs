@@ -133,7 +133,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         TimelineEditor backing, Option<FunTweenManager> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet
       ) {
         EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
-        Undo.undoRedoPerformed += undoCalback;
+        Undo.undoRedoPerformed += undoCallback;
         EditorSceneManager.sceneSaving += EditorSceneManagerOnSceneSaving;
 
         advancedEditor = CreateInstance<ExternalEditor>();
@@ -189,14 +189,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           }
         );
 
-     
-
         backing.Repaint();
       }
 
       public void Dispose() { 
         EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
-        Undo.undoRedoPerformed -= undoCalback;
+        Undo.undoRedoPerformed -= undoCallback;
         EditorSceneManager.sceneSaving -= EditorSceneManagerOnSceneSaving;
       }
 
@@ -235,7 +233,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         backing.Repaint();
       }
 
-      void undoCalback() {
+      void undoCallback() {
         selectedNodesList.Clear();
         importTimeline();
         refreshSelectedNodes();
@@ -334,12 +332,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 var selectedNodeEnd = rootSelected.getEnd();
                 if (selectedNodeEnd < mousePositionSeconds) break;
   
-                rootSelected.startTime = mousePositionSeconds;
-                rootSelected.startTime = Mathf.Clamp(rootSelected.startTime, 0, float.MaxValue);
+                rootSelected.setStartTime(mousePositionSeconds);
   
                 if (rootSelected.startTime > 0 && !isStartSnapped) {
-                  rootSelected.duration = selectedNodeEnd - rootSelected.startTime;
-                  rootSelected.duration = Mathf.Clamp(rootSelected.duration, 0.01f, float.MaxValue);
+                  rootSelected.setDuration(selectedNodeEnd - rootSelected.startTime); 
                 }
   
                 if (snappingEnabled) {
@@ -349,10 +345,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 foreach (var selected in selectedNodesList) {
                   if (selected != rootSelected) {
                     var nodeEnd = selected.getEnd();
-                    selected.startTime = rootSelected.startTime;
-                    selected.duration = nodeEnd - selected.startTime;
-                    selected.startTime = Mathf.Clamp(selected.startTime, 0, float.MaxValue);
-                    selected.duration = Mathf.Clamp(selected.duration, 0.01f, float.MaxValue);
+                    selected.setStartTime(rootSelected.startTime);
+                    selected.setDuration(nodeEnd - selected.startTime);
                   }
                 }
               }
@@ -360,8 +354,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               if (resizeNodeEnd) {
                 if (rootSelected.startTime > mousePositionSeconds) break;
                 
-                rootSelected.duration = mousePositionSeconds - rootSelected.startTime;
-                rootSelected.duration = Mathf.Clamp(rootSelected.duration, 0.01f, float.MaxValue);
+                rootSelected.setDuration(mousePositionSeconds - rootSelected.startTime);
   
                 if (snappingEnabled) {
                   snapEnd(rootSelected);
@@ -369,8 +362,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
                 foreach (var node in selectedNodesList) {
                   if (node != rootSelected) {
-                    node.duration = rootSelected.duration - (node.startTime - rootSelected.startTime);
-                    node.duration = Mathf.Clamp(node.duration, 0.01f, float.MaxValue);
+                    node.setDuration(rootSelected.duration - (node.startTime - rootSelected.startTime));
                   }
                   updateLinkedNodeStartTimes(node);
                 }
@@ -388,8 +380,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                     ? rootSelected.startTime
                     : 0;
   
-                rootSelected.startTime = mousePositionSeconds + timeClickOffset;
-                rootSelected.startTime = Mathf.Clamp(rootSelected.startTime, clampLimit, float.MaxValue);
+                rootSelected.setStartTime(mousePositionSeconds + timeClickOffset, clampLimit);
   
                 isEndSnapped = false;
                 isStartSnapped = false;
@@ -402,17 +393,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 for (var i = 0; i < selectedNodesList.Count; i++) {
   
                   var node = selectedNodesList[i];
-                  node.startTime = rootSelected.startTime + diffList[i];
+                  node.setStartTime(rootSelected.startTime + diffList[i]);
   
                   updateLinkedNodeStartTimes(node);
-                  node.startTime = Mathf.Clamp(node.startTime, 0, float.MaxValue);
                 }
   
                 diffList.Clear();
   
                 if (Event.current.mousePosition.y > rootSelected.channel * 20 + 25) {
                   foreach (var node in selectedNodesList) {
-                    updateLinkedNodeChannels(node, _ => _.channel += 1);
+                    updateLinkedNodeChannels(node, _ => _.increaseChannel());
                     if (node == rootSelected) {
                       node.unlink();
                     }
@@ -422,15 +412,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 if (Event.current.mousePosition.y < rootSelected.channel * 20 - 5
                   && selectedNodesList.find(node => node.channel == 0).isNone) {
                   foreach (var node in selectedNodesList) {
-                    updateLinkedNodeChannels(node, _ => _.channel -= 1);
+                    updateLinkedNodeChannels(node, _ => _.decreaseChannel());
                     if (node == rootSelected) {
                       node.unlink();
                     }
                   }
-                }
-  
-                foreach (var node in selectedNodesList) {
-                  node.channel = Mathf.Clamp(node.channel, 0, int.MaxValue);
                 }
   
                 void updateLinkedNodeChannels(TimelineNode node, Act<TimelineNode> changeChannel) {
@@ -475,7 +461,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       void moveDownIfOverlaping(TimelineNode node) {
         getOverlapingNodes(node).map(overlapingNode => {
-          node.channel++;
+          node.increaseChannel();
           moveDownIfOverlaping(node);
           return node;
         });
@@ -499,7 +485,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           () => { },
           rightNode => {
             if (rightNode.linkedNode.valueOut(out var nodeLinkedTo) && nodeLinkedTo == node) {
-              rightNode.startTime = node.getEnd() + rightNode.element.timeOffset;
+              rightNode.setStartTime(node.getEnd() + rightNode.element.timeOffset);
             }
 
             updateLinkedNodeStartTimes(rightNode);
@@ -548,7 +534,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         NodeSnappedTo setSnapping(
           TimelineNode nodeToSnapTo, bool snappedToNodeStart, float timeToSet, ref bool sideToSnap
         ) {
-          rootNode.startTime = timeToSet;
+          rootNode.setStartTime(timeToSet);
           sideToSnap = true;
 
           SnapType getsnapType(bool isRootStart, bool isNodeStart) {
@@ -600,14 +586,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             var snapPoint = timelineVisuals.secondsToGUI(nodeToSnapTo.startTime);
             var nodeEndPos = timelineVisuals.secondsToGUI(selectedNode.getEnd());
             if (isInRangeOfSnap(snapPoint, nodeEndPos)) {
-              selectedNode.duration = nodeToSnapTo.startTime - selectedNode.startTime;
+              selectedNode.setDuration(nodeToSnapTo.startTime - selectedNode.startTime);
               isEndSnapped = true;
               nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.EndWithStart).some();
             }
             else {
               snapPoint = timelineVisuals.secondsToGUI(nodeToSnapTo.getEnd());
               if (isInRangeOfSnap(snapPoint, nodeEndPos)) {
-                selectedNode.duration = nodeToSnapTo.getEnd() - selectedNode.startTime;
+                selectedNode.setDuration(nodeToSnapTo.getEnd() - selectedNode.startTime);
                 isEndSnapped = true;
                 nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.EndWithEnd).some();
               }
@@ -628,9 +614,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             var nodeStartPos = timelineVisuals.secondsToGUI(selectedNode.startTime);
 
             if (isInRangeOfSnap(snapPoint, nodeStartPos)) {
-              selectedNode.startTime = nodeToSnapTo.startTime;
+              selectedNode.setStartTime(nodeToSnapTo.startTime); 
               if (!isStartSnapped) {
-                selectedNode.duration = end - selectedNode.startTime;
+                selectedNode.setDuration(end - selectedNode.startTime);
                 nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.StartWithStart).some();
                 isStartSnapped = true;
               }
@@ -638,15 +624,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             else {
               snapPoint = timelineVisuals.secondsToGUI(nodeToSnapTo.getEnd());
               if (isInRangeOfSnap(snapPoint, nodeStartPos)) {
-                selectedNode.startTime = nodeToSnapTo.getEnd();
+                selectedNode.setStartTime(nodeToSnapTo.getEnd());
                 if (!isStartSnapped) {
-                  selectedNode.duration = end - selectedNode.startTime;
+                  selectedNode.setDuration(end - selectedNode.startTime);
                   nodeSnappedToOpt = new NodeSnappedTo(nodeToSnapTo, SnapType.StartWithEnd).some();
                   isStartSnapped = true;
                 }
               }
               else if (isStartSnapped) {
-                selectedNode.duration = initialEnd - selectedNode.startTime;
+                selectedNode.setDuration(initialEnd - selectedNode.startTime);
                 nodeSnappedToOpt = F.none_;
                 isStartSnapped = false;
               }

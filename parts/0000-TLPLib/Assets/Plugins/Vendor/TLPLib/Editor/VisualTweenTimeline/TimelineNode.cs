@@ -4,22 +4,23 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
+using GenerationAttributes;
 using UnityEngine;
 using Element = com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences.SerializedTweenTimeline.Element;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
-  public class TimelineNode {
-    public Element element { get; set; }
-    public float startTime { get; set; }
-    public float duration { get; set; }
-    public int channel { get; set; }
-    public string name { get; set; }
-    public bool isCallback { get; set; }
-    public Color nodeTextColor { get; private set; }
+  public partial class TimelineNode {
+    [PublicAccessor] float _duration;
+    [PublicAccessor] float _startTime;
+    [PublicAccessor] int _channel;
+    [PublicAccessor] Color _nodeTextColor;
+    public readonly string name;
+    public readonly bool isCallback;
+    public readonly Element element;
 
     public Option<TimelineNode> linkedNode { get; private set; }
 
-    public float getEnd() => startTime + duration;
+    public float getEnd() => _startTime + _duration;
     
     public void link(TimelineNode linkTo) { linkedNode = linkTo.some(); }
 
@@ -28,6 +29,25 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         link(linkTo);
       }
     }
+
+    void setChannel(int idx) => _channel = Mathf.Clamp(idx, 0, int.MaxValue);
+    public void increaseChannel() => _channel++;
+    public void decreaseChannel() => setChannel(_channel - 1);
+
+    public void setDuration(float durationToSet) {
+      if (element.element != null) {
+        foreach (var setDurationAct in element.element.durationSetterOpt()) {
+          setDurationAct(Mathf.Clamp(durationToSet, 0.01f, float.MaxValue));
+          _duration = Mathf.Clamp(durationToSet, 0.01f, float.MaxValue);
+        }
+      }
+    }
+
+    public void setStartTime(float timeToSet, float lowerBound = 0) {
+      if (element.element != null) {
+         _startTime = Mathf.Clamp(timeToSet, lowerBound, float.MaxValue);
+        }
+    }
     
     public void unlink() {
       linkedNode = F.none_;
@@ -35,24 +55,25 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     public void refreshColor() =>
-      nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
+      _nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
 
     void setTimeOffset(float time) { element.timeOffset = time; }
 
     public TimelineNode(Element element,  float startTime, string name) {
       if (element.element && element.element is SerializedTweenCallback) {
         isCallback = true;
-        duration = 0;
+        _duration = 0;
       }
       else {
         isCallback = false;
-        duration = element.element ? element.element.duration : 10;
+        _duration = element.element ? element.element.duration : 10;
       }
-      this.element = element;
-      channel = element.timelineChannelIdx;
-      this.startTime = startTime;
+
       this.name = name;
-      nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
+      this.element = element;
+      _channel = element.timelineChannelIdx;
+      _startTime = startTime;
+      _nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
     }
 
     static Color elementToColor(SerializedTweenTimelineElement element) {
@@ -75,25 +96,25 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         switch (newStartType) {
           case Element.At.AfterLastElement: {
             if (linkedNode.valueOut(out var linked)) {
-              setTimeOffset(startTime - linked.getEnd());
+              setTimeOffset(_startTime - linked.getEnd());
               element.startAt = newStartType;
-              element.element.setDuration(duration);
+              setDuration(_duration);
             }
 
             break;
           }
           case Element.At.SpecificTime: {
-            setTimeOffset(startTime);
+            setTimeOffset(_startTime);
             element.startAt = newStartType;
-            element.element.setDuration(duration);
+            setDuration(_duration);
             
             break;
           }
           case Element.At.WithLastElement: {
             if (linkedNode.valueOut(out var linked)) {
-              setTimeOffset(startTime - linked.startTime);
+              setTimeOffset(_startTime - linked._startTime);
               element.startAt = newStartType;
-              element.element.setDuration(duration);
+              setDuration(_duration);
             }
 
             break;

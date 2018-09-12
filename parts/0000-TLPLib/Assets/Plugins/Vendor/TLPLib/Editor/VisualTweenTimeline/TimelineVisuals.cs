@@ -170,7 +170,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         true, true
       );
     
-    
     public void drawNodes(
       List<TimelineNode> funNodes, List<TimelineNode> selectedNodes, Option<TimelineNode> root,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt

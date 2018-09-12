@@ -97,8 +97,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     void handleStartAutoplay() {
-      if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();
-      else if (_autoplay == AutoplayMode.ApplyEndStateOnStart) applyMaxDurationState();
+      if (Application.isPlaying) {
+        if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();
+        else if (_autoplay == AutoplayMode.ApplyEndStateOnStart) applyMaxDurationState();
+      }
     }
 
     public void OnEnable() {
