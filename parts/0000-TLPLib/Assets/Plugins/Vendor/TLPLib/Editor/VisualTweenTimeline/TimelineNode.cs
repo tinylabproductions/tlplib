@@ -14,19 +14,18 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     [PublicAccessor] float _startTime;
     [PublicAccessor] int _channel;
     [PublicAccessor] Color _nodeTextColor;
+    [PublicAccessor] Option<TimelineNode> _linkedNode;
     public readonly string name;
     public readonly bool isCallback;
     public readonly Element element;
 
-    public Option<TimelineNode> linkedNode { get; private set; }
-
     public float getEnd() => _startTime + _duration;
     
-    public void link(TimelineNode linkTo) { linkedNode = linkTo.some(); }
+    public void linkTo(TimelineNode linkTo) {
+      _linkedNode = linkTo.some();
 
-    public void reLink(TimelineNode linkTo) {
-      if (element.startAt == Element.At.AfterLastElement) {
-        link(linkTo);
+      if (element.startAt != Element.At.AfterLastElement) {
+        convert(Element.At.AfterLastElement);
       }
     }
 
@@ -34,14 +33,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void increaseChannel() => _channel++;
     public void decreaseChannel() => setChannel(_channel - 1);
 
-    public void setDuration(float durationToSet) {
-      if (element.element != null) {
-        foreach (var setDurationAct in element.element.durationSetterOpt()) {
-          setDurationAct(Mathf.Clamp(durationToSet, 0.01f, float.MaxValue));
-          _duration = Mathf.Clamp(durationToSet, 0.01f, float.MaxValue);
-        }
-      }
-    }
+    public void setDuration(float durationToSet) =>
+      _duration = Mathf.Clamp(durationToSet, 0.01f, float.MaxValue);
 
     public void setStartTime(float timeToSet, float lowerBound = 0) {
       if (element.element != null) {
@@ -50,14 +43,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     public void unlink() {
-      linkedNode = F.none_;
+      _linkedNode = F.none_;
       convert(Element.At.SpecificTime);
     }
 
     public void refreshColor() =>
       _nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
 
-    void setTimeOffset(float time) { element.timeOffset = time; }
+    public void setTimeOffset(float time) { element.timeOffset = time; }
 
     public TimelineNode(Element element,  float startTime, string name) {
       if (element.element && element.element is SerializedTweenCallback) {
@@ -95,7 +88,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (element.element != null) {
         switch (newStartType) {
           case Element.At.AfterLastElement: {
-            if (linkedNode.valueOut(out var linked)) {
+            if (_linkedNode.valueOut(out var linked)) {
               setTimeOffset(_startTime - linked.getEnd());
               element.startAt = newStartType;
               setDuration(_duration);
@@ -111,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             break;
           }
           case Element.At.WithLastElement: {
-            if (linkedNode.valueOut(out var linked)) {
+            if (_linkedNode.valueOut(out var linked)) {
               setTimeOffset(_startTime - linked._startTime);
               element.startAt = newStartType;
               setDuration(_duration);

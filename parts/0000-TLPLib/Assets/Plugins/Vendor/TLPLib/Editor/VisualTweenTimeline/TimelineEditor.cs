@@ -236,7 +236,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       void undoCallback() {
         selectedNodesList.Clear();
         importTimeline();
-        refreshSelectedNodes();
       }
 
       //Selects or deselects node
@@ -438,17 +437,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             break;
           
           case NodeEvents.Refresh:
-            unlinkNodesWithBrokenLink();
             if (dragNode || resizeNodeEnd || resizeNodeStart) {
-              foreach (var ftm in selectedFunTweenManager) {
-                Undo.RegisterFullObjectHierarchyUndo(ftm, "Node changes");
-                refreshSelectedNodes();
-                exportTimelineToTweenManager();
-                importTimeline();
-                timelineVisuals.recalculateTimelineWidth(funNodes);
-              }
+//              refreshSelectedNodes();
+              exportTimelineToTweenManager();
+              importTimeline();
+              timelineVisuals.recalculateTimelineWidth(funNodes);
             }
             
+            unlinkNodesWithBrokenLink();            
             isEndSnapped = false;
             isStartSnapped = false;
             dragNode = false;
@@ -458,6 +454,21 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             break;
         }
       }
+      
+      void refreshSelectedNodes() => selectedNodesList.ForEach(
+        selected =>
+          getLeftNode(selected).voidFold(
+            () => selected.convert(Element.At.SpecificTime),
+            leftNode => {
+              if (selected.linkedNode.valueOut(out var linkedNode) && linkedNode == leftNode) {
+                selected.convert(Element.At.AfterLastElement);
+              }
+              else {
+                selected.convert(Element.At.SpecificTime);
+              }
+            }
+          )
+      );
 
       void moveDownIfOverlaping(TimelineNode node) {
         getOverlapingNodes(node).map(overlapingNode => {
@@ -467,18 +478,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         });
       }
 
-      void unlinkNodesWithBrokenLink() =>
-        funNodes.ForEach(
-          node => {
-            if (
-              node.linkedNode.valueOut(out var linkedNode)
-              && getLeftNode(node).valueOut(out var leftNode)
-              && linkedNode != leftNode
-            ) {
-              node.unlink();
-            }
+      void unlinkNodesWithBrokenLink() {
+        foreach (var node in funNodes) {
+          if (node.linkedNode.valueOut(out var linkedNode)
+            && getLeftNode(node).valueOut(out var leftNode)
+            && linkedNode != leftNode
+          ) {
+            node.unlink();
           }
-        );
+        }
+      }
 
       void updateLinkedNodeStartTimes(TimelineNode node) =>
         getLinkedRightNode(node, node).voidFold(
@@ -604,7 +613,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
           }
         );
-      
 
       void snapStart(TimelineNode selectedNode, float initialEnd) =>
         manageSnap(selectedNode.getEnd(), node => node.startTime, (a, b) => a >= b,
@@ -684,7 +692,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           //Relinking linked nodes, since we dont serialize nodeLinkedTo
           foreach (var node in funNodes) {
             if (getLeftNode(node).valueOut(out var leftNode)) {
-              node.reLink(leftNode);
+              if (node.element.startAt == Element.At.AfterLastElement) {
+                node.linkTo(leftNode);
+              }
             }
 
             node.refreshColor();
@@ -715,21 +725,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           channelNodes => channelNodes.a.OrderBy(channelNode => channelNode.startTime).First()
         );
 
-      void refreshSelectedNodes() => selectedNodesList.ForEach(
-        selected =>
-          getLeftNode(selected).voidFold(
-            () => selected.convert(Element.At.SpecificTime),
-            leftNode => {
-              if (selected.linkedNode.valueOut(out var linkedNode) && linkedNode == leftNode) {
-                selected.convert(Element.At.AfterLastElement);
-              }
-              else {
-                selected.convert(Element.At.SpecificTime);
-              }
-            }
-          )
-      );
-
       const float EPS = 15f;
       Option<TimelineNode> getOverlapingNodes(TimelineNode node) {
         var channelNodes = funNodes.Where(funNode => funNode.channel == node.channel && funNode != node);
@@ -749,17 +744,43 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       
       void exportTimelineToTweenManager() {
         if (selectedFunTweenManager.valueOut(out var manager) && !funNodes.isEmpty()) {
+          EditorUtility.SetDirty(manager);
+          Undo.RegisterFullObjectHierarchyUndo(manager.gameObject, "something changed");
+          
           var arr = new List<TimelineNode>();
-          for (var i = 0; i <= funNodes.Max(x => x.channel); i++) {
+          for (var i = 0; i <= funNodes.Max(funNode => funNode.channel); i++) {
             arr.AddRange(
               funNodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
             );
           }
-
+          
           manager.timeline.elements = arr.Select(elem => {
             elem.element.timelineChannelIdx = elem.channel;
             return elem.element;
           }).ToArray();
+
+          foreach (var element in manager.timeline.elements) {
+            foreach (var found in funNodes.find(funNode => funNode.element == element)) {
+              if (element.element != null) {
+                EditorUtility.SetDirty(element.element);
+                if (element.element.durationSetterOpt().valueOut(out var durationSetter)) {
+                  durationSetter(found.duration);
+                }
+
+                element.timelineChannelIdx = found.channel;
+                
+                if (found.linkedNode.valueOut(out var linked)) {
+                  element.startAt = Element.At.AfterLastElement;
+                  element.timeOffset = found.startTime - linked.getEnd();
+                }
+                else {
+                  element.startAt = Element.At.SpecificTime;
+                  element.timeOffset = found.startTime;
+                }
+              }
+            }
+          }
+
         }
 
         if (funNodes.isEmpty()) manager.timeline.elements = new Element[0];
@@ -795,8 +816,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 if (selectedFunTweenManager.valueOut(out var ftm)) {
                 Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
                 if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
-                  selectedNode.link(leftNode);
-                  selectedNode.convert(Element.At.AfterLastElement);
+                  selectedNode.linkTo(leftNode);
                 }
                 
               }
@@ -804,7 +824,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             case SettingsEvents.Unlink:
               foreach (var selectedNode in rootSelectedNodeOpt) {
                 if (selectedFunTweenManager.valueOut(out var ftm)) {
-                  Undo.RegisterFullObjectHierarchyUndo(ftm, "unlinked Nodes");
+                  Undo.RegisterFullObjectHierarchyUndo(ftm, "Unlinked Nodes");
                   selectedNode.unlink();
                 }
               }
