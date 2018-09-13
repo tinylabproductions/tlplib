@@ -1,4 +1,5 @@
 ﻿#if ADV_INS_CHANGES && UNITY_EDITOR
+#pragma warning disable SwitchEnumAnalyzer
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
