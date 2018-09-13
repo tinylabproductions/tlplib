@@ -61,7 +61,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         isCallback = false;
         _duration = element.element ? element.element.duration : 10;
       }
-
       this.name = name;
       this.element = element;
       _channel = element.timelineChannelIdx;

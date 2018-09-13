@@ -438,7 +438,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           case NodeEvents.Refresh:
             if (dragNode || resizeNodeEnd || resizeNodeStart) {
-//              refreshSelectedNodes();
               exportTimelineToTweenManager();
               importTimeline();
               timelineVisuals.recalculateTimelineWidth(funNodes);
@@ -455,21 +454,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         }
       }
       
-      void refreshSelectedNodes() => selectedNodesList.ForEach(
-        selected =>
-          getLeftNode(selected).voidFold(
-            () => selected.convert(Element.At.SpecificTime),
-            leftNode => {
-              if (selected.linkedNode.valueOut(out var linkedNode) && linkedNode == leftNode) {
-                selected.convert(Element.At.AfterLastElement);
-              }
-              else {
-                selected.convert(Element.At.SpecificTime);
-              }
-            }
-          )
-      );
-
       void moveDownIfOverlaping(TimelineNode node) {
         getOverlapingNodes(node).map(overlapingNode => {
           node.increaseChannel();
