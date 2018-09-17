@@ -36,9 +36,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     bool isAnimationPlaying, applicationPlaying, playingBackwards, beforeCursorDataIsSaved;
     readonly Ref<bool> visualizationMode;
     Option<EditorApplication.CallbackFunction> updateDelegateOpt;
+    Option<Object[]> savedTargetDataOpt;
 
-
-    public static double currentRealSeconds() {
+    static double currentRealSeconds() {
       var epochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
       return (DateTime.UtcNow - epochStart).TotalSeconds;
     }
@@ -48,6 +48,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (lastSeconds < 1) lastSeconds = currentSeconds;
       var timeDiff = (float)(currentSeconds - lastSeconds);
       lastSeconds = currentSeconds;
+      
+      foreach (var savedTargetData in savedTargetDataOpt) {
+        foreach (var entry in savedTargetData) {
+          EditorUtility.SetDirty(entry);
+        }
+      }
       
       manager.timeline.timeline.timePassed += timeDiff * (playingBackwards ? -1 : 1);
     }
@@ -72,8 +78,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
     void startVisualization() {
       if (!visualizationMode.value && getTimelineTargets(manager).valueOut(out var data)) {
-        Undo.RegisterCompleteObjectUndo(data, "Animating targets");
         manager.recreate();
+        Undo.RegisterCompleteObjectUndo(data, "Animating targets");
+        savedTargetDataOpt = data.some();
         visualizationMode.value = true;
       }
     }
@@ -82,6 +89,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (visualizationMode.value) {
         stopTimeUpdate();
         Undo.PerformUndo();
+        savedTargetDataOpt = F.none_;
         visualizationMode.value = false;
       }
     }
@@ -95,23 +103,30 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     public void evaluateCursor(float time) {
       if (getTimelineTargets(manager).valueOut(out var data) && data.All(target => target != null)) {
-        if (!applicationPlaying) {
+
+        if (!Application.isPlaying) {
           if (visualizationMode.value) {
             stopTimeUpdate();
           }
           else if (!beforeCursorDataIsSaved) {
+            manager.recreate();
             beforeCursorDataIsSaved = true;
             Undo.RegisterCompleteObjectUndo(data, "targets saved");
-            manager.recreate();
+            savedTargetDataOpt = data.some();
           }
         }
         else {
-          manager.run(FunTweenManager.Action.Stop);
+            manager.run(FunTweenManager.Action.Stop);
+        }
+        
+        foreach (var entry in data) {
+          EditorUtility.SetDirty(entry);
         }
 
         manager.timeline.timeline.timePassed = time;
-        
-      } else {
+
+      }
+      else {
         Log.d.warn($"Set targets before evaluating!");
       }
     }
@@ -119,13 +134,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void stopCursorEvaluation() {
       if (!visualizationMode.value && beforeCursorDataIsSaved && !Application.isPlaying) {
         Undo.RevertAllInCurrentGroup();
+        savedTargetDataOpt = F.none_;
         beforeCursorDataIsSaved = false;
       }
     }
     
     public void manageAnimation(AnimationPlaybackEvent playbackEvent) {
       applicationPlaying = Application.isPlaying;
-
       switch (playbackEvent) {
         case AnimationPlaybackEvent.GoToStart:
           manager.timeline.timeline.timePassed = 0;
