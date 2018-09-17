@@ -1,10 +1,9 @@
-﻿using AdvancedInspector;
+﻿using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
-  [Help(
-    HelpType.Warning, HelpPosition.Before,
+  [TypeInfoBox(
     "We have no idea what this script does. It was written by Tadas. If you figure out " +
     "what this script does, come tell us at the developer room. Thanks."
   )]

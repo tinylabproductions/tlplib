@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -12,7 +11,7 @@ using EditorUtils = com.tinylabproductions.TLPLib.Utilities.EditorUtils;
 
 namespace com.tinylabproductions.TLPLib.import {
   [CustomEditor(typeof(TextureToGameObjectImporter))]
-  public class TextureToGameObjectImporterEditor : ScriptableEditor {
+  public class TextureToGameObjectImporterEditor : UnityEditor.Editor {
     public override void OnInspectorGUI() {
       var obj = (TextureToGameObjectImporter) target;
 

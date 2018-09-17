@@ -1,5 +1,4 @@
-﻿using AdvancedInspector;
-using com.tinylabproductions.TLPLib.Editor.extensions;
+﻿using com.tinylabproductions.TLPLib.Editor.extensions;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.unity_serialization;
@@ -9,7 +8,7 @@ using static com.tinylabproductions.TLPLib.unity_serialization.SerializedPropert
 
 namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
 
-  //[CustomPropertyDrawer(typeof(UnityEither), useForChildren: true), CanEditMultipleObjects]
+  [CustomPropertyDrawer(typeof(UnityEither), useForChildren: true), CanEditMultipleObjects]
   public class UnityEitherDrawer : PropertyDrawer {
     
     readonly string[] popupOptions = new string[2];
@@ -25,9 +24,8 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       var maybeIsAProp = getValuePropRelative(property, isAPropertyName);
 
       if (maybeIsAProp.valueOut(out var isAProp)) {
-
         EditorGUI.BeginProperty(position, label, property);
-        
+
         const int GAP_WIDTH = 5;
         var popupWidth = position.width / 1.8f;
         
@@ -39,20 +37,17 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
           EditorGUI.showMixedValue = valueProp.hasMultipleDifferentValues;
           if (valueProp.propertyType == SerializedPropertyType.Generic) {
             using (new EditorIndent(EditorGUI.indentLevel + 1)) {
-              //TODO write your own property field function which forwards to certain drawer to AI or to custom
               EditorGUILayout.PropertyField(valueProp, includeChildren: true);
-              InspectorField aa = new InspectorField(valueProp.serializedObject.targetObjects, leftValuePropertyName);
-              AdvancedInspectorControl.DrawField(aa, );
             }
           }
           else {
-            EditorGUI.PropertyField(valueRect, valueProp, new GUIContent(""));
+            EditorGUI.PropertyField(valueRect, valueProp, GUIContent.none);
           }
         }
 
         if ( getValuePropRelative(property, leftValuePropertyName).valueOut(out var leftValueProp)
           && getValuePropRelative(property, rightValuePropertyName).valueOut(out var rightValueProp)
-          ) {
+        ) {
           EditorGUI.BeginChangeCheck();
           EditorGUI.showMixedValue = isAProp.hasMultipleDifferentValues;
 
@@ -81,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
           EditorGUI.EndProperty();
         }
         else {
-          EditorGUI.LabelField(valueRect, "types not serializable!");
+          EditorGUILayout.LabelField("types not serializable!");
         }
         
       } else {

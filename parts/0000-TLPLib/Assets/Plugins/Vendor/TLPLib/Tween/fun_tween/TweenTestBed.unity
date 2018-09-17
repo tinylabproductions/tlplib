@@ -201,6 +201,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 44774973}
+  - component: {fileID: 44774976}
+  - component: {fileID: 44774975}
+  - component: {fileID: 44774974}
   - component: {fileID: 44774972}
   m_Layer: 0
   m_Name: GameObject
@@ -220,27 +223,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72ee1d8b136d43c7a1ad773a12accd89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EitherName:
-    _isA: 1
-    a: 
-    b:
-      a: 0
-      b: 0
-      c: 0
-      mul:
-        e: 0
-        f: 0
-        g: 0
-  optionas:
-    _isSome: 0
-    _value:
-      a: 0
-      b: 0
-      c: 0
-      mul:
-        e: 0
-        f: 0
-        g: 0
+  stail:
+    graphicColor: {r: 0.8602941, g: 0.15181659, b: 0.15181659, a: 0}
+    outlineColor: {r: 0, g: 0, b: 0, a: 0}
+    gradient: 0
+    gradientColor: {r: 0.99264705, g: 0.8101752, b: 0.8101752, a: 0}
 --- !u!4 &44774973
 Transform:
   m_ObjectHideFlags: 0
@@ -249,11 +236,52 @@ Transform:
   m_GameObject: {fileID: 44774971}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 4.04, y: 17.77, z: 13.812809}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.47611254, y: 0.47611254, z: 0.47611254}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &44774974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 44774971}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0afe7762897aa34eb763c5a70ad6cda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  originalWidth: 0
+  originalHeight: 0
+  stretchMode: 0
+--- !u!114 &44774975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 44774971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24d03127ee7824e4182c29692e2cbe15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventOnThreshold:
+    _isSome: 0
+    _value: 0
+--- !u!114 &44774976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 44774971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 223d8f47eb380eb4eab9c48fec59a04c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  originalAspectRatio: {x: 16, y: 9}
 --- !u!1 &726012321
 GameObject:
   m_ObjectHideFlags: 0

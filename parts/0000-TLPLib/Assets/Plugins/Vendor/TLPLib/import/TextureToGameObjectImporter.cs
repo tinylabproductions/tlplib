@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -11,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.import {
   [CreateAssetMenu(menuName = "Game/Texture To Game Object Importer Data")]
   public class TextureToGameObjectImporter : ScriptableObject {
     [Serializable]
-    public class Data : IInspectorRunning {
+    public class Data {
       #region Unity Serialized Fields
 
 #pragma warning disable 649

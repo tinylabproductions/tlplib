@@ -1,18 +1,10 @@
-﻿using AdvancedInspector;
+﻿using com.tinylabproductions.TLPLib.Components.EditorTools;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
-  [
-    ExecuteInEditMode,
-    Help(
-      HelpType.Info, HelpPosition.Before,
-      "This script will change local scale of this game object to account " +
-      "for the changes of screen size.\n\n" +
-      "This script should be used for elements which are not in Canvas. For canvas elements use " +
-      nameof(CanvasAspectRatioScaler) + " script"
-    )
-  ]
+  [ExecuteInEditMode]
   public sealed class ScreenAspectRatioScaler : MonoBehaviour, IMB_Update {
     #region Unity Serialized Fields
 
@@ -20,7 +12,13 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
     [
       SerializeField,
-      Help(HelpType.Info, "Original aspect ratio that this object is designed for.")
+      HelpLabel("Original aspect ratio that this object is designed for.", HelpBoxMessageType.Info),
+      HelpLabel(
+        "This script will change local scale of this game object to account " +
+        "for the changes of screen size.\n\n" +
+        "This script should be used for elements which are not in Canvas. For canvas elements use " +
+        nameof(CanvasAspectRatioScaler) + " script"
+      )
     ] Vector2 originalAspectRatio = new Vector2(16, 9);
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649

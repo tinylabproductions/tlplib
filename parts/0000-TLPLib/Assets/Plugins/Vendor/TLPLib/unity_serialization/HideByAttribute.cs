@@ -1,25 +1,19 @@
 ﻿using UnityEngine;
-using System;
+using GenerationAttributes;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
-  public class HideByAttribute : PropertyAttribute {
-    //The name of the bool field that will be in control
-    public string ConditionalSourceField;
-
-    //TRUE = Hide in inspector / FALSE = Disable in inspector 
-    public bool HideInInspector;
+  public partial class HideByAttribute : PropertyAttribute {
+    [PublicAccessor] readonly string _boolSourceField;
+    [PublicAccessor] readonly bool _hideInInspector;
     
-//    public bool isInverted;
-
-    public HideByAttribute(string conditionalSourceField) {
-      ConditionalSourceField = conditionalSourceField;
-      HideInInspector = false;
+    public HideByAttribute(string boolSourceField) {
+      _boolSourceField = boolSourceField;
+      _hideInInspector = true;
     }
 
-    public HideByAttribute(string conditionalSourceField, bool hideInInspector) {
-      ConditionalSourceField = conditionalSourceField;
-      HideInInspector = hideInInspector;
+    public HideByAttribute(string boolSourceField, bool hideInInspector) {
+      _boolSourceField = boolSourceField;
+      _hideInInspector = hideInInspector;
     }
   }
-  
 }

@@ -1,9 +1,10 @@
 ﻿using System;
-using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Components.EditorTools;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.unity_serialization;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -16,9 +17,9 @@ namespace com.tinylabproductions.TLPLib.Components.Swiping {
 #pragma warning disable 649
     [
       SerializeField,
-      Help(HelpType.Info, "Events are emitted on release.\n" +
-                          "If set, event will be emitted once drag threshold is reached instead. " +
-                          "value is in screen coordinates.")
+      HelpLabel("Events are emitted on release.\n" +
+       "If set, event will be emitted once drag threshold is reached instead. " +
+       "value is in screen coordinates.", HelpBoxMessageType.Info)
     ] UnityOptionFloat eventOnThreshold;
 #pragma warning restore 649
 

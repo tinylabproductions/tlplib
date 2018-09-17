@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Components.gradient;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.unity_serialization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public bool gradient;
     bool gradientOn => gradient;
-    [Inspect(nameof(gradientOn))] public Color gradientColor;
+    [HideBy("gradient", true)] public Color gradientColor;
 
     public GraphicStyle(Color graphicColor, bool gradient, Color gradientColor, Color outlineColor) {
       this.graphicColor = graphicColor;

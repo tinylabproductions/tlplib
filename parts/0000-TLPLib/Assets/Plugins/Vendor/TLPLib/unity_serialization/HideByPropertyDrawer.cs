@@ -7,12 +7,12 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [CustomPropertyDrawer(typeof(HideByAttribute))]
   public class HideByPropertyDrawer : PropertyDrawer {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-      var condHAtt = (HideByAttribute) attribute;
-      var enabled = GetConditionalHideAttributeResult(condHAtt, property);
+      var hideByAttribute = (HideByAttribute) attribute;
+      var enabled = GetConditionalHideAttributeResult(hideByAttribute, property);
 
       var wasEnabled = GUI.enabled;
       GUI.enabled = enabled;
-      if (!condHAtt.HideInInspector || enabled) {
+      if (!hideByAttribute.hideInInspector || enabled) {
         EditorGUI.PropertyField(position, property, label, true);
       }
 
@@ -20,10 +20,10 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-      var condHAtt = (HideByAttribute) attribute;
-      var enabled = GetConditionalHideAttributeResult(condHAtt, property);
+      var hideByAttribute = (HideByAttribute) attribute;
+      var enabled = GetConditionalHideAttributeResult(hideByAttribute, property);
 
-      if (!condHAtt.HideInInspector || enabled) {
+      if (!hideByAttribute.hideInInspector || enabled) {
         return EditorGUI.GetPropertyHeight(property, label);
       }
       else {
@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public bool GetConditionalHideAttributeResult(HideByAttribute condHAtt, SerializedProperty property) {
       var enabled = true;
       var propertyPath = property.propertyPath;
-      var conditionPath = propertyPath.Replace(property.name, condHAtt.ConditionalSourceField);
+      var conditionPath = propertyPath.Replace(property.name, condHAtt.boolSourceField);
       
       if (getValueProp(property, conditionPath).valueOut(out var value)) {
         enabled = value.boolValue;
@@ -42,7 +42,8 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       else {
         Log.d.warn(
           "Attempting to use a HideByAttribute but no matching SourcePropertyValue found in object: " +
-          condHAtt.ConditionalSourceField);
+          condHAtt.boolSourceField
+        );
       }
 
       return enabled;
