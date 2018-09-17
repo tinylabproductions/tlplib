@@ -454,12 +454,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         }
       }
       
-      void moveDownIfOverlaping(TimelineNode node) {
-        getOverlapingNodes(node).map(overlapingNode => {
+      void moveDownIfOverlaping(TimelineNode timelineNode) {
+        foreach (var overlapingNode in getOverlapingNodes(timelineNode)) {
+          selectedNodesList.find(foundNode => foundNode == overlapingNode).voidFold(
+            () => moveAndRecurse(timelineNode),
+            moveAndRecurse
+          );
+        }
+        void moveAndRecurse(TimelineNode node) {
           node.increaseChannel();
           moveDownIfOverlaping(node);
-          return node;
-        });
+        }
       }
 
       void unlinkNodesWithBrokenLink() {
@@ -666,7 +671,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   );
               }
             ).ToList();
-            foreach (var n in selectedNodesList) moveDownIfOverlaping(n);
             foreach (var n in funNodes) moveDownIfOverlaping(n);
           }
           else {

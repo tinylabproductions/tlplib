@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     void setChannel(int idx) => _channel = Mathf.Clamp(idx, 0, int.MaxValue);
-    public void increaseChannel() => setChannel(_channel - 1);
+    public void increaseChannel() => setChannel(_channel + 1);
     public void decreaseChannel() => setChannel(_channel - 1);
 
     public void setDuration(float durationToSet) =>
