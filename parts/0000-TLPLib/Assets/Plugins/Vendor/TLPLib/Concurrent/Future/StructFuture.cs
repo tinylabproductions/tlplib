@@ -29,7 +29,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Future with a known value|unfulfilled future|async future. */
     readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);
-    public Option<A> value => implementation.fold(F.some, _ => F.none<A>(), f => f.value);
+    // ReSharper disable once ConvertClosureToMethodGroup
+    public Option<A> value => implementation.fold(_ => F.some(_), _ => F.none<A>(), f => f.value);
 
     public FutureType type => implementation.fold(
       _ => FutureType.Successful,
