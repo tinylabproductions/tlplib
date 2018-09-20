@@ -384,6 +384,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     static IEnumerable<FieldInfo> getFilteredFields(object o) {
+      if (o == null) return Enumerable.Empty<FieldInfo>();
       var fields = o.GetType().getAllFields();
       foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
         var blacklisted = sv.blacklistedFields();
