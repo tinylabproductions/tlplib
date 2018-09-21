@@ -20,12 +20,17 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
+    public static readonly Act<Progress> DEFAULT_ON_PROGRESS = progress => EditorUtility.DisplayProgressBar(
+      "Validating Objects", "Please wait...", progress.ratio
+    );
+    public static readonly Action DEFAULT_ON_FINISH = EditorUtility.ClearProgressBar;
+    
     #region Menu Items
-
+    
     [UsedImplicitly, MenuItem(
-       "TLP/Tools/Validate Objects in Current Scene",
-       isValidateFunction: false, priority: 55
-     )]
+      "TLP/Tools/Validate Objects in Current Scene",
+      isValidateFunction: false, priority: 55
+    )]
     static void checkCurrentSceneMenuItem() {
       if (EditorApplication.isPlayingOrWillChangePlaymode) {
         EditorUtility.DisplayDialog(
@@ -37,14 +42,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       var scene = SceneManager.GetActiveScene();
-      var t = checkSceneWithTime(
-        scene,
-        Option<CustomObjectValidator>.None,
-        progress => EditorUtility.DisplayProgressBar(
-          "Validating Objects", "Please wait...", progress.ratio
-        ),
-        EditorUtility.ClearProgressBar
-      );
+      var t = checkSceneWithTime(scene, Option<CustomObjectValidator>.None, DEFAULT_ON_PROGRESS, DEFAULT_ON_FINISH);
       showErrors(t._1);
       if (Log.d.isInfo()) Log.d.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
@@ -98,7 +96,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Act<Progress> onProgress = null, Action onFinish = null
     ) {
       var objects = getSceneObjects(scene);
-      var errors = check(new CheckContext(scene.name), objects, customValidatorOpt, onProgress, onFinish);
+      var errors = check(
+        new CheckContext(scene.name), objects, customValidatorOpt, 
+        onProgress, onFinish
+      );
       return errors;
     }
 
