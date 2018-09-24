@@ -21,7 +21,7 @@ public class OptionDrawer<TOpt, A> : OdinValueDrawer<TOpt> where TOpt : UnityOpt
         if (!oneLine) SirenixEditorGUI.EndHorizontalPropertyLayout();
         if ((bool) isSet.ValueEntry.WeakSmartValue) {
             if (oneLine) {
-                value.Draw(null);
+                value.Draw(GUIContent.none);
             }
             else {
                 GUIHelper.PushIndentLevel(EditorGUI.indentLevel + 1);
