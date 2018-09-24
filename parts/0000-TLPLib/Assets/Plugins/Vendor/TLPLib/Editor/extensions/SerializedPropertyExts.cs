@@ -119,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
           property.rectValue = default;
           break;
         case SerializedPropertyType.ArraySize:
-          property.rectValue = default;
+          property.arraySize = default;
           break;
         case SerializedPropertyType.Quaternion:
           property.quaternionValue = default;
