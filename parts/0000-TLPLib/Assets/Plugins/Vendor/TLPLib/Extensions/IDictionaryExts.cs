@@ -21,10 +21,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static V getOrUpdate<K, V>(
       this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
+    ) => getOrUpdate(dict, key, _ => ifNotFound());
+
+    public static V getOrUpdate<K, V>(
+      this IDictionary<K, V> dict, K key, Fn<K, V> ifNotFound
     ) {
       if (dict.TryGetValue(key, out var outVal))
         return outVal;
-      var v = ifNotFound();
+      var v = ifNotFound(key);
       dict.Add(key, v);
       return v;
     }

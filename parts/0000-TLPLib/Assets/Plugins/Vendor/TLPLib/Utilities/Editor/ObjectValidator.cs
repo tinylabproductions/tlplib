@@ -296,7 +296,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option.ensureValue(ref uniqueValuesCache);
       fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
 
-      foreach (var onObjectValidatable in F.opt(objectBeingValidated as OnObjectValidate)) {
+      if (objectBeingValidated is OnObjectValidate onObjectValidatable) {
         // Try because custom validations can throw exceptions.
         var validateResult = F.doTry(() => 
           // Force strict enumerable evaluation, because it might throw an exception while evaluating.
