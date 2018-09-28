@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
 
-namespace Plugins.Vendor.TLPLib.Binding {
+namespace com.tinylabproductions.TLPLib.Binding {
   public class ToggleBinding : MonoBehaviour {
     [Header("Optional")]
     public GameObject whenEnabled, whenDisabled;
