@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       if (_value < 0f || _value > 1f)
-        yield return new ErrorMsg($"Expected percentage value to be in range [0.0, 1.0]");
+        yield return new ErrorMsg($"Expected percentage value {_value} to be in range [0.0, 1.0]");
     }
   }
 }
