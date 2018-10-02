@@ -13,11 +13,13 @@ using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
-  [UsedImplicitly]
-  public class OptionDrawer<TOpt, A> : OdinValueDrawer<TOpt> where TOpt : UnityOption<A>, new() {
-    protected override void DrawPropertyLayout(GUIContent label) {
-      var isSet = Property.Children["_isSome"];
-      var value = Property.Children["_value"];
+  public static class OptionDrawer {
+    public static void drawPropertyLayout<TOpt>(
+      string isSomeName, string valueName,
+      InspectorProperty property, IPropertyValueEntry<TOpt> valueEntry, GUIContent label
+    ) where TOpt : new() {
+      var isSet = property.Children[isSomeName];
+      var value = property.Children[valueName];
 
       var oneLine = value.Children.Count <= 1;
 
@@ -38,11 +40,18 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       }
       else {
         if (changed) {
-          ValueEntry.SmartValue = new TOpt();
+          valueEntry.SmartValue = new TOpt();
         }
       }
 
       if (oneLine) SirenixEditorGUI.EndHorizontalPropertyLayout();
+    }
+  }
+
+  [UsedImplicitly]
+  public class OptionDrawer<TOpt, A> : OdinValueDrawer<TOpt> where TOpt : UnityOption<A>, new() {
+    protected override void DrawPropertyLayout(GUIContent label) {
+      OptionDrawer.drawPropertyLayout("_isSome", "_value", Property, ValueEntry, label);
     }
   }
 
