@@ -73,6 +73,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return target;
     }
 
+    public static To[] map<From, To>(
+      this From[] source, Func<From, int, To> mapper
+    ) {
+      var target = new To[source.Length];
+      for (var i = 0; i < source.Length; i++) target[i] = mapper(source[i], i);
+      return target;
+    }
+
     public static ImmutableArray<To> toImmutable<From, To>(
       this From[] source, Fn<From, To> mapper
     ) {
