@@ -13,6 +13,11 @@ namespace com.tinylabproductions.TLPLib.Collection {
         yield return get(idx);
     }
 
+    [PublicAPI] public static IEnumerable<A> fromImperative<A>(uint count, Fn<uint, A> get) {
+      for (uint idx = 0; idx < count; idx++)
+        yield return get(idx);
+    }
+
     /// <summary>Enumerable from starting number to int.MaxValue</summary>
     [PublicAPI]
     public static IEnumerable<int> from(int startingNumber) {
