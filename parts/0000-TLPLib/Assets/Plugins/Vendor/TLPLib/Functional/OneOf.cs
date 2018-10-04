@@ -122,6 +122,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
       throw new IllegalStateException("Unreachable code");
     }
 
+    public OneOf<AA, BB, CC> map<AA, BB, CC>(Fn<A, AA> aMapper, Fn<B, BB> bMapper, Fn<C, CC> cMapper) {
+      if (isA) return aMapper(__unsafeGetA);
+      if (isB) return bMapper(__unsafeGetB);
+      return cMapper(__unsafeGetC);
+    }
+
     public static implicit operator OneOf<A, B, C>(A a) => new OneOf<A, B, C>(a);
     public static implicit operator OneOf<A, B, C>(B b) => new OneOf<A, B, C>(b);
     public static implicit operator OneOf<A, B, C>(C c) => new OneOf<A, B, C>(c);
