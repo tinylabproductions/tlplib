@@ -77,6 +77,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       else if (_assetsAreBeingEditedCount < 0)
         throw new Exception($"{nameof(stopAssetEditing)} was called more times than {nameof(startAssetEditing)}!");
     }
+
+    public static void forceStopAssetEditing() {
+      _assetsAreBeingEditedCount = 0;
+      if (Log.d.isVerbose())
+        Log.d.verbose($"{nameof(AssetDatabaseUtils)}#{nameof(forceStopAssetEditing)}: count: {_assetsAreBeingEditedCount}");
+      AssetDatabase.StopAssetEditing();
+    }
   }
 }
 #endif
