@@ -1,34 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using AdvancedInspector;
+using com.tinylabproductions.TLPLib.Utilities;
+using GenerationAttributes;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct Percentage : IEquatable<Percentage> {
+  [Record, Serializable]
+  public partial struct Percentage : OnObjectValidate {
     // [0, 1]
-    public readonly float value;
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    [SerializeField, PublicAccessor, Help(HelpType.Info, "[0.0, 1.0]")] float _value;
 
-    public Percentage(float value) {
-      this.value = value;
-    }
-
-    public bool Equals(Percentage other) {
-      return value.Equals(other.value);
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) return false;
-      return obj is Percentage && Equals((Percentage) obj);
-    }
-
-    public override int GetHashCode() {
-      return value.GetHashCode();
-    }
-
-    public static bool operator ==(Percentage left, Percentage right) {
-      return left.Equals(right);
-    }
-
-    public static bool operator !=(Percentage left, Percentage right) {
-      return !left.Equals(right);
+    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+      if (_value < 0f || _value > 1f)
+        yield return new ErrorMsg($"Expected percentage value {_value} to be in range [0.0, 1.0]");
     }
   }
 }
