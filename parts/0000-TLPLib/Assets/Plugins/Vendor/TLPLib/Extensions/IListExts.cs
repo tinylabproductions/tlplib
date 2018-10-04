@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using Smooth.Collections;
 using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -223,6 +224,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       indexes.shuffle(ref rng);
       foreach (var index in indexes)
         yield return list[index];
+    }
+
+    [PublicAPI]
+    public static Option<int> indexOf<A>(this IList<A> list, A a, IEqualityComparer<A> comparer = null) {
+      comparer = comparer ?? EqComparer<A>.Default;
+      for (var idx = 0; idx < list.Count; idx++) {
+        if (comparer.Equals(list[idx], a)) return F.some(idx);
+      }
+      return Option<int>.None;
     }
   }
 }
