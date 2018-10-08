@@ -5,6 +5,10 @@ namespace com.tinylabproductions.TLPLib.Data {
     A value { get; }
   }
 
+  public static class Val {
+    public static Val<A> a<A>(Fn<A> get) => new LambdaVal<A>(get);
+  }
+
   public static class ValExts {
     public static Val<B> mapVal<A, B>(this Val<A> v, Fn<A, B> mapper) =>
       new LambdaVal<B>(() => mapper(v.value));
