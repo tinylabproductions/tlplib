@@ -271,6 +271,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         });
       });
 
+    /// <summary>Emits n'th value to the future and unsubscribes.</summary>
+    public static Future<A> toFuture<A>(this IObservable<A> o, uint n) => (n > 1 ? o.skip(n - 1) : o).toFuture();
+
     // If several events are emitted per same frame, only emit last one in late update.
     // TODO: test, but how? Can't do async tests in unity.
     public static IObservable<A> oncePerFrame<A>(this IObservable<A> o) =>
