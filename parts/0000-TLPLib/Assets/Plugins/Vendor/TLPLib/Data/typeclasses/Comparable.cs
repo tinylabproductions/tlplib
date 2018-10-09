@@ -25,6 +25,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     [PublicAPI] public static readonly Comparable<uint> uint_ = lambda<uint>((a1, a2) => a1.CompareTo(a2));
     [PublicAPI] public static readonly Comparable<long> long_ = lambda<long>((a1, a2) => a1.CompareTo(a2));
     [PublicAPI] public static readonly Comparable<short> short_ = lambda<short>((a1, a2) => a1.CompareTo(a2));
+    [PublicAPI] public static readonly Comparable<ushort> ushort_ = lambda<ushort>((a1, a2) => a1.CompareTo(a2));
     [PublicAPI] public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
     [PublicAPI] public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
     [PublicAPI] public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
