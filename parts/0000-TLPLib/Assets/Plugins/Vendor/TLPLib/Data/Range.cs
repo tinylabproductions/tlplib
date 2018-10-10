@@ -172,7 +172,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [PublicAPI] public float random => Random.Range(from, to);
     [PublicAPI] public float this[Percentage p] => from + (to - from) * p.value;
-    [PublicAPI] public bool contains(float f) => f >= _from && f <= _to;         
+    [PublicAPI] public bool contains(float f) => f >= _from && f <= _to;
+    [PublicAPI] public float diff => _to - _from;
+    [PublicAPI] public float at(float percentage) => from + diff * percentage;
 
     public override string ToString() => $"({from} to {to})";
 
