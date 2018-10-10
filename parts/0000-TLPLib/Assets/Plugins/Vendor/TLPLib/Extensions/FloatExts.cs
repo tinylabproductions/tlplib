@@ -30,5 +30,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static bool approx0(this float number) => Mathf.Approximately(number, 0);
+    
+    [PublicAPI] public static Vector2 rotationVector(this float rotationRad) => 
+      new Vector2(Mathf.Cos(rotationRad), Mathf.Sin(rotationRad));
   }
 }
