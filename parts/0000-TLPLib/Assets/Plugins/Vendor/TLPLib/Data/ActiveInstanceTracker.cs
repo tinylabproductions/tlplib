@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     /// It is unsafe because when we get an enumerator of a mutable data structure, it can
     /// be invalidated by mutation to that data structure. Make sure you dispose of the enumerator
     /// before any mutations can happen.
-    [PublicAPI] public IEnumerable<A> __unsafe__active => _active;
+    [PublicAPI] public HashSet<A> __unsafe__active => _active;
 
     [PublicAPI] public void onEnable(A a) {
       if (iterating) {
