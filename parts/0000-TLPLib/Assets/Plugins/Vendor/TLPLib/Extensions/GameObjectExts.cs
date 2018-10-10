@@ -86,21 +86,35 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     // Modified from unity decompiled dll.
     // Added includeInactive parameter.
-    public static T getComponentInChildren<T>(this GameObject go, bool includeInactive) where T : Component {
+    public static Option<T> getComponentInChildren<T>(
+      this GameObject go, bool includeInactive
+    ) where T : Component {
       if (includeInactive || go.activeInHierarchy) {
         var component = go.GetComponent<T>();
         if (component != null)
-          return component;
+          return F.some(component);
       }
       var transform = go.transform;
       if (transform != null) {
         foreach (Component component in transform) {
           var componentInChildren = component.gameObject.getComponentInChildren<T>(includeInactive);
-          if (componentInChildren != null)
+          if (componentInChildren.isSome)
             return componentInChildren;
         }
       }
-      return null;
+      return F.none<T>();
+    }
+
+    [PublicAPI] public static Option<A> getComponentInParents<A>(
+      this GameObject go, bool includeSelf = true
+    ) where A : Component {
+      var current = go;
+      while (true) {
+        var component = includeSelf ? current.GetComponent<A>() : null;
+        if (component) return F.some(component);
+        else if (current.transform.parent) current = current.transform.parent.gameObject;
+        else return F.none<A>();
+      }
     }
   }
 }
