@@ -113,8 +113,11 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionMonoBehaviours : UnityOption<MonoBehaviour[]> {}
   [Serializable, PublicAPI] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
   [Serializable, PublicAPI] public class UnityOptionAudioClip : UnityOption<AudioClip> {}
-  [Serializable, PublicAPI]
-  public class UnityOptionUInt : UnityOption<uint> {
+  [Serializable, PublicAPI] public class UnityOptionUShort : UnityOption<ushort> {
+    public UnityOptionUShort() { }
+    public UnityOptionUShort(Option<ushort> value) : base(value) { }
+  }
+  [Serializable, PublicAPI] public class UnityOptionUInt : UnityOption<uint> {
     public UnityOptionUInt() { }
     public UnityOptionUInt(Option<uint> value) : base(value) { }
   }
