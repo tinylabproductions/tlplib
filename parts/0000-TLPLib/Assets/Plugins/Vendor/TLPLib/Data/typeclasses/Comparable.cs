@@ -38,7 +38,18 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       new Lambda<A>(compare);
     public static Comparable<A> lambda<A>(Fn<A, A, int> compare) =>
       new Lambda<A>((a1, a2) => compare(a1, a2).asCmpRes());
-    
+
+    [PublicAPI]
+    public static Comparable<A> inverse<A>(this Comparable<A> cmp) =>
+      lambda<A>((a1, a2) => {
+        switch (cmp.compare(a1, a2)) {
+          case CompareResult.LT: return CompareResult.GT;
+          case CompareResult.EQ: return CompareResult.EQ;
+          case CompareResult.GT: return CompareResult.LT;
+          default: throw new ArgumentOutOfRangeException();
+        }
+      });
+
     [PublicAPI]
     public static Comparable<Tpl<A, B>> tpl<A, B>(Comparable<A> aCmp, Comparable<B> bCmp) => lambda<Tpl<A, B>>(
       (t1, t2) => {
