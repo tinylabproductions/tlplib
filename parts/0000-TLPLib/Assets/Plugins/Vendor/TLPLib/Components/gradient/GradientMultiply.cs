@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
 
     public override void ModifyVertices(List<UIVertex> vertexList) =>
       GradientHelper.modifyVertices(
-        vertexList, (c, t) => mult(c, Color32.Lerp(bottomColor, topColor, t)), type
+        vertexList, (c, t) => mult(c, Color32.Lerp(bottomColor, topColor, t)), type, useGraphicAlpha
       );
 
     static Color32 mult(Color32 a, Color32 b) => new Color32(
