@@ -7,14 +7,14 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     public enum GradientType { Vertical, Horizontal }
 
     public static void modifyVertices(
-      List<UIVertex> vertexList, Fn<Color32, float, Color32> f, GradientType type
+      List<UIVertex> vertexList, Fn<Color32, float, Color32> f, GradientType type, bool useGraphicAlpha
     ) {
       switch (type) {
         case GradientType.Vertical:
-          modifyVertices(vertexList, f, v => v.y);
+          modifyVertices(vertexList, f, v => v.y, useGraphicAlpha);
           break;
         case GradientType.Horizontal:
-          modifyVertices(vertexList, f, v => v.x);
+          modifyVertices(vertexList, f, v => v.x, useGraphicAlpha);
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     }
 
     static void modifyVertices(
-      List<UIVertex> vertexList, Fn<Color32, float, Color32> f, Fn<Vector3, float> getAxisFn
+      List<UIVertex> vertexList, Fn<Color32, float, Color32> f, Fn<Vector3, float> getAxisFn, bool useGraphicAlpha
     ) {
       var count = vertexList.Count;
       if (count == 0) return;
@@ -43,7 +43,12 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
 
       for (var i = 0; i < count; i++) {
         var uiVertex = vertexList[i];
-        uiVertex.color = f(uiVertex.color, (getAxisFn(uiVertex.position) - min) / uiElementHeight);
+        var color = f(uiVertex.color, (getAxisFn(uiVertex.position) - min) / uiElementHeight);
+        if (useGraphicAlpha) {
+          // Taken from UnityEngine.UI.Shadow.cs
+          color.a = (byte) (color.a * vertexList[i].color.a / byte.MaxValue);
+        }
+        uiVertex.color = color;
         vertexList[i] = uiVertex;
       }
     }

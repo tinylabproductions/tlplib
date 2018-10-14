@@ -9,6 +9,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
 
 #pragma warning disable 649
     [SerializeField] protected GradientHelper.GradientType type = GradientHelper.GradientType.Vertical;
+    [SerializeField] protected bool useGraphicAlpha;
 #pragma warning restore 649
 
     #endregion
