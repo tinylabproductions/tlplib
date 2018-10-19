@@ -1,4 +1,6 @@
-﻿namespace com.tinylabproductions.TLPLib.Extensions {
+﻿using JetBrains.Annotations;
+
+namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UIntExts {
     public static int toIntClamped(this uint a) =>
       a > int.MaxValue ? int.MaxValue : (int) a;
@@ -9,9 +11,9 @@
       return (uint) (a + b);
     }
 
-    public static string toOrdinalString(this uint number) {
+    [PublicAPI] public static string toOrdinalString(this uint number) {
       var div = number % 100;
-      if ((div >= 11) && (div <= 13)) {
+      if (div >= 11 && div <= 13) {
         return $"{number}th";
       }
 
