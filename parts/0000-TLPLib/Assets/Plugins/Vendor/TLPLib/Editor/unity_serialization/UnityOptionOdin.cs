@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       var isSet = property.Children[isSomeName];
       var value = property.Children[valueName];
 
-      var oneLine = value.Children.Count <= 1;
+      var oneLine = value.Children.Count == 1 && value.Children[0].Children.Count == 0;
 
       SirenixEditorGUI.BeginHorizontalPropertyLayout(label);
       EditorGUI.BeginChangeCheck();
