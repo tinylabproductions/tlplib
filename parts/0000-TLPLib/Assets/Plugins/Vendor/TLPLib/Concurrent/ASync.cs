@@ -60,6 +60,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Coroutine StartCoroutine(IEnumerator coroutine) =>
       new UnityCoroutine(behaviour, coroutine);
 
+    public static Future<Unit> toFuture(this IEnumerator coroutine) =>
+      StartCoroutine<Unit>(p => coroutine.afterThis(() => p.complete(F.unit)));
+
     public static Coroutine WithDelay(
       float seconds, Action action,
       MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
