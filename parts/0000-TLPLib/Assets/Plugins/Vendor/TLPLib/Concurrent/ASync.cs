@@ -60,14 +60,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Coroutine StartCoroutine(IEnumerator coroutine) =>
       new UnityCoroutine(behaviour, coroutine);
 
-    public static Future<A> StartCoroutine<A>(IEnumerator coroutine, A a) {
-      IEnumerator local(Action action) {
-        yield return coroutine;
-        action();
-      }
-
-      return StartCoroutine<A>(p => local(() => p.complete(a)));
-    }
+    public static Future<Unit> toFuture(this IEnumerator coroutine) =>
+      StartCoroutine<Unit>(p => coroutine.afterThis(() => p.complete(F.unit)));
 
     public static Coroutine WithDelay(
       float seconds, Action action,
