@@ -75,6 +75,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
 #endif
       return opt.isSome ? opt.__unsafeGetValue : orElse;
     }
+
+    [PublicAPI] public static Option<A> fromNullable<A>(this A? maybeA) where A : struct =>
+      maybeA.HasValue ? new Option<A>(maybeA.Value) : Option<A>.None;
+    
+    [PublicAPI] public static A? toNullable<A>(this Option<A> maybeA) where A : struct =>
+      maybeA.isSome ? maybeA.__unsafeGetValue : (A?) null;
   }
 
   public struct None {
