@@ -89,11 +89,15 @@ namespace com.tinylabproductions.TLPLib.Components {
     }
 
     void onUpdate() {
-      if (Pointer.held) {
-        var mp = Pointer.currentPosition;
+      var mp =
+          Input.touchCount > 0 ? Input.GetTouch(0).position
+        : Pointer.held ? Pointer.currentPosition
+        : (Vector2?) null;
+      if (mp.HasValue) {
+        var val = mp.Value;
         var gridId = 0;
-        gridId += Mathf.FloorToInt(mp.x / (Screen.width / gridWidth));
-        gridId += gridWidth * Mathf.FloorToInt(mp.y / (Screen.height / gridHeight));
+        gridId += Mathf.FloorToInt(val.x / (Screen.width / gridWidth));
+        gridId += gridWidth * Mathf.FloorToInt(val.y / (Screen.height / gridHeight));
         if (gridId != lastIndex) {
           lastIndex = gridId;
           _regionIndex.push(gridId);
