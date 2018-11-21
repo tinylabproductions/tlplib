@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.widget {
   public class Toast : Binding {
-    public enum Duration { LENGTH_SHORT = 0, LENGTH_LONG = 1 }
+    public enum Duration {
+      LENGTH_SHORT = 0, // 2 seconds
+      LENGTH_LONG = 1 // 3.5 seconds
+    }
 
     Toast(AndroidJavaObject java) : base(java) { }
 
