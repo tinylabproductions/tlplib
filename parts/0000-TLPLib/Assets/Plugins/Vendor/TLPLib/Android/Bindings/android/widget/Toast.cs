@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
+﻿#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.widget {
@@ -19,3 +20,4 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.widget {
     public void show() => java.Call("show");
   }
 }
+#endif
