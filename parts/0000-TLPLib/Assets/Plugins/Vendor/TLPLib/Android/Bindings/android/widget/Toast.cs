@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.widget {
     public static Toast create(string message, Duration duration, Activity activity = null) =>
       new Toast(
         new AndroidJavaClass("android.widget.Toast")
-        .csjo("makeText", (activity ?? AndroidActivity.current).java, message, duration)
+        .csjo("makeText", (activity ?? AndroidActivity.current).java, message, (int)duration)
       );
 
     public void show() => java.Call("show");
