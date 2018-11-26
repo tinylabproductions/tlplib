@@ -12,30 +12,7 @@ using UnityEngine.SceneManagement;
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   class AssetSelector : EditorWindow, IMB_OnGUI {
     [UsedImplicitly, MenuItem("TLP/Tools/Select assets of type...")]
-    static void init() => GetWindow<AssetSelector>("Asset Selector").Show();
-
-    static void selectGameObjectsInScene(Func<GameObject, bool> predicate) {
-      var objects =
-        SceneManager.GetActiveScene()
-        .findObjectsOfTypeAll<Transform>()
-        .Select(_ => _.gameObject)
-        .Where(predicate)
-        .ToArray();
-      if (objects.nonEmpty())
-        Selection.objects = objects;
-    }
-
-    [MenuItem("CONTEXT/Transform/Select GameObjects by current Tag", false)]
-    static void selectByTag(MenuCommand menuCommand) {
-      var tag = ((Transform)menuCommand.context).tag;
-      selectGameObjectsInScene(go => go.CompareTag(tag));
-    }
-
-    [MenuItem("CONTEXT/Transform/Select GameObjects by current Layer", false)]
-    static void selectByLayer(MenuCommand menuCommand) {
-      var layer = ((Transform)menuCommand.context).gameObject.layer;
-      selectGameObjectsInScene(go => go.layer == layer);
-    }
+    public static void init() => GetWindow<AssetSelector>("Asset Selector").Show();
 
     // Useful to clean serialized assets after migration or unity version upgrade
     [UsedImplicitly, MenuItem("TLP/Tools/Make selected objects dirty (force reserialize)")]
