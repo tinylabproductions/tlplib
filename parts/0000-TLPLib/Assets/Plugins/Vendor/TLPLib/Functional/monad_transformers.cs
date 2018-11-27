@@ -35,6 +35,28 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return F.none<B>();
     }
 
+    [PublicAPI] public static Option<Either<A, B>> flattenRight<A, B>(this Option<Either<A, Option<B>>> o) {
+      if (o.isSome) {
+        var e = o.__unsafeGetValue;
+        return
+          e.isLeft
+            ? Either<A, B>.Left(e.__unsafeGetLeft).some()
+            : e.__unsafeGetRight.fold(F.none_, r => Either<A, B>.Right(r).some());
+      }
+      return F.none_;
+    }
+
+    [PublicAPI] public static Option<Either<A, B>> flattenLeft<A, B>(this Option<Either<Option<A>, B>> o) {
+      if (o.isSome) {
+        var e = o.__unsafeGetValue;
+        return
+          e.isRight
+            ? Either<A, B>.Right(e.__unsafeGetRight).some()
+            : e.__unsafeGetLeft.fold(F.none_, l => Either<A, B>.Left(l).some());
+      }
+      return F.none_;
+    }
+
     #endregion
 
     #region of IEnumerable
