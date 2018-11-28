@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
@@ -92,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     void input() {
       var guiEvent = Event.current;
       var transform = behaviour.transform;
-      var mousePos = getLocalPos(getMousePos(Event.current.mousePosition, transform));
+      var mousePos = getLocalPos(EditorUtils.getMousePos(Event.current.mousePosition, transform));
       
       //Removing nodes
       if (guiEvent.type == EventType.MouseDown && (guiEvent.button == 1 || guiEvent.button == 0 && guiEvent.alt) ) {
@@ -221,12 +222,6 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
 
     void drawLine(int nodeIDX, Vector3 mousePos) => 
       Handles.DrawLine(getWorldPos(behaviour.nodes[nodeIDX]), getWorldPos(mousePos));
-
-    public Vector3 getMousePos(Vector2 aMousePos, Transform aTransform) {
-      var plane = new Plane(aTransform.TransformDirection(Vector3.back), aTransform.position);
-      var ray = HandleUtility.GUIPointToWorldRay(aMousePos);
-      return plane.Raycast(ray, out var dist) ? ray.GetPoint(dist) : Vector3.zero; 
-    }
     
     List<Vector3> recalculateRelativePosition(List<Vector3> nodes, bool toLocal) {
       for (var idx = 0; idx < nodes.Count; idx++) {

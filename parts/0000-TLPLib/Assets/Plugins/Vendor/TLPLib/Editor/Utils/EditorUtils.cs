@@ -39,5 +39,12 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
       return id;
     }
+    
+    /// <example>EditorUtils.getMousePos(Event.current.mousePosition, transform)</example>
+    public static Vector3 getMousePos(Vector2 aMousePos, Transform aTransform) {
+      var plane = new Plane(aTransform.TransformDirection(Vector3.back), aTransform.position);
+      var ray = HandleUtility.GUIPointToWorldRay(aMousePos);
+      return plane.Raycast(ray, out var dist) ? ray.GetPoint(dist) : Vector3.zero; 
+    }
   }
 }
