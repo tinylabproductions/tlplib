@@ -1,4 +1,5 @@
-﻿using System;
+﻿﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Diagnostics;
@@ -104,8 +105,11 @@ public class CompilerSettings : EditorWindow
         var durations = GetUniversalCompilerLastBuildLogs();
         GUILayout.Label("Last Build Time");
         EditorGUI.indentLevel += 1;
-        for (var i=0; i< BuildTargets.Length; i++)
-            EditorGUILayout.LabelField("Assembly" + BuildTargets[i].Substring(15), durations[i]);
+        foreach (var duration in durations) {
+            EditorGUILayout.LabelField(duration);
+        }
+        //for (var i=0; i< BuildTargets.Length; i++)
+        //    EditorGUILayout.LabelField("Assembly" + BuildTargets[i].Substring(15), durations[i]);
         EditorGUI.indentLevel -= 1;
     }
 
@@ -184,7 +188,8 @@ public class CompilerSettings : EditorWindow
         if (icsLastWriteTime == _icsLastWriteTime)
             return _ucLastBuildLog;
 
-        _ucLastBuildLog = new[] {"", "", ""};
+        var result = new List<string>();
+        //_ucLastBuildLog = new[] {"", "", ""};
         if (!File.Exists(UcLogFilePath)) {
             return _ucLastBuildLog;
         }
@@ -193,7 +198,7 @@ public class CompilerSettings : EditorWindow
         {
             var lines = File.ReadAllLines(UcLogFilePath);
 
-            var lastIdx = UcLogFilePath.Length;
+            var totalFound = 0;
             var elapsed = 0.0;
             foreach (var line in lines.Reverse())
             {
@@ -201,14 +206,20 @@ public class CompilerSettings : EditorWindow
                 {
                     // "Target assembly: Assembly-CSharp-Editor.dll";
                     var target = Path.GetFileNameWithoutExtension(line.Substring(17).Trim());
-                    var idx = Array.FindIndex(BuildTargets, x => x == target);
-                    if (idx != -1)
-                    {
-                        if (lastIdx <= idx)
-                            break;
-                        _ucLastBuildLog[idx] = elapsed.ToString("0.00") + " sec";
-                        lastIdx = idx;
-                    }
+                    //var idx = Array.FindIndex(BuildTargets, x => x == target);
+                    //if (idx != -1)
+                    //{
+                    //    if (lastIdx <= idx)
+                    //        break;
+                    //    _ucLastBuildLog[idx] = elapsed.ToString("0.00") + " sec";
+                    //    lastIdx = idx;
+                    //}
+
+                    result.Add($"{elapsed:0.00} sec {target}");
+
+                    totalFound++;
+                    if (totalFound >= 30) break;
+
                     elapsed = 0;
                 }
                 else if (line.StartsWith("Elapsed time:"))
@@ -224,6 +235,8 @@ public class CompilerSettings : EditorWindow
         {
             Debug.LogWarning("GetUniversalCompilerLastBuildLogs:" + e);
         }
+
+        _ucLastBuildLog = result.ToArray();
 
         return _ucLastBuildLog;
     }
