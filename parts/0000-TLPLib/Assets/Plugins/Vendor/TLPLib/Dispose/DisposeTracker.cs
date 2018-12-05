@@ -5,7 +5,10 @@ using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Components.debug;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
+using JetBrains.Annotations;
+using Smooth.Dispose;
 
 namespace com.tinylabproductions.TLPLib.dispose {
   [Record]
@@ -29,6 +32,21 @@ namespace com.tinylabproductions.TLPLib.dispose {
     IEnumerable<TrackedDisposable> trackedDisposables { get; }
   }
 
+  public static class IDisposableTrackerExts {
+    [PublicAPI] public static void track(
+      this IDisposableTracker tracker,
+      Action a,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => tracker.track(
+      new Subscription(a),
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
+  }
+  
   public class DisposableTracker : IDisposableTracker {
     readonly List<TrackedDisposable> list = new List<TrackedDisposable>();
     public int trackedCount => list.Count;
