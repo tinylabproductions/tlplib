@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -217,6 +217,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       [PublicAPI]
       public Builder append(TweenTimelineElement element) =>
         insert(totalDuration, element);
+
+      [PublicAPI]
+      public Builder appendWithDelay(Duration delay, TweenTimelineElement element) =>
+        insert(totalDuration + delay.seconds, element);
 
       [PublicAPI]
       public Builder append(Option<TweenTimelineElement> element) =>
