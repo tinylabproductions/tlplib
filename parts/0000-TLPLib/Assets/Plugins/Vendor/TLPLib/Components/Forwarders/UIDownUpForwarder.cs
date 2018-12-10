@@ -1,11 +1,10 @@
-﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Components.ui;
+﻿using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  public class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
+  public class UIDownUpForwarder : PointerDownUp {
     readonly Subject<Unit>
       _onDown = new Subject<Unit>(),
       _onUp = new Subject<Unit>();
@@ -30,7 +29,9 @@ namespace com.tinylabproductions.TLPLib.Components {
         up();
     }
 
-    public void OnDisable() {
+    public override void OnDisable() {
+      base.OnDisable();
+
       if (isDown)
         up();
     }
