@@ -145,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     int targetPageValue;
     public bool isMoving { get; private set; }
     readonly Subject<Unit> _movementComplete = new Subject<Unit>();
-    public IObservable<Unit> movementComplete => _movementComplete;
+    public IRxObservable<Unit> movementComplete => _movementComplete;
 
     public void nextPage() => movePagesByAnimated(1);
     public void prevPage() => movePagesByAnimated(-1);

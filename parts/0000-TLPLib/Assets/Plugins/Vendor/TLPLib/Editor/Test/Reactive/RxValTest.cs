@@ -192,7 +192,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
 
     [Test] public void subscribeForOneEvent() => describe(() => {
-      void addCases(IObservable<bool> rx, Action change) {
+      void addCases(IRxObservable<bool> rx, Action change) {
         var actionInvocations = 0;
         var sub = rx.subscribeForOneEvent(new DisposableTracker(), _ => actionInvocations++);
         

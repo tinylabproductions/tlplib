@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       set { backing.level = value; }
     }
 
-    public IObservable<LogEvent> messageLogged => backing.messageLogged;
+    public IRxObservable<LogEvent> messageLogged => backing.messageLogged;
 
     public bool willLog(Log.Level l) => backing.willLog(l);
     public void log(Log.Level l, LogEntry entry) =>

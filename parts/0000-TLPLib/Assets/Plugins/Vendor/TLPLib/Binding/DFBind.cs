@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     /*********** Observable constructors ***********/
 
-    public static IObservable<Tpl<A, dfMouseEventArgs>> clicksObservable<A>(
+    public static IRxObservable<Tpl<A, dfMouseEventArgs>> clicksObservable<A>(
       this A button
     ) where A : dfControl {
       return new Observable<Tpl<A, dfMouseEventArgs>>(observer => {
@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<A>(
       this RxList<A> list, int max, string maxName,
-      Fn<int, IObservable<Option<A>>, ISubscription> bindObservable
+      Fn<int, IRxObservable<Option<A>>, ISubscription> bindObservable
     ) {
       var subscription = list.rxSize.subscribe(size => {
         if (size > max) throw new Exception(String.Format(
@@ -99,7 +99,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     }
 
     public static ISubscription bind(
-      this IObservable<ValueWithStorage> subject, dfProgressBar control
+      this IRxObservable<ValueWithStorage> subject, dfProgressBar control
     ) {
       return withTween(set => subject.subscribe(value => {
         control.MinValue = 0;
@@ -114,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     }
 
     public static ISubscription bind(
-      this IObservable<ValueWithStorage> subject, dfLabel control
+      this IRxObservable<ValueWithStorage> subject, dfLabel control
     ) {
       return withTween(set => subject.subscribe(value => set(Go.to(
         TF.a(
@@ -125,7 +125,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     }
 
     public static ISubscription bind(
-      this IObservable<uint> subject, dfLabel control
+      this IRxObservable<uint> subject, dfLabel control
     ) {
       return withTween(set => subject.subscribe(value => {
         set(Go.to(

@@ -195,13 +195,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///   someRxVal.toEventSource(_ => F.unit)
     /// ]]></code>
     /// </summary>
-    public static IObservable<B> toEventSource<A, B>(
+    public static IRxObservable<B> toEventSource<A, B>(
       this IRxVal<A> rxVal, Fn<A, B> mapper
     ) => new Observable<B>(onEvent =>
       rxVal.subscribe(NoOpDisposableTracker.instance, v => onEvent(mapper(v)))
     );
 
-    public static IObservable<Unit> toEventSource<A>(this IRxVal<A> o) =>
+    public static IRxObservable<Unit> toEventSource<A>(this IRxVal<A> o) =>
       o.toEventSource(_ => F.unit);
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(

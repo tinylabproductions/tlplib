@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    * will not get the current event.
    *
    * <code>
-   * void example(IObservable<A> observable) {
+   * void example(IRxObservable<A> observable) {
    *   observable.subscribe(a => {
    *     Log.d.info("A " + a);
    *     observable.subscribe(a1 => {
@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     int subscribers { get; }
   }
 
-  public interface IObservable<out A> : IObservable {
+  public interface IRxObservable<out A> : IObservable {
     /// <summary>
     /// Subscribe to this observable to get a value every time an event happens.
     ///
@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <code><![CDATA[
     /// public class OnUpdateForwarder : MonoBehaviour, IMB_Update {
     ///   readonly Subject<Unit> _onUpdate = new Subject<Unit>();
-    ///   public IObservable<Unit> onUpdate => _onUpdate;
+    ///   public IRxObservable<Unit> onUpdate => _onUpdate;
     ///
     ///   public void Update() => _onUpdate.push(F.unit);
     /// }
@@ -228,7 +228,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       addLast, removeFirst, count, collection, first, last
     );
 
-    public static Tpl<A, IObservable<Evt>> a<A, Evt>(
+    public static Tpl<A, IRxObservable<Evt>> a<A, Evt>(
       Fn<Act<Evt>, Tpl<A, ISubscription>> creator
     ) {
       Act<Evt> observer = null;
@@ -240,12 +240,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var t = creator(observer);
       var obj = t._1;
       subscription = t._2;
-      return F.t(obj, (IObservable<Evt>) observable);
+      return F.t(obj, (IRxObservable<Evt>) observable);
     }
 
-    public static IObservable<A> empty<A>() => Observable<A>.empty;
+    public static IRxObservable<A> empty<A>() => Observable<A>.empty;
 
-    public static IObservable<A> fromEvent<A>(
+    public static IRxObservable<A> fromEvent<A>(
       Act<Act<A>> registerCallback, Action unregisterCallback
     ) {
       return new Observable<A>(obs => {
@@ -254,9 +254,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    static IObservable<Unit> everyFrameInstance;
+    static IRxObservable<Unit> everyFrameInstance;
 
-    public static IObservable<Unit> everyFrame =>
+    public static IRxObservable<Unit> everyFrame =>
       everyFrameInstance ?? (
         everyFrameInstance = new Observable<Unit>(observer => {
           var cr = ASync.StartCoroutine(everyFrameCR(observer));
@@ -281,12 +281,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    static IObservable<List<Touch>> touchesInstance;
+    static IRxObservable<List<Touch>> touchesInstance;
 
-    public static IObservable<List<Touch>> touches =>
+    public static IRxObservable<List<Touch>> touches =>
       touchesInstance ?? (touchesInstance = createTouchesInstance());
 
-    static IObservable<List<Touch>> createTouchesInstance() {
+    static IRxObservable<List<Touch>> createTouchesInstance() {
       var touchList = new List<Touch>();
       var previousMousePos = new Vector2();
       var previousMousePhase = TouchPhase.Ended;
@@ -326,10 +326,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #endregion
 
-    public static IObservable<DateTime> interval(Duration interval, Duration delay) =>
+    public static IRxObservable<DateTime> interval(Duration interval, Duration delay) =>
       Observable.interval(interval, F.some(delay));
 
-    public static IObservable<DateTime> interval(
+    public static IRxObservable<DateTime> interval(
       Duration interval, Option<Duration> delay=default(Option<Duration>)
     ) {
       Option.ensureValue(ref delay);
@@ -364,7 +364,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     Elem, out ObservableImplementation
   >(Observable<Elem>.SubscribeToSource subscriptionFn);
 
-  public partial class Observable<A> : IObservable<A> {
+  public partial class Observable<A> : IRxObservable<A> {
     public delegate ISubscription SubscribeToSource(Act<A> onEvent);
 
     public static readonly Observable<A> empty =
@@ -415,7 +415,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
       readonly Subscription subscription;
 #else
-      readonly WeakReference<Subscription> subscription;
+      readonly system.WeakReference<Subscription> subscription;
 #endif
       readonly string callerMemberName, callerFilePath;
       readonly int callerLineNumber;
@@ -515,7 +515,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
         subscription: sub,
 #else
-        subscription: WeakReference.a(sub),
+        subscription: system.WeakReference.a(sub),
 #endif
         callerMemberName: callerMemberName, callerFilePath: callerFilePath,
         callerLineNumber: callerLineNumber

@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// Because it is immutable, the only way for it to change is if its source changes.
   /// </summary>
   /// <typeparam name="A"></typeparam>
-  public interface IRxVal<out A> : IObservable<A>, Val<A> {
+  public interface IRxVal<out A> : IRxObservable<A>, Val<A> {
     ISubscription subscribeWithoutEmit(
       IDisposableTracker tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",

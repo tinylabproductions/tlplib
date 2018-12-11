@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [PublicAPI] public delegate void OnError(LogEvent data);
 
-    [PublicAPI] public static readonly LazyVal<IObservable<LogEvent>> defaultStream =
+    [PublicAPI] public static readonly LazyVal<IRxObservable<LogEvent>> defaultStream =
       UnityLog.fromUnityLogMessages.lazyMap(o => o.join(Log.@default.messageLogged));
 
     /// <summary>

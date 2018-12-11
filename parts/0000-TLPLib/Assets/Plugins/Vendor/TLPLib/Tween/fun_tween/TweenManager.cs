@@ -63,9 +63,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     // These are null intentionally. We try not to create objects if they are not needed.
     ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
 
-    [PublicAPI] public IObservable<TweenCallback.Event> onStart => 
+    [PublicAPI] public IRxObservable<TweenCallback.Event> onStart => 
       __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
-    [PublicAPI] public IObservable<TweenCallback.Event> onEnd =>
+    [PublicAPI] public IRxObservable<TweenCallback.Event> onEnd =>
       __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
 
     [PublicAPI] public float timescale = 1;

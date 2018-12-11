@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #subscribe
 
     [PublicAPI] public static ISubscription subscribe<A>(
-      this IObservable<A> observable,
+      this IRxObservable<A> observable,
       IDisposableTracker tracker,
       Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static ISubscription subscribe<A>(
-      this IObservable<A> observable,
+      this IRxObservable<A> observable,
       IDisposableTracker tracker,
       Act<A, ISubscription> onChange,
       [CallerMemberName] string callerMemberName = "",
@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     [PublicAPI] public static ISubscription subscribe<A>(
-      this IObservable<A> observable, GameObject tracker, Act<A> onEvent,
+      this IRxObservable<A> observable, GameObject tracker, Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     );
 
     [PublicAPI] public static void subscribeLast<A>(
-      this IObservable<A> observable, ref IDisposable subscription, Act<A> onChange,
+      this IRxObservable<A> observable, ref IDisposable subscription, Act<A> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static void subscribeLast<A>(
-      this IObservable<A> observable, ref ISubscription subscription, Act<A> onChange,
+      this IRxObservable<A> observable, ref ISubscription subscription, Act<A> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static ISubscription subscribeForOneEvent<A>(
-      this IObservable<A> observable,
+      this IRxObservable<A> observable,
       IDisposableTracker tracker,
       Act<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
@@ -123,11 +123,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Return self as IObservable.
     /// </summary>
-    public static IObservable<A> asObservable<A>(this IObservable<A> observable) => observable;
+    public static IRxObservable<A> asObservable<A>(this IRxObservable<A> observable) => observable;
 
     /** Maps events coming from this observable. **/
-    public static IObservable<B> map<A, B>(
-      this IObservable<A> o, Fn<A, B> mapper
+    public static IRxObservable<B> map<A, B>(
+      this IRxObservable<A> o, Fn<A, B> mapper
     ) => new Observable<B>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, val => onEvent(mapper(val)))
     );
@@ -138,8 +138,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Maps events coming from this observable and emits all events contained
     /// in returned enumerable.
     /// </summary>
-    public static IObservable<B> flatMap<A, B>(
-      this IObservable<A> o, Fn<A, IEnumerable<B>> mapper
+    public static IRxObservable<B> flatMap<A, B>(
+      this IRxObservable<A> o, Fn<A, IEnumerable<B>> mapper
     ) => new Observable<B>(onEvent => o.subscribe(NoOpDisposableTracker.instance, val => {
       foreach (var b in mapper(val)) onEvent(b);
     }));
@@ -148,8 +148,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Maps events coming from this observable and emits all events that are emitted
     /// by returned observable.
     /// </summary>
-    public static IObservable<B> flatMap<A, B>(
-      this IObservable<A> o, Fn<A, IObservable<B>> mapper
+    public static IRxObservable<B> flatMap<A, B>(
+      this IRxObservable<A> o, Fn<A, IRxObservable<B>> mapper
     ) => new Observable<B>(onBEvent => {
       var bSub = Subscription.empty;
       void unsubscribeFromB() => bSub.unsubscribe();
@@ -169,8 +169,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      *
      * Does not emit value if future completes after observable is finished.
      **/
-    public static IObservable<B> flatMap<A, B>(
-      this IObservable<A> o, Fn<A, Future<B>> mapper
+    public static IRxObservable<B> flatMap<A, B>(
+      this IRxObservable<A> o, Fn<A, Future<B>> mapper
     ) => new Observable<B>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, a => mapper(a).onComplete(onEvent))
     );
@@ -179,16 +179,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Wait until future completes and start emmiting events from the created
     /// observable then.
     /// </summary>
-    public static IObservable<B> flatMap<A, B>(
-      this Future<A> future, Fn<A, IObservable<B>> mapper
+    public static IRxObservable<B> flatMap<A, B>(
+      this Future<A> future, Fn<A, IRxObservable<B>> mapper
     ) => future.map(mapper).extract();
 
     /// <summary>
     /// Abstracts the future away and returns an observable that starts emmiting
     /// events when the future completes with another observable.
     /// </summary>
-    public static IObservable<A> extract<A>(
-      this Future<IObservable<A>> future
+    public static IRxObservable<A> extract<A>(
+      this Future<IRxObservable<A>> future
     ) {
       // Saves onEvent when someone is subscribed to us, but the future has not yet
       // completed.
@@ -241,28 +241,28 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     /** Only emits events that pass the predicate. **/
-    public static IObservable<A> filter<A>(
-      this IObservable<A> o, Fn<A, bool> predicate
+    public static IRxObservable<A> filter<A>(
+      this IRxObservable<A> o, Fn<A, bool> predicate
     ) => new Observable<A>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, val => { if (predicate(val)) onEvent(val); })
     );
 
     /// <summary>Emits given value upon first event to the future and unsubscribes.</summary>
-    public static Future<B> toFuture<A, B>(this IObservable<A> o, B b) =>
+    public static Future<B> toFuture<A, B>(this IRxObservable<A> o, B b) =>
       Future<B>.async((p, f) => {
         var subscription = o.subscribe(NoOpDisposableTracker.instance, _ => p.complete(b));
         f.onComplete(_ => subscription.unsubscribe());
       });
 
     /// <summary>Emits first value to the future and unsubscribes.</summary>
-    public static Future<A> toFuture<A>(this IObservable<A> o) =>
+    public static Future<A> toFuture<A>(this IRxObservable<A> o) =>
       Future<A>.async((p, f) => {
         var subscription = o.subscribe(NoOpDisposableTracker.instance, p.complete);
         f.onComplete(_ => subscription.unsubscribe());
       });
 
     // Skips `count` values from the stream.
-    public static IObservable<A> skip<A>(this IObservable<A> o, uint count) =>
+    public static IRxObservable<A> skip<A>(this IRxObservable<A> o, uint count) =>
       new Observable<A>(onEvent => {
         var skipped = 0u;
         return o.subscribe(NoOpDisposableTracker.instance, a => {
@@ -273,7 +273,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     // If several events are emitted per same frame, only emit last one in late update.
     // TODO: test, but how? Can't do async tests in unity.
-    public static IObservable<A> oncePerFrame<A>(this IObservable<A> o) =>
+    public static IRxObservable<A> oncePerFrame<A>(this IRxObservable<A> o) =>
       new Observable<A>(onEvent => {
         var last = Option<A>.None;
         var mySub = o.subscribe(NoOpDisposableTracker.instance, v => last = v.some());
@@ -289,8 +289,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #zip
 
-    public static IObservable<R> zip<A1, A2, R>(
-      this IObservable<A1> o, IObservable<A2> other, Fn<A1, A2, R> zipper
+    public static IRxObservable<R> zip<A1, A2, R>(
+      this IRxObservable<A1> o, IRxObservable<A2> other, Fn<A1, A2, R> zipper
     ) =>
       new Observable<R>(onEvent => {
         var lastSelf = F.none<A1>();
@@ -308,12 +308,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
 
     [Obsolete("Use zip with custom mapper")]
-    public static IObservable<Tpl<A1, A2>> zip<A1, A2>(
-      this IObservable<A1> o1, IObservable<A2> o2
+    public static IRxObservable<Tpl<A1, A2>> zip<A1, A2>(
+      this IRxObservable<A1> o1, IRxObservable<A2> o2
     ) => o1.zip(o2, F.t);
 
-    public static IObservable<R> zip<A1, A2, A3, R>(
-      this IObservable<A1> o, IObservable<A2> o1, IObservable<A3> o2, Fn<A1, A2, A3, R> zipper
+    public static IRxObservable<R> zip<A1, A2, A3, R>(
+      this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, Fn<A1, A2, A3, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A1>();
       var lastO1 = F.none<A2>();
@@ -333,12 +333,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
 
     [Obsolete("Use zip with custom mapper")]
-    public static IObservable<Tpl<A1, A2, A3>> zip<A1, A2, A3>(
-      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3
+    public static IRxObservable<Tpl<A1, A2, A3>> zip<A1, A2, A3>(
+      this IRxObservable<A1> o1, IRxObservable<A2> o2, IRxObservable<A3> o3
     ) => o1.zip(o2, o3, F.t);
 
-    public static IObservable<R> zip<A1, A2, A3, A4, R>(
-      this IObservable<A1> o, IObservable<A2> o1, IObservable<A3> o2, IObservable<A4> o3,
+    public static IRxObservable<R> zip<A1, A2, A3, A4, R>(
+      this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, IRxObservable<A4> o3,
       Fn<A1, A2, A3, A4, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A1>();
@@ -362,12 +362,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
 
     [Obsolete("Use zip with custom mapper")]
-    public static IObservable<Tpl<A1, A2, A3, A4>> zip<A1, A2, A3, A4>(
-      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4
+    public static IRxObservable<Tpl<A1, A2, A3, A4>> zip<A1, A2, A3, A4>(
+      this IRxObservable<A1> o1, IRxObservable<A2> o2, IRxObservable<A3> o3, IRxObservable<A4> o4
     ) => o1.zip(o2, o3, o4, F.t);
 
-    public static IObservable<R> zip<A1, A2, A3, A4, A5, R>(
-      this IObservable<A1> o, IObservable<A2> o1, IObservable<A3> o2, IObservable<A4> o3, IObservable<A5> o4,
+    public static IRxObservable<R> zip<A1, A2, A3, A4, A5, R>(
+      this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, IRxObservable<A4> o3, IRxObservable<A5> o4,
       Fn<A1, A2, A3, A4, A5, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A1>();
@@ -394,13 +394,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
 
     [Obsolete("Use zip with custom mapper")]
-    public static IObservable<Tpl<A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
-      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5
+    public static IRxObservable<Tpl<A1, A2, A3, A4, A5>> zip<A1, A2, A3, A4, A5>(
+      this IRxObservable<A1> o1, IRxObservable<A2> o2, IRxObservable<A3> o3, IRxObservable<A4> o4, IRxObservable<A5> o5
     ) => o1.zip(o2, o3, o4, o5, F.t);
 
-    public static IObservable<R> zip<A, A1, A2, A3, A4, A5, R>(
-      this IObservable<A> o, IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3,
-      IObservable<A4> o4, IObservable<A5> o5, Fn<A, A1, A2, A3, A4, A5, R> zipper
+    public static IRxObservable<R> zip<A, A1, A2, A3, A4, A5, R>(
+      this IRxObservable<A> o, IRxObservable<A1> o1, IRxObservable<A2> o2, IRxObservable<A3> o3,
+      IRxObservable<A4> o4, IRxObservable<A5> o5, Fn<A, A1, A2, A3, A4, A5, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A>();
       var lastO1 = F.none<A1>();
@@ -429,9 +429,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     });
 
     [Obsolete("Use zip with custom mapper")]
-    public static IObservable<Tpl<A1, A2, A3, A4, A5, A6>> zip<A1, A2, A3, A4, A5, A6>(
-      this IObservable<A1> o1, IObservable<A2> o2, IObservable<A3> o3, IObservable<A4> o4, IObservable<A5> o5,
-      IObservable<A6> o6
+    public static IRxObservable<Tpl<A1, A2, A3, A4, A5, A6>> zip<A1, A2, A3, A4, A5, A6>(
+      this IRxObservable<A1> o1, IRxObservable<A2> o2, IRxObservable<A3> o3, IRxObservable<A4> o4, IRxObservable<A5> o5,
+      IRxObservable<A6> o6
     ) => o1.zip(o2, o3, o4, o5, o6, F.t);
 
     #endregion
@@ -440,7 +440,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Discards values that this observable emits, turning it into event
     /// source that does not carry data with it.
     /// </summary>
-    public static IObservable<Unit> discardValue<A>(this IObservable<A> o) =>
+    public static IRxObservable<Unit> discardValue<A>(this IRxObservable<A> o) =>
       new Observable<Unit>(onEvent =>
         o.subscribe(NoOpDisposableTracker.instance, _ => onEvent(F.unit))
       );
@@ -448,8 +448,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Only emits events that return some.
     /// </summary>
-    public static IObservable<B> collect<A, B>(
-      this IObservable<A> o, Fn<A, Option<B>> collector
+    public static IRxObservable<B> collect<A, B>(
+      this IRxObservable<A> o, Fn<A, Option<B>> collector
     ) => new Observable<B>(onEvent => o.subscribe(
       NoOpDisposableTracker.instance,
       val => {
@@ -465,12 +465,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       * are at the front of the buffer. Only emits `size` items at a time. When
       * new item arrives to the buffer, oldest one is removed.
       **/
-    public static IObservable<ReadOnlyLinkedList<A>> buffer<A>(
-      this IObservable<A> o, int size
+    public static IRxObservable<ReadOnlyLinkedList<A>> buffer<A>(
+      this IRxObservable<A> o, int size
     ) => o.buffer(size, new ObservableReadOnlyLinkedListQueue<A>());
 
-    public static IObservable<C> buffer<A, C>(
-      this IObservable<A> o, int size, IObservableQueue<A, C> queue
+    public static IRxObservable<C> buffer<A, C>(
+      this IRxObservable<A> o, int size, IObservableQueue<A, C> queue
     ) => new Observable<C>(onEvent => o.subscribe(
       NoOpDisposableTracker.instance,
       val => {
@@ -492,12 +492,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Only emits items if `duration` has passed. When
     /// new item arrives to the buffer, oldest one is removed.
     /// </summary>
-    public static IObservable<ReadOnlyLinkedList<Tpl<A, float>>> timeBuffer<A>(
-      this IObservable<A> o, Duration duration, TimeScale timeScale = TimeScale.Realtime
+    public static IRxObservable<ReadOnlyLinkedList<Tpl<A, float>>> timeBuffer<A>(
+      this IRxObservable<A> o, Duration duration, TimeScale timeScale = TimeScale.Realtime
     ) => o.timeBuffer(duration, new ObservableReadOnlyLinkedListQueue<Tpl<A, float>>(), timeScale);
 
-    public static IObservable<C> timeBuffer<A, C>(
-      this IObservable<A> o, Duration duration, IObservableQueue<Tpl<A, float>, C> queue,
+    public static IRxObservable<C> timeBuffer<A, C>(
+      this IRxObservable<A> o, Duration duration, IObservableQueue<Tpl<A, float>, C> queue,
       TimeScale timeScale = TimeScale.Realtime
     ) => new Observable<C>(onEvent => o.subscribe(
       NoOpDisposableTracker.instance,
@@ -520,8 +520,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Joins events of two observables returning an observable which emits events
     /// when either observable emits them.
     /// </summary>
-    public static IObservable<A> join<A, B>(
-      this IObservable<A> o, IObservable<B> other
+    public static IRxObservable<A> join<A, B>(
+      this IRxObservable<A> o, IRxObservable<B> other
     ) where B : A => new Observable<A>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, onEvent)
       .join(other.subscribe(NoOpDisposableTracker.instance, v => onEvent(v)))
@@ -529,15 +529,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #joinAll
 
-    public static IObservable<A> joinAll<A>(
-      this IObservable<A> o, IEnumerable<IObservable<A>> others
+    public static IRxObservable<A> joinAll<A>(
+      this IRxObservable<A> o, IEnumerable<IRxObservable<A>> others
     ) => joinAll(o.Yield().Concat(others));
 
     /// <summary>
     /// Joins all events from all observables into one stream.
     /// </summary>
-    public static IObservable<A> joinAll<A>(
-      this IEnumerable<IObservable<A>> observables
+    public static IRxObservable<A> joinAll<A>(
+      this IEnumerable<IRxObservable<A>> observables
     ) => new Observable<A>(onEvent =>
       observables.Select(aObs => aObs.subscribe(NoOpDisposableTracker.instance, onEvent))
       .ToArray().joinSubscriptions()
@@ -546,8 +546,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     /* Joins events, but discards the values. */
-    public static IObservable<Unit> joinDiscard<A, X>(
-      this IObservable<A> o, IObservable<X> other
+    public static IRxObservable<Unit> joinDiscard<A, X>(
+      this IRxObservable<A> o, IRxObservable<X> other
     ) => new Observable<Unit>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, _ => onEvent(F.unit))
       .join(other.subscribe(NoOpDisposableTracker.instance, _ => onEvent(F.unit)))
@@ -556,8 +556,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Only emits an event if other event was not emmited in specified time range.
     /// </summary>
-    public static IObservable<A> onceEvery<A>(
-      this IObservable<A> o, Duration duration, ITimeContext timeContext = null
+    public static IRxObservable<A> onceEvery<A>(
+      this IRxObservable<A> o, Duration duration, ITimeContext timeContext = null
     ) {
       timeContext = timeContext.orDefault();
       return new Observable<A>(onEvent => {
@@ -579,8 +579,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// seconds window and emits a read only linked list of
     /// (element, emission time) Tpls with emmission time.
     /// </summary>
-    public static IObservable<ReadOnlyLinkedList<Tpl<A, float>>> withinTimeframe<A>(
-      this IObservable<A> o, int count, Duration timeframe, TimeScale timeScale = TimeScale.Realtime
+    public static IRxObservable<ReadOnlyLinkedList<Tpl<A, float>>> withinTimeframe<A>(
+      this IRxObservable<A> o, int count, Duration timeframe, TimeScale timeScale = TimeScale.Realtime
     ) =>
       new Observable<ReadOnlyLinkedList<Tpl<A, float>>>(onEvent =>
         o.map(value => F.t(value, timeScale.now()))
@@ -597,8 +597,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Delays each event.
     /// </summary>
-    public static IObservable<A> delayed<A>(
-      this IObservable<A> o, Duration delay, ITimeContext timeContext = null
+    public static IRxObservable<A> delayed<A>(
+      this IRxObservable<A> o, Duration delay, ITimeContext timeContext = null
     ) {
       timeContext = timeContext.orDefault();
       return new Observable<A>(onEvent => o.subscribe(
@@ -613,16 +613,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    [PublicAPI] public static IObservable<Tpl<Option<A>, A>> changesOpt<A>(
-      this IObservable<A> o, Fn<A, A, bool> areEqual = null
+    [PublicAPI] public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
+      this IRxObservable<A> o, Fn<A, A, bool> areEqual = null
     ) => o.changesOpt(F.t, areEqual);
 
     /// <summary>
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    [PublicAPI] public static IObservable<B> changesOpt<A, B>(
-      this IObservable<A> o, Fn<Option<A>, A, B> zipper, Fn<A, A, bool> areEqual = null
+    [PublicAPI] public static IRxObservable<B> changesOpt<A, B>(
+      this IRxObservable<A> o, Fn<Option<A>, A, B> zipper, Fn<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<B>(changesBase<A, B>(
@@ -638,8 +638,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Like changesOpt() but does not emit if old was None.
     /// </summary>
-    public static IObservable<Tpl<A, A>> changes<A>(
-      this IObservable<A> o, Fn<A, A, bool> areEqual = null
+    public static IRxObservable<Tpl<A, A>> changes<A>(
+      this IRxObservable<A> o, Fn<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<Tpl<A, A>>(changesBase<A, Tpl<A, A>>(
@@ -657,8 +657,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Emits new values. Always emits first value and then emits changed values.
     /// </summary>
-    public static IObservable<A> changedValues<A>(
-      this IObservable<A> o, Fn<A, A, bool> areEqual = null
+    public static IRxObservable<A> changedValues<A>(
+      this IRxObservable<A> o, Fn<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<A>(changesBase<A, A>(
@@ -672,7 +672,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static Observable<Elem>.SubscribeToSource changesBase<A, Elem>(
-      IObservable<A> o, Act<Act<Elem>, Option<A>, A> action
+      IRxObservable<A> o, Act<Act<Elem>, Option<A>, A> action
     ) => onEvent => {
       var lastValue = F.none<A>();
       return o.subscribe(
@@ -689,12 +689,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Convert this observable to reactive value with given initial value.
     /// </summary>
-    public static IRxVal<A> toRxVal<A>(this IObservable<A> o, A initial) => new RxVal<A>(
+    public static IRxVal<A> toRxVal<A>(this IRxObservable<A> o, A initial) => new RxVal<A>(
       initial,
       setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(a))
     );
 
-    public static IRxVal<B> toRxVal<A, B>(this IObservable<A> o, B initial, Fn<A, B> mapper) => new RxVal<B>(
+    public static IRxVal<B> toRxVal<A, B>(this IRxObservable<A> o, B initial, Fn<A, B> mapper) => new RxVal<B>(
       initial,
       setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(mapper(a)))
     );
