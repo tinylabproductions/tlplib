@@ -5,7 +5,7 @@ using com.tinylabproductions.TLPLib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubject : IObservable {}
-  public interface ISubject<A> : ISubject, IObservable<A>, IObserver<A> {}
+  public interface ISubject<A> : ISubject, IRxObservable<A>, IObserver<A> {}
 
   /// <summary>
   /// A subject is something that is <see cref="Observable{A}"/> and <see cref="IObserver{A}"/>

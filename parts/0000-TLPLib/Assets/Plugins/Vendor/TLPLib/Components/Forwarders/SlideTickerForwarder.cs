@@ -10,7 +10,7 @@ namespace com.tinylabproductions.TLPLib.Components.Forwarders {
     public float tickDistance;
 
     readonly Subject<Point2D> _onSlideTick = new Subject<Point2D>();
-    public IObservable<Point2D> onSlideTick => _onSlideTick;
+    public IRxObservable<Point2D> onSlideTick => _onSlideTick;
     Vector2 dragBeginPos;
 
     public void OnBeginDrag(PointerEventData eventData) {

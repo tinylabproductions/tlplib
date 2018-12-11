@@ -9,8 +9,8 @@ namespace com.tinylabproductions.TLPLib.Components {
     readonly Subject<Unit>
       _onDown = new Subject<Unit>(),
       _onUp = new Subject<Unit>();
-    public IObservable<Unit> onDown => _onDown;
-    public IObservable<Unit> onUp => _onUp;
+    public IRxObservable<Unit> onDown => _onDown;
+    public IRxObservable<Unit> onUp => _onUp;
     public bool isDown { get; private set; }
 
     void up() {

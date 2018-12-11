@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Components {
    */
   public class RegionClickObservable {
     readonly Subject<int> _regionIndex = new Subject<int>();
-    public IObservable<int> regionIndex => _regionIndex;
+    public IRxObservable<int> regionIndex => _regionIndex;
 
     readonly int gridWidth, gridHeight;
 
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     /// <summary>
     /// Emits event when a particular region index sequence is executed within X seconds.
     /// </summary>
-    public IObservable<Unit> sequenceWithinTimeframe(
+    public IRxObservable<Unit> sequenceWithinTimeframe(
       IDisposableTracker tracker, IList<int> sequence, float timeS,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",

@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static Tpl<List<A>, ISubscription> pipeToList<A>(
-      this IObservable<A> obs, IDisposableTracker tracker
+      this IRxObservable<A> obs, IDisposableTracker tracker
     ) {
       var list = new List<A>();
       var sub = obs.subscribe(tracker, list.Add);
@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static Tpl<Ref<uint>, ISubscription> countEvents<A>(
-      this IObservable<A> obs, IDisposableTracker tracker
+      this IRxObservable<A> obs, IDisposableTracker tracker
     ) {
       var r = Ref.a(0u);
       var sub = obs.subscribe(tracker, _ => r.value++);
@@ -48,7 +48,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static Tpl<Ref<Option<A>>, ISubscription> pipeToRef<A>(
-      this IObservable<A> obs, IDisposableTracker tracker
+      this IRxObservable<A> obs, IDisposableTracker tracker
     ) {
       var reference = Ref.a(Option<A>.None);
       var sub = obs.subscribe(tracker, a => reference.value = a.some());

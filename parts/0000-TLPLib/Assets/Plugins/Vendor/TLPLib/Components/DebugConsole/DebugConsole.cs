@@ -144,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public static IObservable<Unit> registerDebugSequence(
+    public static IRxObservable<Unit> registerDebugSequence(
       IDisposableTracker tracker,
       DebugSequenceMouseData mouseData=null,
       Option<DebugSequenceDirectionData> directionDataOpt=default,

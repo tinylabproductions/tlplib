@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     public IRxVal<Option<Vector2>> isHeldDown => _isHeldDown;
 
     readonly Subject<Vector2> _onHoldEveryFrame = new Subject<Vector2>();
-    public IObservable<Vector2> onHoldEveryFrame => _onHoldEveryFrame;
+    public IRxObservable<Vector2> onHoldEveryFrame => _onHoldEveryFrame;
 
     public void Update() {
       if (pointerData.isEmpty()) return;

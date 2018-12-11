@@ -195,7 +195,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     bool willLog(Log.Level l);
     void log(Log.Level l, LogEntry o);
-    IObservable<LogEvent> messageLogged { get; }
+    IRxObservable<LogEvent> messageLogged { get; }
   }
 
   public static class ILogExts {
@@ -248,12 +248,12 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
 
-    public IObservable<LogEvent> messageLogged => backing.messageLogged;
+    public IRxObservable<LogEvent> messageLogged => backing.messageLogged;
   }
 
   public abstract class LogBase : ILog {
     readonly ISubject<LogEvent> _messageLogged = new Subject<LogEvent>();
-    public IObservable<LogEvent> messageLogged => _messageLogged;
+    public IRxObservable<LogEvent> messageLogged => _messageLogged;
 
     public Log.Level level { get; set; } = Log.defaultLogLevel;
     public bool willLog(Log.Level l) => l >= level;
@@ -345,7 +345,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
     }
 
-    public static readonly LazyVal<IObservable<LogEvent>> fromUnityLogMessages = F.lazy(() => {
+    public static readonly LazyVal<IRxObservable<LogEvent>> fromUnityLogMessages = F.lazy(() => {
       var subject = new Subject<LogEvent>();
       Application.logMessageReceivedThreaded += (message, backtrace, type) => {
         // Ignore messages that we ourselves sent to Unity.

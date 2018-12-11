@@ -151,8 +151,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       Subject<int> source = null;
       beforeEach += () => source = new Subject<int>();
 
-      Future<IObservable<int>> future;
-      IObservable<int> extracted = null;
+      Future<IRxObservable<int>> future;
+      IRxObservable<int> extracted = null;
 
       Tpl<Ref<List<int>>, Ref<ISubscription>> pipe() {
         var list = Ref.a(new List<int>());
@@ -211,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       };
 
       when["future is completed after we have a subscriber"] = () => {
-        Promise<IObservable<int>> promise = null;
+        Promise<IRxObservable<int>> promise = null;
         beforeEach += () => {
           future = Future.async(out promise);
           extracted = future.extract();
@@ -399,7 +399,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     void test<C>(
-      Fn<Subject<int>, IObservable<C>> createObs, Fn<List<int>, C> createCollection
+      Fn<Subject<int>, IRxObservable<C>> createObs, Fn<List<int>, C> createCollection
     ) where C : IEnumerable<int> {
       var subj = new Subject<int>();
       var obs = createObs(subj);

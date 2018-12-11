@@ -316,7 +316,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       fn.shouldChange(measure).by(0);
 
     public static StreamMatcher<A> shouldPushTo<A>(
-      this Action act, IObservable<A> obs
+      this Action act, IRxObservable<A> obs
     ) => new StreamMatcher<A>(act, obs);
   }
 
@@ -360,9 +360,9 @@ namespace com.tinylabproductions.TLPLib.Test {
   /// <typeparam name="A"></typeparam>
   public class StreamMatcher<A> {
     readonly Action act;
-    readonly IObservable<A> obs;
+    readonly IRxObservable<A> obs;
 
-    public StreamMatcher(Action act, IObservable<A> obs) {
+    public StreamMatcher(Action act, IRxObservable<A> obs) {
       this.act = act;
       this.obs = obs;
     }
