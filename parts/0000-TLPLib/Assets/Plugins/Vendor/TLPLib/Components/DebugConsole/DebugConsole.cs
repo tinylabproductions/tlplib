@@ -87,7 +87,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public delegate void OnShow(DConsole console);
 
-    readonly Dictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
+    readonly IDictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
     public event OnShow onShow;
 
     Option<Instance> current = F.none<Instance>();

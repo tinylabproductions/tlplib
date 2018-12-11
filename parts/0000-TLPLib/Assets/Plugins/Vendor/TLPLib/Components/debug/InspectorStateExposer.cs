@@ -8,7 +8,7 @@ using com.tinylabproductions.TLPLib.system;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
-using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
+
 namespace com.tinylabproductions.TLPLib.Components.debug {
   /// <summary>
   /// Exposes fields of non-monobehaviour objects to unity inspector.
@@ -43,7 +43,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
 
     [Record]
     public partial class Data<A> : IData where A : class {
-      public readonly WeakReference<A> reference;
+      public readonly WeakReferenceTLP<A> reference;
       public readonly string name;
       public readonly Fn<A, IValue> get;
 
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     ) where A : class {
 #if UNITY_EDITOR
       var exposer = go.EnsureComponent<InspectorStateExposer>();
-      var wr = WeakReference.a(reference);
+      var wr = WeakReferenceTLP.a(reference);
       exposer.add(new InspectorStateExposer.Data<A>(wr, name, get));
 #endif
     }

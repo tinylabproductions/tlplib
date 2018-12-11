@@ -30,12 +30,12 @@ namespace com.tinylabproductions.TLPLib.Collection {
     }
     public bool Add(B b, A a) { return Add(a, b); }
 
-    public Option<B> get(A key) { return a2b.get(key); }
-    public Option<A> get(B key) { return b2a.get(key); }
+    public Option<B> get(A key) => ((IDictionary<A, B>) a2b).get(key);
+    public Option<A> get(B key) => ((IDictionary<B, A>) b2a).get(key);
 
     public B this[A key] {
-      get { return a2b.a(key); }
-      set { Add(key, value); }
+      get => a2b.a(key);
+      set => Add(key, value);
     }
 
     public A this[B key] {

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.system;
 using Smooth.Collections;
-using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /// <summary>
@@ -134,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       _value = initialValue;
       this.comparer = comparer ?? EqComparer<A>.Default;
 
-      var wr = WeakReference.a(this);
+      var wr = WeakReferenceTLP.a(this);
       var sub = Subscription.empty;
       sub = subscribeToSource(
         // This callback goes into the source observable callback list, therefore

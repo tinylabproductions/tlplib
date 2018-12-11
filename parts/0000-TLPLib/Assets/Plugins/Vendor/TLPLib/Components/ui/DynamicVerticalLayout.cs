@@ -104,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       readonly bool renderLatestItemsFirst;
 
       // If Option is None, that means there is no backing view, it is only a spacer.
-      readonly Dictionary<IElementData, Option<IElementView>> _items = 
+      readonly IDictionary<IElementData, Option<IElementView>> _items = 
         new Dictionary<IElementData, Option<IElementView>>();
 
       public Option<Option<IElementView>> get(IElementData key) => _items.get(key);

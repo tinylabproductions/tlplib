@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   /* Something that needs to only happen once per unique argument. Pretty much a cache. */
   public class Once<In, Out> {
-    readonly Dictionary<In, Out> cache = new Dictionary<In, Out>();
+    readonly IDictionary<In, Out> cache = new Dictionary<In, Out>();
     readonly Fn<In, Out> fn;
 
     public Once(Fn<In, Out> fn) { this.fn = fn; }

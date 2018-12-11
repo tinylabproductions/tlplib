@@ -9,10 +9,8 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
-using com.tinylabproductions.TLPLib.system;
 using GenerationAttributes;
 using UnityEngine;
-using WeakReference = com.tinylabproductions.TLPLib.system.WeakReference;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -415,7 +413,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
       readonly Subscription subscription;
 #else
-      readonly system.WeakReference<Subscription> subscription;
+      readonly system.WeakReferenceTLP<Subscription> subscription;
 #endif
       readonly string callerMemberName, callerFilePath;
       readonly int callerLineNumber;
@@ -515,7 +513,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
         subscription: sub,
 #else
-        subscription: system.WeakReference.a(sub),
+        subscription: system.WeakReferenceTLP.a(sub),
 #endif
         callerMemberName: callerMemberName, callerFilePath: callerFilePath,
         callerLineNumber: callerLineNumber
