@@ -29,6 +29,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       Radial90,
       Radial180,
       Radial360,
+      // TLP values
+      // These are offet on purpose, because unity may add new values to this struct
+      PieSlice = 100,
     }
 
     public enum OriginHorizontal {
@@ -127,6 +130,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     // Not serialized until we support read-enabled sprites better.
     private float m_AlphaHitTestMinimumThreshold = 0;
+    
+    [SerializeField, Range(0f, 90f)] float pieSliceOffset;
+    [SerializeField, Range(0f, 360f)] float pieSliceAngle;
 
     [Obsolete("eventAlphaThreshold has been deprecated. Use eventMinimumAlphaThreshold instead (UnityUpgradable) -> alphaHitTestMinimumThreshold")]
     public float eventAlphaThreshold { get { return 1 - alphaHitTestMinimumThreshold; } set { alphaHitTestMinimumThreshold = 1 - value; } }
@@ -828,7 +834,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       s_Uv[3] = new Vector2(tx1, ty0);
 
       {
-        if (m_FillAmount < 1f && m_FillMethod != FillMethod.Horizontal && m_FillMethod != FillMethod.Vertical) {
+        if ((m_FillAmount < 1f || m_FillMethod == FillMethod.PieSlice) && m_FillMethod != FillMethod.Horizontal && m_FillMethod != FillMethod.Vertical) {
           if (fillMethod == FillMethod.Radial90) {
             if (RadialCut(s_Xy, s_Uv, m_FillAmount, m_FillClockwise, m_FillOrigin))
               AddQuad(toFill, s_Xy, color, s_Uv);
@@ -938,6 +944,102 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
               if (RadialCut(s_Xy, s_Uv, Mathf.Clamp01(val), m_FillClockwise, ((corner + 2) % 4)))
                 AddQuad(toFill, s_Xy, color, s_Uv);
+            }
+          }
+          else if (fillMethod == FillMethod.PieSlice) {
+            var lerped = Mathf.Lerp(0, pieSliceAngle, fillAmount);
+            var total = lerped + pieSliceOffset;
+            var over360 = total < 360f;
+            var lessThan45 = total % 90f < 45f;
+            
+            float fill = total % 360f / 360f;
+            float reverseFill = (360f - pieSliceOffset) / 360f;
+            
+            if (lerped < 0.001f) return;
+            
+            for (var quadrant = 0; quadrant < 4; ++quadrant) {
+              float fx0, fx1, fy0, fy1;
+
+              if (quadrant < 2) {
+                fx0 = 0f;
+                fx1 = 0.5f;
+              }
+              else {
+                fx0 = 0.5f;
+                fx1 = 1f;
+              }
+
+              if (quadrant == 0 || quadrant == 3) {
+                fy0 = 0f;
+                fy1 = 0.5f;
+              }
+              else {
+                fy0 = 0.5f;
+                fy1 = 1f;
+              }
+
+              s_Xy[0].x = Mathf.Lerp(v.x, v.z, fx0);
+              s_Xy[1].x = s_Xy[0].x;
+              s_Xy[2].x = Mathf.Lerp(v.x, v.z, fx1);
+              s_Xy[3].x = s_Xy[2].x;
+
+              s_Xy[0].y = Mathf.Lerp(v.y, v.w, fy0);
+              s_Xy[1].y = Mathf.Lerp(v.y, v.w, fy1);
+              s_Xy[2].y = s_Xy[1].y;
+              s_Xy[3].y = s_Xy[0].y;
+
+              s_Uv[0].x = Mathf.Lerp(tx0, tx1, fx0);
+              s_Uv[1].x = s_Uv[0].x;
+              s_Uv[2].x = Mathf.Lerp(tx0, tx1, fx1);
+              s_Uv[3].x = s_Uv[2].x;
+
+              s_Uv[0].y = Mathf.Lerp(ty0, ty1, fy0);
+              s_Uv[1].y = Mathf.Lerp(ty0, ty1, fy1);
+              s_Uv[2].y = s_Uv[1].y;
+              s_Uv[3].y = s_Uv[0].y;
+
+              var val = Mathf.Clamp01(
+                m_FillClockwise ?
+                  fill * 4f - ((quadrant + m_FillOrigin) % 4) :
+                  fill * 4f - (3 - ((quadrant + m_FillOrigin) % 4))
+              );
+
+              var reverseVal = Mathf.Clamp01(
+                !m_FillClockwise ?
+                  reverseFill * 4f - ((quadrant + m_FillOrigin) % 4) :
+                  reverseFill * 4f - (3 - ((quadrant + m_FillOrigin) % 4))
+              );
+              
+              var corner = ((quadrant + 2) % 4);
+              
+              if (over360) {
+                if (lessThan45) {
+                  if (RadialCut(s_Xy, s_Uv, reverseVal, !m_FillClockwise, corner)) {
+                    if (RadialCut(s_Xy, s_Uv, val, m_FillClockwise, corner)) {
+                      AddQuad(toFill, s_Xy, color, s_Uv);
+                    }
+                  }
+                }
+                else {
+                  if (RadialCut(s_Xy, s_Uv, val, m_FillClockwise, corner)) {
+                    if (RadialCut(s_Xy, s_Uv, reverseVal, !m_FillClockwise, corner)) {
+                      AddQuad(toFill, s_Xy, color, s_Uv);
+                    }
+                  }
+                }
+              }
+              else {
+                var copyXY = (Vector3[])s_Xy.Clone();
+                var copyUV = (Vector3[])s_Uv.Clone();
+                
+                if (RadialCut(s_Xy, s_Uv, val, m_FillClockwise, corner)) {
+                  AddQuad(toFill, s_Xy, color, s_Uv);
+                }
+
+                if (RadialCut(copyXY, copyUV, reverseVal, !m_FillClockwise, corner)) {
+                  AddQuad(toFill, copyXY, color, copyUV);
+                }
+              }
             }
           }
         }
