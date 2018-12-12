@@ -19,6 +19,11 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>PlayerPrefs backed value.</summary>
   public interface PrefVal<A> : IRxRef<A>, ICachedBlob<A>, InspectablePrefVal {}
 
+  public interface PrefValDictionary<Key, Value> {
+    [PublicAPI] bool hasKey(Key key);
+    [PublicAPI] PrefVal<Value> get(Key key);
+  }
+
   public static class PrefVal {
     [PublicAPI] public delegate void Base64StorePart(byte[] partData);
     [PublicAPI] public delegate byte[] Base64ReadPart();

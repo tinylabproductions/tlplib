@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -105,5 +107,44 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
 
     #endregion
+  }
+
+  class PrefValDictImpl<K, V> : PrefValDictionary<K, V> {
+    readonly Dictionary<K, PrefVal<V>> cache = new Dictionary<K, PrefVal<V>>();
+    readonly string keyPrefix;
+    readonly Fn<K, string> keyToString;
+    readonly ISerializedRW<V> vRw;
+    readonly PrefValStorage storage;
+    readonly V defaultValue;
+    readonly PrefVal.OnDeserializeFailure onDeserializeFailure;
+    readonly ILog log;
+
+    public PrefValDictImpl(
+      string keyPrefix, Fn<K, string> keyToString, ISerializedRW<V> vRw, PrefValStorage storage, V defaultValue, 
+      PrefVal.OnDeserializeFailure onDeserializeFailure, ILog log = null
+    ) {
+      this.keyPrefix = keyPrefix;
+      this.keyToString = keyToString;
+      this.vRw = vRw;
+      this.storage = storage;
+      this.defaultValue = defaultValue;
+      this.onDeserializeFailure = onDeserializeFailure;
+      this.log = log;
+    }
+
+    string stringKey(K key) => $"{keyPrefix}:{keyToString(key)}";
+
+    public bool hasKey(K key) => cache.ContainsKey(key) || storage.hasKey(stringKey(key));
+
+    public PrefVal<V> get(K key) {
+      if (cache.TryGetValue(key, out var prefVal)) {
+        return prefVal;
+      }
+      else {
+        prefVal = storage.custom(stringKey(key), defaultValue, vRw, onDeserializeFailure, log);
+        cache.Add(key, prefVal);
+        return prefVal;
+      }
+    }
   }
 }
