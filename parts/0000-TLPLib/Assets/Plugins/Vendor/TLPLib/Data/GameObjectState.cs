@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     
     [PublicAPI] public static void invertedApply(this IList<GameObjectState> states) {
       foreach (var state in states) {
-        state.invertedApply();();
+        state.invertedApply();
       }
     } 
   }
