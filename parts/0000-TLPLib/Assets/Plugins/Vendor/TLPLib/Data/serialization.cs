@@ -165,6 +165,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => new OneOfRW<A, B, C>(aRW, bRW, cRW);
 
     [PublicAPI]
+    public static ISerializedRW<KeyValuePair<A, B>> kv<A, B>(
+      this ISerializedRW<A> aRW, ISerializedRW<B> bRW
+    ) => and(aRW, bRW, (a, b) => new KeyValuePair<A, B>(a, b), t => t.Key, t => t.Value);
+
+    [PublicAPI]
     public static ISerializedRW<Tpl<A, B>> tpl<A, B>(
       this ISerializedRW<A> aRW, ISerializedRW<B> bRW
     ) => and(aRW, bRW, F.t, t => t._1, t => t._2);
@@ -223,6 +228,19 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => a(
       collectionSerializer<A, ImmutableHashSet<A>>(rw), 
       collectionDeserializer(rw, CollectionBuilderKnownSizeFactory<A>.immutableHashSet)
+    );
+
+    [PublicAPI]
+    public static ISerializedRW<ImmutableDictionary<K, V>> immutableDictionary<K, V>(
+      ISerializedRW<K> kRw, ISerializedRW<V> vRw
+    ) => immutableDictionary(kv(kRw, vRw));
+
+    [PublicAPI]
+    public static ISerializedRW<ImmutableDictionary<K, V>> immutableDictionary<K, V>(
+      ISerializedRW<KeyValuePair<K, V>> rw
+    ) => a(
+      collectionSerializer<KeyValuePair<K, V>, ImmutableDictionary<K, V>>(rw),
+      collectionDeserializer(rw, CollectionBuilderKnownSizeFactoryKV<K, V>.immutableDictionary)
     );
 
     [PublicAPI]
