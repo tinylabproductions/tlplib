@@ -42,16 +42,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 #endif
       ) {
         const string name = "ASync Helper";
-        var go = new GameObject(name);
-        // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
-        // be part of an editor script.
-        if (Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(go);
-        _behaviour = go.EnsureComponent<ASyncHelperBehaviour>();
+        try {
+          var go = new GameObject(name);
+          // Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot
+          // be part of an editor script.
+          if (Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(go);
+          _behaviour = go.EnsureComponent<ASyncHelperBehaviour>();
+        }
+        catch (Exception e) {
+          Log.d.error(
+            $"Failed to create {name}! Make sure {nameof(ASync)} is initialized from main thread!",
+            e
+          );
+        }
       }
       return _behaviour;
     } }
 
-    static ASync() { var _ = behaviour; }
+    static ASync() { behaviour.forSideEffects(); }
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
@@ -185,7 +193,44 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Fn<UnityWebRequest, A> onSuccess
     ) {
       var f = Future<Either<WebRequestError, A>>.async(out var promise);
-      StartCoroutine(webRequestEnumerator(req, promise, acceptedResponseCodes, onSuccess));
+      var op = req.SendWebRequest();
+      op.completed += operation => {
+        var responseCode = req.responseCode;
+        if (
+#if UNITY_2018_2_OR_NEWER
+          req.isNetworkError
+#else
+          req.isError
+#endif
+        ) {
+          var msg = $"error: {req.error}, response code: {responseCode}";
+          var url = new Url(req.url);
+          promise.complete(
+            responseCode == 0 && req.error == "Unknown Error"
+              ? new WebRequestError(url, new NoInternetError(msg))
+              : new WebRequestError(url, LogEntry.simple(msg))
+          );
+          req.Dispose();
+        }
+        else if (!acceptedResponseCodes.contains(responseCode)) {
+          var url = new Url(req.url); // Capture URL before disposing
+          var extrasB = ImmutableArray.CreateBuilder<Tpl<string, string>>();
+          foreach (var header in req.GetResponseHeaders()) {
+            extrasB.Add(F.t(header.Key, header.Value));
+          }
+          extrasB.Add(F.t("response-text", req.downloadHandler.text));
+          req.Dispose();
+          promise.complete(new WebRequestError(url, LogEntry.extras_(
+            $"Received response code {responseCode} was not in {acceptedResponseCodes}",
+            extrasB.MoveToImmutableSafe()
+          )));
+        }
+        else {
+          var a = onSuccess(req);
+          req.Dispose();
+          promise.complete(a);
+        }
+      };
       return f;
     }
 
@@ -195,49 +240,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
 
     [PublicAPI]
-    public static IEnumerator webRequestEnumerator<A>(
-      UnityWebRequest req, Promise<Either<WebRequestError, A>> p, AcceptedResponseCodes acceptedResponseCodes,
-      Fn<UnityWebRequest, A> onSuccess
-    ) {
-      yield return req.Send();
-      var responseCode = req.responseCode;
-      if (
-#if UNITY_2018_2_OR_NEWER
-        req.isNetworkError
-#else
-        req.isError
-#endif
-      ) {
-
-        var msg = $"error: {req.error}, response code: {responseCode}";
-        var url = new Url(req.url);
-        p.complete(
-          responseCode == 0 && req.error == "Unknown Error"
-          ? new WebRequestError(url, new NoInternetError(msg))
-          : new WebRequestError(url, LogEntry.simple(msg))
-        );
-        req.Dispose();
-      }
-      else if (!acceptedResponseCodes.contains(responseCode)) {
-        var url = new Url(req.url); // Capture URL before disposing
-        var extrasB = ImmutableArray.CreateBuilder<Tpl<string, string>>();
-        foreach (var header in req.GetResponseHeaders()) {
-          extrasB.Add(F.t(header.Key, header.Value));
-        }
-        extrasB.Add(F.t("response-text", req.downloadHandler.text));
-        req.Dispose();
-        p.complete(new WebRequestError(url, LogEntry.extras_(
-          $"Received response code {responseCode} was not in {acceptedResponseCodes}",
-          extrasB.MoveToImmutableSafe()
-        )));
-      }
-      else {
-        var a = onSuccess(req);
-        req.Dispose();
-        p.complete(a);
-      }
-    }
-
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
       this Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> cancellable
     ) => cancellable.map(f => f.map(e => e.mapRight(_ => _.asTexture())));
