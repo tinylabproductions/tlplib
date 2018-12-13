@@ -12,8 +12,16 @@ namespace com.tinylabproductions.TLPLib.Threads {
   public static class OnMainThread {
     static readonly Queue<Action> actions = new Queue<Action>();
     static readonly Thread mainThread;
-
-    public static bool isMainThread => Thread.CurrentThread == mainThread;
+    public static bool isMainThread {
+      get {
+        if (mainThread == null) {
+          Log.d.error(
+            $"{nameof(OnMainThread)}#{nameof(isMainThread)} does not know which thread is main!"
+          );
+        }
+        return Thread.CurrentThread == mainThread;
+      }
+    }
 
     /* Initialization. */
     static OnMainThread() {
