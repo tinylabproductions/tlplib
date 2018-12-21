@@ -3,7 +3,7 @@ using GenerationAttributes;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace Plugins.Vendor.TLPLib.Data {
+namespace com.tinylabproductions.TLPLib.Data {
   [Serializable, InlineProperty, Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)]
   public partial class SerializableGUID {
     [SerializeField, HideInInspector] ulong long1, long2;
@@ -17,8 +17,6 @@ namespace Plugins.Vendor.TLPLib.Data {
     public void generate() => guid = Guid.NewGuid();
     
     public SerializableGUID(Guid guid) {
-      long1 = 0;
-      long2 = 0;
       this.guid = guid;
     }
 
