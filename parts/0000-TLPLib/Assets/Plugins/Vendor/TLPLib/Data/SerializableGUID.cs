@@ -1,5 +1,6 @@
 using System;
 using GenerationAttributes;
+using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -14,13 +15,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       set => guid = new Guid(value);
     }
 
-    public void generate() => guid = Guid.NewGuid();
+    [PublicAPI] public void generate() => guid = Guid.NewGuid();
     
     public SerializableGUID(Guid guid) {
       this.guid = guid;
     }
 
-    Guid guid {
+    [PublicAPI] Guid guid {
       get => new Guid(
         (uint) long1,
         (ushort) (long1 >> 32),
@@ -40,6 +41,8 @@ namespace com.tinylabproductions.TLPLib.Data {
         long2 = BitConverter.ToUInt64(bytes, 8);      
       }
     }
+
+    [PublicAPI] public bool isZero => long1 == 0 && long2 == 0;
 
     public override string ToString() => guid.ToString();
   }
