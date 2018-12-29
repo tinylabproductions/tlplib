@@ -224,7 +224,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       .map((path, t) => mapper(t._1, t._2, t._3, t._4));
 
     public static Parser<A, A> idParser<A>() => (path, a) => a; 
-    public static readonly Parser<object, string> stringParser = createCastParser<string>();
+    [PublicAPI] public static readonly Parser<object, string> stringParser = createCastParser<string>();
+    [PublicAPI] public static readonly Parser<object, Guid> guidParser = 
+      stringParser.flatMapTry((_, s) => new Guid(s));
 
     public static readonly Parser<object, int> intParser = (path, n) => {
       try {
