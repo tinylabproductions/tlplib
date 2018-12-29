@@ -228,6 +228,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     [PublicAPI] public static readonly Parser<object, Guid> guidParser = 
       stringParser.flatMapTry((_, s) => new Guid(s));
 
+    [PublicAPI]
     public static readonly Parser<object, int> intParser = (path, n) => {
       try {
         switch (n) {
@@ -241,6 +242,22 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<int>(path, n);
     };
 
+    [PublicAPI]
+    public static readonly Parser<object, ushort> ushortParser = (path, n) => {
+      try {
+        switch (n) {
+          case ulong u: return (ushort)u;
+          case long l: return (ushort)l;
+          case uint u1: return (ushort) u1;
+          case int i: return (ushort)i;
+          case ushort i: return i;
+        }
+      }
+      catch (OverflowException) {}
+      return parseErrorEFor<ushort>(path, n);
+    };
+
+    [PublicAPI]
     public static readonly Parser<object, uint> uintParser = (path, n) => {
       try {
         switch (n) {
@@ -254,6 +271,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<uint>(path, n);
     };
 
+    [PublicAPI]
     public static readonly Parser<object, long> longParser = (path, n) => {
       try {
         switch (n) {
@@ -267,6 +285,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<long>(path, n);
     };
 
+    [PublicAPI]
     public static readonly Parser<object, ulong> ulongParser = (path, n) => {
       try {
         switch (n) {
@@ -280,6 +299,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<ulong>(path, n);
     };
 
+    [PublicAPI]
     public static readonly Parser<object, float> floatParser = (path, n) => {
       try {
         switch (n) {
@@ -295,6 +315,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<float>(path, n);
     };
 
+    [PublicAPI]
     public static readonly Parser<object, double> doubleParser = (path, n) => {
       try {
         if (n is double) return Either<ConfigLookupError, double>.Right((double) n);
@@ -308,6 +329,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<double>(path, n);
     };
 
+    [PublicAPI]
     public static readonly Parser<object, bool> boolParser = createCastParser<bool>();
 
     public static readonly Parser<object, DateTime> dateTimeParser =
