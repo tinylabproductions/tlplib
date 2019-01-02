@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
@@ -26,6 +27,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       [SerializeField] At _at;
       [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
       [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
+      [InlineEditor(InlineEditorObjectFieldModes.CompletelyHidden), ShowInInspector]
+      SerializedTweenTimelineElement __elementOdinDisplay { get => _element; set => _element = value; }
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
