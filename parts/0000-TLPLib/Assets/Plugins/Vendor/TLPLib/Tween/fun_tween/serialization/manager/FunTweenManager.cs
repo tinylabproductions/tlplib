@@ -1,20 +1,20 @@
 ﻿using System;
-using AdvancedInspector;
+using com.tinylabproductions.TLPLib.attributes;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// <summary>
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
-  [AdvancedInspector(true)]
   public class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
-    enum Tab { Fields, Actions }
+    const string TAB_FIELDS = "Fields", TAB_ACTIONS = "Actions";
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
     // ReSharper disable once UnusedMember.Local
@@ -22,41 +22,45 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3 
     }
 
-    [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
+    [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
     float timePassed => _manager == null ? -1 : _manager.timeline.timePassed;
-    [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
+    [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
     uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
-    [Inspect, Tab(Tab.Actions), UsedImplicitly, ReadOnly]
+    [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
     float timescale => _manager == null ? -1 : _manager.timescale;
 
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
     [
-      SerializeField, Tab(Tab.Fields),
-      Help(
-        HelpType.Info, 
-        "Local mode pauses tweens when this game object is disabled and resumes when it is enabled.\n" +
-        "Global mode continues to run the tween even if irrespective of this game objects state."
+      SerializeField, TabGroup(TAB_FIELDS),
+      InfoBox(
+        infoMessageType: InfoMessageType.Info, 
+        message: 
+          "Local mode pauses tweens when this game object is disabled and resumes when it is enabled.\n" +
+          "Global mode continues to run the tween even if irrespective of this game objects state."
       )
     ] RunMode _runMode = RunMode.Local;
     [
-      SerializeField, Tab(Tab.Fields),
-      Help(
-        HelpType.Info,
-        "Modes:\n" +
-        "- " + nameof(AutoplayMode.Disabled) + ": does nothing.\n" +
-        "- " + nameof(AutoplayMode.Enabled) + ": starts playing forwards upon enabling this game object. Pauses upon " +
-        "disabling game object, resumes when it is enabled again.\n" +
-        "- " + nameof(AutoplayMode.ApplyZeroStateOnStart) + ": when this script receives Unity Start callback, " +
-        "sets all the properties of non-relatively tweened objects like it was zeroth second in the timeline.\n" +
-        "- " + nameof(AutoplayMode.ApplyEndStateOnStart) + ": same, but sets the last second state."
+      SerializeField, TabGroup(TAB_FIELDS),
+      InfoBox(
+        infoMessageType: InfoMessageType.Info,
+        message: 
+          "Modes:\n" +
+          "- " + nameof(AutoplayMode.Disabled) + ": does nothing.\n" +
+          "- " + nameof(AutoplayMode.Enabled) + ": starts playing forwards upon enabling this game object. Pauses upon " +
+          "disabling game object, resumes when it is enabled again.\n" +
+          "- " + nameof(AutoplayMode.ApplyZeroStateOnStart) + ": when this script receives Unity Start callback, " +
+          "sets all the properties of non-relatively tweened objects like it was zeroth second in the timeline.\n" +
+          "- " + nameof(AutoplayMode.ApplyEndStateOnStart) + ": same, but sets the last second state."
       )
     ] AutoplayMode _autoplay = AutoplayMode.Enabled;
-    [SerializeField, Tab(Tab.Fields)] TweenTime _time = TweenTime.OnUpdate;
-    [SerializeField, Tab(Tab.Fields)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
-    [SerializeField, NotNull, Tab(Tab.Fields)] SerializedTweenTimeline _timeline;
-    [SerializeField, NotNull, CreateDerived, Tab(Tab.Fields)] SerializedTweenCallback[] _onStart, _onEnd;
+    [SerializeField, TabGroup(TAB_FIELDS)] TweenTime _time = TweenTime.OnUpdate;
+    [SerializeField, TabGroup(TAB_FIELDS)] TweenManager.Loop _looping = new TweenManager.Loop(1, TweenManager.Loop.Mode.Normal);
+    [SerializeField, NotNull, TabGroup(TAB_FIELDS)] SerializedTweenTimeline _timeline;
+    [
+      SerializeField, NotNull, TLPCreateDerived, TabGroup(TAB_FIELDS)
+    ] SerializedTweenCallback[] _onStart, _onEnd;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
     #endregion
@@ -104,55 +108,55 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       if (_runMode == RunMode.Local) manager.stop();
     }
 
-    [Inspect, Tab(Tab.Actions)]
+    [ShowInInspector, TabGroup(TAB_ACTIONS)]
     void playForwards() {
       manager.play(forwards: true);
       lastStateWasPlaying = true;
     }
 
-    [Inspect, Tab(Tab.Actions)]
+    [ShowInInspector, TabGroup(TAB_ACTIONS)]
     void playBackwards() {
       manager.play(forwards: false);
       lastStateWasPlaying = true;
     }
 
-    [Inspect, Tab(Tab.Actions)]
+    [ShowInInspector, TabGroup(TAB_ACTIONS)]
     void resumeForwards() {
       manager.resume(forwards: true); 
       lastStateWasPlaying = true;
     }
 
-    [Inspect, Tab(Tab.Actions)]
+    [ShowInInspector, TabGroup(TAB_ACTIONS)]
     void resumeBackwards() {
       manager.resume(forwards: false);
       lastStateWasPlaying = true;
     }
 
-    [Inspect, Tab(Tab.Actions)]
+    [ShowInInspector, TabGroup(TAB_ACTIONS)]
     void resume() {
       manager.resume();
       lastStateWasPlaying = true;
     }
 
-    [Inspect, Tab(Tab.Actions)]
+    [ShowInInspector, TabGroup(TAB_ACTIONS)]
     void stop() {
       manager.stop();
       lastStateWasPlaying = false;
     }
 
-    [Inspect, Tab(Tab.Actions)] void reverse() => manager.reverse();
-    [Inspect, Tab(Tab.Actions)] void rewind() => 
+    [ShowInInspector, TabGroup(TAB_ACTIONS)] void reverse() => manager.reverse();
+    [ShowInInspector, TabGroup(TAB_ACTIONS)] void rewind() => 
       manager.rewind(applyEffectsForRelativeTweens: false);
-    [Inspect, Tab(Tab.Actions)] void rewindWithEffectsForRelative() => 
+    [ShowInInspector, TabGroup(TAB_ACTIONS)] void rewindWithEffectsForRelative() => 
       manager.rewind(applyEffectsForRelativeTweens: true);
     
-    [Inspect, Tab(Tab.Actions)] void applyZeroState() =>
+    [ShowInInspector, TabGroup(TAB_ACTIONS)] void applyZeroState() =>
       manager.timeline.applyStateAt(0);
-    [Inspect, Tab(Tab.Actions)] void applyMaxDurationState() =>
+    [ShowInInspector, TabGroup(TAB_ACTIONS)] void applyMaxDurationState() =>
       manager.timeline.applyStateAt(manager.timeline.duration);
 
 #if UNITY_EDITOR
-    [Inspect, UsedImplicitly, Tab(Tab.Fields)]
+    [ShowInInspector, UsedImplicitly, TabGroup(TAB_FIELDS)]
     // Advanced Inspector does not render a button if it implements interface method. 
     void recreate() => invalidate();
 #endif

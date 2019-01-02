@@ -1,8 +1,9 @@
 ﻿using System;
-using AdvancedInspector;
+using com.tinylabproductions.TLPLib.attributes;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
@@ -12,9 +13,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
-    [SerializeField, Inspect(nameof(validate)), PublicAccessor] bool _isComplex;
-    [SerializeField, Inspect(nameof(isSimple))] SimpleSerializedEase _simple;
-    [SerializeField, Inspect(nameof(isComplex)), CreateDerived, NotNull] ComplexSerializedEase _complex;
+    [SerializeField, ShowIf(nameof(validate)), PublicAccessor] bool _isComplex;
+    [SerializeField, ShowIf(nameof(isSimple))] SimpleSerializedEase _simple;
+    [SerializeField, ShowIf(nameof(isComplex)), TLPCreateDerived, NotNull] ComplexSerializedEase _complex;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 

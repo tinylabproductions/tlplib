@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
-using AdvancedInspector;
+using com.tinylabproductions.TLPLib.attributes;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
@@ -25,10 +23,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
       [SerializeField] At _at;
-      [SerializeField, Tooltip("in seconds"), Descriptor(nameof(timeOffsetDescription))] float _timeOffset;
-      [SerializeField, NotNull, CreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
-      [InlineEditor(InlineEditorObjectFieldModes.CompletelyHidden), ShowInInspector]
-      SerializedTweenTimelineElement __elementOdinDisplay { get => _element; set => _element = value; }
+      [
+        SerializeField, Tooltip("in seconds"), LabelText("$" + nameof(timeOffsetDescription))
+      ] float _timeOffset;
+      [SerializeField, NotNull, TLPCreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
+      [
+        InlineEditor(InlineEditorObjectFieldModes.CompletelyHidden), ShowInInspector
+      ] SerializedTweenTimelineElement __elementOdinDisplay { get => _element; set => _element = value; }
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
@@ -36,9 +37,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
 
       public void invalidate() => _element.invalidate();
 
-      Description timeOffsetDescription => new Description(
-        _at == At.SpecificTime ? "Time" : "Time Offset"
-      );
+      string timeOffsetDescription => _at == At.SpecificTime ? "Time" : "Time Offset";
 
       public float at(float lastElementTime, float lastElementDuration) {
         switch (_at) {
