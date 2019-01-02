@@ -450,7 +450,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var aSubj = new Subject<A>();
       var otherSubjects = ImmutableList.Create(new Subject<B>(), new Subject<B>());
       var otherObservables = otherSubjects.Select(s => s.map(_ => (A)_)).ToImmutableList();
-      var allObservables = aSubj.Yield<IObservable>().Concat(otherObservables.Cast<IObservable>()).ToArray();
+      var allObservables = aSubj.Yield<IRxObservable>().Concat(otherObservables.Cast<IRxObservable>()).ToArray();
 
       var obs = aSubj.joinAll(otherObservables);
       var t = obs.pipeToList(tracker);

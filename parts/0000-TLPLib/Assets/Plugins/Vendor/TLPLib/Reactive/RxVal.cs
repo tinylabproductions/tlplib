@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   /// <summary>
   /// <para>
-  /// Reference that has a current value and is based on another <see cref="IObservable{A}"/>.
+  /// Reference that has a current value and is based on another <see cref="IRxObservable"/>.
   /// </para>
   ///
   /// <para>
