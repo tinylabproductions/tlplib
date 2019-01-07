@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.guid = guid;
     }
 
-    [PublicAPI] Guid guid {
+    [PublicAPI] public Guid guid {
       get => new Guid(
         (uint) long1,
         (ushort) (long1 >> 32),
@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Data {
         (byte) (long2 >> (8 * 6)),
         (byte) (long2 >> (8 * 7))
       );
-      set  {
+      private set  {
         var bytes = value.ToByteArray();
         long1 = BitConverter.ToUInt64(bytes, 0);
         long2 = BitConverter.ToUInt64(bytes, 8);      
