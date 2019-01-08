@@ -303,7 +303,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     } }
   }
 
-  public static class OptionExts {
+  [PublicAPI] public static class OptionExts {
     public static ImmutableList<A> toImmutableList<A>(this Option<A> opt) =>
       opt.isSome
       ? ImmutableList.Create(opt.__unsafeGetValue)
@@ -313,5 +313,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
       enumerableOpt.isSome
       ? enumerableOpt.__unsafeGetValue
       : Enumerable.Empty<A>();
+
+    public static Option<A> toOption<A>(this A? maybeA) where A : struct => 
+      maybeA.HasValue ? new Option<A>(maybeA.Value) : Option<A>.None;
   }
 }
