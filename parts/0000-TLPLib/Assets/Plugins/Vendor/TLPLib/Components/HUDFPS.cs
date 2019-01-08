@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Text;
 using com.tinylabproductions.TLPLib.Components.dispose;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 
@@ -30,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected override Rect initialRect() => startRect;
     protected override Fn<string> text => sFPS.ToString;
-    protected override Fn<Option<Color>> updateColorOptFn => () => updateColor.opt(color);
+    protected override Fn<Color> updateColorFn => () => updateColor ? color : Color.white;
     protected override bool dragAllowed => allowDrag;
 
     public static HUDFPS create() {

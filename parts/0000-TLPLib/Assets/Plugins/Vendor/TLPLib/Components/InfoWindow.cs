@@ -1,6 +1,5 @@
 using System;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
@@ -8,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected abstract Rect initialRect();
     protected abstract Fn<string> text { get; }
-    protected abstract Fn<Option<Color>> updateColorOptFn { get; }
+    protected abstract Fn<Color> updateColorFn { get; }
     protected abstract bool dragAllowed { get; }
 
     Rect startRect;
@@ -24,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Components {
         };
       }
 
-     GUI.color = updateColorOptFn().fold(Color.white, _ => _);
+     GUI.color = updateColorFn();
 
       startRect = GUI.Window(
         id: 0,

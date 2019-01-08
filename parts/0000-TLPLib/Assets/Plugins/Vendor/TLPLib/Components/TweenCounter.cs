@@ -1,6 +1,4 @@
 using System;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween;
 using UnityEngine;
 
@@ -11,11 +9,11 @@ namespace com.tinylabproductions.TLPLib.Components {
     protected override Rect initialRect() => new Rect(10, 10, 250, 50);
     protected override bool dragAllowed => true;
 
-    protected override Fn<Option<Color>> updateColorOptFn => () => {
+    protected override Fn<Color> updateColorFn => () => {
       var count = TweenManagerRunner.instance.currentlyRunningTweenCount;
-      if (count <= LIMIT / 2) return F.none_;
-      if (count > LIMIT / 2 && count <= LIMIT) return Color.yellow.some();
-      return Color.red.some();
+      if (count <= LIMIT / 2) return Color.white;
+      else if (count <= LIMIT) return Color.yellow;
+      return Color.red;
     };
 
     protected override Fn<string> text => () =>
