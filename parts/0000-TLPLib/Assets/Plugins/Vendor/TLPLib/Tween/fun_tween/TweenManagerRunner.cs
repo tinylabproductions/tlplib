@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -13,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
   /// </summary>
   [AddComponentMenu("")]
-  public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate, IMB_OnGUI {
+  public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
     static TweenManagerRunner _instance;
     [PublicAPI] public static TweenManagerRunner instance {
       get {
@@ -106,12 +104,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       onLateUpdate = new Tweens(),
       onLateUpdateUnscaled = new Tweens();
 
-    TweenManagerRunner() =>
-      DConsole.instance.onShow += dc => {
-        var r = dc.registrarFor(nameof(TweenManagerRunner));
-        r.registerBools($"{nameof(currentlyRunningTweenCountIsShowing)}", currentlyRunningTweenCountIsShowing);
-      };
-
+    TweenManagerRunner() { }
 
     public void Update() {
       phase = UnityPhase.Update;
@@ -163,32 +156,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         default: throw new ArgumentOutOfRangeException();
       }
       return false;
-    }
-
-    static readonly IRxRef<bool> currentlyRunningTweenCountIsShowing = RxRef.a(false);
-
-    Rect startRect = new Rect(10, 10, 150, 50);
-    GUIStyle style;
-
-    public void OnGUI() {
-      if (!currentlyRunningTweenCountIsShowing.value) return;
-      if (style == null) {
-        style = new GUIStyle(GUI.skin.label) {
-          normal = {textColor = Color.white},
-          alignment = TextAnchor.MiddleCenter
-        };
-      }
-
-      startRect = GUI.Window(
-        id: 0,
-        clientRect: startRect,
-        func: windowId => GUI.Label(
-          new Rect(0, 0, startRect.width, startRect.height),
-          $"Current tween count : {instance.currentlyRunningTweenCount}",
-          style
-        ),
-        text: ""
-      );
     }
   }
 }
