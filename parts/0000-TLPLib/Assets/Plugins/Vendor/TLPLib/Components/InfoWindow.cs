@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Components {
         };
       }
 
-      foreach (var color in updateColorOptFn()) GUI.color = color;
+     GUI.color = updateColorOptFn().fold(Color.white, _ => _);
 
       startRect = GUI.Window(
         id: 0,
