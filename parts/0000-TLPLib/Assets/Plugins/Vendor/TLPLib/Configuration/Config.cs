@@ -228,8 +228,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     [PublicAPI] public static readonly Parser<object, Guid> guidParser = 
       stringParser.flatMapTry((_, s) => new Guid(s));
 
-    [PublicAPI]
-    public static readonly Parser<object, int> intParser = (path, n) => {
+    [PublicAPI] public static readonly Parser<object, int> intParser = (path, n) => {
       try {
         switch (n) {
           case ulong i: return (int)i;
@@ -242,8 +241,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<int>(path, n);
     };
 
-    [PublicAPI]
-    public static readonly Parser<object, ushort> ushortParser = (path, n) => {
+    [PublicAPI] public static Parser<object, byte> byteParser =
+      intParser.flatMap(i => i < 0 || i > byte.MaxValue ? F.none_ : F.some((byte) i)); 
+
+    [PublicAPI] public static readonly Parser<object, ushort> ushortParser = (path, n) => {
       try {
         switch (n) {
           case ulong u: return (ushort)u;
