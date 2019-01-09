@@ -26,10 +26,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       [
         SerializeField, Tooltip("in seconds"), LabelText("$" + nameof(timeOffsetDescription))
       ] float _timeOffset;
-      [SerializeField, NotNull, TLPCreateDerived, PublicAccessor] SerializedTweenTimelineElement _element;
-      [
-        InlineEditor(InlineEditorObjectFieldModes.CompletelyHidden), ShowInInspector
-      ] SerializedTweenTimelineElement __elementOdinDisplay { get => _element; set => _element = value; }
+      [SerializeField, NotNull, PublicAccessor, HideLabel] SerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
