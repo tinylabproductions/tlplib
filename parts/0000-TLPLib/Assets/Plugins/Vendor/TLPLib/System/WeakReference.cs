@@ -10,13 +10,13 @@ namespace com.tinylabproductions.TLPLib.system {
   }
 
   public struct WeakReferenceTLP<A> where A : class {
-    public readonly WeakReference<A> untyped;
+    public readonly WeakReference<A> dotNet;
 
     public WeakReferenceTLP(A reference, bool trackResurrection = false) {
-      untyped = new WeakReference<A>(reference, trackResurrection);
+      dotNet = new WeakReference<A>(reference, trackResurrection);
     }
 
-    public Option<A> Target => untyped.TryGetTarget(out var a) ? F.some(a) : F.none_;
+    public Option<A> Target => dotNet.TryGetTarget(out var a) ? F.some(a) : F.none_;
 
     public override string ToString() =>
       $"{nameof(WeakReferenceTLP<A>)}({Target})";

@@ -209,15 +209,7 @@ namespace Smooth.Compare {
 
 		#region EqComparers for specific types
 
-		private static IEqualityComparer<T> EnumEqComparer<T>(Type type) {
-			switch(Type.GetTypeCode(type)) {
-			case TypeCode.Int64:
-			case TypeCode.UInt64:
-				return new Blittable64EqComparer<T>();
-			default:
-				return new Blittable32EqComparer<T>();
-			}
-		}
+		private static IEqualityComparer<T> EnumEqComparer<T>(Type type) => EqualityComparer<T>.Default;
 
 		private static IEqualityComparer<T> KeyValuePairEqComparer<T>(Type type) {
 			var l = Expression.Parameter(type, "l");

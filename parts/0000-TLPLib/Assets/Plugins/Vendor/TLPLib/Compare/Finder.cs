@@ -35,15 +35,7 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 
 			if (type.IsEnum) {
-				switch(Type.GetTypeCode(type)) {
-				case TypeCode.Int64:
-				case TypeCode.UInt64:
-					Register<T>(new Blittable64EqComparer<T>());
-					break;
-				default:
-					Register<T>(new Blittable32EqComparer<T>());
-					break;
-				}
+				Register(EqualityComparer<T>.Default);
 			} else {
 				Log.d.error("Tried to register a non-enumeration type as an enumeration.");
 			}
