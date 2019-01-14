@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public interface ISubject : IObservable {}
+  public interface ISubject : IRxObservable {}
   public interface ISubject<A> : ISubject, IRxObservable<A>, IObserver<A> {}
 
   /// <summary>

@@ -81,6 +81,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       defaultVal ?? ImmutableHashSet<A>.Empty,
       onDeserializeFailure, log
     );
+    
+    [PublicAPI]
+    public PrefValDictionary<K, V> dictionary<K, V>(
+      string key, Fn<K, string> keyToString, ISerializedRW<V> vRw, V defaultValue,
+      PrefVal.OnDeserializeFailure onDeserializeFailure =
+        PrefVal.OnDeserializeFailure.ReturnDefault,
+      ILog log = null
+    ) => new PrefValDictImpl<K, V>(key, keyToString, vRw, this, defaultValue, onDeserializeFailure, log);
 
     #endregion
 

@@ -1,5 +1,6 @@
 ﻿using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Logger;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -37,11 +38,25 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
 
     #endregion
 
-    new RectTransform transform;
+    RectTransform _transform;
+
+    // transform may be null if OnRectTransformDimensionsChange was called before Awake
+    new RectTransform transform => _transform ? _transform : (RectTransform)base.transform;
+    
+    
+    [ShowInInspector]
+    float calculatedScale {
+      get {
+        var tr = transform;
+        var widthScaleRatio = originalWidth / tr.rect.width;
+        var heightScaleRatio = originalHeight / tr.rect.height;
+        return 1 / Mathf.Max(widthScaleRatio, heightScaleRatio);
+      }
+    }
 
     protected override void Awake() {
-      transform = (RectTransform) base.transform;
-      if (transform == target && Log.d.isWarn())
+      _transform = (RectTransform) base.transform;
+      if (_transform == target && Log.d.isWarn())
         Log.d.warn($"{nameof(target)} == self on {this}!");
     }
 
@@ -55,17 +70,13 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     protected override void OnRectTransformDimensionsChange() {
       base.OnRectTransformDimensionsChange();
 
-      // transform may be null if OnRectTransformDimensionsChange was called before Awake
-      var transform = this.transform ? this.transform : ((RectTransform)base.transform);
-      
-      var widthScaleRatio = originalWidth / transform.rect.width;
-      var heightScaleRatio = originalHeight / transform.rect.height;
-      var scale = 1 / Mathf.Max(widthScaleRatio, heightScaleRatio);
+      var tr = transform;
+      var scale = calculatedScale;
       target.localScale = Vector3.one * scale;
 
       if (stretchMode != StretchMode.None) {
         var axis = stretchMode == StretchMode.Vertical ? RectTransform.Axis.Vertical : RectTransform.Axis.Horizontal;
-        var size = axis == RectTransform.Axis.Vertical ? transform.rect.height : transform.rect.width;
+        var size = axis == RectTransform.Axis.Vertical ? tr.rect.height : tr.rect.width;
         target.SetSizeWithCurrentAnchors(axis, size / scale);
       }
     }

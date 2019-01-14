@@ -19,7 +19,9 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       InspectorProperty property, IPropertyValueEntry<TOpt> valueEntry, GUIContent label
     ) where TOpt : new() {
       var isSet = property.Children[isSomeName];
-      var value = property.Children[valueName];
+      var value = property.Children[valueName] 
+        // When placed in any PropertyGroupAttribute, value gets placed as child element in parent #groupName
+        ?? property.Children.First(_ => _.Info.PropertyType == PropertyType.Group).Children.First();
 
       var oneLine = value.Children.Count == 1 && value.Children[0].Children.Count == 0;
 

@@ -179,7 +179,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     // TODO: test
     /// <summary>
-    /// Convert <see cref="IRxVal{A}"/> to <see cref="IObservable{B}"/>.
+    /// Convert <see cref="IRxVal{A}"/> to <see cref="IRxObservable"/>.
     ///
     /// Useful for converting from <see cref="IRxVal{A}"/> to event source. For example:
     ///

@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
@@ -20,7 +21,15 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static readonly CollectionBuilderKnownSizeFactory<A, ImmutableHashSet<A>> immutableHashSet =
       count => new ImmutableHashSetBuilder<A>(ImmutableHashSet.CreateBuilder<A>());
   }
-  
+
+  public static class CollectionBuilderKnownSizeFactoryKV<Key, Value> {
+    [PublicAPI]
+    public static readonly CollectionBuilderKnownSizeFactory<
+      KeyValuePair<Key, Value>, ImmutableDictionary<Key, Value>
+    > immutableDictionary =
+      count => new ImmutableDictionaryBuilder<Key, Value>(ImmutableDictionary.CreateBuilder<Key, Value>());
+  }
+
   // Unity runtime does not like variance and crashes.
   // ReSharper disable TypeParameterCanBeVariant
   public interface ICollectionBuilder<A, C> {
@@ -84,5 +93,15 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public void add(A a) => builder.Add(a);
     public ImmutableHashSet<A> build() => builder.ToImmutableHashSet();
     public ImmutableHashSet<A> buildAndDispose() => build();
+  }
+
+  class ImmutableDictionaryBuilder<K, V> : ICollectionBuilder<KeyValuePair<K, V>, ImmutableDictionary<K, V>> {
+    readonly ImmutableDictionary<K, V>.Builder builder;
+    
+    public ImmutableDictionaryBuilder(ImmutableDictionary<K, V>.Builder builder) { this.builder = builder; }
+
+    public void add(KeyValuePair<K, V> a) => builder.Add(a);
+    public ImmutableDictionary<K, V> build() => builder.ToImmutable();
+    public ImmutableDictionary<K, V> buildAndDispose() => build();
   }
 }

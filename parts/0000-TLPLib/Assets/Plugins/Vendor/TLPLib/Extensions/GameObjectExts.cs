@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
@@ -114,6 +115,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         if (component) return F.some(component);
         else if (current.transform.parent) current = current.transform.parent.gameObject;
         else return F.none<A>();
+      }
+    }
+
+    [PublicAPI] public static void SetActive(this IList<GameObject> gameObjects, bool active) {
+      foreach (var obj in gameObjects) {
+        obj.SetActive(active);
       }
     }
   }

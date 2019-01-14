@@ -16,11 +16,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static void testUnsubscription(
-      this ISubscription subscription, params IObservable[] observables
+      this ISubscription subscription, params IRxObservable[] observables
     ) => testUnsubscriptionC(subscription, observables);
 
     public static void testUnsubscriptionC(
-      this ISubscription subscription, ICollection<IObservable> observables
+      this ISubscription subscription, ICollection<IRxObservable> observables
     ) {
       subscription.isSubscribed.shouldBeTrue("it should be subscribed to aggregate subscription");
       foreach (var obs in observables)

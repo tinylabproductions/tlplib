@@ -50,11 +50,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
    *
    * Will print A1=0,A2=0 and then A1=1,A2=1, not A1=0,A1=1,A2=1,A2=0
    **/
-  public interface IObservable {
+  public interface IRxObservable {
     int subscribers { get; }
   }
 
-  public interface IRxObservable<out A> : IObservable {
+  public interface IRxObservable<out A> : IRxObservable {
     /// <summary>
     /// Subscribe to this observable to get a value every time an event happens.
     ///
@@ -99,7 +99,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///
     /// Transformations are observables that emit events based on one or more source observables.
     ///
-    /// For example <see cref="ObservableOps.zip{A1,A2,R}(com.tinylabproductions.TLPLib.Reactive.IObservable{A1},com.tinylabproductions.TLPLib.Reactive.IObservable{A2},System.Fn{A1,A2,R})"/>
+    /// For example <see cref="ObservableOps.zip{A1,A2,R}(IRxObservable,IRxObservable,System.Fn{A1,A2,R})"/>
     /// takes two observables and produces an observable that emits tupled values.
     ///
     /// Transformations have a nice property, that if nobody is listening to them, they do not have to listen

@@ -1,7 +1,8 @@
 ﻿using AdvancedInspector;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
-  public abstract class ComplexSerializedEase : ComponentMonoBehaviour, Invalidatable {
+  public abstract class ComplexSerializedEase : MonoBehaviour, Invalidatable {
     public abstract string easeName { get; }
     protected abstract Ease createEase();
 

@@ -90,19 +90,28 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return arr.MoveToImmutable();
     }
 
-    public static List<A> listFill<A>(int size, Fn<int, A> creator) {
+    [PublicAPI] public static List<A> listFill<A>(int size, Fn<int, A> creator) {
       var list = new List<A>(size);
       for (var idx = 0; idx < size; idx++) list.Add(creator(idx));
       return list;
     }
+    
+    [PublicAPI] public static Dictionary<K, V> dictFill<K, V>(int size, Fn<int, KeyValuePair<K, V>> creator) {
+      var dict = new Dictionary<K, V>(size);
+      for (var idx = 0; idx < size; idx++) {
+        var kv = creator(idx);
+        dict.Add(kv.Key, kv.Value);
+      }
+      return dict;
+    }
 
-    public static ImmutableList<A> iListFill<A>(int size, Fn<int, A> creator) {
+    [PublicAPI] public static ImmutableList<A> iListFill<A>(int size, Fn<int, A> creator) {
       var lst = ImmutableList.CreateBuilder<A>();
       for (var idx = 0; idx < size; idx++) lst.Add(creator(idx));
       return lst.ToImmutable();
     }
 
-    public static IList<A> ilist<A>(params A[] args) { return list(args); }
+    [PublicAPI] public static IList<A> ilist<A>(params A[] args) => list(args);
 
     public static Dictionary<K, V> dict<K, V>(params Tpl<K, V>[] args) {
       var dict = new Dictionary<K, V>();
