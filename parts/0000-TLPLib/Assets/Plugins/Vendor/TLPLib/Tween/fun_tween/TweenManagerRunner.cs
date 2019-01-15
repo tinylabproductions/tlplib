@@ -27,6 +27,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public UnityPhase phase { get; private set; }
 
+    public int currentlyRunningTweenCount =>
+      onUpdate.total
+      + onUpdateUnscaled.total
+      + onFixedUpdate.total
+      + onLateUpdate.total
+      + onLateUpdateUnscaled.total;
+
     class Tweens {
       readonly HashSet<TweenManager>
         current = new HashSet<TweenManager>(),
@@ -34,6 +41,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         toRemove = new HashSet<TweenManager>();
 
       bool running;
+      public int total => current.Count;
 
       public void add(TweenManager tm) {
         // If we made a call to add a tween on the same phase
