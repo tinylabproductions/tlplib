@@ -64,10 +64,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         return new ParsingError(Option<Exception>.None, $"<empty>('{json}')");
       
       try {
-        var jsonDict = (Dictionary<string, object>) Json.Deserialize(json);
-        return jsonDict == null
-          ? Either<ParsingError, IConfig>.Left(new ParsingError(Option<Exception>.None, json))
-          : Either<ParsingError, IConfig>.Right(new Config(jsonDict));
+        return 
+          from jsonDict in Json.Deserialize(json).cast().toE<Dictionary<string, object>>().mapLeft(err =>
+            new ParsingError(F.some(new Exception($"Config root must be a JSON object, but: {err}")), json)
+          )
+          from res in jsonDict == null
+            ? Either<ParsingError, IConfig>.Left(new ParsingError(Option<Exception>.None, json))
+            : Either<ParsingError, IConfig>.Right(new Config(jsonDict))
+          select res;
       }
       catch (Exception e) {
         return new ParsingError(e.some(), json);
