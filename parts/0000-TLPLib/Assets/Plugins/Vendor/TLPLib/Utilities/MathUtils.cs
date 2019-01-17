@@ -193,8 +193,10 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static float remap(this float value, float from1, float to1, float from2, float to2) => 
       (value - from1) / (to1 - from1) * (to2 - from2) + from2;
 
-    public static float remap01(this float value, FRange fromTo) =>
-      value.remap(fromTo.from, fromTo.to, 0f, 1f);
+    public static float remap01(this float value, FRange fromTo) => value.remap01(fromTo.from, fromTo.to);
+    
+    public static float remap01(this float value, float from1, float to1) =>
+      value.remap(from1, to1, 0f, 1f);
 
     // a % b gives non positive result on negative numbers
     // this always gives positive
