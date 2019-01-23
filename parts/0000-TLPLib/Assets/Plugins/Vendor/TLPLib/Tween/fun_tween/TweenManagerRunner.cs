@@ -83,7 +83,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
                 if (Log.d.isWarn()) Log.d.warn($"Tween stopped because target was destroyed. Context: {t.context}");
                 toRemove.Add(t);
               }
-              Log.d.error($"Tween target was destroyed. Context: {t.context}");
+              else Log.d.error($"Tween target was destroyed. Context: {t.context}");
             }
           }
         }
