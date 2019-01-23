@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       get {
         TweenManager create() {
           if (Log.d.isDebug()) Log.d.debug($"Creating {nameof(TweenManager)} for {this}", this);
-          var tm = new TweenManager(_timeline.timeline, _time, _looping);
+          var tm = new TweenManager(_timeline.timeline, _time, _looping, gameObject.name, true);
           foreach (var cb in _onStart) tm.addOnStartCallback(cb.callback.callback);
           foreach (var cb in _onEnd) tm.addOnEndCallback(cb.callback.callback);
           return tm;

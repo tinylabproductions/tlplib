@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tweener {
@@ -164,7 +165,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public readonly Tween<A> tween;
     [PublicAPI] public readonly T t;
-    [PublicAPI] public readonly TweenMutator<A, T> changeState;
+    readonly TweenMutator<A, T> changeState;
 
     public Tweener(Tween<A> tween, T t, TweenMutator<A, T> changeState) {
       this.tween = tween;
@@ -172,12 +173,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.changeState = changeState;
     }
 
-    public void setRelativeTimePassed(
+    public bool setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
     ) {
       if (applyEffectsForRelativeTweens || !tween.isRelative) {
-        changeState(tween.eval(previousTimePassed, timePassed, playingForwards), t, tween.isRelative);
+        return checkAndChangeState(tween.eval(previousTimePassed, timePassed, playingForwards), t, tween.isRelative);
       }
+      return true;
     }
 
     public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
@@ -185,11 +187,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       return true;
     }
 
-    public void applyStateAt(float time) {
+    public bool applyStateAt(float time) {
       // We do not apply relative tween states, because they do not make sense in a fixed time point.
       if (!tween.isRelative) {
-        changeState(tween.evalAt(time), t, false);
+        return checkAndChangeState(tween.evalAt(time), t, false);
       }
+      return true;
+    }
+
+    bool checkAndChangeState(A a, T t, bool isRelative) {
+      if (t is Object o) {
+        if (!o) return false;
+      }
+      changeState(a, t, isRelative);
+      return true;
     }
 
     public override string ToString() {

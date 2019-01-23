@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -76,15 +77,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public void runOn(float deltaTime) {
         try {
           running = true;
-          foreach (var t in current)
-            t.update(deltaTime);
+          foreach (var t in current) {
+            if (!t.update(deltaTime)) {
+              if (t.stopIfDestroyed) {
+                if (Log.d.isWarn()) Log.d.warn($"Tween stopped because target was destroyed. Context: {t.context}");
+                toRemove.Add(t);
+              }
+              Log.d.error($"Tween target was destroyed. Context: {t.context}");
+            }
+          }
         }
         finally {
           running = false;
 
           if (toRemove.Count > 0) {
-            foreach (var tween in toRemove)
+            foreach (var tween in toRemove) {
+              tween.Dispose();
               current.Remove(tween);
+            }
             toRemove.Clear();
           }
 

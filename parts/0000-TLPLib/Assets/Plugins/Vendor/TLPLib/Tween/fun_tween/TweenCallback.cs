@@ -14,10 +14,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public TweenCallback(Act<Event> callback) { this.callback = callback; }
 
     public float duration => 0;
-    public void setRelativeTimePassed(
+    public bool setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
-    ) => 
+    ) {
       callback(new Event(playingForwards));
+      return true;
+    }
 
     public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
       applyStateAt = default; 
