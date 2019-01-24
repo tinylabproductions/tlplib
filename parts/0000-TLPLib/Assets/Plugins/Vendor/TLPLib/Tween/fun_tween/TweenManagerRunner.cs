@@ -92,7 +92,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
           if (toRemove.Count > 0) {
             foreach (var tween in toRemove) {
-              tween.Dispose();
               current.Remove(tween);
             }
             toRemove.Clear();
