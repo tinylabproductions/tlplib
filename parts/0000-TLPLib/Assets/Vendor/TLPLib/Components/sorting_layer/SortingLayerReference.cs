@@ -1,5 +1,6 @@
 ﻿
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   /// <summary>
@@ -63,6 +64,11 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     public void applyTo(Renderer renderer) {
       renderer.sortingLayerID = sortingLayer;
       renderer.sortingOrder = orderInLayer;
+    }
+
+    public void applyTo(SortingGroup soringGroup) {
+      soringGroup.sortingLayerID = sortingLayer;
+      soringGroup.sortingOrder = orderInLayer;
     }
   }
 }
