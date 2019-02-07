@@ -82,6 +82,11 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       }
     }
 
+
+    public static bool operator ==(UnityOption<A> left, UnityOption<A> right) => left.value == right.value;
+
+    public static bool operator !=(UnityOption<A> left, UnityOption<A> right) => left.value != right.value;
+
     public string[] blacklistedFields() =>
       isSome
       ? new string[] {}
