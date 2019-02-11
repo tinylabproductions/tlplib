@@ -88,6 +88,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in source) b.Add(mapper(a));
       return b.MoveToImmutable();
     }
+    
+    public static A[] removeAt<A>(this A[] source, int index) {
+      if (index < 0 || index >= source.Length) throw new ArgumentOutOfRangeException(
+        nameof(index), index, $"index out of range, length = {source.Length}"
+      );
+      var dest = new A[source.Length - 1];
+      if (index > 0)
+        Array.Copy(source, 0, dest, 0, index);
+
+      if (index < source.Length - 1)
+        Array.Copy(source, index + 1, dest, index, source.Length - index - 1);
+
+      return dest;
+    }
 
     /// <summary>
     /// Removes specified index, shifting everything to left and replaces last element with given value.
