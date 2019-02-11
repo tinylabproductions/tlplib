@@ -68,6 +68,25 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [Test]
     public void RemoveAtTest() {
       var a1 = new[] {1, 2, 3, 4};
+      Assert.Throws<ArgumentOutOfRangeException>(() => a1.removeAt(-2));
+      Assert.Throws<ArgumentOutOfRangeException>(() => a1.removeAt(-1));
+      Assert.Throws<ArgumentOutOfRangeException>(() => a1.removeAt(a1.Length));
+      Assert.Throws<ArgumentOutOfRangeException>(() => a1.removeAt(a1.Length + 1));
+      a1.removeAt(0).shouldEqualEnum(2, 3, 4);
+      a1.removeAt(1).shouldEqualEnum(1, 3, 4);
+      a1.removeAt(2).shouldEqualEnum(1, 2, 4);
+      a1.removeAt(3).shouldEqualEnum(1, 2, 3);
+
+      var a2 = new[] {0};
+      a2.removeAt(0).shouldBeEmpty();
+
+      var a3 = new int[0];
+      Assert.Throws<ArgumentOutOfRangeException>(() => a3.removeAt(0));
+    }
+    
+    [Test]
+    public void RemoveAtAndReplaceTest() {
+      var a1 = new[] {1, 2, 3, 4};
       a1.removeAt(0, 1000);
       a1.shouldEqualEnum(2, 3, 4, 1000);
 
