@@ -33,6 +33,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       return System.Linq.Enumerable.Empty<ErrorMsg>();
 #endif
     }
+
+    [PublicAPI] public static implicit operator bool(TagPrefab<A> _prefab) => _prefab._prefab;
   }
   
   public abstract class TagPrefab {
