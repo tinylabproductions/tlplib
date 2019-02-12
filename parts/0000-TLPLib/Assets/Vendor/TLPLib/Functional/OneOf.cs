@@ -119,8 +119,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
         case OneOf.Choice.C:
           onC(__unsafeGetC);
           return;
+        default:
+          throw new IllegalStateException("Unreachable code");
       }
-      throw new IllegalStateException("Unreachable code");
     }
 
     [PublicAPI] public R fold<R>(Fn<A, R> onA, Fn<B, R> onB, Fn<C, R> onC) {
@@ -128,8 +129,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
         case OneOf.Choice.A: return onA(__unsafeGetA);
         case OneOf.Choice.B: return onB(__unsafeGetB);
         case OneOf.Choice.C: return onC(__unsafeGetC);
+        default: throw new IllegalStateException("Unreachable code"); 
       }
-      throw new IllegalStateException("Unreachable code");
+    }
+
+    [PublicAPI] public OneOf<A, B, C1> mapC<C1>(Func<C, C1> mapper) {
+      switch (whichOne) {
+        case OneOf.Choice.A: return __unsafeGetA;
+        case OneOf.Choice.B: return __unsafeGetB;
+        case OneOf.Choice.C: return mapper(__unsafeGetC);
+        default: throw new IllegalStateException("Unreachable code"); 
+      }
     }
 
     public static implicit operator OneOf<A, B, C>(A a) => new OneOf<A, B, C>(a);
