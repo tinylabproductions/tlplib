@@ -7,7 +7,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerator play(this PlayableDirector director, PlayableAsset asset) {
       director.Play(asset, DirectorWrapMode.Hold);
       director.Evaluate();
-      while (director.time < asset.duration) yield return null;
+      while (!Mathf.Approximately((float) director.time, (float) asset.duration))
+        yield return null;
     }
     public static void setInitial(this PlayableDirector director, PlayableAsset asset) {
       director.Play(asset, DirectorWrapMode.Hold);
