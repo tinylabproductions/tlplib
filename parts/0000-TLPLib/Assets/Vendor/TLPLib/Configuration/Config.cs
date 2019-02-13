@@ -89,7 +89,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) =>
       ConfigLookupError.wrongType(F.lazy(() => ImmutableArray.Create(
         F.t("path", path.pathStrWithBase),
-        F.t("type", typeof(A).FullName),
+        F.t("expected-type", typeof(A).FullName),
+        F.t("actual-type", node.GetType().FullName),
         F.t("extraInfo", extraInfo ?? ""),
         F.t("node-contents", node.asDebugString())
       )));
@@ -499,6 +500,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       (path, o) => aParser(path, o).flatMapRight(a => {
         try { return new Either<ConfigLookupError, B>(f(path, a)); }
         catch (ConfigFetchException e) { return new Either<ConfigLookupError, B>(e.error); }
+        catch (Exception e) { return new Either<ConfigLookupError, B>(ConfigLookupError.fromException(e)); }
       });
 
     [PublicAPI] public static Config.Parser<From, A> filter<From, A>(

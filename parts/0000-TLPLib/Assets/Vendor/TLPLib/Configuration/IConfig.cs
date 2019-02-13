@@ -156,15 +156,25 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   }
 
   public struct ConfigLookupError {
-    public enum Kind : byte { KEY_NOT_FOUND, WRONG_TYPE }
+    public enum Kind : byte { KEY_NOT_FOUND, WRONG_TYPE, EXCEPTION }
 
     public readonly Kind kind;
     public readonly LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras;
+    public readonly Option<Exception> exception;
     public ImmutableArray<Tpl<string, string>> extras => lazyExtras.strict;
 
-    public ConfigLookupError(Kind kind, LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras) {
+    ConfigLookupError(Kind kind, LazyVal<ImmutableArray<Tpl<string, string>>> lazyExtras) {
       this.kind = kind;
       this.lazyExtras = lazyExtras;
+      exception = F.none_;
+    }
+
+    ConfigLookupError(Exception e) {
+      kind = Kind.EXCEPTION;
+      lazyExtras = new NotReallyLazyVal<ImmutableArray<Tpl<string, string>>>(
+        ImmutableArray<Tpl<string, string>>.Empty
+      );
+      exception = e.some();
     }
 
     public static ConfigLookupError keyNotFound(LazyVal<ImmutableArray<Tpl<string, string>>> extras) =>
@@ -173,11 +183,18 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static ConfigLookupError wrongType(LazyVal<ImmutableArray<Tpl<string, string>>> extras) =>
       new ConfigLookupError(Kind.WRONG_TYPE, extras);
 
-    public override string ToString() => $"{nameof(ConfigLookupError)}[{kind}, {extras.mkStringEnum()}]";
+    public static ConfigLookupError fromException(Exception e) =>
+      new ConfigLookupError(e);
+
+    public override string ToString() =>
+      $"{nameof(ConfigLookupError)}[{kind}, {(kind == Kind.EXCEPTION ? exception.get.ToString() : extras.mkStringEnum())}]";
 
     public LogEntry toLogEntry(
       string message, ICollection<Tpl<string, string>> extraExtras = null
     ) {
+      if (kind == Kind.EXCEPTION) {
+        return LogEntry.fromException(nameof(ConfigLookupError), exception.get);
+      }
       ImmutableArray<Tpl<string, string>> extras;
       if (extraExtras == null) {
         extras = this.extras;
