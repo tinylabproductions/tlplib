@@ -1,9 +1,30 @@
-﻿using JetBrains.Annotations;
+﻿using System.Runtime.CompilerServices;
+using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UIntExts {
     public static int toIntClamped(this uint a) =>
       a > int.MaxValue ? int.MaxValue : (int) a;
+
+    [PublicAPI] public static int toIntOrLog(
+      this uint a,
+      Log.Level level = Log.Level.ERROR,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      if (a > int.MaxValue) {
+        if (Log.d.willLog(level)) Log.d.log(
+          level,
+          $"{nameof(UIntExts)}.{nameof(toIntOrLog)} called with {a} from " +
+          $"{callerMemberName} @ {callerFilePath}:{callerLineNumber}"
+        );
+        return int.MaxValue;
+      }
+
+      return (int) a;
+    }
 
     public static uint addClamped(this uint a, int b) {
       if (b < 0 && a < -b) return uint.MinValue;
