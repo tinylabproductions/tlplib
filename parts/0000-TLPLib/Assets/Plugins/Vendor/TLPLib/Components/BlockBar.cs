@@ -22,11 +22,11 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     public delegate void SetBarState(A barElement, bool isEnabled);
 
-    public class Init {
+    public abstract class Init : IDisposable {
       readonly Fn<SetBarState> setState;
       readonly List<A> items = new List<A>();
 
-      public Init(BlockBar<A> backing, Fn<SetBarState> setState) {
+      protected Init(BlockBar<A> backing, Fn<SetBarState> setState) {
         this.setState = setState;
         for (var i = 0; i < backing.elementCount; i++) {
           items.Add(backing.barElement.clone(parent: backing.blockParent));
@@ -42,6 +42,10 @@ namespace com.tinylabproductions.TLPLib.Components {
         for (var i = 0; i < items.Count; i++) {
           setBar(items[i], i < count);
         }
+      }
+
+      public void Dispose() {
+        foreach (var item in items) Destroy(item.gameObject);
       }
     }
   }

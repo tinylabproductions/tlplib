@@ -25,5 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
       vh.AddUIVertexTriangleStream(verts);
       ListPool<UIVertex>.Instance.Release(verts);
     }
+
+    public void setAllDirty() => graphic.SetAllDirty();
   }
 }
