@@ -5,7 +5,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.Components {
+namespace com.tinylabproductions.TLPLib.Components.BlockBar {
   public abstract partial class BlockBar<A> : MonoBehaviour where A : MonoBehaviour {
 
     #region Unity Serialized Fields
