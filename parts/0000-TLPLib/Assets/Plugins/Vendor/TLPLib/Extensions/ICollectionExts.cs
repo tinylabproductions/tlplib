@@ -61,5 +61,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         }
       }
     }
+
+    [PublicAPI]
+    public static bool isDistinct<A>(this ICollection<A> enumerable) {
+      if (enumerable.isEmpty()) return true;
+      return enumerable.Distinct().Count() == enumerable.Count();
+    }
   }
 }
