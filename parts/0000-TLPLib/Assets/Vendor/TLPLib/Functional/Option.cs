@@ -7,7 +7,6 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
-using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class Option {
@@ -23,9 +22,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
      */
     [Conditional("ENABLE_IL2CPP")]
     public static void ensureValue<A>(ref Option<A> opt) {
-#if ENABLE_IL2CPP
-      if ((object) opt == null) opt = Option<A>.None;
-#endif
     }
 
     /// <summary>
@@ -63,16 +59,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
      * where it is a class.
      */
     public static A getOrElse<A>(this Option<A> opt, Fn<A> orElse) {
-#if ENABLE_IL2CPP
-      if (opt == null) return orElse();
-#endif
       return opt.isSome ? opt.__unsafeGetValue : orElse();
     }
 
     public static A getOrElse<A>(this Option<A> opt, A orElse) {
-#if ENABLE_IL2CPP
-      if (opt == null) return orElse;
-#endif
       return opt.isSome ? opt.__unsafeGetValue : orElse;
     }
 
@@ -87,22 +77,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static None i => new None();
   }
   
-  public
-#if ENABLE_IL2CPP
-    sealed class
-#else
-    struct
-#endif
-    Option<A> : HigherKind<Option.W, A>
-  {
+  public struct Option<A> : HigherKind<Option.W, A> {
     public static Option<A> None { get; } = new Option<A>();
 
     public readonly A __unsafeGetValue;
     public readonly bool isSome;
-
-#if ENABLE_IL2CPP
-    Option() {}
-#endif
 
     public Option(A value) : this() {
       __unsafeGetValue = value;
@@ -173,16 +152,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public override int GetHashCode() => Smooth.Collections.EqComparer<A>.Default.GetHashCode(__unsafeGetValue);
 
-    public static bool operator ==(Option<A> lhs, Option<A> rhs) {
-#if ENABLE_IL2CPP
-      var leftNull = ReferenceEquals(lhs, null);
-      var rightNull = ReferenceEquals(rhs, null);
-      if (leftNull && rightNull) return true;
-      if (leftNull || rightNull) return false;
-#endif
-      return lhs.Equals(rhs);
-    }
-
+    public static bool operator ==(Option<A> lhs, Option<A> rhs) => lhs.Equals(rhs);
     public static bool operator !=(Option<A> lhs, Option<A> rhs) => !(lhs == rhs);
 
     #endregion
