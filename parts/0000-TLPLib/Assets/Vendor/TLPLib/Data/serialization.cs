@@ -77,6 +77,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public static readonly ISerializedRW<Vector3> vector3 =
       vector2.and(flt, (v2, z) => new Vector3(v2.x, v2.y, z), _ => _, _ => _.z);
 
+    [PublicAPI] public static readonly ISerializedRW<Url> url = 
+      str.map(_ => F.some(new Url(_)), _ => _.url);
     [PublicAPI] public static readonly ISerializedRW<Uri> uri = lambda(
       uri => str.serialize(uri.ToString()),
       (bytes, startIndex) =>
