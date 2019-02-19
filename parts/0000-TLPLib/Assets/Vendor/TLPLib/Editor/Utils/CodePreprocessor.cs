@@ -35,9 +35,9 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     public static ImmutableList<string> process(
       this ImmutableList<string> lines,
-      Fn<int, ImmutableList<string>> onNoPragma,
-      Fn<int, int, ImmutableList<string>> onPragmaExists,
-      Fn<ImmutableList<string>> onNoDirectives
+      Func<int, ImmutableList<string>> onNoPragma,
+      Func<int, int, ImmutableList<string>> onPragmaExists,
+      Func<ImmutableList<string>> onNoDirectives
     ) =>
       getLastDirectiveIndex(lines).fold(
         onNoDirectives,

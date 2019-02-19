@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI]
     public static T updateOrAdd<T>(
-      this IList<T> list, Fn<T, bool> finder, Fn<T> ifNotFound, Fn<T, T> ifFound
+      this IList<T> list, Func<T, bool> finder, Func<T> ifNotFound, Func<T, T> ifFound
     ) {
       var idxOpt = list.indexWhere(finder);
       if (idxOpt.isNone) {
@@ -69,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static void updateWhere<T>(
-      this IList<T> list, Fn<T, bool> finder, Fn<T, T> ifFound
+      this IList<T> list, Func<T, bool> finder, Func<T, T> ifFound
     ) {
       var idxOpt = list.indexWhere(finder);
       if (idxOpt.isNone) return;
@@ -163,14 +163,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     /// <summary>Any that is garbage free.</summary>
-    public static bool anyGCFree<A>(this IList<A> coll, Fn<A, bool> predicate) {
+    public static bool anyGCFree<A>(this IList<A> coll, Func<A, bool> predicate) {
       // ReSharper disable once ForCanBeConvertedToForeach, LoopCanBeConvertedToQuery
       for (var idx = 0; idx < coll.Count; idx++)
         if (predicate(coll[idx])) return true;
       return false;
     }
 
-    public static Option<int> indexWhere<A>(this IList<A> list, Fn<A, bool> predicate) {
+    public static Option<int> indexWhere<A>(this IList<A> list, Func<A, bool> predicate) {
       for (var idx = 0; idx < list.Count; idx++)
         if (predicate(list[idx])) return F.some(idx);
       return F.none<int>();
@@ -181,7 +181,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<A> randomElementByWeight<A>(
       this IList<A> list,
       // If we change to Func here, Unity crashes. So fun.
-      Fn<A, float> weightSelector
+      Func<A, float> weightSelector
     ) {
       if (list.isEmpty()) return F.none<A>();
 

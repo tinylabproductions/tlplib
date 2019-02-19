@@ -241,7 +241,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       bool matchPredicate(Option<int> _) => _.exists(predicate);
       var rx1 = RxRef.a(3);
       var rx2 = RxRef.a(4);
-      var dst = new[] {rx1, rx2}.anyThat((Fn<int, bool>) predicate);
+      var dst = new[] {rx1, rx2}.anyThat((Func<int, bool>) predicate);
       dst.value.shouldMatch(matchPredicate);
       rx1.value = 2;
       dst.value.shouldBeNone();

@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       Gizmos.DrawLine(lowerLeft, lowerRight);
     }
 
-    public Rect_Vector3 map(Fn<Vector3, Vector3> transformPoint) =>
+    public Rect_Vector3 map(Func<Vector3, Vector3> transformPoint) =>
       new Rect_Vector3(
         transformPoint(lowerLeft),
         transformPoint(lowerRight),

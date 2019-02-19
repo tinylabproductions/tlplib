@@ -163,7 +163,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
 
     [PublicAPI]
-    public LogEntry withMessage(Fn<string, string> message) =>
+    public LogEntry withMessage(Func<string, string> message) =>
       new LogEntry(message(this.message), tags, extras, reportToErrorTracking, backtrace, context);
 
     [PublicAPI]
@@ -171,7 +171,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
 
     [PublicAPI]
-    public LogEntry withExtras(Fn<ImmutableArray<Tpl<string, string>>, ImmutableArray<Tpl<string, string>>> extras) =>
+    public LogEntry withExtras(Func<ImmutableArray<Tpl<string, string>>, ImmutableArray<Tpl<string, string>>> extras) =>
       new LogEntry(message, tags, extras(this.extras), reportToErrorTracking, backtrace, context);
 
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> stringTupleArraySerializedRw =

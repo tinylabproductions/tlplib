@@ -98,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       timing.closeScope();
     }
 
-    public static A scoped<A>(this ITiming timing, string name, Fn<A> f) {
+    public static A scoped<A>(this ITiming timing, string name, Func<A> f) {
       timing.openScope(name);
       var ret = f();
       timing.closeScope();
@@ -152,9 +152,9 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     static readonly Pool<Data> dataPool = new Pool<Data>(() => new Data(), _ => { });
     readonly Stack<Data> scopes = new Stack<Data>();
-    readonly Act<TimingData> onData;
+    readonly Action<TimingData> onData;
 
-    public Timing(Act<TimingData> onData) { this.onData = onData; }
+    public Timing(Action<TimingData> onData) { this.onData = onData; }
 
     public FrameTimingScope frameScope(string name) => new FrameTimingScope(name, this);
 

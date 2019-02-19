@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
                     : $"Both({a}, {b})";
     }
 
-    public These<AA, B> flatMapThis<AA>(Fn<A, These<AA, B>> mapper) {
+    public These<AA, B> flatMapThis<AA>(Func<A, These<AA, B>> mapper) {
       switch (state) {
         case State.A:
         case State.BOTH:
@@ -52,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public These<A, BB> flatMapThat<BB>(Fn<B, These<A, BB>> mapper) {
+    public These<A, BB> flatMapThat<BB>(Func<B, These<A, BB>> mapper) {
       switch (state) {
         case State.A: return F.thiz<A, BB>(a);
         case State.B:
@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public These<AA, B> mapThis<AA>(Fn<A, AA> mapper) {
+    public These<AA, B> mapThis<AA>(Func<A, AA> mapper) {
       switch (state) {
         case State.A: return F.thiz<AA, B>(mapper(a));
         case State.B: return F.that<AA, B>(b);
@@ -71,7 +71,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public These<A, BB> mapThat<BB>(Fn<B, BB> mapper) {
+    public These<A, BB> mapThat<BB>(Func<B, BB> mapper) {
       switch (state) {
         case State.A: return F.thiz<A, BB>(a);
         case State.B: return F.that<A, BB>(mapper(b));
@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public These<AA, BB> map<AA, BB>(Fn<A, AA> aMapper, Fn<B, BB> bMapper) {
+    public These<AA, BB> map<AA, BB>(Func<A, AA> aMapper, Func<B, BB> bMapper) {
       switch (state) {
         case State.A: return F.thiz<AA, BB>(aMapper(a));
         case State.B: return F.that<AA, BB>(bMapper(b));
@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public C fold<C>(Fn<A, C> onA, Fn<B, C> onB, Fn<A, B, C> onBoth) {
+    public C fold<C>(Func<A, C> onA, Func<B, C> onB, Func<A, B, C> onBoth) {
       switch (state) {
         case State.A: return onA(a);
         case State.B: return onB(b);
@@ -98,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public void voidFold(Act<A> onA, Act<B> onB, Act<A, B> onBoth) {
+    public void voidFold(Action<A> onA, Action<B> onB, Action<A, B> onBoth) {
       switch (state) {
         case State.A: onA(a); break;
         case State.B: onB(b); break;
@@ -109,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Option<B> toOpt() { return thatValue; }
 
-    public B getOrElse(Fn<A, B> onThis) { return isThat ? b : onThis(a); }
+    public B getOrElse(Func<A, B> onThis) { return isThat ? b : onThis(a); }
 
     public These<AA, B> withThis<AA>(AA a) {
       switch (state) {
@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public static class These {
-    public static Option<C> a<A, B, C>(Option<A> aOpt, Option<B> bOpt, Fn<These<A, B>, C> mapper) {
+    public static Option<C> a<A, B, C>(Option<A> aOpt, Option<B> bOpt, Func<These<A, B>, C> mapper) {
       if (aOpt.isNone && bOpt.isNone) return F.none_;
       if (aOpt.isSome && bOpt.isSome) return mapper(F.these(aOpt.__unsafeGetValue, bOpt.__unsafeGetValue)).some();
       if (aOpt.isSome) return mapper(F.thiz<A, B>(aOpt.get)).some();

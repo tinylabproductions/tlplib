@@ -92,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// Updates visual if we mutate elements.
     /// Done this way because it's more performant than immutable version
     /// </summary>
-    public void editElements(Act<List<A>> f, bool animate = false) {
+    public void editElements(Action<List<A>> f, bool animate = false) {
       f(elements);
       var pageValue = Mathf.Clamp(_page.value, 0, elements.Count - 1);
       if (animate)

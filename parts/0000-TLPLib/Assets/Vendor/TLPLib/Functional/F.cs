@@ -6,7 +6,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  public static partial class F {
+  [PublicAPI] public static partial class F {
     public static bool isNull<A>(A value) where A : class =>
       // This might seem to be overkill, but on the case of Transforms that
       // have been destroyed, target == null will return false, whereas
@@ -20,16 +20,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Option<A> opt<A>(A? value) where A : struct =>
       value == null ? Option<A>.None : some((A) value);
 
-    [PublicAPI] public static Option<A> some<A>(A value) => new Option<A>(value);
-    [PublicAPI] public static Option<A> none<A>() => Option<A>.None;
-    [PublicAPI] public static None none_ => new None();
+    public static Option<A> some<A>(A value) => new Option<A>(value);
+    public static Option<A> none<A>() => Option<A>.None;
+    public static None none_ => new None();
 
-    public static Either<A, B> left<A, B>(A value) { return new Either<A, B>(value); }
-    public static Either<A, B> right<A, B>(B value) { return new Either<A, B>(value); }
+    public static Either<A, B> left<A, B>(A value) => new Either<A, B>(value);
+    public static Either<A, B> right<A, B>(B value) => new Either<A, B>(value);
 
-    public static These<A, B> thiz<A, B>(A value) { return new These<A, B>(value); }
-    public static These<A, B> that<A, B>(B value) { return new These<A, B>(value); }
-    public static These<A, B> these<A, B>(A a, B b) { return new These<A, B>(a, b); }
+    public static These<A, B> thiz<A, B>(A value) => new These<A, B>(value);
+    public static These<A, B> that<A, B>(B value) => new These<A, B>(value);
+    public static These<A, B> these<A, B>(A a, B b) => new These<A, B>(a, b);
 
     // Exception thrower which "returns" a value for use in expressions.
     public static A throws<A>(Exception ex) { throw ex; }
@@ -44,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     // Function that can be used to throw exceptions.
     public static void doThrow(Exception ex) { throw ex; }
 
-    public static Try<A> doTry<A>(Fn<A> f) {
+    public static Try<A> doTry<A>(Func<A> f) {
       try { return scs(f()); }
       catch (Exception e) { return err<A>(e); }
     }
@@ -78,25 +78,25 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new List<A>(capacity);
     }
 
-    public static A[] arrayFill<A>(int size, Fn<int, A> creator) {
+    public static A[] arrayFill<A>(int size, Func<int, A> creator) {
       var arr = new A[size];
       for (var idx = 0; idx < size; idx++) arr[idx] = creator(idx);
       return arr;
     }
 
-    public static ImmutableArray<A> iArrayFill<A>(int size, Fn<int, A> creator) {
+    public static ImmutableArray<A> iArrayFill<A>(int size, Func<int, A> creator) {
       var arr = ImmutableArray.CreateBuilder<A>(size);
       for (var idx = 0; idx < size; idx++) arr.Add(creator(idx));
       return arr.MoveToImmutable();
     }
 
-    [PublicAPI] public static List<A> listFill<A>(int size, Fn<int, A> creator) {
+    public static List<A> listFill<A>(int size, Func<int, A> creator) {
       var list = new List<A>(size);
       for (var idx = 0; idx < size; idx++) list.Add(creator(idx));
       return list;
     }
     
-    [PublicAPI] public static Dictionary<K, V> dictFill<K, V>(int size, Fn<int, KeyValuePair<K, V>> creator) {
+    public static Dictionary<K, V> dictFill<K, V>(int size, Func<int, KeyValuePair<K, V>> creator) {
       var dict = new Dictionary<K, V>(size);
       for (var idx = 0; idx < size; idx++) {
         var kv = creator(idx);
@@ -105,13 +105,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return dict;
     }
 
-    [PublicAPI] public static ImmutableList<A> iListFill<A>(int size, Fn<int, A> creator) {
+    public static ImmutableList<A> iListFill<A>(int size, Func<int, A> creator) {
       var lst = ImmutableList.CreateBuilder<A>();
       for (var idx = 0; idx < size; idx++) lst.Add(creator(idx));
       return lst.ToImmutable();
     }
 
-    [PublicAPI] public static IList<A> ilist<A>(params A[] args) => list(args);
+    public static IList<A> ilist<A>(params A[] args) => list(args);
 
     public static Dictionary<K, V> dict<K, V>(params Tpl<K, V>[] args) {
       var dict = new Dictionary<K, V>();
@@ -126,11 +126,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Unit unit => Unit.instance;
 
-    public static LazyVal<A> lazy<A>(Fn<A> func, Act<A> afterInitialization = null) =>
+    public static LazyVal<A> lazy<A>(Func<A> func, Action<A> afterInitialization = null) =>
       new LazyValImpl<A>(func, afterInitialization);
 
     public static LazyVal<A> loggedLazy<A>(
-      string name, Fn<A> func, ILog log = null, Log.Level level = Log.Level.DEBUG
+      string name, Func<A> func, ILog log = null, Log.Level level = Log.Level.DEBUG
     ) => lazy(() => {
       var _log = log ?? Log.d;
       if (_log.willLog(level)) _log.log(level, $"Initiliazing lazy value: {name}");
@@ -140,7 +140,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     /// <summary>Lift a value into lazy type.</summary>
     public static LazyVal<A> lazyLift<A>(A a) => new NotReallyLazyVal<A>(a);
 
-    public static Fn<Unit> actToFn(Action action) =>
+    public static Func<Unit> actToFn(Action action) =>
       () => { action(); return unit; };
 
     public static Action andThen(this Action first, Action second) =>
@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Action andThenSys(this Action first, Action second) =>
       () => { first(); second(); };
 
-    public static Fn<B> andThen<A, B>(this Fn<A> first, Fn<A, B> second) =>
+    public static Func<B> andThen<A, B>(this Func<A> first, Func<A, B> second) =>
       () => second(first());
 
     static class EmptyArray<T> {
@@ -162,19 +162,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
       public void Dispose() { }
     }
 
-    [PublicAPI] public static readonly IDisposable emptyDisposable = new EmptyDisposable();
+    public static readonly IDisposable emptyDisposable = new EmptyDisposable();
 
     /// <summary>Representation of ! as a function.</summary>
-    [PublicAPI] public static readonly Fn<bool, bool> invert = a => !a;
+    public static readonly Func<bool, bool> invert = a => !a;
     /// <summary>Representation of && as a function.</summary>
-    [PublicAPI] public static readonly Fn<bool, bool, bool> and2 = (a, b) => a && b;
-    [PublicAPI] public static readonly Fn<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;
-    [PublicAPI] public static readonly Fn<bool, bool, bool, bool, bool> and4 = (a, b, c, d) => a && b && c && d;
+    public static readonly Func<bool, bool, bool> and2 = (a, b) => a && b;
+    public static readonly Func<bool, bool, bool, bool> and3 = (a, b, c) => a && b && c;
+    public static readonly Func<bool, bool, bool, bool, bool> and4 = (a, b, c, d) => a && b && c && d;
 
     /// <summary>Representation of || as a function.</summary>
-    [PublicAPI] public static readonly Fn<bool, bool, bool> or2 = (a, b) => a || b;
+    public static readonly Func<bool, bool, bool> or2 = (a, b) => a || b;
 
     /// <summary>Representation of + as a function.</summary>
-    [PublicAPI] public static readonly Fn<float, float, float> add2F = (a, b) => a + b;
+    public static readonly Func<float, float, float> add2F = (a, b) => a + b;
   }
 }

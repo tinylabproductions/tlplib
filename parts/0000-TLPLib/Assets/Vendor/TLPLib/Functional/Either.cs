@@ -11,27 +11,27 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e) =>
       e.flatMapRight(_ => _);
 
-    static Fn<CollFrom, IEnumerable<ElemTo>> mapC<CollFrom, ElemFrom, ElemTo>(
-      Fn<ElemFrom, ElemTo> mapper
+    static Func<CollFrom, IEnumerable<ElemTo>> mapC<CollFrom, ElemFrom, ElemTo>(
+      Func<ElemFrom, ElemTo> mapper
     ) where CollFrom : IEnumerable<ElemFrom> =>
       c => c.Select(elem => mapper(elem));
 
     [PublicAPI] public static Either<IEnumerable<ElemTo>, Right> mapLeftC<CollFrom, Right, ElemFrom, ElemTo>(
       this Either<CollFrom, Right> e,
-      Fn<ElemFrom, ElemTo> mapper
+      Func<ElemFrom, ElemTo> mapper
     ) where CollFrom : IEnumerable<ElemFrom> =>
       e.mapLeft(mapC<CollFrom, ElemFrom, ElemTo>(mapper));
 
     [PublicAPI] public static Either<Left, IEnumerable<ElemTo>> mapRightC<CollFrom, Left, ElemFrom, ElemTo>(
       this Either<Left, CollFrom> e,
-      Fn<ElemFrom, ElemTo> mapper
+      Func<ElemFrom, ElemTo> mapper
     ) where CollFrom : IEnumerable<ElemFrom> =>
       e.mapRight(mapC<CollFrom, ElemFrom, ElemTo>(mapper));
 
     [PublicAPI] public static Either<CollTo, Right> mapLeftC<CollFrom, CollTo, Right, ElemFrom, ElemTo>(
       this Either<CollFrom, Right> e,
-      Fn<ElemFrom, ElemTo> mapper,
-      Fn<IEnumerable<ElemTo>, CollTo> toCollection
+      Func<ElemFrom, ElemTo> mapper,
+      Func<IEnumerable<ElemTo>, CollTo> toCollection
     )
       where CollFrom : IEnumerable<ElemFrom>
       where CollTo : IEnumerable<ElemTo>
@@ -39,19 +39,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [PublicAPI] public static Either<Left, CollTo> mapRightC<CollFrom, CollTo, Left, ElemFrom, ElemTo>(
       this Either<Left, CollFrom> e,
-      Fn<ElemFrom, ElemTo> mapper,
-      Fn<IEnumerable<ElemTo>, CollTo> toCollection
+      Func<ElemFrom, ElemTo> mapper,
+      Func<IEnumerable<ElemTo>, CollTo> toCollection
     )
       where CollFrom : IEnumerable<ElemFrom>
       where CollTo : IEnumerable<ElemTo>
     => e.mapRightC(mapper).mapRight(toCollection);
 
     [PublicAPI] public static Either<ImmutableList<To>, Right> mapLeftC<From, To, Right>(
-      this Either<ImmutableList<From>, Right> e, Fn<From, To> mapper
+      this Either<ImmutableList<From>, Right> e, Func<From, To> mapper
     ) => mapLeftC(e, mapper, _ => _.ToImmutableList());
 
     [PublicAPI] public static Either<Left, ImmutableList<To>> mapRightC<From, To, Left>(
-      this Either<Left, ImmutableList<From>> e, Fn<From, To> mapper
+      this Either<Left, ImmutableList<From>> e, Func<From, To> mapper
     ) => mapRightC(e, mapper, _ => _.ToImmutableList());
 
     [PublicAPI] public static Either<A, ImmutableList<B>> sequence<A, B>(
@@ -73,17 +73,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
       ? Either<A, B>.Right(ifTrue)
       : Either<A, B>.Left(ifFalse);
 
-    [PublicAPI] public static Either<A, B> opt<A, B>(bool condition, Fn<A> ifFalse, B ifTrue) =>
+    [PublicAPI] public static Either<A, B> opt<A, B>(bool condition, Func<A> ifFalse, B ifTrue) =>
       condition
       ? Either<A, B>.Right(ifTrue)
       : Either<A, B>.Left(ifFalse());
 
-    [PublicAPI] public static Either<A, B> opt<A, B>(bool condition, A ifFalse, Fn<B> ifTrue) =>
+    [PublicAPI] public static Either<A, B> opt<A, B>(bool condition, A ifFalse, Func<B> ifTrue) =>
       condition
       ? Either<A, B>.Right(ifTrue())
       : Either<A, B>.Left(ifFalse);
 
-    [PublicAPI] public static Either<A, B> opt<A, B>(bool condition, Fn<A> ifFalse, Fn<B> ifTrue) =>
+    [PublicAPI] public static Either<A, B> opt<A, B>(bool condition, Func<A> ifFalse, Func<B> ifTrue) =>
       condition
       ? Either<A, B>.Right(ifTrue())
       : Either<A, B>.Left(ifFalse());
@@ -117,8 +117,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public bool Equals(Either<A, B> other) {
       return isLeft == other.isLeft && (
-        (isLeft && Smooth.Collections.EqComparer<A>.Default.Equals(_leftValue, other._leftValue)) ||
-        (!isLeft && Smooth.Collections.EqComparer<B>.Default.Equals(_rightValue, other._rightValue))
+        (isLeft && EqualityComparer<A>.Default.Equals(_leftValue, other._leftValue)) ||
+        (!isLeft && EqualityComparer<B>.Default.Equals(_rightValue, other._rightValue))
       );
     }
 
@@ -129,8 +129,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public override int GetHashCode() {
       unchecked {
-        var hashCode = Smooth.Collections.EqComparer<A>.Default.GetHashCode(_leftValue);
-        hashCode = (hashCode * 397) ^ Smooth.Collections.EqComparer<B>.Default.GetHashCode(_rightValue);
+        var hashCode = EqualityComparer<A>.Default.GetHashCode(_leftValue);
+        hashCode = (hashCode * 397) ^ EqualityComparer<B>.Default.GetHashCode(_rightValue);
         hashCode = (hashCode * 397) ^ isLeft.GetHashCode();
         return hashCode;
       }
@@ -169,43 +169,43 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public override string ToString() =>
       isLeft ? $"Left({_leftValue})" : $"Right({_rightValue})";
 
-    [PublicAPI] public Either<C, B> flatMapLeft<C>(Fn<A, Either<C, B>> mapper) =>
+    [PublicAPI] public Either<C, B> flatMapLeft<C>(Func<A, Either<C, B>> mapper) =>
       isLeft ? mapper(_leftValue) : new Either<C, B>(_rightValue);
 
-    [PublicAPI] public Either<A, C> flatMapRight<C>(Fn<B, Either<A, C>> mapper) =>
+    [PublicAPI] public Either<A, C> flatMapRight<C>(Func<B, Either<A, C>> mapper) =>
       isLeft ? new Either<A, C>(_leftValue) : mapper(_rightValue);
 
-    [PublicAPI] public Either<A, C1> flatMapRight<C, C1>(Fn<B, Either<A, C>> f, Fn<B, C, C1> g) {
+    [PublicAPI] public Either<A, C1> flatMapRight<C, C1>(Func<B, Either<A, C>> f, Func<B, C, C1> g) {
       var self = this;
       return isLeft
         ? new Either<A, C1>(_leftValue)
         : f(_rightValue).mapRight(c => g(self._rightValue, c));
     }
 
-    [PublicAPI] public Either<AA, BB> map<AA, BB>(Fn<A, AA> leftMapper, Fn<B, BB> rightMapper) =>
+    [PublicAPI] public Either<AA, BB> map<AA, BB>(Func<A, AA> leftMapper, Func<B, BB> rightMapper) =>
       isLeft
         ? new Either<AA, BB>(leftMapper(_leftValue))
         : new Either<AA, BB>(rightMapper(_rightValue));
 
-    [PublicAPI] public Either<C, B> mapLeft<C>(Fn<A, C> mapper) =>
+    [PublicAPI] public Either<C, B> mapLeft<C>(Func<A, C> mapper) =>
       isLeft ? new Either<C, B>(mapper(_leftValue)) : new Either<C, B>(_rightValue);
 
-    [PublicAPI] public Either<A, C> mapRight<C>(Fn<B, C> mapper) =>
+    [PublicAPI] public Either<A, C> mapRight<C>(Func<B, C> mapper) =>
       isLeft ? new Either<A, C>(_leftValue) : new Either<A, C>(mapper(_rightValue));
 
     [PublicAPI] public B getOrElse(B onLeft) =>
       isLeft ? onLeft : __unsafeGetRight;
 
-    [PublicAPI] public B getOrElse(Fn<B> onLeft) =>
+    [PublicAPI] public B getOrElse(Func<B> onLeft) =>
       isLeft ? onLeft() : __unsafeGetRight;
 
-    [PublicAPI] public C fold<C>(Fn<A, C> onLeft, Fn<B, C> onRight) =>
+    [PublicAPI] public C fold<C>(Func<A, C> onLeft, Func<B, C> onRight) =>
       isLeft ? onLeft(_leftValue) : onRight(_rightValue);
 
-    [PublicAPI] public void voidFold(Act<A> onLeft, Act<B> onRight)
+    [PublicAPI] public void voidFold(Action<A> onLeft, Action<B> onRight)
       { if (isLeft) onLeft(_leftValue); else onRight(_rightValue); }
 
-    [PublicAPI] public Try<B> toTry(Fn<A, Exception> onLeft) =>
+    [PublicAPI] public Try<B> toTry(Func<A, Exception> onLeft) =>
       isLeft ? new Try<B>(onLeft(_leftValue)) : new Try<B>(_rightValue);
 
     [PublicAPI] public Either<B, A> swap =>

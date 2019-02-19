@@ -142,12 +142,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     
     [PublicAPI]
     public static TweenTimelineElement tweenFloat(
-      float from, float to, Ease ease, float duration, Act<float> setValue
+      float from, float to, Ease ease, float duration, Action<float> setValue
     ) => a(TweenOps.float_.tween(from, to, false, ease, duration), F.unit, ((value, target, relative) => setValue(value)));
 
     [PublicAPI]
     public static Tweener<A, Ref<A>> tweenValue<A>(
-      this Ref<A> reference, Tween<A> tween, Fn<A, A, A> add
+      this Ref<A> reference, Tween<A> tween, Func<A, A, A> add
     ) => a(
       tween, reference, 
       (val, @ref, r) => { @ref.value = r ? add(@ref.value, val) : val; }

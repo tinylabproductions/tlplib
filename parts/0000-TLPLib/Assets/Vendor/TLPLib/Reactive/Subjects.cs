@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     readonly List<A> events = new List<A>();
 
     public override void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0

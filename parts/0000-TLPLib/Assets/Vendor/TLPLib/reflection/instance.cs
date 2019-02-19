@@ -8,15 +8,15 @@ using JetBrains.Annotations;
 namespace com.tinylabproductions.TLPLib.reflection {
   public static class PrivateField {
     [PublicAPI]
-    public static Fn<object, FieldType> getter<FieldType>(Type type, string fieldName) =>
+    public static Func<object, FieldType> getter<FieldType>(Type type, string fieldName) =>
       a => accessor<FieldType>(type, fieldName)(a).value;
     
     [PublicAPI]
-    public static Fn<ObjectType, FieldType> getter<ObjectType, FieldType>(string fieldName) =>
+    public static Func<ObjectType, FieldType> getter<ObjectType, FieldType>(string fieldName) =>
       a => accessor<ObjectType, FieldType>(fieldName)(a).value;
 
     [PublicAPI]
-    public static Fn<object, Ref<FieldType>> accessor<FieldType>(Type type, string fieldName) {
+    public static Func<object, Ref<FieldType>> accessor<FieldType>(Type type, string fieldName) {
       var fieldInfo = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
       if (fieldInfo == null) throw new ArgumentException(
         $"Type {type} does not have non public instance field '{fieldName}'!"
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
     }
     
     [PublicAPI]
-    public static Fn<ObjectType, Ref<FieldType>> accessor<ObjectType, FieldType>(string fieldName) {
+    public static Func<ObjectType, Ref<FieldType>> accessor<ObjectType, FieldType>(string fieldName) {
       var accessor = accessor<FieldType>(typeof(ObjectType), fieldName);
       return a => accessor(a);
     }
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
 
   public static class PrivateMethod {
     [PublicAPI]
-    public static Fn<object, object[], object> obtain(
+    public static Func<object, object[], object> obtain(
       Type type, string methodName, Type[] argtypes, BindingFlags flags = BindingFlags.Instance
     ) {
       var methodInfo = type.GetMethod(
@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
     }
     
     [PublicAPI]
-    public static Fn<object[], object> obtainStatic(
+    public static Func<object[], object> obtainStatic(
       Type type, string methodName, Type[] argtypes
     ) {
       var method = obtain(type, methodName, argtypes, BindingFlags.Static);
@@ -59,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
     }
 
     [PublicAPI]
-    public static Fn<A1, R> obtainStaticFn<A1, R>(
+    public static Func<A1, R> obtainStaticFunc<A1, R>(
       Type type, string methodName
     ) {
       var method = obtainStatic(type, methodName, new[] {typeof(A1)});
@@ -67,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
     }
 
     [PublicAPI]
-    public static Act<object> obtain(
+    public static Action<object> obtain(
       Type type, string methodName, BindingFlags flags = BindingFlags.Instance
     ) {
       var method = obtain(type, methodName, F.emptyArray<Type>(), flags);
@@ -75,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
     }
 
     [PublicAPI]
-    public static Act<object, A1, A2> obtain<A1, A2>(
+    public static Action<object, A1, A2> obtain<A1, A2>(
       Type type, string methodName, BindingFlags flags = BindingFlags.Instance
     ) {
       var method = obtain(type, methodName, new[] {typeof(A1), typeof(A2)}, flags);
@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.reflection {
   }
 
   public static class PrivateConstructor {
-    public static Fn<object[], A> creator<A>() {
+    public static Func<object[], A> creator<A>() {
       var type = typeof(A);
       return args => (A) type.Assembly.CreateInstance(
           type.FullName, false,

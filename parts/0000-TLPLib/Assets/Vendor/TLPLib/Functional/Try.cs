@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [PublicAPI] public Exception __unsafeException => _exception;
 
     [PublicAPI] public A getOrElse(A a) => isSuccess ? _value : a;
-    [PublicAPI] public A getOrElse(Fn<A> a) => isSuccess ? _value : a();
+    [PublicAPI] public A getOrElse(Func<A> a) => isSuccess ? _value : a();
 
     [PublicAPI] public Either<Exception, A> toEither =>
       isSuccess ? Either<Exception, A>.Right(_value) : Either<Exception, A>.Left(_exception);
@@ -64,17 +64,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
       ? Either<ImmutableList<string>, A>.Right(_value)
       : Either<ImmutableList<string>, A>.Left(ImmutableList.Create(_exception.ToString()));
 
-    [PublicAPI] public B fold<B>(B onValue, Fn<Exception, B> onException) =>
+    [PublicAPI] public B fold<B>(B onValue, Func<Exception, B> onException) =>
       isSuccess ? onValue : onException(_exception);
 
-    [PublicAPI] public B fold<B>(Fn<A, B> onValue, Fn<Exception, B> onException) =>
+    [PublicAPI] public B fold<B>(Func<A, B> onValue, Func<Exception, B> onException) =>
       isSuccess ? onValue(_value) : onException(_exception);
 
-    [PublicAPI] public void voidFold(Act<A> onValue, Act<Exception> onException) {
+    [PublicAPI] public void voidFold(Action<A> onValue, Action<Exception> onException) {
       if (isSuccess) onValue(_value); else onException(_exception);
     }
 
-    [PublicAPI] public Try<B> map<B>(Fn<A, B> onValue) {
+    [PublicAPI] public Try<B> map<B>(Func<A, B> onValue) {
       if (isSuccess) {
         try { return new Try<B>(onValue(_value)); }
         catch (Exception e) { return new Try<B>(e); }
@@ -82,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B>(_exception);
     }
 
-    [PublicAPI] public Try<B> flatMap<B>(Fn<A, Try<B>> onValue) {
+    [PublicAPI] public Try<B> flatMap<B>(Func<A, Try<B>> onValue) {
       if (isSuccess) {
         try { return onValue(_value); }
         catch (Exception e) { return new Try<B>(e); }
@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return new Try<B>(_exception);
     }
 
-    [PublicAPI] public Try<B1> flatMap<B, B1>(Fn<A, Try<B>> onValue, Fn<A, B, B1> g) {
+    [PublicAPI] public Try<B1> flatMap<B, B1>(Func<A, Try<B>> onValue, Func<A, B, B1> g) {
       if (isSuccess) {
         try {
           var a = _value;

@@ -153,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [Test]
     public void uniqueValuesComparer() {
       describe(() => {
-        void test<A>(Fn<A> createValue1, Fn<A> createValue2) =>
+        void test<A>(Func<A> createValue1, Func<A> createValue2) =>
           when[typeof(A).Name] = () => {
             it["should work on same values"] = () => ObjectValidator.UniqueValuesCache.comparer.Equals(
               createValue1(), createValue1()
@@ -522,20 +522,20 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     #endregion
 
-    static GameObject setupGOWithComponent<A>(Act<A> setupA = null) where A : Component {
+    static GameObject setupGOWithComponent<A>(Action<A> setupA = null) where A : Component {
       var go = new GameObject();
       var a = go.AddComponent<A>();
       setupA?.Invoke(a);
       return go;
     }
-    static ScriptableObject setupScriptableObject<A>(Act<A> setup = null) where A : ScriptableObject {
+    static ScriptableObject setupScriptableObject<A>(Action<A> setup = null) where A : ScriptableObject {
       var so = ScriptableObject.CreateInstance<A>();
       setup?.Invoke(so);
       return so;
     }
 
     static ImmutableList<ObjectValidator.Error> checkForErrors<A>(
-      Fn<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+      Func<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
     ) where A : Object =>
       ObjectValidator.check(
         ObjectValidator.CheckContext.empty, new Object[] {create()},
@@ -543,17 +543,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
 
     static ImmutableList<ObjectValidator.Error> errorsInScriptableObject<A>(
-      Act<A> setup = null
+      Action<A> setup = null
     ) where A : ScriptableObject =>
       checkForErrors(() => setupScriptableObject(setup), ObjectValidator.UniqueValuesCache.create.some());
 
     public static void shouldNotFindErrors<A>(
-      Act<A> setup = null
+      Action<A> setup = null
     ) where A : Component =>
       checkForErrors(() => setupGOWithComponent(setup)).shouldBeEmpty();
 
     public static void shouldFindErrors<A>(
-      ErrorType errorType, Act<A> setup = null
+      ErrorType errorType, Action<A> setup = null
     ) where A : Component =>
       checkForErrors(() => setupGOWithComponent(setup)).shouldHave(errorType);
   }

@@ -12,8 +12,8 @@ namespace com.tinylabproductions.TLPLib.Tween {
      * options.
      **/
     public static GoTween to<A>(
-      Fn<A> getter, Act<A> setter, float duration,
-      Fn<GoTweenConfig, GoTweenConfig> config
+      Func<A> getter, Action<A> setter, float duration,
+      Func<GoTweenConfig, GoTweenConfig> config
     ) {
       return Go.to(TF.a(getter, setter), duration, config(new GoTweenConfig()));
     }

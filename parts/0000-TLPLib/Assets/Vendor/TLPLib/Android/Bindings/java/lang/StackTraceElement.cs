@@ -1,5 +1,6 @@
 ﻿#if UNITY_ANDROID
 using System.Text.RegularExpressions;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEngine;
 

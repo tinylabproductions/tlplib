@@ -8,12 +8,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     [PublicAPI] public static readonly Ref<Color>
       gizmosColorRef = new LambdaRef<Color>(() => Gizmos.color, v => Gizmos.color = v);
     [PublicAPI] public static readonly 
-      Fn<Color, WithValue<Color>> gizmosColor = v => new WithValue<Color>(gizmosColorRef, v);
+      Func<Color, WithValue<Color>> gizmosColor = v => new WithValue<Color>(gizmosColorRef, v);
     
     [PublicAPI] public static readonly Ref<Matrix4x4>
       gizmosMatrixRef = new LambdaRef<Matrix4x4>(() => Gizmos.matrix, v => Gizmos.matrix = v);
     [PublicAPI] public static readonly 
-      Fn<Matrix4x4, WithValue<Matrix4x4>> gizmosMatrix = v => new WithValue<Matrix4x4>(gizmosMatrixRef, v);
+      Func<Matrix4x4, WithValue<Matrix4x4>> gizmosMatrix = v => new WithValue<Matrix4x4>(gizmosMatrixRef, v);
 
 #if UNITY_EDITOR
     [PublicAPI]
@@ -23,14 +23,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       );
     [PublicAPI]
     public static readonly 
-      Fn<Color, WithValue<Color>> handlesColor = color => new WithValue<Color>(handlesColorRef, color);
+      Func<Color, WithValue<Color>> handlesColor = color => new WithValue<Color>(handlesColorRef, color);
     
     [PublicAPI] public static readonly Ref<Matrix4x4>
       handlesMatrixRef = new LambdaRef<Matrix4x4>(
         () => UnityEditor.Handles.matrix, v => UnityEditor.Handles.matrix = v
       );
     [PublicAPI] public static readonly 
-      Fn<Matrix4x4, WithValue<Matrix4x4>> handlesMatrix = v => new WithValue<Matrix4x4>(handlesMatrixRef, v);
+      Func<Matrix4x4, WithValue<Matrix4x4>> handlesMatrix = v => new WithValue<Matrix4x4>(handlesMatrixRef, v);
 #endif
   }
   

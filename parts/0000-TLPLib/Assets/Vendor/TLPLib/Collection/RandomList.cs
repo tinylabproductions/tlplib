@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     }
 
     /* Removes elements where predicate returns true. */
-    public void RemoveWhere(Fn<A, bool> predicate) {
+    public void RemoveWhere(Func<A, bool> predicate) {
       var idx = 0;
       while (idx < Count) {
         var item = backing.a(idx);

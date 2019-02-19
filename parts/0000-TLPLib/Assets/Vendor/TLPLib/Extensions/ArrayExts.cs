@@ -82,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static ImmutableArray<To> toImmutable<From, To>(
-      this From[] source, Fn<From, To> mapper
+      this From[] source, Func<From, To> mapper
     ) {
       var b = ImmutableArray.CreateBuilder<To>(source.Length);
       foreach (var a in source) b.Add(mapper(a));

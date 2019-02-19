@@ -10,16 +10,16 @@ namespace Smooth.Pools {
 	public class KeyedPool<K, T> {
 		private readonly Dictionary<K, Stack<T>> keyToValues = new Dictionary<K, Stack<T>>();
 
-		private readonly Fn<K, T> create;
-		private readonly Fn<T, K> reset;
-		private readonly Act<T> release;
+		private readonly Func<K, T> create;
+		private readonly Func<T, K> reset;
+		private readonly Action<T> release;
 
 		private KeyedPool() {}
 
 		/// <summary>
 		/// Creates a new keyed pool with the specified value creation and reset delegates.
 		/// </summary>
-		public KeyedPool(Fn<K, T> create, Fn<T, K> reset) {
+		public KeyedPool(Func<K, T> create, Func<T, K> reset) {
 			this.create = create;
 			this.reset = reset;
 			this.release = Release;

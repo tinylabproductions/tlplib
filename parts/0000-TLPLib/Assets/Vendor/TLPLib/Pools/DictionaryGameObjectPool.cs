@@ -18,15 +18,15 @@ namespace com.tinylabproductions.TLPLib.Pools {
   public static class DictionaryGameObjectPool {
     [PublicAPI]
     public static DictionaryGameObjectPool<K, V> a<K, V>(
-      Fn<K, GameObjectPool<V>> createPool
+      Func<K, GameObjectPool<V>> createPool
     ) => new DictionaryGameObjectPool<K, V>(createPool);
   }
   
   public class DictionaryGameObjectPool<K, V> {
     readonly Dictionary<K, GameObjectPool<V>> dictionary = new Dictionary<K, GameObjectPool<V>>();
-    readonly Fn<K, GameObjectPool<V>> createPool;
+    readonly Func<K, GameObjectPool<V>> createPool;
 
-    public DictionaryGameObjectPool(Fn<K, GameObjectPool<V>> createPool) {
+    public DictionaryGameObjectPool(Func<K, GameObjectPool<V>> createPool) {
       this.createPool = createPool;
     }
 

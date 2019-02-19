@@ -35,13 +35,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   /// ]]></code>
   /// </summary>
   public sealed class SingletonActionRegistry<A> {
-    readonly Dictionary<IHeapFuture<A>, Act<A>> callbacks = new Dictionary<IHeapFuture<A>, Act<A>>();
+    readonly Dictionary<IHeapFuture<A>, Action<A>> callbacks = new Dictionary<IHeapFuture<A>, Action<A>>();
 
-    public Act<A> this[IHeapFuture<A> ftr] {
+    public Action<A> this[IHeapFuture<A> ftr] {
       set { singletonAction(ftr, value); }
     }
 
-    public void singletonAction(IHeapFuture<A> ftr, Act<A> action) {
+    public void singletonAction(IHeapFuture<A> ftr, Action<A> action) {
       var value = ftr.value;
       if (value.isSome) {
         action(value.__unsafeGetValue);

@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => checkWithNoiseOpt(deser, serialized, o => o.shouldEqual(expected));
 
     public void checkWithNoiseOpt<A>(
-      IDeserializer<A> deser, Rope<byte> serialized, Act<Option<A>> check
+      IDeserializer<A> deser, Rope<byte> serialized, Action<Option<A>> check
     ) {
       check(
         deser.deserialize(serialized.toArray(), 0)

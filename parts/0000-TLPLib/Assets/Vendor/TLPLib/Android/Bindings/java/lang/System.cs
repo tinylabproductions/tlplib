@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
   public class System : IDisposable {
-    public static A with<A>(Fn<System, A> f) {
+    public static A with<A>(Func<System, A> f) {
       using (var sys = new System(new AndroidJavaClass("java.lang.System"))) {
         return f(sys);
       }

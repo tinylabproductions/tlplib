@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool indexValid<A>(this ICollection<A> collection, int index) =>
       index >= 0 && index < collection.Count;
     
-    public static B[] ToArray<A, B>(this ICollection<A> collection, Fn<A, B> mapper) {
+    public static B[] ToArray<A, B>(this ICollection<A> collection, Func<A, B> mapper) {
       var bArr = new B[collection.Count];
       var idx = 0;
       foreach (var a in collection) {
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static ImmutableList<TupleType> shuffleTuplePairs<TupleType, A, B>(
       this ICollection<TupleType> tuples, ref Rng rng,
       Func<TupleType, A> extractFirst, Func<TupleType, B> extractSecond,
-      Fn<A, B, TupleType> createTuple
+      Func<A, B, TupleType> createTuple
     ) {
       var r = rng;
       var result =

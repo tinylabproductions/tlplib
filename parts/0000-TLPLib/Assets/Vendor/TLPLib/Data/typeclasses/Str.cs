@@ -35,9 +35,9 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
 
     /** Easily define Str instances. */
     public class LambdaStr<A> : Str<A> {
-      readonly Fn<A, string> _asString;
+      readonly Func<A, string> _asString;
 
-      public LambdaStr(Fn<A, string> s) { _asString = s; }
+      public LambdaStr(Func<A, string> s) { _asString = s; }
 
       public string asString(A a) => _asString(a);
     }

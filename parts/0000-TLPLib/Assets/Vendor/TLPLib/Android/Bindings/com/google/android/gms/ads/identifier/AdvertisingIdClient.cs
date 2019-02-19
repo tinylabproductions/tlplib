@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
         $"]";
     }
 
-    static A withKlass<A>(Fn<AndroidJavaClass, A> f) {
+    static A withKlass<A>(Func<AndroidJavaClass, A> f) {
       using (var klass = new AndroidJavaClass(
         "com.google.android.gms.ads.identifier.AdvertisingIdClient"
       )) return f(klass);

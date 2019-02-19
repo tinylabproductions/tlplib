@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     public enum GradientType { Vertical, Horizontal }
 
     public static void modifyVertices(
-      List<UIVertex> vertexList, Fn<Color32, float, Color32> f, GradientType type
+      List<UIVertex> vertexList, Func<Color32, float, Color32> f, GradientType type
     ) {
       switch (type) {
         case GradientType.Vertical:
@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     }
 
     static void modifyVertices(
-      List<UIVertex> vertexList, Fn<Color32, float, Color32> f, Fn<Vector3, float> getAxisFn
+      List<UIVertex> vertexList, Func<Color32, float, Color32> f, Func<Vector3, float> getAxisFn
     ) {
       var count = vertexList.Count;
       if (count == 0) return;

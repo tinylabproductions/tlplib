@@ -4,7 +4,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public static class IO {
     public static readonly IO<Unit> empty = a(() => {});
 
-    public static IO<A> a<A>(Fn<A> fn) => new IO<A>(fn);
+    public static IO<A> a<A>(Func<A> fn) => new IO<A>(fn);
     public static IO<Unit> a(Action action) => new IO<Unit>(() => {
       action();
       return F.unit;
@@ -15,11 +15,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
    * Allows encapsulating side effects and composing them.
    */
   public struct IO<A> {
-    readonly Fn<A> fn;
+    readonly Func<A> fn;
 
-    public IO(Fn<A> fn) { this.fn = fn; }
+    public IO(Func<A> fn) { this.fn = fn; }
 
-    public IO<B> map<B>(Fn<A, B> mapper) {
+    public IO<B> map<B>(Func<A, B> mapper) {
       var fn = this.fn;
       return new IO<B>(() => mapper(fn()));
     }
@@ -33,12 +33,12 @@ namespace com.tinylabproductions.TLPLib.Functional {
       });
     }
 
-    public IO<B> flatMap<B>(Fn<A, IO<B>> mapper) {
+    public IO<B> flatMap<B>(Func<A, IO<B>> mapper) {
       var fn = this.fn;
       return new IO<B>(() => mapper(fn()).__unsafePerformIO());
     }
 
-    public IO<B1> flatMap<B, B1>(Fn<A, IO<B>> mapper, Fn<A, B, B1> g) {
+    public IO<B1> flatMap<B, B1>(Func<A, IO<B>> mapper, Func<A, B, B1> g) {
       var fn = this.fn;
       return new IO<B1>(() => {
         var a = fn();

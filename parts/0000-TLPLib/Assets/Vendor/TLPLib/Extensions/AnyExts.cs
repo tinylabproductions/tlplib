@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
      **/
     public static void forSideEffects<A>(this A a) {}
 
-    public static B mapVal<A, B>(this A any, Fn<A, B> mapper) => mapper(any);
+    public static B mapVal<A, B>(this A any, Func<A, B> mapper) => mapper(any);
     public static To upcast<From, To>(this From any) where From : To => any;
     // ReSharper disable once UnusedParameter.Global
     /// <summary>
@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<To> upcast<From, To>(this IEnumerable<From> any) where From : To
       => any.Select(_ => _.upcast<From, To>());
 
-    public static A tap<A>(this A any, Act<A> tapper) {
+    public static A tap<A>(this A any, Action<A> tapper) {
       tapper(any);
       return any;
     }
@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<A> opt<A>(this A a) where A : class => F.opt(a);
     public static Option<A> some<A>(this A a) => F.some(a);
 
-    public static A orElseIfNull<A>(this A a, Fn<A> ifNull) where A : class =>
+    public static A orElseIfNull<A>(this A a, Func<A> ifNull) where A : class =>
       F.isNull(a) ? ifNull() : a;
 
     public static A orElseIfNull<A>(this A a, A ifNull) where A : class =>

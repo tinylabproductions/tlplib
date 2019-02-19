@@ -39,12 +39,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 //  }
 //
 //  public struct FetchFns {
-//    public readonly Fn<IConfig, string, object> getter;
-//    public readonly Fn<IConfig, string, Option<object>> optGetter;
-//    public readonly Fn<IConfig, string, Try<object>> tryGetter;
-//    public readonly Fn<IConfig, string, Either<ConfigFetchError, object>> eitherGetter;
+//    public readonly Func<IConfig, string, object> getter;
+//    public readonly Func<IConfig, string, Option<object>> optGetter;
+//    public readonly Func<IConfig, string, Try<object>> tryGetter;
+//    public readonly Func<IConfig, string, Either<ConfigFetchError, object>> eitherGetter;
 //
-//    public FetchFns(Fn<IConfig, string, object> getter, Fn<IConfig, string, Option<object>> optGetter, Fn<IConfig, string, Try<object>> tryGetter, Fn<IConfig, string, Either<ConfigFetchError, object>> eitherGetter) {
+//    public FetchFns(Func<IConfig, string, object> getter, Func<IConfig, string, Option<object>> optGetter, Func<IConfig, string, Try<object>> tryGetter, Func<IConfig, string, Either<ConfigFetchError, object>> eitherGetter) {
 //      this.getter = getter;
 //      this.optGetter = optGetter;
 //      this.tryGetter = tryGetter;
@@ -200,13 +200,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 //      nestPrefixes = {"", "foo.bar.baz."},
 //      nestSuffixes = {"", "-ref" };
 //
-//    static void testNested(string key, Act<string> tester) {
+//    static void testNested(string key, Action<string> tester) {
 //      foreach (var prefix in nestPrefixes)
 //        foreach (var suffix in nestSuffixes)
 //          tester(prefix + key + suffix);
 //    }
 //
-//    static Fn<string, string> errMsgFn(
+//    static Func<string, string> errMsgFn(
 //      string key, ConfigType type, Dictionary<string, object> data
 //    ) {
 //      return actionName =>
@@ -230,8 +230,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 ////    static void testType<A>(
 ////      IEnumerable<A> goodValues,
 ////      string[] badValueKeys,
-////      Fn<string, A> getter, Fn<string, Option<A>> optGetter,
-////      Fn<string, Try<A>> tryGetter, Fn<string, Either<ConfigFetchError, A>> eitherGetter
+////      Func<string, A> getter, Func<string, Option<A>> optGetter,
+////      Func<string, Try<A>> tryGetter, Func<string, Either<ConfigFetchError, A>> eitherGetter
 ////    ) {
 ////      foreach (var t in goodValues) t.ua((key, expected) => {
 ////        testNested(
@@ -241,12 +241,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 ////        );
 ////      });
 ////
-////      Act<Try<A>, ConfigFetchError.Kind, Fn<string, string>> matchTryError =
+////      Action<Try<A>, ConfigFetchError.Kind, Func<string, string>> matchTryError =
 ////        (t, kind, errMsg) => matchErr(
 ////          t, _t => _t.exception.flatMap(e => F.opt(e as ConfigFetchException)).map(e => e.error),
 ////          kind, $"Error({nameof(ConfigFetchException)})", errMsg
 ////        );
-////      Act<Either<ConfigFetchError, A>, ConfigFetchError.Kind, Fn<string, string>> matchEitherError =
+////      Action<Either<ConfigFetchError, A>, ConfigFetchError.Kind, Func<string, string>> matchEitherError =
 ////        (either, kind, errMsg) => matchErr(
 ////          either, e => e.leftValue,
 ////          kind, $"Left({nameof(ConfigFetchError)})", errMsg
@@ -272,8 +272,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 ////    }
 //
 //    static void matchErr<A>(
-//      A a, Fn<A, Option<ConfigFetchError>> resolver,
-//      ConfigFetchError.Kind expected, string name, Fn<string, string> errMsg
+//      A a, Func<A, Option<ConfigFetchError>> resolver,
+//      ConfigFetchError.Kind expected, string name, Func<string, string> errMsg
 //    ) {
 //      a.shouldMatch(
 //        _ => resolver(_).exists(e => e.kind == expected),
@@ -287,7 +287,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 //        .shouldBeEmpty("config root scope should be empty string");
 //    }
 //
-//    static void eachValidExampleValue(Act<ExampleData, object> a) {
+//    static void eachValidExampleValue(Action<ExampleData, object> a) {
 //      foreach (var kv in ConfigTestData.examples.table) {
 //        foreach (var value in ConfigTestData.examples.validValuesFor(kv.Key)) {
 //          a(kv.Value, value);

@@ -122,8 +122,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static Parser<object, CB> collectionParser<CB, A>(
       Parser<object, A> parser,
-      Fn<int, CB> createCollectionBuilder,
-      Fn<CB, A, CB> add
+      Func<int, CB> createCollectionBuilder,
+      Func<CB, A, CB> add
     ) =>
       objectListParser.flatMap((path, objList) => {
         var builder = createCollectionBuilder(objList.Count);
@@ -194,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Parser<object, B> configPathedParser<A1, A2, B>(
       string a1Key, Parser<object, A1> a1Parser,
       string a2Key, Parser<object, A2> a2Parser,
-      Fn<A1, A2, B> mapper
+      Func<A1, A2, B> mapper
     ) =>
       configPathedParser(a1Key, a1Parser)
       .and(configPathedParser(a2Key, a2Parser))
@@ -204,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       string a1Key, Parser<object, A1> a1Parser,
       string a2Key, Parser<object, A2> a2Parser,
       string a3Key, Parser<object, A3> a3Parser,
-      Fn<A1, A2, A3, B> mapper
+      Func<A1, A2, A3, B> mapper
     ) =>
       configPathedParser(a1Key, a1Parser)
       .and(
@@ -218,7 +218,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       string a2Key, Parser<object, A2> a2Parser,
       string a3Key, Parser<object, A3> a3Parser,
       string a4Key, Parser<object, A4> a4Parser,
-      Fn<A1, A2, A3, A4, B> mapper
+      Func<A1, A2, A3, A4, B> mapper
     ) =>
       configPathedParser(a1Key, a1Parser)
       .and(
@@ -347,7 +347,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
           : parseErrorEFor<DateTime>(path, s, t.__unsafeException.Message);
       }));
 
-    public static Parser<object, R> rangeParser<A, R>(Parser<object, A> aParser, Fn<A, A, R> lowerUpperToRange) =>
+    public static Parser<object, R> rangeParser<A, R>(Parser<object, A> aParser, Func<A, A, R> lowerUpperToRange) =>
       configPathedParser("lower", aParser)
       .and(configPathedParser("upper", aParser))
       .map((path, t) => lowerUpperToRange(t._1, t._2));
@@ -463,17 +463,17 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
   public static class ConfigExts {
     [PublicAPI] public static Config.Parser<From, B> map<From, A, B>(
-      this Config.Parser<From, A> aParser, Fn<ConfigPath, A, B> f
+      this Config.Parser<From, A> aParser, Func<ConfigPath, A, B> f
     ) =>
       (path, o) => aParser(path, o).mapRight(a => f(path, a));
 
     [PublicAPI] public static Config.Parser<From, B> map<From, A, B>(
-      this Config.Parser<From, A> aParser, Fn<A, B> f
+      this Config.Parser<From, A> aParser, Func<A, B> f
     ) =>
       aParser.map((path, a) => f(a));
 
     [PublicAPI] public static Config.Parser<From, B> flatMap<From, A, B>(
-      this Config.Parser<From, A> aParser, Fn<ConfigPath, A, Option<B>> f
+      this Config.Parser<From, A> aParser, Func<ConfigPath, A, Option<B>> f
     ) => aParser.flatMap((path, a) => {
       var bOpt = f(path, a);
       return bOpt.isSome
@@ -482,7 +482,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     });
 
     [PublicAPI] public static Config.Parser<From, B> flatMap<From, A, B>(
-      this Config.Parser<From, A> aParser, Fn<A, Option<B>> f
+      this Config.Parser<From, A> aParser, Func<A, Option<B>> f
     ) => aParser.flatMap((path, a) => f(a));
 
     [PublicAPI] public static Config.Parser<From, B> flatMapParser<From, A, B>(
@@ -490,12 +490,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) => (path, node) => aParser(path, node).flatMapRight(a => bParser(path, a));
 
     [PublicAPI] public static Config.Parser<From, B> flatMap<From, A, B>(
-      this Config.Parser<From, A> aParser, Fn<ConfigPath, A, Either<ConfigLookupError, B>> f
+      this Config.Parser<From, A> aParser, Func<ConfigPath, A, Either<ConfigLookupError, B>> f
     ) =>
       (path, o) => aParser(path, o).flatMapRight(a => f(path, a));
 
     [PublicAPI] public static Config.Parser<From, B> flatMapTry<From, A, B>(
-      this Config.Parser<From, A> aParser, Fn<ConfigPath, A, B> f
+      this Config.Parser<From, A> aParser, Func<ConfigPath, A, B> f
     ) =>
       (path, o) => aParser(path, o).flatMapRight(a => {
         try { return new Either<ConfigLookupError, B>(f(path, a)); }
@@ -504,7 +504,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       });
 
     [PublicAPI] public static Config.Parser<From, A> filter<From, A>(
-      this Config.Parser<From, A> parser, Fn<A, bool> predicate
+      this Config.Parser<From, A> parser, Func<A, bool> predicate
     ) =>
       (path, o) => parser(path, o).flatMapRight(a =>
         predicate(a)
@@ -513,7 +513,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       );
 
     [PublicAPI] public static Config.Parser<From, B> collect<From, A, B>(
-      this Config.Parser<From, A> parser, Fn<A, Option<B>> collector
+      this Config.Parser<From, A> parser, Func<A, Option<B>> collector
     ) =>
       (path, o) => parser(path, o).flatMapRight(a => {
         var bOpt = collector(a);

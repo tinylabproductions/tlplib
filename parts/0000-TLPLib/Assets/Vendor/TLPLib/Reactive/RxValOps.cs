@@ -7,7 +7,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
-    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Fn<A, B> mapper) =>
+    public static IRxVal<B> map<A, B>(this IRxVal<A> src, Func<A, B> mapper) =>
       new RxVal<B>(
         mapper(src.value),
         setValue => src.subscribeWithoutEmit(
@@ -17,15 +17,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region #filter
 
-    public static IRxVal<A> filter<A>(this IRxVal<A> rx, Fn<A, bool> predicate, Fn<A> onFiltered) =>
+    public static IRxVal<A> filter<A>(this IRxVal<A> rx, Func<A, bool> predicate, Func<A> onFiltered) =>
       rx.map(filterMapper(predicate, onFiltered));
 
-    public static IRxVal<A> filter<A>(this IRxVal<A> rx, Fn<A, bool> predicate, A onFiltered) =>
+    public static IRxVal<A> filter<A>(this IRxVal<A> rx, Func<A, bool> predicate, A onFiltered) =>
       rx.map(filterMapper(predicate, onFiltered));
 
     #endregion
 
-    public static IRxVal<B> flatMap<A, B>(this IRxVal<A> src, Fn<A, IRxVal<B>> mapper) {
+    public static IRxVal<B> flatMap<A, B>(this IRxVal<A> src, Func<A, IRxVal<B>> mapper) {
       var bRx = mapper(src.value);
 
       return new RxVal<B>(
@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #zip
 
     public static IRxVal<R> zip<A1, A2, R>(
-      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, Fn<A1, A2, R> zipper
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, Func<A1, A2, R> zipper
     ) =>
       new RxVal<R>(
         zipper(a1Src.value, a2Src.value),
@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
 
     public static IRxVal<R> zip<A1, A2, A3, R>(
-      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, Fn<A1, A2, A3, R> zipper
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, Func<A1, A2, A3, R> zipper
     ) =>
       new RxVal<R>(
         zipper(a1Src.value, a2Src.value, a3Src.value),
@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxVal<R> zip<A1, A2, A3, A4, R>(
       this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, IRxVal<A4> a4Src,
-      Fn<A1, A2, A3, A4, R> zipper
+      Func<A1, A2, A3, A4, R> zipper
     ) =>
       new RxVal<R>(
         zipper(a1Src.value, a2Src.value, a3Src.value, a4Src.value),
@@ -98,14 +98,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // TODO: test
     /** Convert an enum of rx values into one rx value using a traversal function. **/
     public static IRxVal<B> traverse<A, B>(
-      this IEnumerable<IRxVal<A>> valsEnum, Fn<IEnumerable<A>, B> traverseFn
+      this IEnumerable<IRxVal<A>> valsEnum, Func<IEnumerable<A>, B> traverseFn
     ) => traverse(valsEnum.ToArray(), traverseFn);
 
     /// <summary>
     /// Convert an enum of rx values into one rx value using a traversal function.
     /// </summary>
     public static IRxVal<B> traverse<A, B>(
-      this ICollection<IRxVal<A>> vals, Fn<IEnumerable<A>, B> traverseFn
+      this ICollection<IRxVal<A>> vals, Func<IEnumerable<A>, B> traverseFn
     ) {
       B getValue() => traverseFn(vals.Select(v => v.value));
 
@@ -123,7 +123,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns any value that satisfies the predicate. Order is not guaranteed.
     /// </summary>
     public static IRxVal<Option<A>> anyThat<A, Coll>(
-      this Coll vals, Fn<A, bool> predicate
+      this Coll vals, Func<A, bool> predicate
     ) where Coll : IEnumerable<IRxVal<A>> {
       var dict = new Dictionary<IRxVal<A>, A>();
 
@@ -162,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static IRxVal<Option<A>> anyThat<A>(
-      this IEnumerable<IRxVal<A>> vals, Fn<A, bool> predicate
+      this IEnumerable<IRxVal<A>> vals, Func<A, bool> predicate
     ) => vals.anyThat<A, IEnumerable<IRxVal<A>>>(predicate);
 
     public static IRxVal<bool> anyOf<C>(this C vals, bool searchFor=true)
@@ -196,7 +196,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// ]]></code>
     /// </summary>
     public static IRxObservable<B> toEventSource<A, B>(
-      this IRxVal<A> rxVal, Fn<A, B> mapper
+      this IRxVal<A> rxVal, Func<A, B> mapper
     ) => new Observable<B>(onEvent =>
       rxVal.subscribe(NoOpDisposableTracker.instance, v => onEvent(mapper(v)))
     );
@@ -205,7 +205,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       o.toEventSource(_ => F.unit);
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
-      this IRxVal<Option<A>> source, Fn<A, IRxVal<Option<B>>> extractor
+      this IRxVal<Option<A>> source, Func<A, IRxVal<Option<B>>> extractor
     ) =>
       source.flatMap(aOpt =>
         aOpt.fold(
@@ -215,28 +215,28 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
-      this IRxVal<Option<A>> source, Fn<A, IRxVal<B>> extractor
+      this IRxVal<Option<A>> source, Func<A, IRxVal<B>> extractor
     ) =>
       source.optFlatMap(a => extractor(a).map(b => b.some()));
 
     public static IRxVal<Option<B>> optFlatMap<A, B>(
-      this IRxVal<Option<A>> source, Fn<A, Option<IRxVal<Option<B>>>> extractor
+      this IRxVal<Option<A>> source, Func<A, Option<IRxVal<Option<B>>>> extractor
     ) =>
       source.flatMap(aOpt =>
         aOpt.flatMap(extractor).getOrElse(RxVal.cached(F.none<B>()))
       );
 
     public static IRxVal<Option<B>> optMap<A, B>(
-      this IRxVal<Option<A>> source, Fn<A, B> mapper
+      this IRxVal<Option<A>> source, Func<A, B> mapper
     ) => source.map(aOpt => aOpt.map(mapper));
 
     public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) =>
       rxOpt.fold(RxVal.cached(F.none<A>()), val => val.map(a => a.some()));
 
-    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, Fn<A> onFiltered) =>
+    public static Func<A, A> filterMapper<A>(Func<A, bool> predicate, Func<A> onFiltered) =>
       a => predicate(a) ? a : onFiltered();
 
-    public static Fn<A, A> filterMapper<A>(Fn<A, bool> predicate, A onFiltered) =>
+    public static Func<A, A> filterMapper<A>(Func<A, bool> predicate, A onFiltered) =>
       a => predicate(a) ? a : onFiltered;
   }
 }

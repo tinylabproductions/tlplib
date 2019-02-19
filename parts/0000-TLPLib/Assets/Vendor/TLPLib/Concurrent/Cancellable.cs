@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Cancellable {
-    public static Cancellable<A> a<A>(A value, Fn<bool> cancel) =>
+    public static Cancellable<A> a<A>(A value, Func<bool> cancel) =>
       new Cancellable<A>(value, cancel);
 
     public static Future<A> asNonCancellable<A>(
@@ -16,14 +16,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   public struct Cancellable<A> {
     public readonly A value;
-    readonly Fn<bool> _cancel;
+    readonly Func<bool> _cancel;
 
-    public Cancellable(A value, Fn<bool> cancel) {
+    public Cancellable(A value, Func<bool> cancel) {
       this.value = value;
       _cancel = cancel;
     }
 
-    public Cancellable<B> map<B>(Fn<A, B> mapper) =>
+    public Cancellable<B> map<B>(Func<A, B> mapper) =>
       Cancellable.a(mapper(value), cancel);
 
     /** true if cancelled, false is cancelling is impossible (for example for completed WWW). */

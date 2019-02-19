@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
           offset = Vector2.zero;
           foreach (var c in updateCoroutine) {
             c.stop();
-            updateCoroutine = updateCoroutine.none;
+            updateCoroutine = F.none_;
           }
         }
       }

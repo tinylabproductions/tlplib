@@ -16,14 +16,14 @@ namespace com.tinylabproductions.TLPLib.Binding {
     private const GoEaseType TWEEN_EASE = GoEaseType.SineOut;
     private static readonly Regex intFilter = new Regex(@"\D");
 
-    public static readonly Fn<string, string> strMapper = _ => _;
-    public static readonly Fn<int, string> intMapper = _ => _.ToString();
-    public static readonly Fn<string, int> intComapper = text => {
+    public static readonly Func<string, string> strMapper = _ => _;
+    public static readonly Func<int, string> intMapper = _ => _.ToString();
+    public static readonly Func<string, int> intComapper = text => {
       var filtered = intFilter.Replace(text, "");
       return filtered.Length == 0 ? 0 : int.Parse(filtered);
     };
-    public static readonly Fn<uint, string> uintMapper = v => v.ToString();
-    public static readonly Fn<string, uint> uintComapper = text => {
+    public static readonly Func<uint, string> uintMapper = v => v.ToString();
+    public static readonly Func<string, uint> uintComapper = text => {
       var filtered = intFilter.Replace(text, "");
       return filtered.Length == 0 ? 0 : uint.Parse(filtered);
     };
@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     }
 
     private static ISubscription withTween(
-      Fn<Act<GoTween>, ISubscription> body
+      Func<Action<GoTween>, ISubscription> body
     ) {
       var tween = F.none<GoTween>();
       return body(newT => {
@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<A>(
       this RxList<A> list, int max, string maxName,
-      Fn<int, IRxObservable<Option<A>>, ISubscription> bindObservable
+      Func<int, IRxObservable<Option<A>>, ISubscription> bindObservable
     ) {
       var subscription = list.rxSize.subscribe(size => {
         if (size > max) throw new Exception(String.Format(
@@ -87,7 +87,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<A, Control>(
       this RxList<A> list, int max, string maxName,
-      Fn<int, Control> getControl, Act<Control, A> onChange
+      Func<int, Control> getControl, Action<Control, A> onChange
     ) where Control : dfControl {
       return list.bind(max, maxName, (i, observable) => {
         var control = getControl(i);
@@ -142,7 +142,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<T>(
       this IRxRef<T> subject, IEnumerable<dfCheckbox> checkboxes,
-      Fn<T, string> mapper, Fn<string, T> comapper
+      Func<T, string> mapper, Func<string, T> comapper
     ) {
       var optSubject = RxRef.a(F.some(subject.value));
       var optSubjectSourceSubscription = subject.subscribe(v =>
@@ -162,12 +162,12 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<T>(
       this IRxRef<Option<T>> subject, IEnumerable<dfCheckbox> checkboxes,
-      Fn<T, string> mapper, Fn<string, T> comapper
+      Func<T, string> mapper, Func<string, T> comapper
     ) {
       Action uncheckAll = () => {
         foreach (var cb in checkboxes) cb.IsChecked = false;
       };
-      Act<Option<T>, string> check = (v, name) =>
+      Action<Option<T>, string> check = (v, name) =>
         checkboxes.hIter().find(cb => cb.name == name).voidFold(
           () => {
             throw new Exception(String.Format(
@@ -216,7 +216,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<T>(
       this IRxRef<T> subject, dfTextbox control,
-      Fn<T, string> mapper, Fn<string, T> comapper
+      Func<T, string> mapper, Func<string, T> comapper
     ) {
       return subject.bind(
         mapper, comapper,
@@ -246,7 +246,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<T>(
       this IRxRef<T> subject, dfLabel control,
-      Fn<T, string> mapper, Fn<string, T> comapper
+      Func<T, string> mapper, Func<string, T> comapper
     ) {
       return subject.bind(
         mapper, comapper,
@@ -258,10 +258,10 @@ namespace com.tinylabproductions.TLPLib.Binding {
 
     public static ISubscription bind<T>(
       this IRxRef<T> subject,
-      Fn<T, string> mapper, Fn<string, T> comapper,
-      Act<string> changeControlText,
-      Act<PropertyChangedEventHandler<string>> subscribeToControlChanged,
-      Act<PropertyChangedEventHandler<string>> unsubscribeToControlChanged
+      Func<T, string> mapper, Func<string, T> comapper,
+      Action<string> changeControlText,
+      Action<PropertyChangedEventHandler<string>> subscribeToControlChanged,
+      Action<PropertyChangedEventHandler<string>> unsubscribeToControlChanged
     ) {
       var f = mapper.andThen(changeControlText);
       var subscription = subject.subscribe(f);

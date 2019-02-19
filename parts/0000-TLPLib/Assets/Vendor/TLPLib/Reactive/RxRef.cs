@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public override void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -49,7 +49,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0

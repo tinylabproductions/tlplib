@@ -125,10 +125,10 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public delegate void AddTag(string key, Tag tag);
       public delegate void AddExtra(string key, string extra);
 
-      public readonly Act<AddTag> addTags;
-      public readonly Act<AddExtra> addExtras;
+      public readonly Action<AddTag> addTags;
+      public readonly Action<AddExtra> addExtras;
 
-      public ExtraData(Act<AddTag> addTags, Act<AddExtra> addExtras) {
+      public ExtraData(Action<AddTag> addTags, Action<AddExtra> addExtras) {
         this.addTags = addTags;
         this.addExtras = addExtras;
       }

@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.caching {
     }
 
     public Try<Unit> clear() {
-      blob = blob.none;
+      blob = F.none_;
       return F.scs(F.unit);
     }
   }

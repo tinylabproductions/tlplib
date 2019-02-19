@@ -14,20 +14,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     
     public static Future<A> narrowK<A>(this HigherKind<W, A> hkt) => (Future<A>) hkt;
     
-    public static Future<A> a<A>(Act<Promise<A>> action) => Future<A>.async(action);
+    public static Future<A> a<A>(Action<Promise<A>> action) => Future<A>.async(action);
     public static Future<A> a<A>(IHeapFuture<A> future) => new Future<A>(future);
     public static Future<A> async<A>(out Promise<A> promise) => Future<A>.async(out promise);
 
     public static Future<A> successful<A>(A value) => Future<A>.successful(value);
     public static Future<A> unfulfilled<A>() => Future<A>.unfulfilled;
 
-    public static Future<A> delay<A>(Duration duration, Fn<A> createValue, ITimeContext tc=null) =>
+    public static Future<A> delay<A>(Duration duration, Func<A> createValue, ITimeContext tc=null) =>
       a<A>(p => tc.orDefault().after(duration, () => p.complete(createValue())));
 
     public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc=null) =>
       a<A>(p => tc.orDefault().after(duration, () => p.complete(value)));
 
-    public static Future<A> delayFrames<A>(int framesToSkip, Fn<A> createValue) =>
+    public static Future<A> delayFrames<A>(int framesToSkip, Func<A> createValue) =>
       a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(createValue())));
 
     public static Future<A> delayFrames<A>(int framesToSkip, A value) =>
@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * If all futures do not satisfy the predicate returns None.
      **/
     public static Future<Option<B>> firstOfWhere<A, B>
-    (this IEnumerable<Future<A>> enumerable, Fn<A, Option<B>> predicate) {
+    (this IEnumerable<Future<A>> enumerable, Func<A, Option<B>> predicate) {
       var futures = enumerable.ToList();
       return Future<Option<B>>.async(p => {
         var completed = 0;
@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<Either<Collection, B>> firstOfSuccessfulCollect<A, B, Collection>(
       this IEnumerable<Future<Either<A, B>>> enumerable,
-      Fn<IEnumerable<A>, Collection> collector
+      Func<IEnumerable<A>, Collection> collector
     ) {
       var futures = enumerable.ToArray();
       return futures.firstOfSuccessful().map(opt => opt.fold(
@@ -122,13 +122,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
 
     public static Future<A> fromBusyLoop<A>(
-      Fn<Option<A>> checker, YieldInstruction delay=null
+      Func<Option<A>> checker, YieldInstruction delay=null
     ) { return Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker))); }
 
     /* Waits at most `timeout` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
     public static Future<Either<B, A>> timeout<A, B>(
-      this Future<A> future, Duration timeout, Fn<B> onTimeout, ITimeContext tc=null
+      this Future<A> future, Duration timeout, Func<B> onTimeout, ITimeContext tc=null
     ) {
       var timeoutF = delay(timeout, () => future.value.fold(
         // onTimeout() might have side effects, so we only need to execute it if
@@ -153,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Fn<Option<A>> checker) {
+    static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Func<Option<A>> checker) {
       var valOpt = checker();
       while (valOpt.isNone) {
         yield return delay;

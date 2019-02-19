@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
+using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   [PublicAPI] public static class Option {
@@ -22,6 +23,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
      */
     [Conditional("ENABLE_IL2CPP")]
     public static void ensureValue<A>(ref Option<A> opt) {
+#if ENABLE_IL2CPP
+      if ((object) opt == null) opt = Option<A>.None;
+#endif
     }
 
     /// <summary>
@@ -34,208 +38,73 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ///   Option.getOrUpdate(ref __parts, () => _parts.ToImmutableList().toNonEmpty().get);
     /// ]]></code>
     /// </summary>
-    public static A getOrUpdate<A>(ref Option<A> opt, Fn<A> create) {
+    public static A getOrUpdate<A>(ref Option<A> opt, Func<A> create) {
       if (opt.isNone) opt = new Option<A>(create());
       return opt.__unsafeGetValue;
     }
-
-    public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt) where Child : Base =>
-      opt.isSome ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
-
-    public static A getOrNull<A>(this Option<A> opt) where A : class =>
-      opt.isSome ? opt.get : null;
-
-    public static A orNull<A>(this Option<A> opt) where A : class =>
-      opt.getOrNull();
-
-    public static Option<A> flatten<A>(this Option<Option<A>> opt) =>
-      opt.isSome ? opt.__unsafeGetValue : F.none<A>();
-
-    public static Option<Base> cast<Child, Base>(this Option<Child> o) where Child : Base
-      { return o.isSome ? F.some((Base) o.get) : F.none<Base>(); }
-
-    /**
-     * getOrElse is written as an extension method to make it easier to use in IL2CPP builds
-     * where it is a class.
-     */
-    public static A getOrElse<A>(this Option<A> opt, Fn<A> orElse) {
-      return opt.isSome ? opt.__unsafeGetValue : orElse();
-    }
-
-    public static A getOrElse<A>(this Option<A> opt, A orElse) {
-      return opt.isSome ? opt.__unsafeGetValue : orElse;
-    }
-
-    public static Option<A> fromNullable<A>(this A? maybeA) where A : struct =>
-      maybeA.HasValue ? new Option<A>(maybeA.Value) : Option<A>.None;
-    
-    public static A? toNullable<A>(this Option<A> maybeA) where A : struct =>
-      maybeA.isSome ? maybeA.__unsafeGetValue : (A?) null;
   }
 
   [PublicAPI] public struct None {
     public static None i => new None();
   }
   
-  [PublicAPI] public struct Option<A> : HigherKind<Option.W, A> {
-    public static Option<A> None { get; } = new Option<A>();
+  [PublicAPI] public
+#if ENABLE_IL2CPP
+    sealed class
+#else
+    readonly struct
+#endif
+    Option<A> : HigherKind<Option.W, A> 
+  {
+    public static readonly Option<A> None
+#if ENABLE_IL2CPP
+      = new Option<A>();
+#endif
 
     public readonly A __unsafeGetValue;
     public readonly bool isSome;
-
+    public bool isNone => !isSome;
+      
+#if ENABLE_IL2CPP
+    Option() {}
+#endif
+    
     public Option(A value) : this() {
       __unsafeGetValue = value;
       isSome = true;
     }
 
-    public A getOrThrow(Fn<Exception> getEx) =>
-      isSome ? __unsafeGetValue : F.throws<A>(getEx());
-
-    public A getOrThrow(string message) =>
-      isSome ? __unsafeGetValue : F.throws<A>(new IllegalStateException(message));
-
-    public Option<A> tap(Act<A> action) {
-      if (isSome) action(__unsafeGetValue);
-      return this;
-    }
-
-    public void voidFold(Action ifEmpty, Act<A> ifNonEmpty) {
-      if (isSome) ifNonEmpty(__unsafeGetValue);
-      else ifEmpty();
-    }
-
-    public Option<A> filter(bool keepValue) =>
-      keepValue ? this : F.none<A>();
-
-    public Option<A> filter(Fn<A, bool> predicate) =>
-      isSome && predicate(__unsafeGetValue) ? this : F.none<A>();
-
-    public bool exists(Fn<A, bool> predicate) =>
-      isSome && predicate(__unsafeGetValue);
-
-    public bool exists(A a) =>
-      exists(a, Smooth.Collections.EqComparer<A>.Default);
-
-    public bool exists(A a, IEqualityComparer<A> comparer) =>
-      isSome && comparer.Equals(__unsafeGetValue, a);
-
-    public bool isNone => ! isSome;
-
     public A get { get {
       if (isSome) return __unsafeGetValue;
-      throw new IllegalStateException("#get on None!");
+      throw new Exception("#get on None!");
     } }
-
-    /// <summary>A quick way to get None instance for this options type.</summary>
-    public Option<A> none => None;
-
-    public bool valueOut(out A a) {
-      a = isSome ? __unsafeGetValue : default;
-      return isSome;
-    }
-
-    [PublicAPI]
-    public bool getOrLog(out A a, LogEntry msg, ILog log = null, Log.Level level = Log.Level.ERROR) {
-      if (!valueOut(out a)) {
-        log = log ?? Log.d;
-        if (log.willLog(level)) log.log(level, msg);
-        return false;
-      }
-      return true;
-    }
 
     #region Equality
 
     public override bool Equals(object o) => o is Option<A> option && Equals(option);
 
-    public bool Equals(Option<A> other) => isSome ? other.exists(__unsafeGetValue) : other.isNone;
+    public bool Equals(Option<A> other) => isSome ? other.exists(__unsafeGetValue) : other.isSome;
 
-    public override int GetHashCode() => Smooth.Collections.EqComparer<A>.Default.GetHashCode(__unsafeGetValue);
+    public override int GetHashCode() => EqComparer<A>.Default.GetHashCode(__unsafeGetValue);
 
-    public static bool operator ==(Option<A> lhs, Option<A> rhs) => lhs.Equals(rhs);
+    public static bool operator ==(Option<A> lhs, Option<A> rhs) {
+#if ENABLE_IL2CPP
+      var leftNull = ReferenceEquals(lhs, null);
+      var rightNull = ReferenceEquals(rhs, null);
+      if (leftNull && rightNull) return true;
+      if (leftNull || rightNull) return false;
+#endif
+      return lhs.Equals(rhs);
+    }
+
     public static bool operator !=(Option<A> lhs, Option<A> rhs) => !(lhs == rhs);
 
     #endregion
 
     public OptionEnumerator<A> GetEnumerator() => new OptionEnumerator<A>(this);
 
-    public Option<B> map<B>(Fn<A, B> func) =>
-      isSome ? F.some(func(__unsafeGetValue)) : F.none<B>();
-
-    public Option<B> flatMap<B>(Fn<A, Option<B>> func) =>
-      isSome ? func(__unsafeGetValue) : F.none<B>();
-
-    [PublicAPI]
-    public Option<B> flatMapUnity<B>(Fn<A, B> func) where B : class =>
-      isSome ? F.opt(func(__unsafeGetValue)) : F.none<B>();
-
-    public Option<C> flatMap<B, C>(Fn<A, Option<B>> func, Fn<A, B, C> mapper) {
-      if (isNone) return Option<C>.None;
-      var bOpt = func(__unsafeGetValue);
-      return bOpt.isNone ? Option<C>.None : F.some(mapper(__unsafeGetValue, bOpt.__unsafeGetValue));
-    }
-
     public override string ToString() =>
       isSome ? $"Some({__unsafeGetValue})" : "None";
-
-    public Either<A, B> toLeft<B>(B right) =>
-      isSome ? Either<A, B>.Left(__unsafeGetValue) : Either<A, B>.Right(right);
-
-    public Either<A, B> toLeft<B>(Fn<B> right) =>
-      isSome ? Either<A, B>.Left(__unsafeGetValue) : Either<A, B>.Right(right());
-
-    public Either<B, A> toRight<B>(B left) =>
-      isSome ? Either<B, A>.Right(__unsafeGetValue) : Either<B, A>.Left(left);
-
-    public Either<B, A> toRight<B>(Fn<B> left) =>
-      isSome ? Either<B, A>.Right(__unsafeGetValue) : Either<B, A>.Left(left());
-
-    public IEnumerable<A> asEnum() =>
-      isSome ? get.Yield() : Enumerable.Empty<A>();
-
-    public Option<A> createOrTap(Fn<A> ifEmpty, Act<A> ifNonEmpty) {
-      if (isNone) return new Option<A>(ifEmpty());
-
-      ifNonEmpty(get);
-      return this;
-    }
-
-    public B fold<B>(Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) =>
-      isSome ? ifNonEmpty(get) : ifEmpty();
-
-    public B fold<B>(B ifEmpty, Fn<A, B> ifNonEmpty) =>
-      isSome ? ifNonEmpty(get) : ifEmpty;
-
-    public B fold<B>(B ifEmpty, B ifNonEmpty) =>
-      isSome ? ifNonEmpty : ifEmpty;
-
-    public B fold<B>(B initial, Fn<A, B, B> ifNonEmpty) =>
-      isSome ? ifNonEmpty(get, initial) : initial;
-
-    public Option<Tpl<A, B>> zip<B>(Option<B> opt2) => zip(opt2, F.t);
-
-    public Option<C> zip<B, C>(Option<B> opt2, Fn<A, B, C> mapper) =>
-      isSome && opt2.isSome
-      ? F.some(mapper(__unsafeGetValue, opt2.__unsafeGetValue))
-      : F.none<C>();
-
-    /// <summary>
-    /// If both options are Some, join them together and return Some(result).
-    ///
-    /// Otherwise return that option which is Some, or None if both are None.
-    /// </summary>
-    public Option<A> join(Option<A> opt, Fn<A, A, A> joiner) =>
-      isSome
-        ? opt.isSome
-          ? joiner(__unsafeGetValue, opt.__unsafeGetValue).some()
-          : this
-        : opt;
-
-    /**
-     * If Some() returns None. If None returns b.
-     **/
-    public Option<B> swap<B>(B b) => isSome ? F.none<B>() : F.some(b);
-    public Option<B> swap<B>(Fn<B> b) => isSome ? F.none<B>() : F.some(b());
 
     public static bool operator true(Option<A> opt) => opt.isSome;
 
@@ -263,9 +132,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public OptionEnumerator(Option<A> option) : this() { this.option = option; }
 
-    public bool MoveNext() { return option.isSome && !read; }
+    public bool MoveNext() => option.isSome && !read;
 
-    public void Reset() { read = false; }
+    public void Reset() => read = false;
 
     public A Current { get {
       read = true;
@@ -274,6 +143,150 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   [PublicAPI] public static class OptionExts {
+    public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt) where Child : Base =>
+      opt.isSome ? new Base[] {opt.__unsafeGetValue} : Enumerable.Empty<Base>();
+
+    public static A getOrNull<A>(this Option<A> opt) where A : class =>
+      opt.isSome ? opt.get : null;
+
+    public static A orNull<A>(this Option<A> opt) where A : class =>
+      opt.getOrNull();
+
+    public static Option<A> flatten<A>(this Option<Option<A>> opt) =>
+      opt.isSome ? opt.__unsafeGetValue : Option<A>.None;
+
+    public static Option<Base> cast<Child, Base>(this Option<Child> o) where Child : Base => 
+      o.isSome ? new Option<Base>(o.__unsafeGetValue) : Option<Base>.None;
+
+    public static A getOrElse<A>(this Option<A> opt, Func<A> orElse) {
+#if ENABLE_IL2CPP
+      if (opt == null) return orElse();
+#endif
+      return opt.isSome ? opt.__unsafeGetValue : orElse();
+    }
+
+    public static A getOrElse<A>(this Option<A> opt, A orElse) {
+#if ENABLE_IL2CPP
+      if (opt == null) return orElse;
+#endif
+      return opt.isSome ? opt.__unsafeGetValue : orElse;
+    }
+
+    public static bool valueOut<A>(this Option<A> maybeA, out A a) {
+      a = maybeA.isSome ? maybeA.__unsafeGetValue : default;
+      return maybeA.isSome;
+    }
+
+    public static Option<A> fromNullable<A>(this A? maybeA) where A : struct =>
+      maybeA.HasValue ? new Option<A>(maybeA.Value) : Option<A>.None;
+    
+    public static A? toNullable<A>(this Option<A> maybeA) where A : struct =>
+      maybeA.isSome ? maybeA.__unsafeGetValue : (A?) null;
+    
+    public static A getOrThrow<A>(this Option<A> maybeA, Func<Exception> getEx) =>
+      maybeA.isSome ? maybeA.__unsafeGetValue : throw getEx();
+
+    public static A getOrThrow<A>(this Option<A> maybeA, string message) =>
+      maybeA.isSome ? maybeA.__unsafeGetValue : throw new Exception(message);
+
+    public static void voidFold<A>(this Option<A> maybeA, Action ifEmpty, Action<A> ifNonEmpty) {
+      if (maybeA.isSome) ifNonEmpty(maybeA.__unsafeGetValue);
+      else ifEmpty();
+    }
+
+    public static Option<A> filter<A>(this Option<A> maybeA, bool keepValue) =>
+      keepValue ? maybeA : Option<A>.None;
+
+    public static Option<A> filter<A>(this Option<A> maybeA, Func<A, bool> predicate) =>
+      maybeA.isSome && predicate(maybeA.__unsafeGetValue) ? maybeA : F.none<A>();
+
+    public static bool exists<A>(this Option<A> maybeA, Func<A, bool> predicate) =>
+      maybeA.isSome && predicate(maybeA.__unsafeGetValue);
+
+    public static bool exists<A>(this Option<A> maybeA, A a) =>
+      exists(maybeA, a, EqualityComparer<A>.Default);
+
+    public static bool exists<A>(this Option<A> maybeA, A a, IEqualityComparer<A> comparer) =>
+      maybeA.isSome && comparer.Equals(maybeA.__unsafeGetValue, a);
+    
+    public static Option<B> map<A, B>(this Option<A> maybeA, Func<A, B> func) =>
+      maybeA.isSome ? new Option<B>(func(maybeA.__unsafeGetValue)) : Option<B>.None;
+
+    public static Option<B> flatMap<A, B>(this Option<A> maybeA, Func<A, Option<B>> func) =>
+      maybeA.isSome ? func(maybeA.__unsafeGetValue) : Option<B>.None;
+
+    public static Option<B> flatMapUnity<A, B>(this Option<A> maybeA, Func<A, B> func) where B : class =>
+      maybeA.isSome ? F.opt(func(maybeA.__unsafeGetValue)) : Option<B>.None;
+
+    public static Option<C> flatMap<A, B, C>(
+      this Option<A> maybeA, Func<A, Option<B>> func, Func<A, B, C> mapper
+    ) {
+      if (maybeA.isNone) return Option<C>.None;
+      var bOpt = func(maybeA.__unsafeGetValue);
+      return bOpt.isNone ? Option<C>.None : F.some(mapper(maybeA.__unsafeGetValue, bOpt.__unsafeGetValue));
+    }
+
+    public static Either<A, B> toLeft<A, B>(this Option<A> maybeA, B right) =>
+      maybeA.isSome ? Either<A, B>.Left(maybeA.__unsafeGetValue) : Either<A, B>.Right(right);
+
+    public static Either<A, B> toLeft<A, B>(this Option<A> maybeA, Func<B> right) =>
+      maybeA.isSome ? Either<A, B>.Left(maybeA.__unsafeGetValue) : Either<A, B>.Right(right());
+
+    public static Either<B, A> toRight<A, B>(this Option<A> maybeA, B left) =>
+      maybeA.isSome ? Either<B, A>.Right(maybeA.__unsafeGetValue) : Either<B, A>.Left(left);
+
+    public static Either<B, A> toRight<A, B>(this Option<A> maybeA, Func<B> left) =>
+      maybeA.isSome ? Either<B, A>.Right(maybeA.__unsafeGetValue) : Either<B, A>.Left(left());
+
+    public static IEnumerable<A> asEnum<A>(this Option<A> maybeA) =>
+      maybeA.isSome ? maybeA.__unsafeGetValue.Yield() : Enumerable.Empty<A>();
+
+    public static Option<A> createOrTap<A>(this Option<A> maybeA, Func<A> ifEmpty, Action<A> ifNonEmpty) {
+      if (maybeA.isNone) return new Option<A>(ifEmpty());
+
+      ifNonEmpty(maybeA.__unsafeGetValue);
+      return maybeA;
+    }
+
+    public static B fold<A, B>(this Option<A> maybeA, Func<B> ifEmpty, Func<A, B> ifNonEmpty) =>
+      maybeA.isSome ? ifNonEmpty(maybeA.__unsafeGetValue) : ifEmpty();
+
+    public static B fold<A, B>(this Option<A> maybeA, B ifEmpty, Func<A, B> ifNonEmpty) =>
+      maybeA.isSome ? ifNonEmpty(maybeA.__unsafeGetValue) : ifEmpty;
+
+    public static B fold<A, B>(this Option<A> maybeA, B ifEmpty, B ifNonEmpty) =>
+      maybeA.isSome ? ifNonEmpty : ifEmpty;
+
+    public static B fold<A, B>(this Option<A> maybeA, B initial, Func<A, B, B> ifNonEmpty) =>
+      maybeA.isSome ? ifNonEmpty(maybeA.__unsafeGetValue, initial) : initial;
+
+    public static Option<Tpl<A, B>> zip<A, B>(this Option<A> maybeA, Option<B> opt2) => 
+      maybeA.zip(opt2, F.t);
+
+    public static Option<C> zip<A, B, C>(this Option<A> maybeA, Option<B> opt2, Func<A, B, C> mapper) =>
+      maybeA.isSome && opt2.isSome
+      ? F.some(mapper(maybeA.__unsafeGetValue, opt2.__unsafeGetValue))
+      : F.none<C>();
+
+    /// <summary>
+    /// If both options are Some, join them together and return Some(result).
+    ///
+    /// Otherwise return that option which is Some, or None if both are None.
+    /// </summary>
+    public static Option<A> join<A>(this Option<A> maybeA, Option<A> opt, Func<A, A, A> joiner) =>
+      maybeA.isSome
+        ? opt.isSome
+          ? joiner(maybeA.__unsafeGetValue, opt.__unsafeGetValue).some()
+          : maybeA
+        : opt;
+
+    /// <summary>If Some() returns None. If None returns b.</summary>
+    public static Option<B> swap<A, B>(this Option<A> maybeA, B b) => 
+      maybeA.isSome ? Option<B>.None : F.some(b);
+    
+    public static Option<B> swap<A, B>(this Option<A> maybeA, Func<B> b) => 
+      maybeA.isSome ? Option<B>.None : F.some(b());
+    
     public static ImmutableList<A> toImmutableList<A>(this Option<A> opt) =>
       opt.isSome
       ? ImmutableList.Create(opt.__unsafeGetValue)
@@ -286,5 +299,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Option<A> toOption<A>(this A? maybeA) where A : struct => 
       maybeA.HasValue ? new Option<A>(maybeA.Value) : Option<A>.None;
+    
+    public static bool getOrLog<A>(
+      this Option<A> maybeA, out A a, LogEntry msg, ILog log = null, Log.Level level = Log.Level.ERROR
+    ) {
+      if (!maybeA.valueOut(out a)) {
+        log = log ?? Log.d;
+        if (log.willLog(level)) log.log(level, msg);
+        return false;
+      }
+      return true;
+    }
   }
 }

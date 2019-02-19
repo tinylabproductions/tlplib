@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public static class SpriteExts {
     public static void replaceSpriteTexture<A>(
       this A a, Texture2D texture,
-      Fn<A, Sprite> getSprite, Act<A, Sprite> setSprite
+      Func<A, Sprite> getSprite, Action<A, Sprite> setSprite
     ) {
       // Might not have a sprite there
       var origOpt = F.opt(getSprite(a));

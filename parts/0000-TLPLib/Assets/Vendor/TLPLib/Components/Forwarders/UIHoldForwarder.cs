@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected override void onPointerUp(PointerEventData eventData) {
       if (pointerData.isEmpty()) {
-        _isHeldDown.value = _isHeldDown.value.none;
+        _isHeldDown.value = F.none_;
       }
     }
   }

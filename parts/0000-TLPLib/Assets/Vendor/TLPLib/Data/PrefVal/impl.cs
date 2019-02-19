@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public int subscribers => rxRef.subscribers;
     public ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -81,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
 
     public void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
 
     public ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -112,7 +112,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   class PrefValDictImpl<K, V> : PrefValDictionary<K, V> {
     readonly Dictionary<K, PrefVal<V>> cache = new Dictionary<K, PrefVal<V>>();
     readonly string keyPrefix;
-    readonly Fn<K, string> keyToString;
+    readonly Func<K, string> keyToString;
     readonly ISerializedRW<V> vRw;
     readonly PrefValStorage storage;
     readonly V defaultValue;
@@ -120,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     readonly ILog log;
 
     public PrefValDictImpl(
-      string keyPrefix, Fn<K, string> keyToString, ISerializedRW<V> vRw, PrefValStorage storage, V defaultValue, 
+      string keyPrefix, Func<K, string> keyToString, ISerializedRW<V> vRw, PrefValStorage storage, V defaultValue, 
       PrefVal.OnDeserializeFailure onDeserializeFailure, ILog log = null
     ) {
       this.keyPrefix = keyPrefix;

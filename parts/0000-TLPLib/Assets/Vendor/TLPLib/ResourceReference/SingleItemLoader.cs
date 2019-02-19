@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly IRxRef<Option<IAsyncOperation>> request = RxRef.a(F.none<IAsyncOperation>());
 
-    // At this moment we could use Fn<Tpl<ResourceRequest, Future<A>>> instead of ILoader<A>,
+    // At this moment we could use Func<Tpl<ResourceRequest, Future<A>>> instead of ILoader<A>,
     // but there is no gain in refactoring this now. Just a note.
     public readonly IRxRef<Option<ILoader<A>>> currentLoader = RxRef.a(Option<ILoader<A>>.None);
     public readonly IRxRef<LoadPriority> priority = RxRef.a(LoadPriority.High);
@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     void discardPreviousRequest() {
       foreach (var r in request.value) r.priority = PRIORITY_OFF;
-      request.value = request.value.none;
+      request.value = F.none_;
     }
 
     public void Dispose() {

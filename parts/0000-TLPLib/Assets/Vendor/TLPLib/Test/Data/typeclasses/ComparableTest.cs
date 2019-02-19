@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     static readonly Comparable<int> cmp = Comparable.integer;
     static readonly ImmutableList<Tpl<string, int>> seqTpl =
       seq.Select(v => F.t($"foo{v}", v)).ToImmutableList();
-    static readonly Fn<Tpl<string, int>, int> extract = _ => _._2;
+    static readonly Func<Tpl<string, int>, int> extract = _ => _._2;
 
     [Test]
     public void TestOpLt() {

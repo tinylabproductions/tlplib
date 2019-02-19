@@ -54,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       this.validator = validator;
     }
 
-    public WithSceneValidator<B> map<B>(Fn<A, B> mapper) =>
+    public WithSceneValidator<B> map<B>(Func<A, B> mapper) =>
       new WithSceneValidator<B>(mapper(a), validator);
   }
 

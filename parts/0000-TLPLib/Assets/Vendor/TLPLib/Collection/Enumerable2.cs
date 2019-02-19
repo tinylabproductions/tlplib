@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
   /* As System.Enumerable. */
   public static class Enumerable2 {
     [PublicAPI]
-    public static IEnumerable<A> fromImperative<A>(int count, Fn<int, A> get) {
+    public static IEnumerable<A> fromImperative<A>(int count, Func<int, A> get) {
       for (var idx = 0; idx < count; idx++)
         yield return get(idx);
     }
@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     }
 
     [PublicAPI]
-    public static IEnumerable<A> fill<A>(int count, Fn<A> create) {
+    public static IEnumerable<A> fill<A>(int count, Func<A> create) {
       for (var idx = 0; idx < count; idx++)
         yield return create();
     }

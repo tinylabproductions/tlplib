@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
       new GCFreeHashMap<K, V>(source.Keys.ToArray(), source.Values.ToArray());
 
     public static GCFreeHashMap<K, VV> a<K, V, VV>(
-      IDictionary<K, V> source, Fn<V, VV> valueMapper
+      IDictionary<K, V> source, Func<V, VV> valueMapper
     ) =>
       new GCFreeHashMap<K, VV>(source.Keys.ToArray(), source.Values.ToArray(valueMapper));
   }

@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     /// (Scene -> bool) You need to return true if scene was modified and needs to be saved
     /// </param>
     /// <returns>true - if operation was not canceled by user</returns>
-    public static bool modifyAllScenesInProject(Fn<Scene, bool> modifyScene) {
+    public static bool modifyAllScenesInProject(Func<Scene, bool> modifyScene) {
       var result = openScenesAndDo(
         AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Select(_ => new ScenePath(_)),
         scene => { if (modifyScene(scene)) EditorSceneManager.SaveScene(scene); }
@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return result;
     }
 
-    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Act<Scene> doWithLoadedScene) {
+    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Action<Scene> doWithLoadedScene) {
       try {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
           return false;

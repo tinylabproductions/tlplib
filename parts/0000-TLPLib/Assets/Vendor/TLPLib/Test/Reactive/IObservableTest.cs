@@ -399,7 +399,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     void test<C>(
-      Fn<Subject<int>, IRxObservable<C>> createObs, Fn<List<int>, C> createCollection
+      Func<Subject<int>, IRxObservable<C>> createObs, Func<List<int>, C> createCollection
     ) where C : IEnumerable<int> {
       var subj = new Subject<int>();
       var obs = createObs(subj);

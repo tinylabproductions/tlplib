@@ -24,11 +24,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly IPrefValueRW<Duration> duration = new DurationRW();
     public static readonly IPrefValueRW<DateTime> dateTime = new DateTimeRW();
 
-    public static IPrefValueRW<A> custom__OLD<A>(Fn<A, string> map, Fn<string, A> comap) =>
+    public static IPrefValueRW<A> custom__OLD<A>(Func<A, string> map, Func<string, A> comap) =>
       new CustomOldRW<A>(map, comap);
 
     public static IPrefValueRW<A> custom<A>(
-      Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
+      Func<A, string> serialize, Func<string, Option<A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.@default);
@@ -120,12 +120,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     class CustomRW<A> : IPrefValueRW<A> {
       const string DEFAULT_VALUE = "d", NON_DEFAULT_VALUE_DISCRIMINATOR = "_";
 
-      readonly Fn<A, string> serialize;
-      readonly Fn<string, Option<A>> deserialize;
+      readonly Func<A, string> serialize;
+      readonly Func<string, Option<A>> deserialize;
       readonly PrefVal.OnDeserializeFailure onDeserializeFailure;
       readonly ILog log;
 
-      public CustomRW(Fn<A, string> serialize, Fn<string, Option<A>> deserialize, PrefVal.OnDeserializeFailure onDeserializeFailure, ILog log) {
+      public CustomRW(Func<A, string> serialize, Func<string, Option<A>> deserialize, PrefVal.OnDeserializeFailure onDeserializeFailure, ILog log) {
         this.serialize = serialize;
         this.deserialize = deserialize;
         this.onDeserializeFailure = onDeserializeFailure;
@@ -163,10 +163,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       /* If you store this as a value in type custom PrefValue, you'll get back a default value. */
       const string CUSTOM_V1_DEFAULT = "";
 
-      readonly Fn<A, string> map;
-      readonly Fn<string, A> comap;
+      readonly Func<A, string> map;
+      readonly Func<string, A> comap;
 
-      public CustomOldRW(Fn<A, string> map, Fn<string, A> comap) {
+      public CustomOldRW(Func<A, string> map, Func<string, A> comap) {
         this.map = map;
         this.comap = comap;
       }

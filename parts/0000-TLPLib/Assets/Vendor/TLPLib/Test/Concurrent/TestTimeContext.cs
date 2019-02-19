@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         .GroupBy(_ => _._3)
         .ToImmutableDictionary(_ => _.Key, _ => _.Count());
 
-    public Fn<string, int> actionCountsFn { get {
+    public Func<string, int> actionCountsFn { get {
       var dict = actionCounts;
       return key => dict.getOrElse(key, 0);
     } }

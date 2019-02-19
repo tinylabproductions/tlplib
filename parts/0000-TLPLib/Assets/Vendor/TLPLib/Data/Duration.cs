@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      return obj is Duration && Equals((Duration) obj);
+      return obj is Duration a && Equals(a);
     }
 
     public override int GetHashCode() => millis.GetHashCode();

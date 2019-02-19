@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    public static void doRecursively(this GameObject go, Act<GameObject> act) {
+    public static void doRecursively(this GameObject go, Action<GameObject> act) {
       act(go);
       go.transform.doRecursively(t => act(t.gameObject));
     }
@@ -50,7 +50,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       rt.SetSiblingIndex(siblingIndex);
     }
 
-    public static Coroutine everyFrame(this GameObject go, Fn<bool> f) => ASync.EveryFrame(go, f);
+    public static Coroutine everyFrame(this GameObject go, Func<bool> f) => ASync.EveryFrame(go, f);
 
     public static Coroutine everyFrame(this GameObject go, Action a) =>
       go.everyFrame(() => { a(); return true; });

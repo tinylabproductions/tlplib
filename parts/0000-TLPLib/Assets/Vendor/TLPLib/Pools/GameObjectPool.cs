@@ -13,23 +13,23 @@ namespace com.tinylabproductions.TLPLib.Pools {
     public static class Init {
       [PublicAPI]
       public static Init<T> withReparenting<T>(
-        string name, Fn<T> create,
-        Act<T> wakeUp = null, Act<T> sleep = null,
+        string name, Func<T> create,
+        Action<T> wakeUp = null, Action<T> sleep = null,
         bool dontDestroyOnLoad = true, Transform parent = null
       ) => Init<T>.withReparenting(name, create, wakeUp, sleep, dontDestroyOnLoad, parent);
 
       [PublicAPI]
       public static Init<T> noReparenting<T>(
-        string name, Fn<T> create,
-        Act<T> wakeUp = null, Act<T> sleep = null,
+        string name, Func<T> create,
+        Action<T> wakeUp = null, Action<T> sleep = null,
         bool dontDestroyOnLoad = true
       ) => Init<T>.noReparenting(name, create, wakeUp, sleep, dontDestroyOnLoad);
     }
     
     public struct Init<T> {
       public readonly string name;
-      public readonly Fn<T> create;
-      public readonly Option<Act<T>> wakeUp, sleep;
+      public readonly Func<T> create;
+      public readonly Option<Action<T>> wakeUp, sleep;
       public readonly bool dontDestroyOnLoad;
 
       // Some: parent transform for GameObjectPool. (null = root)
@@ -37,8 +37,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
       public readonly Option<Transform> parent;
 
       Init(
-        string name, Fn<T> create, Option<Transform> parent,
-        Act<T> wakeUp = null, Act<T> sleep = null,
+        string name, Func<T> create, Option<Transform> parent,
+        Action<T> wakeUp = null, Action<T> sleep = null,
         bool dontDestroyOnLoad = true
       ) {
         this.name = name;
@@ -51,8 +51,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
 
       [PublicAPI]
       public static Init<T> withReparenting(
-        string name, Fn<T> create,
-        Act<T> wakeUp = null, Act<T> sleep = null,
+        string name, Func<T> create,
+        Action<T> wakeUp = null, Action<T> sleep = null,
         bool dontDestroyOnLoad = true, Transform parent = null
       ) => new Init<T>(
         name, create, parent.some(), wakeUp, sleep, dontDestroyOnLoad
@@ -60,8 +60,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
 
       [PublicAPI]
       public static Init<T> noReparenting(
-        string name, Fn<T> create,
-        Act<T> wakeUp = null, Act<T> sleep = null,
+        string name, Func<T> create,
+        Action<T> wakeUp = null, Action<T> sleep = null,
         bool dontDestroyOnLoad = true
       ) => new Init<T>(
         name, create, Option<Transform>.None, wakeUp, sleep, dontDestroyOnLoad
@@ -69,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
     }
 
     public static GameObjectPool<T> a<T>(
-      Init<T> init, Fn<T, GameObject> toGameObject
+      Init<T> init, Func<T, GameObject> toGameObject
     ) => new GameObjectPool<T>(init, toGameObject);
     
     public static GameObjectPool<GameObject> a(
@@ -89,12 +89,12 @@ namespace com.tinylabproductions.TLPLib.Pools {
     readonly Stack<T> values = new Stack<T>();
     readonly Option<Transform> rootOpt;
 
-    readonly Fn<T, GameObject> toGameObject;
-    readonly Fn<T> create;
-    readonly Option<Act<T>> wakeUp, sleep;
+    readonly Func<T, GameObject> toGameObject;
+    readonly Func<T> create;
+    readonly Option<Action<T>> wakeUp, sleep;
     readonly bool dontDestroyOnLoad;
 
-    public GameObjectPool(GameObjectPool.Init<T> init, Fn<T, GameObject> toGameObject) {
+    public GameObjectPool(GameObjectPool.Init<T> init, Func<T, GameObject> toGameObject) {
       rootOpt = init.parent.map(parent => {
         var rootParent = new GameObject($"{nameof(GameObjectPool)}: {init.name}").transform;
         rootParent.parent = parent;
@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
       values.Push(value);
     }
 
-    public void dispose(Act<T> disposeFn) {
+    public void dispose(Action<T> disposeFn) {
       foreach (var value in values) {
         disposeFn(value);
       }

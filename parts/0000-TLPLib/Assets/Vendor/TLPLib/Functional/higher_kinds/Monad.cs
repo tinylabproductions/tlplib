@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Functional.higher_kinds {
     [PublicAPI] HigherKind<Witness, A> point<A>(A a);
     [PublicAPI] HigherKind<Witness, B> flatMap<A, B>(
       HigherKind<Witness, A> data,
-      Fn<A, HigherKind<Witness, B>> mapper
+      Func<A, HigherKind<Witness, B>> mapper
     );
   }
 
@@ -21,35 +21,35 @@ namespace com.tinylabproductions.TLPLib.Functional.higher_kinds {
     
     #region Id
 
-    public HigherKind<Id.W, B> map<A, B>(HigherKind<Id.W, A> data, Fn<A, B> mapper) =>
+    public HigherKind<Id.W, B> map<A, B>(HigherKind<Id.W, A> data, Func<A, B> mapper) =>
       Functors.i.map(data, mapper);
     
     HigherKind<Id.W, A> Monad<Id.W>.point<A>(A a) => Id.a(a);
 
     public HigherKind<Id.W, B> flatMap<A, B>(
       HigherKind<Id.W, A> data,
-      Fn<A, HigherKind<Id.W, B>> mapper
+      Func<A, HigherKind<Id.W, B>> mapper
     ) => mapper(data.narrowK().a); 
 
     #endregion
 
     #region Future
 
-    public HigherKind<Future.W, B> map<A, B>(HigherKind<Future.W, A> data, Fn<A, B> mapper) =>
+    public HigherKind<Future.W, B> map<A, B>(HigherKind<Future.W, A> data, Func<A, B> mapper) =>
       Functors.i.map(data, mapper);
 
     HigherKind<Future.W, A> Monad<Future.W>.point<A>(A a) =>
       Future.successful(a);
     
     public HigherKind<Future.W, B> flatMap<A, B>(
-      HigherKind<Future.W, A> data, Fn<A, HigherKind<Future.W, B>> mapper
+      HigherKind<Future.W, A> data, Func<A, HigherKind<Future.W, B>> mapper
     ) => data.narrowK().flatMap(a => mapper(a).narrowK()); 
 
     #endregion
 
     #region Option
 
-    public HigherKind<Option.W, B> map<A, B>(HigherKind<Option.W, A> data, Fn<A, B> mapper) =>
+    public HigherKind<Option.W, B> map<A, B>(HigherKind<Option.W, A> data, Func<A, B> mapper) =>
       Functors.i.map(data, mapper);
 
     public HigherKind<Option.W, A> point<A>(A a) =>
@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Functional.higher_kinds {
 
     public HigherKind<Option.W, B> flatMap<A, B>(
       HigherKind<Option.W, A> data,
-      Fn<A, HigherKind<Option.W, B>> mapper
+      Func<A, HigherKind<Option.W, B>> mapper
     ) => data.narrowK().flatMap(a => mapper(a).narrowK());
 
     #endregion

@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       : Either<ImmutableList<A>, B>.Left(errors);
 
     public static Either<ImmutableList<A>, B> asValidationErrors<A, B>(
-      this ImmutableList<A> errors, Fn<B> b
+      this ImmutableList<A> errors, Func<B> b
     ) =>
       errors.IsEmpty
       ? Either<ImmutableList<A>, B>.Right(b())

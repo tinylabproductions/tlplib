@@ -7,11 +7,11 @@ namespace com.tinylabproductions.TLPLib.Retry {
     readonly int retryCount;
     readonly float retryDelay;
     readonly Action tryAction;
-    readonly Act<A> failAction;
+    readonly Action<A> failAction;
     readonly TimeScale timeScale;
     int retries;
 
-    public Retry(int retryCount, float retryDelay, Action tryAction, Act<A> failAction, TimeScale timeScale = TimeScale.Realtime) {
+    public Retry(int retryCount, float retryDelay, Action tryAction, Action<A> failAction, TimeScale timeScale = TimeScale.Realtime) {
       this.retryCount = retryCount;
       this.retryDelay = retryDelay;
       this.tryAction = tryAction;
@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
       tryAction();
     }
 
-    public void failure(Fn<A> result) {
+    public void failure(Func<A> result) {
       if (retries < retryCount) {
         retries++;
         ASync.WithDelay(retryDelay, tryAction, timeScale: timeScale);

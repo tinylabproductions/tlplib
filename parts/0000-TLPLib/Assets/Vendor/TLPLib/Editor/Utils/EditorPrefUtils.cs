@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     [MenuItem("TLP/Tools/Prefs/Clear EditorPrefs")]
     public static void clearEditorPrefs() {
-      Fn<string, bool> check = title =>
+      Func<string, bool> check = title =>
         EditorUtility.DisplayDialog(
           "Clear editor prefs?",
           $"{title}\n\n" +

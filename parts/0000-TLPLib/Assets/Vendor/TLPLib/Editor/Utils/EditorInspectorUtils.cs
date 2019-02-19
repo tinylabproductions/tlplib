@@ -58,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       windowInstance.Show();
       PrivateMethod.obtain(windowType, "Init")(windowInstance);
 
-      var getInstanceIDFromGUID = PrivateMethod.obtainStaticFn<string, int>(
+      var getInstanceIDFromGUID = PrivateMethod.obtainStaticFunc<string, int>(
         typeof(AssetDatabase), "GetInstanceIDFromGUID"
       );
       

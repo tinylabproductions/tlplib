@@ -8,9 +8,9 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
   partial class AndRW2<A1, A2, B> : ISerializedRW<B> {
     readonly ISerializedRW<A1> a1RW;
     readonly ISerializedRW<A2> a2RW;
-    readonly Fn<A1, A2, B> mapper;
-    readonly Fn<B, A1> getA1;
-    readonly Fn<B, A2> getA2;
+    readonly Func<A1, A2, B> mapper;
+    readonly Func<B, A1> getA1;
+    readonly Func<B, A2> getA2;
 
     public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
       try {
@@ -38,10 +38,10 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
     readonly ISerializedRW<A1> a1RW;
     readonly ISerializedRW<A2> a2RW;
     readonly ISerializedRW<A3> a3RW;
-    readonly Fn<A1, A2, A3, B> mapper;
-    readonly Fn<B, A1> getA1;
-    readonly Fn<B, A2> getA2;
-    readonly Fn<B, A3> getA3;
+    readonly Func<A1, A2, A3, B> mapper;
+    readonly Func<B, A1> getA1;
+    readonly Func<B, A2> getA2;
+    readonly Func<B, A3> getA3;
 
     public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
       try {
@@ -73,11 +73,11 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
     readonly ISerializedRW<A2> a2RW;
     readonly ISerializedRW<A3> a3RW;
     readonly ISerializedRW<A4> a4RW;
-    readonly Fn<A1, A2, A3, A4, B> mapper;
-    readonly Fn<B, A1> getA1;
-    readonly Fn<B, A2> getA2;
-    readonly Fn<B, A3> getA3;
-    readonly Fn<B, A4> getA4;
+    readonly Func<A1, A2, A3, A4, B> mapper;
+    readonly Func<B, A1> getA1;
+    readonly Func<B, A2> getA2;
+    readonly Func<B, A3> getA3;
+    readonly Func<B, A4> getA4;
 
     public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
       try {

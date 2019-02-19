@@ -125,13 +125,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     [PublicAPI]
-    public TweenManager addOnStartCallback(Act<TweenCallback.Event> act) {
+    public TweenManager addOnStartCallback(Action<TweenCallback.Event> act) {
       onStart.subscribe(tracker, act);
       return this;
     }
 
     [PublicAPI]
-    public TweenManager addOnEndCallback(Act<TweenCallback.Event> act) {
+    public TweenManager addOnEndCallback(Action<TweenCallback.Event> act) {
       onEnd.subscribe(tracker, act);
       return this;
     }

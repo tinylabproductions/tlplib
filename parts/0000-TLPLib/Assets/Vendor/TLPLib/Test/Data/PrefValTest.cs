@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void Normal() {
-      Fn<PrefVal<int>> create = () =>
+      Func<PrefVal<int>> create = () =>
         storage.custom(key, 3, i => i.ToString(), i => i.parseInt().rightValue);
       var pv = create();
       pv.value.shouldEqual(3);
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void SerializedIsEmptyString() {
-      Fn<PrefVal<int>> create = () =>
+      Func<PrefVal<int>> create = () =>
         storage.custom(key, 10, _ => "", _ => 1.some());
       var pv = create();
       pv.value.shouldEqual(10);
@@ -88,7 +88,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void DeserializeFailureReturnDefault() {
-      Fn<PrefVal<int>> create = () => storage.custom(
+      Func<PrefVal<int>> create = () => storage.custom(
         key, 10, i => i.ToString(), _ => Option<int>.None,
         onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault,
         log: log
@@ -104,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void DeserializeFailureThrowException() {
-      Fn<PrefVal<int>> create = () => storage.custom(
+      Func<PrefVal<int>> create = () => storage.custom(
         key, 10, i => i.ToString(), _ => Option<int>.None,
         onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException
       );
@@ -140,7 +140,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void Normal() {
-      Fn<PrefVal<string>> create = () => storage.custom(key, "", SerializedRW.str);
+      Func<PrefVal<string>> create = () => storage.custom(key, "", SerializedRW.str);
       var pv = create();
       pv.value.shouldEqual("");
       pv.value = "foobar";
@@ -256,7 +256,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   class PrefValHashSetTest : PrefValTestBase {
     [Test]
     public void StringMultipleTimes() {
-      Fn<PrefVal<ImmutableHashSet<string>>> create = () =>
+      Func<PrefVal<ImmutableHashSet<string>>> create = () =>
         storage.hashSet(nameof(PrefValHashSetTest), SerializedRW.str);
 
       var p1 = create();

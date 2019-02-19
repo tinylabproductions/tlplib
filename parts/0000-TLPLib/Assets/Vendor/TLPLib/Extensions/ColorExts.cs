@@ -47,13 +47,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Color32 with32Alpha(this Color32 color, byte alpha) =>
       color.with32(a: F.some(alpha));
 
-    public static Color modifyBrightness(this Color rgb, Fn<float, float> f) {
+    public static Color modifyBrightness(this Color rgb, Func<float, float> f) {
       var hsv = rgb.RGBToHSV();
       hsv.b = f(hsv.b);
       return hsv.HSVToRGB();
     }
 
-    public static Color modifySaturation(this Color rgb, Fn<float, float> f) {
+    public static Color modifySaturation(this Color rgb, Func<float, float> f) {
       var hsv = rgb.RGBToHSV();
       hsv.g = f(hsv.g);
       return hsv.HSVToRGB();
