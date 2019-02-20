@@ -52,6 +52,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static DConsole instance { get; } = new DConsole();
     public static readonly ImmutableArray<bool> bools = ImmutableArray.Create(true, false);
 
+    readonly IObservable<Unit> editorShortcutObs;
+
     [RuntimeInitializeOnLoadMethod]
     static void registerLogMessages() {
       if (!Application.isEditor) {
@@ -83,6 +85,13 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         logEntries.Clear();
         clearVisibleLog();
       });
+      
+      editorShortcutObs =
+#if UNITY_EDITOR
+        Observable.everyFrame.filter(_ => Input.GetKeyDown(DEFAULT_EDITOR_KEYCODE));
+#else
+        Observable<Unit>.empty;
+#endif
     }
 
     public delegate void OnShow(DConsole console);
@@ -92,6 +101,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     Option<Instance> current = F.none<Instance>();
 
+    const KeyCode DEFAULT_EDITOR_KEYCODE = KeyCode.BackQuote; //~
     public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
     public static readonly ImmutableList<Direction> DEFAULT_DIRECTION_SEQUENCE =
       ImmutableList.Create(
@@ -191,7 +201,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
       );
 
-      var obs = mouseObs.join(directionObs);
+      var editorShortcut = instance.editorShortcutObs.filter(_ => instance.current.isNone);
+      var obs = mouseObs.join(directionObs).join(editorShortcut);
       obs.subscribe(tracker, _ => instance.show(binding));
       return obs;
     }
@@ -267,7 +278,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       Application.logMessageReceivedThreaded += logCallback;
       
       view.closeButton.onClick.AddListener(destroy);
-      view.minimizeButton.onClick.subscribe(view.gameObject, _ => 
+      var editorShortcut = instance.editorShortcutObs.filter(_ => instance.current.isSome);
+      view.minimizeButton.onClick.join(editorShortcut).subscribe(view.gameObject, _ =>
         view.minimizableObjectsContainer.SetActive(
           !view.minimizableObjectsContainer.activeSelf
         )
