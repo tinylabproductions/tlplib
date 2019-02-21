@@ -6,8 +6,8 @@ using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
-  public static class ImmutableArrayExts {
-    [PublicAPI] public static ImmutableArray<To> map<From, To>(
+  [PublicAPI] public static class ImmutableArrayExts {
+    public static ImmutableArray<To> map<From, To>(
       this ImmutableArray<From> source, Fn<From, To> mapper
     ) {
       var target = ImmutableArray.CreateBuilder<To>(source.Length);
@@ -15,13 +15,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return target.MoveToImmutable();
     }
 
-    [PublicAPI] public static Option<T> get<T>(this ImmutableArray<T> list, int index) =>
+    public static Option<T> get<T>(this ImmutableArray<T> list, int index) =>
       index >= 0 && index < list.Length ? F.some(list[index]) : F.none<T>();
 
-    [PublicAPI] public static bool isEmpty<A>(this ImmutableArray<A> list) => list.Length == 0;
-    [PublicAPI] public static bool nonEmpty<A>(this ImmutableArray<A> list) => list.Length != 0;
+    public static bool isEmpty<A>(this ImmutableArray<A> list) => list.Length == 0;
+    public static bool nonEmpty<A>(this ImmutableArray<A> list) => list.Length != 0;
 
-    [PublicAPI] public static Range indexRange<A>(this ImmutableArray<A> coll) =>
+    public static Range indexRange<A>(this ImmutableArray<A> coll) =>
       new Range(0, coll.Length - 1);
 
     [PublicAPI]
@@ -42,21 +42,21 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   }
 
   public static class ImmutableArrayBuilderExts {
-    [PublicAPI] public static ImmutableArray<A>.Builder addAnd<A>(
+    public static ImmutableArray<A>.Builder addAnd<A>(
       this ImmutableArray<A>.Builder b, A a
     ) {
       b.Add(a);
       return b;
     }
 
-    [PublicAPI] public static ImmutableArray<A>.Builder addOptAnd<A>(
+    public static ImmutableArray<A>.Builder addOptAnd<A>(
       this ImmutableArray<A>.Builder b, Option<A> aOpt
     ) {
       if (aOpt.isSome) b.Add(aOpt.__unsafeGetValue);
       return b;
     }
 
-    [PublicAPI] public static ImmutableArray<A>.Builder addRangeAnd<A>(
+    public static ImmutableArray<A>.Builder addRangeAnd<A>(
       this ImmutableArray<A>.Builder b, IEnumerable<A> aEnumerable
     ) {
       b.AddRange(aEnumerable);
@@ -69,8 +69,34 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// <typeparam name="A"></typeparam>
     /// <param name="b"></param>
     /// <returns></returns>
-    [PublicAPI] public static ImmutableArray<A> MoveToImmutableSafe<A>(
+    public static ImmutableArray<A> MoveToImmutableSafe<A>(
       this ImmutableArray<A>.Builder b
     ) => b.Capacity == b.Count ? b.MoveToImmutable() : b.ToImmutable();
+    
+    public static Option<int> indexWhere<A>(this ImmutableArray<A> list, Fn<A, bool> predicate) {
+      for (var idx = 0; idx < list.Length; idx++)
+        if (predicate(list[idx])) return F.some(idx);
+      return F.none<int>();
+    }
+    
+    public static Option<int> indexWhere<A, B>(this ImmutableArray<A> list, B data, Fn<A, B, bool> predicate) {
+      for (var idx = 0; idx < list.Length; idx++)
+        if (predicate(list[idx], data)) return F.some(idx);
+      return F.none<int>();
+    }
+
+    public static Option<int> indexWhereReverse<A>(this ImmutableArray<A> list, Fn<A, bool> predicate) {
+      for (var idx = list.Length - 1; idx >= 0; idx--)
+        if (predicate(list[idx])) return F.some(idx);
+      return F.none<int>();
+    }
+
+    public static Option<int> indexWhereReverse<A, B>(
+      this ImmutableArray<A> list, B data, Fn<A, B, bool> predicate
+    ) {
+      for (var idx = list.Length - 1; idx >= 0; idx--)
+        if (predicate(list[idx], data)) return F.some(idx);
+      return F.none<int>();
+    }
   }
 }
