@@ -10,3 +10,5 @@ obj
 
 # Intellij IDEA
 .idea
+
+parts/incremental-compiler/Compiler/*.log
