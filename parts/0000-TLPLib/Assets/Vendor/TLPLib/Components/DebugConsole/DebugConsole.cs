@@ -20,7 +20,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
-  public partial class DConsole {
+  [PublicAPI] public partial class DConsole {
     public enum Direction { Left, Up, Right, Down }
 
     public struct Command {
@@ -441,6 +441,16 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       register($"Toggle {name}", () => {
         setter(!getter());
         return comment == null ? getter().ToString() : $"{comment}: value={getter()}";
+      });
+    }
+    
+    public void registerToggleOpt(string name, Ref<Option<bool>> r, string comment=null) {
+      register($"{name}?", () => r.value);
+      register($"Clear {name}", () => r.value = F.none_);
+      register($"Toggle {name}", () => {
+        var current = r.value.getOrElse(false);
+        r.value = F.some(!current);
+        return comment == null ? r.value.ToString() : $"{comment}: value={r.value}";
       });
     }
 
