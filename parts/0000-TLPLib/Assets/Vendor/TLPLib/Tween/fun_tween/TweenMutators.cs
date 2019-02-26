@@ -44,6 +44,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     #endregion
 
+    #region CanvasGroup
+
+    [PublicAPI] public static readonly TweenMutator<float, CanvasGroup>
+      canvasGroupAlpha = (v, cg, r) => { if (r) cg.alpha += v; else cg.alpha = v; };
+
+    #endregion
+
     #region Render Settings
 
     [PublicAPI] public static readonly TweenMutator<Color, Unit>

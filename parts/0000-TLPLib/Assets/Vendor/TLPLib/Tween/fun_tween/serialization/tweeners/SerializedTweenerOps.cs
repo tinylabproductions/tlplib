@@ -20,6 +20,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       public static readonly Extract<Color, GlobalTweenTargets> globalFogColor = _ => RenderSettings.fogColor;
       public static readonly Extract<float, GlobalTweenTargets> globalFogDensity = _ => RenderSettings.fogDensity;
       public static readonly Extract<Color, Graphic> graphicColor = _ => _.color;
+      public static readonly Extract<float, CanvasGroup> canvasGroupAlpha = _ => _.alpha;
       public static readonly Extract<float, Graphic> graphicColorAlpha = _ => _.color.a;
       public static readonly Extract<float, Image> imageFillAmount = _ => _.fillAmount;
       public static readonly Extract<Color, Light> lightColor = _ => _.color;
