@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.attributes;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -20,6 +21,35 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 #pragma warning restore 649
 
     #endregion
+    
+    [HideLabel, HorizontalGroup, ShowIf(nameof(isSimple)), ShowInInspector, PreviewField]
+    Texture2D _simplePreview {
+      get {
+        const float verticalOffset = 0.25f;
+        var texture = new Texture2D(64, 64);
+        texture.fill(Color.black);
+        for (var _x = 0; _x < texture.width; _x++) {
+          var _y = (int) (
+            _simple.toEase().Invoke(_x / (float) texture.width)
+            * texture.height
+            * (1f - verticalOffset * 2f) 
+            + verticalOffset * texture.height
+          );
+          
+          texture.SetPixel(_x, (int) (verticalOffset * texture.height), Color.gray);
+          texture.SetPixel(_x, (int) ((1f - verticalOffset) * texture.height), Color.gray);
+          
+          // 2x2 pixel
+          for (var x = _x; x < _x + 2 && x < texture.width; x++) {
+            for (var y = _y; y < _y + 2 && y < texture.height; y++) {
+              texture.SetPixel(x, y, Color.green);
+            }
+          }
+        }
+        texture.Apply();
+        return texture;
+      }
+    }
 
     [PublicAPI] public SerializedEase(SimpleSerializedEase simple) {
       _isComplex = false;

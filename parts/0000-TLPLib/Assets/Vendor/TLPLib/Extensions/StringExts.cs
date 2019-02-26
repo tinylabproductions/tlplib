@@ -6,47 +6,40 @@ using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
-  public static class StringExts {
-    public static Either<string, int> parseInt(this String str) {
-      int output;
-      return int.TryParse(str, out output).either(
-        () => "cannot parse as int: '" + str + "'", output
-      );
+  [PublicAPI] public static class StringExts {
+    public static Either<string, int> parseInt(this string str) {
+      if (int.TryParse(str, out var output)) return output;
+      else return $"cannot parse as int: '{str}'";
     }
 
-    public static Either<string, uint> parseUInt(this String str) {
-      uint output;
-      return uint.TryParse(str, out output).either(
-        () => "cannot parse as uint: '" + str + "'", output
-      );
+    public static Either<string, ushort> parseUShort(this string str) {
+      if (ushort.TryParse(str, out var output)) return output;
+      else return $"cannot parse as ushort: '{str}'";
     }
 
-    public static Either<string, long> parseLong(this String str) {
-      long output;
-      return long.TryParse(str, out output).either(
-        () => "cannot parse as long: '" + str + "'", output
-      );
+    public static Either<string, uint> parseUInt(this string str) {
+      if (uint.TryParse(str, out var output)) return output;
+      else return $"cannot parse as uint: '{str}'";
     }
 
-    public static Either<string, float> parseFloat(this String str) {
-      float output;
-      return float.TryParse(str, out output).either(
-        () => "cannot parse as float: '" + str + "'", output
-      );
+    public static Either<string, long> parseLong(this string str) {
+      if (long.TryParse(str, out var output)) return output;
+      else return $"cannot parse as long: '{str}'";
     }
 
-    public static Either<string, double> parseDouble(this String str) {
-      double output;
-      return double.TryParse(str, out output).either(
-        () => "cannot parse as double: '" + str + "'", output
-      );
+    public static Either<string, float> parseFloat(this string str) {
+      if (float.TryParse(str, out var output)) return output;
+      else return $"cannot parse as float: '{str}'";
     }
 
-    public static Either<string, bool> parseBool(this String str) {
-      bool output;
-      return bool.TryParse(str, out output).either(
-        () => "cannot parse as bool: '" + str + "'", output
-      );
+    public static Either<string, double> parseDouble(this string str) {
+      if (double.TryParse(str, out var output)) return output;
+      else return $"cannot parse as double: '{str}'";
+    }
+
+    public static Either<string, bool> parseBool(this string str) {
+      if (bool.TryParse(str, out var output)) return output;
+      else return $"cannot parse as bool: '{str}'";
     }
 
     public static Try<DateTime> parseDateTime(this string str) {

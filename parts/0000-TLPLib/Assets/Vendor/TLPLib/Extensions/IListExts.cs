@@ -176,6 +176,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<int>();
     }
 
+    public static Option<int> indexWhereReverse<A>(this IList<A> list, Fn<A, bool> predicate) {
+      for (var idx = list.Count - 1; idx >= 0; idx--)
+        if (predicate(list[idx])) return F.some(idx);
+      return F.none<int>();
+    }
+
     /* Returns a random element. The probability is selected by elements
      * weight. Non-iter version. */
     public static Option<A> randomElementByWeight<A>(

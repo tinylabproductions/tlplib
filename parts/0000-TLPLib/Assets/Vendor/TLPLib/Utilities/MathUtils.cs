@@ -1,11 +1,16 @@
-﻿using System;
-using com.tinylabproductions.TLPLib.Data;
+﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  public static class MathUtils {
+  [PublicAPI] public static class MathUtils {
+    public static ushort clamp(this ushort v, ushort lower, ushort upper) {
+      if (v < lower) return lower;
+      if (v > upper) return upper;
+      return v;
+    }
+    
     public static Option<Vector2> LineIntersectionPoint(
       Vector2 ps1, Vector2 pe1, Vector2 ps2, Vector2 pe2
     ) {

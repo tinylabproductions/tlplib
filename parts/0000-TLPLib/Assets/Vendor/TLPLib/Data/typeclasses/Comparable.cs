@@ -5,9 +5,9 @@ using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
-  public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
+  [PublicAPI] public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
 
-  public static class CompareResultExts {
+  [PublicAPI] public static class CompareResultExts {
     public static int asInt(this CompareResult res) => (int) res;
 
     public static CompareResult asCmpRes(this int result) =>
@@ -16,21 +16,21 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       : CompareResult.GT;
   }
 
-  public interface Comparable<A> : IComparer<A>, Eql<A> {
+  [PublicAPI] public interface Comparable<A> : IComparer<A>, Eql<A> {
     CompareResult compare(A a1, A a2);
   }
 
-  public static class Comparable {
-    [PublicAPI] public static readonly Comparable<int> integer = lambda<int>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<uint> uint_ = lambda<uint>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<long> long_ = lambda<long>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<short> short_ = lambda<short>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<ushort> ushort_ = lambda<ushort>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<bool> bool_ = lambda<bool>((a1, a2) => a1.CompareTo(a2));
-    [PublicAPI] public static readonly Comparable<string> string_ =
+  [PublicAPI] public static class Comparable {
+    public static readonly Comparable<int> integer = lambda<int>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<uint> uint_ = lambda<uint>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<long> long_ = lambda<long>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<short> short_ = lambda<short>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<ushort> ushort_ = lambda<ushort>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<ulong> ulong_ = lambda<ulong>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<float> float_ = lambda<float>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<double> double_ = lambda<double>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<bool> bool_ = lambda<bool>((a1, a2) => a1.CompareTo(a2));
+    public static readonly Comparable<string> string_ =
       // ReSharper disable once ConvertClosureToMethodGroup - the call is ambiguous
       lambda<string>((s1, s2) => string.CompareOrdinal(s1, s2));
 
@@ -39,7 +39,6 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public static Comparable<A> lambda<A>(Fn<A, A, int> compare) =>
       new Lambda<A>((a1, a2) => compare(a1, a2).asCmpRes());
 
-    [PublicAPI]
     public static Comparable<A> inverse<A>(this Comparable<A> cmp) =>
       lambda<A>((a1, a2) => {
         switch (cmp.compare(a1, a2)) {
@@ -50,7 +49,13 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
         }
       });
 
-    [PublicAPI]
+    public static Comparable<A> and<A>(this Comparable<A> a1Cmp, Comparable<A> a2Cmp) => lambda<A>(
+      (a1, a2) => {
+        var aRes = a1Cmp.compare(a1, a2);
+        return aRes == CompareResult.EQ ? a2Cmp.compare(a1, a2) : aRes;
+      }
+    );
+
     public static Comparable<Tpl<A, B>> tpl<A, B>(Comparable<A> aCmp, Comparable<B> bCmp) => lambda<Tpl<A, B>>(
       (t1, t2) => {
         var (a1, b1) = t1;
@@ -60,7 +65,6 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       }
     );
     
-    [PublicAPI]
     public static Comparable<Tpl<A, B, C>> tpl<A, B, C>(
       Comparable<A> aCmp, Comparable<B> bCmp, Comparable<C> cCmp
     ) => lambda<Tpl<A, B, C>>(
@@ -75,7 +79,6 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       }
     );
     
-    [PublicAPI]
     public static Comparable<Tpl<A, B, C, D>> tpl<A, B, C, D>(
       Comparable<A> aCmp, Comparable<B> bCmp, Comparable<C> cCmp, Comparable<D> dCmp
     ) => lambda<Tpl<A, B, C, D>>(
@@ -92,7 +95,6 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       }
     );
 
-    [PublicAPI]
     public static Comparable<A> by<A, B>(Fn<A, B> mapper, Comparable<B> cmp) => lambda<A>((a1, a2) => {
       var b1 = mapper(a1);
       var b2 = mapper(a2);

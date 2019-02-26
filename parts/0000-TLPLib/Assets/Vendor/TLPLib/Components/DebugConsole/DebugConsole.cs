@@ -20,7 +20,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
-  public partial class DConsole {
+  [PublicAPI] public partial class DConsole {
     public enum Direction { Left, Up, Right, Down }
 
     public struct Command {
@@ -149,11 +149,13 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       DebugSequenceMouseData mouseData=null,
       Option<DebugSequenceDirectionData> directionDataOpt=default,
       DebugConsoleBinding binding=null,
+      Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       Option.ensureValue(ref directionDataOpt);
+      Option.ensureValue(ref keyboardShortcutOpt);
 
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
@@ -191,7 +193,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
       );
 
-      var obs = mouseObs.join(directionObs);
+      var keyboardShortcutObs = keyboardShortcutOpt.fold(
+        Observable<Unit>.empty,
+        kc => Observable.everyFrame.filter(_ => kc.getKeyDown)
+      );
+
+      var obs = mouseObs.joinAll(new [] {directionObs, keyboardShortcutObs});
       obs.subscribe(tracker, _ => instance.show(binding));
       return obs;
     }
@@ -441,6 +448,16 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       register($"Toggle {name}", () => {
         setter(!getter());
         return comment == null ? getter().ToString() : $"{comment}: value={getter()}";
+      });
+    }
+    
+    public void registerToggleOpt(string name, Ref<Option<bool>> r, string comment=null) {
+      register($"{name}?", () => r.value);
+      register($"Clear {name}", () => r.value = F.none_);
+      register($"Toggle {name}", () => {
+        var current = r.value.getOrElse(false);
+        r.value = F.some(!current);
+        return comment == null ? r.value.ToString() : $"{comment}: value={r.value}";
       });
     }
 
