@@ -149,11 +149,13 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       DebugSequenceMouseData mouseData=null,
       Option<DebugSequenceDirectionData> directionDataOpt=default,
       DebugConsoleBinding binding=null,
+      Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       Option.ensureValue(ref directionDataOpt);
+      Option.ensureValue(ref keyboardShortcutOpt);
 
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
@@ -191,7 +193,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
       );
 
-      var obs = mouseObs.join(directionObs);
+      var keyboardShortcutObs = keyboardShortcutOpt.fold(
+        Observable<Unit>.empty,
+        kc => Observable.everyFrame.filter(_ => kc.getKeyDown)
+      );
+
+      var obs = mouseObs.joinAll(new [] {directionObs, keyboardShortcutObs});
       obs.subscribe(tracker, _ => instance.show(binding));
       return obs;
     }
