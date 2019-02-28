@@ -272,7 +272,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     protected abstract void logInner(Log.Level l, LogEntry entry);
 
-    static string line(string level, object o) => $"[{thread}|{level}]> {o}";
+    static string line(string level, object o) => $"[{Time.realtimeSinceStartup:F3}|{thread}|{level}]> {o}";
 
     static string thread => (OnMainThread.isMainThread ? "Tm" : "T") + Thread.CurrentThread.ManagedThreadId;
   }
