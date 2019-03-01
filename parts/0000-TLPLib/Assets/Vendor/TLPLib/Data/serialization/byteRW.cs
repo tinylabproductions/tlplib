@@ -13,11 +13,11 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
   class byteArrayRW : ISerializedRW<byte[]> {
     public Option<DeserializeInfo<byte[]>> deserialize(byte[] serialized, int startIndex) {
       if (!SerializedRW.integer.deserialize(serialized, startIndex).valueOut(out var lengthInfo)) 
-        return Option<DeserializeInfo<byte[]>>.None;
+        return F.none_;
       var dataStartIndex = startIndex + lengthInfo.bytesRead;
       var length = lengthInfo.value;
       var data = serialized.slice(dataStartIndex, length);
-      return F.some(new DeserializeInfo<byte[]>(data, length));
+      return F.some(new DeserializeInfo<byte[]>(data, intRW.LENGTH + length));
     }
 
     public Rope<byte> serialize(byte[] arr) => SerializedRW.integer.serialize(arr.Length) + Rope.a(arr);

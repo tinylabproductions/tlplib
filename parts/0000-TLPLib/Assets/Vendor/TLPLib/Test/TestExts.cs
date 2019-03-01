@@ -11,11 +11,12 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using JetBrains.Annotations;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace com.tinylabproductions.TLPLib.Test {
-  public class TestBase {
+  [PublicAPI] public class TestBase {
     protected readonly IDisposableTracker tracker = new DisposableTracker();
 
     [TearDown]
@@ -56,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static Fn<A> code<A>(Fn<A> a) => a;
   }
 
-  public static class TestExts {
+  [PublicAPI] public static class TestExts {
     public static void shouldBeEmpty(this IEnumerable enumerable, string message = null) =>
       Assert.IsEmpty(enumerable, message);
 
@@ -77,11 +78,23 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.False(b, message);
     }
 
-    public static void shouldEqual<A>(this A a, A expected, string message=null) =>
-      Assert.AreEqual(expected, a, message);
+    public static void shouldEqual<A>(this A a, A expected, string message=null) {
+      if (a is IEnumerable ae && expected is IEnumerable ee) {
+        ae.shouldEqualEnum(ee, message);
+      }
+      else {
+        Assert.AreEqual(expected, a, message);
+      }
+    }
 
-    public static void shouldNotEqual<A>(this A a, A expected, string message=null) =>
-      Assert.AreNotEqual(expected, a, message);
+    public static void shouldNotEqual<A>(this A a, A expected, string message=null) {
+      if (a is IEnumerable ae && expected is IEnumerable ee) {
+        ae.shouldNotEqualEnum(ee, message);
+      }
+      else {
+        Assert.AreNotEqual(expected, a, message);
+      }
+    }
 
     public static void shouldRefEqual<A>(
       this A a, A expected, string message = null
@@ -163,13 +176,25 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldEqualEnum<A>(this IEnumerable<A> a, params A[] expected) =>
       shouldEqualEnum(a, expected, null);
 
+    public static void shouldNotEqualEnum<A>(
+      this IEnumerable<A> a, IEnumerable<A> expected, string message = null
+    ) => shouldNotEqualEnum((IEnumerable) a, expected, message);
+
+    public static void shouldNotEqualEnum(
+      this IEnumerable a, IEnumerable expected, string message = null
+    ) => CollectionAssert.AreNotEquivalent(expected, a, message);
+
+    public static void shouldNotEqualEnum<A>(this IEnumerable<A> a, params A[] expected) =>
+      shouldNotEqualEnum(a, expected, null);
+
     public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
       if (! predicate(a))
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
     }
 
-    public static void shouldBeSome<A>(this Option<A> a, A expected, string message=null) {
-      a.shouldEqual(expected.some(), message);
+    public static void shouldBeSome<A>(this Option<A> maybeA, A expected, string message=null) {
+      if (maybeA.valueOut(out var a)) a.shouldEqual(expected, message ?? $"Expected {maybeA} to be {F.some(expected)}");
+      else Assert.Fail(message ?? $"Expected to be Some({expected}, but it was None");
     }
 
     public static void shouldBeAnySome<A>(this Option<A> a, string message = null) {
