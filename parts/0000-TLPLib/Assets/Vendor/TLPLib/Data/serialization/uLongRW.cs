@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
     public const int LENGTH = 8;
 
     protected override DeserializeInfo<ulong> tryDeserialize(byte[] serialized, int startIndex) =>
-      new DeserializeInfo<ulong>(BitConverter.ToUInt32(serialized, startIndex), LENGTH);
+      new DeserializeInfo<ulong>(BitConverter.ToUInt64(serialized, startIndex), LENGTH);
 
     public override Rope<byte> serialize(ulong a) => Rope.a(BitConverter.GetBytes(a));
   }
