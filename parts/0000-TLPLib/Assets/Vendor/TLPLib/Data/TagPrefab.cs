@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -53,4 +54,5 @@ namespace com.tinylabproductions.TLPLib.Data {
   [Serializable, PublicAPI] public class TransformPrefab : TagPrefab<Transform> { }
   [Serializable, PublicAPI] public class RectTransformPrefab : TagPrefab<RectTransform> { }
   [Serializable, PublicAPI] public class ParticleSystemPrefab : TagPrefab<ParticleSystem> { }
+  [Serializable, PublicAPI] public class TextPrefab : TagPrefab<Text> { }
 }

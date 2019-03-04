@@ -68,6 +68,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Coroutine StartCoroutine(IEnumerator coroutine) =>
       new UnityCoroutine(behaviour, coroutine);
 
+    public static Future<Unit> toFuture(this IEnumerator coroutine) =>
+      StartCoroutine<Unit>(p => coroutine.afterThis(() => p.complete(F.unit)));
+
     public static Coroutine WithDelay(
       float seconds, Action action,
       MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
@@ -82,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Duration duration, Action action, ITimeContext timeContext,
       MonoBehaviour behaviour = null
     ) {
-      behaviour = behaviour ?? ASync.behaviour;
+      behaviour = behaviour ? behaviour : ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeContext);
       return new UnityCoroutine(behaviour, enumerator);
     }
@@ -169,6 +172,19 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
+    public static Future<bool> checkForInternetConnection() {
+      var future = Future<bool>.async(out var promise);
+
+      IEnumerator checkCoroutine(){
+        var www = new WWW("http://google.com");
+        yield return www;
+        promise.complete(www.error == null);
+      }
+
+      StartCoroutine(checkCoroutine());
+      return future;
+    }
+
     /* Do async cancellable WWW request. */
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
       Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
@@ -205,11 +221,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         ) {
           var msg = $"error: {req.error}, response code: {responseCode}";
           var url = new Url(req.url);
-          promise.complete(
-            responseCode == 0 && req.error == "Unknown Error"
-              ? new WebRequestError(url, new NoInternetError(msg))
-              : new WebRequestError(url, LogEntry.simple(msg))
-          );
+        // no internet check
+        if (responseCode == 0 && (req.error == "Unknown Error" || req.error == "Cannot resolve destination host")) {
+          checkForInternetConnection().onComplete(hasInternet => {
+            p.complete(hasInternet
+              ? new WebRequestError(url, LogEntry.simple(msg))
+              : new WebRequestError(url, new NoInternetError(msg)));
+          });
+        }
+        else p.complete(new WebRequestError(url, LogEntry.simple(msg)));
           req.Dispose();
         }
         else if (!acceptedResponseCodes.contains(responseCode)) {

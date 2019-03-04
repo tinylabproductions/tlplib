@@ -18,7 +18,8 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
           var b = Color.Lerp(c2, c1, t);
           return new Color(a.r + b.r, a.g * b.g, a.b * b.b).HSVToRGB();
         },
-        type
+        type,
+        useGraphicAlpha
       );
     }
   }

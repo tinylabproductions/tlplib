@@ -28,6 +28,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public UnityPhase phase { get; private set; }
 
+    public int currentlyRunningTweenCount =>
+      onUpdate.total
+      + onUpdateUnscaled.total
+      + onFixedUpdate.total
+      + onLateUpdate.total
+      + onLateUpdateUnscaled.total;
+
     class Tweens {
       readonly HashSet<TweenManager>
         current = new HashSet<TweenManager>(),
@@ -35,6 +42,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         toRemove = new HashSet<TweenManager>();
 
       bool running;
+      public int total => current.Count;
 
       public void add(TweenManager tm) {
         // If we made a call to add a tween on the same phase
@@ -69,15 +77,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public void runOn(float deltaTime) {
         try {
           running = true;
-          foreach (var t in current)
-            t.update(deltaTime);
+          foreach (var t in current) {
+            if (!t.update(deltaTime)) {
+              if (t.stopIfDestroyed) {
+                if (Log.d.isWarn()) Log.d.warn($"Tween stopped because target was destroyed. Context: {t.context}");
+                toRemove.Add(t);
+              }
+              else Log.d.error($"Tween target was destroyed. Context: {t.context}");
+            }
+          }
         }
         finally {
           running = false;
 
           if (toRemove.Count > 0) {
-            foreach (var tween in toRemove)
+            foreach (var tween in toRemove) {
               current.Remove(tween);
+            }
             toRemove.Clear();
           }
 

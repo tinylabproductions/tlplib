@@ -7,11 +7,12 @@ using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   class AssetSelector : EditorWindow, IMB_OnGUI {
     [UsedImplicitly, MenuItem("TLP/Tools/Select assets of type...")]
-    static void init() => GetWindow<AssetSelector>("Asset Selector").Show();
+    public static void init() => GetWindow<AssetSelector>("Asset Selector").Show();
 
     // Useful to clean serialized assets after migration or unity version upgrade
     [UsedImplicitly, MenuItem("TLP/Tools/Make selected objects dirty (force reserialize)")]

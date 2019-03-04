@@ -144,6 +144,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this Future<A> future, Duration timeout, ITimeContext tc=null
     ) => future.timeout(timeout, () => timeout, tc);
 
+    /* Waits at most `timeout` and then completes it with the provided value. */
+    public static Future<A> timeout2<A>(
+      this Future<A> future, Duration timeout, Fn<A> onTimeout, ITimeContext tc=null
+    ) {
+      var timeoutF = delay(timeout, onTimeout, tc);
+      return new[] { future, timeoutF }.firstOf();
+    }
+
     /** Measures how much time has passed from call to timed to future completion. **/
     public static Future<Tpl<A, Duration>> timed<A>(this Future<A> future) {
       var startTime = Time.realtimeSinceStartup;

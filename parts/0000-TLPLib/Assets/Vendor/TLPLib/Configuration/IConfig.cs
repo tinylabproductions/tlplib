@@ -68,35 +68,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     #endregion
 
-    /* Some(value) if found, None if not found or wrong type. */
-
-    #region opt getters
-
-    public static Option<List<A>> optList<A>(this IConfig cfg, string key, Parser<object, A> parser) =>
-      cfg.eitherList(key, parser).rightValue;
-
-    public static Option<Dictionary<K, V>> optDict<K, V>(
-      this IConfig cfg, string key, Parser<string, K> keyParser, Parser<object, V> valueParser
-    ) => cfg.eitherDict(key, keyParser, valueParser).rightValue;
-
-    public static Option<object> optObject(this IConfig cfg, string key) => cfg.optGet(key, objectParser);
-    public static Option<string> optString(this IConfig cfg, string key) => cfg.optGet(key, stringParser);
-    public static Option<int> optInt(this IConfig cfg, string key) => cfg.optGet(key, intParser);
-    public static Option<uint> optUInt(this IConfig cfg, string key) => cfg.optGet(key, uintParser);
-    public static Option<long> optLong(this IConfig cfg, string key) => cfg.optGet(key, longParser);
-    public static Option<ulong> optULong(this IConfig cfg, string key) => cfg.optGet(key, ulongParser);
-    public static Option<float> optFloat(this IConfig cfg, string key) => cfg.optGet(key, floatParser);
-    public static Option<double> optDouble(this IConfig cfg, string key) => cfg.optGet(key, doubleParser);
-    public static Option<bool> optBool(this IConfig cfg, string key) => cfg.optGet(key, boolParser);
-    public static Option<Range> optIRange(this IConfig cfg, string key) => cfg.optGet(key, iRangeParser);
-    public static Option<FRange> optFRange(this IConfig cfg, string key) => cfg.optGet(key, fRangeParser);
-    public static Option<URange> optURange(this IConfig cfg, string key) => cfg.optGet(key, uRangeParser);
-    public static Option<DateTime> optDateTime(this IConfig cfg, string key) => cfg.optGet(key, dateTimeParser);
-    public static Option<IConfig> optSubConfig(this IConfig cfg, string key) => cfg.optGet(key, configParser);
-    public static Option<List<IConfig>> optSubConfigList(this IConfig cfg, string key) => cfg.optList(key, configParser);
-
-    #endregion
-
     #region either getters
 
     public static Either<ConfigLookupError, List<A>> eitherList<A>(

@@ -4,12 +4,12 @@ using UnityEngine.Events;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks {
   [AddComponentMenu("")]
-  public class Callback_UnityEvent : SerializedTweenCallback {
+  public partial class Callback_UnityEvent : SerializedTweenCallback {
 
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
-    [SerializeField] InvokeOn _invokeOn;
+    [SerializeField] InvokeOn _invokeOn = InvokeOn.Forward;
     [SerializeField, NotNull] UnityEvent _onEvent;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649

@@ -176,5 +176,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     /// <summary>Representation of + as a function.</summary>
     [PublicAPI] public static readonly Fn<float, float, float> add2F = (a, b) => a + b;
+
+    [PublicAPI] public static readonly Fn<bool, bool> i = a => a;
   }
 }

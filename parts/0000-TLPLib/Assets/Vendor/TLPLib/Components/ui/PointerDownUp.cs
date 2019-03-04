@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
-  public abstract class PointerDownUp : MonoBehaviour, IPointerDownHandler, IPointerUpHandler {
+  public abstract class PointerDownUp : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IMB_OnDisable {
     /// <summary>
     /// We need a list here, because:
     /// * If we made several touches and then released some of them, we need to
@@ -42,5 +43,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     protected abstract void onPointerDown(PointerEventData eventData);
     protected abstract void onPointerUp(PointerEventData eventData);
+
+    public virtual void OnDisable() => pointerData.Clear();
   }
 }

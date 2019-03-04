@@ -13,9 +13,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     // may not work on scene awake
     // http://forum.unity3d.com/threads/bug-getrootgameobjects-is-not-working-in-awake.379317/
     [PublicAPI]
-    public static IEnumerable<T> findObjectsOfTypeAll<T>(this Scene scene) where T : Object {
-      return scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<T>(true));
-    }
+    public static IEnumerable<T> findComponentsOfTypeAll<T>(this Scene scene) where T : Component
+      => findComponentsOfTypeAllUnsafe<T>(scene);
+
+    // This is needed because GetComponentsInChildren accepts interfaces too.
+    public static IEnumerable<T> findComponentsOfTypeAllUnsafe<T>(this Scene scene) where T : class
+      => scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<T>(true));
 
     /// <summary>
     /// Retrieve first <see cref="A"/> attached to a root <see cref="GameObject"/> in the <see cref="Scene"/>.

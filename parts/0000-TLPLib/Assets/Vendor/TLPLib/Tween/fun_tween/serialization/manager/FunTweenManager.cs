@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// <summary>
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
-  public class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
+  public partial class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
     const string TAB_FIELDS = "Fields", TAB_ACTIONS = "Actions";
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
@@ -28,6 +29,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
     [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
     float timescale => _manager == null ? -1 : _manager.timescale;
+    
+#if UNITY_EDITOR
+    [SerializeField, PublicAccessor] string _title = "Fun Tween Manager";
+    [Inspect, UsedImplicitly, Tab(Tab.Fields)]
+    // Advanced Inspector does not render a button if it implements interface method. 
+    public void recreate() => invalidate();
+
+    public float currentTime => timePassed;
+#endif
 
     #region Unity Serialized Fields
 #pragma warning disable 649
@@ -72,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       get {
         TweenManager create() {
           if (Log.d.isDebug()) Log.d.debug($"Creating {nameof(TweenManager)} for {this}", this);
-          var tm = new TweenManager(_timeline.timeline, _time, _looping);
+          var tm = new TweenManager(_timeline.timeline, _time, _looping, gameObject.name, true);
           foreach (var cb in _onStart) tm.addOnStartCallback(cb.callback.callback);
           foreach (var cb in _onEnd) tm.addOnEndCallback(cb.callback.callback);
           return tm;
@@ -91,8 +101,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     void handleStartAutoplay() {
-      if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();
-      else if (_autoplay == AutoplayMode.ApplyEndStateOnStart) applyMaxDurationState();
+      if (Application.isPlaying) {
+        if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();
+        else if (_autoplay == AutoplayMode.ApplyEndStateOnStart) applyMaxDurationState();
+      }
     }
 
     public void OnEnable() {
@@ -155,7 +167,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [ShowInInspector, TabGroup(TAB_ACTIONS)] void applyMaxDurationState() =>
       manager.timeline.applyStateAt(manager.timeline.duration);
 
-#if UNITY_EDITOR
     [ShowInInspector, UsedImplicitly, TabGroup(TAB_FIELDS)]
     // Advanced Inspector does not render a button if it implements interface method. 
     void recreate() => invalidate();
@@ -169,7 +180,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       _timeline.invalidate();
       _manager = null;
       handleStartAutoplay();
-      if (_autoplay == AutoplayMode.Enabled) manager.play();
     }
     
     public enum Action : byte {

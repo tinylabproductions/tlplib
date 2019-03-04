@@ -15,5 +15,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static KeyValuePair<K, VV> mapValue<K, V, VV>(
       this KeyValuePair<K, V>  kv, Fn<V, VV> mapper
     ) => new KeyValuePair<K, VV>(kv.Key, mapper(kv.Value));
+
+    public static void Deconstruct<K, V>(
+      this KeyValuePair<K, V> kv, out K key, out V value
+    ) {
+      key = kv.Key;
+      value = kv.Value;
+    }
   }
 }

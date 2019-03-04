@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Linq;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.attributes;
+using com.tinylabproductions.TLPLib.Data.serialization;
 using com.tinylabproductions.TLPLib.Extensions;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
   /// <summary>
@@ -15,14 +19,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     [Serializable]
     // Can't be struct, because AdvancedInspector freaks out.
     public partial class Element : Invalidatable {
-      enum At : byte { AfterLastElement, WithLastElement, SpecificTime }
+      public enum At : byte { AfterLastElement, WithLastElement, SpecificTime }
       
       #region Unity Serialized Fields
 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
       [SerializeField, NotNull] string _title = "";
-      [SerializeField] At _at;
+      [SerializeField, HideInInspector] At _at;
       [
         SerializeField, Tooltip("in seconds"), LabelText("$" + nameof(timeOffsetDescription))
       ] float _timeOffset;
@@ -58,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
               ? $"{_at} + {_timeOffset}s"
               : $"{_at} - {-_timeOffset}s"
           );
-        return $"{titleS}{atS}: {_element}";
+        return $"{titleS}{atS} {_element}";
       }
     }
     

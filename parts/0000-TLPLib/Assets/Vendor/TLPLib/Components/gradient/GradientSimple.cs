@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     public Color32 topColor = Color.white, bottomColor = Color.black;
 
     public override void ModifyVertices(List<UIVertex> vertexList) {
-      GradientHelper.modifyVertices(vertexList, (c, t) => Color32.Lerp(bottomColor, topColor, t), type);
+      GradientHelper.modifyVertices(vertexList, (c, t) => Color32.Lerp(bottomColor, topColor, t), type, useGraphicAlpha);
     }
 
     [PublicAPI]

@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     #endregion
 
-    readonly List<A> elements = new List<A>();
+    public List<A> elements = new List<A>();
 
     /// <summary>
     /// Updates visual if we mutate elements.
@@ -206,7 +206,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     UnityMeters toUnityMeters(Carousel.Pages pages) => 
       UnityMeters.a(pages.pages * SpaceBetweenSelectedAndAdjacentPages);
     
-    void lerpPosition(float amount) {
+    public void lerpPosition(float amount) {
       if (elements.isEmpty()) return;
 
       var withinMoveCompletedThreshold =

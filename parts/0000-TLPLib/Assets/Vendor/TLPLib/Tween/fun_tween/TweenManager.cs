@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Contexts;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -56,6 +59,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public readonly ITweenTimeline timeline;
     [PublicAPI] public readonly TweenTime time;
+    [PublicAPI] public readonly string context;
+    [PublicAPI] public readonly bool stopIfDestroyed;
 
     IDisposableTracker _tracker;
     IDisposableTracker tracker => _tracker ?? (_tracker = new DisposableTracker());
@@ -76,19 +81,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     // TODO: implement me: loop(times, forever, yoyo)
     // notice: looping needs to take into account that some duration might have passed in the
     // new iteration
-    public TweenManager(ITweenTimeline timeline, TweenTime time, Loop looping) {
+    public TweenManager(ITweenTimeline timeline, TweenTime time, Loop looping, string context, bool stopIfDestroyed = false) {
       this.timeline = timeline;
       this.time = time;
       this.looping = looping;
+      this.context = context;
+      this.stopIfDestroyed = stopIfDestroyed;
     }
 
     [PublicAPI]
-    public void update(float deltaTime) {
+    public bool update(float deltaTime) {
+      var noErrors = true;
+
       if (!forwards) deltaTime *= -1;
       deltaTime *= timescale;
 
       // ReSharper disable once CompareOfFloatsByEqualityOperator
-      if (deltaTime == 0) return;
+      if (deltaTime == 0) return noErrors;
 
       if (
         currentIteration == 0 
@@ -98,7 +107,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
 
       var previousTime = timeline.timePassed;
-      timeline.update(deltaTime);
+      if (!timeline.update(deltaTime)) noErrors = false;
 
       if (forwards && timeline.isAtDuration() || !forwards && timeline.isAtZero()) {
         if (looping.shouldLoop(currentIteration)) {
@@ -115,13 +124,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             default:
               throw new ArgumentOutOfRangeException();
           }
-          update(unusedTime);
+          if (!update(unusedTime)) noErrors = false;
         }
         else {
           __onEndSubject?.push(new TweenCallback.Event(forwards));
           stop();
         }
       }
+
+      return noErrors;
     }
 
     [PublicAPI]
@@ -149,7 +160,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public TweenManager play(float startTime) {
       rewind();
       resume(true);
-      timeline.timePassed = startTime;
+      timeline.setTimePassed(startTime, true);
       return this;
     }
     
@@ -199,23 +210,45 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class TweenManagerExts {
     [PublicAPI]
     public static TweenManager managed(
-      this ITweenTimeline timeline, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(timeline, time, TweenManager.Loop.single);
+      this ITweenTimeline timeline, TweenTime time = TweenTime.OnUpdate,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => new TweenManager(
+      timeline, time, TweenManager.Loop.single, createContext(callerMemberName, callerFilePath, callerLineNumber)
+    );
 
     [PublicAPI]
     public static TweenManager managed(
-      this ITweenTimeline timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(timeline, time, looping);
+      this ITweenTimeline timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => new TweenManager(timeline, time, looping, createContext(callerMemberName, callerFilePath, callerLineNumber));
 
     [PublicAPI]
     public static TweenManager managed(
-      this TweenTimelineElement timeline, TweenTime time = TweenTime.OnUpdate, float delay = 0
-    ) => timeline.managed(TweenManager.Loop.single, time, delay);
+      this TweenTimelineElement timeline, TweenTime time = TweenTime.OnUpdate, float delay = 0,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+      // ReSharper disable ExplicitCallerInfoArgument
+    ) => timeline.managed(TweenManager.Loop.single, time, delay, callerMemberName, callerFilePath, callerLineNumber);
+    // ReSharper restore ExplicitCallerInfoArgument
 
     [PublicAPI]
     public static TweenManager managed(
       this TweenTimelineElement timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
-      float delay = 0
-    ) => new TweenManager(TweenTimeline.single(timeline, delay), time, looping);
+      float delay = 0,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => new TweenManager(
+      TweenTimeline.single(timeline, delay), time, looping,
+      createContext(callerMemberName, callerFilePath, callerLineNumber)
+    );
+
+    static string createContext(string callerMemberName, string callerFilePath, int callerLineNumber) =>
+      $"{callerMemberName} @ {callerFilePath}:{callerLineNumber}.";
   }
 }
