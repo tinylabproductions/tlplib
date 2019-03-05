@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void Dispose() {}
   }
 
-  [Serializable]
+  [Serializable, PublicAPI] 
   public struct URange : IEnumerable<uint>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -103,6 +103,9 @@ namespace com.tinylabproductions.TLPLib.Data {
       _to = to;
     }
 
+    // https://stackoverflow.com/a/3269471/935259
+    public bool overlaps(URange o) => _from <= o._to && o._from <= _to;
+    
     public uint random => (uint) Random.Range(from, to + 1);
     public uint this[Percentage p] => from + (uint) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
@@ -113,9 +116,11 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
     }
 
-    [PublicAPI] public URangeEnumerator GetEnumerator() => new URangeEnumerator(from, to);
+    public URangeEnumerator GetEnumerator() => new URangeEnumerator(from, to);
     IEnumerator<uint> IEnumerable<uint>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    
+    public static URange operator +(URange r, uint i) => new URange(from: r._from + i, to: r._to + i);
   }
 
   public struct URangeEnumerator : IEnumerator<uint> {

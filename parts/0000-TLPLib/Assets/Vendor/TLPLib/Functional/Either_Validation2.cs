@@ -1,12 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   // Non-generated methods for validation.
-  public static class Either_Validation2 {
+  [PublicAPI] public static class Either_Validation2 {
     public static Either<ImmutableList<A>, B> validationSuccess<A, B>(this B b) =>
       Either<ImmutableList<A>, B>.Right(b);
+
+    public static Either<ImmutableList<A>, B> validationSuccess<A, B>(this B b, A example) =>
+      validationSuccess<A, B>(b);
+    
+    public static Either<ImmutableList<A>, B> validationFailure<A, B>(this A a) =>
+      Either<ImmutableList<A>, B>.Left(ImmutableList.Create(a));
+
+    public static Either<ImmutableList<A>, B> validationFailure<A, B>(this A a, B example) =>
+      validationFailure<A, B>(a);
 
     public static Either<ImmutableList<string>, A> stringValidationSuccess<A>(this A b) =>
       b.validationSuccess<string, A>();

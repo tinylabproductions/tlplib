@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -20,7 +21,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public void checkWithNoiseOpt<A>(
       IDeserializer<A> deser, Rope<byte> serialized, Option<A> expected
-    ) => checkWithNoiseOpt(deser, serialized, o => o.shouldEqual(expected));
+    ) => checkWithNoiseOpt(deser, serialized, o => {
+      o.voidFold(() => expected.shouldBeNone(), a => o.shouldBeSome(a));
+    });
 
     public void checkWithNoiseOpt<A>(
       IDeserializer<A> deser, Rope<byte> serialized, Act<Option<A>> check
@@ -36,7 +39,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     static A valueFromInfo<A>(DeserializeInfo<A> info, int serializedLength) {
-      info.bytesRead.shouldEqual(serializedLength);
+      info.bytesRead.shouldEqual(
+        serializedLength, $"should have read {serializedLength} but deserialization read {info.bytesRead}"
+      );
       return info.value;
     }
   }
@@ -51,12 +56,32 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
   }
 
+  public class SerializationTestULongRW : SerializationTestBase {
+    static readonly ISerializedRW<ulong> rw = SerializedRW.uLong;
+
+    [Test]
+    public void Test() {
+      const ulong value = ulong.MaxValue;
+      checkWithNoise(rw, rw.serialize(value), value);
+    }
+  }
+
   public class SerializationTestByteRW : SerializationTestBase {
     static readonly ISerializedRW<byte> rw = SerializedRW.byte_;
 
     [Test]
     public void Test() {
       const byte value = 8;
+      checkWithNoise(rw, rw.serialize(value), value);
+    }
+  }
+
+  public class SerializationTestByteArrayRW : SerializationTestBase {
+    static readonly ISerializedRW<byte[]> rw = SerializedRW.byteArray;
+
+    [Test]
+    public void Test() {
+      var value = Enumerable.Range(0, byte.MaxValue).Select(_ => (byte) _).ToArray();
       checkWithNoise(rw, rw.serialize(value), value);
     }
   }

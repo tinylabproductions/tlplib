@@ -62,7 +62,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public static readonly ISerializedRW<string> str = new stringRW();
     [PublicAPI] public static readonly ISerializedRW<int> integer = new intRW();
     [PublicAPI] public static readonly ISerializedRW<byte> byte_ = new byteRW();
+    [PublicAPI] public static readonly ISerializedRW<byte[]> byteArray = new byteArrayRW();
     [PublicAPI] public static readonly ISerializedRW<uint> uInteger = new uintRW();
+    [PublicAPI] public static readonly ISerializedRW<ulong> uLong = new ulongRW();
     [PublicAPI] public static readonly ISerializedRW<ushort> uShort = new ushortRW();
     [PublicAPI] public static readonly ISerializedRW<bool> boolean = new boolRW();
     [PublicAPI] public static readonly ISerializedRW<float> flt = new floatRW();
