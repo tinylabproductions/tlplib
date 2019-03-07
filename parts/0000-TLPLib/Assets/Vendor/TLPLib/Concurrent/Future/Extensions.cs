@@ -6,7 +6,7 @@ using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public static class FutureExts {
+  [PublicAPI] public static class FutureExts {
     public static Future<A> flatten<A>(this Future<Future<A>> future) =>
       future.flatMap(_ => _);
 
@@ -57,6 +57,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return new Subscription(() => sub.unsubscribe());
       }
     );
+
+    public static Future<Either<A, B>> extract<A, B>(this Either<A, Future<B>> eitherFuture) =>
+      eitherFuture.fold(
+        a => Future.successful(Either<A, B>.Left(a)),
+        bFuture => bFuture.map(Either<A, B>.Right)
+      );
 
     public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(Future<A>.unfulfilled, f => f);
