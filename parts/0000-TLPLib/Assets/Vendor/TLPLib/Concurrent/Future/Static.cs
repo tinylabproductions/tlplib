@@ -123,7 +123,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<A> fromBusyLoop<A>(
       Fn<Option<A>> checker, YieldInstruction delay=null
-    ) { return Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker))); }
+    ) => Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
+
+    /// <summary>Complete when checker returns true</summary>
+    public static Future<Unit> fromBusyLoop(
+      Fn<bool> checker, YieldInstruction delay=null
+    ) => Future<Unit>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
 
     /* Waits at most `timeout` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
@@ -160,6 +165,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         valOpt = checker();
       }
       p.complete(valOpt.get);
+    }
+
+    static IEnumerator busyLoopEnum(YieldInstruction delay, Promise<Unit> p, Fn<bool> checker) {
+      while (!checker()) {
+        yield return delay;
+      }
+      p.complete(F.unit);
     }
   }
 }
