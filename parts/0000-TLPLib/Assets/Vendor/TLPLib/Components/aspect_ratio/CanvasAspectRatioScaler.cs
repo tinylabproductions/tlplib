@@ -42,8 +42,9 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
 
     // transform may be null if OnRectTransformDimensionsChange was called before Awake
     new RectTransform transform => _transform ? _transform : (RectTransform)base.transform;
-    
-    
+
+    public float scale { get; private set; }
+
     [ShowInInspector]
     float calculatedScale {
       get {
@@ -71,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       base.OnRectTransformDimensionsChange();
 
       var tr = transform;
-      var scale = calculatedScale;
+      scale = calculatedScale;
       target.localScale = Vector3.one * scale;
 
       if (stretchMode != StretchMode.None) {
