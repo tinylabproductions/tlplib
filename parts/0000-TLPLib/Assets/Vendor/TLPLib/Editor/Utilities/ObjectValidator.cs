@@ -336,7 +336,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
         }
         if (fieldValue is string s) {
-          if (fi.getAttributes<UnityTagAttribute>().nonEmpty()) {
+          if (fi.getAttributes<UnityTagAttribute>().nonEmptyAllocating()) {
             if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(s)) {
               yield return createError.badTextFieldTag(fieldHierarchy.asString());
             }

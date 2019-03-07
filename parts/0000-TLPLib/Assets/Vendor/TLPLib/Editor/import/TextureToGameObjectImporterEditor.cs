@@ -83,7 +83,7 @@ namespace com.tinylabproductions.TLPLib.import {
           });
         }
 
-        if (unknownColorsFound.nonEmpty()) {
+        if (unknownColorsFound.nonEmptyAllocating()) {
           EditorUtils.userInfo(
             "Found unknown colors!", level: Log.Level.ERROR,
             body:

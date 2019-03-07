@@ -364,8 +364,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return result;
     }
 
-    public static bool isEmpty<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
-    public static bool nonEmpty<A>(this IEnumerable<A> enumerable) => enumerable.Any();
+    public static bool isEmptyAllocating<A>(this IEnumerable<A> enumerable) => !enumerable.Any();
+    public static bool nonEmptyAllocating<A>(this IEnumerable<A> enumerable) => enumerable.Any();
     
     public static IEnumerable<A> Except<A>(
       this IEnumerable<A> enumerable, A except, IEqualityComparer<A> cmp = null

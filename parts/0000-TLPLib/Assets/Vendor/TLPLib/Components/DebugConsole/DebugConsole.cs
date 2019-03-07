@@ -157,7 +157,6 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       Option.ensureValue(ref directionDataOpt);
       Option.ensureValue(ref keyboardShortcutOpt);
 
-      binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
       mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
 
       var mouseObs =
@@ -234,7 +233,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
     
-    public void show(DebugConsoleBinding binding) {
+    public void show(DebugConsoleBinding binding = null) {
+      binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
+
       destroy();
       onShow?.Invoke(this);
       onShow = null;

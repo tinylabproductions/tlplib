@@ -12,6 +12,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -178,16 +179,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
       SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
   }
 
-  public struct LogEvent {
+  [Record] public readonly partial struct LogEvent {
     public readonly Log.Level level;
     public readonly LogEntry entry;
-
-    public LogEvent(Log.Level level, LogEntry entry) {
-      this.level = level;
-      this.entry = entry;
-    }
-
-    public override string ToString() => $"{nameof(LogEvent)}[{level}, {entry}]";
   }
 
   public interface ILog {

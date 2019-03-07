@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       uniqueValidators = fi.getAttributes<UniqueValue>().Select(uv => new UniqueValuesValidator(uv.category))
         .ToImmutableArray();
 
-      if (fi.getAttributes<UnityTagAttribute>().nonEmpty()) {
+      if (fi.getAttributes<UnityTagAttribute>().nonEmptyAllocating()) {
         b.Add(new TagValidator());
       }
 

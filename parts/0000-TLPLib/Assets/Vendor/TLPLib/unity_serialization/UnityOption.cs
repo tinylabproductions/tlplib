@@ -43,7 +43,12 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
     public override bool isSome { get {
       if (_isSome) {
-        if (Application.isPlaying && _value == null) {
+        if (
+#if UNITY_EDITOR
+          Application.isPlaying &&
+#endif
+          !typeof(A).IsValueType && _value == null
+        ) {
           Log.d.error(
             $"{nameof(UnityOption<A>)} of {GetType()} was marked as Some, but referencing value was null!"
           );
