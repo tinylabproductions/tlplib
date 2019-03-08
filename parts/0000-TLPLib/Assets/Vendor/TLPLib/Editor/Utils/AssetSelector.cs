@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     [UsedImplicitly, MenuItem("TLP/Tools/Make selected objects dirty (force reserialize)")]
     static void makeObjectsDirty() {
       var objects = Selection.objects;
-      Undo.RecordObjects(objects, "Set objects dirty");
+      objects.recordEditorChanges("Set objects dirty");
       foreach (var o in objects) EditorUtility.SetDirty(o);
     }
 

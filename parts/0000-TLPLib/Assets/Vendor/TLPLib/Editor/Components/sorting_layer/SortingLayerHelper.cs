@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Utilities;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
   public static class SortingLayerHelper {
@@ -30,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
       var newLayerIndex = EditorGUILayout.Popup("Sorting Layer", oldLayerIndex, sortingLayerNames);
 
       if (newLayerIndex != oldLayerIndex) {
-        Undo.RecordObjects(renderers, "Edit Sorting Layer");
+        renderers.recordEditorChanges("Edit Sorting Layer");
         var newId = layers[newLayerIndex].id;
         foreach (var r in renderers) {
           r.sortingLayerID = newId;
@@ -45,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer.Editor {
 
       var newSortingLayerOrder = EditorGUILayout.IntField("Sorting Layer Order", oldOrder);
       if (newSortingLayerOrder != oldOrder) {
-        Undo.RecordObjects(renderers, "Edit Sorting Order");
+        renderers.recordEditorChanges("Edit Sorting Order");
         foreach (var r in renderers) {
           r.sortingOrder = newSortingLayerOrder;
           EditorUtility.SetDirty(r);

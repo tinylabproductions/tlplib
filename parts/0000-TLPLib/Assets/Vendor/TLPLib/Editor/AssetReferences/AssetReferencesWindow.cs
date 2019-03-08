@@ -157,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
           if (GUILayout.Button("set dirty")) {
             var objects = loadGuids(guids).ToArray();
-            Undo.RecordObjects(objects, "Set objects dirty");
+            objects.recordEditorChanges("Set objects dirty");
             foreach (var o in objects) EditorUtility.SetDirty(o);
           }
         }
