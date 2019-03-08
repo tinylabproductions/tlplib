@@ -23,7 +23,6 @@ namespace com.tinylabproductions.TLPLib.Android {
       public override string ToString() => $"DPI[xDpi: {xDpi}, yDpi: {yDpi}]";
     }
 
-    static readonly AndroidJavaClass bridge;
     public static readonly Activity current;
     public static readonly Context appContext;
     public static readonly PackageManager packageManager;
@@ -35,7 +34,6 @@ namespace com.tinylabproductions.TLPLib.Android {
       if (Application.isEditor) return;
 
       using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
-        bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
         current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));
         appContext = current.applicationContext;
         packageManager = appContext.packageManager;
@@ -69,20 +67,6 @@ namespace com.tinylabproductions.TLPLib.Android {
     } }
 
     public static string rateURL => "market://details?id=" + packageName;
-
-    static Option<bool> _isTablet = F.none<bool>();
-
-    public static bool isTablet { get {
-      if (_isTablet.isNone) {
-        // cache result
-        _isTablet = F.some(bridge.CallStatic<bool>("isTablet"));
-      }
-      return _isTablet.get;
-    } }
-
-    public static void sharePNG(string path, string title, string sharerText) {
-      bridge.CallStatic("sharePNG", path, title, sharerText);
-    }
 
     public static void runOnUI(Action act) => current.runOnUIThread(act);
     public static Future<A> runOnUI<A>(Fn<A> f) => Future<A>.async(promise => runOnUI(() => {

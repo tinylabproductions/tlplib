@@ -1,15 +1,17 @@
 ﻿#if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
+using com.tinylabproductions.TLPLib.Android.Bindings.android.os;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.telephony;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
-
-  [JavaBinding("android.content.Context")]
+  [JavaBinding("android.content.Context"), PublicAPI]
   public class Context : Binding {
     const string
+      SERVICE_VIBRATOR = "vibrator",
       SERVICE_TELEPHONY_MANAGER = "phone";
 
     public enum SharedPreferencesMode : byte {
@@ -22,6 +24,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
 
     public AndroidJavaObject getSystemService(string name) =>
       java.cjo("getSystemService", name);
+
+    public Vibrator vibrator =>
+      new Vibrator(getSystemService(SERVICE_VIBRATOR));
 
     public TelephonyManager telephonyManager =>
       new TelephonyManager(getSystemService(SERVICE_TELEPHONY_MANAGER));
