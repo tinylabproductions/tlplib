@@ -39,14 +39,17 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       ;
 
     [PublicAPI]
-    public static void userInfo(string title, string body, Log.Level level = Log.Level.INFO) {
+    public static void userInfo(
+      string title, string body, Log.Level level = Log.Level.INFO, Object context = null
+    ) {
       var log = Log.@default;
       if (log.willLog(level)) log.log(
         level,
         LogEntry.simple(
           $"########## {title} ##########\n\n" +
           $"{body}\n\n" +
-          $"############################################################"
+          $"############################################################",
+          context: context
         )
       );
 #if UNITY_EDITOR
