@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
@@ -157,7 +158,43 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public static LogEntry fromException(
       string message, Exception ex, bool reportToErrorTracking = true, Object context = null
-    ) => simple($"{message}: {ex.Message}", reportToErrorTracking, Backtrace.fromException(ex), context);
+    ) {
+      var sb = new StringBuilder();
+
+      void appendEx(Exception e) {
+        sb.Append("[");
+        sb.Append(e.GetType());
+        sb.Append("] ");
+        sb.Append(e.Message);
+      }
+      
+      sb.Append(message);
+      sb.Append(": ");
+      appendEx(ex);
+      var backtraceBuilder = ImmutableList.CreateBuilder<BacktraceElem>();
+      foreach (var bt in Backtrace.fromException(ex)) {
+        backtraceBuilder.AddRange(bt.elements.a);
+      }
+
+      var idx = 0;
+      var cause = ex.InnerException;
+      while (cause != null) {
+        sb.Append("\nCaused by [");
+        sb.Append(idx);
+        sb.Append("]: ");
+        appendEx(cause);
+        foreach (var bt in Backtrace.fromException(ex)) {
+          backtraceBuilder.Add(new BacktraceElem($"### Backtrace for [{idx}] ###", F.none_));
+          backtraceBuilder.AddRange(bt.elements.a);
+        }
+        cause = cause.InnerException;
+        idx++;
+      }
+
+      var backtrace = backtraceBuilder.ToImmutable().toNonEmpty().map(_ => new Backtrace(_));
+      
+      return simple(sb.ToString(), reportToErrorTracking, backtrace, context);
+    }
 
     [PublicAPI]
     public LogEntry withMessage(string message) =>
