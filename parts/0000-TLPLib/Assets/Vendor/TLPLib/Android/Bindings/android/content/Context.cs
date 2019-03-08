@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
 
     public Context(AndroidJavaObject java) : base(java) {}
 
-    AndroidJavaObject getSystemService(string name) =>
+    public AndroidJavaObject getSystemService(string name) =>
       java.cjo("getSystemService", name);
 
     public TelephonyManager telephonyManager =>
@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
       // There are 3 modes, but 2 of them are deprecated:
       // https://developer.android.com/reference/android/content/Context.html#MODE_WORLD_READABLE
       new SharedPreferences(java.c<AndroidJavaObject>("getSharedPreferences", name, 0));
-
+    
     /// <summary>
     /// https://developer.android.com/reference/android/content/Context.html#startActivity(android.content.Intent)
     /// </summary>
