@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
@@ -11,10 +12,21 @@ using UnityEditorInternal;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class EditorUtils {
+    [Conditional("UNITY_EDITOR")]
     public static void recordEditorChanges(this Object o, string name) {
 #if UNITY_EDITOR
       Undo.RecordObject(o, name);
       EditorUtility.SetDirty(o);
+#endif
+    }
+
+    [Conditional("UNITY_EDITOR")]
+    public static void recordEditorChanges(this Object[] objects, string name) {
+#if UNITY_EDITOR
+      Undo.RecordObjects(objects, name);
+      foreach (var o in objects) {
+        EditorUtility.SetDirty(o);
+      }
 #endif
     }
 
