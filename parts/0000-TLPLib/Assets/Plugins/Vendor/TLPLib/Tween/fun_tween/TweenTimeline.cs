@@ -242,6 +242,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       [PublicAPI]
       public Builder append(TweenTimelineElement element, out float elementEndsAt) =>
         insert(totalDuration, element, out elementEndsAt);
+      
+      [PublicAPI] 
+      public Builder appendSequentially(IEnumerable<TweenTimelineElement> elements) {
+        foreach (var element in elements)
+          append(element);
+        return this;
+      }
     }
 
     [PublicAPI] 
