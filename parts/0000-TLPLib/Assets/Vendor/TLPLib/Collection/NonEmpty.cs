@@ -54,6 +54,14 @@ namespace com.tinylabproductions.TLPLib.Collection {
     }
 
     [PublicAPI] 
+    public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1) =>
+      NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.Create(a1));
+
+    [PublicAPI] 
+    public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1, params A[] rest) =>
+      NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.Create(rest).Add(a1));
+
+    [PublicAPI] 
     public static NonEmpty<ImmutableSortedSet<A>> sortedSet<A>(A a1) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ImmutableSortedSet.Create(a1));
 
