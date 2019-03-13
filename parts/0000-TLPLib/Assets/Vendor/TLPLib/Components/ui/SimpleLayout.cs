@@ -1,5 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
-using Sirenix.OdinInspector;
+﻿using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -14,6 +13,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField, OnValueChanged(nameof(recalculateLayout))] bool _resizeParent;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
+
+    public float spacing {
+      get => _spacing;
+      set {
+        _spacing = value;
+        recalculateLayout();
+      }
+    }
 
     [Button]
     public void recalculateLayout() {
