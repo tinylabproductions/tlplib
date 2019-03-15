@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -22,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     [SerializeField/*, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))*/]
     public Object scene;
 
-    [SerializeField, HideInInspector] string _sceneName, _scenePath;
+    [SerializeField, ReadOnly] string _sceneName, _scenePath;
 
     // Required for AI
     // ReSharper disable once NotNullMemberIsNotInitialized
@@ -43,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       return new ScenePath(_scenePath);
     } }
 
-    [Conditional("UNITY_EDITOR")]
+    [Conditional("UNITY_EDITOR"), Button]
     public void prepareForRuntime() {
 #if UNITY_EDITOR
       if (!AssetDatabase.GetAssetPath(scene).EndsWithFast(".unity")) {
@@ -56,11 +57,6 @@ namespace com.tinylabproductions.TLPLib.Data {
         _scenePath = AssetDatabase.GetAssetPath(scene);
       }
 #endif
-    }
-
-    bool inspect() {
-      prepareForRuntime();
-      return true;
     }
 
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
