@@ -70,6 +70,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     DConsole() {
       var r = registrarFor(nameof(DConsole));
+      r.register("Run GC", GC.Collect);
       r.register("Self-test", () => "self-test");
       r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s"));
       
