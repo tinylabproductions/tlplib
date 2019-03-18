@@ -415,10 +415,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #else
       readonly system.WeakReferenceTLP<Subscription> subscription;
 #endif
-      readonly string callerMemberName, callerFilePath;
-      readonly int callerLineNumber;
+      public readonly string callerMemberName, callerFilePath;
+      public readonly int callerLineNumber;
 
-      public bool isSubscribed { get {
+      public bool isSubscribed(out bool isBroken) {
+        isBroken = false;
         if (haveUnsubscribed) return false;
 #if LEGACY_OBSERVABLES
         return subscription.isSubscribed;
@@ -426,11 +427,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         if (subscription.Target.valueOut(out var sub)) return sub.isSubscribed;
         Log.d.error(
           $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
-          $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}."
+          subscribedFrom
         );
+        isBroken = true;
         return false;
 #endif
-      } }
+      }
+
+      public string subscribedFrom => $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}.";
 
       public Sub withActive(bool active) => new Sub(
         onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription,
@@ -472,18 +476,30 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       // Mark a flag to prevent concurrent modification of subscriptions array.
       iterating = true;
+      // Did we detect broken subscriptions?
+      var brokenSubsDetected = false;
       try {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
-          if (sub.active && sub.isSubscribed) {
-            sub.onEvent(a);
+          if (sub.active) {
+            if (sub.isSubscribed(out var isBroken)) {
+              try {
+                sub.onEvent(a);
+              }
+              catch (Exception e) {
+                Log.d.error("Exception on event, unsubscribing! " + sub.subscribedFrom, e);
+                unsubscribe(sub, idx);
+              }
+            }
+
+            brokenSubsDetected = brokenSubsDetected || isBroken;
           }
         }
       }
       finally {
         iterating = false;
-        afterIteration();
+        afterIteration(brokenSubsDetected);
         // Process pending submits.
         if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
       }
@@ -498,7 +514,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       // Hard ref from subscription to this
-      var sub = new Subscription(() => onUnsubscribed(onEvent));
+      var sub = new Subscription(() => unsubscribe(onEvent));
       subscription = sub;
       tracker.track(
         subscription,
@@ -542,17 +558,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region private methods
 
-    void onUnsubscribed(Action<A> onEvent) {
+    void unsubscribe(Action<A> onEvent) {
       for (var idx = 0; idx < subscriptions.Count; idx++) {
         var sub = subscriptions[idx];
         if (sub.onEvent == onEvent) {
           subscriptions[idx] = sub.unsubscribe();
-          break;
+          unsubscribe(sub, idx);
+          return;
         }
       }
+    }
+
+    void unsubscribe(Sub sub, int idx) {
+      subscriptions[idx] = sub.unsubscribe();
       pendingRemovals++;
       if (iterating) return;
-      afterIteration();
+      afterIteration(false);
 
       // Unsubscribe from source if we don't have any subscribers that are
       // subscribed to us.
@@ -562,7 +583,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    void afterIteration() {
+    void afterIteration(bool brokenSubsDetected) {
       if (pendingSubscriptionActivations != 0) {
         for (var idx = 0; idx < subscriptions.Count; idx++) {
           var sub = subscriptions[idx];
@@ -570,13 +591,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         }
         pendingSubscriptionActivations = 0;
       }
-      if (pendingRemovals != 0) {
-        subscriptions.RemoveWhere(sub => !sub.isSubscribed);
+      if (brokenSubsDetected || pendingRemovals != 0) {
+        subscriptions.RemoveWhere(sub => !sub.isSubscribed(out _));
         pendingRemovals = 0;
       }
     }
 
     #endregion
-
   }
 }
