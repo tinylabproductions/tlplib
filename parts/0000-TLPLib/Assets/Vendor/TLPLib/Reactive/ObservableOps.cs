@@ -671,7 +671,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       ));
     }
 
-    static Observable<Elem>.SubscribeToSource changesBase<A, Elem>(
+    static SubscribeToSource<Elem> changesBase<A, Elem>(
       IRxObservable<A> o, Action<Action<Elem>, Option<A>, A> action
     ) => onEvent => {
       var lastValue = F.none<A>();

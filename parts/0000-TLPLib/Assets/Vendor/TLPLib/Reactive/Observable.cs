@@ -358,41 +358,42 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
   }
 
-  public delegate ObservableImplementation ObserverBuilder<
-    Elem, out ObservableImplementation
-  >(Observable<Elem>.SubscribeToSource subscriptionFn);
+  // This is here, instead of in Observable<A>, because il2cpp generates nonsense code
+  // when the delegate is in the class.
+  // ReSharper disable once TypeParameterCanBeVariant
+  public delegate ISubscription SubscribeToSource<A>(Action<A> onEvent);
 
   public partial class Observable<A> : IRxObservable<A> {
-    public delegate ISubscription SubscribeToSource(Action<A> onEvent);
-
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
       readonly Action<A> onEvent;
-      readonly SubscribeToSource subscribeFn;
+      readonly SubscribeToSource<A> subscribeFn;
 
-      Option<ISubscription> subscription = F.none<ISubscription>();
+      // not an option due to that option is reference type on il2cpp
+      ISubscription subscription;
 
       public SourceProperties(
-        Action<A> onEvent, SubscribeToSource subscribeFn
+        Action<A> onEvent, SubscribeToSource<A> subscribeFn
       ) {
         this.onEvent = onEvent;
         this.subscribeFn = subscribeFn;
       }
 
       public bool trySubscribe() {
-        if (subscription.isNone) {
-          subscription = F.some(subscribeFn(onEvent));
+        if (subscription == null) {
+          subscription = subscribeFn(onEvent);
           return true;
         }
         return false;
       }
 
       public bool tryUnsubscribe() {
-        foreach (var sub in subscription) {
-          subscription = Option<ISubscription>.None;
+        if (subscription != null) {
+          var sub = subscription;
+          subscription = null;
           return sub.unsubscribe();
         }
         return false;
@@ -463,7 +464,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       sourceProps = F.none<SourceProperties>();
     }
 
-    public Observable(SubscribeToSource subscribeFn) {
+    public Observable(SubscribeToSource<A> subscribeFn) {
       sourceProps = new SourceProperties(submit, subscribeFn).some();
     }
 
