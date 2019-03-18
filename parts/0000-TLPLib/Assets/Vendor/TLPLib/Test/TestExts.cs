@@ -49,12 +49,12 @@ namespace com.tinylabproductions.TLPLib.Test {
       a2.shouldNotEqual(a1);
     }
 
-    public static Fn<Unit> code(Action a) => () => {
+    public static Func<Unit> code(Action a) => () => {
       a();
       return F.unit;
     };
 
-    public static Fn<A> code<A>(Fn<A> a) => a;
+    public static Func<A> code<A>(Func<A> a) => a;
   }
 
   [PublicAPI] public static class TestExts {
@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.IsEmpty(enumerable, message);
 
     public static void shouldBeEmpty<A>(
-      this ICollection<A> enumerable, Fn<ICollection<A>, string> message = null
+      this ICollection<A> enumerable, Func<ICollection<A>, string> message = null
     ) =>
       Assert.IsEmpty(enumerable, message?.Invoke(enumerable));
 
@@ -134,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Test {
       Assert.Contains(a, collection, message);
 
     public static void shouldContain<A>(
-      this IEnumerable<A> enumerable, Fn<A, bool> predicate, string message = null
+      this IEnumerable<A> enumerable, Func<A, bool> predicate, string message = null
     ) {
       if (enumerable.find(predicate).isNone) Assert.Fail(
         message ??
@@ -143,8 +143,8 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldNotContain<A>(
-      this IEnumerable<A> enumerable, Fn<A, bool> predicate,
-      Fn<A, string> message = null
+      this IEnumerable<A> enumerable, Func<A, bool> predicate,
+      Func<A, string> message = null
     ) {
       foreach (var a in enumerable.find(predicate)) Assert.Fail(
         message?.Invoke(a) ??
@@ -187,7 +187,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static void shouldNotEqualEnum<A>(this IEnumerable<A> a, params A[] expected) =>
       shouldNotEqualEnum(a, expected, null);
 
-    public static void shouldMatch<A>(this A a, Fn<A, bool> predicate, string message = null) {
+    public static void shouldMatch<A>(this A a, Func<A, bool> predicate, string message = null) {
       if (! predicate(a))
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
     }
@@ -313,31 +313,31 @@ namespace com.tinylabproductions.TLPLib.Test {
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);
 
     public static ChangeMatcher<A, R> shouldChange<A, R>(
-      this Fn<R> fn, Fn<A> measure, Numeric<A> num
+      this Func<R> fn, Func<A> measure, Numeric<A> num
     ) => new ChangeMatcher<A, R>(fn, measure, num);
 
     public static ChangeMatcher<A, R> shouldChange<A, R>(
-      this Fn<R> fn, Val<A> measure, Numeric<A> num
+      this Func<R> fn, Val<A> measure, Numeric<A> num
     ) => new ChangeMatcher<A, R>(fn, () => measure.value, num);
 
     public static void shouldNotChange<A, R>(
-      this Fn<R> fn, Fn<A> measure, Numeric<A> num
+      this Func<R> fn, Func<A> measure, Numeric<A> num
     ) => fn.shouldChange(measure, num).by(0);
 
     public static void shouldNotChange<A, R>(
-      this Fn<R> fn, Val<A> measure, Numeric<A> num
+      this Func<R> fn, Val<A> measure, Numeric<A> num
     ) => fn.shouldChange(measure, num).by(0);
 
-    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Fn<int> measure) =>
+    public static ChangeMatcher<int, R> shouldChange<R>(this Func<R> fn, Func<int> measure) =>
       fn.shouldChange(measure, Numeric.integer);
 
-    public static ChangeMatcher<int, R> shouldChange<R>(this Fn<R> fn, Val<int> measure) =>
+    public static ChangeMatcher<int, R> shouldChange<R>(this Func<R> fn, Val<int> measure) =>
       fn.shouldChange(measure, Numeric.integer);
 
-    public static void shouldNotChange<R>(this Fn<R> fn, Fn<int> measure) =>
+    public static void shouldNotChange<R>(this Func<R> fn, Func<int> measure) =>
       fn.shouldChange(measure).by(0);
 
-    public static void shouldNotChange<R>(this Fn<R> fn, Val<int> measure) =>
+    public static void shouldNotChange<R>(this Func<R> fn, Val<int> measure) =>
       fn.shouldChange(measure).by(0);
 
     public static StreamMatcher<A> shouldPushTo<A>(
@@ -346,11 +346,11 @@ namespace com.tinylabproductions.TLPLib.Test {
   }
 
   public class ChangeMatcher<MeasurementType, ReturnedType> {
-    readonly Fn<ReturnedType> run;
-    readonly Fn<MeasurementType> measure;
+    readonly Func<ReturnedType> run;
+    readonly Func<MeasurementType> measure;
     readonly Numeric<MeasurementType> num;
 
-    public ChangeMatcher(Fn<ReturnedType> run, Fn<MeasurementType> measure, Numeric<MeasurementType> num) {
+    public ChangeMatcher(Func<ReturnedType> run, Func<MeasurementType> measure, Numeric<MeasurementType> num) {
       this.run = run;
       this.measure = measure;
       this.num = num;

@@ -230,11 +230,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void Test() {
       var subj = new Subject<int>();
       var obs = subj.map(i => i * 2);
-      obs.pipeToList(tracker).ua((list, sub) => {
-        foreach (var a in new[] {1, 2, 3, 4, 5}) subj.push(a);
-        list.shouldEqual(F.list(2, 4, 6, 8, 10));
-        sub.testUnsubscription(subj);
-      });
+      var (list, sub) = obs.pipeToList(tracker);
+      foreach (var a in new[] {1, 2, 3, 4, 5}) subj.push(a);
+      list.shouldEqual(F.list(2, 4, 6, 8, 10));
+      sub.testUnsubscription(subj);
     }
   }
 
@@ -243,12 +242,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void Test() {
       var subj = new Subject<int>();
       var obs = subj.discardValue();
-      obs.countEvents(tracker).ua((evts, sub) => {
-        evts.value.shouldEqual(0u);
-        foreach (var a in new[] {1, 2, 3, 4}) subj.push(a);
-        evts.value.shouldEqual(4u);
-        sub.testUnsubscription(subj);
-      });
+      var (evts, sub) = obs.countEvents(tracker);
+      evts.value.shouldEqual(0u);
+      foreach (var a in new[] {1, 2, 3, 4}) subj.push(a);
+      evts.value.shouldEqual(4u);
+      sub.testUnsubscription(subj);
     }
   }
 
@@ -257,15 +255,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void TestIEnumerable() {
       var subj = new Subject<int>();
       var obs = subj.flatMap(i => Enumerable.Range(0, i));
-      obs.pipeToList(tracker).ua((list, sub) => {
-        foreach (var a in new[] {1, 2, 3}) subj.push(a);
-        list.shouldEqual(F.list(
-          0,
-          0, 1,
-          0, 1, 2
-        ));
-        sub.testUnsubscription(subj);
-      });
+      var (list, sub) = obs.pipeToList(tracker);
+      foreach (var a in new[] {1, 2, 3}) subj.push(a);
+      list.shouldEqual(F.list(
+        0,
+        0, 1,
+        0, 1, 2
+      ));
+      sub.testUnsubscription(subj);
     }
 
     [Test]
@@ -399,7 +396,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     void test<C>(
-      Fn<Subject<int>, IRxObservable<C>> createObs, Fn<List<int>, C> createCollection
+      Func<Subject<int>, IRxObservable<C>> createObs, Func<List<int>, C> createCollection
     ) where C : IEnumerable<int> {
       var subj = new Subject<int>();
       var obs = createObs(subj);
@@ -430,14 +427,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var subj1 = new Subject<int>();
       var subj2 = new Subject<int>();
       var obs = subj1.join(subj2);
-      obs.pipeToList(tracker).ua((list, sub) => {
-        subj1.push(1);
-        subj2.push(2);
-        subj1.push(3);
-        subj2.push(4);
-        list.shouldEqual(F.list(1, 2, 3, 4));
-        sub.testUnsubscription(subj1, subj2);
-      });
+      var (list, sub) = obs.pipeToList(tracker);
+      subj1.push(1);
+      subj2.push(2);
+      subj1.push(3);
+      subj2.push(4);
+      list.shouldEqual(F.list(1, 2, 3, 4));
+      sub.testUnsubscription(subj1, subj2);
     }
   }
 
@@ -450,7 +446,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var aSubj = new Subject<A>();
       var otherSubjects = ImmutableList.Create(new Subject<B>(), new Subject<B>());
       var otherObservables = otherSubjects.Select(s => s.map(_ => (A)_)).ToImmutableList();
-      var allObservables = aSubj.Yield<IRxObservable>().Concat(otherObservables.Cast<IRxObservable>()).ToArray();
+      var allObservables = aSubj.Yield<IRxObservable>().Concat(otherObservables).ToArray();
 
       var obs = aSubj.joinAll(otherObservables);
       var t = obs.pipeToList(tracker);

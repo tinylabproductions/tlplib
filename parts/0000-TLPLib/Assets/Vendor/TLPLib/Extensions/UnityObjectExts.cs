@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     /** Invoke `f` on `a` if it is not dead. */
-    public static B optInvoke<A, B>(this A a, Fn<A, B> f)
+    public static B optInvoke<A, B>(this A a, Func<A, B> f)
       where A : Object
       where B : Object
     => a ? f(a) : null;

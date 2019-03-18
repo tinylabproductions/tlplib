@@ -3,7 +3,7 @@ using System.Text;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class BiMapper {
-    public static BiMapper<A, B> a<A, B>(Fn<A, B> map, Fn<B, A> comap) =>
+    public static BiMapper<A, B> a<A, B>(Func<A, B> map, Func<B, A> comap) =>
       new BiMapper<A, B>(map, comap);
 
     public static readonly Encoding defaultEncoding = Encoding.UTF8;
@@ -18,10 +18,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public struct BiMapper<A, B> : IEquatable<BiMapper<A, B>> {
-    public readonly Fn<A, B> map;
-    public readonly Fn<B, A> comap;
+    public readonly Func<A, B> map;
+    public readonly Func<B, A> comap;
 
-    public BiMapper(Fn<A, B> map, Fn<B, A> comap) {
+    public BiMapper(Func<A, B> map, Func<B, A> comap) {
       this.map = map;
       this.comap = comap;
     }

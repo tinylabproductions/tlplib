@@ -139,12 +139,6 @@ IComparable<$fullType>, IEquatable<$fullType> {
     s"""
   $adderS
   $unshifterS
-
-  /// <summary>Unapply.</summary>
-  public static void ua<$typeSigGenerics>(this $fullType t, Act<$typeSigGenerics> f) => f(${propArgsFor("t.")});
-
-  /// <summary>Unapply with function.</summary>
-  public static R ua<$typeSigGenerics, R>(this $fullType t, Fn<$typeSigGenerics, R> f) => f(${propArgsFor("t.")});
      """.stripMargin
 
   def eitherCsStr: String = {

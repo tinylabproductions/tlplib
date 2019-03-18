@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public void voidFold(Act<A> onA, Act<B> onB, Act<C> onC, Act<D> onD, Act<E> onE) {
+    public void voidFold(Action<A> onA, Action<B> onB, Action<C> onC, Action<D> onD, Action<E> onE) {
       switch (whichOne) {
         case OneOf5.Choice.A:
           onA(_aValue);
@@ -153,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    public R fold<R>(Fn<A, R> onA, Fn<B, R> onB, Fn<C, R> onC, Fn<D, R> onD, Fn<E, R> onE) {
+    public R fold<R>(Func<A, R> onA, Func<B, R> onB, Func<C, R> onC, Func<D, R> onD, Func<E, R> onE) {
       switch (whichOne) {
         case OneOf5.Choice.A: return onA(_aValue);
         case OneOf5.Choice.B: return onB(_bValue);

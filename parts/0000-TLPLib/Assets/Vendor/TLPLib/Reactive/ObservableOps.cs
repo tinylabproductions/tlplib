@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     [PublicAPI] public static ISubscription subscribe<A>(
       this IRxObservable<A> observable,
       IDisposableTracker tracker,
-      Act<A> onEvent,
+      Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static ISubscription subscribe<A>(
       this IRxObservable<A> observable,
       IDisposableTracker tracker,
-      Act<A, ISubscription> onChange,
+      Action<A, ISubscription> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     [PublicAPI] public static ISubscription subscribe<A>(
-      this IRxObservable<A> observable, GameObject tracker, Act<A> onEvent,
+      this IRxObservable<A> observable, GameObject tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     );
 
     [PublicAPI] public static void subscribeLast<A>(
-      this IRxObservable<A> observable, ref IDisposable subscription, Act<A> onChange,
+      this IRxObservable<A> observable, ref IDisposable subscription, Action<A> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static void subscribeLast<A>(
-      this IRxObservable<A> observable, ref ISubscription subscription, Act<A> onChange,
+      this IRxObservable<A> observable, ref ISubscription subscription, Action<A> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -102,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static ISubscription subscribeForOneEvent<A>(
       this IRxObservable<A> observable,
       IDisposableTracker tracker,
-      Act<A> onEvent,
+      Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -127,7 +127,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     /** Maps events coming from this observable. **/
     public static IRxObservable<B> map<A, B>(
-      this IRxObservable<A> o, Fn<A, B> mapper
+      this IRxObservable<A> o, Func<A, B> mapper
     ) => new Observable<B>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, val => onEvent(mapper(val)))
     );
@@ -139,7 +139,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// in returned enumerable.
     /// </summary>
     public static IRxObservable<B> flatMap<A, B>(
-      this IRxObservable<A> o, Fn<A, IEnumerable<B>> mapper
+      this IRxObservable<A> o, Func<A, IEnumerable<B>> mapper
     ) => new Observable<B>(onEvent => o.subscribe(NoOpDisposableTracker.instance, val => {
       foreach (var b in mapper(val)) onEvent(b);
     }));
@@ -149,7 +149,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// by returned observable.
     /// </summary>
     public static IRxObservable<B> flatMap<A, B>(
-      this IRxObservable<A> o, Fn<A, IRxObservable<B>> mapper
+      this IRxObservable<A> o, Func<A, IRxObservable<B>> mapper
     ) => new Observable<B>(onBEvent => {
       var bSub = Subscription.empty;
       void unsubscribeFromB() => bSub.unsubscribe();
@@ -170,7 +170,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
      * Does not emit value if future completes after observable is finished.
      **/
     public static IRxObservable<B> flatMap<A, B>(
-      this IRxObservable<A> o, Fn<A, Future<B>> mapper
+      this IRxObservable<A> o, Func<A, Future<B>> mapper
     ) => new Observable<B>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, a => mapper(a).onComplete(onEvent))
     );
@@ -180,7 +180,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// observable then.
     /// </summary>
     public static IRxObservable<B> flatMap<A, B>(
-      this Future<A> future, Fn<A, IRxObservable<B>> mapper
+      this Future<A> future, Func<A, IRxObservable<B>> mapper
     ) => future.map(mapper).extract();
 
     /// <summary>
@@ -192,7 +192,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) {
       // Saves onEvent when someone is subscribed to us, but the future has not yet
       // completed.
-      var supposedToBeSubscribed = Option<Act<A>>.None;
+      var supposedToBeSubscribed = Option<Action<A>>.None;
       // Saves the actual subscription that is filled in when the future completes
       // so that we could unsubscribe from source if everyone unsubscribes from us.
       var currentSubscription = Subscription.empty;
@@ -220,7 +220,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         }
       });
 
-      ISubscription subscribeToSource(Act<A> onEvent) {
+      ISubscription subscribeToSource(Action<A> onEvent) {
         if (lastFutureValue.isSome) {
           // If somebody subscribed to us and the future was already completed.
           var obs = lastFutureValue.__unsafeGetValue;
@@ -242,7 +242,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     /** Only emits events that pass the predicate. **/
     public static IRxObservable<A> filter<A>(
-      this IRxObservable<A> o, Fn<A, bool> predicate
+      this IRxObservable<A> o, Func<A, bool> predicate
     ) => new Observable<A>(onEvent =>
       o.subscribe(NoOpDisposableTracker.instance, val => { if (predicate(val)) onEvent(val); })
     );
@@ -290,7 +290,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region #zip
 
     public static IRxObservable<R> zip<A1, A2, R>(
-      this IRxObservable<A1> o, IRxObservable<A2> other, Fn<A1, A2, R> zipper
+      this IRxObservable<A1> o, IRxObservable<A2> other, Func<A1, A2, R> zipper
     ) =>
       new Observable<R>(onEvent => {
         var lastSelf = F.none<A1>();
@@ -313,7 +313,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) => o1.zip(o2, F.t);
 
     public static IRxObservable<R> zip<A1, A2, A3, R>(
-      this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, Fn<A1, A2, A3, R> zipper
+      this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, Func<A1, A2, A3, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A1>();
       var lastO1 = F.none<A2>();
@@ -339,7 +339,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxObservable<R> zip<A1, A2, A3, A4, R>(
       this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, IRxObservable<A4> o3,
-      Fn<A1, A2, A3, A4, R> zipper
+      Func<A1, A2, A3, A4, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A1>();
       var lastO1 = F.none<A2>();
@@ -368,7 +368,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxObservable<R> zip<A1, A2, A3, A4, A5, R>(
       this IRxObservable<A1> o, IRxObservable<A2> o1, IRxObservable<A3> o2, IRxObservable<A4> o3, IRxObservable<A5> o4,
-      Fn<A1, A2, A3, A4, A5, R> zipper
+      Func<A1, A2, A3, A4, A5, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A1>();
       var lastO1 = F.none<A2>();
@@ -400,7 +400,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxObservable<R> zip<A, A1, A2, A3, A4, A5, R>(
       this IRxObservable<A> o, IRxObservable<A1> o1, IRxObservable<A2> o2, IRxObservable<A3> o3,
-      IRxObservable<A4> o4, IRxObservable<A5> o5, Fn<A, A1, A2, A3, A4, A5, R> zipper
+      IRxObservable<A4> o4, IRxObservable<A5> o5, Func<A, A1, A2, A3, A4, A5, R> zipper
     ) => new Observable<R>(onEvent => {
       var lastSelf = F.none<A>();
       var lastO1 = F.none<A1>();
@@ -449,7 +449,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Only emits events that return some.
     /// </summary>
     public static IRxObservable<B> collect<A, B>(
-      this IRxObservable<A> o, Fn<A, Option<B>> collector
+      this IRxObservable<A> o, Func<A, Option<B>> collector
     ) => new Observable<B>(onEvent => o.subscribe(
       NoOpDisposableTracker.instance,
       val => {
@@ -614,7 +614,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// If there was no events before, old may be None.
     /// </summary>
     [PublicAPI] public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
-      this IRxObservable<A> o, Fn<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<A, A, bool> areEqual = null
     ) => o.changesOpt(F.t, areEqual);
 
     /// <summary>
@@ -622,7 +622,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// If there was no events before, old may be None.
     /// </summary>
     [PublicAPI] public static IRxObservable<B> changesOpt<A, B>(
-      this IRxObservable<A> o, Fn<Option<A>, A, B> zipper, Fn<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<B>(changesBase<A, B>(
@@ -639,7 +639,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Like changesOpt() but does not emit if old was None.
     /// </summary>
     public static IRxObservable<Tpl<A, A>> changes<A>(
-      this IRxObservable<A> o, Fn<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<Tpl<A, A>>(changesBase<A, Tpl<A, A>>(
@@ -658,7 +658,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Emits new values. Always emits first value and then emits changed values.
     /// </summary>
     public static IRxObservable<A> changedValues<A>(
-      this IRxObservable<A> o, Fn<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<A>(changesBase<A, A>(
@@ -672,7 +672,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static Observable<Elem>.SubscribeToSource changesBase<A, Elem>(
-      IRxObservable<A> o, Act<Act<Elem>, Option<A>, A> action
+      IRxObservable<A> o, Action<Action<Elem>, Option<A>, A> action
     ) => onEvent => {
       var lastValue = F.none<A>();
       return o.subscribe(
@@ -694,7 +694,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(a))
     );
 
-    public static IRxVal<B> toRxVal<A, B>(this IRxObservable<A> o, B initial, Fn<A, B> mapper) => new RxVal<B>(
+    public static IRxVal<B> toRxVal<A, B>(this IRxObservable<A> o, B initial, Func<A, B> mapper) => new RxVal<B>(
       initial,
       setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(mapper(a)))
     );

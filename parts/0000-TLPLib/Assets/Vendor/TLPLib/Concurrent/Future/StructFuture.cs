@@ -67,10 +67,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static readonly Future<A> unfulfilled = new Future<A>(new UnfulfilledFuture());
 
     /// <summary>Asynchronous heap based future which can be completed later.</summary>
-    public static Future<A> async(Act<Promise<A>> body) => async((p, _) => body(p));
+    public static Future<A> async(Action<Promise<A>> body) => async((p, _) => body(p));
 
     /// <summary>Asynchronous heap based future which can be completed later.</summary>
-    public static Future<A> async(Act<Promise<A>, Future<A>> body) {
+    public static Future<A> async(Action<Promise<A>, Future<A>> body) {
       var future = async(out var promise);
       body(promise, future);
       return future;
@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       throw new IllegalStateException();
     }
 
-    public void onComplete(Act<A> action) {
+    public void onComplete(Action<A> action) {
       if (implementation.isA) action(implementation.__unsafeGetA);
       else if (implementation.isC) implementation.__unsafeGetC.onComplete(action);
     }
@@ -99,32 +99,32 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Always run `action`. If the future is not completed right now, run `action` again when it
      * completes.
      */
-    public void nowAndOnComplete(Act<Option<A>> action) {
+    public void nowAndOnComplete(Action<Option<A>> action) {
       var current = value;
       action(current);
       if (current.isNone) onComplete(a => action(a.some()));
     }
 
-    public Future<B> map<B>(Fn<A, B> mapper) => implementation.fold(
+    public Future<B> map<B>(Func<A, B> mapper) => implementation.fold(
       v => Future<B>.successful(mapper(v)),
       _ => Future<B>.unfulfilled,
       f => Future<B>.async(p => f.onComplete(v => p.complete(mapper(v))))
     );
 
-    public Future<B> flatMap<B>(Fn<A, Future<B>> mapper) => implementation.fold(
+    public Future<B> flatMap<B>(Func<A, Future<B>> mapper) => implementation.fold(
       mapper,
       _ => Future<B>.unfulfilled,
       f => Future<B>.async(p => f.onComplete(v => mapper(v).onComplete(p.complete)))
     );
 
-    public Future<C> flatMap<B, C>(Fn<A, Future<B>> mapper, Fn<A, B, C> joiner) => implementation.fold(
+    public Future<C> flatMap<B, C>(Func<A, Future<B>> mapper, Func<A, B, C> joiner) => implementation.fold(
       a => mapper(a).map(b => joiner(a, b)),
       _ => Future<C>.unfulfilled,
       f => Future<C>.async(p => f.onComplete(a => mapper(a).onComplete(b => p.complete(joiner(a, b)))))
     );
 
     /** Filter future on value - if predicate matches turns completed future into unfulfilled. **/
-    public Future<A> filter(Fn<A, bool> predicate) {
+    public Future<A> filter(Func<A, bool> predicate) {
       var self = this;
       return implementation.fold(
         a => predicate(a) ? self : unfulfilled,
@@ -137,7 +137,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Filter & map future on value. If collector returns Some, completes the future,
      * otherwise - never completes.
      **/
-    public Future<B> collect<B>(Fn<A, Option<B>> collector) {
+    public Future<B> collect<B>(Func<A, Option<B>> collector) {
       return implementation.fold(
         a => collector(a).fold(Future<B>.unfulfilled, Future<B>.successful),
         _ => Future<B>.unfulfilled,
@@ -150,7 +150,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Waits until both futures yield a result. */
     public Future<Tpl<A, B>> zip<B>(Future<B> fb) => zip(fb, F.t);
 
-    public Future<C> zip<B, C>(Future<B> fb, Fn<A, B, C> mapper) {
+    public Future<C> zip<B, C>(Future<B> fb, Func<A, B, C> mapper) {
       if (implementation.isB || fb.implementation.isB) return Future<C>.unfulfilled;
       if (implementation.isA && fb.implementation.isA)
         return Future.successful(mapper(implementation.__unsafeGetA, fb.implementation.__unsafeGetA));

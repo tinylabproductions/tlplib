@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* action should return true if it wants to keep running. */
     public static Coroutine every(
-      this ITimeContext tc, Duration duration, Fn<bool> action, string name = null
+      this ITimeContext tc, Duration duration, Func<bool> action, string name = null
     ) {
       var cr = new TimeContextEveryDurationCoroutine();
       void repeatingInvoke() {
@@ -110,11 +110,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static ITimeContext DEFAULT => playMode;
 
-    readonly Fn<Duration> _passedSinceStartup;
+    readonly Func<Duration> _passedSinceStartup;
     readonly Option<MonoBehaviour> behaviour;
 
     public TimeContext(
-      Fn<Duration> passedSinceStartup,
+      Func<Duration> passedSinceStartup,
       Option<MonoBehaviour> behaviour = default
     ) {
       Option.ensureValue(ref behaviour);

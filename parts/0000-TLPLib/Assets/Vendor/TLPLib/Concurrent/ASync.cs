@@ -127,26 +127,26 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(Fn<bool> f) => EveryFrame(behaviour, f);
+    public static Coroutine EveryFrame(Func<bool> f) => EveryFrame(behaviour, f);
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(GameObject go, Fn<bool> f) => EveryFrame(coroutineHelper(go), f);
+    public static Coroutine EveryFrame(GameObject go, Func<bool> f) => EveryFrame(coroutineHelper(go), f);
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(MonoBehaviour behaviour, Fn<bool> f) {
+    public static Coroutine EveryFrame(MonoBehaviour behaviour, Func<bool> f) {
       var enumerator = EveryWaitEnumerator(null, f);
       return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, Fn<bool> f) => EveryXSeconds(seconds, behaviour, f);
+    public static Coroutine EveryXSeconds(float seconds, Func<bool> f) => EveryXSeconds(seconds, behaviour, f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, GameObject go, Fn<bool> f) =>
+    public static Coroutine EveryXSeconds(float seconds, GameObject go, Func<bool> f) =>
       EveryXSeconds(seconds, coroutineHelper(go), f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Fn<bool> f) {
+    public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Func<bool> f) {
       var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtimeReusable(seconds), f);
       return new UnityCoroutine(behaviour, enumerator);
     }
@@ -190,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [PublicAPI]
     public static Future<Either<WebRequestError, A>> toFuture<A>(
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, 
-      Fn<UnityWebRequest, A> onSuccess
+      Func<UnityWebRequest, A> onSuccess
     ) {
       var f = Future<Either<WebRequestError, A>>.async(out var promise);
       var op = req.SendWebRequest();
@@ -236,7 +236,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [PublicAPI]
     public static Future<Either<LogEntry, A>> toFutureSimple<A>(
-      this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Fn<UnityWebRequest, A> onSuccess
+      this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Func<UnityWebRequest, A> onSuccess
     ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
 
     [PublicAPI]
@@ -289,7 +289,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       action();
     }
 
-    public static IEnumerator EveryWaitEnumerator(IEnumerator wait, Fn<bool> f) {
+    public static IEnumerator EveryWaitEnumerator(IEnumerator wait, Func<bool> f) {
       // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
       while (f()) yield return wait;
     }
@@ -312,7 +312,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * of the application.
      **/
     public static IRxVal<Option<B>> inAsyncSeq<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, Future<B>> asyncAction
+      this IEnumerable<A> enumerable, Func<A, Future<B>> asyncAction
     ) {
       var rxRef = RxRef.a(F.none<B>());
       inAsyncSeq(enumerable.GetEnumerator(), rxRef, asyncAction);
@@ -321,7 +321,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static void inAsyncSeq<A, B>(
       IEnumerator<A> e, IRxRef<Option<B>> rxRef,
-      Fn<A, Future<B>> asyncAction
+      Func<A, Future<B>> asyncAction
     ) {
       if (! e.MoveNext()) return;
       asyncAction(e.Current).onComplete(b => {

@@ -9,20 +9,20 @@ namespace Smooth.Pools {
 	/// Pool that lends values of type T with an associated key of type K and defines a default key.
 	/// </summary>
 	public class KeyedPoolWithDefaultKey<K, T> : KeyedPool<K, T> {
-		private readonly Either<K, Fn<K>> defaultKey;
+		private readonly Either<K, Func<K>> defaultKey;
 
 		/// <summary>
 		/// Creates a new keyed pool with the specified creation delegate, reset delegate, and default key.
 		/// </summary>
-		public KeyedPoolWithDefaultKey(Fn<K, T> create, Fn<T, K> reset, K defaultKey) : base (create, reset) {
-			this.defaultKey = Either<K, Fn<K>>.Left(defaultKey);
+		public KeyedPoolWithDefaultKey(Func<K, T> create, Func<T, K> reset, K defaultKey) : base (create, reset) {
+			this.defaultKey = Either<K, Func<K>>.Left(defaultKey);
 		}
 
 		/// <summary>
 		/// Creates a new keyed pool with the specified creation delegate, reset delegate, and default key.
 		/// </summary>
-		public KeyedPoolWithDefaultKey(Fn<K, T> create, Fn<T, K> reset, Fn<K> defaultKeyFunc) : base (create, reset) {
-			this.defaultKey = Either<K, Fn<K>>.Right(defaultKeyFunc);
+		public KeyedPoolWithDefaultKey(Func<K, T> create, Func<T, K> reset, Func<K> defaultKeyFunc) : base (create, reset) {
+			this.defaultKey = Either<K, Func<K>>.Right(defaultKeyFunc);
 		}
 
 		/// <summary>

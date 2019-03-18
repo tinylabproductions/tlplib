@@ -131,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public readonly A a;
 
     /// <summary>You should never use this method directly.</summary>
-    internal static Option<NonEmpty<A>> __unsafeApply(A c, Fn<A, bool> isEmpty) =>
+    internal static Option<NonEmpty<A>> __unsafeApply(A c, Func<A, bool> isEmpty) =>
       isEmpty(c) ? Option<NonEmpty<A>>.None : F.some(__unsafeNew(c));
 
     /// <summary>Never use this from user code, this is only intended for library use.</summary>

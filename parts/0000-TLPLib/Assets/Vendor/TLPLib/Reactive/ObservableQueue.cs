@@ -31,13 +31,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   }
 
   public class ObservableLambdaQueue<A, C> : IObservableQueue<A, C> {
-    readonly Act<A> _addLast;
+    readonly Action<A> _addLast;
     readonly Action _removeFirst;
-    readonly Fn<int> _count;
-    readonly Fn<C> _collection;
-    readonly Fn<A> _first, _last;
+    readonly Func<int> _count;
+    readonly Func<C> _collection;
+    readonly Func<A> _first, _last;
 
-    public ObservableLambdaQueue(Act<A> addLast, Action removeFirst, Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last) {
+    public ObservableLambdaQueue(Action<A> addLast, Action removeFirst, Func<int> count, Func<C> collection, Func<A> first, Func<A> last) {
       _addLast = addLast;
       _removeFirst = removeFirst;
       _count = count;

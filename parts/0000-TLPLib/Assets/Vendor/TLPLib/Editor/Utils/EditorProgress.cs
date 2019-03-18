@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void execute(string name, Action a) =>
       execute(name, () => { a(); return F.unit; });
 
-    public A execute<A>(string name, Fn<A> f) {
+    public A execute<A>(string name, Func<A> f) {
       start(name);
       var ret = f();
       done();

@@ -48,6 +48,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public interface OtherThreadExecutor<out A> {
-    void execute(Act<A> onSuccess, Act<Exception> onError);
+    void execute(Action<A> onSuccess, Action<Exception> onError);
   }
 }

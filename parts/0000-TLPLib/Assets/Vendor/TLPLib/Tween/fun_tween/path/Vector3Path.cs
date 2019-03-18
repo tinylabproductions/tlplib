@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
 
       public readonly ImmutableArray<Entry> entries;
 
-      public ConstantSpeedTable(int subdivisions, Fn<float, Vector3> getPointOnPath) {
+      public ConstantSpeedTable(int subdivisions, Func<float, Vector3> getPointOnPath) {
         var lengthAccumulator = 0f;
         var increment = 1f / subdivisions;
         var builder = ImmutableArray.CreateBuilder<Entry>(subdivisions);

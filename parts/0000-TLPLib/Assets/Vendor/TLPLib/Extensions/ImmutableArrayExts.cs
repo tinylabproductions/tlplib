@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class ImmutableArrayExts {
     public static ImmutableArray<To> map<From, To>(
-      this ImmutableArray<From> source, Fn<From, To> mapper
+      this ImmutableArray<From> source, Func<From, To> mapper
     ) {
       var target = ImmutableArray.CreateBuilder<To>(source.Length);
       for (var i = 0; i < source.Length; i++) target.Add(mapper(source[i]));
@@ -73,26 +73,26 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this ImmutableArray<A>.Builder b
     ) => b.Capacity == b.Count ? b.MoveToImmutable() : b.ToImmutable();
     
-    public static Option<int> indexWhere<A>(this ImmutableArray<A> list, Fn<A, bool> predicate) {
+    public static Option<int> indexWhere<A>(this ImmutableArray<A> list, Func<A, bool> predicate) {
       for (var idx = 0; idx < list.Length; idx++)
         if (predicate(list[idx])) return F.some(idx);
       return F.none<int>();
     }
     
-    public static Option<int> indexWhere<A, B>(this ImmutableArray<A> list, B data, Fn<A, B, bool> predicate) {
+    public static Option<int> indexWhere<A, B>(this ImmutableArray<A> list, B data, Func<A, B, bool> predicate) {
       for (var idx = 0; idx < list.Length; idx++)
         if (predicate(list[idx], data)) return F.some(idx);
       return F.none<int>();
     }
 
-    public static Option<int> indexWhereReverse<A>(this ImmutableArray<A> list, Fn<A, bool> predicate) {
+    public static Option<int> indexWhereReverse<A>(this ImmutableArray<A> list, Func<A, bool> predicate) {
       for (var idx = list.Length - 1; idx >= 0; idx--)
         if (predicate(list[idx])) return F.some(idx);
       return F.none<int>();
     }
 
     public static Option<int> indexWhereReverse<A, B>(
-      this ImmutableArray<A> list, B data, Fn<A, B, bool> predicate
+      this ImmutableArray<A> list, B data, Func<A, B, bool> predicate
     ) {
       for (var idx = list.Length - 1; idx >= 0; idx--)
         if (predicate(list[idx], data)) return F.some(idx);

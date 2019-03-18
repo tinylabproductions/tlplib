@@ -53,15 +53,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    public static readonly Act<UnityEventBase> rebuildPersistentCallsIfNeeded;
+    public static readonly Action<UnityEventBase> rebuildPersistentCallsIfNeeded;
     public static void __rebuildPersistentCallsIfNeeded(this UnityEventBase evt) =>
       rebuildPersistentCallsIfNeeded(evt);
 
-    public static readonly Fn<UnityEventBase, PersistentCallGroup> persistentCalls;
+    public static readonly Func<UnityEventBase, PersistentCallGroup> persistentCalls;
     public static PersistentCallGroup __persistentCalls(this UnityEventBase evt) =>
       persistentCalls(evt);
 
-    public static readonly Fn<UnityEventBase, PersistentCall, Option<MethodInfo>> findMethod;
+    public static readonly Func<UnityEventBase, PersistentCall, Option<MethodInfo>> findMethod;
     public static Option<MethodInfo> __findMethod(this UnityEventBase evt, PersistentCall pc) =>
       findMethod(evt, pc);
 

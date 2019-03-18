@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   // often crashes with variance.
   public interface IHeapFuture<A> {
     bool isCompleted { get; }
-    void onComplete(Act<A> action);
+    void onComplete(Action<A> action);
     Option<A> value { get; }
   }
 
@@ -18,9 +18,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
-    static readonly Pool<List<Act<A>>> pool = ListPool<Act<A>>.Instance;
+    static readonly Pool<List<Action<A>>> pool = ListPool<Action<A>>.Instance;
 
-    List<Act<A>> listeners = pool.Borrow();
+    List<Action<A>> listeners = pool.Borrow();
 
     public bool isCompleted => value.isSome;
     public Option<A> value { get; private set; } = F.none<A>();
@@ -44,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return ret;
     }
 
-    public void onComplete(Act<A> action) {
+    public void onComplete(Action<A> action) {
       if (value.isSome) action(value.get);
       else listeners.Add(action);
     }

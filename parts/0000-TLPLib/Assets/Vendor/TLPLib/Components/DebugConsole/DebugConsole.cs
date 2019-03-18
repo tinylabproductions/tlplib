@@ -297,7 +297,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    static void setupList(DebugConsoleListBinding listBinding, Fn<ImmutableList<ButtonBinding>> contents) {
+    static void setupList(DebugConsoleListBinding listBinding, Func<ImmutableList<ButtonBinding>> contents) {
       listBinding.clearFilterButton.onClick.AddListener(() => listBinding.filterInput.text = "");
       listBinding.filterInput.onValueChanged.AddListener(value => {
         foreach (var button in contents()) {
@@ -399,7 +399,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
   }
 
-  public delegate Option<Obj> HasObjFn<Obj>();
+  public delegate Option<Obj> HasObjFunc<Obj>();
 
   public struct DConsoleRegistrar {
     public readonly DConsole console;
@@ -410,25 +410,25 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       this.commandGroup = commandGroup;
     }
 
-    static readonly HasObjFn<Unit> unitSomeFn = () => F.some(F.unit);
+    static readonly HasObjFunc<Unit> unitSomeFn = () => F.some(F.unit);
 
     public ISubscription register(string name, Action run) =>
       register(name, () => { run(); return F.unit; });
-    public ISubscription register<A>(string name, Fn<A> run) =>
+    public ISubscription register<A>(string name, Func<A> run) =>
       register(name, unitSomeFn, _ => run());
-    public ISubscription register<A>(string name, Fn<Future<A>> run) =>
+    public ISubscription register<A>(string name, Func<Future<A>> run) =>
       register(name, unitSomeFn, _ => run());
-    public ISubscription register<Obj>(string name, HasObjFn<Obj> objOpt, Act<Obj> run) =>
+    public ISubscription register<Obj>(string name, HasObjFunc<Obj> objOpt, Action<Obj> run) =>
       register(name, objOpt, obj => { run(obj); return F.unit; });
-    public ISubscription register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, A> run) =>
+    public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, A> run) =>
       register(name, objOpt, obj => Future.successful(run(obj)));
-    public ISubscription register<Obj, A>(string name, HasObjFn<Obj> objOpt, Fn<Obj, Future<A>> run) {
+    public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run) {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
       return console.register(new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
         if (opt.isSome) {
           var returnFuture = run(opt.get);
-          Act<A> onComplete = t => Debug.Log($"{prefixedName} done: {t}");
+          Action<A> onComplete = t => Debug.Log($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.
           returnFuture.value.voidFold(
             () => {
@@ -445,7 +445,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public void registerToggle(string name, Ref<bool> r, string comment=null) =>
       registerToggle(name, () => r.value, v => r.value = v, comment);
 
-    public void registerToggle(string name, Fn<bool> getter, Act<bool> setter, string comment=null) {
+    public void registerToggle(string name, Func<bool> getter, Action<bool> setter, string comment=null) {
       register($"{name}?", getter);
       register($"Toggle {name}", () => {
         setter(!getter());

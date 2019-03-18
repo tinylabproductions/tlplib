@@ -2,15 +2,15 @@
 
 namespace com.tinylabproductions.TLPLib.Functional.Matching {
   public interface IVoidMatcher<in Base> where Base : class {
-    IVoidMatcher<Base> when<T>(Act<T> onMatch) where T : Base;
+    IVoidMatcher<Base> when<T>(Action<T> onMatch) where T : Base;
   }
 
   public interface IMatcher<in Base, Return> where Base : class {
-    IMatcher<Base,Return> when<T>(Fn<T, Return> onMatch)
+    IMatcher<Base,Return> when<T>(Func<T, Return> onMatch)
     where T : Base;
 
     Return get();
-    Return getOrElse(Fn<Return> elseFunc);
+    Return getOrElse(Func<Return> elseFunc);
   }
 
   public class MatchError : Exception {
@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
       this.subject = subject;
     }
 
-    public IVoidMatcher<Base> when<T>(Act<T> onMatch) where T : Base {
+    public IVoidMatcher<Base> when<T>(Action<T> onMatch) where T : Base {
       if (subject is T) {
         onMatch((T) subject);
         return new SuccessfulMatcher<Base, Unit>(F.unit);
@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
       else return this;
     }
 
-    public IMatcher<Base, Return> when<T>(Fn<T, Return> onMatch)
+    public IMatcher<Base, Return> when<T>(Func<T, Return> onMatch)
     where T : Base {
       if (subject is T) {
         var casted = (T) subject;
@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
       ));
     }
 
-    public Return getOrElse(Fn<Return> elseFunc) { return elseFunc.Invoke(); }
+    public Return getOrElse(Func<Return> elseFunc) { return elseFunc.Invoke(); }
   }
 
   public
@@ -74,15 +74,15 @@ namespace com.tinylabproductions.TLPLib.Functional.Matching {
       this.result = result;
     }
 
-    public IVoidMatcher<Base> when<T>(Act<T> onMatch)
+    public IVoidMatcher<Base> when<T>(Action<T> onMatch)
     where T : Base { return this; }
 
-    public IMatcher<Base, Return> when<T>(Fn<T, Return> onMatch)
+    public IMatcher<Base, Return> when<T>(Func<T, Return> onMatch)
     where T : Base { return this; }
 
     public Return get() { return result; }
 
-    public Return getOrElse(Fn<Return> elseFunc) { return get(); }
+    public Return getOrElse(Func<Return> elseFunc) { return get(); }
   }
 
   public

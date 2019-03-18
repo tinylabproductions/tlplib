@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.bytesRead = bytesRead;
     }
 
-    public Option<DeserializeInfo<B>> flatMapTry<B>(Fn<A, B> mapper) {
+    public Option<DeserializeInfo<B>> flatMapTry<B>(Func<A, B> mapper) {
       try {
         return new DeserializeInfo<B>(mapper(value), bytesRead).some();
       }
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   public static class DeserializeInfoExts {
     public static Option<DeserializeInfo<B>> map<A, B>(
-      this Option<DeserializeInfo<A>> aOpt, Fn<A, B> mapper
+      this Option<DeserializeInfo<A>> aOpt, Func<A, B> mapper
     ) {
       if (aOpt.isNone) return Option<DeserializeInfo<B>>.None;
       var aInfo = aOpt.get;
@@ -129,26 +129,26 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [PublicAPI]
     public static ISerializer<B> map<A, B>(
-      this ISerializer<A> a, Fn<B, A> mapper
+      this ISerializer<A> a, Func<B, A> mapper
     ) => new MappedSerializer<A, B>(a, mapper);
 
     [PublicAPI]
     public static IDeserializer<B> map<A, B>(
-      this IDeserializer<A> a, Fn<A, Option<B>> mapper
+      this IDeserializer<A> a, Func<A, Option<B>> mapper
     ) => new MappedDeserializer<A, B>(a, mapper);
 
     [PublicAPI]
     public static ISerializedRW<B> map<A, B>(
       this ISerializedRW<A> aRW,
-      Fn<A, Option<B>> deserializeConversion,
-      Fn<B, A> serializeConversion
+      Func<A, Option<B>> deserializeConversion,
+      Func<B, A> serializeConversion
     ) => new MappedRW<A, B>(aRW, serializeConversion, deserializeConversion);
 
     [PublicAPI]
     public static ISerializedRW<B> mapTry<A, B>(
       this ISerializedRW<A> aRW,
-      Fn<A, B> deserializeConversion,
-      Fn<B, A> serializeConversion
+      Func<A, B> deserializeConversion,
+      Func<B, A> serializeConversion
     ) => new MappedRW<A, B>(aRW, serializeConversion, a => {
       try {
         return deserializeConversion(a).some();
@@ -186,20 +186,20 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI]
     public static ISerializedRW<B> and<A1, A2, B>(
       this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW,
-      Fn<A1, A2, B> mapper, Fn<B, A1> getA1, Fn<B, A2> getA2
+      Func<A1, A2, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2
     ) => new AndRW2<A1, A2, B>(a1RW, a2RW, mapper, getA1, getA2);
 
     [PublicAPI]
     public static ISerializedRW<B> and<A1, A2, A3, B>(
       this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
-      Fn<A1, A2, A3, B> mapper, Fn<B, A1> getA1, Fn<B, A2> getA2, Fn<B, A3> getA3
+      Func<A1, A2, A3, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3
     ) => new AndRW3<A1, A2, A3, B>(a1RW, a2RW, a3RW, mapper, getA1, getA2, getA3);
 
     [PublicAPI]
     public static ISerializedRW<B> and<A1, A2, A3, A4, B>(
       this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
       ISerializedRW<A4> a4RW,
-      Fn<A1, A2, A3, A4, B> mapper, Fn<B, A1> getA1, Fn<B, A2> getA2, Fn<B, A3> getA3, Fn<B, A4> getA4
+      Func<A1, A2, A3, A4, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3, Func<B, A4> getA4
     ) => new AndRW4<A1, A2, A3, A4, B>(a1RW, a2RW, a3RW, a4RW, mapper, getA1, getA2, getA3, getA4);
 
     [PublicAPI]

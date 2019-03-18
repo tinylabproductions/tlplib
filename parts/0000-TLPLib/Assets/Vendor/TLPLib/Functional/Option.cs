@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ///   Option.getOrUpdate(ref __parts, () => _parts.ToImmutableList().toNonEmpty().get);
     /// ]]></code>
     /// </summary>
-    public static A getOrUpdate<A>(ref Option<A> opt, Fn<A> create) {
+    public static A getOrUpdate<A>(ref Option<A> opt, Func<A> create) {
       if (opt.isNone) opt = new Option<A>(create());
       return opt.__unsafeGetValue;
     }
@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
      * getOrElse is written as an extension method to make it easier to use in IL2CPP builds
      * where it is a class.
      */
-    public static A getOrElse<A>(this Option<A> opt, Fn<A> orElse) {
+    public static A getOrElse<A>(this Option<A> opt, Func<A> orElse) {
 #if ENABLE_IL2CPP
       if (opt == null) return orElse();
 #endif
@@ -108,18 +108,18 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isSome = true;
     }
 
-    public A getOrThrow(Fn<Exception> getEx) =>
+    public A getOrThrow(Func<Exception> getEx) =>
       isSome ? __unsafeGetValue : F.throws<A>(getEx());
 
     public A getOrThrow(string message) =>
       isSome ? __unsafeGetValue : F.throws<A>(new IllegalStateException(message));
 
-    public Option<A> tap(Act<A> action) {
+    public Option<A> tap(Action<A> action) {
       if (isSome) action(__unsafeGetValue);
       return this;
     }
 
-    public void voidFold(Action ifEmpty, Act<A> ifNonEmpty) {
+    public void voidFold(Action ifEmpty, Action<A> ifNonEmpty) {
       if (isSome) ifNonEmpty(__unsafeGetValue);
       else ifEmpty();
     }
@@ -127,10 +127,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Option<A> filter(bool keepValue) =>
       keepValue ? this : F.none<A>();
 
-    public Option<A> filter(Fn<A, bool> predicate) =>
+    public Option<A> filter(Func<A, bool> predicate) =>
       isSome && predicate(__unsafeGetValue) ? this : F.none<A>();
 
-    public bool exists(Fn<A, bool> predicate) =>
+    public bool exists(Func<A, bool> predicate) =>
       isSome && predicate(__unsafeGetValue);
 
     public bool exists(A a) =>
@@ -188,17 +188,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public OptionEnumerator<A> GetEnumerator() => new OptionEnumerator<A>(this);
 
-    public Option<B> map<B>(Fn<A, B> func) =>
+    public Option<B> map<B>(Func<A, B> func) =>
       isSome ? F.some(func(__unsafeGetValue)) : F.none<B>();
 
-    public Option<B> flatMap<B>(Fn<A, Option<B>> func) =>
+    public Option<B> flatMap<B>(Func<A, Option<B>> func) =>
       isSome ? func(__unsafeGetValue) : F.none<B>();
 
     [PublicAPI]
-    public Option<B> flatMapUnity<B>(Fn<A, B> func) where B : class =>
+    public Option<B> flatMapUnity<B>(Func<A, B> func) where B : class =>
       isSome ? F.opt(func(__unsafeGetValue)) : F.none<B>();
 
-    public Option<C> flatMap<B, C>(Fn<A, Option<B>> func, Fn<A, B, C> mapper) {
+    public Option<C> flatMap<B, C>(Func<A, Option<B>> func, Func<A, B, C> mapper) {
       if (isNone) return Option<C>.None;
       var bOpt = func(__unsafeGetValue);
       return bOpt.isNone ? Option<C>.None : F.some(mapper(__unsafeGetValue, bOpt.__unsafeGetValue));
@@ -210,40 +210,40 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Either<A, B> toLeft<B>(B right) =>
       isSome ? Either<A, B>.Left(__unsafeGetValue) : Either<A, B>.Right(right);
 
-    public Either<A, B> toLeft<B>(Fn<B> right) =>
+    public Either<A, B> toLeft<B>(Func<B> right) =>
       isSome ? Either<A, B>.Left(__unsafeGetValue) : Either<A, B>.Right(right());
 
     public Either<B, A> toRight<B>(B left) =>
       isSome ? Either<B, A>.Right(__unsafeGetValue) : Either<B, A>.Left(left);
 
-    public Either<B, A> toRight<B>(Fn<B> left) =>
+    public Either<B, A> toRight<B>(Func<B> left) =>
       isSome ? Either<B, A>.Right(__unsafeGetValue) : Either<B, A>.Left(left());
 
     public IEnumerable<A> asEnum() =>
       isSome ? get.Yield() : Enumerable.Empty<A>();
 
-    public Option<A> createOrTap(Fn<A> ifEmpty, Act<A> ifNonEmpty) {
+    public Option<A> createOrTap(Func<A> ifEmpty, Action<A> ifNonEmpty) {
       if (isNone) return new Option<A>(ifEmpty());
 
       ifNonEmpty(get);
       return this;
     }
 
-    public B fold<B>(Fn<B> ifEmpty, Fn<A, B> ifNonEmpty) =>
+    public B fold<B>(Func<B> ifEmpty, Func<A, B> ifNonEmpty) =>
       isSome ? ifNonEmpty(get) : ifEmpty();
 
-    public B fold<B>(B ifEmpty, Fn<A, B> ifNonEmpty) =>
+    public B fold<B>(B ifEmpty, Func<A, B> ifNonEmpty) =>
       isSome ? ifNonEmpty(get) : ifEmpty;
 
     public B fold<B>(B ifEmpty, B ifNonEmpty) =>
       isSome ? ifNonEmpty : ifEmpty;
 
-    public B fold<B>(B initial, Fn<A, B, B> ifNonEmpty) =>
+    public B fold<B>(B initial, Func<A, B, B> ifNonEmpty) =>
       isSome ? ifNonEmpty(get, initial) : initial;
 
     public Option<Tpl<A, B>> zip<B>(Option<B> opt2) => zip(opt2, F.t);
 
-    public Option<C> zip<B, C>(Option<B> opt2, Fn<A, B, C> mapper) =>
+    public Option<C> zip<B, C>(Option<B> opt2, Func<A, B, C> mapper) =>
       isSome && opt2.isSome
       ? F.some(mapper(__unsafeGetValue, opt2.__unsafeGetValue))
       : F.none<C>();
@@ -253,7 +253,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ///
     /// Otherwise return that option which is Some, or None if both are None.
     /// </summary>
-    public Option<A> join(Option<A> opt, Fn<A, A, A> joiner) =>
+    public Option<A> join(Option<A> opt, Func<A, A, A> joiner) =>
       isSome
         ? opt.isSome
           ? joiner(__unsafeGetValue, opt.__unsafeGetValue).some()
@@ -264,7 +264,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
      * If Some() returns None. If None returns b.
      **/
     public Option<B> swap<B>(B b) => isSome ? F.none<B>() : F.some(b);
-    public Option<B> swap<B>(Fn<B> b) => isSome ? F.none<B>() : F.some(b());
+    public Option<B> swap<B>(Func<B> b) => isSome ? F.none<B>() : F.some(b());
 
     public static bool operator true(Option<A> opt) => opt.isSome;
 

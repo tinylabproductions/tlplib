@@ -9,9 +9,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public Event(bool playingForwards) { this.playingForwards = playingForwards; }
     }
 
-    [PublicAPI] public readonly Act<Event> callback;
+    [PublicAPI] public readonly Action<Event> callback;
 
-    public TweenCallback(Act<Event> callback) { this.callback = callback; }
+    public TweenCallback(Action<Event> callback) { this.callback = callback; }
 
     public float duration => 0;
     public void setRelativeTimePassed(

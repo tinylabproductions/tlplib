@@ -9,18 +9,18 @@ namespace Smooth.Collections {
 	/// </summary>
 	public class FuncEnumerable<T> : IEnumerable<T> {
 		private readonly T seed;
-		private readonly Either<Fn<T, T>, Fn<T, Option<T>>> step;
+		private readonly Either<Func<T, T>, Func<T, Option<T>>> step;
 
 		private FuncEnumerable() {}
 
-		public FuncEnumerable(T seed, Fn<T, T> step) {
+		public FuncEnumerable(T seed, Func<T, T> step) {
 			this.seed = seed;
-			this.step = Either<Fn<T, T>, Fn<T, Option<T>>>.Left(step);
+			this.step = Either<Func<T, T>, Func<T, Option<T>>>.Left(step);
 		}
 
-		public FuncEnumerable(T seed, Fn<T, Option<T>> step) {
+		public FuncEnumerable(T seed, Func<T, Option<T>> step) {
 			this.seed = seed;
-			this.step = Either<Fn<T, T>, Fn<T, Option<T>>>.Right(step);
+			this.step = Either<Func<T, T>, Func<T, Option<T>>>.Right(step);
 		}
 
 		public IEnumerator<T> GetEnumerator() {
@@ -47,20 +47,20 @@ namespace Smooth.Collections {
 	/// </summary>
 	public class FuncEnumerable<T, P> : IEnumerable<T> {
 		private readonly T seed;
-		private readonly Either<Fn<T, P, T>, Fn<T, P, Option<T>>> step;
+		private readonly Either<Func<T, P, T>, Func<T, P, Option<T>>> step;
 		private readonly P parameter;
 
 		private FuncEnumerable() {}
 
-		public FuncEnumerable(T seed, Fn<T, P, T> step, P parameter) {
+		public FuncEnumerable(T seed, Func<T, P, T> step, P parameter) {
 			this.seed = seed;
-			this.step = Either<Fn<T, P, T>, Fn<T, P, Option<T>>>.Left(step);
+			this.step = Either<Func<T, P, T>, Func<T, P, Option<T>>>.Left(step);
 			this.parameter = parameter;
 		}
 
-		public FuncEnumerable(T seed, Fn<T, P, Option<T>> step, P parameter) {
+		public FuncEnumerable(T seed, Func<T, P, Option<T>> step, P parameter) {
 			this.seed = seed;
-			this.step = Either<Fn<T, P, T>, Fn<T, P, Option<T>>>.Right(step);
+			this.step = Either<Func<T, P, T>, Func<T, P, Option<T>>>.Right(step);
 			this.parameter = parameter;
 		}
 

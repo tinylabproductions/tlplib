@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   /// <typeparam name="A"></typeparam>
   public interface IRxVal<out A> : IRxObservable<A>, Val<A> {
     ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -128,7 +128,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     readonly ISubscription baseObservableSubscription;
 
     public RxVal(
-      A initialValue, Fn<SetValue, ISubscription> subscribeToSource,
+      A initialValue, Func<SetValue, ISubscription> subscribeToSource,
       IEqualityComparer<A> comparer = null
     ) {
       _value = initialValue;
@@ -169,7 +169,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public override void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -184,7 +184,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0

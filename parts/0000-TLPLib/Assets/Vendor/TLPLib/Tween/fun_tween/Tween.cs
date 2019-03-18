@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class Tween {
-    public static TweenCallback callback(Act<TweenCallback.Event> callback) =>
+    public static TweenCallback callback(Action<TweenCallback.Event> callback) =>
       new TweenCallback(callback);
 
     public static Tween<A>.Ops ops<A>(Tween<A>.Lerp lerp, Tween<A>.Diff diff) =>

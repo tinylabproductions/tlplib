@@ -9,7 +9,7 @@
 
   public static class NumericOps {
     public static A add<A>(this Numeric<A> n, A a1, int a2) => n.add(a1, n.fromInt(a2));
-    public static A subtract<A>(this Numeric<A> n, A a1, int a2) => n.subtract(a1, n.fromInt(a2));
+    public static A subtrAction<A>(this Numeric<A> n, A a1, int a2) => n.subtract(a1, n.fromInt(a2));
   }
 
   public static class Numeric {

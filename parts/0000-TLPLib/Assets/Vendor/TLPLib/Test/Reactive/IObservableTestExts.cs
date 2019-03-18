@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return F.t(reference, sub);
     }
 
-    public static void observableCreateListQueue<A>(Act<IObservableQueue<A, List<A>>> act) {
+    public static void observableCreateListQueue<A>(Action<IObservableQueue<A, List<A>>> act) {
       var c = new List<A>();
       var queue = Observable.createQueue(
         a => c.Add(a), () => c.RemoveAt(0), () => c.Count, () => c,

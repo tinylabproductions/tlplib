@@ -42,13 +42,13 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
    * until the last possible time, thus the mandatory `OnMainThread`.
    **/
   public static class BaseAdListenerOps {
-    public static void invoke(Fn<Action> aFn) =>
+    public static void invoke(Func<Action> aFn) =>
       ASync.OnMainThread(() => aFn()?.Invoke());
 
-    public static void invoke<A>(Fn<Act<A>> act, A a) =>
+    public static void invoke<A>(Func<Action<A>> act, A a) =>
       ASync.OnMainThread(() => act()?.Invoke(a));
 
-    public static void invoke<A, B>(Fn<Act<A, B>> act, A a, B b) =>
+    public static void invoke<A, B>(Func<Action<A, B>> act, A a, B b) =>
       ASync.OnMainThread(() => act()?.Invoke(a, b));
   }
 
@@ -57,9 +57,9 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     protected BaseAdListener(string javaInterface) : base(javaInterface) {}
     protected BaseAdListener(AndroidJavaClass javaInterface) : base(javaInterface) {}
 
-    public static void invoke(Fn<Action> aFn) => BaseAdListenerOps.invoke(aFn);
-    public static void invoke<A>(Fn<Act<A>> act, A a) => BaseAdListenerOps.invoke(act, a);
-    public static void invoke<A, B>(Fn<Act<A, B>> act, A a, B b) => BaseAdListenerOps.invoke(act, a, b);
+    public static void invoke(Func<Action> aFn) => BaseAdListenerOps.invoke(aFn);
+    public static void invoke<A>(Func<Action<A>> act, A a) => BaseAdListenerOps.invoke(act, a);
+    public static void invoke<A, B>(Func<Action<A, B>> act, A a, B b) => BaseAdListenerOps.invoke(act, a, b);
   }
 #endif
 }

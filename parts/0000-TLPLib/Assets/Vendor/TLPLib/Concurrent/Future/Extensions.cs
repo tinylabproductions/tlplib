@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         p.complete
       )));
 
-    public static ISubscription onCompleteCancellable<A>(this Future<A> future, Act<A> action) {
+    public static ISubscription onCompleteCancellable<A>(this Future<A> future, Action<A> action) {
       var sub = new Subscription(() => { });
       future.onComplete(val => { if (sub.isSubscribed) action(val); });
       return sub;
@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return rx;
     }
 
-    public static IRxVal<B> toRxVal<A, B>(this Future<A> future, B whileNotCompleted, Fn<A, B> onCompletion) {
+    public static IRxVal<B> toRxVal<A, B>(this Future<A> future, B whileNotCompleted, Func<A, B> onCompletion) {
       var rx = RxRef.a(whileNotCompleted);
       future.onComplete(a => rx.value = onCompletion(a));
       return rx;
@@ -76,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [PublicAPI]
     public static void onComplete<A, B>(
       this Future<Either<A, B>> future,
-      Act<A> onError, Act<B> onSuccess
+      Action<A> onError, Action<B> onSuccess
     ) =>
       future.onComplete(e => {
         if (e.isLeft) onError(e.__unsafeGetLeft);
@@ -84,13 +84,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
 
     [PublicAPI]
-    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Act<B> action) =>
+    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Action<B> action) =>
       future.onComplete(e => {
         foreach (var b in e.rightValue) action(b);
       });
 
     [PublicAPI]
-    public static void onSuccess<A>(this Future<Try<A>> future, Act<A> action) =>
+    public static void onSuccess<A>(this Future<Try<A>> future, Action<A> action) =>
       future.onComplete(e => {
         foreach (var a in e.value) action(a);
       });
@@ -103,12 +103,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
       future.map(e => e.value);
 
-    public static void onFailure<A, B>(this Future<Either<A, B>> future, Act<A> action) =>
+    public static void onFailure<A, B>(this Future<Either<A, B>> future, Action<A> action) =>
       future.onComplete(e => {
         foreach (var a in e.leftValue) action(a);
       });
 
-    public static void onFailure<A>(this Future<Try<A>> future, Act<Exception> action) =>
+    public static void onFailure<A>(this Future<Try<A>> future, Action<Exception> action) =>
       future.onComplete(e => {
         foreach (var ex in e.exception) action(ex);
       });

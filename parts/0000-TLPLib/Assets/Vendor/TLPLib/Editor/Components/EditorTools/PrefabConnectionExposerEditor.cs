@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       var prefabTransform = so.prefab.transform;
 
       void run<A>(
-        string name, Fn<Transform, A> get, Act<Transform, A> set
+        string name, Func<Transform, A> get, Action<Transform, A> set
       ) {
         var instanceV = get(instanceTransform);
         var prefabV = get(prefabTransform);

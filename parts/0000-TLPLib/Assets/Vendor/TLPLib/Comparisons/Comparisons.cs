@@ -48,7 +48,7 @@ namespace Smooth.Comparisons {
 	/// </summary>
 	public static class Comparisons<T> {
 		private static Dictionary<IComparer<T>, Comparison<T>> toComparison = new Dictionary<IComparer<T>, Comparison<T>>();
-		private static Dictionary<IEqualityComparer<T>, Fn<T, T, bool>> toPredicate = new Dictionary<IEqualityComparer<T>, Fn<T, T, bool>>();
+		private static Dictionary<IEqualityComparer<T>, Func<T, T, bool>> toPredicate = new Dictionary<IEqualityComparer<T>, Func<T, T, bool>>();
 
 		/// <summary>
 		/// The comparison method of the default sort comparer for T in delegate form.
@@ -58,7 +58,7 @@ namespace Smooth.Comparisons {
 		/// <summary>
 		/// The comparison method of the default equality comparer for T in delegate form.
 		/// </summary>
-		public static Fn<T, T, bool> DefaultPredicate { get { return ToPredicate(Smooth.Collections.EqComparer<T>.Default); } }
+		public static Func<T, T, bool> DefaultPredicate { get { return ToPredicate(Smooth.Collections.EqComparer<T>.Default); } }
 
 		/// <summary>
 		/// Returns the comparison method of the specfied sort comparer in delegate form.
@@ -77,8 +77,8 @@ namespace Smooth.Comparisons {
 		/// <summary>
 		/// Returns the comparison method of the specfied equality comparer in delegate form.
 		/// </summary>
-		public static Fn<T, T, bool> ToPredicate(IEqualityComparer<T> EqComparer) {
-			Fn<T, T, bool> c;
+		public static Func<T, T, bool> ToPredicate(IEqualityComparer<T> EqComparer) {
+			Func<T, T, bool> c;
 			lock (toPredicate) {
 				if (!toPredicate.TryGetValue(EqComparer, out c)) {
 					c = EqComparer.Equals;

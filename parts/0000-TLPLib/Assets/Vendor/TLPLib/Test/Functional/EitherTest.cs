@@ -180,8 +180,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class EitherTestVoidFold {
     static void test(Either<int, string> e, char expected) {
       var result = Option<char>.None;
-      Act<int> leftFolder = i => result = i.ToString()[0].some();
-      Act<string> rightFolder = s => result = s[0].some();
+      Action<int> leftFolder = i => result = i.ToString()[0].some();
+      Action<string> rightFolder = s => result = s[0].some();
       e.voidFold(leftFolder, rightFolder);
       result.shouldBeSome(expected);
     }
@@ -191,7 +191,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   }
 
   public class EitherTestToTry {
-    static readonly Fn<int, Exception> onLeft = i => new ArgumentException(i.ToString());
+    static readonly Func<int, Exception> onLeft = i => new ArgumentException(i.ToString());
 
     [Test] public void WhenLeft() =>
       Either<int, string>.Left(3)

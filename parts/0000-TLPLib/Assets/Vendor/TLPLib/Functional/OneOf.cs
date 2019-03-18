@@ -108,7 +108,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       : isB ? $"OneOf[{typeof(B)}]({__unsafeGetB})"
             : $"OneOf[{typeof(C)}]({__unsafeGetC})";
 
-    [PublicAPI] public void voidFold(Act<A> onA, Act<B> onB, Act<C> onC) {
+    [PublicAPI] public void voidFold(Action<A> onA, Action<B> onB, Action<C> onC) {
       switch (whichOne) {
         case OneOf.Choice.A:
           onA(__unsafeGetA);
@@ -124,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       }
     }
 
-    [PublicAPI] public R fold<R>(Fn<A, R> onA, Fn<B, R> onB, Fn<C, R> onC) {
+    [PublicAPI] public R fold<R>(Func<A, R> onA, Func<B, R> onB, Func<C, R> onC) {
       switch (whichOne) {
         case OneOf.Choice.A: return onA(__unsafeGetA);
         case OneOf.Choice.B: return onB(__unsafeGetB);

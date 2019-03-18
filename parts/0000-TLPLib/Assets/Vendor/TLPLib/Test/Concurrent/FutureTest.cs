@@ -10,8 +10,8 @@ using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   static class FT {
-    public static readonly Fn<int, Either<int, string>> left = F.left<int, string>;
-    public static readonly Fn<string, Either<int, string>> right = F.right<int, string>;
+    public static readonly Func<int, Either<int, string>> left = F.left<int, string>;
+    public static readonly Func<string, Either<int, string>> right = F.right<int, string>;
 
     public static IEnumerable<Future<A>> addUnfulfilled<A>(this IEnumerable<Future<A>> futures)
       { return futures.Concat(Future.unfulfilled<A>().Yield()); }
@@ -98,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class FutureTestMap {
-    readonly Fn<int, int> mapper = i => i * 2;
+    readonly Func<int, int> mapper = i => i * 2;
 
     [Test]
     public void WhenSuccessful() {
@@ -123,8 +123,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class FutureTestFlatMap {
-    readonly Fn<int, Future<int>> successfulMapper = i => Future.successful(i * 2);
-    readonly Fn<int, Future<int>> unfulfilledMapper = i => Future<int>.unfulfilled;
+    readonly Func<int, Future<int>> successfulMapper = i => Future.successful(i * 2);
+    readonly Func<int, Future<int>> unfulfilledMapper = i => Future<int>.unfulfilled;
 
     readonly Future<int>
       successful = Future.successful(1),
@@ -162,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       unfulfilledShouldNotCallMapper(i => Future.a<int>(p => {}));
     }
 
-    void unfulfilledShouldNotCallMapper<A>(Fn<int, Future<A>> mapper) {
+    void unfulfilledShouldNotCallMapper<A>(Func<int, Future<A>> mapper) {
       var called = false;
       unfulfilled.flatMap(i => {
         called = true;
@@ -234,7 +234,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       foreach (var t in new[] {
         F.t("X-O", Future.unfulfilled<int>(), Future.successful(1)),
         F.t("O-X", Future.successful(1), Future.unfulfilled<int>())
-      }) t.ua((name, fa, fb) => fa.zip(fb).shouldBeOfUnfulfilledType(name));
+      }) {
+        var (name, fa, fb) = t;
+        fa.zip(fb).shouldBeOfUnfulfilledType(name);
+      }
     }
 
     [Test]

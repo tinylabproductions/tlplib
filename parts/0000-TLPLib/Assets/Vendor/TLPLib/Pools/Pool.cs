@@ -9,16 +9,16 @@ namespace Smooth.Pools {
 	public class Pool<T> {
 		private readonly Stack<T> values = new Stack<T>();
 
-		private readonly Fn<T> create;
-		private readonly Act<T> reset;
-		private readonly Act<T> release;
+		private readonly Func<T> create;
+		private readonly Action<T> reset;
+		private readonly Action<T> release;
 
 		private Pool() {}
 
 		/// <summary>
 		/// Creates a new pool with the specified value creation and reset delegates.
 		/// </summary>
-		public Pool(Fn<T> create, Act<T> reset) {
+		public Pool(Func<T> create, Action<T> reset) {
 			this.create = create;
 			this.reset = reset;
 			this.release = Release;

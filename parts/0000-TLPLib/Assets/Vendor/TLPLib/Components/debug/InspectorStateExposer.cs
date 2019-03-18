@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     public partial class Data<A> : IData where A : class {
       public readonly WeakReferenceTLP<A> reference;
       public readonly string name;
-      public readonly Fn<A, IValue> get;
+      public readonly Func<A, IValue> get;
 
       public Option<ForRepresentation> repr => reference.Target.map(reference => new ForRepresentation(
         reference, name, get(reference)
@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
   public static class InspectorStateExposerExts {
     [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Fn<A, InspectorStateExposer.IValue> get
+      this GameObject go, A reference, string name, Func<A, InspectorStateExposer.IValue> get
     ) where A : class {
 #if UNITY_EDITOR
       var exposer = go.EnsureComponent<InspectorStateExposer>();
@@ -75,22 +75,22 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
 
     [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Fn<A, string> get
+      this GameObject go, A reference, string name, Func<A, string> get
     ) where A : class => go.exposeToInspector(reference, name, a => new InspectorStateExposer.StringValue(get(a)));
 
     [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Fn<A, float> get
+      this GameObject go, A reference, string name, Func<A, float> get
     ) where A : class => go.exposeToInspector(reference, name, a => new InspectorStateExposer.FloatValue(get(a)));
 
     [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Fn<A, bool> get
+      this GameObject go, A reference, string name, Func<A, bool> get
     ) where A : class => go.exposeToInspector(reference, name, a => get(a) ? "true" : "false");
 
     [Conditional("UNITY_EDITOR"), PublicAPI]
     public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Fn<A, UnityEngine.Object> get
+      this GameObject go, A reference, string name, Func<A, UnityEngine.Object> get
     ) where A : class => go.exposeToInspector(reference, name, x => new InspectorStateExposer.ObjectValue(get(x)));
 
     [Conditional("UNITY_EDITOR"), PublicAPI]

@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class Specification : TestBase {
-    public static void describe(Act<SpecificationBuilder> buildTests) {
+    public static void describe(Action<SpecificationBuilder> buildTests) {
       var builder = new SpecificationBuilder();
       buildTests(builder);
       builder.execute();
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     protected SimpleRef<A> let<A>(A initialValue) => currentBuilder.let(initialValue);
-    protected SimpleRef<A> let<A>(Fn<A> initialValue) => currentBuilder.let(initialValue);
+    protected SimpleRef<A> let<A>(Func<A> initialValue) => currentBuilder.let(initialValue);
 
     protected void describe(Action buildTests) {
       describe(builder => {
@@ -173,7 +173,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public SimpleRef<A> let<A>(A initialValue) => let(() => initialValue);
 
     /// <summary>A reference which gets set to provided value before each test.</summary>
-    public SimpleRef<A> let<A>(Fn<A> createInitialValue) {
+    public SimpleRef<A> let<A>(Func<A> createInitialValue) {
       var r = new SimpleRef<A>(createInitialValue());
       Action reinit = () => r.value = createInitialValue();
       currentContext = currentContext.addBeforeEach(reinit);

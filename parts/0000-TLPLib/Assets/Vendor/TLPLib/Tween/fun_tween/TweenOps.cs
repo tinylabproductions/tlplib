@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     static TweenOps() {
       int intDiff(int a1, int a2) => a1 - a2;
 
-      Tween<int>.Ops opsFor(Fn<float, int> fToI) => Tween.ops<int>(
+      Tween<int>.Ops opsFor(Func<float, int> fToI) => Tween.ops<int>(
         (start, end, t) => fToI(float_.lerp(start, end, t)),
         intDiff
       );

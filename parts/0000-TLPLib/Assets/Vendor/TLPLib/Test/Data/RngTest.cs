@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     static Rng newRng => new Rng(new Rng.Seed(100));
 
     void test<A>(
-      Fn<Rng, Tpl<Rng, A>> nextA, A min, A max, Option<ImmutableHashSet<A>> allOpt,
+      Func<Rng, Tpl<Rng, A>> nextA, A min, A max, Option<ImmutableHashSet<A>> allOpt,
       uint iterations = 10000, double tolerance = 0.9
     ) where A : IComparable<A> {
       var rng = newRng;

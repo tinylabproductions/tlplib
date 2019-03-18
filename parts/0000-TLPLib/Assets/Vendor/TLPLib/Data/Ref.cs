@@ -26,10 +26,10 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public class LambdaRef<A> : Ref<A> {
-    readonly Fn<A> get;
-    readonly Act<A> set;
+    readonly Func<A> get;
+    readonly Action<A> set;
 
-    public LambdaRef(Fn<A> get, Act<A> set) {
+    public LambdaRef(Func<A> get, Action<A> set) {
       this.get = get;
       this.set = set;
     }
@@ -70,14 +70,14 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   public static class Ref {
     public static Ref<A> a<A>(A value) => new SimpleRef<A>(value);
-    public static Ref<A> a<A>(Fn<A> get, Act<A> set) => new LambdaRef<A>(get, set);
-    public static LazyRef<A> lazy<A>(Fn<Ref<A>> backing) => lazy(F.lazy(backing));
+    public static Ref<A> a<A>(Func<A> get, Action<A> set) => new LambdaRef<A>(get, set);
+    public static LazyRef<A> lazy<A>(Func<Ref<A>> backing) => lazy(F.lazy(backing));
     public static LazyRef<A> lazy<A>(LazyVal<Ref<A>> backing) => new LazyRef<A>(backing);
 
-    public static Ref<B> map<A, B>(this Ref<A> r, Fn<A, B> map, Fn<B, A> contraMap) =>
+    public static Ref<B> map<A, B>(this Ref<A> r, Func<A, B> map, Func<B, A> contraMap) =>
       a(() => map(r.value), b => r.value = contraMap(b));
 
-    public static Ref<B> map<A, B>(this Ref<A> r, Fn<A, B> map, Fn<B, Option<A>> contraMap) =>
+    public static Ref<B> map<A, B>(this Ref<A> r, Func<A, B> map, Func<B, Option<A>> contraMap) =>
       a(() => map(r.value), b => {
         foreach (var a in contraMap(b))
           r.value = a;

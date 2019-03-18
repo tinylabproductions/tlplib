@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ///
     /// Evaluating B will evaluate A, but evaluating A will not evaluate B.
     /// </summary>
-    public static LazyVal<B> lazyMap<A, B>(this LazyVal<A> lazy, Fn<A, B> mapper) =>
+    public static LazyVal<B> lazyMap<A, B>(this LazyVal<A> lazy, Func<A, B> mapper) =>
       F.lazy(() => mapper(lazy.strict));
 
     /// <summary>
@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     /// Projector function is called on every access, so make sure it is something lite,
     /// like a cast or field access.
     /// </summary>
-    public static LazyVal<B> project<A, B>(this LazyVal<A> lazy, Fn<A, B> projector) =>
+    public static LazyVal<B> project<A, B>(this LazyVal<A> lazy, Func<A, B> projector) =>
       new ProjectedLazyVal<A, B>(lazy, projector);
 
     [PublicAPI]
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ) where MoreSpecific : LessSpecific => lazy.upcast<MoreSpecific, LessSpecific>();
 
     [PublicAPI]
-    public static A getOrElse<A>(this LazyVal<A> lazy, Fn<A> orElse) =>
+    public static A getOrElse<A>(this LazyVal<A> lazy, Func<A> orElse) =>
       lazy.isCompleted ? lazy.strict : orElse();
 
     [PublicAPI]
@@ -63,21 +63,21 @@ namespace com.tinylabproductions.TLPLib.Functional {
     #region Future
     public bool isCompleted => true;
     public Option<A> value => F.some(strict);
-    public void onComplete(Act<A> action) => action(strict);
+    public void onComplete(Action<A> action) => action(strict);
     #endregion
   }
 
   public class LazyValImpl<A> : LazyVal<A> {
-    static readonly Pool<List<Act<A>>> listenerPool = ListPool<Act<A>>.Instance;
+    static readonly Pool<List<Action<A>>> listenerPool = ListPool<Action<A>>.Instance;
 
     A obj;
     public bool isCompleted { get; private set; }
-    readonly Fn<A> initializer;
-    readonly Option<Act<A>> afterInitialization;
+    readonly Func<A> initializer;
+    readonly Option<Action<A>> afterInitialization;
 
-    List<Act<A>> listeners;
+    List<Action<A>> listeners;
 
-    public LazyValImpl(Fn<A> initializer, Act<A> afterInitialization = null) {
+    public LazyValImpl(Func<A> initializer, Action<A> afterInitialization = null) {
       this.initializer = initializer;
       this.afterInitialization = afterInitialization.opt();
     }
@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public Option<A> value => isCompleted ? F.some(obj) : Option<A>.None;
 
-    public void onComplete(Act<A> action) {
+    public void onComplete(Action<A> action) {
       if (isCompleted) action(obj);
       else {
         listeners = listeners ?? listenerPool.Borrow();
@@ -119,14 +119,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
   class ProjectedLazyVal<A, B> : LazyVal<B> {
     readonly LazyVal<A> backing;
-    readonly Fn<A, B> projector;
+    readonly Func<A, B> projector;
 
-    public ProjectedLazyVal(LazyVal<A> backing, Fn<A, B> projector) {
+    public ProjectedLazyVal(LazyVal<A> backing, Func<A, B> projector) {
       this.backing = backing;
       this.projector = projector;
     }
 
-    public void onComplete(Act<B> action) => backing.onComplete(a => action(projector(a)));
+    public void onComplete(Action<B> action) => backing.onComplete(a => action(projector(a)));
     public Option<B> value => backing.value.map(projector);
     public bool isCompleted => backing.isCompleted;
     public B strict => projector(backing.strict);

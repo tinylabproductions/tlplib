@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class EditorSceneManagerUtils {
-    public static A withScene<A>(ScenePath scenePath, Fn<Scene, A> f) {
+    public static A withScene<A>(ScenePath scenePath, Func<Scene, A> f) {
       var isLoaded = SceneManagerUtils.loadedScenes.Any(s => s.path == scenePath);
       var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
       var ret = f(scene);
@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     }
 
     public static B withSceneObject<A, B>(
-      this RuntimeSceneRefWithComponent<A> sceneRef, Fn<A, B> f
+      this RuntimeSceneRefWithComponent<A> sceneRef, Func<A, B> f
     ) where A : Component =>
       withScene(sceneRef.scenePath, scene => f(scene.findComponentOnRootGameObjects<A>().rightOrThrow));
   }

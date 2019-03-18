@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     
     [PublicAPI]
     public PrefValDictionary<K, V> dictionary<K, V>(
-      string key, Fn<K, string> keyToString, ISerializedRW<V> vRw, V defaultValue,
+      string key, Func<K, string> keyToString, ISerializedRW<V> vRw, V defaultValue,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefVal<A> custom<A>(
       string key, A defaultVal,
-      Fn<A, string> serialize, Fn<string, Option<A>> deserialize,
+      Func<A, string> serialize, Func<string, Option<A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(

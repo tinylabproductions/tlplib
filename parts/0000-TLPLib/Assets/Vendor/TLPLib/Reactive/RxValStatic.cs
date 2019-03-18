@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public RxValStatic(A value) { this.value = value; }
 
     public ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       string callerMemberName = "",
       string callerFilePath = "",
       int callerLineNumber = 0
@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       string callerMemberName = "", string callerFilePath = "", int callerLineNumber = 0
     ) {
       subscription = Subscription.empty;
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       string callerMemberName = "",
       string callerFilePath = "",
       int callerLineNumber = 0

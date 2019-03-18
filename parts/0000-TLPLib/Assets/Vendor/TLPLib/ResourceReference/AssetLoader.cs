@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   [Record]
   public partial class LoaderMapped<A, B> : ILoader<B> {
     readonly ILoader<A> loader;
-    readonly Fn<A, B> mapper;
+    readonly Func<A, B> mapper;
 
     public B loadSync() => mapper(loader.loadSync());
     public Tpl<IAsyncOperation, Future<B>> loadASync() => 
@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   }
 
   public static class LoaderExts {
-    [PublicAPI] public static ILoader<B> map<A, B>(this ILoader<A> loader, Fn<A, B> mapper) =>
+    [PublicAPI] public static ILoader<B> map<A, B>(this ILoader<A> loader, Func<A, B> mapper) =>
       new LoaderMapped<A, B>(loader, mapper);
   }
   
@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   public interface IAssetLoader<A> : IAssetLoader, ILoader<A> {}
 
   public static class AssetLoaderExts {
-    [PublicAPI] public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Fn<A, B> mapper) =>
+    [PublicAPI] public static IAssetLoader<B> map<A, B>(this IAssetLoader<A> loader, Func<A, B> mapper) =>
       new AssetLoaderMapped<A, B>(loader, mapper);
   }
 
@@ -76,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   public partial class AssetLoaderMapped<A, B> : LoaderMapped<A, B>, IAssetLoader<B> {
     readonly IAssetLoader<A> loader;
 
-    public AssetLoaderMapped(IAssetLoader<A> loader, Fn<A, B> mapper) : base(loader, mapper) {
+    public AssetLoaderMapped(IAssetLoader<A> loader, Func<A, B> mapper) : base(loader, mapper) {
       this.loader = loader;
     }
 

@@ -69,12 +69,12 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static string rateURL => "market://details?id=" + packageName;
 
     public static void runOnUI(Action act) => current.runOnUIThread(act);
-    public static Future<A> runOnUI<A>(Fn<A> f) => Future<A>.async(promise => runOnUI(() => {
+    public static Future<A> runOnUI<A>(Func<A> f) => Future<A>.async(promise => runOnUI(() => {
       var ret = f();
       ASync.OnMainThread(() => promise.complete(ret));
     }));
 
-    public static A runOnUIBlocking<A>(Fn<A> f) =>
+    public static A runOnUIBlocking<A>(Func<A> f) =>
       SyncOtherThreadOp.a(AndroidUIThreadExecutor.a(f)).execute();
 
     public static void runOnUIBlocking(Action act) =>
@@ -98,19 +98,19 @@ namespace com.tinylabproductions.TLPLib.Android {
   }
 
   public static class AndroidUIThreadExecutor {
-    public static AndroidUIThreadExecutor<A> a<A>(Fn<A> code) => new AndroidUIThreadExecutor<A>(code);
+    public static AndroidUIThreadExecutor<A> a<A>(Func<A> code) => new AndroidUIThreadExecutor<A>(code);
   }
 
   // This takes 10 ms on galaxy S5
   // 1 ms on Acer A110
   public class AndroidUIThreadExecutor<A> : OtherThreadExecutor<A> {
-    readonly Fn<A> code;
+    readonly Func<A> code;
 
-    public AndroidUIThreadExecutor(Fn<A> code) {
+    public AndroidUIThreadExecutor(Func<A> code) {
       this.code = code;
     }
 
-    public void execute(Act<A> onSuccess, Act<Exception> onError) {
+    public void execute(Action<A> onSuccess, Action<Exception> onError) {
       AndroidActivity.runOnUI(() => {
         try { onSuccess(code()); }
         catch (Exception e) { onError(e); }

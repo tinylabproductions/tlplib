@@ -26,12 +26,12 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
   public static class EnumBuilder {
     public static EnumBuilder<A> a<A>(
       AndroidJavaClass klass,
-      Fn<AndroidJavaObject, A> create
+      Func<AndroidJavaObject, A> create
     ) where A : Enum => new EnumBuilder<A>(klass, create);
 
     public static EnumBuilder<A> a<A>(
       string klass,
-      Fn<AndroidJavaObject, A> create
+      Func<AndroidJavaObject, A> create
     ) where A : Enum => a(
       // Fake support when running in editor
       Application.platform == RuntimePlatform.Android
@@ -43,11 +43,11 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
 
   public class EnumBuilder<A> where A : Enum {
     readonly AndroidJavaClass klass;
-    readonly Fn<AndroidJavaObject, A> create;
+    readonly Func<AndroidJavaObject, A> create;
 
     public EnumBuilder(
       AndroidJavaClass klass,
-      Fn<AndroidJavaObject, A> create
+      Func<AndroidJavaObject, A> create
     ) {
       this.klass = klass;
       this.create = create;

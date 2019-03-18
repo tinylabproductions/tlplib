@@ -204,14 +204,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/caller-information
     /// </summary>
     ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     );
 
     void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -220,16 +220,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
   public static class Observable {
     public static IObservableQueue<A, C> createQueue<A, C>(
-      Act<A> addLast, Action removeFirst,
-      Fn<int> count, Fn<C> collection, Fn<A> first, Fn<A> last
+      Action<A> addLast, Action removeFirst,
+      Func<int> count, Func<C> collection, Func<A> first, Func<A> last
     ) => new ObservableLambdaQueue<A, C>(
       addLast, removeFirst, count, collection, first, last
     );
 
     public static Tpl<A, IRxObservable<Evt>> a<A, Evt>(
-      Fn<Act<Evt>, Tpl<A, ISubscription>> creator
+      Func<Action<Evt>, Tpl<A, ISubscription>> creator
     ) {
-      Act<Evt> observer = null;
+      Action<Evt> observer = null;
       ISubscription subscription = null;
       var observable = new Observable<Evt>(obs => {
         observer = obs;
@@ -244,7 +244,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxObservable<A> empty<A>() => Observable<A>.empty;
 
     public static IRxObservable<A> fromEvent<A>(
-      Act<Act<A>> registerCallback, Action unregisterCallback
+      Action<Action<A>> registerCallback, Action unregisterCallback
     ) {
       return new Observable<A>(obs => {
         registerCallback(obs);
@@ -337,7 +337,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       });
     }
 
-    static IEnumerator everyFrameCR(Act<Unit> onEvent) {
+    static IEnumerator everyFrameCR(Action<Unit> onEvent) {
       while (true) {
         onEvent(Unit.instance);
         yield return null;
@@ -346,7 +346,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static IEnumerator intervalEnum(
-      Act<DateTime> pushEvent, Duration interval, Option<Duration> delay
+      Action<DateTime> pushEvent, Duration interval, Option<Duration> delay
     ) {
       foreach (var d in delay) yield return new WaitForSeconds(d.seconds);
       var wait = new WaitForSeconds(interval.seconds);
@@ -363,20 +363,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   >(Observable<Elem>.SubscribeToSource subscriptionFn);
 
   public partial class Observable<A> : IRxObservable<A> {
-    public delegate ISubscription SubscribeToSource(Act<A> onEvent);
+    public delegate ISubscription SubscribeToSource(Action<A> onEvent);
 
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
     /** Properties if this observable was created from other source. **/
     class SourceProperties {
-      readonly Act<A> onEvent;
+      readonly Action<A> onEvent;
       readonly SubscribeToSource subscribeFn;
 
       Option<ISubscription> subscription = F.none<ISubscription>();
 
       public SourceProperties(
-        Act<A> onEvent, SubscribeToSource subscribeFn
+        Action<A> onEvent, SubscribeToSource subscribeFn
       ) {
         this.onEvent = onEvent;
         this.subscribeFn = subscribeFn;
@@ -401,7 +401,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     [Record]
     partial struct Sub {
-      public readonly Act<A> onEvent;
+      public readonly Action<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
       public readonly bool active;
@@ -492,7 +492,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
 
     public virtual void subscribe(
-      IDisposableTracker tracker, Act<A> onEvent, out ISubscription subscription,
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -526,7 +526,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public ISubscription subscribe(
-      IDisposableTracker tracker, Act<A> onEvent,
+      IDisposableTracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -542,7 +542,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region private methods
 
-    void onUnsubscribed(Act<A> onEvent) {
+    void onUnsubscribed(Action<A> onEvent) {
       for (var idx = 0; idx < subscriptions.Count; idx++) {
         var sub = subscriptions[idx];
         if (sub.onEvent == onEvent) {

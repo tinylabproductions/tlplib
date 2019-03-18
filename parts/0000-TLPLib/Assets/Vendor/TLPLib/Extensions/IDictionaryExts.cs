@@ -24,11 +24,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       dict.get(key).toRight($"Can't find '{key}'!");
 
     public static V getOrUpdate<K, V>(
-      this IDictionary<K, V> dict, K key, Fn<V> ifNotFound
+      this IDictionary<K, V> dict, K key, Func<V> ifNotFound
     ) => getOrUpdate(dict, key, _ => ifNotFound());
 
     public static V getOrUpdate<K, V>(
-      this IDictionary<K, V> dict, K key, Fn<K, V> ifNotFound
+      this IDictionary<K, V> dict, K key, Func<K, V> ifNotFound
     ) {
       if (dict.TryGetValue(key, out var outVal))
         return outVal;
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static V getOrElse<K, V>(
-      this IDictionary<K, V> dict, K key, Fn<V> orElse
+      this IDictionary<K, V> dict, K key, Func<V> orElse
     ) => dict.TryGetValue(key, out var outVal) ? outVal : orElse();
 
     public static V getOrElse<K, V>(

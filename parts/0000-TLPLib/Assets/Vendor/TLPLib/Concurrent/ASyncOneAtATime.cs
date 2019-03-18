@@ -8,11 +8,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
    * concurrent event based apis to futures. */
   public static class ASyncNAtATimeQueue {
     public static ASyncNAtATimeQueue<Params, Return> a<Params, Return>(
-      Fn<Params, Future<Return>> execute, ushort maxTasks = 1
+      Func<Params, Future<Return>> execute, ushort maxTasks = 1
     ) => new ASyncNAtATimeQueue<Params,Return>(maxTasks, execute);
 
     public static ASyncNAtATimeQueue<Params, Return> a<Params, Return>(
-      Act<Params, Promise<Return>> execute, ushort maxTasks = 1
+      Action<Params, Promise<Return>> execute, ushort maxTasks = 1
     ) => new ASyncNAtATimeQueue<Params,Return>(
       maxTasks,
       p => Future<Return>.async(promise => execute(p, promise))
@@ -33,12 +33,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly Queue<QueueEntry> queue = new Queue<QueueEntry>();
     readonly uint maxTasks;
-    readonly Fn<Params, Future<Return>> execute;
+    readonly Func<Params, Future<Return>> execute;
 
     public uint running { get; private set; }
     public uint queued => (uint) queue.Count;
 
-    public ASyncNAtATimeQueue(uint maxTasks, Fn<Params, Future<Return>> execute) {
+    public ASyncNAtATimeQueue(uint maxTasks, Func<Params, Future<Return>> execute) {
       this.maxTasks = maxTasks;
       this.execute = execute;
     }

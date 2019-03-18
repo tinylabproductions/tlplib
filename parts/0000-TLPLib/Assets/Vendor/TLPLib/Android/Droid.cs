@@ -81,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     ) => javaObject.Call<A>(methodName, args);
 
     /** Access to ```internal AndroidJavaObject(IntPtr jobject)``` */
-    static readonly Fn<object[], AndroidJavaObject> ajoCreator =
+    static readonly Func<object[], AndroidJavaObject> ajoCreator =
       PrivateConstructor.creator<AndroidJavaObject>();
 
     /**

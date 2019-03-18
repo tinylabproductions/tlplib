@@ -6,7 +6,7 @@ namespace com.tinylabproductions.TLPLib.Tween {
     /** Name of the property you need to pass to go tween **/
     public const string Prop = "value";
 
-    public static TweenFacade<A> a<A>(Fn<A> getter, Act<A> setter) {
+    public static TweenFacade<A> a<A>(Func<A> getter, Action<A> setter) {
       return new TweenFacade<A>(getter, setter);
     }
   }
@@ -18,10 +18,10 @@ namespace com.tinylabproductions.TLPLib.Tween {
     struct
 #endif
     TweenFacade<A> {
-    private readonly Fn<A> getter;
-    private readonly Act<A> setter;
+    private readonly Func<A> getter;
+    private readonly Action<A> setter;
 
-    public TweenFacade(Fn<A> getter, Act<A> setter) {
+    public TweenFacade(Func<A> getter, Action<A> setter) {
       this.getter = getter;
       this.setter = setter;
     }

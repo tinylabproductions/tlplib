@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public bool hasKey(string name) =>
       storage.ContainsKey(name);
 
-    A get<A>(string name, A defaultValue, Fn<OneOf<string, int, float>, Option<A>> select) =>
+    A get<A>(string name, A defaultValue, Func<OneOf<string, int, float>, Option<A>> select) =>
       storage.get(name).fold(defaultValue, _ => select(_).get);
 
     public string getString(string name, string defaultValue) =>

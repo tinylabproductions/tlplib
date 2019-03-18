@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       reportToErrorTracking: reportToErrorTracking
     );
     
-    [PublicAPI] public ErrorMsg withMessage(Fn<string, string> f) => 
+    [PublicAPI] public ErrorMsg withMessage(Func<string, string> f) => 
       new ErrorMsg(f(s), context, reportToErrorTracking);
     
     [PublicAPI] public ErrorMsg withContext(Object context) => 

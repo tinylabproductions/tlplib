@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static string mkString<A>(
-      this IEnumerable<A> e, Act<StringBuilder> appendSeparator,
+      this IEnumerable<A> e, Action<StringBuilder> appendSeparator,
       string start = null, string end = null
     ) {
       var sb = new StringBuilder();
@@ -126,13 +126,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static Dictionary<K, A> toDict<A, K>(
-      this IEnumerable<A> list, Fn<A, K> keyGetter
+      this IEnumerable<A> list, Func<A, K> keyGetter
     ) => list.toDict(keyGetter, _ => _);
 
     // AOT safe version of ToDictionary.
     
     public static Dictionary<K, V> toDict<A, K, V>(
-      this IEnumerable<A> list, Fn<A, K> keyGetter, Fn<A, V> valueGetter
+      this IEnumerable<A> list, Func<A, K> keyGetter, Func<A, V> valueGetter
     ) {
       var dict = new Dictionary<K, V>();
       // ReSharper disable once LoopCanBeConvertedToQuery
@@ -176,14 +176,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> Yield<A>(this A any) { yield return any; }
 
     
-    public static Option<A> find<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
+    public static Option<A> find<A>(this IEnumerable<A> enumerable, Func<A, bool> predicate) {
       foreach (var a in enumerable) if (predicate(a)) return F.some(a);
       return F.none<A>();
     }
     
     
     public static Option<A> find<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
+      this IEnumerable<A> enumerable, Func<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
     ) {
       comparer = comparer ?? EqComparer<B>.Default;
       foreach (var a in enumerable) {
@@ -195,7 +195,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static IEnumerable<C> zip<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> zipper
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Func<A, B, C> zipper
     ) {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
@@ -209,7 +209,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static IEnumerable<C> zipLeft<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> zipper, Fn<A, int, C> generateMissing
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Func<A, B, C> zipper, Func<A, int, C> generateMissing
     ) {
       var aEnum = aEnumerable.GetEnumerator();
       var bEnum = bEnumerable.GetEnumerator();
@@ -226,7 +226,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static IEnumerable<C> zipRight<A, B, C>(
-      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Fn<A, B, C> zipper, Fn<B, int, C> generateMissing
+      this IEnumerable<A> aEnumerable, IEnumerable<B> bEnumerable, Func<A, B, C> zipper, Func<B, int, C> generateMissing
     ) => bEnumerable.zipLeft(aEnumerable, (b, a) => zipper(a, b), generateMissing);
 
     
@@ -258,7 +258,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// </summary>
     
     public static IEnumerable<B> mapDistinct<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, B> mapper
+      this IEnumerable<A> enumerable, Func<A, B> mapper
     ) {
       var cache = new Dictionary<A, B>();
       foreach (var a in enumerable) {
@@ -274,7 +274,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static IEnumerable<B> collect<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+      this IEnumerable<A> enumerable, Func<A, Option<B>> collector
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
@@ -284,7 +284,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static IEnumerable<B> collect<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, int, Option<B>> collector
+      this IEnumerable<A> enumerable, Func<A, int, Option<B>> collector
     ) {
       var idx = 0;
       foreach (var a in enumerable) {
@@ -296,7 +296,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static Option<B> collectFirst<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+      this IEnumerable<A> enumerable, Func<A, Option<B>> collector
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
@@ -307,7 +307,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static Option<B> collectFirst<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
+      this IEnumerable<A> enumerable, Func<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
     ) {
       comparer = comparer ?? EqComparer<B>.Default;
       foreach (var a in enumerable) {
@@ -323,7 +323,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     /// <summary>Partitions enumerable into two lists using a predicate.</summary>
     
-    public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Fn<A, bool> predicate) {
+    public static Partitioned<A> partition<A>(this IEnumerable<A> enumerable, Func<A, bool> predicate) {
       var trues = ImmutableList.CreateBuilder<A>();
       var falses = ImmutableList.CreateBuilder<A>();
       foreach (var a in enumerable) (predicate(a) ? trues : falses).Add(a);
@@ -332,7 +332,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     
     public static Tpl<ImmutableList<A>, ImmutableList<B>> partitionCollect<A, B>(
-      this IEnumerable<A> enumerable, Fn<A, Option<B>> collector
+      this IEnumerable<A> enumerable, Func<A, Option<B>> collector
     ) {
       var nones = ImmutableList.CreateBuilder<A>();
       var somes = ImmutableList.CreateBuilder<B>();
@@ -385,7 +385,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// </summary>
     
     public static B Aggregate<A, B>(
-      this IEnumerable<A> enumerable, B initial, Fn<A, B, int, B> reducer
+      this IEnumerable<A> enumerable, B initial, Func<A, B, int, B> reducer
     ) {
       var reduced = initial;
       var idx = 0;

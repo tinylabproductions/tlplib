@@ -61,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [PublicAPI]
-    public void forEach(Act<A> action) {
+    public void forEach(Action<A> action) {
       try {
         iterating = true;
         foreach (var a in _active) action(a);
@@ -77,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [PublicAPI]
     public void track(
-      IDisposableTracker tracker, Act<A> runOnEnabled = null, Act<A> runOnDisabled = null
+      IDisposableTracker tracker, Action<A> runOnEnabled = null, Action<A> runOnDisabled = null
     ) {
       if (runOnEnabled != null) {
         // Subscribe to onEnabled before running the code on already active objects, because

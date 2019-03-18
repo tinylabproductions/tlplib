@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         .GroupBy(_ => _._3)
         .ToImmutableDictionary(_ => _.Key, _ => _.Count());
 
-    public Fn<string, int> actionCountsFn { get {
+    public Func<string, int> actionCountsFn { get {
       var dict = actionCounts;
       return key => dict.getOrElse(key, 0);
     } }
@@ -53,10 +53,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       // Actions might remove themselves as side effects, so we should first evaluate
       // all actions that should be run, then remove the ran actions if they are still
       // there.
-      var toRun = actions.Where(t => t.ua((runAt, act, name) => {
+      var toRun = actions.Where(t => {
+        var (runAt, act, name) = t;
         var shouldRun = timePassed >= runAt;
         return shouldRun;
-      })).ToList();
+      }).ToList();
       foreach (var t in toRun) t._2();
       actions.RemoveWhere(toRun.Contains);
     }

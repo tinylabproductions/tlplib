@@ -20,7 +20,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    public static readonly Act<Progress> DEFAULT_ON_PROGRESS = progress => EditorUtility.DisplayProgressBar(
+    public static readonly Action<Progress> DEFAULT_ON_PROGRESS = progress => EditorUtility.DisplayProgressBar(
       "Validating Objects", "Please wait...", progress.ratio
     );
     public static readonly Action DEFAULT_ON_FINISH = EditorUtility.ClearProgressBar;
@@ -93,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkScene(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<Progress> onProgress = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var objects = getSceneObjects(scene);
       var errors = check(
@@ -106,7 +106,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static Tpl<ImmutableList<Error>, TimeSpan> checkSceneWithTime(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<Progress> onProgress = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = Stopwatch.StartNew();
       var errors = checkScene(scene, customValidatorOpt, onProgress, onFinish);
@@ -116,7 +116,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkAssetsAndDependencies(
       IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<Progress> onProgress = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var loadedAssets =
         assets.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
@@ -137,7 +137,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static ImmutableList<Error> checkRecursively(
       CheckContext context, IEnumerable<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<Progress> onProgress = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) => check(
       context,
       collectDependencies(objects.ToArray()),
@@ -152,7 +152,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
-      Act<Progress> onProgress = null, Action onFinish = null,
+      Action<Progress> onProgress = null, Action onFinish = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
       Option.ensureValue(ref customValidatorOpt);

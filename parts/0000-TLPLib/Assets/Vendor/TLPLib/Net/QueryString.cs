@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Net {
     public override string ToString() => $"{nameof(QueryString)}({queryString})";
 
     public static QueryString build<A>(
-      IEnumerable<A> qsParams, Fn<A, string> extractKey, Fn<A, string> extractValue
+      IEnumerable<A> qsParams, Func<A, string> extractKey, Func<A, string> extractValue
     ) {
       var qs = new QueryString();
       foreach (var a in qsParams)
