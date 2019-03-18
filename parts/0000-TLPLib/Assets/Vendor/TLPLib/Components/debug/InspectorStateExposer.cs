@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.system;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -43,13 +42,14 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
 
     [Record]
     public partial class Data<A> : IData where A : class {
-      public readonly WeakReferenceTLP<A> reference;
+      public readonly WeakReference<A> reference;
       public readonly string name;
       public readonly Func<A, IValue> get;
 
-      public Option<ForRepresentation> repr => reference.Target.map(reference => new ForRepresentation(
-        reference, name, get(reference)
-      ));
+      public Option<ForRepresentation> repr => 
+        reference.TryGetTarget(out var _ref)
+        ? F.some(new ForRepresentation(_ref, name, get(_ref)))
+        : F.none_;
     }
 
     readonly List<IData> data = new List<IData>();
@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     ) where A : class {
 #if UNITY_EDITOR
       var exposer = go.EnsureComponent<InspectorStateExposer>();
-      var wr = WeakReferenceTLP.a(reference);
+      var wr = new WeakReference<A>(reference);
       exposer.add(new InspectorStateExposer.Data<A>(wr, name, get));
 #endif
     }

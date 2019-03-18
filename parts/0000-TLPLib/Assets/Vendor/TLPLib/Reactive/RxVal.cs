@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.system;
 using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
@@ -134,7 +133,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       _value = initialValue;
       this.comparer = comparer ?? EqComparer<A>.Default;
 
-      var wr = WeakReferenceTLP.a(this);
+      var wr = new WeakReference<RxVal<A>>(this);
       var sub = Subscription.empty;
       sub = subscribeToSource(
         // This callback goes into the source observable callback list, therefore
@@ -153,8 +152,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // All the hard references should point backwards.
         a => {
           // Make sure to not capture `this`!
-          var thizOpt = wr.Target;
-          if (thizOpt.isSome) thizOpt.__unsafeGetValue.value = a;
+          if (wr.TryGetTarget(out var _this)) _this.value = a;
           // This hard is reference [1]. It is needed so that subscription would
           // not be lost even if this RxVal would be garbage collected and we would
           // not get "lost subscription without unsubscribing first" warning.

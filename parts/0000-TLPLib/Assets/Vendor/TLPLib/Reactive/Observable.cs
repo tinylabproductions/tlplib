@@ -413,7 +413,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
       readonly Subscription subscription;
 #else
-      readonly system.WeakReferenceTLP<Subscription> subscription;
+      readonly WeakReference<Subscription> subscription;
 #endif
       public readonly string callerMemberName, callerFilePath;
       public readonly int callerLineNumber;
@@ -424,7 +424,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
         return subscription.isSubscribed;
 #else
-        if (subscription.Target.valueOut(out var sub)) return sub.isSubscribed;
+        if (subscription.TryGetTarget(out var sub)) return sub.isSubscribed;
         Log.d.error(
           $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
           subscribedFrom
@@ -529,7 +529,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #if LEGACY_OBSERVABLES
         subscription: sub,
 #else
-        subscription: system.WeakReferenceTLP.a(sub),
+        subscription: new WeakReference<Subscription>(sub),
 #endif
         callerMemberName: callerMemberName, callerFilePath: callerFilePath,
         callerLineNumber: callerLineNumber
