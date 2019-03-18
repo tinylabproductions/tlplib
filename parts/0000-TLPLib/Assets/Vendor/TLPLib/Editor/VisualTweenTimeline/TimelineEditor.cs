@@ -1,9 +1,8 @@
-﻿#if ADV_INS_CHANGES && UNITY_EDITOR
+﻿#if ADV_INS_CHANGES && UNITY_EDITOR && FALSE //TODO
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Data;

@@ -509,16 +509,31 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public void registerEnum<A>(
       string name, Ref<A> reference, IEnumerable<A> enumerable, string comment = null
+    ) => registerEnum(name, () => reference.value, a => reference.value = a, enumerable, comment);
+
+    void registerEnum<A, B>(
+      string name, Fn<B> getCurrent, Act<A> set, IEnumerable<A> enumerable, string comment = null
     ) {
       register($"{name}?", () => {
-        var v = reference.value;
+        var v = getCurrent();
         return comment == null ? v.ToString() : $"{comment}: value={v}";
       });
       foreach (var a in enumerable)
         register($"{name}={a}", () => {
-          reference.value = a;
+          set(a);
           return comment == null ? a.ToString() : $"{comment}: value={a}";
         });
+    }
+
+    public void registerEnumOpt<A>(
+      string name, Ref<Option<A>> reference, IEnumerable<A> enumerable, string comment = null
+    ) {
+      registerEnum(name, () => reference.value, a => reference.value = a.some(), enumerable, comment);
+
+      register($"{name}=None", () => {
+        reference.value = F.none_;
+        return reference.value.ToString();
+      });
     }
 
     static readonly bool[] BOOLS = {true, false};

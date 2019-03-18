@@ -5,10 +5,10 @@ using com.tinylabproductions.TLPLib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubject : IRxObservable {}
-  public interface ISubject<A> : ISubject, IRxObservable<A>, IObserver<A> {}
+  public interface ISubject<A> : ISubject, IRxObservable<A>, IRxObserver<A> {}
 
   /// <summary>
-  /// A subject is something that is <see cref="Observable{A}"/> and <see cref="IObserver{A}"/>
+  /// A subject is something that is <see cref="Observable{A}"/> and <see cref="IRxObserver{A}"/>
   /// at the same time.
   /// </summary>
   public class Subject<A> : Observable<A>, ISubject<A> {

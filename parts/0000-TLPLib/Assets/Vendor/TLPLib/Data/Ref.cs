@@ -1,5 +1,8 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
+using Sirenix.OdinInspector;
+using Sirenix.OdinInspector.Editor;
+using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -60,6 +63,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public LazyRef(LazyVal<Ref<A>> backing) { this.backing = backing; }
 
+    [ShowInInspector]
     public A value {
       get => backing.strict.value;
       set => backing.strict.value = value;
@@ -83,4 +87,46 @@ namespace com.tinylabproductions.TLPLib.Data {
           r.value = a;
       });
   }
+
+  /*[DrawerPriority(10, 0, 0)] // Giv
+  public class LazyRefDrawer<L, A> : OdinValueDrawer<L>
+    where L : LazyRef<A>
+  {
+    protected override bool CanDrawValueProperty(InspectorProperty property) {
+      return base.CanDrawValueProperty(property);
+
+    }
+
+
+
+    /*protected override void DrawPropertyLayout(GUIContent label) {
+      var entry = this.ValueEntry;
+      entry.SmartValue.value;
+      // Check all values for null, and if any are null, create an instance
+      // Only do this in repaint; as a rule, only change reference type values in repaint
+      Debug.LogError("TEST DRAWER");
+//      if (Event.current.type == EventType.Repaint)
+//        for (int i = 0; i < entry.ValueCount; i++)
+//          if (entry.Values[i] == null)
+//            entry.Values[i] = new L();
+
+      // Call the next drawer in line, and let the lists be drawn normally
+//      this.CallNextDrawer(label);
+      base.DrawPropertyLayout(new GUIContent("TEST"));
+
+    }#1#
+/*    protected override void DrawPropertyRect(Rect position, IPropertyValueEntry<LazyRef<T>> entry, GUIContent label) { base.DrawPropertyRect(position, entry, label); }
+
+    protected override void DrawPropertyLayout(IPropertyValueEntry<LazyRef<T>> entry, GUIContent label) {
+      // Check all values for null, and if any are null, create an instance
+      // Only do this in repaint; as a rule, only change reference type values in repaint
+      if (Event.current.type == EventType.Repaint)
+        for (int i = 0; i < entry.ValueCount; i++)
+          if (entry.Values[i] == null)
+            entry.Values[i] = new T();
+
+      // Call the next drawer in line, and let the lists be drawn normally
+      this.CallNextDrawer(entry, label);
+    }#1#
+  }*/
 }

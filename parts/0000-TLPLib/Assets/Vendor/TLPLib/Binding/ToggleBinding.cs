@@ -17,6 +17,6 @@ namespace com.tinylabproductions.TLPLib.Binding {
       }
     }
 
-    public IObservable<Unit> uiClick => gameObject.uiClick();
+    public IRxObservable<Unit> uiClick => gameObject.uiClick();
   }
 }

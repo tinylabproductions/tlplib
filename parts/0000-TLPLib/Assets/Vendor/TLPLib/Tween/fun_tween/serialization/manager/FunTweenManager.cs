@@ -30,15 +30,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
     float timescale => _manager == null ? -1 : _manager.timescale;
     
-#if UNITY_EDITOR
-    [SerializeField, PublicAccessor] string _title = "Fun Tween Manager";
-    [Inspect, UsedImplicitly, Tab(Tab.Fields)]
-    // Advanced Inspector does not render a button if it implements interface method. 
-    public void recreate() => invalidate();
-
-    public float currentTime => timePassed;
-#endif
-
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -167,6 +158,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [ShowInInspector, TabGroup(TAB_ACTIONS)] void applyMaxDurationState() =>
       manager.timeline.applyStateAt(manager.timeline.duration);
 
+#if UNITY_EDITOR
     [ShowInInspector, UsedImplicitly, TabGroup(TAB_FIELDS)]
     // Advanced Inspector does not render a button if it implements interface method. 
     void recreate() => invalidate();

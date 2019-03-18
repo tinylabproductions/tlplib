@@ -224,12 +224,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         // no internet check
         if (responseCode == 0 && (req.error == "Unknown Error" || req.error == "Cannot resolve destination host")) {
           checkForInternetConnection().onComplete(hasInternet => {
-            p.complete(hasInternet
+            promise.complete(hasInternet
               ? new WebRequestError(url, LogEntry.simple(msg))
               : new WebRequestError(url, new NoInternetError(msg)));
           });
         }
-        else p.complete(new WebRequestError(url, LogEntry.simple(msg)));
+        else promise.complete(new WebRequestError(url, LogEntry.simple(msg)));
           req.Dispose();
         }
         else if (!acceptedResponseCodes.contains(responseCode)) {
