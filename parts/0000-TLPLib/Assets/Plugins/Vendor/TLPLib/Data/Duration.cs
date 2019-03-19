@@ -125,7 +125,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     [PublicAPI] public static Duration days(this int v) => Duration.fromSeconds(v * 3600 * 24);
     [PublicAPI] public static Duration days(this float v) => Duration.fromSeconds(v * 3600 * 24);
 
-    [PublicAPI] public static Duration toDuration(this TimeSpan ts) =>
-      new Duration((int) ts.TotalMilliseconds);
+    [PublicAPI] public static Duration toDuration(this TimeSpan ts) => new Duration((int) ts.TotalMilliseconds);
+    [PublicAPI] public static TimeSpan toTimeSpan(this Duration d) => TimeSpan.FromMilliseconds(d.millis);
   }
 }
