@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.video_player;
+package com.tlp.tlplib.video_player;
 
 public interface VideoPlayerListener {
   void onCancel();

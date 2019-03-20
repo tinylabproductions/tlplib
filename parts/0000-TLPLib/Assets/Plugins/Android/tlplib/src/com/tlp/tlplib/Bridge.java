@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib;
+package com.tlp.tlplib;
 
 import android.app.Activity;
 import android.content.Context;

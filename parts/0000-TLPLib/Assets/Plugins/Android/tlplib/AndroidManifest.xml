@@ -9,7 +9,7 @@
   <application>
     <!-- To get install referrer. -->
     <receiver
-      android:name="com.tinylabproductions.tlplib.referrer.InstallReferrerReceiver"
+      android:name="com.tlp.tlplib.referrer.InstallReferrerReceiver"
       android:exported="true"
       >
       <intent-filter>
@@ -18,7 +18,7 @@
     </receiver>
 
     <activity
-        android:name="com.tinylabproductions.tlplib.video_player.AndroidVideoPlayer"
+        android:name="com.tlp.tlplib.video_player.AndroidVideoPlayer"
         android:screenOrientation="landscape" >
     </activity>
 

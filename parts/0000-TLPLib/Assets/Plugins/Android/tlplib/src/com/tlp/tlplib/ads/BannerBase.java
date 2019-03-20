@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.ads;
+package com.tlp.tlplib.ads;
 
 import android.app.Activity;
 import android.util.Log;
@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import com.tinylabproductions.tlplib.fns.Fn1;
-import com.tinylabproductions.tlplib.util.Utils;
+import com.tlp.tlplib.fns.Fn1;
+import com.tlp.tlplib.util.Utils;
 
 @SuppressWarnings("unused")
 public abstract class BannerBase<Banner extends View> implements IStandardBanner {

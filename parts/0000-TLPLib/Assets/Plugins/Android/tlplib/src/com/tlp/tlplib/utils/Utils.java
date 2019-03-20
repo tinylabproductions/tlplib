@@ -1,7 +1,7 @@
-package com.tinylabproductions.tlplib.util;
+package com.tlp.tlplib.util;
 
-import com.tinylabproductions.tlplib.Tag;
-import com.tinylabproductions.tlplib.logging.Log;
+import com.tlp.tlplib.Tag;
+import com.tlp.tlplib.logging.Log;
 import com.unity3d.player.UnityPlayer;
 
 @SuppressWarnings("unused")

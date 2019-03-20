@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.util;
+package com.tlp.tlplib.util;
 
 import java.util.HashMap;
 

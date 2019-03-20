@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib;
+package com.tlp.tlplib;
 
 /**
  * Created by arturas on 2016-07-25.

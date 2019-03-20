@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.video_player;
+package com.tlp.tlplib.video_player;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,7 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.VideoView;
-import com.tinylabproductions.tlplib.logging.Log;
+import com.tlp.tlplib.logging.Log;
 import com.tlplib.R;
 import java.io.File;
 import java.io.FileOutputStream;

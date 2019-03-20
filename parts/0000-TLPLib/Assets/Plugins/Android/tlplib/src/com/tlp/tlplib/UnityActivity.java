@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib;
+package com.tlp.tlplib;
 
 import android.content.Intent;
 import com.unity3d.player.UnityPlayerActivity;

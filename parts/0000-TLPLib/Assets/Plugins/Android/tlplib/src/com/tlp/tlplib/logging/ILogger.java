@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.logging;
+package com.tlp.tlplib.logging;
 
 /**
  * Created by Karolis Jucius on 2017-09-08.
