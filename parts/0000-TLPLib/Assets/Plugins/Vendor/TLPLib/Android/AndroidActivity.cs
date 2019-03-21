@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       if (Application.isEditor) return;
 
       using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
-        bridge = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
+        bridge = new AndroidJavaClass("com.tlp.tlplib.Bridge");
         current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));
         appContext = current.applicationContext;
         packageManager = appContext.packageManager;
@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Android {
      * To use this, add the following to your AndroidManifest.xml
      *
      * <receiver
-     *   android:name="com.tinylabproductions.tlplib.referrer.InstallReferrerReceiver"
+     *   android:name="com.tlp.tlplib.referrer.InstallReferrerReceiver"
      *   android:exported="true"
      * >
      *   <intent-filter>
