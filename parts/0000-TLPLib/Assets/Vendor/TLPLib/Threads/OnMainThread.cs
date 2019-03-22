@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Threads {
   /// <summary>
   /// Helper class to queue things from other threads to be ran on the main thread.
   /// </summary>
-  public static class OnMainThread {
+  [PublicAPI] public static class OnMainThread {
     static readonly Queue<Action> actions = new Queue<Action>();
     static readonly Thread mainThread;
+    public static readonly TaskScheduler mainThreadScheduler;
+    
     public static bool isMainThread {
       get {
         if (mainThread == null) {
@@ -26,6 +32,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
     /* Initialization. */
     static OnMainThread() {
       mainThread = Thread.CurrentThread;
+      mainThreadScheduler = TaskScheduler.FromCurrentSynchronizationContext();
       if (Application.isPlaying) {
         // In players isPlaying is always true.
         ASync.EveryFrame(onUpdate);
@@ -64,5 +71,29 @@ namespace com.tinylabproductions.TLPLib.Threads {
       }
       return true;
     }
+
+    public static Future<Either<TaskFailed, A>> toFuture<A>(this Task<A> task) {
+      var future = Future.async<Either<TaskFailed, A>>(out var promise);
+      task.ContinueWith(t => {
+        if (t.IsCompleted) { promise.complete(t.Result); } 
+        else if (t.IsFaulted) { promise.complete(new TaskFailed(t.Exception)); }
+        else { promise.complete(new TaskFailed(null)); }
+      }, mainThreadScheduler);
+      return future;
+    }
+  }
+
+  [Record(GenerateToString = false), PublicAPI] public readonly partial struct TaskFailed {
+    readonly AggregateException exception;
+
+    public bool cancelled => exception == null;
+    public bool failed => exception != null;
+
+    public bool getFailure(out AggregateException e) {
+      e = exception;
+      return exception != null;
+    }
+    
+    public override string ToString() => cancelled ? "TaskCancelled" : $"TaskFailed({exception})";
   }
 }
