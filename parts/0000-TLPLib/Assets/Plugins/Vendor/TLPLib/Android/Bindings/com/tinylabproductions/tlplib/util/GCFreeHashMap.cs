@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
     // ReSharper disable SuggestBaseTypeForParameter
     public GCFreeHashMap(K[] keys, V[] values) : base(
       new AndroidJavaObject(
-        "com.tinylabproductions.tlplib.util.GCFreeHashMap", keys, values
+        "com.tlp.tlplib.util.GCFreeHashMap", keys, values
     )) {
       map = new HashMap(java.Get<AndroidJavaObject>("map"));
     }

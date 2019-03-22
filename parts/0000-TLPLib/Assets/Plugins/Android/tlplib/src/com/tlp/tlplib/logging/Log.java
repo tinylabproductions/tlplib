@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.logging;
+package com.tlp.tlplib.logging;
 
 import java.util.ArrayList;
 import java.util.List;

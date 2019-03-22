@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.referrer;
+package com.tlp.tlplib.referrer;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,7 +8,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import com.tinylabproductions.tlplib.Tag;
+import com.tlp.tlplib.Tag;
 import java.util.ArrayList;
 import java.util.List;
 

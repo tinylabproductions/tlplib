@@ -35,14 +35,14 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
 
     class MediaPlayerBinding : Binding {
       public MediaPlayerBinding()
-        : base(new AndroidJavaObject("com.tinylabproductions.tlplib.video_player.VideoPlayerBridge")) { }
+        : base(new AndroidJavaObject("com.tlp.tlplib.video_player.VideoPlayerBridge")) { }
 
       public void showVideo(string fileName, string clickUrl, VideoListener listener)
         => java.CallStatic("playFromStreamingAssets", fileName, clickUrl, listener);
     }
 
     public class VideoListener : BaseAdListener {
-      public VideoListener() : base("com.tinylabproductions.tlplib.video_player.VideoPlayerListener") { }
+      public VideoListener() : base("com.tlp.tlplib.video_player.VideoPlayerListener") { }
       public event Action canceled, videoCompleted, clicked;
 
       [UsedImplicitly] void onCancel() => invoke(() => canceled);

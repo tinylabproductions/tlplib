@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.logging;
+package com.tlp.tlplib.logging;
 
 import android.util.Log;
 

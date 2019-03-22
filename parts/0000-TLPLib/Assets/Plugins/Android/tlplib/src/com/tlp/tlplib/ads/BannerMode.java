@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.ads;
+package com.tlp.tlplib.ads;
 
 public class BannerMode {
     public interface Mode {}

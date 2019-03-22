@@ -1,4 +1,4 @@
-package com.tinylabproductions.tlplib.util;
+package com.tlp.tlplib.util;
 
 @SuppressWarnings("unused")
 public class StringUtil {
