@@ -377,12 +377,12 @@ public class CompilerSettings : EditorWindow
 
     private void ShowIncrementalCompilerClientLog()
     {
-        Process.Start(Path.GetFullPath(@"./Temp/IncrementalCompiler.log"));
+        Process.Start(Path.GetFullPath(@"./Compiler/Temp/IncrementalCompiler.log"));
     }
 
     private void ShowIncrementalCompilerServerLog()
     {
-        Process.Start(Path.GetFullPath(@"./Temp/IncrementalCompiler-Server.log"));
+        Process.Start(Path.GetFullPath(@"./Compiler/Temp/IncrementalCompiler-Server.log"));
     }
 
     // workaround for Xelement.SetElementValue bug at Unity3D
