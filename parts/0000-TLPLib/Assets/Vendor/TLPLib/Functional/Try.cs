@@ -111,6 +111,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [PublicAPI] public override string ToString() =>
       isSuccess ? $"Success({_value})" : $"Error({_exception})";
+    
+    public static implicit operator Try<A>(A a) => new Try<A>(a);
+    public static implicit operator Try<A>(Exception ex) => new Try<A>(ex);
   }
 
   public static class TryExts {
