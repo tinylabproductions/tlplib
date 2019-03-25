@@ -64,6 +64,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         bFuture => bFuture.map(Either<A, B>.Right)
       );
 
+    public static Future<Try<A>> extract<A>(this Try<Future<Try<A>>> tryFuture) =>
+      tryFuture.fold(
+        future => future,
+        exception => Future.successful<Try<A>>(exception)
+      );
+
     public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(Future<A>.unfulfilled, f => f);
 
