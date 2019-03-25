@@ -26,14 +26,6 @@ public class CompilerSettings : EditorWindow
         public CompilerType Compiler;
     }
 
-    public enum DebugSymbolFileType
-    {
-        None,
-        Pdb,
-        PdbToMdb,
-        Mdb
-    }
-
     public enum PrebuiltOutputReuseType
     {
         None,
@@ -43,7 +35,6 @@ public class CompilerSettings : EditorWindow
 
     public struct IncrementalCompilerSettings
     {
-        public DebugSymbolFileType DebugSymbolFile;
         public PrebuiltOutputReuseType PrebuiltOutputReuse;
     }
 
@@ -193,7 +184,7 @@ public class CompilerSettings : EditorWindow
         if (!File.Exists(UcLogFilePath)) {
             return _ucLastBuildLog;
         }
-        
+
         try
         {
             var lines = File.ReadAllLines(UcLogFilePath);
@@ -247,7 +238,6 @@ public class CompilerSettings : EditorWindow
 
         LoadIncrementalCompilerSettings();
         IncrementalCompilerSettings ics;
-        ics.DebugSymbolFile = (DebugSymbolFileType)EditorGUILayout.EnumPopup("DebugSymbolFile:", _ics.DebugSymbolFile);
         ics.PrebuiltOutputReuse = (PrebuiltOutputReuseType)EditorGUILayout.EnumPopup("PrebuiltOutputReuse:", _ics.PrebuiltOutputReuse);
         if (ics.Equals(_ics) == false)
         {
@@ -269,8 +259,6 @@ public class CompilerSettings : EditorWindow
                 var xdoc = XDocument.Load(fs).Element("Settings");
                 _ics = new IncrementalCompilerSettings
                 {
-                    DebugSymbolFile = (DebugSymbolFileType)
-                        Enum.Parse(typeof(DebugSymbolFileType), xdoc.Element("DebugSymbolFile").Value),
                     PrebuiltOutputReuse = (PrebuiltOutputReuseType)
                         Enum.Parse(typeof(PrebuiltOutputReuseType), xdoc.Element("PrebuiltOutputReuse").Value),
                 };
@@ -302,7 +290,6 @@ public class CompilerSettings : EditorWindow
             {
             }
 
-            SetXmlElementValue(xel, "DebugSymbolFile", _ics.DebugSymbolFile.ToString());
             SetXmlElementValue(xel, "PrebuiltOutputReuse", _ics.PrebuiltOutputReuse.ToString());
 
             xel.Save(IcsFilePath);
@@ -377,12 +364,12 @@ public class CompilerSettings : EditorWindow
 
     private void ShowIncrementalCompilerClientLog()
     {
-        Process.Start(Path.GetFullPath(@"./Temp/IncrementalCompiler.log"));
+        Process.Start(Path.GetFullPath(@"./Compiler/Temp/IncrementalCompiler.log"));
     }
 
     private void ShowIncrementalCompilerServerLog()
     {
-        Process.Start(Path.GetFullPath(@"./Temp/IncrementalCompiler-Server.log"));
+        Process.Start(Path.GetFullPath(@"./Compiler/Temp/IncrementalCompiler-Server.log"));
     }
 
     // workaround for Xelement.SetElementValue bug at Unity3D
