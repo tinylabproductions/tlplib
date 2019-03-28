@@ -170,7 +170,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     /// <summary>Stops playback of the tween</summary>
     [PublicAPI]
     public TweenManager stop() {
-      TweenManagerRunner.instance.remove(this);
+      if (TweenManagerRunner.hasActiveInstance) {
+        // TweenManagerRunner.instance gets destroyed when we exit play mode
+        // We don't want to create a new instance once that happens
+        TweenManagerRunner.instance.remove(this);
+      }
       return this;
     }
 

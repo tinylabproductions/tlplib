@@ -26,6 +26,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
     }
 
+    [PublicAPI] public static bool hasActiveInstance => _instance;
+
     [PublicAPI] public UnityPhase phase { get; private set; }
 
     class Tweens {

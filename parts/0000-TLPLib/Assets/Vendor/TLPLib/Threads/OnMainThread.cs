@@ -53,7 +53,10 @@ namespace com.tinylabproductions.TLPLib.Threads {
 
     /* Run the given action in the main thread. */
     public static void run(Action action, bool runNowIfOnMainThread=true) {
-      if (isMainThread && runNowIfOnMainThread) action();
+      if (isMainThread && runNowIfOnMainThread) {
+        try { action(); }
+        catch (Exception e) { Log.d.error(e); }
+      }
       else lock (actions) { actions.Enqueue(action); }
     }
 
@@ -75,9 +78,16 @@ namespace com.tinylabproductions.TLPLib.Threads {
     public static Future<Either<TaskFailed, A>> toFuture<A>(this Task<A> task) {
       var future = Future.async<Either<TaskFailed, A>>(out var promise);
       task.ContinueWith(t => {
-        if (t.IsCompleted) { promise.complete(t.Result); } 
-        else if (t.IsFaulted) { promise.complete(new TaskFailed(t.Exception)); }
-        else { promise.complete(new TaskFailed(null)); }
+        // exceptions thrown here get silenced
+        try {
+          // Task.IsCompleted documentation:
+          // true if the task has completed (that is, the task is in one of the three final states: RanToCompletion,
+          // Faulted, or Canceled); otherwise, false
+          if (t.Status == TaskStatus.RanToCompletion) { promise.tryComplete(t.Result); }
+          else if (t.IsFaulted) { promise.tryComplete(new TaskFailed(t.Exception)); }
+          else { promise.tryComplete(new TaskFailed(null)); }
+        }
+        catch (Exception e) { promise.tryComplete(new TaskFailed(new AggregateException(e))); }
       }, mainThreadScheduler);
       return future;
     }
