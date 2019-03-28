@@ -543,6 +543,26 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         ));
       };
 
+    [PublicAPI] public static Config.Parser<From, C> tpl<From, A1, A2, C>(
+      this Config.Parser<From, A1> a1p, Config.Parser<From, A2> a2p, Func<A1, A2, C> mapper
+    ) =>
+      (path, node) => {
+        if (node is List<From> list) {
+          if (list.Count == 2) {
+            return 
+              from a1 in a1p(path.indexed(0), list[0])
+              from a2 in a2p(path.indexed(1), list[1])
+              select mapper(a1, a2);
+          }
+          else {
+            return Config.parseErrorFor<Tpl<A1, A2>>(path, node, $"expected list of 2, got {list}");
+          }
+        }
+        else {
+          return Config.parseErrorFor<Tpl<A1, A2>>(path, node);
+        }
+      };
+
     [PublicAPI] public static Config.Parser<From, Tpl<A1, A2, A3>> and<From, A1, A2, A3>(
       this Config.Parser<From, A1> a1p, Config.Parser<From, A2> a2p, Config.Parser<From, A3> a3p
     ) =>
