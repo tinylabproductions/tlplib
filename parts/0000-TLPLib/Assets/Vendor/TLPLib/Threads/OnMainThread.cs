@@ -83,11 +83,11 @@ namespace com.tinylabproductions.TLPLib.Threads {
           // Task.IsCompleted documentation:
           // true if the task has completed (that is, the task is in one of the three final states: RanToCompletion,
           // Faulted, or Canceled); otherwise, false
-          if (t.Status == TaskStatus.RanToCompletion) { promise.complete(t.Result); }
-          else if (t.IsFaulted) { promise.complete(new TaskFailed(t.Exception)); }
-          else { promise.complete(new TaskFailed(null)); }
+          if (t.Status == TaskStatus.RanToCompletion) { promise.tryComplete(t.Result); }
+          else if (t.IsFaulted) { promise.tryComplete(new TaskFailed(t.Exception)); }
+          else { promise.tryComplete(new TaskFailed(null)); }
         }
-        catch (Exception e) { Log.d.error(e); }
+        catch (Exception e) { promise.tryComplete(new TaskFailed(new AggregateException(e))); }
       }, mainThreadScheduler);
       return future;
     }
