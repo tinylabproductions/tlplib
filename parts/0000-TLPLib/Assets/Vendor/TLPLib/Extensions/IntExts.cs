@@ -1,5 +1,7 @@
-﻿namespace com.tinylabproductions.TLPLib.Extensions {
-  public static class IntExts {
+﻿using JetBrains.Annotations;
+
+namespace com.tinylabproductions.TLPLib.Extensions {
+  [PublicAPI] public static class IntExts {
     public static long toLong(this int i) => i;
     public static uint toUIntClamped(this int a) => a < 0 ? 0u : (uint) a;
 
