@@ -233,6 +233,8 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     [PublicAPI] public static readonly Parser<object, Guid> guidParser = 
       stringParser.flatMapTry((_, s) => new Guid(s));
 
+    [PublicAPI] public static readonly Parser<object, Option<Guid>> optGuidParser = opt(guidParser);
+
     [PublicAPI] public static readonly Parser<object, int> intParser = (path, n) => {
       try {
         switch (n) {
