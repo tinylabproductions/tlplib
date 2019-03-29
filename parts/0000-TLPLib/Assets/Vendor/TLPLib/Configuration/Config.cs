@@ -563,6 +563,28 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         }
       };
 
+    [PublicAPI] public static Config.Parser<From, C> tpl<From, A1, A2, A3, C>(
+      this Config.Parser<From, A1> a1p, Config.Parser<From, A2> a2p, Config.Parser<From, A3> a3p, 
+      Func<A1, A2, A3, C> mapper
+    ) =>
+      (path, node) => {
+        if (node is List<From> list) {
+          if (list.Count == 3) {
+            return 
+              from a1 in a1p(path.indexed(0), list[0])
+              from a2 in a2p(path.indexed(1), list[1])
+              from a3 in a3p(path.indexed(2), list[2])
+              select mapper(a1, a2, a3);
+          }
+          else {
+            return Config.parseErrorFor<Tpl<A1, A2, A3>>(path, node, $"expected list of 3, got {list}");
+          }
+        }
+        else {
+          return Config.parseErrorFor<Tpl<A1, A2, A3>>(path, node);
+        }
+      };
+
     [PublicAPI] public static Config.Parser<From, Tpl<A1, A2, A3>> and<From, A1, A2, A3>(
       this Config.Parser<From, A1> a1p, Config.Parser<From, A2> a2p, Config.Parser<From, A3> a3p
     ) =>
