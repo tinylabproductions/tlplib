@@ -1,18 +1,23 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Collection {
-  public static class Rope {
+  [PublicAPI] public static class Rope {
     public static Rope<A> a<A>(A[] first) => new Rope<A>(first);
     public static Rope<A> a<A>(A[] first, A[] second) =>
       new Rope<A>(first, ImmutableList.Create<A[]>(second));
     public static Rope<A> create<A>(params A[] args) => new Rope<A>(args);
+
+    public static void write(this Rope<byte> rope, Stream stream) => rope.write_(stream, _ => _);
   }
 
   /**
    * Immutable data structure to efficiently string arrays together.
    */
-  public struct Rope<A> {
+  [PublicAPI] public struct Rope<A> {
     readonly A[] first;
     readonly ImmutableList<A[]> rest;
 
@@ -40,5 +45,14 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public A[] toArray() => builder().ToArray();
     public ImmutableArray<A> toImmutable() => builder().MoveToImmutable();
+    
+    public void write_(Stream stream, Func<A[], byte[]> evidence) {
+      var firstBytes = evidence(first);
+      stream.Write(firstBytes, 0, firstBytes.Length);
+      foreach (var r in rest) {
+        var rBytes = evidence(r);
+        stream.Write(rBytes, 0, rBytes.Length);
+      }
+    }
   }
 }

@@ -285,6 +285,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
   public abstract class LogBase : ILog {
     readonly ISubject<LogEvent> _messageLogged = new Subject<LogEvent>();
     public IRxObservable<LogEvent> messageLogged => _messageLogged;
+    // Can't use Unity time, because it is not thread safe
+    static readonly DateTime initAt = DateTime.Now;
 
     public Log.Level level { get; set; } = Log.defaultLogLevel;
     public bool willLog(Log.Level l) => l >= level;
@@ -303,7 +305,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     protected abstract void logInner(Log.Level l, LogEntry entry);
 
-    static string line(string level, object o) => $"[{Time.realtimeSinceStartup:F3}|{thread}|{level}]> {o}";
+    static string line(string level, object o) => $"[{(DateTime.Now - initAt).TotalSeconds:F3}|{thread}|{level}]> {o}";
 
     static string thread => (OnMainThread.isMainThread ? "Tm" : "T") + Thread.CurrentThread.ManagedThreadId;
   }
