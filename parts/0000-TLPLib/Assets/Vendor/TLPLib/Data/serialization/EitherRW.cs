@@ -21,21 +21,22 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
       bRW = bRw;
     }
 
-    public Option<DeserializeInfo<Either<A, B>>> deserialize(byte[] serialized, int startIndex) {
-      if (serialized.Length == 0 || startIndex > serialized.Length - 1)
-        return Option<DeserializeInfo<Either<A, B>>>.None;
+    public Either<string, DeserializeInfo<Either<A, B>>> deserialize(byte[] serialized, int startIndex) {
+      if (serialized.Length == 0) return "either deserialization failed: zero length byte array!";
+      if (startIndex >= serialized.Length) 
+        return $"either deserialization failed: startIndex {startIndex} >= serialized length {serialized.Length}";
       var discriminator = serialized[startIndex];
       switch (discriminator) {
         case EitherRW.DISCRIMINATOR_LEFT:
-          return aRW.deserialize(serialized, startIndex + 1).map(info =>
+          return aRW.deserialize(serialized, startIndex + 1).mapRight(info =>
             new DeserializeInfo<Either<A, B>>(Either<A, B>.Left(info.value), info.bytesRead + 1)
           );
         case EitherRW.DISCRIMINATOR_RIGHT:
-          return bRW.deserialize(serialized, startIndex + 1).map(info =>
+          return bRW.deserialize(serialized, startIndex + 1).mapRight(info =>
             new DeserializeInfo<Either<A, B>>(Either<A,B>.Right(info.value), info.bytesRead + 1)
           );
         default:
-          return Option<DeserializeInfo<Either<A, B>>>.None;
+          return $"Unknown either discriminator '{discriminator}'";
       }
     }
 

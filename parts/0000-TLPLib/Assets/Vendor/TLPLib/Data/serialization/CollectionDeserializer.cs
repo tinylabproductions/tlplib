@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
       this.builderKnownSizeFactory = builderKnownSizeFactory;
     }
 
-    public Option<DeserializeInfo<C>> deserialize(byte[] serialized, int startIndex) {
+    public Either<string, DeserializeInfo<C>> deserialize(byte[] serialized, int startIndex) {
       try {
         var count = BitConverter.ToInt32(serialized, startIndex);
         var bytesRead = intRW.LENGTH;
@@ -26,19 +26,23 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
         var builder = builderKnownSizeFactory(count);
         var readIdx = startIndex + bytesRead;
         for (var idx = 0; idx < count; idx++) {
-          var aOpt = deserializer.deserialize(serialized, readIdx);
+          var aEither = deserializer.deserialize(serialized, readIdx);
 
-          if (aOpt.isNone) {
-            return Option<DeserializeInfo<C>>.None;
+          if (aEither.leftValueOut(out var aErr)) {
+            return $"Error deserializing index {idx}/{count}: {aErr}";
           }
-          var aInfo = aOpt.get;
+
+          var aInfo = aEither.__unsafeGetRight;
           bytesRead += aInfo.bytesRead;
           readIdx += aInfo.bytesRead;
           builder.add(aInfo.value);
         }
-        return F.some(new DeserializeInfo<C>(builder.build(), bytesRead));
+
+        return new DeserializeInfo<C>(builder.build(), bytesRead);
       }
-      catch (Exception) { return Option<DeserializeInfo<C>>.None; }
+      catch (Exception e) {
+        return $"deserializing a collection threw {e}";
+      }
     }
   }
 }

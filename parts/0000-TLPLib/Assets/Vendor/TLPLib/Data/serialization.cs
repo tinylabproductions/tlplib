@@ -26,17 +26,20 @@ namespace com.tinylabproductions.TLPLib.Data {
       this.bytesRead = bytesRead;
     }
 
-    public Option<DeserializeInfo<B>> flatMapTry<B>(Func<A, B> mapper) {
+    public Either<string, DeserializeInfo<B>> flatMapTry<B>(Func<A, B> mapper) {
       try {
-        return new DeserializeInfo<B>(mapper(value), bytesRead).some();
+        return new DeserializeInfo<B>(mapper(value), bytesRead);
       }
-      catch (Exception) {
-        return Option<DeserializeInfo<B>>.None;
+      catch (Exception e) {
+        return $"{nameof(flatMapTry)} from {typeof(A).FullName} to {typeof(B).FullName} threw {e}";
       }
     }
+
+    public DeserializeInfo<B> map<B>(Func<A, B> mapper) => 
+      new DeserializeInfo<B>(mapper(value), bytesRead);
   }
 
-  public static class DeserializeInfoExts {
+  [PublicAPI] public static class DeserializeInfoExts {
     public static Option<DeserializeInfo<B>> map<A, B>(
       this Option<DeserializeInfo<A>> aOpt, Func<A, B> mapper
     ) {
@@ -48,20 +51,20 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   public interface IDeserializer<A> {
     // Returns None if deserialization failed.
-    Option<DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex);
+    Either<string, DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex);
   }
 
   // TODO: document
   public interface ISerializedRW<A> : IDeserializer<A>, ISerializer<A> { }
 
-  public delegate Option<A> Deserialize<A>(byte[] serialized, int startIndex);
+  public delegate Either<string, A> Deserialize<A>(byte[] serialized, int startIndex);
 
   public delegate Rope<byte> Serialize<in A>(A a);
 
-  public static class SerializedRW {
-    [PublicAPI] public static readonly ISerializedRW<string> str = new stringRW();
-    [PublicAPI] public static readonly ISerializedRW<int> integer = new intRW();
-    [PublicAPI] public static readonly ISerializedRW<byte> byte_ = new byteRW();
+  [PublicAPI] public static class SerializedRW {
+    public static readonly ISerializedRW<string> str = new stringRW();
+    public static readonly ISerializedRW<int> integer = new intRW();
+    public static readonly ISerializedRW<byte> byte_ = new byteRW();
     [PublicAPI] public static readonly ISerializedRW<byte[]> byteArray = new byteArrayRW();
     [PublicAPI] public static readonly ISerializedRW<uint> uInteger = new uintRW();
     [PublicAPI] public static readonly ISerializedRW<ulong> uLong = new ulongRW();
@@ -80,19 +83,20 @@ namespace com.tinylabproductions.TLPLib.Data {
       vector2.and(flt, (v2, z) => new Vector3(v2.x, v2.y, z), _ => _, _ => _.z);
 
     [PublicAPI] public static readonly ISerializedRW<Url> url = 
-      str.map(_ => F.some(new Url(_)), _ => _.url);
+      str.map(_ => Either<string, Url>.Right(new Url(_)), _ => _.url);
     [PublicAPI] public static readonly ISerializedRW<Uri> uri = lambda(
       uri => str.serialize(uri.ToString()),
       (bytes, startIndex) =>
-        str.deserialize(bytes, startIndex)
-          .flatMap(di => di.flatMapTry(s => new Uri(s)))
+        str.deserialize(bytes, startIndex).flatMapRight(di => di.flatMapTry(s => new Uri(s)))
     );
 
     [PublicAPI] public static readonly ISerializedRW<Guid> guid = new GuidRW();
 
     [PublicAPI] public static readonly ISerializedRW<TextureFormat> textureFormat =
       integer.map(
-        i => EnumUtils.GetValues<TextureFormat>().find(_ => (int) _ == i),
+        i => 
+          EnumUtils.GetValues<TextureFormat>().find(_ => (int) _ == i)
+          .toRight($"Can't find texture format by {i}"),
         tf => (int) tf
       );
 
@@ -112,7 +116,14 @@ namespace com.tinylabproductions.TLPLib.Data {
 #if UNITY_EDITOR
     [PublicAPI] public static ISerializedRW<A> unityObjectSerializedRW<A>() where A : Object =>
       PathStr.serializedRW.map(
-        path => UnityEditor.AssetDatabase.LoadAssetAtPath<A>(path).opt(),
+        path => {
+          try {
+            return Either<string, A>.Right(UnityEditor.AssetDatabase.LoadAssetAtPath<A>(path));
+          }
+          catch (Exception e) {
+            return $"loading {typeof(A).FullName} from '{path}' threw {e}";
+          }
+        },
         module => module.path()
       );
 #endif
@@ -120,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     /// <summary>Serialized RW for a type that has no parameters (like <see cref="Unit"/>)</summary>
     [PublicAPI]
     public static ISerializedRW<A> unitType<A>() where A : new() =>
-      Unit.rw.map(_ => F.some(new A()), _ => F.unit);
+      Unit.rw.mapNoFail(_ => new A(), _ => F.unit);
 
     [PublicAPI]
     public static ISerializedRW<A> a<A>(
@@ -128,79 +139,99 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => new JointRW<A>(serializer, deserializer);
 
     [PublicAPI]
-    public static ISerializer<B> map<A, B>(
+    public static ISerializer<B> mapSerialize<A, B>(
       this ISerializer<A> a, Func<B, A> mapper
     ) => new MappedSerializer<A, B>(a, mapper);
 
     [PublicAPI]
     public static IDeserializer<B> map<A, B>(
-      this IDeserializer<A> a, Func<A, Option<B>> mapper
+      this IDeserializer<A> a, Func<A, Either<string, B>> mapper
     ) => new MappedDeserializer<A, B>(a, mapper);
 
     [PublicAPI]
+    public static ISerializedRW<B> mapNoFail<A, B>(
+      this ISerializedRW<A> aRW,
+      Func<A, B> deserializeConversion,
+      Func<B, A> serializeConversion
+    ) => aRW.map(
+      a => Either<string, B>.Right(deserializeConversion(a)), 
+      serializeConversion
+    );
+
     public static ISerializedRW<B> map<A, B>(
       this ISerializedRW<A> aRW,
-      Func<A, Option<B>> deserializeConversion,
+      Func<A, Either<string, B>> deserializeConversion,
       Func<B, A> serializeConversion
     ) => new MappedRW<A, B>(aRW, serializeConversion, deserializeConversion);
+    
+    public static ISerializedRW<A> mapError<A>(
+      this ISerializedRW<A> aRW,
+      Func<string, string> mapper
+    ) => new Lambda<A>(
+      aRW.serialize,
+      (serialized, index) => {
+        var either = aRW.deserialize(serialized, index);
+        return either.leftValueOut(out var err) ? mapper(err) : either;
+      }
+    );
 
-    [PublicAPI]
     public static ISerializedRW<B> mapTry<A, B>(
       this ISerializedRW<A> aRW,
       Func<A, B> deserializeConversion,
       Func<B, A> serializeConversion
     ) => new MappedRW<A, B>(aRW, serializeConversion, a => {
       try {
-        return deserializeConversion(a).some();
+        return deserializeConversion(a);
       }
-      catch (Exception) {
-        return Option<B>.None;
+      catch (Exception e) {
+        return $"mapping from {typeof(A).FullName} to {typeof(B).FullName} threw {e}";
       }
     });
 
-    [PublicAPI]
     public static ISerializedRW<A> lambda<A>(
       Serialize<A> serialize, Deserialize<DeserializeInfo<A>> deserialize
     ) => new Lambda<A>(serialize, deserialize);
 
-    [PublicAPI]
     public static ISerializedRW<OneOf<A, B, C>> oneOf<A, B, C>(
       ISerializedRW<A> aRW, ISerializedRW<B> bRW, ISerializedRW<C> cRW
     ) => new OneOfRW<A, B, C>(aRW, bRW, cRW);
 
-    [PublicAPI]
     public static ISerializedRW<KeyValuePair<A, B>> kv<A, B>(
       this ISerializedRW<A> aRW, ISerializedRW<B> bRW
     ) => and(aRW, bRW, (a, b) => new KeyValuePair<A, B>(a, b), t => t.Key, t => t.Value);
 
-    [PublicAPI]
     public static ISerializedRW<Tpl<A, B>> tpl<A, B>(
       this ISerializedRW<A> aRW, ISerializedRW<B> bRW
     ) => and(aRW, bRW, F.t, t => t._1, t => t._2);
 
-    [PublicAPI]
     public static ISerializedRW<Tpl<A, B, C>> tpl<A, B, C>(
       this ISerializedRW<A> aRW, ISerializedRW<B> bRW, ISerializedRW<C> cRW
     ) => and(aRW, bRW, cRW, F.t, t => t._1, t => t._2, t => t._3);
 
-    [PublicAPI]
     public static ISerializedRW<B> and<A1, A2, B>(
       this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW,
       Func<A1, A2, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2
     ) => new AndRW2<A1, A2, B>(a1RW, a2RW, mapper, getA1, getA2);
 
-    [PublicAPI]
     public static ISerializedRW<B> and<A1, A2, A3, B>(
       this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
       Func<A1, A2, A3, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3
     ) => new AndRW3<A1, A2, A3, B>(a1RW, a2RW, a3RW, mapper, getA1, getA2, getA3);
 
-    [PublicAPI]
     public static ISerializedRW<B> and<A1, A2, A3, A4, B>(
       this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
       ISerializedRW<A4> a4RW,
       Func<A1, A2, A3, A4, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3, Func<B, A4> getA4
     ) => new AndRW4<A1, A2, A3, A4, B>(a1RW, a2RW, a3RW, a4RW, mapper, getA1, getA2, getA3, getA4);
+
+    public static ISerializedRW<B> and<A1, A2, A3, A4, A5, B>(
+      this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
+      ISerializedRW<A4> a4RW, ISerializedRW<A5> a5RW,
+      Func<A1, A2, A3, A4, A5, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3, 
+      Func<B, A4> getA4, Func<B, A5> getA5
+    ) => new AndRW5<A1, A2, A3, A4, A5, B>(
+      a1RW, a2RW, a3RW, a4RW, a5RW, mapper, getA1, getA2, getA3, getA4, getA5
+    );
 
     [PublicAPI]
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) =>

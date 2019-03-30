@@ -17,19 +17,20 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
 
     public OptRW(ISerializedRW<A> rw) { this.rw = rw; }
 
-    public Option<DeserializeInfo<Option<A>>> deserialize(byte[] bytes, int startIndex) {
-      if (bytes.Length == 0 || startIndex > bytes.Length - 1)
-        return Option<DeserializeInfo<Option<A>>>.None;
+    public Either<string, DeserializeInfo<Option<A>>> deserialize(byte[] bytes, int startIndex) {
+      if (bytes.Length == 0) return "Option deserialize failed: bytes are 0 length";
+      if (startIndex >= bytes.Length) 
+        return $"Option deserialize failed: start index {startIndex} >= bytes.Length {bytes.Length}";
       var discriminator = bytes[startIndex];
       switch (discriminator) {
         case OptRW.DISCRIMINATOR_NONE:
-          return F.some(new DeserializeInfo<Option<A>>(Option<A>.None, 1));
+          return new DeserializeInfo<Option<A>>(Option<A>.None, 1);
         case OptRW.DISCRIMINATOR_SOME:
-          return rw.deserialize(bytes, startIndex + 1).map(info =>
+          return rw.deserialize(bytes, startIndex + 1).mapRight(info =>
             new DeserializeInfo<Option<A>>(F.some(info.value), info.bytesRead + 1)
           );
         default:
-          return Option<DeserializeInfo<Option<A>>>.None;
+          return $"Option deserialize failed: unknown discriminator '{discriminator}'";
       }
     }
 

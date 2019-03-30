@@ -25,26 +25,27 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
       cRW = cRw;
     }
 
-    public Option<DeserializeInfo<OneOf<A, B, C>>> deserialize(byte[] serialized, int startIndex) {
-      if (serialized.Length == 0 || startIndex > serialized.Length - 1)
-        return Option<DeserializeInfo<OneOf<A, B, C>>>.None;
+    public Either<string, DeserializeInfo<OneOf<A, B, C>>> deserialize(byte[] serialized, int startIndex) {
+      if (serialized.Length == 0) return "OneOf deserialize failed: bytes are 0 length";
+      if (startIndex >= serialized.Length) 
+        return $"OneOf deserialize failed: start index {startIndex} >= serialized.Length {serialized.Length}";
       var discriminator = serialized[startIndex];
       var readFrom = startIndex + 1;
       switch (discriminator) {
         case OneOfRW.DISCRIMINATOR_A:
-          return aRW.deserialize(serialized, readFrom).map(info =>
+          return aRW.deserialize(serialized, readFrom).mapRight(info =>
             new DeserializeInfo<OneOf<A, B, C>>(new OneOf<A, B, C>(info.value), info.bytesRead + 1)
           );
         case OneOfRW.DISCRIMINATOR_B:
-          return bRW.deserialize(serialized, readFrom).map(info =>
+          return bRW.deserialize(serialized, readFrom).mapRight(info =>
             new DeserializeInfo<OneOf<A, B, C>>(new OneOf<A, B, C>(info.value), info.bytesRead + 1)
           );
         case OneOfRW.DISCRIMINATOR_C:
-          return cRW.deserialize(serialized, readFrom).map(info =>
+          return cRW.deserialize(serialized, readFrom).mapRight(info =>
             new DeserializeInfo<OneOf<A, B, C>>(new OneOf<A, B, C>(info.value), info.bytesRead + 1)
           );
         default:
-          return Option<DeserializeInfo<OneOf<A, B, C>>>.None;
+          return $"OneOf deserialize failed: unknown discriminator '{discriminator}'";
       }
     }
 

@@ -65,8 +65,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void Normal() {
-      Func<PrefVal<int>> create = () =>
-        storage.custom(key, 3, i => i.ToString(), i => i.parseInt().rightValue);
+      PrefVal<int> create() => 
+        storage.custom(key, 3, i => i.ToString(), i => i.parseInt());
       var pv = create();
       pv.value.shouldEqual(3);
       pv.value = 10;
@@ -77,8 +77,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void SerializedIsEmptyString() {
-      Func<PrefVal<int>> create = () =>
-        storage.custom(key, 10, _ => "", _ => 1.some());
+      PrefVal<int> create() => 
+        storage.custom(key, 10, _ => "", _ => 1);
       var pv = create();
       pv.value.shouldEqual(10);
       pv.value = 5;
@@ -88,10 +88,9 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void DeserializeFailureReturnDefault() {
-      Func<PrefVal<int>> create = () => storage.custom(
-        key, 10, i => i.ToString(), _ => Option<int>.None,
-        onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault,
-        log: log
+      PrefVal<int> create() => storage.custom(
+        key, 10, i => i.ToString(), _ => "failed", 
+        onDeserializeFailure: PrefVal.OnDeserializeFailure.ReturnDefault, log: log
       );
       var pv = create();
       pv.value.shouldEqual(10);
@@ -104,8 +103,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void DeserializeFailureThrowException() {
-      Func<PrefVal<int>> create = () => storage.custom(
-        key, 10, i => i.ToString(), _ => Option<int>.None,
+      PrefVal<int> create() => storage.custom(
+        key, 10, i => i.ToString(), _ => "failed", 
         onDeserializeFailure: PrefVal.OnDeserializeFailure.ThrowException
       );
       var pv = create();
@@ -148,7 +147,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       storage.custom(
         key2, "",
         s => Convert.ToBase64String(SerializedRW.str.serialize(s).toArray()),
-        _ => Option<string>.None
+        _ => Either<string, string>.Left("failed")
       ).value = pv.value;
       backend.storage[key].shouldEqual(backend.storage[key2]);
       var pv2 = create();
@@ -182,8 +181,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     const string key = nameof(PrefValTestCollection);
 
     static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
-    static Option<DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
-      SerializedRW.integer.deserialize(data, startIndex).filter(i => i.value % 2 != 0);
+    static Either<string, DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
+      SerializedRW.integer.deserialize(data, startIndex).rightValue.filter(i => i.value % 2 != 0)
+        .toRight("failed");
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(
@@ -194,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) =>
       storage.collection(
         key,
-        SerializedRW.lambda(serialize, deserializeFn ?? SerializedRW.integer.deserialize),
+        SerializedRW.lambda(serialize, deserializeFn ?? ((serialized, startIndex) => SerializedRW.integer.deserialize(serialized, startIndex))),
         CollectionBuilderKnownSizeFactory<int>.immutableList, defaultVal,
         onDeserializeFailure: onDeserializeFailure,
         log: log

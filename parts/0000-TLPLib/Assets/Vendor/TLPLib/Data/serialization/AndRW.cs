@@ -12,21 +12,20 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
     readonly Func<B, A1> getA1;
     readonly Func<B, A2> getA2;
 
-    public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
+    public Either<string, DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
       try {
         var a1Opt = a1RW.deserialize(serialized, startIndex);
-        if (a1Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a1Info = a1Opt.__unsafeGetValue;
+        if (a1Opt.leftValueOut(out var a1Err)) return $"{nameof(AndRW2<A1, A2, B>)} a1 failed: {a1Err}";
+        var a1Info = a1Opt.__unsafeGetRight;
         var a2Opt = a2RW.deserialize(serialized, startIndex + a1Info.bytesRead);
-        if (a2Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a2Info = a2Opt.__unsafeGetValue;
-        var info = new DeserializeInfo<B>(
+        if (a2Opt.leftValueOut(out var a2Err)) return $"{nameof(AndRW2<A1, A2, B>)} a2 failed: {a2Err}";
+        var a2Info = a2Opt.__unsafeGetRight;
+        return new DeserializeInfo<B>(
           mapper(a1Info.value, a2Info.value),
           a1Info.bytesRead + a2Info.bytesRead
         );
-        return F.some(info);
       }
-      catch (Exception) { return Option<DeserializeInfo<B>>.None; }
+      catch (Exception e) { return $"{nameof(AndRW2<A1, A2, B>)} threw {e}"; }
     }
 
     public Rope<byte> serialize(B b) =>
@@ -43,24 +42,26 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
     readonly Func<B, A2> getA2;
     readonly Func<B, A3> getA3;
 
-    public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
+    public Either<string, DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
       try {
         var a1Opt = a1RW.deserialize(serialized, startIndex);
-        if (a1Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a1Info = a1Opt.__unsafeGetValue;
+        if (a1Opt.leftValueOut(out var a1Err)) return $"{nameof(AndRW3<A1, A2, A3, B>)} a1 failed: {a1Err}";
+        var a1Info = a1Opt.__unsafeGetRight;
         var a2Opt = a2RW.deserialize(serialized, startIndex + a1Info.bytesRead);
-        if (a2Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a2Info = a2Opt.__unsafeGetValue;
+        if (a2Opt.leftValueOut(out var a2Err)) return $"{nameof(AndRW3<A1, A2, A3, B>)} a2 failed: {a2Err}";
+        var a2Info = a2Opt.__unsafeGetRight;
         var a3Opt = a3RW.deserialize(serialized, startIndex + a1Info.bytesRead + a2Info.bytesRead);
-        if (a3Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a3Info = a3Opt.__unsafeGetValue;
+        if (a3Opt.leftValueOut(out var a3Err)) return $"{nameof(AndRW3<A1, A2, A3, B>)} a3 failed: {a3Err}";
+        var a3Info = a3Opt.__unsafeGetRight;
         var info = new DeserializeInfo<B>(
           mapper(a1Info.value, a2Info.value, a3Info.value),
           a1Info.bytesRead + a2Info.bytesRead + a3Info.bytesRead
         );
-        return F.some(info);
+        return info;
       }
-      catch (Exception) { return Option<DeserializeInfo<B>>.None; }
+      catch (Exception e) {
+        return $"{nameof(AndRW3<A1, A2, A3, B>)} threw {e}";
+      }
     }
 
     public Rope<byte> serialize(B b) =>
@@ -79,34 +80,41 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
     readonly Func<B, A3> getA3;
     readonly Func<B, A4> getA4;
 
-    public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
+    public Either<string, DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
+      var step = "a1";
       try {
         var a1Opt = a1RW.deserialize(serialized, startIndex);
-        if (a1Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a1Info = a1Opt.__unsafeGetValue;
-        
+        if (a1Opt.leftValueOut(out var a1Err)) return $"{nameof(AndRW4<A1, A2, A3, A4, B>)} a1 failed: {a1Err}";
+        var a1Info = a1Opt.__unsafeGetRight;
+
+        step = "a2";
         var a2Opt = a2RW.deserialize(serialized, startIndex + a1Info.bytesRead);
-        if (a2Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a2Info = a2Opt.__unsafeGetValue;
-        
+        if (a2Opt.leftValueOut(out var a2Err)) return $"{nameof(AndRW4<A1, A2, A3, A4, B>)} a2 failed: {a2Err}";
+        var a2Info = a2Opt.__unsafeGetRight;
+
+        step = "a3";
         var a3Opt = a3RW.deserialize(serialized, startIndex + a1Info.bytesRead + a2Info.bytesRead);
-        if (a3Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a3Info = a3Opt.__unsafeGetValue;
-        
+        if (a3Opt.leftValueOut(out var a3Err)) return $"{nameof(AndRW4<A1, A2, A3, A4, B>)} a3 failed: {a3Err}";
+        var a3Info = a3Opt.__unsafeGetRight;
+
+        step = "a4";
         var a4Opt = a4RW.deserialize(
-          serialized, 
+          serialized,
           startIndex + a1Info.bytesRead + a2Info.bytesRead + a3Info.bytesRead
         );
-        if (a4Opt.isNone) return Option<DeserializeInfo<B>>.None;
-        var a4Info = a4Opt.__unsafeGetValue;
-        
+        if (a4Opt.leftValueOut(out var a4Err)) return $"{nameof(AndRW4<A1, A2, A3, A4, B>)} a4 failed: {a4Err}";
+        var a4Info = a4Opt.__unsafeGetRight;
+
+        step = "mapper";
         var info = new DeserializeInfo<B>(
           mapper(a1Info.value, a2Info.value, a3Info.value, a4Info.value),
           a1Info.bytesRead + a2Info.bytesRead + a3Info.bytesRead + a4Info.bytesRead
         );
-        return F.some(info);
+        return info;
       }
-      catch (Exception) { return Option<DeserializeInfo<B>>.None; }
+      catch (Exception e) {
+        return $"{nameof(AndRW4<A1, A2, A3, A4, B>)} at index {startIndex}, step {step} threw {e}";
+      }
     }
 
     public Rope<byte> serialize(B b) =>
@@ -114,5 +122,72 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
       + a2RW.serialize(getA2(b)) 
       + a3RW.serialize(getA3(b)) 
       + a4RW.serialize(getA4(b));
+  }
+  
+  [Record(GenerateComparer = false, GenerateGetHashCode = false, GenerateToString = false)]
+  partial class AndRW5<A1, A2, A3, A4, A5, B> : ISerializedRW<B> {
+    readonly ISerializedRW<A1> a1RW;
+    readonly ISerializedRW<A2> a2RW;
+    readonly ISerializedRW<A3> a3RW;
+    readonly ISerializedRW<A4> a4RW;
+    readonly ISerializedRW<A5> a5RW;
+    readonly Func<A1, A2, A3, A4, A5, B> mapper;
+    readonly Func<B, A1> getA1;
+    readonly Func<B, A2> getA2;
+    readonly Func<B, A3> getA3;
+    readonly Func<B, A4> getA4;
+    readonly Func<B, A5> getA5;
+
+    public Either<string, DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) {
+      var step = "a1";
+      try {
+        var a1Opt = a1RW.deserialize(serialized, startIndex);
+        if (a1Opt.leftValueOut(out var a1Err)) return $"{nameof(AndRW5<A1, A2, A3, A4, A5, B>)} a1 failed: {a1Err}";
+        var a1Info = a1Opt.__unsafeGetRight;
+
+        step = "a2";
+        var a2Opt = a2RW.deserialize(serialized, startIndex + a1Info.bytesRead);
+        if (a2Opt.leftValueOut(out var a2Err)) return $"{nameof(AndRW5<A1, A2, A3, A4, A5, B>)} a2 failed: {a2Err}";
+        var a2Info = a2Opt.__unsafeGetRight;
+
+        step = "a3";
+        var a3Opt = a3RW.deserialize(serialized, startIndex + a1Info.bytesRead + a2Info.bytesRead);
+        if (a3Opt.leftValueOut(out var a3Err)) return $"{nameof(AndRW5<A1, A2, A3, A4, A5, B>)} a3 failed: {a3Err}";
+        var a3Info = a3Opt.__unsafeGetRight;
+
+        step = "a4";
+        var a4Opt = a4RW.deserialize(
+          serialized,
+          startIndex + a1Info.bytesRead + a2Info.bytesRead + a3Info.bytesRead
+        );
+        if (a4Opt.leftValueOut(out var a4Err)) return $"{nameof(AndRW5<A1, A2, A3, A4, A5, B>)} a4 failed: {a4Err}";
+        var a4Info = a4Opt.__unsafeGetRight;
+
+        step = "a5";
+        var a5Opt = a5RW.deserialize(
+          serialized,
+          startIndex + a1Info.bytesRead + a2Info.bytesRead + a3Info.bytesRead + a4Info.bytesRead
+        );
+        if (a5Opt.leftValueOut(out var a5Err)) return $"{nameof(AndRW5<A1, A2, A3, A4, A5, B>)} a5 failed: {a5Err}";
+        var a5Info = a5Opt.__unsafeGetRight;
+
+        step = "mapper";
+        var info = new DeserializeInfo<B>(
+          mapper(a1Info.value, a2Info.value, a3Info.value, a4Info.value, a5Info.value),
+          a1Info.bytesRead + a2Info.bytesRead + a3Info.bytesRead + a4Info.bytesRead + a5Info.bytesRead
+        );
+        return info;
+      }
+      catch (Exception e) {
+        return $"{nameof(AndRW5<A1, A2, A3, A4, A5, B>)} at index {startIndex}, step {step} threw {e}";
+      }
+    }
+
+    public Rope<byte> serialize(B b) =>
+      a1RW.serialize(getA1(b)) 
+      + a2RW.serialize(getA2(b)) 
+      + a3RW.serialize(getA3(b)) 
+      + a4RW.serialize(getA4(b))
+      + a5RW.serialize(getA5(b));
   }
 }

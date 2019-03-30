@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
       _deserialize = deserialize;
     }
 
-    public Option<DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex) =>
+    public Either<string, DeserializeInfo<A>> deserialize(byte[] serialized, int startIndex) =>
       _deserialize(serialized, startIndex);
 
     public Rope<byte> serialize(A a) => _serialize(a);

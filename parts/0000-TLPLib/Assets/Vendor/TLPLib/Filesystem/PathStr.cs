@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public string unityPath => Path.DirectorySeparatorChar == '/' ? path : path.Replace('\\' , '/');
 
     public static readonly ISerializedRW<PathStr> serializedRW =
-      SerializedRW.str.map(s => new PathStr(s).some(), path => path.path);
+      SerializedRW.str.mapNoFail(s => new PathStr(s), path => path.path);
   }
 
   public static class PathStrExts {

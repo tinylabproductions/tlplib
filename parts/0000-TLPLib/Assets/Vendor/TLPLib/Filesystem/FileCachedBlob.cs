@@ -7,8 +7,8 @@ using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
-  public class FileCachedBlob : ICachedBlob<byte[]> {
-    [PublicAPI] public readonly PathStr path;
+  [PublicAPI] public class FileCachedBlob : ICachedBlob<byte[]> {
+    public readonly PathStr path;
 
     public FileCachedBlob(PathStr path) { this.path = path; }
 
@@ -19,17 +19,14 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public Try<Unit> store(byte[] data) => store(path, data);
     public Try<Unit> clear() => clear(path);
     
-    [PublicAPI]
     public static Option<Try<byte[]>> read(PathStr path) =>
       File.Exists(path)
         ? F.doTry(() => File.ReadAllBytes(path)).some()
         : F.none<Try<byte[]>>();
     
-    [PublicAPI] 
     public static Try<Unit> store(PathStr path, byte[] data) => 
       F.doTry(() => File.WriteAllBytes(path, data));
     
-    [PublicAPI] 
     public static Try<Unit> clear(PathStr path) => F.doTry(() => File.Delete(path));
 
     public static ICachedBlob<A> a<A>(
@@ -39,17 +36,17 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       log = log ?? Log.d;
       return new FileCachedBlob(path).bimap(BiMapper.a(
         (byte[] bytes) => {
-          var deserializedOpt = rw.deserialize(bytes, 0);
-          if (deserializedOpt.isNone) {
+          var deserializedEither = rw.deserialize(bytes, 0);
+          if (deserializedEither.leftValueOut(out var err)) {
             if (log.willLog(onDeserializeFailureLogLevel))
               log.log(
                 onDeserializeFailureLogLevel, 
-                $"Can't deserialize {path}, deleting and returning default value."
+                $"Can't deserialize {path} because of {err}, deleting and returning default value."
               );
             clear(path).getOrLog($"Couldn't clear file: '{path}'", log: log);
             return defaultValue;
           }
-          return deserializedOpt.__unsafeGetValue.value;
+          return deserializedEither.__unsafeGetRight.value;
         },
         a => rw.serialize(a).toArray()
       ));

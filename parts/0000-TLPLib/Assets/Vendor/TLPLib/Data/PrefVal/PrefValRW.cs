@@ -28,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       new CustomOldRW<A>(map, comap);
 
     public static IPrefValueRW<A> custom<A>(
-      Func<A, string> serialize, Func<string, Option<A>> deserialize,
+      Func<A, string> serialize, Func<string, Either<string, A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => new CustomRW<A>(serialize, deserialize, onDeserializeFailure, log ?? Log.@default);
@@ -42,10 +42,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       s => {
         try {
           var bytes = Convert.FromBase64String(s);
-          return aRW.deserialize(bytes, 0).map(_ => _.value);
+          return aRW.deserialize(bytes, 0).mapRight(_ => _.value);
         }
-        catch (FormatException) {
-          return Option<A>.None;
+        catch (FormatException e) {
+          return $"converting from base64 threw {e}";
         }
       },
       onDeserializeFailure,
@@ -121,11 +121,14 @@ namespace com.tinylabproductions.TLPLib.Data {
       const string DEFAULT_VALUE = "d", NON_DEFAULT_VALUE_DISCRIMINATOR = "_";
 
       readonly Func<A, string> serialize;
-      readonly Func<string, Option<A>> deserialize;
+      readonly Func<string, Either<string, A>> deserialize;
       readonly PrefVal.OnDeserializeFailure onDeserializeFailure;
       readonly ILog log;
 
-      public CustomRW(Func<A, string> serialize, Func<string, Option<A>> deserialize, PrefVal.OnDeserializeFailure onDeserializeFailure, ILog log) {
+      public CustomRW(
+        Func<A, string> serialize, Func<string, Either<string, A>> deserialize, 
+        PrefVal.OnDeserializeFailure onDeserializeFailure, ILog log
+      ) {
         this.serialize = serialize;
         this.deserialize = deserialize;
         this.onDeserializeFailure = onDeserializeFailure;
@@ -135,28 +138,33 @@ namespace com.tinylabproductions.TLPLib.Data {
       public A read(IPrefValueBackend backend, string key, A defaultVal) {
         var serialized = backend.getString(key, DEFAULT_VALUE);
 
-        if (string.IsNullOrEmpty(serialized)) return deserializationFailed(key, defaultVal, serialized);
+        if (string.IsNullOrEmpty(serialized)) return deserializationFailed(
+          key, defaultVal, "serialized data is empty", serialized
+        );
         if (serialized == DEFAULT_VALUE) return defaultVal;
 
         var serializedWithoutDiscriminator = serialized.Substring(1);
-        var opt = deserialize(serializedWithoutDiscriminator);
-        return opt.isSome ? opt.get : deserializationFailed(key, defaultVal, serialized);
+        var either = deserialize(serializedWithoutDiscriminator);
+        return 
+          either.leftValueOut(out var error) 
+            ? deserializationFailed(key, defaultVal, error, serialized) 
+            : either.__unsafeGetRight;
       }
 
-      A deserializationFailed(string key, A defaultVal, string serialized) {
+      A deserializationFailed(string key, A defaultVal, string error, string serialized) {
         if (onDeserializeFailure == PrefVal.OnDeserializeFailure.ReturnDefault) {
-          if (log.isWarn()) log.warn(deserializeFailureMsg(key, serialized, ", returning default"));
+          if (log.isWarn()) log.warn(deserializeFailureMsg(key, error, serialized, ", returning default"));
           return defaultVal;
         }
 
-        throw new SerializationException(deserializeFailureMsg(key, serialized));
+        throw new SerializationException(deserializeFailureMsg(key, error, serialized));
       }
 
       public void write(IPrefValueBackend backend, string key, A value) =>
         backend.setString(key, $"{NON_DEFAULT_VALUE_DISCRIMINATOR}{serialize(value)}");
 
-      static string deserializeFailureMsg(string key, string serialized, string ending = "") =>
-        $"Can't deserialize {typeof(A)} from '{serialized}' for PrefVal '{key}'{ending}.";
+      static string deserializeFailureMsg(string key, string error, string serialized, string ending = "") =>
+        $"Can't deserialize {typeof(A)} because of '{error}' from '{serialized}' for PrefVal '{key}'{ending}.";
     }
 
     class CustomOldRW<A> : IPrefValueRW<A> {

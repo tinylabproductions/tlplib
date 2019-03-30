@@ -20,45 +20,45 @@ namespace com.tinylabproductions.TLPLib.Data.serialization {
 
   class MappedDeserializer<A, B> : IDeserializer<B> {
     readonly IDeserializer<A> aDeserializer;
-    readonly Func<A, Option<B>> mapper;
+    readonly Func<A, Either<string, B>> mapper;
 
-    public MappedDeserializer(IDeserializer<A> aDeserializer, Func<A, Option<B>> mapper) {
+    public MappedDeserializer(IDeserializer<A> aDeserializer, Func<A, Either<string, B>> mapper) {
       this.aDeserializer = aDeserializer;
       this.mapper = mapper;
     }
 
-    public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) =>
+    public Either<string, DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) =>
       deserialize(aDeserializer, mapper, serialized, startIndex);
 
-    public static Option<DeserializeInfo<B>> deserialize(
-      IDeserializer<A> aDeserializer, Func<A, Option<B>> mapper,
+    public static Either<string, DeserializeInfo<B>> deserialize(
+      IDeserializer<A> aDeserializer, Func<A, Either<string, B>> mapper,
       byte[] serialized, int startIndex
     ) {
-      var aInfoOpt = aDeserializer.deserialize(serialized, startIndex);
-      if (aInfoOpt.isNone) return Option<DeserializeInfo<B>>.None;
-      var aInfo = aInfoOpt.get;
-      var bOpt = mapper(aInfo.value);
-      if (bOpt.isNone) return Option<DeserializeInfo<B>>.None;
-      var bInfo = new DeserializeInfo<B>(bOpt.get, aInfo.bytesRead);
-      return F.some(bInfo);
+      var aInfoEither = aDeserializer.deserialize(serialized, startIndex);
+      if (aInfoEither.leftValueOut(out var aErr)) return aErr;
+      var aInfo = aInfoEither.__unsafeGetRight;
+      var bEither = mapper(aInfo.value);
+      if (bEither.leftValueOut(out var bErr)) return $"mapped deserializer failed in mapper: {bErr}";
+      var bInfo = new DeserializeInfo<B>(bEither.__unsafeGetRight, aInfo.bytesRead);
+      return bInfo;
     }
   }
 
   class MappedRW<A, B> : ISerializedRW<B> {
     readonly ISerializedRW<A> aRW;
     readonly Func<B, A> serializeConversion;
-    readonly Func<A, Option<B>> deserializeConversion;
+    readonly Func<A, Either<string, B>> deserializeConversion;
 
     public MappedRW(
       ISerializedRW<A> aRw, Func<B, A> serializeConversion,
-      Func<A, Option<B>> deserializeConversion
+      Func<A, Either<string, B>> deserializeConversion
     ) {
       aRW = aRw;
       this.serializeConversion = serializeConversion;
       this.deserializeConversion = deserializeConversion;
     }
 
-    public Option<DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) =>
+    public Either<string, DeserializeInfo<B>> deserialize(byte[] serialized, int startIndex) =>
       MappedDeserializer<A, B>.deserialize(aRW, deserializeConversion, serialized, startIndex);
 
     public Rope<byte> serialize(B b) =>

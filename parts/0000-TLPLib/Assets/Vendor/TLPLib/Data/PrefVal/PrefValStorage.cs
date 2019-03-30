@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public PrefVal<A> custom<A>(
       string key, A defaultVal,
-      Func<A, string> serialize, Func<string, Option<A>> deserialize,
+      Func<A, string> serialize, Func<string, Either<string, A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => create(

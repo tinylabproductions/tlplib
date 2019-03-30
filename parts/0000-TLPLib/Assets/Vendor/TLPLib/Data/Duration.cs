@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [NonSerialized]
     public static readonly ISerializedRW<Duration> serializedRW =
-      SerializedRW.integer.map(l => new Duration(l).some(), d => d.millis);
+      SerializedRW.integer.mapNoFail(l => new Duration(l), d => d.millis);
 
     [NonSerialized]
     public static readonly Config.Parser<object, Duration> configParser =

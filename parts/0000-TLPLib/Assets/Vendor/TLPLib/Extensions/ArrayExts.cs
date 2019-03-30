@@ -56,8 +56,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         $"{nameof(count)}({count}) is too big (arr size: {a.Length}, {nameof(endIdxExclusive)}={endIdxExclusive})"
       );
       var arr = new A[count];
-      for (int srcIdx = startIndex, newIdx = 0; srcIdx < endIdxExclusive; srcIdx++, newIdx++)
-        arr[newIdx] = a[srcIdx];
+      Array.Copy(a, startIndex, arr, 0, count);
+//      for (int srcIdx = startIndex, newIdx = 0; srcIdx < endIdxExclusive; srcIdx++, newIdx++)
+//        arr[newIdx] = a[srcIdx];
       return arr;
     }
 
