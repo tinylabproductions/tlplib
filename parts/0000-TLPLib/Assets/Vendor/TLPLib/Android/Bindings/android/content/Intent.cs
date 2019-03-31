@@ -1,5 +1,7 @@
 ﻿#if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Android.Bindings.android.net;
+using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -10,9 +12,14 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
   public class Intent : Binding {
     public Intent(AndroidJavaObject java) : base(java) { }
 
-    public string getAction() => java.Call<string>("getAction");
-    public Uri getData() => new Uri(java.cjo("getData"));
-    public string getDataString() => java.Call<string>("getDataString");
+    public Option<string> getAction() => java.Call<string>("getAction").opt();
+    
+    public Option<Uri> getData() {
+      var jUri = java.cjo("getData");
+      return jUri == null ? F.none_ : F.some(new Uri(jUri));
+    }
+
+    public Option<string> getDataString() => java.Call<string>("getDataString").opt();
   }
 }
 #endif
