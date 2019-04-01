@@ -10,7 +10,7 @@ using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public abstract class SerializationTestBase {
+  public abstract class SerializationTestBase : ImplicitSpecification {
     public static readonly Rope<byte> noise = Rope.create(
       (byte)'a', (byte)'b', (byte)'c', (byte)'d'
     );

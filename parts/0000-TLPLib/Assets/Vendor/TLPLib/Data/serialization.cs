@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data.serialization;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
@@ -192,6 +193,47 @@ namespace com.tinylabproductions.TLPLib.Data {
       Serialize<A> serialize, Deserialize<DeserializeInfo<A>> deserialize
     ) => new Lambda<A>(serialize, deserialize);
 
+    // ReSharper disable TypeParameterCanBeVariant
+    public delegate Rope<byte> SerializeAggregate<A, Meta>(A a, Meta meta);
+    public delegate Either<string, DeserializeInfo<A>> DeserializeAggregate<A, Meta>(
+      byte[] data, int offset, Meta meta, A current
+    );
+    // ReSharper restore TypeParameterCanBeVariant
+    /// <summary>
+    /// Serialize value with multiple serializers aggregated together.
+    /// </summary>
+    /// <param name="metas"></param>
+    /// <param name="startingValue"></param>
+    /// <param name="serialize"></param>
+    /// <param name="deserialize"></param>
+    public static ISerializedRW<A> aggregate<A, Meta>(
+      IEnumerable<Meta> metas, A startingValue, 
+      SerializeAggregate<A, Meta> serialize,
+      DeserializeAggregate<A, Meta> deserialize
+    ) => lambda(
+      a => metas.Aggregate(
+        Rope.a(F.emptyArray<byte>()),
+        (current, meta) => current + serialize(a, meta)
+      ),
+      (bytes, offset) => metas.Aggregate(
+        Either<string, DeserializeInfo<A>>.Right(
+          new DeserializeInfo<A>(startingValue, 0)
+        ),
+        (currentEither, meta) => {
+          if (currentEither.rightValueOut(out var currentInfo)) {
+            var newEither = deserialize(bytes, offset + currentInfo.bytesRead, meta, currentInfo.value);
+            return 
+              newEither.rightValueOut(out var readInfo) 
+                ? new DeserializeInfo<A>(readInfo.value, currentInfo.bytesRead + readInfo.bytesRead) 
+                : newEither;
+          }
+          else {
+            return currentEither;
+          }
+        }
+      )
+    );
+
     public static ISerializedRW<OneOf<A, B, C>> oneOf<A, B, C>(
       ISerializedRW<A> aRW, ISerializedRW<B> bRW, ISerializedRW<C> cRW
     ) => new OneOfRW<A, B, C>(aRW, bRW, cRW);
@@ -231,6 +273,15 @@ namespace com.tinylabproductions.TLPLib.Data {
       Func<B, A4> getA4, Func<B, A5> getA5
     ) => new AndRW5<A1, A2, A3, A4, A5, B>(
       a1RW, a2RW, a3RW, a4RW, a5RW, mapper, getA1, getA2, getA3, getA4, getA5
+    );
+
+    public static ISerializedRW<B> and<A1, A2, A3, A4, A5, A6, B>(
+      this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
+      ISerializedRW<A4> a4RW, ISerializedRW<A5> a5RW, ISerializedRW<A6> a6RW,
+      Func<A1, A2, A3, A4, A5, A6, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3, 
+      Func<B, A4> getA4, Func<B, A5> getA5, Func<B, A6> getA6
+    ) => new AndRW6<A1, A2, A3, A4, A5, A6, B>(
+      a1RW, a2RW, a3RW, a4RW, a5RW, a6RW, mapper, getA1, getA2, getA3, getA4, getA5, getA6
     );
 
     [PublicAPI]
@@ -276,6 +327,19 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) => a(
       collectionSerializer<KeyValuePair<K, V>, ImmutableDictionary<K, V>>(rw),
       collectionDeserializer(rw, CollectionBuilderKnownSizeFactoryKV<K, V>.immutableDictionary)
+    );
+
+    [PublicAPI]
+    public static ISerializedRW<Dictionary<K, V>> dictionary<K, V>(
+      ISerializedRW<K> kRw, ISerializedRW<V> vRw
+    ) => dictionary(kv(kRw, vRw));
+
+    [PublicAPI]
+    public static ISerializedRW<Dictionary<K, V>> dictionary<K, V>(
+      ISerializedRW<KeyValuePair<K, V>> rw
+    ) => a(
+      collectionSerializer<KeyValuePair<K, V>, Dictionary<K, V>>(rw),
+      collectionDeserializer(rw, CollectionBuilderKnownSizeFactoryKV<K, V>.dictionary)
     );
 
     [PublicAPI]

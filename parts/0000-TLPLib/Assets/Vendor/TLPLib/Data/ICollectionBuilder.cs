@@ -4,30 +4,28 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   public delegate ICollectionBuilder<A, C> CollectionBuilderKnownSizeFactory<A, C>(int count);
-  public static class CollectionBuilderKnownSizeFactory<A> {
-    [PublicAPI]
+  [PublicAPI] public static class CollectionBuilderKnownSizeFactory<A> {
     public static readonly CollectionBuilderKnownSizeFactory<A, A[]> array =
       count => new ArrayBuilder<A>(new A[count]);
     
-    [PublicAPI]
     public static readonly CollectionBuilderKnownSizeFactory<A, ImmutableArray<A>> immutableArray =
       count => new ImmutableArrayBuilder<A>(ImmutableArray.CreateBuilder<A>(count));
     
-    [PublicAPI]
     public static readonly CollectionBuilderKnownSizeFactory<A, ImmutableList<A>> immutableList =
       count => new ImmutableListBuilder<A>(ImmutableList.CreateBuilder<A>());
     
-    [PublicAPI]
     public static readonly CollectionBuilderKnownSizeFactory<A, ImmutableHashSet<A>> immutableHashSet =
       count => new ImmutableHashSetBuilder<A>(ImmutableHashSet.CreateBuilder<A>());
   }
 
-  public static class CollectionBuilderKnownSizeFactoryKV<Key, Value> {
-    [PublicAPI]
+  [PublicAPI] public static class CollectionBuilderKnownSizeFactoryKV<Key, Value> {
     public static readonly CollectionBuilderKnownSizeFactory<
       KeyValuePair<Key, Value>, ImmutableDictionary<Key, Value>
     > immutableDictionary =
       count => new ImmutableDictionaryBuilder<Key, Value>(ImmutableDictionary.CreateBuilder<Key, Value>());
+    
+    public static readonly CollectionBuilderKnownSizeFactory<KeyValuePair<Key, Value>, Dictionary<Key, Value>> 
+      dictionary = count => new DictionaryBuilder<Key, Value>(new Dictionary<Key, Value>(count));
   }
 
   // Unity runtime does not like variance and crashes.
@@ -103,5 +101,16 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
     public void add(KeyValuePair<K, V> a) => builder.Add(a);
     public ImmutableDictionary<K, V> build() => builder.ToImmutable();
     public ImmutableDictionary<K, V> buildAndDispose() => build();
+  }
+
+  class DictionaryBuilder<K, V> : ICollectionBuilder<KeyValuePair<K, V>, Dictionary<K, V>> {
+    readonly Dictionary<K, V> builder;
+    
+    public DictionaryBuilder(Dictionary<K, V> builder) { this.builder = builder; }
+
+    public void add(KeyValuePair<K, V> a) => builder.Add(a.Key, a.Value);
+
+    public Dictionary<K, V> build() => new Dictionary<K, V>(builder);
+    public Dictionary<K, V> buildAndDispose() => builder;
   }
 }
