@@ -227,14 +227,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// <summary>
     /// Returns array with all the indexes of this list.
     /// </summary>
-    [PublicAPI] public static int[] indexes<A>(this IList<A> list) {
+    public static int[] indexes<A>(this IList<A> list) {
       var indexes = new int[list.Count];
       for (var idx = 0; idx < list.Count; idx++)
         indexes[idx] = idx;
       return indexes;
     }
 
-    [PublicAPI]
     public static IEnumerable<A> randomized<A>(this IList<A> list, Rng rng) {
       var indexes = list.indexes();
       indexes.shuffle(ref rng);
@@ -242,13 +241,28 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         yield return list[index];
     }
 
-    [PublicAPI]
     public static Option<int> indexOf<A>(this IList<A> list, A a, IEqualityComparer<A> comparer = null) {
       comparer = comparer ?? EqComparer<A>.Default;
       for (var idx = 0; idx < list.Count; idx++) {
         if (comparer.Equals(list[idx], a)) return F.some(idx);
       }
       return Option<int>.None;
+    }
+
+    public static bool average(this IList<float> floats, out float avg) {
+      var count = floats.Count;
+      if (count == 0) {
+        avg = 0;
+        return false;
+      }
+      else {
+        var sum = 0f;
+        for (var idx = 0; idx < count; idx++) {
+          sum += floats[idx];
+        }
+        avg = sum / count;
+        return true;
+      }
     }
   }
 }
