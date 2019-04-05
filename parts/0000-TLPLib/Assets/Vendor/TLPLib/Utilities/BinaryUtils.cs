@@ -39,8 +39,27 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         writeBuffer[offset + 3] = block[3];
       }
     }
-
+    
     public static int ReadIntBigEndian(this byte[] data, int offset) => 
       data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3];
+    
+    
+    
+    public static unsafe void WriteUShortBigEndian(this byte[] writeBuffer, ushort s, int offset) {
+      var block = stackalloc byte[2];
+      var asUShortPtr = (ushort*) block;
+      *asUShortPtr = s;
+      if (BitConverter.IsLittleEndian) {
+        writeBuffer[offset]     = block[1];
+        writeBuffer[offset + 1] = block[0];
+      }
+      else {
+        writeBuffer[offset]     = block[0];
+        writeBuffer[offset + 1] = block[1];
+      }
+    }
+    
+    public static ushort ReadUShortBigEndian(this byte[] data, int offset) => 
+      (ushort) (data[offset] << 8 | data[offset + 1]);
   }
 }
