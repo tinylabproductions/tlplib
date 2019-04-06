@@ -162,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
           }
         }
 
-        foreach (var guid in guids.OrderBy(AssetDatabase.GUIDToAssetPath)) {
+        foreach (var guid in guids.OrderBySafe(AssetDatabase.GUIDToAssetPath)) {
           var asset = AssetDatabaseUtils.loadMainAssetByGuid(guid);
           if (asset != null) {
             objectDisplay(guid);

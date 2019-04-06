@@ -198,7 +198,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     public static Dictionary<string, Tag> dynamicTags() => new Dictionary<string, Tag> {
       {"App:LoadedLevelNames", new Tag(
         Enumerable2.fromImperative(SceneManager.sceneCount, SceneManager.GetSceneAt).
-          Select(_ => $"{_.name}({_.buildIndex})").OrderBy(_ => _).mkString(", ")
+          Select(_ => $"{_.name}({_.buildIndex})").OrderBySafe(_ => _).mkString(", ")
       )},
       {"App:InternetReachability", Tag.a(Application.internetReachability)},
       {"App:TargetFrameRate", Tag.a(Application.targetFrameRate)},

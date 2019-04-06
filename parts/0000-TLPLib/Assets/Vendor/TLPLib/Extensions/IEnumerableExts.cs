@@ -350,6 +350,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IEnumerable<A> source, Func<A, B> keySelector
     ) where B : IComparable<B> => source.OrderBy(keySelector);
 
+    public static IOrderedEnumerable<A> ThenBySafe<A, B>(
+      this IOrderedEnumerable<A> source, Func<A, B> keySelector
+    ) where B : IComparable<B> => source.ThenBy(keySelector);
+
     public static IOrderedEnumerable<A> OrderBySafe<A>(this IEnumerable<A> source, Comparable<A> cmp) => 
       source.OrderBy(a => a, cmp);
 

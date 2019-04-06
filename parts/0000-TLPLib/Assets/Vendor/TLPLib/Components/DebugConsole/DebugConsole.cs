@@ -247,7 +247,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var currentGroupButtons = ImmutableList<ButtonBinding>.Empty;
       setupList(view.commands, () => currentGroupButtons);
 
-      var commandGroups = commands.OrderBy(_ => _.Key).Select(commandGroup => {
+      var commandGroups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
         var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
         button.text.text = commandGroup.Key;
         button.button.onClick.AddListener(() =>
