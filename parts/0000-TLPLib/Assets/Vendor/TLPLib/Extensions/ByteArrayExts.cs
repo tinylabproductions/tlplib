@@ -25,10 +25,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// Convert bytes to a hex string.
     /// </summary>
     [PublicAPI]
-    public static string asHexString(this byte[] data) {
+    public static string asHexString(this byte[] data, char? separator=null) {
       var sb = new StringBuilder();
 
+      var first = true;
       foreach (var t in data) {
+        if (!first && separator.HasValue) sb.Append(separator.Value);
+        else first = false;
         sb.Append(Convert.ToString(t, 16).PadLeft(2, '0'));
       }
 
