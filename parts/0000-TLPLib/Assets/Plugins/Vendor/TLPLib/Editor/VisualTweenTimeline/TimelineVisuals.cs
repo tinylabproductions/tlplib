@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
@@ -36,8 +37,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       public float timeZoomFactor, timelineOffset, lastNodeTime;
 
       public TimelineVisualsSettings(int selectedFTMindex) {
-        timeIndexFactor = 1;
-        timeZoomFactor = 1;
+        timeIndexFactor = 0;
+        timeZoomFactor = 4;
         timelineOffset = 450;
         lastNodeTime = 0;
         this.selectedFTMindex = selectedFTMindex;
@@ -138,7 +139,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (funTweenManager.valueOut(out var ftm) && (visualizationMode.value || applicationPlaying)) {
         currentTime = ftm.timeline.timeline.timePassed;
       }
-      
       doCursor(funNodes);
       doToolbarGUI(position, funTweenManager, funNodes, selectedNodesList, snapping, rootNode);
       drawTicksGUI();
@@ -554,12 +554,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var count = 0;
       for (var x = timeRect.x - _visualsSettings.scroll.x; x < timeRect.width; x += ZOOM * _visualsSettings.timeZoomFactor) {
         Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.7f);
-        if(x >= _visualsSettings.timelineOffset){
-          if(count % 5 == 0){ 
+        if (x >= _visualsSettings.timelineOffset) {
+          if (count % 5 == 0) {
+            var first = _visualsSettings.timeIndexFactor == 0;
             Handles.DrawLine(new Vector3(x, 7, 0), new Vector3(x, 17, 0));
             var displayMinutes = Mathf.FloorToInt(count / 5.0f * timeFactor[_visualsSettings.timeIndexFactor] / 60.0f);
-            var	displaySeconds = Mathf.FloorToInt(count / 5.0f * timeFactor[_visualsSettings.timeIndexFactor] % 60.0f);
-            var content = new GUIContent($"{displayMinutes:0}:{displaySeconds:00}");
+            var displaySeconds = Mathf.FloorToInt(count / 5.0f * timeFactor[_visualsSettings.timeIndexFactor] % 60.0f);
+            var content = new GUIContent(
+              first
+                ? displaySeconds.ToString()
+                : $"{displayMinutes:0}:{displaySeconds:00}"
+            );
             var size = ((GUIStyle)"Label").CalcSize(content);
             size.x = Mathf.Clamp(size.x, 0.0f, timeRect.width - x);
             GUI.Label(new Rect(x, -2, size.x, size.y), content);
@@ -744,25 +749,25 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               break;
             }
           break;
-          case EventType.ScrollWheel:
-            var f = _visualsSettings.timeZoomFactor;
-            if (_visualsSettings.timeIndexFactor == timeFactor.Length - 1 && f < 0.5f) {
-              f = 0.5f;
-            } else {
-              f += ev.delta.y / 100;
-            }
-            if (f < 0.5f && _visualsSettings.timeIndexFactor < timeFactor.Length - 1) {
-              _visualsSettings.timeIndexFactor++;
-              f = 1;
-            }
-            if (f > 1.5f && _visualsSettings.timeIndexFactor > 0) {
-              _visualsSettings.timeIndexFactor--;
-              f = 1;
-            }
-    
-            recalculateTimelineWidth(funNodes);
-            _visualsSettings.timeZoomFactor = f;
+        case EventType.ScrollWheel:
+          var f = _visualsSettings.timeZoomFactor;
+          if (_visualsSettings.timeIndexFactor == timeFactor.Length - 1 && f < 0.5f) {
+            f = 0.5f;
+          } else {
+            f += ev.delta.y / 100;
+          }
+          if (f < 0.5f && _visualsSettings.timeIndexFactor < timeFactor.Length - 1) {
+            _visualsSettings.timeIndexFactor++;
+            f = 1;
+          }
+          if (f > 1.5f && _visualsSettings.timeIndexFactor > 0) {
+            _visualsSettings.timeIndexFactor--;
+            f = 1;
+          }
           
+          recalculateTimelineWidth(funNodes);
+          _visualsSettings.timeZoomFactor = f;
+
           ev.Use ();
           break;
         default: break;
@@ -772,13 +777,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public float secondsToGUI(float seconds) => 
       seconds / timeFactor[_visualsSettings.timeIndexFactor] * ZOOM * _visualsSettings.timeZoomFactor * 5.0f;
 
-    public float GUIToSeconds(float xCoord){
+    public float GUIToSeconds(float xCoord) {
       var guiSecond = ZOOM * _visualsSettings.timeZoomFactor * 5.0f / timeFactor[_visualsSettings.timeIndexFactor];
       return xCoord / guiSecond;
     }
 
-    public void recalculateTimelineWidth(List<TimelineNode> funNodes) =>
-      _visualsSettings.lastNodeTime = secondsToGUI(funNodes.Max(node => node.getEnd()));
+    public void recalculateTimelineWidth(List<TimelineNode> funNodes) {
+      foreach (var timelineNode in funNodes.maxBy(Comparable.float_, node => node.getEnd())) {
+        _visualsSettings.lastNodeTime = secondsToGUI(timelineNode.getEnd());
+      }
+    }
   }
 }
 #endif
