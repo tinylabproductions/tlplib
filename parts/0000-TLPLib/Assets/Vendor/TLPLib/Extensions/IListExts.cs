@@ -241,12 +241,23 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         yield return list[index];
     }
 
-    public static Option<int> indexOf<A>(this IList<A> list, A a, IEqualityComparer<A> comparer = null) {
+    public static Option<int> indexOf<A>(
+      this IList<A> list, A a, int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
+    ) =>
+      list.indexOfOut(a, out var idx, startAt: startAt, count: count, comparer: comparer)
+        ? F.some(idx)
+        : Option<int>.None;
+
+    public static bool indexOfOut<A>(
+      this IList<A> list, A a, out int index, 
+      int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
+    ) {
       comparer = comparer ?? EqComparer<A>.Default;
-      for (var idx = 0; idx < list.Count; idx++) {
-        if (comparer.Equals(list[idx], a)) return F.some(idx);
+      var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
+      for (index = startAt; index < endIdx; index++) {
+        if (comparer.Equals(list[index], a)) return true;
       }
-      return Option<int>.None;
+      return false;
     }
 
     public static bool average(this IList<float> floats, out float avg) {
