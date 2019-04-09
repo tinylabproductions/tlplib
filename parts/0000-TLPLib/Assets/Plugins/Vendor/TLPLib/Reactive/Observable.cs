@@ -338,11 +338,32 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return new Subscription(cr.stop);
       });
     }
+    
+    public static IObservable<DateTime> interval(
+      Fn<Duration> interval, Option<Duration> delay=default(Option<Duration>)
+    ) {
+      Option.ensureValue(ref delay);
+      return new Observable<DateTime>(observer => {
+        var cr = ASync.StartCoroutine(intervalEnum(observer, interval, delay));
+        return new Subscription(cr.stop);
+      });
+    }
 
     static IEnumerator everyFrameCR(Act<Unit> onEvent) {
       while (true) {
         onEvent(Unit.instance);
         yield return null;
+      }
+      // ReSharper disable once IteratorNeverReturns
+    }
+    
+    static IEnumerator intervalEnum(
+      Act<DateTime> pushEvent, Fn<Duration> intervalFn, Option<Duration> delay
+    ) {
+      foreach (var d in delay) yield return new WaitForSeconds(d.seconds);
+      while (true) {
+        pushEvent(DateTime.Now);
+        yield return new WaitForSeconds(intervalFn().seconds);
       }
       // ReSharper disable once IteratorNeverReturns
     }
