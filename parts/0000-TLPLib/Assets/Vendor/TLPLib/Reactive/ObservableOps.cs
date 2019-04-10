@@ -12,12 +12,13 @@ using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using Smooth.Collections;
 using UnityEngine;
+using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
-  public static class ObservableOps {
+  [PublicAPI] public static class ObservableOps {
     #region #subscribe
 
-    [PublicAPI] public static ISubscription subscribe<A>(
+    public static ISubscription subscribe<A>(
       this IRxObservable<A> observable,
       IDisposableTracker tracker,
       Action<A> onEvent,
@@ -54,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return subscription;
     }
 
-    [PublicAPI] public static ISubscription subscribe<A>(
+    public static ISubscription subscribe<A>(
       this IRxObservable<A> observable, GameObject tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
@@ -67,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       // ReSharper restore ExplicitCallerInfoArgument
     );
 
-    [PublicAPI] public static void subscribeLast<A>(
+    public static void subscribeLast<A>(
       this IRxObservable<A> observable, ref IDisposable subscription, Action<A> onChange,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
@@ -575,6 +576,32 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     /// <summary>
+    /// On emitted event starts a timer and only emits that event if no other events happen within given timeout.
+    ///
+    /// If other event fires within the timeout, discards the previous event and restarts the timer. 
+    /// </summary>
+    public static IRxObservable<A> lastWithinTimeout<A>(
+      this IRxObservable<A> o, Duration timeout, ITimeContext timeContext = null
+    ) {
+      timeContext = timeContext.orDefault();
+
+      var lastA = default(A);
+      var maybeLastTimer = F.none<Coroutine>(); 
+      
+      return new Observable<A>(onEvent => {
+        void onTimeout() => onEvent(lastA);
+        return o.subscribe(NoOpDisposableTracker.instance, a => {
+          lastA = a;
+          if (maybeLastTimer.valueOut(out var lastTimer)) {
+            lastTimer.Dispose();
+          }
+          // TODO: reduce heap allocations
+          maybeLastTimer = F.some(timeContext.after(timeout, onTimeout, nameof(lastWithinTimeout)));
+        });
+      });
+    }
+
+    /// <summary>
     /// Waits until `count` events are emmited within a single `timeframe`
     /// seconds window and emits a read only linked list of
     /// (element, emission time) Tpls with emmission time.
@@ -613,7 +640,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    [PublicAPI] public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
+    public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
       this IRxObservable<A> o, Func<A, A, bool> areEqual = null
     ) => o.changesOpt(F.t, areEqual);
 
@@ -621,7 +648,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    [PublicAPI] public static IRxObservable<B> changesOpt<A, B>(
+    public static IRxObservable<B> changesOpt<A, B>(
       this IRxObservable<A> o, Func<Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
