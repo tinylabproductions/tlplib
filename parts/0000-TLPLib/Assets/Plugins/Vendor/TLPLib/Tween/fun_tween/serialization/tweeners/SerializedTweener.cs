@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
@@ -13,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected enum Mode { Absolute = 0, Relative = 1, RelativeFromCreation = 2 }
   }
 
-  public abstract partial class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener {
+  public abstract partial class SerializedTweener<SourceType, DestinationType, Target> : SerializedTweener{
 
     #region Unity Serialized Fields
 #pragma warning disable 649
@@ -22,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     [SerializeField, NotNull] SourceType _start, _end;
     [SerializeField, Tooltip("in seconds")] float _duration = 10;
     [SerializeField, NotNull] SerializedEase _ease;
-    [SerializeField, NotNull, NonEmpty] Target[] _targets = new Target[1];
+    [SerializeField, NotNull, NonEmpty] protected Target[] _targets = new Target[1];
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
     #endregion
@@ -70,7 +71,38 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
         );
       }
     }
+  }
+  
+  public abstract class SerializedTweenerWithTransformTarget<SourceType, DestinationType>
+    : SerializedTweener<SourceType, DestinationType, Transform>
+  {
+    protected SerializedTweenerWithTransformTarget(
+      Tween<DestinationType>.Ops ops,
+      SerializedTweenerOps.Add<DestinationType> add,
+      SerializedTweenerOps.Extract<DestinationType,
+      Transform> extract,
+      SourceType defaultValue
+    ) : base(ops, add, extract, defaultValue) { }
+    
+    [Inspect]
+    public void setCurrentGameObjectAsTarget() {
+      _targets[0] = gameObject.transform;
+    }
+  }
+  
+  public abstract class SerializedTweenerWithTransformTarget<Value> : SerializedTweener<Value, Transform> {
+    protected SerializedTweenerWithTransformTarget(
+      Tween<Value>.Ops ops,
+      SerializedTweenerOps.Add<Value> add,
+      SerializedTweenerOps.Extract<Value, Transform> extract,
+      TweenMutator<Value, Transform> mutator,
+      Value defaultValue
+    ) : base(ops, add, extract, mutator, defaultValue) { }
 
+    [Inspect]
+    public void setCurrentGameObjectAsTarget() {
+      _targets[0] = gameObject.transform;
+    }
   }
 
   public abstract class SerializedTweener<Value, Target> : SerializedTweener<Value, Value, Target> {
