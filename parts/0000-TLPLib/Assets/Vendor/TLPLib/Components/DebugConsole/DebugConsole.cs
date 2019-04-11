@@ -352,7 +352,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           case LogType.Exception:
             return Color.red;
           case LogType.Assert: return Color.magenta;
-          case LogType.Warning: return new Color(255, 180, 0, 255);
+          case LogType.Warning: return new Color32(213, 144, 0, 255);
           case LogType.Log: return Color.black;
           default: throw new Exception();
         }
