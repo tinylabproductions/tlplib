@@ -10,6 +10,10 @@ using JetBrains.Annotations;
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class NonEmpty {
     [PublicAPI]
+    public static Option<NonEmpty<string>> toNonEmpty(this string s) =>
+      NonEmpty<string>.__unsafeApply(s, _ => _.isNullOrEmpty());
+    
+    [PublicAPI]
     public static Option<NonEmpty<ImmutableList<A>>> toNonEmpty<A>(this ImmutableList<A> c) =>
       NonEmpty<ImmutableList<A>>.__unsafeApply(c, _ => _.IsEmpty);
 

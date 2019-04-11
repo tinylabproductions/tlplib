@@ -249,13 +249,50 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         : Option<int>.None;
 
     public static bool indexOfOut<A>(
-      this IList<A> list, A a, out int index, 
+      this IList<A> list, A a, out int index,
       int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
-    ) {
+    ) => indexOfOutC(list: list, a: a, index: out index, startAt: startAt, count: count, comparer: comparer);
+
+    public static bool indexOfOutC<A, C>(
+      this C list, A a, out int index, 
+      int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
+    ) where C : IList<A> {
       comparer = comparer ?? EqComparer<A>.Default;
       var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
       for (index = startAt; index < endIdx; index++) {
         if (comparer.Equals(list[index], a)) return true;
+      }
+      return false;
+    }
+
+    public static bool indexWhereOut<A>(
+      this IList<A> list, Func<A, bool> predicate, out int index,
+      int startAt = 0, int? count = null
+    ) => indexWhereOutC(list, predicate, out index, startAt: startAt, count: count);
+
+    public static bool indexWhereOutC<A, Coll>(
+      this Coll list, Func<A, bool> predicate, out int index, 
+      int startAt = 0, int? count = null
+    ) where Coll : IList<A> {
+      var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
+      for (index = startAt; index < endIdx; index++) {
+        if (predicate(list[index])) return true;
+      }
+      return false;
+    }
+
+    public static bool indexWhereOut<A, Data>(
+      this IList<A> list, Data data, Func<A, Data, bool> predicate, out int index,
+      int startAt = 0, int? count = null
+    ) => indexWhereOutC(list, data, predicate, out index, startAt: startAt, count: count);
+
+    public static bool indexWhereOutC<A, Data, Coll>(
+      this Coll list, Data data, Func<A, Data, bool> predicate, out int index, 
+      int startAt = 0, int? count = null
+    ) where Coll : IList<A> {
+      var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
+      for (index = startAt; index < endIdx; index++) {
+        if (predicate(list[index], data)) return true;
       }
       return false;
     }
