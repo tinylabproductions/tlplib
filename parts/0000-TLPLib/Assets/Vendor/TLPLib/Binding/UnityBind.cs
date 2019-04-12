@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       
       void cleanupCurrent() {
         foreach (var element in current) {
-          pool.release(element.instance);
+          if (element.instance) pool.release(element.instance);
           element.subscription.unsubscribe();
         }
         current.Clear();
