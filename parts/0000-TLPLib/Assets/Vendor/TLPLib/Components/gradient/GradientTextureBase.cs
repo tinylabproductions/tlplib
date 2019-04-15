@@ -1,6 +1,7 @@
 ﻿
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
@@ -16,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
 
     protected abstract void setTexture(Texture2D texture);
     
-    // [Inspect]
+    [Button]
     void generate() {
       var textureSizeX = direction == Direction.Horizontal ? textureSize : 1;
       var textureSizeY = direction == Direction.Vertical ? textureSize : 1;
