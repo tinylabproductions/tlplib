@@ -76,8 +76,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
       Init<GameObject> init
     ) => new GameObjectPool<GameObject>(init, _ => _);
 
-    public static GameObjectPool<A> a<A>(Init<A> init) where A : Component =>
-      new GameObjectPool<A>(init, a => {
+    public static GameObjectPool<A> a<A>(Init<A> init, int initialSize = 0) where A : Component =>
+      new GameObjectPool<A>(init, initialSize: initialSize, toGameObject: a => {
         if (!a) Log.d.error(
           $"Component {typeof(A)} is destroyed in {nameof(GameObjectPool)} '{init.name}'!"
         ); 
@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
   }
 
   public class GameObjectPool<T> {
-    readonly Stack<T> values = new Stack<T>();
+    readonly Stack<T> values;
     readonly Option<Transform> rootOpt;
 
     readonly Func<T, GameObject> toGameObject;
@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
     readonly Option<Action<T>> wakeUp, sleep;
     readonly bool dontDestroyOnLoad;
 
-    public GameObjectPool(GameObjectPool.Init<T> init, Func<T, GameObject> toGameObject) {
+    public GameObjectPool(GameObjectPool.Init<T> init, Func<T, GameObject> toGameObject, int initialSize = 0) {
       rootOpt = init.parent.map(parent => {
         var rootParent = new GameObject($"{nameof(GameObjectPool)}: {init.name}").transform;
         rootParent.parent = parent;
@@ -107,15 +107,27 @@ namespace com.tinylabproductions.TLPLib.Pools {
       wakeUp = init.wakeUp;
       sleep = init.sleep;
       dontDestroyOnLoad = init.dontDestroyOnLoad;
+      values = initialSize == 0 ? new Stack<T>() : new Stack<T>(initialSize);
+
+      for (var i = 0; i < initialSize; i++) {
+        release(createAndInit());
+      }
+    }
+
+    T createAndInit() {
+      var result = create();
+      var go = toGameObject(result);
+      var t = go.transform;
+      if (dontDestroyOnLoad && !t.parent) Object.DontDestroyOnLoad(go);
+      return result;
     }
 
     public T borrow() {
-      var result = values.Count > 0 ? values.Pop() : create();
+      var result = values.Count > 0 ? values.Pop() : createAndInit();
       var go = toGameObject(result);
       var t = go.transform;
       t.localPosition = Vector3.zero;
       t.rotation = Quaternion.identity;
-      if (dontDestroyOnLoad && !t.parent) Object.DontDestroyOnLoad(go);
       go.SetActive(true);
       if (wakeUp.isSome) wakeUp.get(result);
       return result;
