@@ -4,6 +4,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
@@ -96,15 +97,20 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     // TODO: test
-    /** Convert an enum of rx values into one rx value using a traversal function. **/
+    [PublicAPI]
     public static IRxVal<B> traverse<A, B>(
       this IEnumerable<IRxVal<A>> valsEnum, Fn<IEnumerable<A>, B> traverseFn
     ) => traverse(valsEnum.ToArray(), traverseFn);
 
+    [PublicAPI]
+    public static IRxVal<B> traverse<A, B>(
+      this IEnumerable<IRxRef<A>> refsEnum, Fn<IEnumerable<A>, B> traverseFn
+    ) => traverse(refsEnum.upcast<IRxRef<A>, IRxVal<A>>(), traverseFn);
+
     /// <summary>
     /// Convert an enum of rx values into one rx value using a traversal function.
     /// </summary>
-    public static IRxVal<B> traverse<A, B>(
+    [PublicAPI] public static IRxVal<B> traverse<A, B>(
       this ICollection<IRxVal<A>> vals, Fn<IEnumerable<A>, B> traverseFn
     ) {
       B getValue() => traverseFn(vals.Select(v => v.value));
