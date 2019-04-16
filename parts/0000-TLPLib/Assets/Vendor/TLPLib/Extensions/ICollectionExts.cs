@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  [PublicAPI]
   public static class ICollectionExts {
-    [PublicAPI]
     public static bool indexValid<A>(this ICollection<A> collection, int index) =>
       index >= 0 && index < collection.Count;
     
@@ -21,7 +22,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return bArr;
     }
 
-    [PublicAPI]
     public static Range indexRange<A>(this ICollection<A> coll) =>
       new Range(0, coll.Count - 1);
 
@@ -51,7 +51,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return result;
     }
     
-    [PublicAPI] 
     public static IEnumerable<A> shuffleRepeatedly<A>(this ICollection<A> collection, Rng rng) {
       var copy = collection.ToList();
       while (true) {
@@ -60,6 +59,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           yield return item;
         }
       }
+    }
+
+    public static Option<double> average<A>(this ICollection<A> collection, Func<A, double> mapper) {
+      if (collection.Count == 0) return F.none_;
+      double result = 0;
+      foreach (var item in collection) {
+        result += mapper(item);
+      }
+      return (result / collection.Count).some();
     }
   }
 }
