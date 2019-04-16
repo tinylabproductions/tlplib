@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using JetBrains.Annotations;
 using Smooth.Pools;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   // Can't split into two interfaces and use variance because mono runtime
   // often crashes with variance.
-  public interface IHeapFuture<A> {
+  [PublicAPI] public interface IHeapFuture<A> {
     bool isCompleted { get; }
     void onComplete(Action<A> action);
     Option<A> value { get; }
+    bool valueOut(out A a);
   }
 
   public static class IHeapFutureExts {
@@ -24,6 +25,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public bool isCompleted => value.isSome;
     public Option<A> value { get; private set; } = F.none<A>();
+    public bool valueOut(out A a) => value.valueOut(out a);
 
     public override string ToString() => $"{nameof(FutureImpl<A>)}({value})";
 
