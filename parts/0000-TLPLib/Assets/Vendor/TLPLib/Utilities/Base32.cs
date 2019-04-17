@@ -1,84 +1,163 @@
+// https://blogs.technet.microsoft.com/cloudpfe/2018/04/18/base32-encoding-and-decoding-in-c/
+/*
+ * Derived from https://github.com/google/google-authenticator-android/blob/master/AuthenticatorApp/src/main/java/com/google/android/apps/authenticator/Base32String.java
+ * 
+ * Copyright (C) 2016 BravoTango86
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 using System;
-using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  // https://blogs.technet.microsoft.com/cloudpfe/2018/04/18/base32-encoding-and-decoding-in-c/
+  // https://gist.github.com/erdomke/9335c394c5cc65404c4cf9aceab04143
+
   [PublicAPI] public static class Base32 {
-    /// <summary>
-    /// The different characters allowed in Base32 encoding.
-    /// </summary>
-    /// <remarks>
-    /// This is a 32-character subset of the twenty-six letters A–Z and six digits 2–7.
-    /// <see cref="https://en.wikipedia.org/wiki/Base32" />
-    /// </remarks>
-    const string Base32AllowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    static readonly char[] _digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".ToCharArray();
+    const int _mask = 31;
+    const int _shift = 5;
 
-    /// <summary>
-    /// Converts a byte array into a Base32 string.
-    /// </summary>
-    /// <param name="input">The string to convert to Base32.</param>
-    /// <param name="addPadding">Whether or not to add RFC3548 '='-padding to the string.</param>
-    /// <returns>A Base32 string.</returns>
-    /// <remarks>
-    /// https://tools.ietf.org/html/rfc3548#section-2.2 indicates padding MUST be added unless the reference to the RFC tells us otherswise.
-    /// https://github.com/google/google-authenticator/wiki/Key-Uri-Format indicates that padding SHOULD be omitted.
-    /// To meet both requirements, you can omit padding when required.
-    /// </remarks>
-    public static string ToBase32String(this byte[] input, bool addPadding = true) {
-      if (input == null || input.Length == 0) {
-        return string.Empty;
+    static int CharToInt(char c) {
+      switch (c) {
+        case 'A': return 0;
+        case 'B': return 1;
+        case 'C': return 2;
+        case 'D': return 3;
+        case 'E': return 4;
+        case 'F': return 5;
+        case 'G': return 6;
+        case 'H': return 7;
+        case 'I': return 8;
+        case 'J': return 9;
+        case 'K': return 10;
+        case 'L': return 11;
+        case 'M': return 12;
+        case 'N': return 13;
+        case 'O': return 14;
+        case 'P': return 15;
+        case 'Q': return 16;
+        case 'R': return 17;
+        case 'S': return 18;
+        case 'T': return 19;
+        case 'U': return 20;
+        case 'V': return 21;
+        case 'W': return 22;
+        case 'X': return 23;
+        case 'Y': return 24;
+        case 'Z': return 25;
+        case '2': return 26;
+        case '3': return 27;
+        case '4': return 28;
+        case '5': return 29;
+        case '6': return 30;
+        case '7': return 31;
       }
 
-      var bits = input.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')).Aggregate((a, b) => a + b)
-        .PadRight((int) (Math.Ceiling((input.Length * 8) / 5d) * 5), '0');
-      var result = Enumerable.Range(0, bits.Length / 5)
-        .Select(i => Base32AllowedCharacters.Substring(Convert.ToInt32(bits.Substring(i * 5, 5), 2), 1))
-        .Aggregate((a, b) => a + b);
-      if (addPadding) {
-        result = result.PadRight((int) (Math.Ceiling(result.Length / 8d) * 8), '=');
-      }
-
-      return result;
+      return -1;
     }
 
-    public static string EncodeAsBase32String(this string input, bool addPadding = true) {
-      if (string.IsNullOrEmpty(input)) {
-        return string.Empty;
-      }
+    public static byte[] FromBase32String(string encoded) {
+      if (encoded == null)
+        throw new ArgumentNullException(nameof(encoded));
 
-      var bytes = Encoding.UTF8.GetBytes(input);
-      var result = bytes.ToBase32String(addPadding);
-      return result;
-    }
-
-    public static string DecodeFromBase32String(this string input) {
-      if (string.IsNullOrEmpty(input)) {
-        return string.Empty;
-      }
-
-      var bytes = input.ToByteArray();
-      var result = Encoding.UTF8.GetString(bytes);
-      return result;
-    }
-
-    /// <summary>
-    /// Converts a Base32 string into the corresponding byte array, using 5 bits per character.
-    /// </summary>
-    /// <param name="input">The Base32 String</param>
-    /// <returns>A byte array containing the properly encoded bytes.</returns>
-    public static byte[] ToByteArray(this string input) {
-      if (string.IsNullOrEmpty(input)) {
+      // Remove whitespace and padding. Note: the padding is used as hint 
+      // to determine how many bits to decode from the last incomplete chunk
+      // Also, canonicalize to all upper case
+      encoded = encoded.Trim().TrimEnd('=').ToUpper();
+      if (encoded.Length == 0)
         return new byte[0];
+
+      var outLength = encoded.Length * _shift / 8;
+      var result = new byte[outLength];
+      var buffer = 0;
+      var next = 0;
+      var bitsLeft = 0;
+      foreach (var c in encoded) {
+        var charValue = CharToInt(c);
+        if (charValue < 0)
+          throw new FormatException("Illegal character: `" + c + "`");
+
+        buffer <<= _shift;
+        buffer |= charValue & _mask;
+        bitsLeft += _shift;
+        if (bitsLeft >= 8) {
+          result[next++] = (byte) (buffer >> (bitsLeft - 8));
+          bitsLeft -= 8;
+        }
       }
 
-      var bits = input.TrimEnd('=').ToUpper().ToCharArray()
-        .Select(c => Convert.ToString(Base32AllowedCharacters.IndexOf(c), 2).PadLeft(5, '0'))
-        .Aggregate((a, b) => a + b);
-      var result = Enumerable.Range(0, bits.Length / 8).Select(i => Convert.ToByte(bits.Substring(i * 8, 8), 2))
-        .ToArray();
       return result;
+    }
+
+    public static string ToBase32String(byte[] data, bool padOutput = false) {
+      return ToBase32String(data, 0, data.Length, padOutput);
+    }
+
+    public static string ToBase32String(byte[] data, int offset, int length, bool padOutput = false) {
+      if (data == null)
+        throw new ArgumentNullException(nameof(data));
+
+      if (offset < 0)
+        throw new ArgumentOutOfRangeException(nameof(offset));
+
+      if (length < 0)
+        throw new ArgumentOutOfRangeException(nameof(length));
+
+      if ((offset + length) > data.Length)
+        throw new ArgumentOutOfRangeException();
+
+      if (length == 0)
+        return "";
+
+      // SHIFT is the number of bits per output character, so the length of the
+      // output is the length of the input multiplied by 8/SHIFT, rounded up.
+      // The computation below will fail, so don't do it.
+      if (length >= (1 << 28))
+        throw new ArgumentOutOfRangeException(nameof(data));
+
+      var outputLength = (length * 8 + _shift - 1) / _shift;
+      var result = new StringBuilder(outputLength);
+
+      var last = offset + length;
+      int buffer = data[offset++];
+      var bitsLeft = 8;
+      while (bitsLeft > 0 || offset < last) {
+        if (bitsLeft < _shift) {
+          if (offset < last) {
+            buffer <<= 8;
+            buffer |= (data[offset++] & 0xff);
+            bitsLeft += 8;
+          }
+          else {
+            int pad = _shift - bitsLeft;
+            buffer <<= pad;
+            bitsLeft += pad;
+          }
+        }
+
+        int index = _mask & (buffer >> (bitsLeft - _shift));
+        bitsLeft -= _shift;
+        result.Append(_digits[index]);
+      }
+
+      if (padOutput) {
+        int padding = 8 - (result.Length % 8);
+        if (padding > 0) result.Append('=', padding == 8 ? 0 : padding);
+      }
+
+      return result.ToString();
     }
   }
 }
