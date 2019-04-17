@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  public class Base36 {
+  [PublicAPI] public class Base36 {
     private const string Clist = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static readonly char[] Clistarr = Clist.ToCharArray();
 
