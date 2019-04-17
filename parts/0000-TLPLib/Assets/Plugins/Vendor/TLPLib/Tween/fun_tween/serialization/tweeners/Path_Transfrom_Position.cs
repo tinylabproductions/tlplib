@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [AddComponentMenu("")]
-  public class Path_Transfrom_Position : SerializedTweener<float, float, Transform> {
+  public class Path_Transfrom_Position : SerializedTweenerWithTransformTarget<float, float> {
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
