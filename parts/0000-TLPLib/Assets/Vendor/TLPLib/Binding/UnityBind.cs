@@ -30,25 +30,23 @@ namespace com.tinylabproductions.TLPLib.binding {
     }
     
     public static void bindEnumerable<Template, Data>(
-      string gameObjectPoolName,
-      Template template, IRxObservable<IEnumerable<Data>> rx,
-      IDisposableTracker tracker, Func<Template, Data, ISubscription> setup
+      GameObjectPool<Template> pool,
+      IRxObservable<IEnumerable<Data>> rx,
+      IDisposableTracker tracker, Func<Template, Data, ISubscription> setup,
+      bool orderMatters = true
     ) where Template : Component {
-      template.gameObject.SetActive(false);
-      var pool = GameObjectPool.a(GameObjectPool.Init.noReparenting(
-        gameObjectPoolName,
-        create: () => template.clone(parent: template.transform.parent)
-      ));
-      
       var current = new List<BindEnumerableEntry<Template>>();
 
       rx.subscribe(tracker,list => {
         cleanupCurrent();
-        
+
+        var idx = 0;
         foreach (var element in list) {
           var instance = pool.borrow();
+          if (orderMatters) instance.transform.SetSiblingIndex(idx);
           var sub = setup(instance, element);
           current.Add(new BindEnumerableEntry<Template>(instance, sub));
+          idx++;
         }
       });
       tracker.track(new Subscription(cleanupCurrent));
@@ -60,6 +58,20 @@ namespace com.tinylabproductions.TLPLib.binding {
         }
         current.Clear();
       }
+    }
+    
+    public static GameObjectPool<Template> bindEnumerable<Template, Data>(
+      string gameObjectPoolName,
+      Template template, IRxObservable<IEnumerable<Data>> rx,
+      IDisposableTracker tracker, Func<Template, Data, ISubscription> setup
+    ) where Template : Component {
+      template.gameObject.SetActive(false);
+      var pool = GameObjectPool.a(GameObjectPool.Init.noReparenting(
+        gameObjectPoolName,
+        create: () => template.clone(parent: template.transform.parent)
+      ));
+      bindEnumerable(pool, rx, tracker, setup);
+      return pool;
     }
 
     [Record] public readonly partial struct BindEnumerableEntry<Template> {
