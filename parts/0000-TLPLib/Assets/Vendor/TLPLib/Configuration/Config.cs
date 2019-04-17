@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   }
 
   /* See IConfig. */
-  public partial class Config : IConfig {
+  [PublicAPI] public partial class Config : IConfig {
     [Record]
     public partial struct ParsingError {
       public readonly Option<Exception> exception;
@@ -151,6 +151,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static Parser<object, ImmutableList<A>> immutableListParser<A>(Parser<object, A> parser) =>
       collectionParser(parser, count => ImmutableList.CreateBuilder<A>(), (b, a) => {
+        b.Add(a);
+        return b;
+      }).map(_ => _.ToImmutable());
+
+    public static Parser<object, ImmutableHashSet<A>> immutableHashSetParser<A>(Parser<object, A> parser) =>
+      collectionParser(parser, count => ImmutableHashSet.CreateBuilder<A>(), (b, a) => {
         b.Add(a);
         return b;
       }).map(_ => _.ToImmutable());
