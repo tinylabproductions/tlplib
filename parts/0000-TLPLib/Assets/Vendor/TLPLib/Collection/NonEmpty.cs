@@ -8,48 +8,37 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Collection {
-  public static class NonEmpty {
-    [PublicAPI]
+  [PublicAPI] public static class NonEmpty {
     public static Option<NonEmpty<string>> toNonEmpty(this string s) =>
       NonEmpty<string>.__unsafeApply(s, _ => _.isNullOrEmpty());
     
-    [PublicAPI]
     public static Option<NonEmpty<ImmutableList<A>>> toNonEmpty<A>(this ImmutableList<A> c) =>
       NonEmpty<ImmutableList<A>>.__unsafeApply(c, _ => _.IsEmpty);
 
-    [PublicAPI] 
     public static Option<NonEmpty<ImmutableArray<A>>> toNonEmpty<A>(this ImmutableArray<A> c) =>
       NonEmpty<ImmutableArray<A>>.__unsafeApply(c, _ => _.IsEmpty);
 
-    [PublicAPI] 
     public static Option<NonEmpty<A[]>> toNonEmpty<A>(this A[] c) =>
       NonEmpty<A[]>.__unsafeApply(c, _ => _.isEmpty());
 
-    [PublicAPI] 
     public static Option<NonEmpty<ImmutableHashSet<A>>> toNonEmpty<A>(this ImmutableHashSet<A> c) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeApply(c, _ => _.IsEmpty);
 
-    [PublicAPI] 
     public static Option<NonEmpty<ImmutableSortedSet<A>>> toNonEmpty<A>(this ImmutableSortedSet<A> c) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeApply(c, _ => _.IsEmpty);
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableArray<A>> array<A>(A a1) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1));
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableArray<A>> array<A>(A a1, A a2) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1, a2));
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableArray<A>> array<A>(A a1, A a2, A a3) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1, a2, a3));
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableArray<A>> array<A>(A a1, A a2, A a3, A a4) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1, a2, a3, a4));
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableArray<A>> array<A>(A first, params A[] rest) {
       var b = ImmutableArray.CreateBuilder<A>(rest.Length + 1);
       b.Add(first);
@@ -57,19 +46,18 @@ namespace com.tinylabproductions.TLPLib.Collection {
       return NonEmpty<ImmutableArray<A>>.__unsafeNew(b.MoveToImmutable());
     }
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.Create(a1));
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1, params A[] rest) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.Create(rest).Add(a1));
 
-    [PublicAPI] 
+    public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1, IEnumerable<A> rest) =>
+      NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.CreateRange(rest).Add(a1));
+
     public static NonEmpty<ImmutableSortedSet<A>> sortedSet<A>(A a1) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ImmutableSortedSet.Create(a1));
 
-    [PublicAPI] 
     public static NonEmpty<ImmutableSortedSet<A>> sortedSet<A>(A a1, params A[] rest) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ImmutableSortedSet.Create(rest).Add(a1));
   }
