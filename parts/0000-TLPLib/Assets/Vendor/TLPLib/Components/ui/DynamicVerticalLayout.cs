@@ -136,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           updateLayout();
         });
 
-        dt.track(backing._scrollRect.onValueChanged.subscribe(_ => updateLayout()));
+        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
       }
 
       /// <param name="element"></param>
