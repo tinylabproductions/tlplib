@@ -284,6 +284,15 @@ namespace com.tinylabproductions.TLPLib.Data {
       a1RW, a2RW, a3RW, a4RW, a5RW, a6RW, mapper, getA1, getA2, getA3, getA4, getA5, getA6
     );
 
+    public static ISerializedRW<B> and<A1, A2, A3, A4, A5, A6, A7, B>(
+      this ISerializedRW<A1> a1RW, ISerializedRW<A2> a2RW, ISerializedRW<A3> a3RW,
+      ISerializedRW<A4> a4RW, ISerializedRW<A5> a5RW, ISerializedRW<A6> a6RW, ISerializedRW<A7> a7RW,
+      Func<A1, A2, A3, A4, A5, A6, A7, B> mapper, Func<B, A1> getA1, Func<B, A2> getA2, Func<B, A3> getA3, 
+      Func<B, A4> getA4, Func<B, A5> getA5, Func<B, A6> getA6, Func<B, A7> getA7
+    ) => new AndRW7<A1, A2, A3, A4, A5, A6, A7, B>(
+      a1RW, a2RW, a3RW, a4RW, a5RW, a6RW, a7RW, mapper, getA1, getA2, getA3, getA4, getA5, getA6, getA7
+    );
+
     [PublicAPI]
     public static ISerializedRW<Option<A>> opt<A>(ISerializedRW<A> rw) =>
       new OptRW<A>(rw);

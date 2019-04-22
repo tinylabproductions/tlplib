@@ -175,12 +175,34 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     
     public static IEnumerable<A> Yield<A>(this A any) { yield return any; }
 
-    
     public static Option<A> find<A>(this IEnumerable<A> enumerable, Func<A, bool> predicate) {
       foreach (var a in enumerable) if (predicate(a)) return F.some(a);
       return F.none<A>();
     }
-    
+
+    public static bool findOut<A>(this IEnumerable<A> enumerable, Func<A, bool> predicate, out A a) {
+      foreach (var _a in enumerable)
+        if (predicate(_a)) {
+          a = _a;
+          return true;
+        }
+
+      a = default;
+      return false;
+    }
+
+    public static bool findOut<A, Data>(
+      this IEnumerable<A> enumerable, Data data, Func<A, Data, bool> predicate, out A a
+    ) {
+      foreach (var _a in enumerable)
+        if (predicate(_a, data)) {
+          a = _a;
+          return true;
+        }
+
+      a = default;
+      return false;
+    }
     
     public static Option<A> find<A, B>(
       this IEnumerable<A> enumerable, Func<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
@@ -349,6 +371,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IOrderedEnumerable<A> OrderBySafe<A, B>(
       this IEnumerable<A> source, Func<A, B> keySelector
     ) where B : IComparable<B> => source.OrderBy(keySelector);
+
+    public static IOrderedEnumerable<A> OrderByDescendingSafe<A, B>(
+      this IEnumerable<A> source, Func<A, B> keySelector
+    ) where B : IComparable<B> => source.OrderByDescending(keySelector);
+
+    public static IOrderedEnumerable<A> ThenBySafe<A, B>(
+      this IOrderedEnumerable<A> source, Func<A, B> keySelector
+    ) where B : IComparable<B> => source.ThenBy(keySelector);
 
     public static IOrderedEnumerable<A> OrderBySafe<A>(this IEnumerable<A> source, Comparable<A> cmp) => 
       source.OrderBy(a => a, cmp);

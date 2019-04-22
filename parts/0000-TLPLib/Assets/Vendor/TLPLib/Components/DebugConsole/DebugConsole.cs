@@ -247,7 +247,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var currentGroupButtons = ImmutableList<ButtonBinding>.Empty;
       setupList(view.commands, () => currentGroupButtons);
 
-      var commandGroups = commands.OrderBy(_ => _.Key).Select(commandGroup => {
+      var commandGroups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
         var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
         button.text.text = commandGroup.Key;
         button.button.onClick.AddListener(() =>
@@ -352,7 +352,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           case LogType.Exception:
             return Color.red;
           case LogType.Assert: return Color.magenta;
-          case LogType.Warning: return new Color(255, 180, 0, 255);
+          case LogType.Warning: return new Color32(213, 144, 0, 255);
           case LogType.Log: return Color.black;
           default: throw new Exception();
         }

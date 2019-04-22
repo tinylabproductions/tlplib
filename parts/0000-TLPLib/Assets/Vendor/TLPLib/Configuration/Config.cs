@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
   }
 
   /* See IConfig. */
-  public partial class Config : IConfig {
+  [PublicAPI] public partial class Config : IConfig {
     [Record]
     public partial struct ParsingError {
       public readonly Option<Exception> exception;
@@ -155,6 +155,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         return b;
       }).map(_ => _.ToImmutable());
 
+    public static Parser<object, ImmutableHashSet<A>> immutableHashSetParser<A>(Parser<object, A> parser) =>
+      collectionParser(parser, count => ImmutableHashSet.CreateBuilder<A>(), (b, a) => {
+        b.Add(a);
+        return b;
+      }).map(_ => _.ToImmutable());
+
     public static readonly Parser<object, Dictionary<string, object>> jsClassParser =
       createCastParser<Dictionary<string, object>>();
 
@@ -187,6 +193,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         }
         return Either<ConfigLookupError, Dictionary<K, V>>.Right(dict);
       });
+
+    public static Parser<object, ImmutableDictionary<K, V>> immutableDictParser<K, V>(
+      Parser<string, K> keyParser, Parser<object, V> valueParser
+    ) => dictParser(keyParser, valueParser).map(_ => _.ToImmutableDictionary());
 
     public static Parser<object, A> configPathedParser<A>(string key, Parser<object, A> aParser) =>
       configParser.flatMap((path, cfg) => cfg.eitherGet(key, aParser));

@@ -241,12 +241,60 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         yield return list[index];
     }
 
-    public static Option<int> indexOf<A>(this IList<A> list, A a, IEqualityComparer<A> comparer = null) {
+    public static Option<int> indexOf<A>(
+      this IList<A> list, A a, int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
+    ) =>
+      list.indexOfOut(a, out var idx, startAt: startAt, count: count, comparer: comparer)
+        ? F.some(idx)
+        : Option<int>.None;
+
+    public static bool indexOfOut<A>(
+      this IList<A> list, A a, out int index,
+      int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
+    ) => indexOfOutC(list: list, a: a, index: out index, startAt: startAt, count: count, comparer: comparer);
+
+    public static bool indexOfOutC<A, C>(
+      this C list, A a, out int index, 
+      int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
+    ) where C : IList<A> {
       comparer = comparer ?? EqComparer<A>.Default;
-      for (var idx = 0; idx < list.Count; idx++) {
-        if (comparer.Equals(list[idx], a)) return F.some(idx);
+      var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
+      for (index = startAt; index < endIdx; index++) {
+        if (comparer.Equals(list[index], a)) return true;
       }
-      return Option<int>.None;
+      return false;
+    }
+
+    public static bool indexWhereOut<A>(
+      this IList<A> list, Func<A, bool> predicate, out int index,
+      int startAt = 0, int? count = null
+    ) => indexWhereOutC(list, predicate, out index, startAt: startAt, count: count);
+
+    public static bool indexWhereOutC<A, Coll>(
+      this Coll list, Func<A, bool> predicate, out int index, 
+      int startAt = 0, int? count = null
+    ) where Coll : IList<A> {
+      var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
+      for (index = startAt; index < endIdx; index++) {
+        if (predicate(list[index])) return true;
+      }
+      return false;
+    }
+
+    public static bool indexWhereOut<A, Data>(
+      this IList<A> list, Data data, Func<A, Data, bool> predicate, out int index,
+      int startAt = 0, int? count = null
+    ) => indexWhereOutC(list, data, predicate, out index, startAt: startAt, count: count);
+
+    public static bool indexWhereOutC<A, Data, Coll>(
+      this Coll list, Data data, Func<A, Data, bool> predicate, out int index, 
+      int startAt = 0, int? count = null
+    ) where Coll : IList<A> {
+      var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
+      for (index = startAt; index < endIdx; index++) {
+        if (predicate(list[index], data)) return true;
+      }
+      return false;
     }
 
     public static bool average(this IList<float> floats, out float avg) {

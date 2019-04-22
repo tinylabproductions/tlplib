@@ -93,6 +93,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         }
       );
 
+    public static IRxVal<R> zip<A1, A2, A3, A4, A5, R>(
+      this IRxVal<A1> a1Src, IRxVal<A2> a2Src, IRxVal<A3> a3Src, IRxVal<A4> a4Src, IRxVal<A5> a5Src,
+      Func<A1, A2, A3, A4, A5, R> zipper
+    ) =>
+      new RxVal<R>(
+        zipper(a1Src.value, a2Src.value, a3Src.value, a4Src.value, a5Src.value),
+        setValue => {
+          var tracker = NoOpDisposableTracker.instance;
+          var a1Sub = a1Src.subscribeWithoutEmit(tracker, a1 => setValue(zipper(a1, a2Src.value, a3Src.value, a4Src.value, a5Src.value)));
+          var a2Sub = a2Src.subscribeWithoutEmit(tracker, a2 => setValue(zipper(a1Src.value, a2, a3Src.value, a4Src.value, a5Src.value)));
+          var a3Sub = a3Src.subscribeWithoutEmit(tracker, a3 => setValue(zipper(a1Src.value, a2Src.value, a3, a4Src.value, a5Src.value)));
+          var a4Sub = a4Src.subscribeWithoutEmit(tracker, a4 => setValue(zipper(a1Src.value, a2Src.value, a3Src.value, a4, a5Src.value)));
+          var a5Sub = a5Src.subscribeWithoutEmit(tracker, a5 => setValue(zipper(a1Src.value, a2Src.value, a3Src.value, a4Src.value, a5)));
+          return a1Sub.join(a2Sub, a3Sub, a4Sub, a5Sub);
+        }
+      );
+
     #endregion
 
     // TODO: test

@@ -58,11 +58,17 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class NotReallyLazyVal<A> : LazyVal<A> {
     public A strict { get; }
 
-    public NotReallyLazyVal(A get) { this.strict = get; }
+    public NotReallyLazyVal(A get) { strict = get; }
 
     #region Future
     public bool isCompleted => true;
     public Option<A> value => F.some(strict);
+
+    public bool valueOut(out A a) {
+      a = strict;
+      return true;
+    }
+    
     public void onComplete(Action<A> action) => action(strict);
     #endregion
   }
@@ -94,6 +100,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
     #region Future
 
     public Option<A> value => isCompleted ? F.some(obj) : Option<A>.None;
+
+    public bool valueOut(out A a) {
+      a = obj;
+      return isCompleted;
+    }
 
     public void onComplete(Action<A> action) {
       if (isCompleted) action(obj);
@@ -130,5 +141,16 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public Option<B> value => backing.value.map(projector);
     public bool isCompleted => backing.isCompleted;
     public B strict => projector(backing.strict);
+
+    public bool valueOut(out B b) {
+      if (backing.valueOut(out var a)) {
+        b = projector(a);
+        return true;
+      }
+      else {
+        b = default;
+        return false;
+      }
+    }
   }
 }

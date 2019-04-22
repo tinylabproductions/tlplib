@@ -3319,28 +3319,9 @@
             <param name="nlogConfig"></param>
             <param name="basePath"></param>
         </member>
-        <member name="M:NLog.Config.LoggingConfigurationParser.SetInternalLogLevel(System.Collections.Generic.IDictionary{System.String,System.String})">
+        <member name="M:NLog.Config.LoggingConfigurationParser.CreateUniqueSortedListFromConfig(NLog.Config.ILoggingConfigurationElement)">
             <summary>
-            Set <see cref="P:NLog.Common.InternalLogger.LogLevel"/> and return internalLoggerEnabled
-            </summary>
-            <param name="dict"></param>
-            <returns>internalLoggerEnabled?</returns>
-        </member>
-        <member name="M:NLog.Config.LoggingConfigurationParser.SetThrowConfigExceptions(System.Collections.Generic.IDictionary{System.String,System.String})">
-            <summary>
-            Set <see cref="P:NLog.LogFactory.ThrowConfigExceptions"/>
-            </summary>
-            <param name="dict"></param>
-        </member>
-        <member name="M:NLog.Config.LoggingConfigurationParser.SetThrowExceptions(System.Collections.Generic.IDictionary{System.String,System.String})">
-            <summary>
-            Set <see cref="P:NLog.LogFactory.ThrowExceptions"/>
-            </summary>
-            <param name="dict"></param>
-        </member>
-        <member name="M:NLog.Config.LoggingConfigurationParser.CreateNLogConfigDictionary(NLog.Config.ILoggingConfigurationElement)">
-            <summary>
-            build dictionary, use last value of duplicates
+            Builds list with unique keys, using last value of duplicates. High priority keys placed first.
             </summary>
             <param name="nlogConfig"></param>
             <returns></returns>
@@ -7723,6 +7704,11 @@
             </summary>
             <param name="assemblyName">name without .dll</param>
             <returns></returns>
+        </member>
+        <member name="T:NLog.Internal.AsyncHelpersTask">
+            <summary>
+            Forward declare of system delegate type for use by other classes
+            </summary>
         </member>
         <member name="T:NLog.Internal.AsyncOperationCounter">
             <summary>
@@ -14771,6 +14757,11 @@
             Value inside the element
             </summary>
         </member>
+        <member name="P:NLog.Layouts.XmlElement.Encode">
+            <summary>
+            Determines wether or not this attribute will be Xml encoded.
+            </summary>
+        </member>
         <member name="T:NLog.Layouts.XmlElementBase">
             <summary>
             A specialized layout that renders XML-formatted events.
@@ -14797,7 +14788,7 @@
             <remarks>Upgrade to private protected when using C# 7.2 </remarks>
             <docgen category='XML Options' order='10' />
         </member>
-        <member name="P:NLog.Layouts.XmlElementBase.ElementEncode">
+        <member name="P:NLog.Layouts.XmlElementBase.ElementEncodeInternal">
             <summary>
             Xml Encode the value for the XML element
             </summary>
@@ -14958,6 +14949,12 @@
             Value inside the root XML element
             </summary>
             <docgen category='XML Options' order='10' />
+        </member>
+        <member name="P:NLog.Layouts.XmlLayout.ElementEncode">
+            <summary>
+            Determines wether or not this attribute will be Xml encoded.
+            </summary>
+            <docgen category='XML Options' order='100' />
         </member>
         <member name="T:NLog.LogEventInfo">
             <summary>
@@ -21808,11 +21805,12 @@
             </summary>
             <param name="disposing"></param>
         </member>
-        <member name="M:NLog.Targets.AsyncTaskTarget.TaskStartNext(System.Object)">
+        <member name="M:NLog.Targets.AsyncTaskTarget.TaskStartNext(System.Object,System.Boolean)">
             <summary>
             Checks the internal queue for the next <see cref="T:NLog.LogEventInfo"/> to create a new task for
             </summary>
             <param name="previousTask">Used for race-condition validation betweewn task-completion and timeout</param>
+            <param name="fullBatchCompleted">Signals whether previousTask completed an almost full BatchSize</param>
         </member>
         <member name="M:NLog.Targets.AsyncTaskTarget.WriteAsyncTaskWithRetry(System.Threading.Tasks.Task,System.Collections.Generic.IList{NLog.LogEventInfo},System.Threading.CancellationToken,System.Int32)">
             <summary>

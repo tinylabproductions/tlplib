@@ -23,22 +23,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Range indexRange<A>(this ImmutableArray<A> coll) =>
       new Range(0, coll.Length - 1);
-
-    [PublicAPI]
-    public static ImmutableArray<A> ReplaceAt<A>(this ImmutableArray<A> arr, int idx, A value) {
-      if (idx < 0 || idx >= arr.Length) throw new ArgumentOutOfRangeException(
-        nameof(idx), idx, $"index {idx} is < 0 || >= array length {arr.Length}"
-      );
-      var b = ImmutableArray.CreateBuilder<A>(arr.Length);
-      for (var i = 0; i < idx; i++) {
-        b.Add(arr[i]);
-      }
-      b.Add(value);
-      for (var i = idx + 1; i < arr.Length; i++) {
-        b.Add(arr[i]);
-      }
-      return b.MoveToImmutable();
-    }
   }
 
   public static class ImmutableArrayBuilderExts {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
@@ -181,7 +182,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       public TweenTimeline build() => new TweenTimeline(
         totalDuration,
-        effects.OrderBy(_ => _.startsAt).ToArray()
+        effects.OrderBySafe(_ => _.startsAt).ToArray()
       );
 
       public static Builder create() => new Builder();

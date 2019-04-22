@@ -38,5 +38,11 @@ namespace com.tinylabproductions.TLPLib.Pools {
 
       return pool;
     }
+
+    public void dispose(Action<V> disposeFn) {
+      foreach (var pool in dictionary.Values) {
+        pool.dispose(disposeFn);
+      }
+    }
   }
 }
