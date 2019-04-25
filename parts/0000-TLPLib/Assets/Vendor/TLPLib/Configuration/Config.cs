@@ -108,6 +108,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Parser<object, A> constantParser<A>(A a) =>
       (path, _) => Either<ConfigLookupError, A>.Right(a);
 
+    /// Parser that always fails and returns constant.
+    public static Parser<object, A> constantErrorParser<A>(ConfigLookupError error) =>
+      (path, _) => Either<ConfigLookupError, A>.Left(error);
+
     public static readonly Parser<object, object> objectParser = (_, n) =>
       Either<ConfigLookupError, object>.Right(n);
 
@@ -500,6 +504,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     [PublicAPI] public static Config.Parser<From, B> flatMapParser<From, A, B>(
       this Config.Parser<From, A> aParser, Config.Parser<A, B> bParser
     ) => (path, node) => aParser(path, node).flatMapRight(a => bParser(path, a));
+
+    [PublicAPI] public static Config.Parser<From, B> flatMapParser<From, A, B>(
+      this Config.Parser<From, A> aParser, Func<ConfigPath, A, Config.Parser<A, B>> bParser
+    ) => (path, node) => aParser(path, node).flatMapRight(a => bParser(path, a)(path, a));
 
     [PublicAPI] public static Config.Parser<From, B> flatMap<From, A, B>(
       this Config.Parser<From, A> aParser, Func<ConfigPath, A, Either<ConfigLookupError, B>> f
