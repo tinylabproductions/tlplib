@@ -12,11 +12,11 @@
          <Members>
           <Member Name="#Dispose()" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message Id="_outputDebugSymbolStream" TypeName="DisposableFieldsShouldBeDisposed" Category="Microsoft.Usage" CheckId="CA2213" Status="Active" Created="2019-04-17 07:52:43Z" FixCategory="NonBreaking">
-             <Issue Certainty="75" Level="Warning" Path="E:\work\Unity3D.IncrementalCompiler3\core\IncrementalCompiler" File="Compiler.cs" Line="651">'Compiler' contains field 'Compiler._outputDebugSymbolStream' that is of IDisposable type: 'MemoryStream'. Change the Dispose method on 'Compiler' to call Dispose or Close on this field.</Issue>
+            <Message Id="_outputDebugSymbolStream" TypeName="DisposableFieldsShouldBeDisposed" Category="Microsoft.Usage" CheckId="CA2213" Status="Active" Created="2019-04-25 15:01:34Z" FixCategory="NonBreaking">
+             <Issue Certainty="75" Level="Warning" Path="E:\work\Unity3D.IncrementalCompiler3\core\IncrementalCompiler" File="Compiler.cs" Line="654">'Compiler' contains field 'Compiler._outputDebugSymbolStream' that is of IDisposable type: 'MemoryStream'. Change the Dispose method on 'Compiler' to call Dispose or Close on this field.</Issue>
             </Message>
-            <Message Id="_outputDllStream" TypeName="DisposableFieldsShouldBeDisposed" Category="Microsoft.Usage" CheckId="CA2213" Status="Active" Created="2019-04-17 07:52:43Z" FixCategory="NonBreaking">
-             <Issue Certainty="75" Level="Warning" Path="E:\work\Unity3D.IncrementalCompiler3\core\IncrementalCompiler" File="Compiler.cs" Line="651">'Compiler' contains field 'Compiler._outputDllStream' that is of IDisposable type: 'MemoryStream'. Change the Dispose method on 'Compiler' to call Dispose or Close on this field.</Issue>
+            <Message Id="_outputDllStream" TypeName="DisposableFieldsShouldBeDisposed" Category="Microsoft.Usage" CheckId="CA2213" Status="Active" Created="2019-04-25 15:01:34Z" FixCategory="NonBreaking">
+             <Issue Certainty="75" Level="Warning" Path="E:\work\Unity3D.IncrementalCompiler3\core\IncrementalCompiler" File="Compiler.cs" Line="654">'Compiler' contains field 'Compiler._outputDllStream' that is of IDisposable type: 'MemoryStream'. Change the Dispose method on 'Compiler' to call Dispose or Close on this field.</Issue>
             </Message>
            </Messages>
           </Member>
@@ -30,7 +30,7 @@
          <Members>
           <Member Name="#TryGetAssemblyIdentity(System.String)" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2019-04-17 07:52:43Z" FixCategory="DependsOnFix">
+            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2019-04-25 15:01:34Z" FixCategory="DependsOnFix">
              <Issue Certainty="75" Level="Warning" Path="E:\work\Unity3D.IncrementalCompiler3\core\IncrementalCompiler\Analyzers" File="AnalyzerAssemblyLoader.cs" Line="176">Object 'stream' can be disposed more than once in method 'AnalyzerAssemblyLoader.TryGetAssemblyIdentity(string)'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 176</Issue>
             </Message>
            </Messages>
