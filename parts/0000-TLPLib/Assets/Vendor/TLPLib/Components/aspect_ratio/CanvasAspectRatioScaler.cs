@@ -3,10 +3,11 @@ using com.tinylabproductions.TLPLib.Logger;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
   [
-    ExecuteInEditMode,
+    ExecuteAlways,
     // Help(
     //   HelpType.Info, HelpPosition.Before,
     //   "This script will changes local scale of this game object to account " +
@@ -17,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     //   "on RectTransform and left, top, right, bottom should = 0 !!!"
     // )
   ]
-  public class CanvasAspectRatioScaler : UIBehaviour {
+  public class CanvasAspectRatioScaler : UIBehaviour, ILayoutController {
     enum StretchMode : byte { None, Horizontal, Vertical }
 
     #region Unity Serialized Fields
@@ -39,6 +40,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     #endregion
 
     RectTransform _transform;
+    DrivenRectTransformTracker rtTracker = new DrivenRectTransformTracker();
 
     // transform may be null if OnRectTransformDimensionsChange was called before Awake
     new RectTransform transform => _transform ? _transform : (RectTransform)base.transform;
@@ -68,18 +70,33 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
       OnRectTransformDimensionsChange();
     }
 
+    protected override void OnEnable() => OnRectTransformDimensionsChange();
+    protected override void OnDisable() => rtTracker.Clear();
+
     protected override void OnRectTransformDimensionsChange() {
-      base.OnRectTransformDimensionsChange();
+      if (!IsActive()) return;
 
       var tr = transform;
       scale = calculatedScale;
       target.localScale = Vector3.one * scale;
 
+      var properties = DrivenTransformProperties.Scale;
+
       if (stretchMode != StretchMode.None) {
+        properties |= stretchMode == StretchMode.Vertical
+          ? DrivenTransformProperties.SizeDeltaY
+          : DrivenTransformProperties.SizeDeltaX;
         var axis = stretchMode == StretchMode.Vertical ? RectTransform.Axis.Vertical : RectTransform.Axis.Horizontal;
         var size = axis == RectTransform.Axis.Vertical ? tr.rect.height : tr.rect.width;
         target.SetSizeWithCurrentAnchors(axis, size / scale);
       }
+
+      rtTracker.Clear();
+      rtTracker.Add(this, target, properties);
     }
+
+    public void SetLayoutHorizontal() => OnRectTransformDimensionsChange();
+
+    public void SetLayoutVertical() => OnRectTransformDimensionsChange();
   }
 }
