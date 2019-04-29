@@ -61,7 +61,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       else return errorMsg<To>();
     }
 
-    string errorMsg<To>() => $"Can't cast {from.GetType()} to {typeof(To)}";
+    string errorMsg<To>() {
+      var valueStr = from == null ? "<null>" : from.ToString();
+      return $"Can't cast {typeof(From)} (value='{valueStr}') to {typeof(To)}";
+    }
 
     public To to<To>() where To : class, From {
       var to = from as To;
