@@ -62,58 +62,49 @@ namespace com.tinylabproductions.TLPLib.Collection {
       NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ImmutableSortedSet.Create(rest).Add(a1));
   }
 
-  public static class NonEmptyExts {
-    [PublicAPI] public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
-    [PublicAPI] public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
-    [PublicAPI] public static A head<A>(this NonEmpty<A[]> ne) => ne.a[0];
+  [PublicAPI] public static class NonEmptyExts {
+    public static A head<A>(this NonEmpty<ImmutableList<A>> ne) => ne.a[0];
+    public static A head<A>(this NonEmpty<ImmutableArray<A>> ne) => ne.a[0];
+    public static A head<A>(this NonEmpty<A[]> ne) => ne.a[0];
+    
+    public static NonEmpty<ImmutableHashSet<A>> add<A>(this NonEmpty<ImmutableHashSet<A>> ne, A a) => 
+      NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ne.a.Add(a));
 
-    [PublicAPI]
     public static NonEmpty<IEnumerable<B>> map<A, B, C>(
       this NonEmpty<C> ne, Func<A, B> f
     ) where C : IEnumerable<A> =>
       NonEmpty<IEnumerable<B>>.__unsafeNew(ne.a.Select(f));
 
-    [PublicAPI]
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableArray<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableArray<A>>(ne, f);
 
-    [PublicAPI]
     public static NonEmpty<ImmutableArray<A>> toImmutableArray<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ne.a.ToImmutableArray());
-
-    [PublicAPI]
+    
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableList<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableList<A>>(ne, f);
-
-    [PublicAPI]
+    
     public static NonEmpty<ImmutableList<A>> toImmutableList<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableList<A>>.__unsafeNew(ne.a.ToImmutableList());
-
-    [PublicAPI]
+    
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableHashSet<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableHashSet<A>>(ne, f);
-
-    [PublicAPI]
+    
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<ImmutableSortedSet<A>> ne, Func<A, B> f) =>
       map<A, B, ImmutableSortedSet<A>>(ne, f);
-
-    [PublicAPI]
+    
     public static NonEmpty<IEnumerable<B>> map<A, B>(this NonEmpty<A[]> ne, Func<A, B> f) =>
       map<A, B, A[]>(ne, f);
 
-    [PublicAPI]
     public static NonEmpty<ImmutableArray<A>> ToImmutableArray<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ne.a.ToImmutableArray());
 
-    [PublicAPI]
     public static NonEmpty<ImmutableList<A>> ToImmutableList<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableList<A>>.__unsafeNew(ne.a.ToImmutableList());
 
-    [PublicAPI]
     public static NonEmpty<ImmutableHashSet<A>> ToImmutableHashSet<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ne.a.ToImmutableHashSet());
 
-    [PublicAPI]
     public static NonEmpty<ImmutableSortedSet<A>> ToImmutableSortedSet<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ne.a.ToImmutableSortedSet());
   }
