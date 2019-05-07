@@ -19,6 +19,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return sub;
     }
 
+    public static IRxObservable<A> toObservable<A>(this UnityEvent<A> evt) =>
+      new Observable<A>(push => {
+        var action = new UnityAction<A>(a => push(a));
+        evt.AddListener(action);
+        return new Subscription(() => evt.RemoveListener(action));
+      });
+
     public static IRxVal<A> toRxVal<A>(this UnityEvent<A> evt, IDisposableTracker tracker, A initial) {
       var rx = RxRef.a(initial);
       evt.subscribe(tracker,a => rx.value = a);
