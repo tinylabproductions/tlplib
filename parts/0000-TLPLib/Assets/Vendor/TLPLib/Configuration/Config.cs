@@ -201,6 +201,11 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static Parser<object, ImmutableDictionary<K, V>> immutableDictParser<K, V>(
       Parser<string, K> keyParser, Parser<object, V> valueParser
     ) => dictParser(keyParser, valueParser).map(_ => _.ToImmutableDictionary());
+    
+    /// <summary>Parse dictionary from [[key, value], ...] pairs</summary>
+    public static Parser<object, ImmutableDictionary<K, V>> listImmutableDictParser<K, V>(
+      Parser<object, K> kParser, Parser<object, V> vParser
+    ) => listParser(kParser.and(vParser)).map(l => l.ToImmutableDictionary(_ => _._1, _ => _._2));
 
     public static Parser<object, A> configPathedParser<A>(string key, Parser<object, A> aParser) =>
       configParser.flatMap((path, cfg) => cfg.eitherGet(key, aParser));
