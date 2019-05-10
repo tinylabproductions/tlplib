@@ -1,5 +1,6 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.targets;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,7 +31,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       public static readonly Extract<Color, Shadow> shadowEffectColor = _ => _.effectColor;
       public static readonly Extract<Color, SpriteRenderer> spriteRendererColor = _ => _.color;
       public static readonly Extract<Color, Text> textColor = _ => _.color;
-      public static readonly Extract<Vector3, Transform> 
+      public static readonly Extract<Color, TextMeshProUGUI> tmProColor = _ => _.color;
+      public static readonly Extract<Vector3, Transform>
         localEulerAngles = _ => _.localEulerAngles,
         localPosition = _ => _.localPosition,
         localScale = _ => _.localScale,

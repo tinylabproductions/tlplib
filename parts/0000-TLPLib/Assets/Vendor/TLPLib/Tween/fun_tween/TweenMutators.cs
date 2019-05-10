@@ -1,6 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using JetBrains.Annotations;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -94,6 +95,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI] public static readonly TweenMutator<Color, Text>
       textColor = (v, o, r) => { if (r) o.color += v; else o.color = v; };
+
+    [PublicAPI] public static readonly TweenMutator<Color, TextMeshProUGUI>
+      tmProColor = (v, o, r) => { if (r) o.color += v; else o.color = v; };
 
     #endregion
     
