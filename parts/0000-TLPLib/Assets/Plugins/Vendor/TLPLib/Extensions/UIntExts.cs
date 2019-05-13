@@ -9,6 +9,9 @@
       return (uint) (a + b);
     }
 
+    public static uint subtractClamped(this uint a, int b) => a.subtractClamped(b.toUIntClamped());
+    public static uint subtractClamped(this uint a, uint b) => b > a ? 0 : a - b;
+
     public static string toOrdinalString(this uint number) {
       var div = number % 100;
       if ((div >= 11) && (div <= 13)) {
