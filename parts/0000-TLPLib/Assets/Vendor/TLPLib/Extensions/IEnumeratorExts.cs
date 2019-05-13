@@ -10,6 +10,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       yield return new WaitForSeconds(seconds);
       yield return enumeratorNext;
     }
+    
     public static IEnumerator cancellableDelay(
       Duration duration, IDisposableTracker tracker, TimeScale timeScale = TimeScale.Unity
     ) {
