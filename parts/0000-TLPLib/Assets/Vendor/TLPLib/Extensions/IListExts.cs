@@ -146,8 +146,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var end = list.Count - count;
       var idx = 0;
       foreach (var item in list) {
-        if (idx < end) yield return item;
-        idx++;
+        if (idx < end) {
+          yield return item;
+          idx++;
+        }
+        else {
+          break;
+        }
       }
     }
 
