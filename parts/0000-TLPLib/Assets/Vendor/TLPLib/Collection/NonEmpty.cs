@@ -27,6 +27,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static Option<NonEmpty<ImmutableSortedSet<A>>> toNonEmpty<A>(this ImmutableSortedSet<A> c) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeApply(c, _ => _.IsEmpty);
 
+    public static NonEmpty<ImmutableList<A>> list<A>(A a1) =>
+      NonEmpty<ImmutableList<A>>.__unsafeNew(ImmutableList.Create(a1));
+
     public static NonEmpty<ImmutableArray<A>> array<A>(A a1) =>
       NonEmpty<ImmutableArray<A>>.__unsafeNew(ImmutableArray.Create(a1));
 
@@ -107,6 +110,21 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static NonEmpty<ImmutableSortedSet<A>> ToImmutableSortedSet<A>(this NonEmpty<IEnumerable<A>> ne) =>
       NonEmpty<ImmutableSortedSet<A>>.__unsafeNew(ne.a.ToImmutableSortedSet());
+
+    public static Option<NonEmpty<A>> flatten<A>(
+      this IEnumerable<NonEmpty<A>> nonEmpties, Func<A, A, A> add
+    ) {
+      var current = Option<NonEmpty<A>>.None;
+      foreach (var ne in nonEmpties) {
+        current = F.some(
+          current.valueOut(out var c) 
+            ? NonEmpty<A>.__unsafeNew(add(c, ne)) 
+            : ne
+        );
+      }
+
+      return current;
+    }
   }
 
   [Record(GenerateToString = false)]
