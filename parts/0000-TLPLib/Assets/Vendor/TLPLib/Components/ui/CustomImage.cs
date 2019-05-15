@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Extensions;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Sprites;
@@ -20,7 +21,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       // These are offet on purpose, because unity may add new values to this struct
       TransparentEdgesBoth = 100,
       TransparentEdgesLeft = 101,
-      TransparentEdgesRight = 102
+      TransparentEdgesRight = 102,
+      SlicedOutside = 103,
+      SlicedOutsideFixedBorderSize = 104
     }
 
     public enum FillMethod {
@@ -185,7 +188,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
 
     const float referencePPU = 100;
+
+    [LabelText("$" + nameof(labelText))]
     [SerializeField] float spritePixelsPerUnit = referencePPU;
+
+    string labelText => type == Type.SlicedOutsideFixedBorderSize ? "Border Size" : "Pixels Per Unit";
 
     public float pixelsPerUnit
     {
@@ -321,6 +328,12 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           break;
         case Type.TransparentEdgesRight:
           GenerateTranparentEdgesSprite(toFill, transparentLeft: false, transparentRight: true);
+          break;
+        case Type.SlicedOutside:
+          GenerateSlicedSpriteV2(toFill, false);
+          break;
+        case Type.SlicedOutsideFixedBorderSize:
+          GenerateSlicedSpriteV2(toFill, true);
           break;
       }
     }
@@ -467,6 +480,77 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       s_VertScratch[2].x = rect.width - adjustedBorders.z;
       s_VertScratch[2].y = rect.height - adjustedBorders.w;
+
+      for (int i = 0; i < 4; ++i) {
+        s_VertScratch[i].x += rect.x;
+        s_VertScratch[i].y += rect.y;
+      }
+
+      s_UVScratch[0] = new Vector2(outer.x, outer.y);
+      s_UVScratch[1] = new Vector2(inner.x, inner.y);
+      s_UVScratch[2] = new Vector2(inner.z, inner.w);
+      s_UVScratch[3] = new Vector2(outer.z, outer.w);
+
+      toFill.Clear();
+
+      for (int x = 0; x < 3; ++x) {
+        int x2 = x + 1;
+
+        for (int y = 0; y < 3; ++y) {
+          if (!m_FillCenter && x == 1 && y == 1)
+            continue;
+
+          int y2 = y + 1;
+
+          AddQuad(toFill,
+            new Vector2(s_VertScratch[x].x, s_VertScratch[y].y),
+            new Vector2(s_VertScratch[x2].x, s_VertScratch[y2].y),
+            color,
+            new Vector2(s_UVScratch[x].x, s_UVScratch[y].y),
+            new Vector2(s_UVScratch[x2].x, s_UVScratch[y2].y));
+        }
+      }
+    }
+
+    private void GenerateSlicedSpriteV2(VertexHelper toFill, bool fixedBorderSize) {
+      if (!hasBorder) {
+        GenerateSimpleSprite(toFill, false);
+        return;
+      }
+
+      Vector4 outer, inner, padding, border;
+
+      if (activeSprite != null) {
+        outer = DataUtility.GetOuterUV(activeSprite);
+        inner = DataUtility.GetInnerUV(activeSprite);
+        padding = DataUtility.GetPadding(activeSprite);
+        border = activeSprite.border;
+      }
+      else {
+        outer = Vector4.zero;
+        inner = Vector4.zero;
+        padding = Vector4.zero;
+        border = Vector4.zero;
+      }
+
+      Rect rect = GetPixelAdjustedRect();
+      padding = padding / pixelsPerUnit;
+
+      s_VertScratch[1] = new Vector2(padding.x, padding.y);
+      s_VertScratch[2] = new Vector2(rect.width - padding.z, rect.height - padding.w);
+
+      if (fixedBorderSize) {
+        var max = Mathf.Max(Mathf.Max(border.x, border.y), Mathf.Max(border.z, border.w));
+        for (var i = 0; i < 4; i++) {
+          border[i] = border[i] / max * spritePixelsPerUnit;
+        }
+      }
+      else {
+        border /= pixelsPerUnit;
+      }
+
+      s_VertScratch[0] = s_VertScratch[1] - new Vector2(border.x, border.y);
+      s_VertScratch[3] = s_VertScratch[2] + new Vector2(border.z, border.w);
 
       for (int i = 0; i < 4; ++i) {
         s_VertScratch[i].x += rect.x;
