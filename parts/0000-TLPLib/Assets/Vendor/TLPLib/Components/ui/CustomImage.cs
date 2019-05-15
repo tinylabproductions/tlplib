@@ -536,8 +536,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       Rect rect = GetPixelAdjustedRect();
       padding = padding / pixelsPerUnit;
 
-      s_VertScratch[1] = new Vector2(padding.x, padding.y);
-      s_VertScratch[2] = new Vector2(rect.width - padding.z, rect.height - padding.w);
+      s_VertScratch[1] = Vector2.zero;
+      s_VertScratch[2] = rect.size;
 
       if (fixedBorderSize) {
         var max = Mathf.Max(Mathf.Max(border.x, border.y), Mathf.Max(border.z, border.w));
