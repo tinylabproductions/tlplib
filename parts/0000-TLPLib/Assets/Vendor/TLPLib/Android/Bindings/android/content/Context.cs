@@ -1,4 +1,5 @@
 ﻿#if UNITY_ANDROID
+using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.os;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.telephony;
@@ -12,7 +13,8 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
   public class Context : Binding {
     const string
       SERVICE_VIBRATOR = "vibrator",
-      SERVICE_TELEPHONY_MANAGER = "phone";
+      SERVICE_TELEPHONY_MANAGER = "phone",
+      NOTIFICATION_MANAGER = "notification";
 
     public enum SharedPreferencesMode : byte {
       // File creation mode: the default mode, where the created file can only be accessed by the
@@ -30,6 +32,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
 
     public TelephonyManager telephonyManager =>
       new TelephonyManager(getSystemService(SERVICE_TELEPHONY_MANAGER));
+
+    public NotificationManager notificationManager =>
+      new NotificationManager(getSystemService(NOTIFICATION_MANAGER));
 
     public Context applicationContext => new Context(java.cjo("getApplicationContext"));
 
