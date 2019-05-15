@@ -7,8 +7,8 @@ using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  public static class EitherExts {
-    [PublicAPI] public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e) =>
+  [PublicAPI] public static class EitherExts {
+    public static Either<A, B> flatten<A, B>(this Either<A, Either<A, B>> e) =>
       e.flatMapRight(_ => _);
 
     static Func<CollFrom, IEnumerable<ElemTo>> mapC<CollFrom, ElemFrom, ElemTo>(
@@ -16,19 +16,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
     ) where CollFrom : IEnumerable<ElemFrom> =>
       c => c.Select(elem => mapper(elem));
 
-    [PublicAPI] public static Either<IEnumerable<ElemTo>, Right> mapLeftC<CollFrom, Right, ElemFrom, ElemTo>(
+    public static Either<IEnumerable<ElemTo>, Right> mapLeftC<CollFrom, Right, ElemFrom, ElemTo>(
       this Either<CollFrom, Right> e,
       Func<ElemFrom, ElemTo> mapper
     ) where CollFrom : IEnumerable<ElemFrom> =>
       e.mapLeft(mapC<CollFrom, ElemFrom, ElemTo>(mapper));
 
-    [PublicAPI] public static Either<Left, IEnumerable<ElemTo>> mapRightC<CollFrom, Left, ElemFrom, ElemTo>(
+    public static Either<Left, IEnumerable<ElemTo>> mapRightC<CollFrom, Left, ElemFrom, ElemTo>(
       this Either<Left, CollFrom> e,
       Func<ElemFrom, ElemTo> mapper
     ) where CollFrom : IEnumerable<ElemFrom> =>
       e.mapRight(mapC<CollFrom, ElemFrom, ElemTo>(mapper));
 
-    [PublicAPI] public static Either<CollTo, Right> mapLeftC<CollFrom, CollTo, Right, ElemFrom, ElemTo>(
+    public static Either<CollTo, Right> mapLeftC<CollFrom, CollTo, Right, ElemFrom, ElemTo>(
       this Either<CollFrom, Right> e,
       Func<ElemFrom, ElemTo> mapper,
       Func<IEnumerable<ElemTo>, CollTo> toCollection
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       where CollTo : IEnumerable<ElemTo>
     => e.mapLeftC(mapper).mapLeft(toCollection);
 
-    [PublicAPI] public static Either<Left, CollTo> mapRightC<CollFrom, CollTo, Left, ElemFrom, ElemTo>(
+    public static Either<Left, CollTo> mapRightC<CollFrom, CollTo, Left, ElemFrom, ElemTo>(
       this Either<Left, CollFrom> e,
       Func<ElemFrom, ElemTo> mapper,
       Func<IEnumerable<ElemTo>, CollTo> toCollection
@@ -46,15 +46,15 @@ namespace com.tinylabproductions.TLPLib.Functional {
       where CollTo : IEnumerable<ElemTo>
     => e.mapRightC(mapper).mapRight(toCollection);
 
-    [PublicAPI] public static Either<ImmutableList<To>, Right> mapLeftC<From, To, Right>(
+    public static Either<ImmutableList<To>, Right> mapLeftC<From, To, Right>(
       this Either<ImmutableList<From>, Right> e, Func<From, To> mapper
     ) => mapLeftC(e, mapper, _ => _.ToImmutableList());
 
-    [PublicAPI] public static Either<Left, ImmutableList<To>> mapRightC<From, To, Left>(
+    public static Either<Left, ImmutableList<To>> mapRightC<From, To, Left>(
       this Either<Left, ImmutableList<From>> e, Func<From, To> mapper
     ) => mapRightC(e, mapper, _ => _.ToImmutableList());
 
-    [PublicAPI] public static Either<A, ImmutableList<B>> sequence<A, B>(
+    public static Either<A, ImmutableList<B>> sequence<A, B>(
       this IEnumerable<Either<A, B>> enumerable
     ) {
       // mutable for performance
@@ -64,6 +64,19 @@ namespace com.tinylabproductions.TLPLib.Functional {
         builder.Add(either.__unsafeGetRight);
       }
       return builder.ToImmutable();
+    }
+
+    public static (ImmutableList<A>, ImmutableList<B>) separate<A, B>(
+      this IEnumerable<Either<A, B>> enumerable
+    ) {
+      var aBuilder = ImmutableList.CreateBuilder<A>();
+      var bBuilder = ImmutableList.CreateBuilder<B>();
+      foreach (var either in enumerable) {
+        if (either.isLeft) aBuilder.Add(either.__unsafeGetLeft);
+        else bBuilder.Add(either.__unsafeGetRight);
+      }
+
+      return (aBuilder.ToImmutable(), bBuilder.ToImmutableList());
     }
   }
 
