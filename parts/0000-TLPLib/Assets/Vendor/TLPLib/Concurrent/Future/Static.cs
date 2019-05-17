@@ -112,11 +112,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Future<Unit>.async(p => {
         if (coroutine.finished) p.complete(F.unit);
         else {
-          Action onComplete = null;
-          onComplete = () => {
+          void onComplete() {
             p.complete(F.unit);
             coroutine.onFinish -= onComplete;
-          };
+          }
+
           coroutine.onFinish += onComplete;
         }
       });
