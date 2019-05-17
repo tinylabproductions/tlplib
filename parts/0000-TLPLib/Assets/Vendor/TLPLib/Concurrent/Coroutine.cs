@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Logger;
+using Smooth.Pools;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -67,20 +69,43 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 #endif
     }
 
+    static readonly Pool<Stack<IEnumerator>> stackPool = new Pool<Stack<IEnumerator>>(
+      () => new Stack<IEnumerator>(),
+      s => s.Clear()
+    );
+    
     /**
      * So...
      *
      * 1. https://fogbugz.unity3d.com/default.asp?826400_tcbicqltkckqmer1
      * 2. Unity API has no way to check whether Coroutine has been completed.
      **/
-    IEnumerator fixUnityBugs(IEnumerator enumerator) {
-      while (enumerator.MoveNext()) {
-        yield return enumerator.Current;
-        if (shouldStop) break;
-      }
+    IEnumerator fixUnityBugs(IEnumerator startingEnumerator) {
+      using (var stackDisposable = stackPool.BorrowDisposable()) {
+        var stack = stackDisposable.value;
+        stack.Push(startingEnumerator);
+        
+        while (stack.Count > 0 && !shouldStop) {
+          var enumerator = stack.Peek();
+          if (enumerator.MoveNext()) {
+            var current = enumerator.Current;
+            switch (current) {
+              case IEnumerator innerEnumerator:
+                stack.Push(innerEnumerator);
+                break;
+              default:
+                yield return current;
+                break;
+            }
+          }
+          else {
+            stack.Pop();
+          }
+        }
 
-      finished = true;
-      onFinish?.Invoke();
+        finished = true;
+        onFinish?.Invoke();
+      }
     }
 
     public void stop() => shouldStop = true;
