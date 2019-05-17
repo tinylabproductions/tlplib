@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using Smooth.Pools;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public interface Coroutine : IDisposable {
+  public interface Coroutine : IDisposable, IEnumerator {
     /**
      * We could use Future here, but future is a heap allocated object and
      * we don't want each coroutine to allocate 2 extra heap objects.
@@ -19,17 +21,23 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     bool finished { get; }
   }
 
-  public static class CoroutineExts {
+  [PublicAPI] public static class CoroutineExts {
     public static void stop(this Coroutine c) => c.Dispose();
+    
+    public static AggregateCoroutine aggregate(this Coroutine[] coroutines) => 
+      new AggregateCoroutine(coroutines);
+    public static AggregateCoroutine aggregate(this IEnumerable<Coroutine> coroutines) => 
+      new AggregateCoroutine(coroutines.ToArray());
   }
 
   public static class CoroutineUtils {
     public static readonly YieldInstruction waitFixed = new WaitForFixedUpdate();
   }
 
-  public class UnityCoroutine : Coroutine {
+  public sealed class UnityCoroutine : CustomYieldInstruction, Coroutine {
     public event Action onFinish;
-    public bool finished { get; private set; }
+    public bool finished { get; protected set; }
+    public override bool keepWaiting => !finished;
 
     bool shouldStop;
 
@@ -94,6 +102,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
                 stack.Push(innerEnumerator);
                 break;
               default:
+                switch (current) {
+                  case null:
+                  case YieldInstruction _:
+                    break;
+                  default:
+                    if (Log.d.isDebug()) Log.d.warn(
+                      $"{stack.Count}: {enumerator} yielding unknown {current.GetType()}"
+                    );
+                    break;
+                }
                 yield return current;
                 break;
             }
@@ -112,4 +130,35 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public void Dispose() => stop();
   }
+
+  public sealed class AggregateCoroutine : CustomYieldInstruction, Coroutine {
+    readonly Coroutine[] coroutines;
+    int finishedCoroutines;
+    
+    public event Action onFinish;
+    public bool finished { get; private set; }
+    public override bool keepWaiting => !finished;
+
+    public AggregateCoroutine(Coroutine[] coroutines) { 
+      this.coroutines = coroutines;
+      foreach (var c in coroutines) {
+        if (c.finished) coroutineFinished();
+        else c.onFinish += coroutineFinished;
+      }
+
+      void coroutineFinished() {
+        finishedCoroutines++;
+        if (finishedCoroutines == coroutines.Length) {
+          onFinish?.Invoke();
+          finished = true;
+        }
+      }
+    }
+
+    public void Dispose() {
+      foreach (var coroutine in coroutines) {
+        coroutine.Dispose();
+      }
+    }
+  } 
 }

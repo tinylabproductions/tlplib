@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public class TestTimeContext : ITimeContext {
@@ -88,9 +89,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       timePassed = Duration.comparable.max(timePassed, time);
   }
 
-  class TestTimeContextCoroutine : Coroutine {
+  class TestTimeContextCoroutine : CustomYieldInstruction, Coroutine {
     public event Action onFinish;
     public bool finished { get; private set; }
+    public override bool keepWaiting => !finished;
 
     readonly Action onDispose;
 

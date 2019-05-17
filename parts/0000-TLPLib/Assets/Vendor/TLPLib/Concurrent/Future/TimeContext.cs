@@ -34,9 +34,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) => tc.every(duration, () => { action(); return true; }, name);
   }
 
-  class TimeContextEveryDurationCoroutine : Coroutine {
+  class TimeContextEveryDurationCoroutine : CustomYieldInstruction, Coroutine {
     public event Action onFinish;
     public bool finished { get; private set; }
+    public override bool keepWaiting => !finished;
 
     public Coroutine current;
 
