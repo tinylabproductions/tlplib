@@ -41,4 +41,33 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>Clears the event backlog.</summary>
     public void clear() => events.Clear();
   }
+
+  /// <summary>
+  /// Cache subject stores events when there are 0 subscribers, and pushes them all at once on new subscription
+  /// </summary>
+  public class CacheSubject<A> : Observable<A>, ISubject<A> {
+    readonly List<A> cache = new List<A>();
+
+    public override void subscribe(
+      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      // ReSharper disable ExplicitCallerInfoArgument
+      base.subscribe(tracker, onEvent, out subscription, callerMemberName, callerFilePath, callerLineNumber);
+      // ReSharper restore ExplicitCallerInfoArgument
+      foreach (var evt in cache) onEvent(evt);
+      cache.Clear();
+    }
+
+    public void push(A value) {
+      if (subscribers == 0) {
+        cache.Add(value);
+      }
+      else {
+        submit(value);
+      }
+    }
+  }
 }
