@@ -80,7 +80,7 @@ namespace Code.Utils {
         case TextureFormat.RGFloat: return false;
         case TextureFormat.RGBAFloat: return true;
         case TextureFormat.YUY2: return false;
-#if ! UNITY_IPHONE
+#if !UNITY_IOS
         case TextureFormat.DXT1Crunched: return false;
         case TextureFormat.DXT5Crunched: return true;
 #endif
@@ -117,8 +117,10 @@ namespace Code.Utils {
         case TextureFormat.RGB9e5Float: return false;
         case TextureFormat.RG16: return false;
         case TextureFormat.R8: return false;
+#if !UNITY_IOS
         case TextureFormat.ETC_RGB4Crunched: return false;
         case TextureFormat.ETC2_RGBA8Crunched: return true;
+#endif
         default:
           throw new ArgumentOutOfRangeException(nameof(tf), tf, null);
       }
@@ -183,8 +185,10 @@ namespace Code.Utils {
         case TextureFormat.RGB9e5Float: return 9 * 3 + 5;
         case TextureFormat.RG16: return 16;
         case TextureFormat.R8: return 8;
+#if !UNITY_IOS
         case TextureFormat.ETC_RGB4Crunched: return 4;
         case TextureFormat.ETC2_RGBA8Crunched: return 8;
+#endif
         default:
           throw new ArgumentOutOfRangeException(nameof(tf), tf, null);
       }
