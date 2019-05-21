@@ -563,7 +563,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       for (var idx = 0; idx < subscriptions.Count; idx++) {
         var sub = subscriptions[idx];
         if (sub.onEvent == onEvent) {
-          subscriptions[idx] = sub.unsubscribe();
           unsubscribe(sub, idx);
           return;
         }
@@ -575,13 +574,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       pendingRemovals++;
       if (iterating) return;
       afterIteration(false);
-
-      // Unsubscribe from source if we don't have any subscribers that are
-      // subscribed to us.
-      foreach (var source in sourceProps) {
-        if (subscribers == 0)
-          source.tryUnsubscribe();
-      }
     }
 
     void afterIteration(bool brokenSubsDetected) {
@@ -595,6 +587,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (brokenSubsDetected || pendingRemovals != 0) {
         subscriptions.RemoveWhere(sub => !sub.isSubscribed(out _));
         pendingRemovals = 0;
+        
+        // Unsubscribe from source if we don't have any subscribers that are
+        // subscribed to us.
+        foreach (var source in sourceProps) {
+          if (subscribers == 0)
+            source.tryUnsubscribe();
+        }
       }
     }
 
