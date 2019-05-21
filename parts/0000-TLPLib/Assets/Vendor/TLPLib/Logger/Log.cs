@@ -7,6 +7,7 @@ using System.Threading;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
@@ -54,14 +55,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
     static readonly bool useConsoleLog = EditorUtils.inBatchMode;
 
     static Log() {
-      DConsole.instance.onShow += dc => {
-        var r = dc.registrarFor("Default Logger");
-        r.registerEnum(
-          "level",
-          Ref.a(() => @default.level, v => @default.level = v),
-          EnumUtils.GetValues<Level>()
-        );
-      };
+      DConsole.instance.registrarOnShow(
+        NeverDisposeDisposableTracker.instance, "Default Logger",
+        (dc, r) => {
+          r.registerEnum(
+            "level",
+            Ref.a(() => @default.level, v => @default.level = v),
+            EnumUtils.GetValues<Level>()
+          );
+        }
+      );
     }
 
     static ILog _default;

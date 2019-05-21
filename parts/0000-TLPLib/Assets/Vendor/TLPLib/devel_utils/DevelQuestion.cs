@@ -1,4 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Components.DebugConsole;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
 
@@ -16,11 +17,14 @@ namespace com.tinylabproductions.TLPLib.devel_utils {
 
 #if UNITY_EDITOR
     static DevelQuestion() {
-      DConsole.instance.onShow += dc => {
-        var r = dc.registrarFor(nameof(DevelQuestion));
-        r.registerToggle("PrefVal enabled", enabledPrefVal);
-        r.registerToggle("enabled", () => enabled, v => enabled = v);
-      };
+      DConsole.instance.registrarOnShow(
+        NeverDisposeDisposableTracker.instance,
+        nameof(DevelQuestion),
+        (dc, r) => {
+          r.registerToggle("PrefVal enabled", enabledPrefVal);
+          r.registerToggle("enabled", () => enabled, v => enabled = v);
+        }
+      );
     }
 #endif
 
