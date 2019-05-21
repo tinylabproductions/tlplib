@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Components.debug;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
-using Smooth.Dispose;
 
 namespace com.tinylabproductions.TLPLib.dispose {
-  [Record]
-  public partial struct TrackedDisposable : IStr {
+  [Record] public partial struct TrackedDisposable : IStr {
     public readonly IDisposable disposable;
-    public readonly string callerMemberName, callerFilePath;
-    public readonly int callerLineNumber;
+    public readonly CallerData caller;
 
-    public string asString() => $"{callerMemberName} @ {callerFilePath}:{callerLineNumber}";
+    public string asString() => caller.asString();
   }
 
-  public interface IDisposableTracker : IDisposable {
+  [PublicAPI] public interface IDisposableTracker : IDisposable {
     void track(
       IDisposable a,
       [CallerMemberName] string callerMemberName = "",
@@ -47,28 +47,38 @@ namespace com.tinylabproductions.TLPLib.dispose {
     );
   }
   
-  public class DisposableTracker : IDisposableTracker {
+  [PublicAPI] public class DisposableTracker : IDisposableTracker {
+    readonly CallerData creator;
+    
     readonly List<TrackedDisposable> list = new List<TrackedDisposable>();
+    
     public int trackedCount => list.Count;
     public IEnumerable<TrackedDisposable> trackedDisposables => list;
+
+    static readonly LazyVal<ILog> lazyLog = F.lazy(() => Log.d.withScope(nameof(DisposableTracker)));
+
+    public DisposableTracker(
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      creator = new CallerData(callerMemberName, callerFilePath, callerLineNumber);
+      var log = lazyLog.strict;
+      if (log.isDebug()) log.debug($"Creating tracker at {creator}");
+    }
 
     public void track(
       IDisposable a,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
-    ) => list.Add(new TrackedDisposable(
-      a, callerMemberName, callerFilePath, callerLineNumber
-    ));
-
-    public void track(params IDisposable[] disposables) {
-      foreach (var disposable in disposables)
-        track(disposable);
-    }
+    ) => list.Add(new TrackedDisposable(a, new CallerData(callerMemberName, callerFilePath, callerLineNumber)));
 
     public int count => list.Count;
 
     public void Dispose() {
+      var log = lazyLog.strict;
+      if (log.isDebug()) log.debug($"Disposing tracker at {creator}");
       foreach (var a in list) a.disposable.Dispose();
       list.Clear();
       list.Capacity = 0;
@@ -122,6 +132,6 @@ namespace com.tinylabproductions.TLPLib.dispose {
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
-    ) => list.Add(new TrackedDisposable(a, callerMemberName, callerFilePath, callerLineNumber));
+    ) => list.Add(new TrackedDisposable(a, new CallerData(callerMemberName, callerFilePath, callerLineNumber)));
   }
 }

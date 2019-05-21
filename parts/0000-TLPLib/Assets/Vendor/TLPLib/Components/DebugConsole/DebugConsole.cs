@@ -69,7 +69,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     DConsole() {
-      var r = registrarFor(nameof(DConsole));
+      var r = registrarFor(nameof(DConsole), NeverDisposeDisposableTracker.instance);
       r.register("Run GC", GC.Collect);
       r.register("Self-test", () => "self-test");
       r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s"));
@@ -89,8 +89,22 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public delegate void OnShow(DConsole console);
 
     readonly IDictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
-    public event OnShow onShow;
+    event OnShow onShow;
 
+    public ISubscription registrarOnShow(
+      IDisposableTracker tracker, string prefix, Action<DConsole, DConsoleRegistrar> action
+    ) {
+      void onShowDo(DConsole console) {
+        var r = console.registrarFor(prefix, tracker);
+        action(console, r);
+      }
+      
+      var sub = new Subscription(() => onShow -= onShowDo);
+      onShow += onShowDo;
+      tracker.track(sub);
+      return sub;
+    }
+    
     Option<Instance> current = F.none<Instance>();
 
     public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
@@ -203,23 +217,25 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return obs;
     }
 
-    public ISubscription register(Command command) {
+    public ISubscription register(IDisposableTracker tracker, Command command) {
       var list = commands.get(command.cmdGroup).getOrElse(() => {
         var lst = new List<Command>();
         commands[command.cmdGroup] = lst;
         return lst;
       });
       list.Add(command);
-      return new Subscription(() => list.Remove(command));
+      var sub = new Subscription(() => list.Remove(command));
+      tracker.track(sub);
+      return sub;
     }
 
-    public DConsoleRegistrar registrarFor(string prefix) =>
-      new DConsoleRegistrar(this, prefix);
+    public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker) =>
+      new DConsoleRegistrar(this, prefix, tracker);
 
     public void registerHashSet<A>(
-      string name, Ref<ImmutableHashSet<A>> pv, IEnumerable<A> options
+      string name, IDisposableTracker tracker, Ref<ImmutableHashSet<A>> pv, IEnumerable<A> options
     ) {
-      var r = registrarFor(name);
+      var r = registrarFor(name, tracker);
       r.register("List", () => pv.value.asDebugString());
       r.register("Clear", () => {
         pv.value = ImmutableHashSet<A>.Empty;
@@ -404,10 +420,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public struct DConsoleRegistrar {
     public readonly DConsole console;
     public readonly string commandGroup;
+    readonly IDisposableTracker tracker;
 
-    public DConsoleRegistrar(DConsole console, string commandGroup) {
+    public DConsoleRegistrar(DConsole console, string commandGroup, IDisposableTracker tracker) {
       this.console = console;
       this.commandGroup = commandGroup;
+      this.tracker = tracker;
     }
 
     static readonly HasObjFunc<Unit> unitSomeFn = () => F.some(F.unit);
@@ -424,11 +442,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       register(name, objOpt, obj => Future.successful(run(obj)));
     public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run) {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
-      return console.register(new DConsole.Command(commandGroup, name, () => {
+      return console.register(tracker, new DConsole.Command(commandGroup, name, () => {
         var opt = objOpt();
         if (opt.isSome) {
           var returnFuture = run(opt.get);
-          Action<A> onComplete = t => Debug.Log($"{prefixedName} done: {t}");
+
+          void onComplete(A t) => Debug.Log($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.
           returnFuture.value.voidFold(
             () => {

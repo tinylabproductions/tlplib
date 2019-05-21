@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
+using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using UnityEngine;
 
@@ -14,34 +16,35 @@ namespace Code.Utils {
     public static PrefVal<bool> devForcedFastestQualitySetting =>
       PrefVal.player.boolean("forced-fastest-quality-setting", false);
 
-    public static void registerTextureConsole() {
-      DConsole.instance.onShow += dc => {
-        var r = dc.registrarFor("Textures");
-        r.register("Texture format support", () =>
-          EnumUtils.GetValues<TextureFormat>()
-            .Select(tf => $"[{tf}] {tf.isSupported()}")
-            .asDebugString()
-        );
-        r.register("Render texture format support", () =>
-          EnumUtils.GetValues<RenderTextureFormat>()
-            .Select(tf => $"[{tf}] {SystemInfo.SupportsRenderTextureFormat(tf)}")
-            .asDebugString()
-        );
-        r.register("Max texture size", () => SystemInfo.maxTextureSize);
-        r.register("Textures size info", () => {
-          var all = Resources.FindObjectsOfTypeAll<Texture2D>()
-            .Select(tex => F.t(tex.name, textureSizeInBytes(tex)))
-            .ToArray();
-          Log.d.debug(all.Where(t => t._2 > 1024).OrderByDescending(t => t._2).Select(t => $"{t._2 / 1024,7:F0} KB [{t._1}]").asDebugString());
-          return all.Select(t => t._2).Sum() / 1024 / 1024 + " MB";
-        });
-        r.register(nameof(SystemInfo.systemMemorySize), () => SystemInfo.systemMemorySize);
-        r.register(nameof(SystemInfo.graphicsMemorySize), () => SystemInfo.graphicsMemorySize);
-        r.register(nameof(QualitySettings.GetQualityLevel), QualitySettings.GetQualityLevel);
-        foreach (var b in DConsole.bools)
-          r.register($"{nameof(devForcedFastestQualitySetting)} to {b}", () => devForcedFastestQualitySetting.value = b);
-      };
-    }
+    public static ISubscription registerTextureConsole(IDisposableTracker tracker) =>
+      DConsole.instance.registrarOnShow(
+        tracker, "Textures",
+        (dc, r) => {
+          r.register("Texture format support", () =>
+            EnumUtils.GetValues<TextureFormat>()
+              .Select(tf => $"[{tf}] {tf.isSupported()}")
+              .asDebugString()
+          );
+          r.register("Render texture format support", () =>
+            EnumUtils.GetValues<RenderTextureFormat>()
+              .Select(tf => $"[{tf}] {SystemInfo.SupportsRenderTextureFormat(tf)}")
+              .asDebugString()
+          );
+          r.register("Max texture size", () => SystemInfo.maxTextureSize);
+          r.register("Textures size info", () => {
+            var all = Resources.FindObjectsOfTypeAll<Texture2D>()
+              .Select(tex => F.t(tex.name, textureSizeInBytes(tex)))
+              .ToArray();
+            Log.d.debug(all.Where(t => t._2 > 1024).OrderByDescending(t => t._2).Select(t => $"{t._2 / 1024,7:F0} KB [{t._1}]").asDebugString());
+            return all.Select(t => t._2).Sum() / 1024 / 1024 + " MB";
+          });
+          r.register(nameof(SystemInfo.systemMemorySize), () => SystemInfo.systemMemorySize);
+          r.register(nameof(SystemInfo.graphicsMemorySize), () => SystemInfo.graphicsMemorySize);
+          r.register(nameof(QualitySettings.GetQualityLevel), QualitySettings.GetQualityLevel);
+          foreach (var b in DConsole.bools)
+            r.register($"{nameof(devForcedFastestQualitySetting)} to {b}", () => devForcedFastestQualitySetting.value = b);
+        }
+      );
 
     public static float textureSizeInBytes(Texture2D tex) {
       var size = tex.width * tex.height * bitsPerPixelOnCurrentDevice(tex.format) / 8f;
