@@ -49,8 +49,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     static readonly Deque<LogEntry> logEntries = new Deque<LogEntry>();
-    public static DConsole instance { get; } = new DConsole();
-    public static readonly ImmutableArray<bool> bools = ImmutableArray.Create(true, false);
+    static LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
+    public static DConsole instance => _instance.strict;
 
     [RuntimeInitializeOnLoadMethod]
     static void registerLogMessages() {
@@ -225,7 +225,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       });
       list.Add(command);
       var sub = new Subscription(() => list.Remove(command));
-      tracker.track(sub);
+      tracker.track(sub, callerMemberName: $"DConsole register: {command.cmdGroup}/{command.name}");
       return sub;
     }
 
@@ -542,7 +542,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         });
     }
 
-    static readonly bool[] BOOLS = {true, false};
+    public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
     static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
     
     [PublicAPI]

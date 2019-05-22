@@ -41,7 +41,7 @@ namespace Code.Utils {
           r.register(nameof(SystemInfo.systemMemorySize), () => SystemInfo.systemMemorySize);
           r.register(nameof(SystemInfo.graphicsMemorySize), () => SystemInfo.graphicsMemorySize);
           r.register(nameof(QualitySettings.GetQualityLevel), QualitySettings.GetQualityLevel);
-          foreach (var b in DConsole.bools)
+          foreach (var b in DConsoleRegistrar.BOOLS)
             r.register($"{nameof(devForcedFastestQualitySetting)} to {b}", () => devForcedFastestQualitySetting.value = b);
         }
       );
