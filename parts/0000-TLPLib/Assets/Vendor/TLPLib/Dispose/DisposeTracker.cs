@@ -12,6 +12,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.dispose {
   [Record] public partial struct TrackedDisposable : IStr {
@@ -120,11 +121,13 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
     NeverDisposeDisposableTracker() {
 #if UNITY_EDITOR
-      ASync.OnMainThread(() => {
-        var go = new UnityEngine.GameObject(nameof(NeverDisposeDisposableTracker));
-        go.exposeToInspector(this, nameof(trackedCount), _ => _.trackedCount);
-        go.exposeToInspector(this, nameof(list), _ => _.list.Select(d => d.asString()).mkString("\n"));
-      });
+      if (Application.isPlaying) {
+        ASync.OnMainThread(() => {
+          var go = new UnityEngine.GameObject(nameof(NeverDisposeDisposableTracker));
+          go.exposeToInspector(this, nameof(trackedCount), _ => _.trackedCount);
+          go.exposeToInspector(this, nameof(list), _ => _.list.Select(d => d.asString()).mkString("\n"));
+        });
+      }
 #endif
     }
 

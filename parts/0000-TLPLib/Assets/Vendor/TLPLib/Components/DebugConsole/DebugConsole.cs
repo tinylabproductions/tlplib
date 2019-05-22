@@ -94,6 +94,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public ISubscription registrarOnShow(
       IDisposableTracker tracker, string prefix, Action<DConsole, DConsoleRegistrar> action
     ) {
+      if (!Application.isPlaying) {
+        return Subscription.empty;
+      }
+
       void onShowDo(DConsole console) {
         var r = console.registrarFor(prefix, tracker);
         action(console, r);
