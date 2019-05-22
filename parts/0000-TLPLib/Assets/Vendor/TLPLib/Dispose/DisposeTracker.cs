@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Components.debug;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -119,9 +120,11 @@ namespace com.tinylabproductions.TLPLib.dispose {
 
     NeverDisposeDisposableTracker() {
 #if UNITY_EDITOR
-      var go = new UnityEngine.GameObject(nameof(NeverDisposeDisposableTracker));
-      go.exposeToInspector(this, nameof(trackedCount), _ => _.trackedCount);
-      go.exposeToInspector(this, nameof(list), _ => _.list.Select(d => d.asString()).mkString("\n"));
+      ASync.OnMainThread(() => {
+        var go = new UnityEngine.GameObject(nameof(NeverDisposeDisposableTracker));
+        go.exposeToInspector(this, nameof(trackedCount), _ => _.trackedCount);
+        go.exposeToInspector(this, nameof(list), _ => _.list.Select(d => d.asString()).mkString("\n"));
+      });
 #endif
     }
 

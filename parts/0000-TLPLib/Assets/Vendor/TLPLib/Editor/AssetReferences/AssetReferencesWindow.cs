@@ -210,15 +210,15 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     [UsedImplicitly]
     void OnSelectionChange() => Repaint();
 
-    readonly IDisposableTracker tracker = new DisposableTracker();
+    readonly LazyVal<DisposableTracker> tracker = F.lazy(() => new DisposableTracker());
 
     public void OnEnable() {
       wantsMouseMove = true;
-      locked.subscribe(tracker, v => {
+      locked.subscribe(tracker.strict, v => {
         if (v) lockedObj = Selection.activeObject;
       });
     }
 
-    public void OnDisable() => tracker.Dispose();
+    public void OnDisable() => tracker.strict.Dispose();
   }
 }
