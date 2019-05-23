@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /** Asynchronous promise that can be used to complete an asynchronous future. **/
@@ -41,6 +42,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static void tryCompleteError<Val>(this Promise<Try<Val>> p, Exception error) {
       p.tryComplete(F.err<Val>(error));
+    }
+
+    public static void completeOrLog<A>(this Promise<A> p, A v) {
+      try {
+        p.complete(v);
+      }
+      catch (Exception e) {
+        // we will get exception if future is already completed, or listener action throws an error
+        Log.d.error(e);
+      }
     }
   }
 }
