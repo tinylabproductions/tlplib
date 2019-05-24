@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.Threads;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -65,8 +66,10 @@ namespace com.tinylabproductions.TLPLib.dispose {
       [CallerLineNumber] int callerLineNumber = 0
     ) {
       creator = new CallerData(callerMemberName, callerFilePath, callerLineNumber);
-      var log = lazyLog.strict;
-      if (log.isDebug()) log.debug($"Creating tracker at {creator}");
+      if (OnMainThread.isMainThreadIgnoreUnknown) {
+        var log = lazyLog.strict;
+        if (log.isDebug()) log.debug($"Creating tracker at {creator}");
+      }
     }
 
     public void track(
@@ -79,8 +82,10 @@ namespace com.tinylabproductions.TLPLib.dispose {
     public int count => list.Count;
 
     public void Dispose() {
-      var log = lazyLog.strict;
-      if (log.isDebug()) log.debug($"Disposing tracker at {creator}");
+      if (OnMainThread.isMainThreadIgnoreUnknown) {
+        var log = lazyLog.strict;
+        if (log.isDebug()) log.debug($"Disposing tracker at {creator}");
+      }
       foreach (var a in list) a.disposable.Dispose();
       list.Clear();
       list.Capacity = 0;
@@ -112,6 +117,9 @@ namespace com.tinylabproductions.TLPLib.dispose {
   ///
   /// This should only be used for things that should never go out
   /// </summary>
+#if UNITY_EDITOR
+  [UnityEditor.InitializeOnLoad]
+#endif
   public class NeverDisposeDisposableTracker : IDisposableTracker {
     public static readonly IDisposableTracker instance = new NeverDisposeDisposableTracker();
 
@@ -119,14 +127,15 @@ namespace com.tinylabproductions.TLPLib.dispose {
     public int trackedCount => list.Count;
     public IEnumerable<TrackedDisposable> trackedDisposables => list;
 
+    // needed for InitializeOnLoad to work
+    static NeverDisposeDisposableTracker() {}
+
     NeverDisposeDisposableTracker() {
 #if UNITY_EDITOR
       if (Application.isPlaying) {
-        ASync.OnMainThread(() => {
-          var go = new UnityEngine.GameObject(nameof(NeverDisposeDisposableTracker));
-          go.exposeToInspector(this, nameof(trackedCount), _ => _.trackedCount);
-          go.exposeToInspector(this, nameof(list), _ => _.list.Select(d => d.asString()).mkString("\n"));
-        });
+        var go = new GameObject(nameof(NeverDisposeDisposableTracker));
+        go.exposeToInspector(this, nameof(trackedCount), _ => _.trackedCount);
+        go.exposeToInspector(this, nameof(list), _ => _.list.Select(d => d.asString()).mkString("\n"));
       }
 #endif
     }

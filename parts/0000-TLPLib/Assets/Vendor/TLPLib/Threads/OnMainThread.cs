@@ -15,8 +15,8 @@ namespace com.tinylabproductions.TLPLib.Threads {
   /// </summary>
   [PublicAPI] public static class OnMainThread {
     static readonly Queue<Action> actions = new Queue<Action>();
-    static readonly Thread mainThread;
-    public static readonly TaskScheduler mainThreadScheduler;
+    static Thread mainThread;
+    public static TaskScheduler mainThreadScheduler;
     
     public static bool isMainThread {
       get {
@@ -29,8 +29,16 @@ namespace com.tinylabproductions.TLPLib.Threads {
       }
     }
 
-    /* Initialization. */
-    static OnMainThread() {
+    // mainThread variable may not be initialized in editor when MonoBehaviour constructor gets called
+    public static bool isMainThreadIgnoreUnknown => Thread.CurrentThread == mainThread;
+
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+#endif
+    [RuntimeInitializeOnLoadMethod]
+    static void init() {
+      // Can't use static constructor, because it may be called from a different thread
+      // init will always be called fom a main thread
       mainThread = Thread.CurrentThread;
       mainThreadScheduler = TaskScheduler.FromCurrentSynchronizationContext();
       if (Application.isPlaying) {
@@ -43,13 +51,6 @@ namespace com.tinylabproductions.TLPLib.Threads {
       }
 #endif
     }
-
-#if UNITY_EDITOR
-    [UnityEditor.InitializeOnLoadMethod]
-#endif
-    [RuntimeInitializeOnLoadMethod]
-    // We can't add these attributes to constructor
-    static void init() {}
 
     /* Run the given action in the main thread. */
     public static void run(Action action, bool runNowIfOnMainThread=true) {
