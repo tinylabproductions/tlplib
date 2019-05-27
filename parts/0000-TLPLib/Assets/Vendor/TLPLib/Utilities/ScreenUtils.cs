@@ -12,6 +12,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public static IRxVal<Size> screenSizeVal => _screenSizeVal.strict;
 
+    static readonly LazyVal<IRxVal<Rect>> _screenSafeArea =
+      F.lazy(() => Observable.everyFrame.map(_ => Screen.safeArea).toRxVal(Screen.safeArea));
+
+    public static IRxVal<Rect> screenSafeArea => _screenSafeArea.strict;
+
     /** Convert screen width percentage to absolute value. **/
     public static float pWidthToAbs(this float percentWidth) => Screen.width * percentWidth;
 
