@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace Vendor.TLPLib.Components.ui {
   // https://connect.unity.com/p/updating-your-gui-for-the-iphone-x-and-other-notched-devices
-  public class ResizeToSafeArea : UIBehaviour, IMB_Update {
+  public class ResizeToSafeAreaAnchors : UIBehaviour, IMB_Update {
 
 #pragma warning disable 649
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
