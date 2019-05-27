@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Formats.MiniJSON;
@@ -269,6 +270,14 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return parseErrorEFor<int>(path, n);
     };
 
+    /// <summary>Parses [100,24]</summary>
+    [PublicAPI] public static readonly Parser<object, decimal> decimalParser =
+      stringParser.flatMap((path, s) =>
+        decimal.TryParse(s, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out var dec) 
+          ? Either<ConfigLookupError, decimal>.Right(dec) 
+          : parseErrorEFor<decimal>(path, s)
+      );
+
     [PublicAPI] public static Parser<object, byte> byteParser =
       intParser.flatMap(i => i < 0 || i > byte.MaxValue ? F.none_ : F.some((byte) i)); 
 
@@ -444,8 +453,6 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     ) => internalGet(key, parser);
 
     #endregion
-
-
 
     Either<ConfigLookupError, A> internalGet<A>(
       string key, Parser<object, A> parser, Dictionary<string, object> current = null
