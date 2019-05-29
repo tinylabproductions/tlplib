@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   [RequireComponent(typeof(Canvas))]
+  [DisallowMultipleComponent]
   public sealed class CanvasSortingLayer : SortingLayerSetter {
     Canvas canvas => GetComponent<Canvas>();
 

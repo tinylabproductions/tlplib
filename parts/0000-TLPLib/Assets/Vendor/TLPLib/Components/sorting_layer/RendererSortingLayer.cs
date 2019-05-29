@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   [RequireComponent(typeof(Renderer))]
+  [DisallowMultipleComponent]
   public sealed class RendererSortingLayer : SortingLayerSetter {
     new Renderer renderer => GetComponent<Renderer>();
 
