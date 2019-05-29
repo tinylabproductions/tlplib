@@ -327,10 +327,10 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public static readonly Parser<object, ulong> ulongParser = (path, n) => {
       try {
         switch (n) {
-          case ulong _: return (ulong) n;
-          case long _: return (ulong) (long) n;
-          case uint _: return (uint) n;
-          case int _: return (ulong) (int) n;
+          case ulong num: return num;
+          case long num: return (ulong) num;
+          case uint num: return num;
+          case int num: return (ulong) num;
         }
       }
       catch (OverflowException) { }

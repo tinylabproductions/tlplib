@@ -319,16 +319,20 @@ namespace com.tinylabproductions.TLPLib.Formats.MiniJSON {
       {
         string number = NextWord;
 
-        if (number.IndexOf('.') == -1)
-        {
-          long parsedInt;
-          Int64.TryParse(number, out parsedInt);
-          return parsedInt;
+        if (number.IndexOf('.') == -1) {
+          if (number.IndexOf('-') == -1) {
+            ulong.TryParse(number, out var parsed);
+            return parsed;
+          }
+          else {
+            long.TryParse(number, out var parsedInt);
+            return parsedInt;            
+          }
         }
-
-        double parsedDouble;
-        Double.TryParse(number, out parsedDouble);
-        return parsedDouble;
+        else {
+          double.TryParse(number, out var parsedDouble);
+          return parsedDouble;
+        }
       }
 
       void EatWhitespace()
