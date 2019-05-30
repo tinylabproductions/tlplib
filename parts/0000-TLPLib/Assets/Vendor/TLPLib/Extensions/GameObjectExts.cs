@@ -11,6 +11,7 @@ using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  [PublicAPI]
   public static class GameObjectExts {
     public static void changeAlpha(this GameObject go, float alpha) {
       foreach (var childRenderer in go.GetComponentsInChildren<Renderer>()) {
@@ -106,7 +107,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<T>();
     }
 
-    [PublicAPI] public static Option<A> getComponentInParents<A>(
+    public static Option<A> getComponentInParents<A>(
       this GameObject go, bool includeSelf = true
     ) where A : Component {
       var current = go;
@@ -118,10 +119,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    [PublicAPI] public static void SetActive(this IList<GameObject> gameObjects, bool active) {
+    public static void SetActive(this IList<GameObject> gameObjects, bool active) {
       foreach (var obj in gameObjects) {
         obj.SetActive(active);
       }
     }
+
+    public static void destroyGameObject(this GameObject go) => Object.Destroy(go);
   }
 }

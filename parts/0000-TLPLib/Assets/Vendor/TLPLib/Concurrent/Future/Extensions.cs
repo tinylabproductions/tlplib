@@ -143,5 +143,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static LazyVal<Option<A>> toLazy<A>(this Future<A> f) =>
       F.lazy(() => f.value);
+
+    public static Future<A> first<A>(this Future<A> a, Future<A> b) {
+      return Future.a<A>(p => {
+        a.onComplete(_ => p.tryComplete(_));
+        b.onComplete(_ => p.tryComplete(_));
+      });
+    }
   }
 }

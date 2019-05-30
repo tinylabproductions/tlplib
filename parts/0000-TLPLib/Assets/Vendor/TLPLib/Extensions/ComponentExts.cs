@@ -4,8 +4,8 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+  [PublicAPI]
   public static class ComponentExts {
-    [PublicAPI]
     public static A clone<A>(
       this A self, Vector3? position=null, Quaternion? rotation=null, Transform parent=null,
       int? siblingIndex=null, bool? setActive=null
@@ -21,7 +21,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return cloned;
     }
 
-    [PublicAPI]
     public static A clone<A, Data>(
       this A self, Data data, Vector3? position = null, Quaternion? rotation = null, Transform parent = null,
       int? siblingIndex = null, bool? setActive = null
@@ -31,20 +30,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return a;
     }
 
-    [PublicAPI]
-    public static Option<A> GetComponentOption<A>(this GameObject o) where A : Object => 
+    public static Option<A> GetComponentOption<A>(this GameObject o) where A : Object =>
       F.opt(o.GetComponent<A>());
 
-    [PublicAPI]
-    public static Option<A> GetComponentOption<A>(this Component c) where A : Object => 
+    public static Option<A> GetComponentOption<A>(this Component c) where A : Object =>
       F.opt(c.GetComponent<A>());
 
-    [PublicAPI]
-    public static Option<A> GetComponentInChildrenOption<A>(this GameObject o) where A : Object => 
+    public static Option<A> GetComponentInChildrenOption<A>(this GameObject o) where A : Object =>
       F.opt(o.GetComponentInChildren<A>());
 
-    [PublicAPI]
-    public static Option<A> GetComponentInChildrenOption<A>(this Component c) where A : Object => 
+    public static Option<A> GetComponentInChildrenOption<A>(this Component c) where A : Object =>
       F.opt(c.GetComponentInChildren<A>());
+
+    public static void destroyGameObject(this Component c) => Object.Destroy(c.gameObject);
+    public static void destroyComponent(this Component c) => Object.Destroy(c);
   }
 }
