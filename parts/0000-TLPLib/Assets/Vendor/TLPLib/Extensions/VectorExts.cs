@@ -3,6 +3,8 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
+
+  [PublicAPI]
   public static class VectorExts {
     public static Vector2 withX(this Vector2 v, float x) => new Vector2(x, v.y);
     public static Vector2 withY(this Vector2 v, float y) => new Vector2(v.x, y);
@@ -58,13 +60,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return new Vector3(x.getOrElse(v.x), y.getOrElse(v.y), z.getOrElse(v.z));
     }
 
-    [PublicAPI] public static Vector2 rotate90(this Vector2 v) => new Vector2(-v.y, v.x);
-    [PublicAPI] public static Vector2 rotate180(this Vector2 v) => new Vector2(-v.x, -v.y);
-    [PublicAPI] public static Vector2 rotate270(this Vector2 v) => new Vector2(v.y, -v.x);
+    public static Vector2 rotate90(this Vector2 v) => new Vector2(-v.y, v.x);
+    public static Vector2 rotate180(this Vector2 v) => new Vector2(-v.x, -v.y);
+    public static Vector2 rotate270(this Vector2 v) => new Vector2(v.y, -v.x);
 
-    [PublicAPI] public static float cross(this Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
+    public static float cross(this Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
 
-    [PublicAPI] public static Vector2 rotate(this Vector2 v, float degrees) {
+    public static Vector2 rotate(this Vector2 v, float degrees) {
       var radians = degrees * Mathf.Deg2Rad;
       var sin = Mathf.Sin(radians);
       var cos = Mathf.Cos(radians);
@@ -75,14 +77,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return new Vector2(cos * tx - sin * ty, sin * tx + cos * ty);
     }
 
-    [PublicAPI] public static float segmentAngle(this Vector2 from, Vector2 to) =>
+    public static float segmentAngle(this Vector2 from, Vector2 to) =>
       Mathf.Atan2(to.y - from.y, to.x - from.x);
-    [PublicAPI] public static float segmentAngle(this Vector3 from, Vector3 to) =>
+    public static float segmentAngle(this Vector3 from, Vector3 to) =>
       Mathf.Atan2(to.y - from.y, to.x - from.x);
       
     public static float signedAngle(Vector2 from, Vector2 to) {
       var degrees = Vector2.Angle(from, to);
       return from.cross(to) < 0 ? -degrees : degrees;
+    }
+
+    public static float distanceSquared(this Vector2 a, Vector2 b) {
+      var dx = a.x - b.x;
+      var dy = a.y - b.y;
+      return dx * dx + dy * dy;
     }
   }
 }
