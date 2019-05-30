@@ -17,6 +17,7 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
    * using static com.tinylabproductions.TLPLib.Data.typeclasses.Str;
    */
   public static class Str {
+    public static string s(byte v) => v.ToString();
     public static string s(short v) => v.ToString();
     public static string s(ushort v) => v.ToString();
     public static string s(int v) => v.ToString();
