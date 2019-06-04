@@ -1,8 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
 using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
-using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
