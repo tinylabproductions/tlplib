@@ -46,4 +46,31 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     static void testAdd(uint a, uint b) => a.addClamped((int) b).shouldEqual(a + b);
   }
+
+  public class UIntExtsTestSubtractClamped {
+    [Test]
+    public void WithZero() {
+      const int b = 0;
+      testSubtract(uint.MinValue, b);
+      testSubtract(1, b);
+      testSubtract(15456u, b);
+    }
+    
+    [Test]
+    public void WithPositive() {
+      const int b = 1, b1 = 100;
+      testSubtractShouldEqualZero(uint.MinValue, b);
+      testSubtractShouldEqualZero(uint.MinValue, b1);
+      testSubtractShouldEqualZero(1, b);
+      testSubtractShouldEqualZero(1, b1);
+      testSubtract(15456u, b);
+      testSubtract(15456u, b1);
+      uint.MinValue.subtractClamped(b).shouldEqual(uint.MinValue);
+      (uint.MinValue + b1 - 1).subtractClamped(b1).shouldEqual(uint.MinValue);
+      (uint.MinValue + b1 + 1).subtractClamped(b1).shouldEqual(uint.MinValue + 1);
+    }
+    
+    static void testSubtract(uint a, uint b) => a.subtractClamped(b).shouldEqual(a - b);
+    static void testSubtractShouldEqualZero(uint a, uint b) => a.subtractClamped(b).shouldEqual(0u);
+  }
 }

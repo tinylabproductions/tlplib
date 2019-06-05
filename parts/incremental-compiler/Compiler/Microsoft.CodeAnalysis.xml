@@ -269,9 +269,9 @@
               Looks up a localized string similar to Can&apos;t create a metadata reference to a dynamic assembly..
             </summary>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.ChangesMustBeOrderedAndNotOverlapping">
+        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.ChangesMustNotOverlap">
             <summary>
-              Looks up a localized string similar to The changes must be ordered and not overlapping..
+              Looks up a localized string similar to The changes must not overlap..
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.Class1">
@@ -324,6 +324,11 @@
                Looks up a localized string similar to Analyzer &apos;{0}&apos; threw the following exception:
             &apos;{1}&apos;..
              </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.CompilerDiagnosticIdReported">
+            <summary>
+              Looks up a localized string similar to Reported diagnostic has an ID &apos;{0}&apos;, which only a compiler should be reporting..
+            </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.Constructor">
             <summary>
@@ -400,6 +405,11 @@
                Looks up a localized string similar to Exception occurred with following context:
             {0}.
              </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.ExceptionEnablingMulticoreJit">
+            <summary>
+              Looks up a localized string similar to Warning: Could not enable multicore JIT due to exception: {0}..
+            </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.ExpectedNonEmptyPublicKey">
             <summary>
@@ -579,11 +589,6 @@
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.KeepAliveWithoutShared">
             <summary>
               Looks up a localized string similar to &apos;/keepalive&apos; option is only valid with &apos;/shared&apos; option..
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.KeyInPathMapEndsWithSeparator">
-            <summary>
-              Looks up a localized string similar to A key in the pathMap ends with a path separator..
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.MetadataPeStreamUnexpectedWhenEmittingMetadataOnly">
@@ -1989,14 +1994,14 @@
             Is the given bit array null?
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.BitVector.IntersectWith(Microsoft.CodeAnalysis.BitVector)">
+        <member name="M:Microsoft.CodeAnalysis.BitVector.IntersectWith(Microsoft.CodeAnalysis.BitVector@)">
             <summary>
             Modify this bit vector by bitwise AND-ing each element with the other bit vector.
             For the purposes of the intersection, any bits beyond the current length will be treated as zeroes.
             Return true if any changes were made to the bits of this bit vector.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.BitVector.UnionWith(Microsoft.CodeAnalysis.BitVector)">
+        <member name="M:Microsoft.CodeAnalysis.BitVector.UnionWith(Microsoft.CodeAnalysis.BitVector@)">
             <summary>
             Modify this bit vector by '|'ing each element with the other bit vector.
             </summary>
@@ -2618,7 +2623,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.CommandLineArguments.ChecksumAlgorithm">
             <summary>
-            Hash algorithm to use to calculate source file debug checksums.
+            Hash algorithm to use to calculate source file debug checksums and PDB checksum.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CommandLineArguments.ScriptArguments">
@@ -2880,6 +2885,13 @@
             csc.exe and vbc.exe entry point.
             </summary>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.CompileAndEmit(Microsoft.CodeAnalysis.TouchedFileLogger,Microsoft.CodeAnalysis.Compilation@,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.AdditionalTextFile},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.EmbeddedText},Microsoft.CodeAnalysis.DiagnosticBag,System.Threading.CancellationToken,System.Threading.CancellationTokenSource@,System.Boolean@,Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver@)">
+            <summary>
+            Perform all the work associated with actual compilation
+            (parsing, binding, compile, emit), resulting in diagnostics
+            and analyzer output.
+            </summary>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.CommonCompiler.GetOutputFileName(Microsoft.CodeAnalysis.Compilation,System.Threading.CancellationToken)">
             <summary>
             Given a compilation and a destination directory, determine three names:
@@ -2923,7 +2935,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.BuildPaths.ClientDirectory">
             <summary>
-            The path which containts the compiler binaries and response files.
+            The path which contains the compiler binaries and response files.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.BuildPaths.WorkingDirectory">
@@ -2966,7 +2978,7 @@
             
              The first <see cref="T:Microsoft.CodeAnalysis.DiagnosticDescriptor"/> added with a given <see cref="P:Microsoft.CodeAnalysis.DiagnosticDescriptor.Id"/>
              value is given that value as its unique key. Subsequent adds with the same ID will have .NNN
-             apppended to their with an auto-incremented numeric value.
+             appended to their with an auto-incremented numeric value.
              </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.StreamErrorLogger.DiagnosticDescriptorSet.Count">
@@ -3000,7 +3012,7 @@
                 the log.
             
              2. <see cref="P:Microsoft.CodeAnalysis.DiagnosticDescriptor.CustomTags"/> is *not* part of that built-in
-                equatability, but we do write them out, and so descriptors differening only
+                equatability, but we do write them out, and so descriptors differing only
                 by CustomTags (rare) would cause only one set of tags to be reported in the
                 log.
              </summary>
@@ -3140,17 +3152,17 @@
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Compilation.AssemblyName">
-            <summary>
-            Simple assembly name, or null if not specified.
-            </summary>
-            <remarks>
-            The name is used for determining internals-visible-to relationship with referenced assemblies.
+             <summary>
+             Simple assembly name, or null if not specified.
+             </summary>
+             <remarks>
+             The name is used for determining internals-visible-to relationship with referenced assemblies.
             
-            If the compilation represents an assembly the value of <see cref="P:Microsoft.CodeAnalysis.Compilation.AssemblyName"/> is its simple name.
+             If the compilation represents an assembly the value of <see cref="P:Microsoft.CodeAnalysis.Compilation.AssemblyName"/> is its simple name.
             
-            Unless <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.ModuleName"/> specifies otherwise the module name
-            written to metadata is <see cref="P:Microsoft.CodeAnalysis.Compilation.AssemblyName"/> with an extension based upon <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.OutputKind"/>.
-            </remarks>
+             Unless <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.ModuleName"/> specifies otherwise the module name
+             written to metadata is <see cref="P:Microsoft.CodeAnalysis.Compilation.AssemblyName"/> with an extension based upon <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.OutputKind"/>.
+             </remarks>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.WithAssemblyName(System.String)">
             <summary>
@@ -3366,7 +3378,7 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.GetMetadataReference(Microsoft.CodeAnalysis.IAssemblySymbol)">
             <summary>
-            Gets the <see cref="T:Microsoft.CodeAnalysis.MetadataReference"/> that corresponds to the assembly symbol. 
+            Gets the <see cref="T:Microsoft.CodeAnalysis.MetadataReference"/> that corresponds to the assembly symbol.
             </summary>
             <param name="assemblySymbol">The target symbol.</param>
         </member>
@@ -3375,8 +3387,8 @@
             Assembly identities of all assemblies directly referenced by this compilation.
             </summary>
             <remarks>
-            Includes identities of references passed in the compilation constructor 
-            as well as those specified via directives in source code. 
+            Includes identities of references passed in the compilation constructor
+            as well as those specified via directives in source code.
             </remarks>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Compilation.Assembly">
@@ -3392,7 +3404,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Compilation.GlobalNamespace">
             <summary>
-            The root namespace that contains all namespaces and types defined in source code or in 
+            The root namespace that contains all namespaces and types defined in source code or in
             referenced metadata, merged into a single namespace hierarchy.
             </summary>
         </member>
@@ -3490,14 +3502,14 @@
             </remarks>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.CreateAnonymousTypeSymbol(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.ITypeSymbol},System.Collections.Immutable.ImmutableArray{System.String},System.Collections.Immutable.ImmutableArray{System.Boolean},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Location})">
-            <summary>
-            Returns a new anonymous type symbol with the given member types member names.
-            Anonymous type members will be readonly by default.  Writable properties are
-            supported in VB and can be created by passing in <code>false</code> in the 
-            appropriate locations in <paramref name="memberIsReadOnly"/>. 
+             <summary>
+             Returns a new anonymous type symbol with the given member types member names.
+             Anonymous type members will be readonly by default.  Writable properties are
+             supported in VB and can be created by passing in <code>false</code> in the
+             appropriate locations in <paramref name="memberIsReadOnly"/>.
             
-            Source locations can also be provided through <paramref name="memberLocations"/>
-            </summary>
+             Source locations can also be provided through <paramref name="memberLocations"/>
+             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.GetParseDiagnostics(System.Threading.CancellationToken)">
             <summary>
@@ -3548,11 +3560,11 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Compilation.LinkerMajorVersion">
             <summary>
-            The value is not used by Windows loader, but the OS appcompat infrastructure uses it to identify apps. 
-            It is useful for us to have a mechanism to identify the compiler that produced the binary. 
-            This is the appropriate value to use for that. That is what it was invented for. 
-            We don't want to have the high bit set for this in case some users perform a signed comparison to 
-            determine if the value is less than some version. The C++ linker is at 0x0B. 
+            The value is not used by Windows loader, but the OS appcompat infrastructure uses it to identify apps.
+            It is useful for us to have a mechanism to identify the compiler that produced the binary.
+            This is the appropriate value to use for that. That is what it was invented for.
+            We don't want to have the high bit set for this in case some users perform a signed comparison to
+            determine if the value is less than some version. The C++ linker is at 0x0B.
             We'll start our numbering at 0x30 for C#, 0x50 for VB.
             </summary>
         </member>
@@ -3582,7 +3594,7 @@
             <summary>
             Signals the event queue, if any, that we are done compiling.
             There should not be more compiling actions after this step.
-            NOTE: once we signal about completion to analyzers they will cancel and thus in some cases we 
+            NOTE: once we signal about completion to analyzers they will cancel and thus in some cases we
                   may be effectively cutting off some diagnostics.
                   It is not clear if behavior is desirable.
                   See: https://github.com/dotnet/roslyn/issues/11470
@@ -3590,40 +3602,40 @@
             <param name="filterTree">What tree to complete. null means complete all trees. </param>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.Emit(System.IO.Stream,System.IO.Stream,System.IO.Stream,System.IO.Stream,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.ResourceDescription},Microsoft.CodeAnalysis.Emit.EmitOptions,Microsoft.CodeAnalysis.IMethodSymbol,System.IO.Stream,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.EmbeddedText},System.IO.Stream,System.Threading.CancellationToken)">
-            <summary>
-            Emit the IL for the compiled source code into the specified stream.
-            </summary>
-            <param name="peStream">Stream to which the compilation will be written.</param>
-            <param name="metadataPEStream">Stream to which the metadata-only output will be written.</param>
-            <param name="pdbStream">Stream to which the compilation's debug info will be written.  Null to forego PDB generation.</param>
-            <param name="xmlDocumentationStream">Stream to which the compilation's XML documentation will be written.  Null to forego XML generation.</param>
-            <param name="win32Resources">Stream from which the compilation's Win32 resources will be read (in RES format).  
-            Null to indicate that there are none. The RES format begins with a null resource entry.</param>
-            <param name="manifestResources">List of the compilation's managed resources.  Null to indicate that there are none.</param>
-            <param name="options">Emit options.</param>
-            <param name="debugEntryPoint">
-            Debug entry-point of the assembly. The method token is stored in the generated PDB stream.
+             <summary>
+             Emit the IL for the compiled source code into the specified stream.
+             </summary>
+             <param name="peStream">Stream to which the compilation will be written.</param>
+             <param name="metadataPEStream">Stream to which the metadata-only output will be written.</param>
+             <param name="pdbStream">Stream to which the compilation's debug info will be written.  Null to forego PDB generation.</param>
+             <param name="xmlDocumentationStream">Stream to which the compilation's XML documentation will be written.  Null to forego XML generation.</param>
+             <param name="win32Resources">Stream from which the compilation's Win32 resources will be read (in RES format).
+             Null to indicate that there are none. The RES format begins with a null resource entry.</param>
+             <param name="manifestResources">List of the compilation's managed resources.  Null to indicate that there are none.</param>
+             <param name="options">Emit options.</param>
+             <param name="debugEntryPoint">
+             Debug entry-point of the assembly. The method token is stored in the generated PDB stream.
             
-            When a program launches with a debugger attached the debugger places the first breakpoint to the start of the debug entry-point method.
-            The CLR starts executing the static Main method of <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.MainTypeName"/> type. When the first breakpoint is hit
-            the debugger steps thru the code statement by statement until user code is reached, skipping methods marked by <see cref="T:System.Diagnostics.DebuggerHiddenAttribute"/>, 
-            and taking other debugging attributes into consideration.
+             When a program launches with a debugger attached the debugger places the first breakpoint to the start of the debug entry-point method.
+             The CLR starts executing the static Main method of <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.MainTypeName"/> type. When the first breakpoint is hit
+             the debugger steps thru the code statement by statement until user code is reached, skipping methods marked by <see cref="T:System.Diagnostics.DebuggerHiddenAttribute"/>,
+             and taking other debugging attributes into consideration.
             
-            By default both entry points in an executable program (<see cref="F:Microsoft.CodeAnalysis.OutputKind.ConsoleApplication"/>, <see cref="F:Microsoft.CodeAnalysis.OutputKind.WindowsApplication"/>, <see cref="F:Microsoft.CodeAnalysis.OutputKind.WindowsRuntimeApplication"/>)
-            are the same method (Main). A non-executable program has no entry point. Runtimes that implement a custom loader may specify debug entry-point
-            to force the debugger to skip over complex custom loader logic executing at the beginning of the .exe and thus improve debugging experience.
+             By default both entry points in an executable program (<see cref="F:Microsoft.CodeAnalysis.OutputKind.ConsoleApplication"/>, <see cref="F:Microsoft.CodeAnalysis.OutputKind.WindowsApplication"/>, <see cref="F:Microsoft.CodeAnalysis.OutputKind.WindowsRuntimeApplication"/>)
+             are the same method (Main). A non-executable program has no entry point. Runtimes that implement a custom loader may specify debug entry-point
+             to force the debugger to skip over complex custom loader logic executing at the beginning of the .exe and thus improve debugging experience.
             
-            Unlike ordinary entry-point which is limited to a non-generic static method of specific signature, there are no restrictions on the <paramref name="debugEntryPoint"/> 
-            method other than having a method body (extern, interface, or abstract methods are not allowed).
-            </param>
-            <param name="sourceLinkStream">
-            Stream containing information linking the compilation to a source control.
-            </param>
-            <param name="embeddedTexts">
-            Texts to embed in the PDB.
-            Only supported when emitting Portable PDBs.
-            </param>
-            <param name="cancellationToken">To cancel the emit process.</param>
+             Unlike ordinary entry-point which is limited to a non-generic static method of specific signature, there are no restrictions on the <paramref name="debugEntryPoint"/>
+             method other than having a method body (extern, interface, or abstract methods are not allowed).
+             </param>
+             <param name="sourceLinkStream">
+             Stream containing information linking the compilation to a source control.
+             </param>
+             <param name="embeddedTexts">
+             Texts to embed in the PDB.
+             Only supported when emitting Portable PDBs.
+             </param>
+             <param name="cancellationToken">To cancel the emit process.</param>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.Emit(System.IO.Stream,System.IO.Stream,System.IO.Stream,System.IO.Stream,System.IO.Stream,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.ResourceDescription},Microsoft.CodeAnalysis.Emit.EmitOptions,Microsoft.CodeAnalysis.IMethodSymbol,System.IO.Stream,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.EmbeddedText},Microsoft.CodeAnalysis.CodeGen.CompilationTestData,System.Threading.CancellationToken)">
             <summary>
@@ -3655,6 +3667,14 @@
             </summary>
             <returns><see cref="T:Microsoft.CodeAnalysis.Emit.CommonPEModuleBuilder"/> if successful.</returns>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.Compilation.GetPeStream(Microsoft.CodeAnalysis.DiagnosticBag,Microsoft.CodeAnalysis.Compilation.EmitStreamProvider,System.Boolean)">
+            <summary>
+            Returns a tuple of streams where
+            * `peStream` is a stream which will carry the output PE bits
+            * `signingStream` is the stream which will be signed by the legacy strong name signer, or null if we aren't using the legacy signer
+            * `selectedStream` is an alias of either peStream or signingStream, and is the stream that will be written to by the emitter.
+            </summary>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.CompareSyntaxTreeOrdering(Microsoft.CodeAnalysis.SyntaxTree,Microsoft.CodeAnalysis.SyntaxTree)">
             <summary>
             The compiler needs to define an ordering among different partial class in different syntax trees
@@ -3664,7 +3684,13 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.Compilation.CompareSourceLocations(Microsoft.CodeAnalysis.Location,Microsoft.CodeAnalysis.Location)">
             <summary>
-            Compare two source locations, using their containing trees, and then by Span.First within a tree. 
+            Compare two source locations, using their containing trees, and then by Span.First within a tree.
+            Can be used to get a total ordering on declarations, for example.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Compilation.CompareSourceLocations(Microsoft.CodeAnalysis.SyntaxReference,Microsoft.CodeAnalysis.SyntaxReference)">
+            <summary>
+            Compare two source locations, using their containing trees, and then by Span.First within a tree.
             Can be used to get a total ordering on declarations, for example.
             </summary>
         </member>
@@ -4002,7 +4028,11 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.CompilationOptions.MetadataImportOptions">
             <summary>
-            Import internal/private members from all references regardless of "internals-visible-to" relationship.
+            Specifies whether to import members with accessibility other than public or protected by default. 
+            Default value is <see cref="F:Microsoft.CodeAnalysis.MetadataImportOptions.Public"/>. The value specified is not going to 
+            affect correctness of analysis performed by compilers because all members needed for correctness 
+            are going to be imported regardless. This setting can force compilation to import members that it 
+            normally doesn't.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CompilationOptions.ReferencesSupersedeLowerVersions">
@@ -4226,6 +4256,16 @@
             <summary>
             The set of the local variables that have been referenced in anonymous
             functions within a region and therefore must be moved to a field of a frame class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.DataFlowAnalysis.CapturedInside">
+            <summary>
+            The set of variables that are captured inside a region.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.DataFlowAnalysis.CapturedOutside">
+            <summary>
+            The set of variables that are captured outside a region.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.DataFlowAnalysis.UnsafeAddressTaken">
@@ -4715,6 +4755,12 @@
             If not specified the file name of the source module with an extension changed to "pdb" is used.
             </remarks>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.Emit.EmitOptions.PdbChecksumAlgorithm">
+            <summary>
+            A crypto hash algorithm used to calculate PDB Checksum stored in the PE/COFF File.
+            If not specified (the value is <code>default(HashAlgorithmName)</code>) the checksum is not calculated.
+            </summary>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.Emit.EmitOptions.RuntimeMetadataVersion">
             <summary>
             Runtime metadata version. 
@@ -5192,6 +5238,36 @@
             Represents an operation with two operands that produces a result with the same type as at least one of the operands.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.BaseTupleBinaryOperatorExpression">
+            <summary>
+            Represents an operation with two operands that produces a result with the same type as at least one of the operands.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.BaseTupleBinaryOperatorExpression.OperatorKind">
+            <summary>
+            Kind of binary operation.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.BaseTupleBinaryOperatorExpression.LeftOperand">
+            <summary>
+            Left operand.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.BaseTupleBinaryOperatorExpression.RightOperand">
+            <summary>
+            Right operand.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.TupleBinaryOperatorExpression">
+            <summary>
+            Represents an operation with two operands that produces a result with the same type as at least one of the operands.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.LazyTupleBinaryOperatorExpression">
+            <summary>
+            Represents an operation with two operands that produces a result with the same type as at least one of the operands.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.BaseBlockStatement">
             <summary>
             Represents a block scope.
@@ -5319,7 +5395,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.BaseConditionalAccessExpression.Operation">
             <summary>
-            Expresson that is conditionally accessed.
+            Expression that is conditionally accessed.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.BaseConditionalAccessExpression.WhenNotNull">
@@ -5410,7 +5486,7 @@
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.EmptyStatement">
             <summary>
-            Reprsents an empty statement.
+            Represents an empty statement.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.EndStatement">
@@ -6487,6 +6563,13 @@
             Represents a tuple expression.
             </summary>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.BaseTupleExpression.NaturalType">
+            <summary>
+            Natural type of the tuple, or null if tuple doesn't have a natural type.
+            Natural type can be different from <see cref="P:Microsoft.CodeAnalysis.IOperation.Type"/> depending on the
+            conversion context, in which the tuple is used. 
+            </summary>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.BaseTupleExpression.Elements">
             <summary>
             Elements for tuple expression.
@@ -6807,11 +6890,6 @@
         <member name="P:Microsoft.CodeAnalysis.Operations.BaseLocalFunctionStatement.Symbol">
             <summary>
             Local function symbol.
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.Operations.BaseLocalFunctionStatement.Body">
-            <summary>
-            Body of the local function.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.LocalFunctionStatement">
@@ -7848,6 +7926,29 @@
             Constant value of the pattern operation.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.IConstructorBodyOperation">
+            <summary>
+            Represents a constructor method body operation.
+            <para>
+            Current usage:
+             (1) C# method body for constructor declaration
+            </para>
+            </summary>
+            <remarks>
+            This interface is reserved for implementation by its associated APIs. We reserve the right to
+            change it in the future.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.IConstructorBodyOperation.Locals">
+            <summary>
+            Local declarations contained within the <see cref="P:Microsoft.CodeAnalysis.Operations.IConstructorBodyOperation.Initializer"/>.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.IConstructorBodyOperation.Initializer">
+            <summary>
+            Constructor initializer, if any
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.IConversionOperation">
             <summary>
             Represents a type conversion.
@@ -7991,6 +8092,24 @@
             The lambda or method binding that this delegate is created from.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.IDiscardOperation">
+            <summary>
+            Represents a discard operation.
+            <para>
+            Current Usage:
+             (1) C# discard expressions
+            </para>
+            </summary>
+            <remarks>
+            This interface is reserved for implementation by its associated APIs. We reserve the right to
+            change it in the future.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.IDiscardOperation.DiscardSymbol">
+            <summary>
+            The symbol of the discard operation.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.IDynamicIndexerAccessOperation">
             <summary>
             Represents an indexer access that is dynamically bound.
@@ -8069,7 +8188,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IDynamicMemberReferenceOperation.ContainingType">
             <summary>
-            The containing type of the referenced member. In C#, this will always be null.
+            The containing type of the referenced member, if different from type of the <see cref="P:Microsoft.CodeAnalysis.Operations.IDynamicMemberReferenceOperation.Instance"/>.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.IDynamicObjectCreationOperation">
@@ -8560,9 +8679,13 @@
             <summary>
             Body of the local function.
             </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.ILocalFunctionOperation.IgnoredBody">
+            <summary>
+            An extra body for the local function, if both a block body and expression body are specified in source.
+            </summary>
             <remarks>
-            Expression-bodied local functions are normalized here to be a single <see cref="T:Microsoft.CodeAnalysis.IOperation"/>
-            inside of a block statement.
+            This is only ever non-null in error situations.
             </remarks>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.ILocalReferenceOperation">
@@ -8662,6 +8785,42 @@
             <summary>
             Referenced member.
             </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.IMethodBodyBaseOperation">
+            <summary>
+            Represents a method body operation.
+            <para>
+            Current usage:
+             (1) C# method body
+            </para>
+            </summary>
+            <remarks>
+            This interface is reserved for implementation by its associated APIs. We reserve the right to
+            change it in the future.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.IMethodBodyBaseOperation.BlockBody">
+            <summary>
+            Method body corresponding to BaseMethodDeclarationSyntax.Body or AccessorDeclarationSyntax.Body
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.IMethodBodyBaseOperation.ExpressionBody">
+            <summary>
+            Method body corresponding to BaseMethodDeclarationSyntax.ExpressionBody or AccessorDeclarationSyntax.ExpressionBody
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.IMethodBodyOperation">
+            <summary>
+            Represents a method body operation.
+            <para>
+            Current usage:
+             (1) C# method body for non-constructor
+            </para>
+            </summary>
+            <remarks>
+            This interface is reserved for implementation by its associated APIs. We reserve the right to
+            change it in the future.
+            </remarks>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.IMethodReferenceOperation">
             <summary>
@@ -9168,6 +9327,11 @@
             change it in the future.
             </remarks>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.ISymbolInitializerOperation.Locals">
+            <summary>
+            Local declared in and scoped to the <see cref="P:Microsoft.CodeAnalysis.Operations.ISymbolInitializerOperation.Value"/>.
+            </summary>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.ISymbolInitializerOperation.Value">
             <summary>
             Underlying initializer value.
@@ -9246,6 +9410,34 @@
             Finally handler of the try.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.ITupleBinaryOperation">
+            <summary>
+            Represents a comparison of two operands that returns a bool type.
+            <para>
+            Current usage:
+             (1) C# tuple binary operator expression.
+            </para>
+            </summary>
+            <remarks>
+            This interface is reserved for implementation by its associated APIs. We reserve the right to
+            change it in the future.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.ITupleBinaryOperation.OperatorKind">
+            <summary>
+            Kind of binary operation.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.ITupleBinaryOperation.LeftOperand">
+            <summary>
+            Left operand.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.ITupleBinaryOperation.RightOperand">
+            <summary>
+            Right operand.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.ITupleOperation">
             <summary>
             Represents a tuple with one or more elements.
@@ -9263,6 +9455,13 @@
         <member name="P:Microsoft.CodeAnalysis.Operations.ITupleOperation.Elements">
             <summary>
             Tuple elements.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operations.ITupleOperation.NaturalType">
+            <summary>
+            Natural type of the tuple, or null if tuple doesn't have a natural type.
+            Natural type can be different from <see cref="P:Microsoft.CodeAnalysis.IOperation.Type"/> depending on the
+            conversion context, in which the tuple is used. 
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.ITypeOfOperation">
@@ -10119,6 +10318,11 @@
             Compiles your assembly to run on a computer that has an Advanced RISC Machine (ARM) processor.
             </summary>
         </member>
+        <member name="F:Microsoft.CodeAnalysis.Platform.Arm64">
+            <summary>
+            Compiles your assembly to run on a computer that has an Advanced RISC Machine 64 bit (ARM64) processor.
+            </summary>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.PreprocessingSymbolInfo.Symbol">
             <summary>
             The symbol that was referred to by the identifier, if any. 
@@ -10836,7 +11040,7 @@
             </summary>
             <param name="nameSyntax">The nameSyntax node to get semantic information for.</param>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.SemanticModel.ComputeDeclarationsInSpan(Microsoft.CodeAnalysis.Text.TextSpan,System.Boolean,System.Collections.Generic.List{Microsoft.CodeAnalysis.DeclarationInfo},System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.SemanticModel.ComputeDeclarationsInSpan(Microsoft.CodeAnalysis.Text.TextSpan,System.Boolean,Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder{Microsoft.CodeAnalysis.DeclarationInfo},System.Threading.CancellationToken)">
             <summary>
             Gets the <see cref="T:Microsoft.CodeAnalysis.DeclarationInfo"/> for all the declarations whose span overlaps with the given <paramref name="span"/>.
             </summary>
@@ -10846,7 +11050,7 @@
             <param name="builder">Builder to add declarations.</param>
             <param name="cancellationToken">Cancellation token.</param>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.SemanticModel.ComputeDeclarationsInNode(Microsoft.CodeAnalysis.SyntaxNode,System.Boolean,System.Collections.Generic.List{Microsoft.CodeAnalysis.DeclarationInfo},System.Threading.CancellationToken,System.Nullable{System.Int32})">
+        <member name="M:Microsoft.CodeAnalysis.SemanticModel.ComputeDeclarationsInNode(Microsoft.CodeAnalysis.SyntaxNode,System.Boolean,Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder{Microsoft.CodeAnalysis.DeclarationInfo},System.Threading.CancellationToken,System.Nullable{System.Int32})">
             <summary>
             Takes a node and returns a set of declarations that overlap the node's span.
             </summary>
@@ -11689,31 +11893,6 @@
             PERF: This cache enables us to re-use semantic model's bound node cache across analyzer execution and diagnostic queries.
             </summary>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.DeclaringReferenceSyntax">
-            <summary>
-            GetSyntax() for the given SyntaxReference.
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.TopmostNodeForAnalysis">
-            <summary>
-            Topmost declaration node for analysis.
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.DeclarationsInNode">
-            <summary>
-            All member declarations within the declaration.
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.DescendantNodesToAnalyze">
-            <summary>
-            All descendant nodes for syntax node actions.
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.IsPartialAnalysis">
-            <summary>
-            Flag indicating if this is a partial analysis.
-            </summary>
-        </member>
         <member name="F:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DefaultGeneratedCodeAnalysisFlags">
             <summary>
             Default analysis mode for generated code.
@@ -11927,6 +12106,31 @@
             Returns true if all the diagnostics that can be produced by this analyzer are suppressed through options.
             </summary>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.DeclaringReferenceSyntax">
+            <summary>
+            GetSyntax() for the given SyntaxReference.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.TopmostNodeForAnalysis">
+            <summary>
+            Topmost declaration node for analysis.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.DeclarationsInNode">
+            <summary>
+            All member declarations within the declaration.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.DescendantNodesToAnalyze">
+            <summary>
+            All descendant nodes for syntax node actions.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver.DeclarationAnalysisData.IsPartialAnalysis">
+            <summary>
+            Flag indicating if this is a partial analysis.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Diagnostics.AnalyzerDriver`1">
             <summary>
             Driver to execute diagnostic analyzers for a given compilation.
@@ -11965,7 +12169,12 @@
             Contains the core execution logic for callbacks into analyzers.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerExecutor.Create(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.Diagnostics.AnalyzerOptions,System.Action{Microsoft.CodeAnalysis.Diagnostic},System.Action{System.Exception,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,Microsoft.CodeAnalysis.Diagnostic},System.Func{System.Exception,System.Boolean},System.Func{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Boolean},Microsoft.CodeAnalysis.Diagnostics.AnalyzerManager,System.Func{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Boolean},System.Func{Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,Microsoft.CodeAnalysis.Compilation,System.Threading.CancellationToken,System.Boolean},System.Func{Microsoft.CodeAnalysis.Location,System.Boolean},System.Func{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Object},System.Boolean,System.Action{Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Boolean},System.Action{Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Threading.CancellationToken)">
+        <member name="F:Microsoft.CodeAnalysis.Diagnostics.AnalyzerExecutor._analyzerExecutionTimeMapOpt">
+            <summary>
+            The values in this map convert to <see cref="T:System.TimeSpan"/> using <see cref="M:System.TimeSpan.FromTicks(System.Int64)"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerExecutor.Create(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.Diagnostics.AnalyzerOptions,System.Action{Microsoft.CodeAnalysis.Diagnostic},System.Action{System.Exception,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,Microsoft.CodeAnalysis.Diagnostic},System.Func{System.Exception,System.Boolean},System.Func{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Boolean},Microsoft.CodeAnalysis.Diagnostics.AnalyzerManager,System.Func{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Boolean},System.Func{Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,Microsoft.CodeAnalysis.Compilation,System.Threading.CancellationToken,System.Boolean},System.Func{Microsoft.CodeAnalysis.SyntaxTree,Microsoft.CodeAnalysis.Text.TextSpan,System.Boolean},System.Func{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Object},System.Boolean,System.Action{Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer,System.Boolean},System.Action{Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Threading.CancellationToken)">
             <summary>
             Creates <see cref="T:Microsoft.CodeAnalysis.Diagnostics.AnalyzerExecutor"/> to execute analyzer actions with given arguments
             </summary>
@@ -13829,7 +14038,7 @@
             </summary>
             <returns>A <see cref="T:Microsoft.CodeAnalysis.DiagnosticInfo"/> with effective severity based on option or null if suppressed.</returns>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommonMessageProvider.ReportStreamWriteException(System.Exception,System.String,System.IO.TextWriter)">
+        <member name="M:Microsoft.CodeAnalysis.CommonMessageProvider.ReportStreamWriteException(System.Exception,System.String,Microsoft.CodeAnalysis.DiagnosticBag)">
             <summary>
             Takes an exception produced while writing to a file stream and produces a diagnostic.
             </summary>
@@ -13890,6 +14099,26 @@
             </summary>
             <param name="descriptor">A <see cref="T:Microsoft.CodeAnalysis.DiagnosticDescriptor"/> describing the diagnostic.</param>
             <param name="location">An optional primary location of the diagnostic. If null, <see cref="P:Microsoft.CodeAnalysis.Diagnostic.Location"/> will return <see cref="P:Microsoft.CodeAnalysis.Location.None"/>.</param>
+            <param name="additionalLocations">
+            An optional set of additional locations related to the diagnostic.
+            Typically, these are locations of other items referenced in the message.
+            If null, <see cref="P:Microsoft.CodeAnalysis.Diagnostic.AdditionalLocations"/> will return an empty list.
+            </param>
+            <param name="properties">
+            An optional set of name-value pairs by means of which the analyzer that creates the diagnostic
+            can convey more detailed information to the fixer. If null, <see cref="P:Microsoft.CodeAnalysis.Diagnostic.Properties"/> will return
+            <see cref="F:System.Collections.Immutable.ImmutableDictionary`2.Empty"/>.
+            </param>
+            <param name="messageArgs">Arguments to the message of the diagnostic.</param>
+            <returns>The <see cref="T:Microsoft.CodeAnalysis.Diagnostic"/> instance.</returns>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Diagnostic.Create(Microsoft.CodeAnalysis.DiagnosticDescriptor,Microsoft.CodeAnalysis.Location,Microsoft.CodeAnalysis.DiagnosticSeverity,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.Location},System.Collections.Immutable.ImmutableDictionary{System.String,System.String},System.Object[])">
+            <summary>
+            Creates a <see cref="T:Microsoft.CodeAnalysis.Diagnostic"/> instance.
+            </summary>
+            <param name="descriptor">A <see cref="T:Microsoft.CodeAnalysis.DiagnosticDescriptor"/> describing the diagnostic.</param>
+            <param name="location">An optional primary location of the diagnostic. If null, <see cref="P:Microsoft.CodeAnalysis.Diagnostic.Location"/> will return <see cref="P:Microsoft.CodeAnalysis.Location.None"/>.</param>
+            <param name="effectiveSeverity">Effective severity of the diagnostic.</param>
             <param name="additionalLocations">
             An optional set of additional locations related to the diagnostic.
             Typically, these are locations of other items referenced in the message.
@@ -14076,6 +14305,21 @@
             <summary>
             Returns true if the diagnostic location (or any additional location) is within the given tree and intersects with the filterSpanWithinTree, if non-null.
             </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Diagnostic.GetDefaultWarningLevel(Microsoft.CodeAnalysis.DiagnosticSeverity)">
+            <summary>
+            Gets the default warning level for a diagnostic severity. Warning levels are used with the <c>/warn:N</c>
+            command line option to suppress diagnostics over a severity of interest. When N is 0, only error severity
+            messages are produced by the compiler. Values greater than 0 indicated that warnings up to and including
+            level N should also be included.
+            </summary>
+            <remarks>
+            <see cref="F:Microsoft.CodeAnalysis.DiagnosticSeverity.Info"/> and <see cref="F:Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden"/> are treated as warning
+            level 1. In other words, these diagnostics which typically interact with editor features are enabled unless
+            the special <c>/warn:0</c> option is set.
+            </remarks>
+            <param name="severity">A <see cref="T:Microsoft.CodeAnalysis.DiagnosticSeverity"/> value.</param>
+            <returns>The default compiler warning level for <paramref name="severity"/>.</returns>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Diagnostic.IsNotConfigurable">
             <summary>
@@ -14546,16 +14790,6 @@
             <returns>The string representation of FileLinePositionSpan.</returns>
             <example>Path: (0,0)-(5,6)</example>
         </member>
-        <member name="T:Microsoft.CodeAnalysis.IMessageSerializable">
-            <summary>
-            Indicates that the implementing type can be serialized via <see cref="M:System.Object.ToString"/> 
-            for diagnostic message purposes.
-            </summary>
-            <remarks>
-            Not appropriate on types that require localization, since localization should
-            happen after serialization.
-            </remarks>
-        </member>
         <member name="T:Microsoft.CodeAnalysis.LocalizableResourceString">
             <summary>
             A localizable resource string that may possibly be formatted differently depending on culture.
@@ -14999,7 +15233,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.EmbeddedText.Checksum">
             <summary>
-            The <see cref="P:Microsoft.CodeAnalysis.EmbeddedText.ChecksumAlgorithm"/> hash of the uncrompressed bytes
+            The <see cref="P:Microsoft.CodeAnalysis.EmbeddedText.ChecksumAlgorithm"/> hash of the uncompressed bytes
             that's saved to the PDB.
             </summary>
         </member>
@@ -15173,7 +15407,7 @@
         <member name="M:Microsoft.CodeAnalysis.Text.CompositeText.ReduceSegmentCountIfNecessary(Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder{Microsoft.CodeAnalysis.Text.SourceText})">
             <summary>
             Reduces the number of segments toward the target number of segments,
-            if the number of regments is deemed to be too large (beyond the maximum).
+            if the number of segments is deemed to be too large (beyond the maximum).
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Text.CompositeText.GetMinimalSegmentSizeToUseForCombining(Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder{Microsoft.CodeAnalysis.Text.SourceText})">
@@ -15768,7 +16002,7 @@
             </summary>
             <param name="oldText">The text before the change.</param>
             <param name="newText">The text after the change.</param>
-            <param name="changes">A non-empty set of ranges for the change.</param>
+            <param name="changes">A set of ranges for the change.</param>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Text.TextChangeEventArgs.#ctor(Microsoft.CodeAnalysis.Text.SourceText,Microsoft.CodeAnalysis.Text.SourceText,Microsoft.CodeAnalysis.Text.TextChangeRange[])">
             <summary>
@@ -15776,7 +16010,7 @@
             </summary>
             <param name="oldText">The text before the change.</param>
             <param name="newText">The text after the change.</param>
-            <param name="changes">A non-empty set of ranges for the change.</param>
+            <param name="changes">A set of ranges for the change.</param>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Text.TextChangeEventArgs.OldText">
             <summary>
@@ -16256,6 +16490,18 @@
             stack trace.
             </summary>
             <returns>True to catch the exception.</returns>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.FatalError.ReportWithoutCrashAndPropagate(System.Exception)">
+            <summary>
+            Report a non-fatal error like <see cref="M:Microsoft.CodeAnalysis.FatalError.ReportWithoutCrash(System.Exception)"/> but propagates the exception.
+            </summary>
+            <returns>False to propagate the exception.</returns>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.FatalError.ReportWithoutCrashUnlessCanceledAndPropagate(System.Exception)">
+            <summary>
+            Report a non-fatal error like <see cref="M:Microsoft.CodeAnalysis.FatalError.ReportWithoutCrash(System.Exception)"/> but propagates the exception.
+            </summary>
+            <returns>False to propagate the exception.</returns>
         </member>
         <member name="T:Microsoft.CodeAnalysis.ThreeState">
             <summary>
@@ -18837,6 +19083,18 @@
         <member name="F:Microsoft.CodeAnalysis.OperationKind.DeclarationPattern">
             <summary>Indicates an <see cref="T:Microsoft.CodeAnalysis.Operations.IDeclarationPatternOperation"/>.</summary>
         </member>
+        <member name="F:Microsoft.CodeAnalysis.OperationKind.TupleBinaryOperator">
+            <summary>Indicates an <see cref="T:Microsoft.CodeAnalysis.Operations.ITupleBinaryOperation"/>.</summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.OperationKind.MethodBodyOperation">
+            <summary>Indicates an <see cref="T:Microsoft.CodeAnalysis.Operations.IMethodBodyOperation"/>.</summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.OperationKind.ConstructorBodyOperation">
+            <summary>Indicates an <see cref="T:Microsoft.CodeAnalysis.Operations.IConstructorBodyOperation"/>.</summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.OperationKind.Discard">
+            <summary>Indicates an <see cref="T:Microsoft.CodeAnalysis.Operations.IDiscardOperation"/>.</summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Optional`1">
             <summary>
             Combines a value, <see cref="P:Microsoft.CodeAnalysis.Optional`1.Value"/>, and a flag, <see cref="P:Microsoft.CodeAnalysis.Optional`1.HasValue"/>, 
@@ -18923,7 +19181,7 @@
         <member name="T:Microsoft.CodeAnalysis.RealParser">
             <summary>
             A set of utilities for converting from a decimal floating-point literal string to its IEEE float
-            or double representation, which coniders all digits signficant and correctly rounds according to
+            or double representation, which considers all digits significant and correctly rounds according to
             the IEEE round-to-nearest-ties-to-even mode. This code does not support a leading sign character,
             as that is not part of the C# or VB floating-point literal lexical syntax.
             
@@ -19285,7 +19543,7 @@
              </param>
              <param name="explicitReferences">
              An array of references passed to the compilation and resolved from #r directives.
-             May contain references that were skipped during resolution (they don't have a corresponding explicit assmebly).
+             May contain references that were skipped during resolution (they don't have a corresponding explicit assembly).
              </param>
              <param name="explicitReferenceMap">
              Maps index to <paramref name="explicitReferences"/> to an index of a resolved assembly or module in <paramref name="explicitAssemblies"/> or modules.
@@ -20235,13 +20493,31 @@
             Gets the name of the special type as it would appear in metadata.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CryptoBlobParser.TryGetPublicKey(System.Collections.Immutable.ImmutableArray{System.Byte},System.Collections.Immutable.ImmutableArray{System.Byte}@)">
+        <member name="M:Microsoft.CodeAnalysis.CryptoBlobParser.TryParseKey(System.Collections.Immutable.ImmutableArray{System.Byte},System.Collections.Immutable.ImmutableArray{System.Byte}@,System.Nullable{System.Security.Cryptography.RSAParameters}@)">
             <summary>
             Try to retrieve the public key from a crypto blob.
             </summary>
             <remarks>
             Can be either a PUBLICKEYBLOB or PRIVATEKEYBLOB. The BLOB must be unencrypted.
             </remarks>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CryptoBlobParser.ToRSAParameters(System.Byte[],System.Boolean)">
+            <summary>
+            Helper for RsaCryptoServiceProvider.ExportParameters()
+            Copied from https://github.com/dotnet/corefx/blob/5fe5f9aae7b2987adc7082f90712b265bee5eefc/src/System.Security.Cryptography.Csp/src/System/Security/Cryptography/CapiHelper.Shared.cs
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CryptoBlobParser.ExponentAsBytes(System.UInt32)">
+            <summary>
+            Helper for converting a UInt32 exponent to bytes.
+            Copied from https://github.com/dotnet/corefx/blob/5fe5f9aae7b2987adc7082f90712b265bee5eefc/src/System.Security.Cryptography.Csp/src/System/Security/Cryptography/CapiHelper.Shared.cs
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CryptoBlobParser.ReadReversed(System.IO.BinaryReader,System.Int32)">
+            <summary>
+            Read in a byte array in reverse order.
+            Copied from https://github.com/dotnet/corefx/blob/5fe5f9aae7b2987adc7082f90712b265bee5eefc/src/System.Security.Cryptography.Csp/src/System/Security/Cryptography/CapiHelper.Shared.cs
+            </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.DesktopStrongNameProvider">
             <summary>
@@ -20255,17 +20531,10 @@
             <param name="tempPath">Path to use for any temporary file generation.</param>
             <param name="keyFileSearchPaths">An ordered set of fully qualified paths which are searched when locating a cryptographic key file.</param>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.DesktopStrongNameProvider.ResolveStrongNameKeyFile(System.String)">
-            <summary>
-            Resolves assembly strong name key file path.
-            Internal for testing.
-            </summary>
-            <returns>Normalized key file path or null if not found.</returns>
-        </member>
         <member name="M:Microsoft.CodeAnalysis.DesktopStrongNameProvider.CreateInputStream">
             <exception cref="T:System.IO.IOException"></exception>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.DesktopStrongNameProvider.SignAssembly(Microsoft.CodeAnalysis.StrongNameKeys,System.IO.Stream,System.IO.Stream)">
+        <member name="M:Microsoft.CodeAnalysis.DesktopStrongNameProvider.SignStream(Microsoft.CodeAnalysis.StrongNameKeys,System.IO.Stream,System.IO.Stream)">
             <exception cref="T:System.IO.IOException"></exception>
             <exception cref="T:Microsoft.CodeAnalysis.DesktopStrongNameProvider.ClrStrongNameMissingException"></exception>
         </member>
@@ -20274,6 +20543,12 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.DesktopStrongNameProvider.Sign(System.String,System.Collections.Immutable.ImmutableArray{System.Byte})">
             <exception cref="T:System.IO.IOException"/>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.StrongNameFileSystem.ResolveStrongNameKeyFile(System.String,System.Collections.Immutable.ImmutableArray{System.String})">
+            <summary>
+            Resolves assembly strong name key file path.
+            </summary>
+            <returns>Normalized key file path or null if not found.</returns>
         </member>
         <member name="F:Microsoft.CodeAnalysis.StrongNameKeys.KeyPair">
             <summary>
@@ -20284,6 +20559,11 @@
         <member name="F:Microsoft.CodeAnalysis.StrongNameKeys.PublicKey">
             <summary>
             Determines source assembly identity.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.StrongNameKeys.PrivateKey">
+            <summary> 
+            The Private key information that will exist if it was a private key file that was parsed.
             </summary>
         </member>
         <member name="F:Microsoft.CodeAnalysis.StrongNameKeys.DiagnosticOpt">
@@ -21907,7 +22187,7 @@
             <summary>
             Is this a zero-based one-dimensional array, i.e. SZArray in CLR terms.
             SZArray is an array type encoded in metadata with ELEMENT_TYPE_SZARRAY (always single-dim array with 0 lower bound).
-            Non-SZArray type is ecoded in metadata with ELEMENT_TYPE_ARRAY and with optional sizes and lower bounds. Even though 
+            Non-SZArray type is encoded in metadata with ELEMENT_TYPE_ARRAY and with optional sizes and lower bounds. Even though 
             non-SZArray can also be a single-dim array with 0 lower bound, the encoding of these types in metadata is distinct.
             </summary>
         </member>
@@ -22665,6 +22945,11 @@
              If this type is not a tuple, then returns default.
              </summary>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.INamedTypeSymbol.IsSerializable">
+            <summary>
+            True if the type is serializable (has Serializable metadata flag).
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.INamespaceOrTypeSymbol">
             <summary>
             Represents either a namespace or a type.
@@ -23354,7 +23639,12 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.ITypeParameterSymbol.HasValueTypeConstraint">
             <summary>
-            True if the value type constraint (<c>struct</c>)was specified for the type parameter.
+            True if the value type constraint (<c>struct</c>) was specified for the type parameter.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.ITypeParameterSymbol.HasUnmanagedTypeConstraint">
+            <summary>
+            True if the value type constraint (<c>unmanaged</c>) was specified for the type parameter.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.ITypeParameterSymbol.HasConstructorConstraint">
@@ -24211,6 +24501,11 @@
         <member name="F:Microsoft.CodeAnalysis.WellKnownMemberNames.GetEnumeratorMethodName">
             <summary>
             The required name for the <c>GetEnumerator</c> method used in a ForEach statement.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.WellKnownMemberNames.DeconstructMethodName">
+            <summary>
+            The required name for the <c>Deconstruct</c> method used in a deconstruction.
             </summary>
         </member>
         <member name="F:Microsoft.CodeAnalysis.WellKnownMemberNames.MoveNextMethodName">
@@ -25522,6 +25817,12 @@
             MethodDeclaration will be held weakly.
             </summary>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.SyntaxNode.CloneNodeAsRoot``1(``0,Microsoft.CodeAnalysis.SyntaxTree)">
+            <summary>
+            Creates a clone of a red node that can be used as a root of given syntaxTree.
+            New node has no parents, position == 0, and syntaxTree as specified.
+            </summary>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.SyntaxNodeExtensions.ReplaceSyntax``1(``0,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.SyntaxNode},System.Func{Microsoft.CodeAnalysis.SyntaxNode,Microsoft.CodeAnalysis.SyntaxNode,Microsoft.CodeAnalysis.SyntaxNode},System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.SyntaxToken},System.Func{Microsoft.CodeAnalysis.SyntaxToken,Microsoft.CodeAnalysis.SyntaxToken,Microsoft.CodeAnalysis.SyntaxToken},System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.SyntaxTrivia},System.Func{Microsoft.CodeAnalysis.SyntaxTrivia,Microsoft.CodeAnalysis.SyntaxTrivia,Microsoft.CodeAnalysis.SyntaxTrivia})">
             <summary>
             Creates a new tree of nodes with the specified nodes, tokens and trivia replaced.
@@ -25776,6 +26077,11 @@
         <member name="M:Microsoft.CodeAnalysis.SyntaxNodeExtensions.WithTrailingTrivia``1(``0,Microsoft.CodeAnalysis.SyntaxTrivia[])">
             <summary>
             Creates a new node from this node with the trailing trivia replaced.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.SyntaxNodeExtensions.AsRootOfNewTreeWithOptionsFrom(Microsoft.CodeAnalysis.SyntaxNode,Microsoft.CodeAnalysis.SyntaxTree)">
+            <summary>
+            Attaches the node to a SyntaxTree that the same options as <paramref name="oldTree"/>
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.SyntaxNodeExtensions.TrackNodes``1(``0,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.SyntaxNode})">
@@ -28023,6 +28329,11 @@
             start &gt;= value &lt;= end
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.CoreClrShim">
+            <summary>
+            Shim for APIs available only on CoreCLR.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.DeclarationInfo">
             <summary>
             Struct containing information about a source declaration.
@@ -28415,6 +28726,359 @@
             <param name="size">The size of the pool.</param>
             <returns></returns>
         </member>
+        <member name="M:Microsoft.DiaSymReader.IMetadataImport.ResolveTypeRef(System.Int32,System.Guid@,System.Object@,System.Int32@)">
+            <summary>
+            Resolves type reference.
+            </summary>
+            <param name="typeRef">The TypeRef metadata token to return the referenced type information for.</param>
+            <param name="scopeInterfaceId">The IID of the interface to return in scope. Typically, this would be IID_IMetaDataImport.</param>
+            <param name="scope">An interface to the module scope in which the referenced type is defined.</param>
+            <param name="typeDef">A pointer to a TypeDef token that represents the referenced type.</param>
+            <remarks>
+            TypeDefs define a type within a scope. TypeRefs refer to type-defs in other scopes
+            and allow you to import a type from another scope. This function attempts to determine
+            which type-def a type-ref points to.
+            
+            This resolve (type-ref, this cope) --> (type-def=*ptd, other scope=*ppIScope)
+            
+            However, this resolution requires knowing what modules have been loaded, which is not decided
+            until runtime via loader / fusion policy. Thus this interface can't possibly be correct since
+            it doesn't have that knowledge. Furthermore, when inspecting metadata from another process
+            (such as a debugger inspecting the debuggee's metadata), this API can be truly misleading.
+            
+            This API usage should be avoided.
+            </remarks>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.SymWriterMetadataAdapter">
+            <summary>
+            Minimal implementation of IMetadataImport that implements APIs used by SymReader and SymWriter.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.ComMemoryStream">
+            <summary>
+            A COM IStream implementation over memory. Supports just enough for DiaSymReader's PDB writing.
+            Also tuned for performance:
+            1. SetSize (and Seek beyond the length) is very fast and doesn't re-allocate the underlying memory.
+            2. Read and Write are optimized to avoid copying (see <see cref="T:Microsoft.DiaSymReader.IUnsafeComStream"/>)
+            3. Allocates in chunks instead of a contiguous buffer to avoid re-alloc and copy costs when growing.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.IUnsafeComStream">
+            <summary>
+            This is a re-definition of COM's IStream interface. The important change is that
+            the Read and Write methods take an <see cref="T:System.IntPtr"/> instead of a byte[] to avoid the
+            allocation cost when called from native code.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.ISymUnmanagedWriter5">
+            <summary>
+            The highest version of the interface available on Desktop FX 4.0+.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.ISymUnmanagedWriter5.DefineConstant2(System.String,Microsoft.DiaSymReader.VariantStructure,System.Int32)">
+            <remarks>
+            <paramref name="value"/> has type <see cref="T:Microsoft.DiaSymReader.VariantStructure"/>, rather than <see cref="T:System.Object"/>,
+            so that we can do custom marshalling of <see cref="T:System.DateTime"/>.  Unfortunately, .NET marshals
+            <see cref="T:System.DateTime"/>s as the number of days since 1899/12/30, whereas the native VB compiler
+             marshalled them as the number of ticks since the Unix epoch (i.e. a much, much larger number).
+            </remarks>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.ISymUnmanagedWriter5.OpenMapTokensToSourceSpans">
+            <summary>
+            Open a special custom data section to emit token to source span mapping information into. 
+            Opening this section while a method is already open or vice versa is an error.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.ISymUnmanagedWriter5.CloseMapTokensToSourceSpans">
+            <summary>
+            Close the special custom data section for token to source span mapping
+            information. Once it is closed no more mapping information can be added.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.ISymUnmanagedWriter5.MapTokenToSourceSpan(System.Int32,Microsoft.DiaSymReader.ISymUnmanagedDocumentWriter,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Maps the given metadata token to the given source line span in the specified source file. 
+            Must be called between calls to <see cref="M:Microsoft.DiaSymReader.ISymUnmanagedWriter5.OpenMapTokensToSourceSpans"/> and <see cref="M:Microsoft.DiaSymReader.ISymUnmanagedWriter5.CloseMapTokensToSourceSpans"/>.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.ISymUnmanagedWriter8">
+            <summary>
+            The highest version of the interface available in Microsoft.DiaSymReader.Native.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.VariantStructure">
+            <summary>
+            A struct with the same size and layout as the native VARIANT type:
+              2 bytes for a discriminator (i.e. which type of variant it is).
+              6 bytes of padding
+              8 or 16 bytes of data
+            </summary>
+        </member>
+        <member name="F:Microsoft.DiaSymReader.VariantStructure._padding">
+            <summary>
+            This field determines the size of the struct 
+            (16 bytes on 32-bit platforms, 24 bytes on 64-bit platforms).
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.VariantPadding">
+            <summary>
+            This type is 8 bytes on a 32-bit platforms and 16 bytes on 64-bit platforms.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.SymUnmanagedWriter">
+            <summary>
+            Windows PDB writer.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.Dispose">
+            <summary>
+            Diposes the writer.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.GetUnderlyingData">
+            <summary>
+            Gets the raw data blobs that comprise the written PDB content so far.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.WriteTo(System.IO.Stream)">
+            <summary>
+            Writes the PDB data to specified stream. Once called no more changes to the data can be made using this writer.
+            May be called multiple times. Always writes the same data. 
+            </summary>
+            <param name="stream">Stream to write PDB data to.</param>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing data to the stream.</exception>
+        </member>
+        <member name="P:Microsoft.DiaSymReader.SymUnmanagedWriter.DocumentTableCapacity">
+            <summary>
+            The capacity of document table. 
+            </summary>
+            <remarks>
+            Whenever a document is defined an entry is added to this table. 
+            If the number of documents is known upfront setting this value may reduce memory consumption.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.DefineDocument(System.String,System.Guid,System.Guid,System.Guid,System.Guid,System.Byte[],System.Byte[])">
+            <summary>
+            Defines a source document.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.DefineSequencePoints(System.Int32,System.Int32,System.Int32[],System.Int32[],System.Int32[],System.Int32[],System.Int32[])">
+            <summary>
+            Defines sequence points.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.OpenMethod(System.Int32)">
+            <summary>
+            Opens a method.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.CloseMethod">
+            <summary>
+            Closes a method previously open using <see cref="M:Microsoft.DiaSymReader.SymUnmanagedWriter.OpenMethod(System.Int32)"/>.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.OpenScope(System.Int32)">
+            <summary>
+            Opens a local scope.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.CloseScope(System.Int32)">
+            <summary>
+            Closes a local scope previously open using <see cref="M:Microsoft.DiaSymReader.SymUnmanagedWriter.OpenScope(System.Int32)"/>.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.DefineLocalVariable(System.Int32,System.String,System.Int32,System.Int32)">
+            <summary>
+            Defines a local variable.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.DefineLocalConstant(System.String,System.Object,System.Int32)">
+            <summary>
+            Defines a local constant.
+            </summary>
+            <param name="name">Name of the constant.</param>
+            <param name="value">Value.</param>
+            <param name="constantSignatureToken">Standalone signature token encoding the static type of the constant.</param>
+            <returns>False if the constant representation is too long (e.g. long string).</returns>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="name"/> is null</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.UsingNamespace(System.String)">
+            <summary>
+            Adds namespace import.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="importString"/> is null</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.SetAsyncInfo(System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[])">
+            <summary>
+            Sets method async information.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="yieldOffsets"/> or <paramref name="resumeOffsets"/> is null</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="yieldOffsets"/> or <paramref name="resumeOffsets"/> differ in length.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.DefineCustomMetadata(System.Byte[])">
+            <summary>
+            Associates custom debug information blob with the current method.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="metadata"/> is null</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.SetEntryPoint(System.Int32)">
+            <summary>
+            Designates specified method as an entry point.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.UpdateSignature(System.Guid,System.UInt32,System.Int32)">
+            <summary>
+            Updates the current PDB signature.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.GetSignature(System.Guid@,System.UInt32@,System.Int32@)">
+            <summary>
+            Gets the current PDB signature.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.SetSourceServerData(System.Byte[])">
+            <summary>
+            Sets source server data blob (srcsvr stream).
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="data"/> is null</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.SetSourceLinkData(System.Byte[])">
+            <summary>
+            Sets source link data blob (sourcelink stream).
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="data"/> is null</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.OpenTokensToSourceSpansMap">
+            <summary>
+            Opens a map of tokens to source spans.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.MapTokenToSourceSpan(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Maps specified token to a source span.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="documentIndex"/> doesn't correspond to any defined document.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriter.CloseTokensToSourceSpansMap">
+            <summary>
+            Closes map of tokens to source spans previously opened using <see cref="M:Microsoft.DiaSymReader.SymUnmanagedWriter.OpenTokensToSourceSpansMap"/>.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed.</exception>
+            <exception cref="T:System.InvalidOperationException">Writes are not allowed to the underlying stream.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error occurred while writing PDB data.</exception>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions">
+            <summary>
+            <see cref="T:Microsoft.DiaSymReader.SymUnmanagedWriter"/> creation options.
+            </summary>
+        </member>
+        <member name="F:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions.Default">
+            <summary>
+            Default options.
+            </summary>
+        </member>
+        <member name="F:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions.UseAlternativeLoadPath">
+            <summary>
+            Use environment variable MICROSOFT_DIASYMREADER_NATIVE_ALT_LOAD_PATH to locate Microsoft.DiaSymReader.Native.{platform}.dll.
+            </summary>
+        </member>
+        <member name="F:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions.UseComRegistry">
+            <summary>
+            Use COM registry to locate an implementation of the writer.
+            </summary>
+        </member>
+        <member name="F:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions.Deterministic">
+            <summary>
+            Create a deterministic PDB writer.
+            </summary>
+        </member>
+        <member name="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">
+            <summary>
+            Exception reported when PDB write operation fails.
+            </summary>
+        </member>
+        <member name="P:Microsoft.DiaSymReader.SymUnmanagedWriterException.ImplementationModuleName">
+            <summary>
+            The name of the module that implements the underlying PDB writer (e.g. diasymreader.dll), or null if not available.
+            </summary>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriterFactory.CreateWriter(Microsoft.DiaSymReader.ISymWriterMetadataProvider,Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions)">
+            <summary>
+            Creates a Windows PDB writer.
+            </summary>
+            <param name="metadataProvider"><see cref="T:Microsoft.DiaSymReader.ISymWriterMetadataProvider"/> implementation.</param>
+            <param name="options">Options.</param>
+            <remarks>
+            Tries to load the implementation of the PDB writer from Microsoft.DiaSymReader.Native.{platform}.dll library first.
+            It searches for this library in the directory Microsoft.DiaSymReader.dll is loaded from, 
+            the application directory, the %WinDir%\System32 directory, and user directories in the DLL search path, in this order.
+            If not found in the above locations and <see cref="F:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions.UseAlternativeLoadPath"/> option is specified
+            the directory specified by MICROSOFT_DIASYMREADER_NATIVE_ALT_LOAD_PATH environment variable is also searched.
+            If the Microsoft.DiaSymReader.Native.{platform}.dll library can't be found and <see cref="F:Microsoft.DiaSymReader.SymUnmanagedWriterCreationOptions.UseComRegistry"/> 
+            option is specified checks if the PDB reader is available from a globally registered COM object. This COM object is provided 
+            by .NET Framework and has limited functionality (features like determinism and source link are not supported).
+            </remarks>
+            <exception cref="T:System.ArgumentNullException"><paramref name="metadataProvider"/>is null.</exception>
+            <exception cref="T:System.DllNotFoundException">The SymWriter implementation is not available or failed to load.</exception>
+            <exception cref="T:Microsoft.DiaSymReader.SymUnmanagedWriterException">Error creating the PDB writer. See inner exception for root cause.</exception>
+        </member>
+        <member name="M:Microsoft.DiaSymReader.SymUnmanagedWriterImpl.WriteTo(System.IO.Stream)">
+            <summary>
+            Writes teh content to the given stream. The writer is disposed and can't be used for further writing.
+            </summary>
+        </member>
         <member name="T:Microsoft.Cci.ModulePropertiesForSerialization">
             <summary>
             This class is used to store the module serialization properties for a compilation.
@@ -28486,78 +29150,13 @@
             Flags that control the behavior of the target operating system. CLI implementations are supposed to ignore this, but some operating system pay attention.
             </summary>
         </member>
-        <member name="T:Microsoft.Cci.ISymUnmanagedWriter5">
-            <summary>
-            The highest version of the interface available on Desktop FX 4.0+.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Cci.ISymUnmanagedWriter5.DefineConstant2(System.String,Microsoft.Cci.VariantStructure,System.UInt32)">
-            <remarks>
-            <paramref name="value"/> has type <see cref="T:Microsoft.Cci.VariantStructure"/>, rather than <see cref="T:System.Object"/>,
-            so that we can do custom marshalling of <see cref="T:System.DateTime"/>.  Unfortunately, .NET marshals
-            <see cref="T:System.DateTime"/>s as the number of days since 1899/12/30, whereas the native VB compiler
-             marshalled them as the number of ticks since the Unix epoch (i.e. a much, much larger number).
-            </remarks>
-        </member>
-        <member name="M:Microsoft.Cci.ISymUnmanagedWriter5.OpenMapTokensToSourceSpans">
-            <summary>
-            Open a special custom data section to emit token to source span mapping information into. 
-            Opening this section while a method is already open or vice versa is an error.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Cci.ISymUnmanagedWriter5.CloseMapTokensToSourceSpans">
-            <summary>
-            Close the special custom data section for token to source span mapping
-            information. Once it is closed no more mapping information can be added.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Cci.ISymUnmanagedWriter5.MapTokenToSourceSpan(System.UInt32,Microsoft.Cci.ISymUnmanagedDocumentWriter,System.UInt32,System.UInt32,System.UInt32,System.UInt32)">
-            <summary>
-            Maps the given metadata token to the given source line span in the specified source file. 
-            Must be called between calls to <see cref="M:Microsoft.Cci.ISymUnmanagedWriter5.OpenMapTokensToSourceSpans"/> and <see cref="M:Microsoft.Cci.ISymUnmanagedWriter5.CloseMapTokensToSourceSpans"/>.
-            </summary>
-        </member>
-        <member name="T:Microsoft.Cci.ISymUnmanagedWriter8">
-            <summary>
-            The highest version of the interface available in Microsoft.DiaSymReader.Native.
-            </summary>
-        </member>
-        <member name="T:Microsoft.Cci.VariantStructure">
-            <summary>
-            A struct with the same size and layout as the native VARIANT type:
-              2 bytes for a discriminator (i.e. which type of variant it is).
-              6 bytes of padding
-              8 or 16 bytes of data
-            </summary>
-        </member>
-        <member name="F:Microsoft.Cci.VariantStructure._data">
-            <summary>
-            This field determines the size of the struct 
-            (16 bytes on 32-bit platforms, 24 bytes on 64-bit platforms).
-            </summary>
-        </member>
-        <member name="T:Microsoft.Cci.VariantData">
-            <summary>
-            This type is 8 bytes on a 32-bit platforms and 16 bytes on 64-bit platforms.
-            </summary>
-        </member>
-        <member name="T:Microsoft.Cci.PdbWritingException">
-            <summary>
-            Exception to enable callers to catch all of the exceptions originating
-            from writing PDBs. We resurface such exceptions as this type, to eventually
-            be reported as PDB-writing failure diagnostics to the user.
-            Unfortunately, an exception originating in a user-implemented
-            Stream derivation will come out of the symbol writer as a COMException
-            missing all of the original exception info.
-            </summary>
-        </member>
         <member name="M:Microsoft.Cci.PdbWriter.WriteRemainingEmbeddedDocuments(System.Collections.Generic.IEnumerable{Microsoft.Cci.DebugSourceDocument})">
             <summary>
             Write document entries for any embedded text document that does not yet have an entry.
             </summary>
             <remarks>
             This is done after serializing method debug info to ensure that we embed all requested
-            text even if there are no correspodning sequence points.
+            text even if there are no corresponding sequence points.
             </remarks>
         </member>
         <member name="T:Microsoft.Cci.AssemblyReferenceAlias">
@@ -29898,7 +30497,7 @@
             The greatest index given to any method definition.
             </summary>
         </member>
-        <member name="M:Microsoft.Cci.MetadataWriter.TryGetTypeRefeferenceHandle(Microsoft.Cci.ITypeReference,System.Reflection.Metadata.TypeReferenceHandle@)">
+        <member name="M:Microsoft.Cci.MetadataWriter.TryGetTypeReferenceHandle(Microsoft.Cci.ITypeReference,System.Reflection.Metadata.TypeReferenceHandle@)">
             <summary>
             Return true and full metadata handle of the type reference
             if the reference is available in the current generation.
@@ -29933,7 +30532,7 @@
         </member>
         <member name="M:Microsoft.Cci.MetadataWriter.GetOrAddStandaloneSignatureHandle(System.Reflection.Metadata.BlobHandle)">
             <summary>
-            Returns full metadata handle the stanadlone signature, adding
+            Returns full metadata handle the standalone signature, adding
             the signature to the index for this generation if missing.
             Deltas are not required to return rows from previous generations.
             </summary>
@@ -30024,7 +30623,7 @@
             </summary>
             <remarks>
             This is done after serializing method debug info to ensure that we embed all requested
-            text even if there are no correspodning sequence points.
+            text even if there are no corresponding sequence points.
             </remarks>
         </member>
         <member name="T:Microsoft.Cci.IteratorHelper">
@@ -31073,6 +31672,15 @@
             <summary>
             Removes trailing directory separator characters
             </summary>
+            <remarks>
+            This will trim the root directory separator:
+            "C:\" maps to "C:", and "/" maps to ""
+            </remarks>
+        </member>
+        <member name="M:Roslyn.Utilities.PathUtilities.EnsureTrailingSeparator(System.String)">
+            <summary>
+            Ensures a trailing directory separator character
+            </summary>
         </member>
         <member name="M:Roslyn.Utilities.PathUtilities.GetDirectoryName(System.String)">
             <summary>
@@ -31164,6 +31772,21 @@
             <summary>
             True if the two paths are the same.  (but only up to the specified length)
             </summary>
+        </member>
+        <member name="M:Roslyn.Utilities.PathUtilities.IsValidFilePath(System.String)">
+            <summary>
+            Unfortunatelly, we cannot depend on Path.GetInvalidPathChars() or Path.GetInvalidFileNameChars()
+            From MSDN: The array returned from this method is not guaranteed to contain the complete set of characters
+            that are invalid in file and directory names. The full set of invalid characters can vary by file system.
+            https://msdn.microsoft.com/en-us/library/system.io.path.getinvalidfilenamechars.aspx
+            
+            Additionally, Path.GetInvalidPathChars() doesn't include "?" or "*" which are invalid characters,
+            and Path.GetInvalidFileNameChars() includes ":" and "\" which are valid characters.
+            
+            The more accurate way is to let the framework parse the path and throw on any errors.
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
         </member>
         <member name="M:Roslyn.Utilities.ArrayExtensions.BinarySearchUpperBound(System.Int32[],System.Int32)">
             <summary>
@@ -31621,7 +32244,7 @@
             A simple, forward-only JSON writer to avoid adding dependencies to the compiler.
             Used to generate /errorlogger output.
             
-            Does not guarantee well-formed JSON if misused. It is the caller's reponsibility 
+            Does not guarantee well-formed JSON if misused. It is the caller's responsibility 
             to balance array/object start/end, to only write key-value pairs to objects and
             elements to arrays, etc.
             
@@ -31654,10 +32277,71 @@
             Used when a collection usually contains a single item but sometimes might contain multiple.
             </remarks>
         </member>
+        <member name="T:Roslyn.Utilities.PerformanceSensitiveAttribute">
+            <summary>
+            Indicates that a code element is performance sensitive under a known scenario.
+            </summary>
+            <remarks>
+            <para>When applying this attribute, only explicitly set the values for properties specifically indicated by the
+            test/measurement technique described in the associated <see cref="P:Roslyn.Utilities.PerformanceSensitiveAttribute.Uri"/>.</para>
+            </remarks>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.Uri">
+            <summary>
+            Gets the location where the original problem is documented, likely with steps to reproduce the issue and/or
+            validate performance related to a change in the method.
+            </summary>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.Constraint">
+            <summary>
+            Gets or sets a description of the constraint imposed by the original performance issue.
+            </summary>
+            <remarks>
+            <para>Constraints are normally specified by other specific properties that allow automated validation of the
+            constraint. This property supports documenting constraints which cannot be described in terms of other
+            constraint properties.</para>
+            </remarks>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.AllowCaptures">
+            <summary>
+            Gets or sets a value indicating whether captures are allowed.
+            </summary>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.AllowGenericEnumeration">
+            <summary>
+            Gets or sets a value indicating whether enumeration of a generic <see cref="T:System.Collections.Generic.IEnumerable`1"/> is allowed.
+            </summary>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.AllowLocks">
+            <summary>
+            Gets or sets a value indicating whether locks are allowed.
+            </summary>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.OftenCompletesSynchronously">
+            <summary>
+            Gets or sets a value indicating whether the asynchronous state machine typically completes synchronously.
+            </summary>
+            <remarks>
+            <para>When <see langword="true"/>, validation of this performance constraint typically involves analyzing
+            the method to ensure synchronous completion of the state machine does not require the allocation of a
+            <see cref="T:System.Threading.Tasks.Task"/>, either through caching the result or by using ValueTask.</para>
+            </remarks>
+        </member>
+        <member name="P:Roslyn.Utilities.PerformanceSensitiveAttribute.IsParallelEntry">
+            <summary>
+            Gets or sets a value indicating whether this is an entry point to a parallel algorithm.
+            </summary>
+            <remarks>
+            <para>Parallelization APIs and algorithms, e.g. <c>Parallel.ForEach</c>, may be efficient for parallel entry
+            points (few direct calls but large amounts of iterative work), but are problematic when called inside the
+            iterations themselves. Performance-sensitive code should avoid the use of heavy parallization APIs except
+            for known entry points to the parallel portion of code.</para>
+            </remarks>
+        </member>
         <member name="T:Roslyn.Utilities.PlatformInformation">
             <summary>
             This class provides simple properties for determining whether the current platform is Windows or Unix-based.
-            We intentionally do not use System.Runtime.InteropServices.RuntimeInformation.IsOSPlatfrom(...) because
+            We intentionally do not use System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(...) because
             it incorrectly reports 'true' for 'Windows' in desktop builds running on Unix-based platforms via Mono.
             </summary>
         </member>
@@ -31694,7 +32378,7 @@
         </member>
         <member name="M:Roslyn.Utilities.StreamExtensions.ReadAllBytes(System.IO.Stream)">
             <summary>
-            Reads all bytes from the current postion of the given stream to its end.
+            Reads all bytes from the current position of the given stream to its end.
             </summary>
         </member>
         <member name="M:Roslyn.Utilities.StringExtensions.IsValidClrNamespaceName(System.String)">
@@ -31767,33 +32451,24 @@
             Note that some of them might not point to live objects anymore.
             </summary>
         </member>
-        <member name="T:Roslyn.Utilities.ComMemoryStream">
-            <summary>
-            A COM IStream implementation over memory. Supports just enough for DiaSymReader's PDB writing.
-            Also tuned for performance:
-            1. SetSize (and Seek beyond the length) is very fast and doesn't re-allocate the underlying memory.
-            2. Read and Write are optimized to avoid copying (see <see cref="T:Roslyn.Utilities.IUnsafeComStream"/>)
-            3. Allocates in chunks instead of a contiguous buffer to avoid re-alloc and copy costs when growing.
-            </summary>
-        </member>
-        <member name="T:Roslyn.Utilities.IUnsafeComStream">
-            <summary>
-            This is a re-definition of COM's IStream interface. The important change is that
-            the Read and Write methods take an <see cref="T:System.IntPtr"/> instead of a byte[] to avoid the
-            allocation cost when called from native code.
-            </summary>
-        </member>
         <member name="T:Roslyn.Utilities.IObjectWritable">
             <summary>
             Objects that implement this interface know how to write their contents to an <see cref="T:Roslyn.Utilities.ObjectWriter"/>,
             so they can be reconstructed later by an <see cref="T:Roslyn.Utilities.ObjectReader"/>.
             </summary>
         </member>
+        <member name="P:Roslyn.Utilities.IObjectWritable.ShouldReuseInSerialization">
+            <summary>
+            Returns 'true' when the same instance could be used more than once.
+            Instances that return 'false' should not be tracked for the purpose 
+            of de-duplication while serializing/deserializing.
+            </summary>
+        </member>
         <member name="T:Roslyn.Utilities.ObjectBinder">
             <summary>
             <see cref="T:Roslyn.Utilities.ObjectBinder"/> is a registry that maps between arbitrary <see cref="T:System.Type"/>s and 
             the 'reader' function used to deserialize serialized instances of those types.  Registration
-            must happen ahead of time using the <see cref="M:Roslyn.Utilities.ObjectBinder.RegisterTypeReader(System.Type,System.Func{Roslyn.Utilities.ObjectReader,System.Object})"/> method.
+            must happen ahead of time using the <see cref="M:Roslyn.Utilities.ObjectBinder.RegisterTypeReader(System.Type,System.Func{Roslyn.Utilities.ObjectReader,Roslyn.Utilities.IObjectWritable})"/> method.
             </summary>
         </member>
         <member name="F:Roslyn.Utilities.ObjectBinder.s_gate">
@@ -32249,10 +32924,36 @@
             so this shim is necessary for switching on the dependent behavior.
             </summary>
         </member>
+        <member name="M:Roslyn.Reflection.PortableExecutable.DebugDirectoryExtensions.ReadPdbChecksumDebugDirectoryData(System.Reflection.PortableExecutable.PEReader,System.Reflection.PortableExecutable.DebugDirectoryEntry)">
+            <summary>
+            Reads the data pointed to by the specified Debug Directory entry and interprets them as PDB Checksum entry.
+            </summary>
+            <exception cref="T:System.ArgumentException"><paramref name="entry"/> is not a PDB Checksum entry.</exception>
+            <exception cref="T:System.BadImageFormatException">Bad format of the data.</exception>
+            <exception cref="T:System.IO.IOException">IO error while reading from the underlying stream.</exception>
+            <exception cref="T:System.InvalidOperationException">PE image not available.</exception>
+        </member>
+        <member name="P:Roslyn.Reflection.PortableExecutable.PdbChecksumDebugDirectoryData.AlgorithmName">
+            <summary>
+            Checksum algorithm name.
+            </summary>
+        </member>
+        <member name="P:Roslyn.Reflection.PortableExecutable.PdbChecksumDebugDirectoryData.Checksum">
+            <summary>
+            Checksum of the associated PDB.
+            </summary>
+        </member>
         <member name="T:System.Runtime.CompilerServices.InternalImplementationOnlyAttribute">
             <summary>
             This is a marker attribute that can be put on an interface to denote that only internal implementations
             of that interface should exist.
+            </summary>
+        </member>
+        <member name="T:System.Linq.EnumerableExtensions">
+            <summary>
+            Declare the following extension methods in System.Linq namespace to avoid accidental boxing of ImmutableArray{T} that implements IEnumerable{T}.
+            The boxing would occur if the methods were defined in Roslyn.Utilities and the file calling these methods has <code>using Roslyn.Utilities</code>
+            but not <code>using System.Linq"</code>.
             </summary>
         </member>
     </members>

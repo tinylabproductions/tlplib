@@ -31,6 +31,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (b > 0 && uint.MaxValue - a < b) return uint.MaxValue;
       return (uint) (a + b);
     }
+    
+    public static uint subtractClamped(this uint a, int b) => a.subtractClamped(b.toUIntClamped());
+    public static uint subtractClamped(this uint a, uint b) => b > a ? 0 : a - b;
 
     [PublicAPI] public static string toOrdinalString(this uint number) {
       var div = number % 100;

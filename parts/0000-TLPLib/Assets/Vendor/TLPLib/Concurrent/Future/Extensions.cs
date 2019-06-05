@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
@@ -20,6 +21,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         err => { if (logOnError) Log.d.error(err.ToString()); },
         p.complete
       )));
+
+    public static void onCompleteCancellable<A>(this Future<A> future, IDisposableTracker tracker, Act<A> action) =>
+      tracker.track(onCompleteCancellable(future, action));
 
     public static ISubscription onCompleteCancellable<A>(this Future<A> future, Act<A> action) {
       var sub = new Subscription(() => { });

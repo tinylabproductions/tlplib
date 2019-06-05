@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
 
     static InstallReferrerReceiver() {
       klass = new AndroidJavaClass(
-        "com.tinylabproductions.tlplib.referrer.InstallReferrerReceiver"
+        "com.tlp.tlplib.referrer.InstallReferrerReceiver"
       );
       PREF_REFERRER = klass.GetStatic<string>("PREF_REFERRER");
     }

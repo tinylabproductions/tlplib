@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.tlplib {
   public class TLPBridge {
-    static readonly AndroidJavaClass klass = new AndroidJavaClass("com.tinylabproductions.tlplib.Bridge");
+    static readonly AndroidJavaClass klass = new AndroidJavaClass("com.tlp.tlplib.Bridge");
 
     public static Future<Either<string, Option<string>>> countryCodeFromLastKnownLocation { get {
       return Future<Either<string, Option<string>>>.async(p => new JThread(() => {
