@@ -249,16 +249,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     );
 
     /// <summary>Emits given value upon first event to the future and unsubscribes.</summary>
-    public static Future<B> toFuture<A, B>(this IRxObservable<A> o, B b) =>
+    public static Future<B> toFuture<A, B>(this IRxObservable<A> o, IDisposableTracker tracker, B b) =>
       Future<B>.async((p, f) => {
-        var subscription = o.subscribe(NoOpDisposableTracker.instance, _ => p.complete(b));
+        var subscription = o.subscribe(tracker, _ => p.complete(b));
         f.onComplete(_ => subscription.unsubscribe());
       });
 
     /// <summary>Emits first value to the future and unsubscribes.</summary>
-    public static Future<A> toFuture<A>(this IRxObservable<A> o) =>
+    public static Future<A> toFuture<A>(this IRxObservable<A> o, IDisposableTracker tracker) =>
       Future<A>.async((p, f) => {
-        var subscription = o.subscribe(NoOpDisposableTracker.instance, p.complete);
+        var subscription = o.subscribe(tracker, p.complete);
         f.onComplete(_ => subscription.unsubscribe());
       });
 
