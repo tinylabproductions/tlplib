@@ -139,7 +139,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     [Test]
     public void toFuture() {
       var subj = new Subject<int>();
-      var f = subj.toFuture();
+      var f = subj.toFuture(tracker);
       f.value.shouldBeNone();
       subj.push(1);
       f.value.shouldBeSome(1);
