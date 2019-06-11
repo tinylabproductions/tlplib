@@ -286,13 +286,29 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         switch (n) {
           case ulong u: return (ushort)u;
           case long l: return (ushort)l;
-          case uint u1: return (ushort) u1;
+          case uint u1: return (ushort)u1;
           case int i: return (ushort)i;
           case ushort i: return i;
+          case short i: return (ushort) i;
         }
       }
       catch (OverflowException) {}
       return parseErrorEFor<ushort>(path, n);
+    };
+
+    [PublicAPI] public static readonly Parser<object, short> shortParser = (path, n) => {
+      try {
+        switch (n) {
+          case ulong u:  return (short)u;
+          case long l:   return (short)l;
+          case uint u1:  return (short)u1;
+          case int i:    return (short)i;
+          case ushort i: return (short)i;
+          case short i:  return i;
+        }
+      }
+      catch (OverflowException) {}
+      return parseErrorEFor<short>(path, n);
     };
 
     [PublicAPI]
