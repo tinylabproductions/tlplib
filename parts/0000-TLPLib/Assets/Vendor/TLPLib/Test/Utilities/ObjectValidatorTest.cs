@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
+using com.tinylabproductions.TLPLib.Test.Utilities;
 using com.tinylabproductions.TLPLib.validations;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -24,11 +24,6 @@ using ErrorType = com.tinylabproductions.TLPLib.Utilities.Editor.ObjectValidator
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public partial class ObjectValidatorTest : ImplicitSpecification {
     public const string UNIQUE_CATEGORY = "UNIQUE_CATEGORY";
-
-    class Component1 : MonoBehaviour { }
-    class Component2 : MonoBehaviour { }
-    class Component3 : MonoBehaviour { }
-    class Component3Child : Component3 { }
 
     #region Test Classes
 
@@ -107,19 +102,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       [SerializeField] protected InnerNotNull field;
       public void setField (InnerNotNull inn) { field = inn; }
     }
-
-    [RequireComponent(typeof(Component1), typeof(Component2), typeof(Component3))]
-    class RequireComponentBehaviour : MonoBehaviour {
-      public void setup(bool first = true, bool second = true, bool third = true) {
-        var go = gameObject;
-        if (first) go.AddComponent<Component1>();
-        if (second) go.AddComponent<Component2>();
-        // Inheriting from Component3
-        if (third) go.AddComponent<Component3Child>();
-      }
-    }
-
-    class InheritingRequireComponentBehaviour : RequireComponentBehaviour {}
 
     class TextFieldTypeTag : MonoBehaviour {
       [UnityTag]
@@ -449,56 +431,58 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     #endregion
 
     #region RequireComponent
-
+    
+    static readonly LazyVal<PathStr> requireComponentsPrefabsDirectory =
+      new LazyValImpl<PathStr>(() =>
+        // There is no such thing as editor resources folder, so we have to resort to this hack
+        AssetDatabase.GetAllAssetPaths().find(s =>
+          s.EndsWithFast($"TLPLib/Test RequireComponent/{nameof(TestRequireComponent)}.cs")
+        ).map(p => PathStr.a(p).dirname).get
+      );
+    
+    static Object getRequireComponentPrefab(string prefabName) =>
+      AssetDatabase.LoadMainAssetAtPath($"{requireComponentsPrefabsDirectory.strict}/{prefabName}");
+    
+    static void testRequireComponentPrefab(string prefabName, Option<ErrorType> errorTypeOpt = default) {
+      var o = getRequireComponentPrefab(prefabName);
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] { o });
+      if (errorTypeOpt.valueOut(out var errorType))
+        errors.shouldHave(errorType);
+      else 
+        errors.shouldBeEmpty();
+    }
+    
     [Test] public void WhenRequireComponentComponentsAreThere() =>
-       shouldNotFindErrors<RequireComponentBehaviour>(a => a.setup());
+      testRequireComponentPrefab("WhenRequireComponentComponentsAreThere.prefab");
 
     [Test] public void WhenRequireComponentFirstComponentIsNotThere() =>
-      shouldFindErrors<RequireComponentBehaviour>(
-        ErrorType.MissingRequiredComponent,
-        a => a.setup(first: false)
-      );
+      testRequireComponentPrefab("WhenRequireComponentFirstComponentIsNotThere.prefab", ErrorType.MissingRequiredComponent.some());
 
     [Test] public void WhenRequireComponentSecondComponentIsNotThere() =>
-      shouldFindErrors<RequireComponentBehaviour>(
-        ErrorType.MissingRequiredComponent,
-        a => a.setup(second: false)
-      );
+      testRequireComponentPrefab("WhenRequireComponentSecondComponentIsNotThere.prefab", ErrorType.MissingRequiredComponent.some());
 
     [Test] public void WhenRequireComponentThirdComponentIsNotThere() =>
-      shouldFindErrors<RequireComponentBehaviour>(
-        ErrorType.MissingRequiredComponent,
-        a => a.setup(third: false)
-      );
+      testRequireComponentPrefab("WhenRequireComponentThirdComponentIsNotThere.prefab", ErrorType.MissingRequiredComponent.some());
 
     [Test] public void WhenInheritingRequireComponentComponentsAreThere() =>
-      shouldNotFindErrors<InheritingRequireComponentBehaviour>(a => a.setup());
+      testRequireComponentPrefab("WhenInheritingRequireComponentComponentsAreThere.prefab");
 
     [Test] public void WhenInheritingRequireComponentFirstComponentIsNotThere() =>
-      shouldFindErrors<InheritingRequireComponentBehaviour>(
-        ErrorType.MissingRequiredComponent,
-        a => a.setup(first: false)
-      );
+      testRequireComponentPrefab("WhenInheritingRequireComponentFirstComponentIsNotThere.prefab", ErrorType.MissingRequiredComponent.some());
 
     [Test] public void WhenInheritingRequireComponentSecondComponentIsNotThere() =>
-      shouldFindErrors<InheritingRequireComponentBehaviour>(
-        ErrorType.MissingRequiredComponent,
-        a => a.setup(second: false)
-      );
+      testRequireComponentPrefab("WhenInheritingRequireComponentSecondComponentIsNotThere.prefab", ErrorType.MissingRequiredComponent.some());
 
     [Test] public void WhenInheritingRequireComponentThirdComponentIsNotThere() =>
-      shouldFindErrors<InheritingRequireComponentBehaviour>(
-        ErrorType.MissingRequiredComponent,
-        a => a.setup(third: false)
-      );
+      testRequireComponentPrefab("WhenInheritingRequireComponentThirdComponentIsNotThere.prefab", ErrorType.MissingRequiredComponent.some());
 
     #endregion
 
     #region UnityEvent
 
     static void testPrefab(string prefabName, ErrorType errorType) {
-      var go = getPrefab(prefabName);
-      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] { go });
+      var o = getPrefab(prefabName);
+      var errors = ObjectValidator.check(ObjectValidator.CheckContext.empty, new[] { o });
       errors.shouldHave(errorType);
     }
 
