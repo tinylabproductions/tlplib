@@ -8,7 +8,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UnityObjectExts {
 #if UNITY_EDITOR
-    public static PathStr path(this Object obj) => new PathStr(AssetDatabase.GetAssetPath(obj));
+    public static PathStr editorAssetPath(this Object obj) => new PathStr(AssetDatabase.GetAssetPath(obj));
 #endif
 
     public static A dontDestroyOnLoad<A>(this A a) where A : Object {

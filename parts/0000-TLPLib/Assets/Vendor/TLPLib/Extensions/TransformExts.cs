@@ -5,6 +5,17 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class TransformExts {
+    public static string debugPath(this Transform transform) {
+      var t = transform;
+      var s = "";
+      while (t) {
+        s = $"{t.name}/{s}";
+        t = t.parent;
+      }
+
+      return s;
+    }
+    
     public static void positionBetween(
       this Transform t, Vector3 start, Vector3 end, float width
     ) {

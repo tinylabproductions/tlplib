@@ -125,7 +125,7 @@ namespace com.tinylabproductions.TLPLib.Data {
             return $"loading {typeof(A).FullName} from '{path}' threw {e}";
           }
         },
-        module => module.path()
+        module => module.editorAssetPath()
       );
 #endif
 
