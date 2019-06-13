@@ -18,9 +18,9 @@ namespace com.tinylabproductions.TLPLib.Components.dispose {
       tracker = F.lazy(() => new DisposableTracker(
         // ReSharper disable ExplicitCallerInfoArgument
         callerFilePath: Log.d.isDebug() ? gameObject.transform.debugPath() : gameObject.name,
-        // ReSharper restore ExplicitCallerInfoArgument
         callerMemberName: nameof(GameObjectDisposeTracker),
         callerLineNumber: -1
+        // ReSharper restore ExplicitCallerInfoArgument
       ));
     }
 
