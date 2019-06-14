@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Utilities;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -18,7 +13,7 @@ using UnityEditor;
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
   // [AdvancedInspector(true)]
-  public class RuntimeSceneRef : OnObjectValidate {
+  public class RuntimeSceneRef {
     [SerializeField/*, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))*/]
     public Object scene;
 
@@ -61,12 +56,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     bool inspect() {
       prepareForRuntime();
       return true;
-    }
-
-    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
-      containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(onObjectValidate)}");
-      prepareForRuntime();
-      return Enumerable.Empty<ErrorMsg>();
     }
 
     public override string ToString() => $"{nameof(RuntimeSceneRef)}({_scenePath})";
