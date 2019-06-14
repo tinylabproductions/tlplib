@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
+using com.tinylabproductions.TLPLib.Extensions;
 using GenerationAttributes;
 using Object = UnityEngine.Object;
 
@@ -59,13 +61,36 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       private readonly List<CheckedField> checkedFields = new List<CheckedField>();
 
       public IEnumerable<DuplicateField> getDuplicateFields() {
+        Dictionary<Key, List<Value>> groupByDictionary<Key, Value>(
+          IEnumerable<Value> enumerable,
+          Func<Value, Key> keySelector,
+          IEqualityComparer<Key> comparer
+        ) {
+          var dict = new Dictionary<Key, List<Value>>();
+          foreach (var value in enumerable) {
+            var key = keySelector(value);
+            var opt = dict.Keys.find(_ => _, key, comparer);
+            if (opt.valueOut(out var k)) {
+              dict[k].Add(value);
+            }
+            else {
+              dict.Add(key, new List<Value> { value });
+            }
+          }
+      
+          return dict;
+        }
+        
         var categories = checkedFields.GroupBy(f => f.category);
         return categories.SelectMany(category => {
           var categoryName = category.Key;
-          var grouped = category.GroupBy(_ => _.fieldValue, comparer);
-          var duplicateFields = grouped.Where(_ => _.Count() > 1);
+          
+          // var grouped = category.GroupBy(_ => _.fieldValue, comparer);
+          // Changed into dictionary because of .GroupBy bug - it is not using comparer
+          var grouped = groupByDictionary(category, _ => _.fieldValue, comparer);
+          var duplicateFields = grouped.Where(_ => _.Value.Count > 1);
           return duplicateFields.Select(fieldToObjects => new DuplicateField(
-            categoryName, fieldToObjects.Key, fieldToObjects.Select(_ => _.checkedObject).ToImmutableList()
+            categoryName, fieldToObjects.Key, fieldToObjects.Value.Select(_ => _.checkedObject).ToImmutableList()
           ));
         });
       }
