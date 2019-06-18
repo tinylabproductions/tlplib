@@ -46,6 +46,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     #endregion
 
     public float seconds => millis / 1000f;
+    public int secondsInt => Mathf.RoundToInt(seconds);
 
     public static Duration operator +(Duration d1, Duration d2) =>
       new Duration(d1.millis + d2.millis);
