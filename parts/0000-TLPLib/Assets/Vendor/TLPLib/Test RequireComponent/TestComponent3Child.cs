@@ -1,1 +1,4 @@
-﻿class TestComponent3Child : TestComponent3 { }
+﻿using UnityEngine;
+
+[AddComponentMenu("")]
+class TestComponent3Child : TestComponent3 { }
