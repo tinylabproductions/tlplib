@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  [Serializable, PublicAPI] public partial class GameObjectState {
+  [Serializable, PublicAPI] public sealed partial class GameObjectState {
 #pragma warning disable 649
     [SerializeField, NotNull, PublicAccessor] GameObject _gameObject;
     [SerializeField, NotNull, PublicAccessor] bool _active;
@@ -33,4 +34,16 @@ namespace com.tinylabproductions.TLPLib.Data {
       else states.invertedApply();
     }
   }
+
+  [Serializable, PublicAPI] public sealed partial class GameObjectStates {
+    [
+      SerializeField, NotNull, PublicAccessor, 
+      InlineButton(nameof(_editor_apply), "On"), 
+      InlineButton(nameof(_editor_unapply), "Off"), 
+      TableList
+    ] GameObjectState[] _states;
+    
+    void _editor_apply(GameObjectState[] cv) => cv.apply();
+    void _editor_unapply(GameObjectState[] cv) => cv.invertedApply();
+  } 
 }
