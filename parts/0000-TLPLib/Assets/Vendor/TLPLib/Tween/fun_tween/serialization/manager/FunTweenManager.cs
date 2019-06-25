@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     enum RunMode : byte { Local, Global }
     // ReSharper disable once UnusedMember.Local
     enum AutoplayMode : byte {
-      Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3 
+      Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3, EnabledAndApplyZeroStateOnStart = 4
     }
 
     [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
@@ -91,12 +91,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     void handleStartAutoplay() {
-      if (_autoplay == AutoplayMode.ApplyZeroStateOnStart) applyZeroState();
+      if (_autoplay == AutoplayMode.ApplyZeroStateOnStart || _autoplay == AutoplayMode.EnabledAndApplyZeroStateOnStart)
+        applyZeroState();
       else if (_autoplay == AutoplayMode.ApplyEndStateOnStart) applyMaxDurationState();
     }
 
     public void OnEnable() {
-      if (_autoplay == AutoplayMode.Enabled) playForwards();
+      if (_autoplay == AutoplayMode.Enabled || _autoplay == AutoplayMode.EnabledAndApplyZeroStateOnStart) playForwards();
       else if (_runMode == RunMode.Local && lastStateWasPlaying) resume();
     }
 
@@ -160,7 +161,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     // Advanced Inspector does not render a button if it implements interface method. 
     void recreate() => invalidate();
 #endif
-    
+
     public void invalidate() {
       if (_manager != null) {
         _manager.stop();
@@ -169,7 +170,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       _timeline.invalidate();
       _manager = null;
       handleStartAutoplay();
-      if (_autoplay == AutoplayMode.Enabled) manager.play();
+      if (_autoplay == AutoplayMode.Enabled || _autoplay == AutoplayMode.EnabledAndApplyZeroStateOnStart) manager.play();
     }
     
     public enum Action : byte {
