@@ -32,8 +32,9 @@ namespace com.tinylabproductions.TLPLib.binding {
     public static void bindEnumerable<Template, Data>(
       GameObjectPool<Template> pool,
       IRxObservable<IEnumerable<Data>> rx,
-      IDisposableTracker tracker, Func<Template, Data, ISubscription> setup,
-      bool orderMatters = true
+      IDisposableTracker tracker, Func<Template, Data, IDisposable> setup,
+      bool orderMatters = true,
+      Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
       var current = new List<BindEnumerableEntry<Template>>();
 
@@ -48,13 +49,14 @@ namespace com.tinylabproductions.TLPLib.binding {
           current.Add(new BindEnumerableEntry<Template>(instance, sub));
           idx++;
         }
+        afterUpdate?.Invoke(current);
       });
       tracker.track(new Subscription(cleanupCurrent));
       
       void cleanupCurrent() {
         foreach (var element in current) {
           if (element.instance) pool.release(element.instance);
-          element.subscription.unsubscribe();
+          element.subscription.Dispose();
         }
         current.Clear();
       }
@@ -63,20 +65,21 @@ namespace com.tinylabproductions.TLPLib.binding {
     public static GameObjectPool<Template> bindEnumerable<Template, Data>(
       string gameObjectPoolName,
       Template template, IRxObservable<IEnumerable<Data>> rx,
-      IDisposableTracker tracker, Func<Template, Data, ISubscription> setup
+      IDisposableTracker tracker, Func<Template, Data, IDisposable> setup,
+      Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
       template.gameObject.SetActive(false);
       var pool = GameObjectPool.a(GameObjectPool.Init.noReparenting(
         gameObjectPoolName,
         create: () => template.clone(parent: template.transform.parent)
       ));
-      bindEnumerable(pool, rx, tracker, setup);
+      bindEnumerable(pool, rx, tracker, setup, afterUpdate: afterUpdate);
       return pool;
     }
 
     [Record] public readonly partial struct BindEnumerableEntry<Template> {
       public readonly Template instance;
-      public readonly ISubscription subscription;
+      public readonly IDisposable subscription;
     }
   }
 }
