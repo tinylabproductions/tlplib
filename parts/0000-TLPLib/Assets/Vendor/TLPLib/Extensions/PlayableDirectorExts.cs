@@ -5,10 +5,12 @@ using UnityEngine.Playables;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class PlayableDirectorExts {
-    public static IEnumerator play(this PlayableDirector director, PlayableAsset asset) {
+    public static IEnumerator play(
+      this PlayableDirector director, PlayableAsset asset, bool logErrorIfInactive = true
+    ) {
       // Directors do not play if the game object is not active.
       if (!director.isActiveAndEnabled) {
-        Log.d.error(
+        if (logErrorIfInactive) Log.d.error(
           $"Wanted to play {asset} on director, which is not active and enabled! " +
           "This does not work, ensure the director is active and enabled.",
           director
@@ -23,6 +25,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
           yield return null;
       }
     }
+    
     
     public static IEnumerator play(this PlayableDirector director) {
        yield return director.play(director.playableAsset);
