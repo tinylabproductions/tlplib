@@ -71,7 +71,8 @@ namespace com.tinylabproductions.TLPLib.binding {
       template.gameObject.SetActive(false);
       var pool = GameObjectPool.a(GameObjectPool.Init.noReparenting(
         gameObjectPoolName,
-        create: () => template.clone(parent: template.transform.parent)
+        create: () => template.clone(parent: template.transform.parent),
+        dontDestroyOnLoad: false
       ));
       bindEnumerable(pool, rx, tracker, setup, afterUpdate: afterUpdate);
       return pool;
