@@ -1,8 +1,10 @@
 ﻿
+using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
@@ -26,6 +28,28 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     [SerializeField, NotNull] SortingLayerReference sortingLayer;
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
+
+    [ShowInInspector, ValueDropdown(nameof(all))] SortingLayerReference selector {
+      get => sortingLayer;
+      set => sortingLayer = value;
+    }
+    
+    ValueDropdownList<SortingLayerReference> all {
+      get {
+        var list = new ValueDropdownList<SortingLayerReference>();
+        foreach (var item in Resources
+          .FindObjectsOfTypeAll<SortingLayerReference>()
+          .OrderBy(_ => _.sortingLayer)
+          .ThenBy(_ => _.orderInLayer)
+          .Select(_ =>
+            new ValueDropdownItem<SortingLayerReference>($"{_.orderInLayer,4}: {_.name}", _))
+        ) {
+          list.Add(item);
+        }
+        return list;
+      }
+    }
+
 
     Option<SortingLayerReference> sortingLayerOverride = F.none_;
     public void setSortingLayerOverride(SortingLayerReference sortingLayer) {

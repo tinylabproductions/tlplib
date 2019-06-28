@@ -31,7 +31,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
        yield return director.play(director.playableAsset);
     }
     
-    public static void setInitial(this PlayableDirector director, PlayableAsset asset) {
+    public static void setInitial(this PlayableDirector director, PlayableAsset asset, bool logErrorIfInactive = true) {
+      if (!director.isActiveAndEnabled) {
+        if (logErrorIfInactive) Log.d.error(
+          $"Wanted to set initial state for {asset} on director, which is not active and enabled! " +
+          "This does not work, ensure the director is active and enabled.",
+          director
+        );
+      }
       director.Play(asset, DirectorWrapMode.Hold);
       director.Evaluate();
       director.Stop();
