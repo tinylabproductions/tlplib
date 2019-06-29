@@ -473,8 +473,6 @@ namespace com.tinylabproductions.TLPLib.Formats.MiniJSON {
 
       void SerializeValue(object value)
       {
-        IList asList;
-        IDictionary asDict;
         string asStr;
 
         if (value == null)
@@ -489,13 +487,13 @@ namespace com.tinylabproductions.TLPLib.Formats.MiniJSON {
         {
           builder.Append((bool)value ? "true" : "false");
         }
-        else if ((asList = value as IList) != null)
-        {
-          SerializeArray(asList);
-        }
-        else if ((asDict = value as IDictionary) != null)
+        else if (value is IDictionary asDict)
         {
           SerializeObject(asDict);
+        }
+        else if (value is IEnumerable enumerable)
+        {
+          SerializeArray(enumerable);
         }
         else if (value is char)
         {
@@ -531,7 +529,7 @@ namespace com.tinylabproductions.TLPLib.Formats.MiniJSON {
         builder.Append('}');
       }
 
-      void SerializeArray(IList anArray)
+      void SerializeArray(IEnumerable anArray)
       {
         builder.Append('[');
 
