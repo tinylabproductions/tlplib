@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public class PrefValStorage {
-    readonly IPrefValueBackend backend;
+    public readonly IPrefValueBackend backend;
 
     public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
 
