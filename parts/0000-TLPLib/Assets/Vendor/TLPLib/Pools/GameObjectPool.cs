@@ -20,9 +20,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
 
       [PublicAPI]
       public static Init<T> noReparenting<T>(
-        string name, Func<T> create,
-        Action<T> wakeUp = null, Action<T> sleep = null,
-        bool dontDestroyOnLoad = true
+        string name, Func<T> create, bool dontDestroyOnLoad,
+        Action<T> wakeUp = null, Action<T> sleep = null
       ) => Init<T>.noReparenting(name, create, wakeUp, sleep, dontDestroyOnLoad);
     }
     
