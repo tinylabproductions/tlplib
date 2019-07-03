@@ -11,6 +11,7 @@ using com.tinylabproductions.TLPLib.unity_serialization;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -57,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         "elements and they fit into the screen, user can see the wraparound moving the elements " +
         "in the view."
       ),
-      // Inspect(nameof(wrapableAround))
+    ShowIf(nameof(wrapableAround))
     ] int _minElementsForWraparound = 5;
     [SerializeField] UnityOptionInt maxElementsFromCenter;
     [SerializeField] UnityOptionVector3 selectedPageOffset;

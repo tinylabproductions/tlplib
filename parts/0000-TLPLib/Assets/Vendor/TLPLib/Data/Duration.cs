@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.unity_serialization;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -100,6 +101,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly Config.Parser<object, Duration> configParser =
       Config.intParser.map(ms => new Duration(ms));
   }
+  
+  [Serializable, PublicAPI] public class UnityOptionDuration : UnityOption<Duration> {}
 
   public static class DurationExts {
     [PublicAPI] public static Duration milli(this int v) => v.millis();

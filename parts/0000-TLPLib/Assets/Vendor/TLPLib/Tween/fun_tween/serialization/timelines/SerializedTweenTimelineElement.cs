@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences {
   /// <summary>

@@ -23,7 +23,10 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
         // When placed in any PropertyGroupAttribute, value gets placed as child element in parent #groupName
         ?? property.Children.First(_ => _.Info.PropertyType == PropertyType.Group).Children.First();
 
-      var oneLine = value.Children.Count == 1 && value.Children[0].Children.Count == 0;
+      var oneLine =
+        value.Children.Count == 1
+        && value.Children[0].Children.Count == 0
+        && !value.Children[0].Attributes.Any(attribute => attribute is InfoBoxAttribute || attribute is TextAreaAttribute);
 
       SirenixEditorGUI.BeginHorizontalPropertyLayout(label);
       EditorGUI.BeginChangeCheck();
@@ -32,7 +35,10 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       if (!oneLine) SirenixEditorGUI.EndHorizontalPropertyLayout();
       if ((bool) isSet.ValueEntry.WeakSmartValue) {
         if (oneLine) {
-          value.Draw(GUIContent.none);
+          var prev = EditorGUIUtility.labelWidth;
+          EditorGUIUtility.labelWidth = EditorGUIUtility.currentViewWidth * 0.15f;
+          value.Draw(null);
+          EditorGUIUtility.labelWidth = prev;
         }
         else {
           GUIHelper.PushIndentLevel(EditorGUI.indentLevel + 1);

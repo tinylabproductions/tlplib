@@ -1,12 +1,13 @@
 ﻿using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.EditorTools {
   [CustomEditor(typeof(ObjectCloner))]
-  public class ObjectClonerEditor : UnityEditor.Editor {
+  public class ObjectClonerEditor : OdinEditor {
     enum LockedAxis2 { A, B }
 
     Option<GameObject> objectToMoveAroundOpt;

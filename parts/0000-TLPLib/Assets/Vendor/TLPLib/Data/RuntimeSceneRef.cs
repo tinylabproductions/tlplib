@@ -3,6 +3,8 @@ using System.Diagnostics;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -12,9 +14,8 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
-  // [AdvancedInspector(true)]
   public class RuntimeSceneRef {
-    [SerializeField/*, DontAllowSceneObject, NotNull, Inspect(nameof(inspect))*/]
+    [SerializeField, NotNull, AssetsOnly, ShowIf(nameof(inspect))]
     public Object scene;
 
     [SerializeField, HideInInspector] string _sceneName, _scenePath;

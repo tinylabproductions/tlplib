@@ -1,10 +1,8 @@
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components {
-
   [CustomEditor(typeof(TLPComponentMonoBehaviour), editorForChildClasses: true)]
   public class TLPComponentMonoBehaviourEditor : OdinEditor {
     public override void OnInspectorGUI() {

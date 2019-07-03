@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.unity_serialization;
 using JetBrains.Annotations;
 using UnityEngine.EventSystems;
 
@@ -21,4 +22,5 @@ namespace com.tinylabproductions.TLPLib.Components {
   }
 
   [Serializable, PublicAPI] public class UIClickForwarderPrefab : TagPrefab<UIClickForwarder> {}
+  [Serializable, PublicAPI] public class UnityOptionUIClickForwarder : UnityOption<UIClickForwarder> { }
 }

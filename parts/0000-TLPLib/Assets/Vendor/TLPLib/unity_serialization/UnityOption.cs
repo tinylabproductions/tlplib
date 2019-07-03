@@ -1,11 +1,10 @@
 ﻿using System;
-
-using com.tinylabproductions.TLPLib.Components;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -24,11 +23,8 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
 
 #pragma warning disable 649
     // ReSharper disable FieldCanBeMadeReadOnly.Local
-    [
-      SerializeField, FormerlySerializedAs("isSome"),
-      // Inspect, Descriptor(nameof(isSomeDescription))
-    ] bool _isSome;
-    [SerializeField, NotNull/*, Inspect(nameof(inspectValue)), Descriptor(nameof(description))*/] A _value;
+    [SerializeField, FormerlySerializedAs("isSome"), ShowInInspector] bool _isSome;
+    [SerializeField, NotNull, ShowIf(nameof(inspectValue))] A _value;
     // ReSharper restore FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -67,9 +63,6 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       if (!_isSome) _value = default;
       return _isSome;
     }
-
-    // protected virtual Description isSomeDescription { get; } = new Description("Set?");
-    // protected virtual Description description { get; } = new Description("Value");
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
     public Option<A> value => isSome ? F.some(_value) : Option<A>.None;
@@ -116,7 +109,6 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionColor : UnityOption<Color> {}
   [Serializable, PublicAPI] public class UnityOptionMonoBehaviour : UnityOption<MonoBehaviour> {}
   [Serializable, PublicAPI] public class UnityOptionMonoBehaviours : UnityOption<MonoBehaviour[]> {}
-  [Serializable, PublicAPI] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
   [Serializable, PublicAPI] public class UnityOptionAudioClip : UnityOption<AudioClip> {}
   [Serializable, PublicAPI] public class UnityOptionUShort : UnityOption<ushort> {
     public UnityOptionUShort() { }
@@ -142,12 +134,10 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionComponents : UnityOption<Component[]> {}
   [Serializable, PublicAPI] public class UnityOptionRigidbody2D : UnityOption<Rigidbody2D> { }
   [Serializable, PublicAPI] public class UnityOptionText : UnityOption<Text> {}
-  [Serializable, PublicAPI] public class UnityOptionUIClickForwarder : UnityOption<UIClickForwarder> { }
   [Serializable, PublicAPI] public class UnityOptionTransform : UnityOption<Transform> { }
   [Serializable, PublicAPI] public class UnityOptionImage : UnityOption<Image> { }
   [Serializable, PublicAPI] public class UnityOptionTexture2D : UnityOption<Texture2D> {}
   [Serializable, PublicAPI] public class UnityOptionKeyCode : UnityOption<KeyCode> {}
-  [Serializable, PublicAPI] public class UnityOptionDuration: UnityOption<Duration> {}
   [Serializable, PublicAPI] public class UnityOptionSprite : UnityOption<Sprite> {}
   [Serializable, PublicAPI] public class UnityOptionParticleSystem : UnityOption<ParticleSystem> {}
   [Serializable, PublicAPI] public class UnityOptionTrailRenderer : UnityOption<TrailRenderer> {}

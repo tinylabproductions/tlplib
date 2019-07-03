@@ -1,12 +1,13 @@
 using System;
 using com.tinylabproductions.TLPLib.Logger;
+using Sirenix.OdinInspector.Editor;
 using Smooth.Collections;
 using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.EditorTools {
   [CustomEditor(typeof(PrefabConnectionExposer))]
-  public class PrefabConnectionExposerEditor : UnityEditor.Editor {
+  public class PrefabConnectionExposerEditor : OdinEditor {
     public override void OnInspectorGUI() {
       var so = (PrefabConnectionExposer) serializedObject.targetObject;
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using com.tinylabproductions.TLPLib.Components.gradient;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.unity_serialization;
+using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public bool gradient;
     bool gradientOn => gradient;
-    /*[Inspect(nameof(gradientOn))] */public Color gradientColor;
+    [ShowIf(nameof(gradientOn))] public Color gradientColor;
 
     public GraphicStyle(Color graphicColor, bool gradient, Color gradientColor, Color outlineColor) {
       this.graphicColor = graphicColor;
@@ -45,4 +47,6 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       }
     }
   }
+  
+  [Serializable, PublicAPI] public class UnityOptionGraphicStyle : UnityOption<GraphicStyle> {}
 }

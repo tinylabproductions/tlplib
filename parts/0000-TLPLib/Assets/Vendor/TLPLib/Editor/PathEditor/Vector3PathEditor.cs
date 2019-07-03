@@ -6,12 +6,13 @@ using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.path {
   [CustomEditor(typeof(Vector3PathBehaviour))]
-  public class Vector3PathEditor : UnityEditor.Editor, IMB_OnDisable, IMB_OnEnable {
+  public class Vector3PathEditor : OdinEditor, IMB_OnDisable, IMB_OnEnable {
     
     DisposableTracker dt = new DisposableTracker();
 

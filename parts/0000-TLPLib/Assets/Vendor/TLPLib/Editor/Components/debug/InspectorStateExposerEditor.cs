@@ -1,10 +1,11 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.debug {
   [CustomEditor(typeof(InspectorStateExposer))]
-  public class InspectorStateExposerEditor : UnityEditor.Editor {
+  public class InspectorStateExposerEditor : OdinEditor {
     static readonly LazyVal<GUIStyle> multilineTextStyle = F.lazy(() => new GUIStyle {wordWrap = true});
     
     public override void OnInspectorGUI() {

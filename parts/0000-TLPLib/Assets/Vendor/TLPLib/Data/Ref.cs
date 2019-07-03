@@ -46,14 +46,6 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>
   /// Lazy reference that wraps another <see cref="Ref{A}"/>, but does not initialize it
   /// until first access.
-  ///
-  /// Very useful in making <see cref="PrefVal{A}"/>s inspectable.
-  ///
-  /// For example:
-  /// <code>
-  /// [Inspect, UsedImplicitly]
-  /// LazyRef&lt;string&gt; adbAdditions = Ref.lazy(() =&gt; prefVals.adbAdditions);
-  /// </code>
   /// </summary>
   public class LazyRef<A> : Ref<A> {
     [HideInInspector]
@@ -85,46 +77,4 @@ namespace com.tinylabproductions.TLPLib.Data {
           r.value = a;
       });
   }
-
-  /*[DrawerPriority(10, 0, 0)] // Giv
-  public class LazyRefDrawer<L, A> : OdinValueDrawer<L>
-    where L : LazyRef<A>
-  {
-    protected override bool CanDrawValueProperty(InspectorProperty property) {
-      return base.CanDrawValueProperty(property);
-
-    }
-
-
-
-    /*protected override void DrawPropertyLayout(GUIContent label) {
-      var entry = this.ValueEntry;
-      entry.SmartValue.value;
-      // Check all values for null, and if any are null, create an instance
-      // Only do this in repaint; as a rule, only change reference type values in repaint
-      Debug.LogError("TEST DRAWER");
-//      if (Event.current.type == EventType.Repaint)
-//        for (int i = 0; i < entry.ValueCount; i++)
-//          if (entry.Values[i] == null)
-//            entry.Values[i] = new L();
-
-      // Call the next drawer in line, and let the lists be drawn normally
-//      this.CallNextDrawer(label);
-      base.DrawPropertyLayout(new GUIContent("TEST"));
-
-    }#1#
-/*    protected override void DrawPropertyRect(Rect position, IPropertyValueEntry<LazyRef<T>> entry, GUIContent label) { base.DrawPropertyRect(position, entry, label); }
-
-    protected override void DrawPropertyLayout(IPropertyValueEntry<LazyRef<T>> entry, GUIContent label) {
-      // Check all values for null, and if any are null, create an instance
-      // Only do this in repaint; as a rule, only change reference type values in repaint
-      if (Event.current.type == EventType.Repaint)
-        for (int i = 0; i < entry.ValueCount; i++)
-          if (entry.Values[i] == null)
-            entry.Values[i] = new T();
-
-      // Call the next drawer in line, and let the lists be drawn normally
-      this.CallNextDrawer(entry, label);
-    }#1#
-  }*/
 }

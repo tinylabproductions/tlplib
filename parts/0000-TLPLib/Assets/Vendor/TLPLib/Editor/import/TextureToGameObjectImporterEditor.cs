@@ -6,13 +6,14 @@ using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 using EditorUtils = com.tinylabproductions.TLPLib.Utilities.EditorUtils;
 
 namespace com.tinylabproductions.TLPLib.import {
   [CustomEditor(typeof(TextureToGameObjectImporter))]
-  public class TextureToGameObjectImporterEditor : UnityEditor.Editor {
+  public class TextureToGameObjectImporterEditor : OdinEditor {
     public override void OnInspectorGUI() {
       var obj = (TextureToGameObjectImporter) target;
 

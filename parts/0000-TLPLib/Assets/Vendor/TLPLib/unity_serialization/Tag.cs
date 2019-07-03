@@ -1,5 +1,5 @@
 ﻿using System;
-
+using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
-    [SerializeField/*, UnityTag*/] public string value;
+    [SerializeField, UnityTag] public string value;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
     #endregion

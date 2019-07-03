@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-// todo: reenable
-//using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.validations;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -85,10 +84,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       SourceType defaultValue
     ) : base(ops, add, extract, defaultValue) { }
     
-//    [Inspect]
-//    public void setCurrentGameObjectAsTarget() {
-//      _targets[0] = gameObject.transform;
-//    }
+    [Button]
+    public void setCurrentGameObjectAsTarget() {
+      _targets[0] = gameObject.transform;
+    }
   }
   
   public abstract class SerializedTweenerWithTransformTarget<Value> : SerializedTweener<Value, Transform> {
@@ -100,10 +99,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       Value defaultValue
     ) : base(ops, add, extract, mutator, defaultValue) { }
 
-//    [Inspect]
-//    public void setCurrentGameObjectAsTarget() {
-//      _targets[0] = gameObject.transform;
-//    }
+    [Button]
+    public void setCurrentGameObjectAsTarget() {
+      _targets[0] = gameObject.transform;
+    }
   }
 
   public abstract class SerializedTweener<Value, Target> : SerializedTweener<Value, Value, Target> {

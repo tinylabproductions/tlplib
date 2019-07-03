@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-
+using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
@@ -9,9 +9,8 @@ using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Serializable]
-  // [AdvancedInspector(true)]
   public class RuntimeFolderRef {
-    [SerializeField/*, DontAllowSceneObject, Inspect(nameof(inspect))*/]
+    [SerializeField, AssetsOnly, ShowIf(nameof(inspect))]
     public Object folder;
 
     [SerializeField, HideInInspector] string _folderName;

@@ -36,24 +36,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [
       SerializeField, TabGroup(TAB_FIELDS),
       InfoBox(
-        infoMessageType: InfoMessageType.Info, 
-        message: 
-          "Local mode pauses tweens when this game object is disabled and resumes when it is enabled.\n" +
-          "Global mode continues to run the tween even if irrespective of this game objects state."
+        "Local mode pauses tweens when this game object is disabled and resumes when it is enabled.\n" +
+        "Global mode continues to run the tween even if irrespective of this game objects state."
       )
     ] RunMode _runMode = RunMode.Local;
     [
       SerializeField, TabGroup(TAB_FIELDS),
       InfoBox(
-        infoMessageType: InfoMessageType.Info,
-        message: 
-          "Modes:\n" +
-          "- " + nameof(AutoplayMode.Disabled) + ": does nothing.\n" +
-          "- " + nameof(AutoplayMode.Enabled) + ": starts playing forwards upon enabling this game object. Pauses upon " +
-          "disabling game object, resumes when it is enabled again.\n" +
-          "- " + nameof(AutoplayMode.ApplyZeroStateOnStart) + ": when this script receives Unity Start callback, " +
-          "sets all the properties of non-relatively tweened objects like it was zeroth second in the timeline.\n" +
-          "- " + nameof(AutoplayMode.ApplyEndStateOnStart) + ": same, but sets the last second state."
+        "Modes:\n" +
+        "- " + nameof(AutoplayMode.Disabled) + ": does nothing.\n" +
+        "- " + nameof(AutoplayMode.Enabled) + ": starts playing forwards upon enabling this game object. Pauses upon " +
+        "disabling game object, resumes when it is enabled again.\n" +
+        "- " + nameof(AutoplayMode.ApplyZeroStateOnStart) + ": when this script receives Unity Start callback, " +
+        "sets all the properties of non-relatively tweened objects like it was zeroth second in the timeline.\n" +
+        "- " + nameof(AutoplayMode.ApplyEndStateOnStart) + ": same, but sets the last second state."
       )
     ] AutoplayMode _autoplay = AutoplayMode.Enabled;
     [SerializeField, TabGroup(TAB_FIELDS)] TweenTime _time = TweenTime.OnUpdate;

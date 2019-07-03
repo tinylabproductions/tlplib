@@ -8,7 +8,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -55,12 +54,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
      )]
     static void checkSelectedObjects() {
       var errors = check(
-        new CheckContext("Selection"), Selection.objects,
-        Option<CustomObjectValidator>.None,
+        context: new CheckContext("Selection"),
+        objects: Selection.objects,
+        customValidatorOpt: Option<CustomObjectValidator>.None,
         progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress.ratio
         ),
-        EditorUtility.ClearProgressBar, UniqueValuesCache.create.some()
+        onFinish: EditorUtility.ClearProgressBar,
+        uniqueValuesCache: UniqueValuesCache.create.some()
       );
       showErrors(errors);
     }
@@ -97,8 +98,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     ) {
       var objects = getSceneObjects(scene);
       var errors = check(
-        new CheckContext(scene.name), objects, customValidatorOpt, 
-        onProgress, onFinish
+        context: new CheckContext(scene.name),
+        objects: objects,
+        customValidatorOpt: customValidatorOpt, 
+        onProgress: onProgress,
+        onFinish: onFinish
       );
       return errors;
     }
@@ -123,8 +127,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var dependencies = collectDependencies(loadedAssets);
       return check(
         // and instead of &, because unity does not show '&' in some windows
-        new CheckContext("Assets and Deps"),
-        dependencies, customValidatorOpt, onProgress, onFinish, UniqueValuesCache.create.some()
+        context: new CheckContext("Assets and Deps"),
+        objects: dependencies,
+        customValidatorOpt: customValidatorOpt,
+        onProgress: onProgress,
+        onFinish: onFinish,
+        uniqueValuesCache: UniqueValuesCache.create.some()
       );
     }
 
@@ -139,9 +147,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<CustomObjectValidator> customValidatorOpt = default,
       Act<Progress> onProgress = null, Action onFinish = null
     ) => check(
-      context,
-      collectDependencies(objects.ToArray()),
-      customValidatorOpt: customValidatorOpt, onProgress: onProgress, onFinish: onFinish,
+      context: context,
+      objects: collectDependencies(objects.ToArray()),
+      customValidatorOpt: customValidatorOpt,
+      onProgress: onProgress,
+      onFinish: onFinish,
       uniqueValuesCache: UniqueValuesCache.create.some()
     );
 

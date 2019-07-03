@@ -4,13 +4,19 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.import {
   [CreateAssetMenu(menuName = "Game/Texture To Game Object Importer Data")]
   public class TextureToGameObjectImporter : ScriptableObject {
-    [Serializable]
-    public class Data/* : IInspectorRunning*/ {
+    [Serializable,
+      InfoBox(
+        "If other objects are present, a random object will be spawned from " +
+        "the first object and other objects."
+      )
+    ]
+    public class Data {
       #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -39,18 +45,6 @@ namespace com.tinylabproductions.TLPLib.import {
 
         return $"#{color.toHex()} -> {sb}";
       }
-
-      public void OnHeaderGUI() {
-#if UNITY_EDITOR
-        UnityEditor.EditorGUILayout.HelpBox(
-          "If other objects are present, a random object will be spawned from " +
-          "the first object and other objects.",
-          UnityEditor.MessageType.Info
-        );
-#endif
-      }
-
-      public void OnFooterGUI() { }
     }
 
     #region Unity Serialized Fields
