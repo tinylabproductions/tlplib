@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   /** Representation of configuration path. */
@@ -269,6 +270,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       catch (OverflowException) {}
       return parseErrorEFor<int>(path, n);
     };
+
+    [PublicAPI] public static readonly Parser<object, Color> colorParser =
+      stringParser.flatMap(s => ColorUtility.TryParseHtmlString(s, out var c) ? F.some(c) : F.none_);
 
     /// <summary>Parses [100,24]</summary>
     [PublicAPI] public static readonly Parser<object, decimal> decimalParser =
