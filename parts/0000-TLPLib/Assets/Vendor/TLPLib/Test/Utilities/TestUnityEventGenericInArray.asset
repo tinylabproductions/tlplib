@@ -3,8 +3,9 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -14,25 +15,25 @@ MonoBehaviour:
   unityEvent:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   nestedEvent:
     unityEvent:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-        PublicKeyToken=null
+      m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
   nestedEventArray: []
   unityEventGameObject:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: TestUnityEvent+UnityEventGameObject, Assembly-CSharp-Editor-firstpass,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    m_TypeName: TestUnityEvent+UnityEventGameObject, tlplib-tests, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   unityEventGameObjectArray:
   - m_PersistentCalls:
       m_Calls: []
-    m_TypeName: TestUnityEvent+UnityEventGameObject, Assembly-CSharp-Editor-firstpass,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    m_TypeName: TestUnityEvent+UnityEventGameObject, tlplib-tests, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -57,5 +58,5 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: TestUnityEvent+UnityEventGameObject, Assembly-CSharp-Editor-firstpass,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    m_TypeName: TestUnityEvent+UnityEventGameObject, tlplib-tests, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
