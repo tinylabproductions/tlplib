@@ -1,17 +1,13 @@
-{
-    "name": "tlplib-editor",
-    "references": [
-        "tlplib-core",
-        "tlplib"
-    ],
+﻿{
+    "name": "tlplib-core",
+    "references": [],
     "optionalUnityReferences": [],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": []
 }

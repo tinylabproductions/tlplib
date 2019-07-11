@@ -1,6 +1,7 @@
 {
     "name": "tlplib-tests",
     "references": [
+        "tlplib-core",
         "tlplib",
         "tlplib-editor"
     ],
