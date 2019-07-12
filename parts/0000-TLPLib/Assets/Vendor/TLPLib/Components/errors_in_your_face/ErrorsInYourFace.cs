@@ -117,12 +117,13 @@ namespace com.tinylabproductions.TLPLib.Components.errors_in_your_face {
             stacktrace +
             $"</size></color>";
         }
+        
+        entries.AddFirst(entry.trimTo(maxSymbols));
 
         while (calculateSymbols() > maxSymbols) {
           entries.RemoveLast();
           removedMessages++;
         }
-        entries.AddFirst(entry);
       }
 
       int calculateSymbols() => entries.Aggregate(0, (sum, entry) => sum + entry.Length);
