@@ -3,6 +3,7 @@ using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
+using pzd.lib.serialization;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {

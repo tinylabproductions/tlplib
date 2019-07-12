@@ -9,6 +9,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -170,9 +171,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do async cancellable WWW request. */
-    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
-      Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
-      var f = Future<Either<Cancelled, Either<WWWError, WWW>>>.async(out promise);
+    public static Cancellable<Future<Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>>> toFuture(this WWW www) {
+      Promise<Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>> promise;
+      var f = Future<Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>>.async(out promise);
 
       var wwwCoroutine = StartCoroutine(WWWEnumerator(www, promise));
 
@@ -181,18 +182,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
         wwwCoroutine.stop();
         www.Dispose();
-        promise.complete(new Either<Cancelled, Either<WWWError, WWW>>(Cancelled.instance));
+        promise.complete(new Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>(Cancelled.instance));
         return true;
       });
     }
 
     /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
     [PublicAPI]
-    public static Future<Either<WebRequestError, A>> toFuture<A>(
+    public static Future<Functional.Either<WebRequestError, A>> toFuture<A>(
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, 
       Func<UnityWebRequest, A> onSuccess
     ) {
-      var f = Future<Either<WebRequestError, A>>.async(out var promise);
+      var f = Future<Functional.Either<WebRequestError, A>>.async(out var promise);
       var op = req.SendWebRequest();
       op.completed += operation => {
         var responseCode = req.responseCode;
@@ -235,20 +236,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     [PublicAPI]
-    public static Future<Either<LogEntry, A>> toFutureSimple<A>(
+    public static Future<Functional.Either<LogEntry, A>> toFutureSimple<A>(
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Func<UnityWebRequest, A> onSuccess
     ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
 
     [PublicAPI]
-    public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
-      this Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> cancellable
+    public static Cancellable<Future<Functional.Either<Cancelled, Functional.Either<WWWError, Texture2D>>>> asTexture(
+      this Cancellable<Future<Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>>> cancellable
     ) => cancellable.map(f => f.map(e => e.mapRight(_ => _.asTexture())));
 
     public static IEnumerator WWWEnumerator(WWW www) { yield return www; }
 
-    public static IEnumerator WWWEnumerator(WWW www, Promise<Either<Cancelled, Either<WWWError, WWW>>> promise) =>
+    public static IEnumerator WWWEnumerator(WWW www, Promise<Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>> promise) =>
       WWWEnumerator(www).afterThis(() => promise.complete(
-        Either<Cancelled, Either<WWWError, WWW>>.Right(www.toEither())
+        Functional.Either<Cancelled, Functional.Either<WWWError, WWW>>.Right(www.toEither())
       ));
 
     /* Wait until enumerator is completed and then do action */
@@ -311,7 +312,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Returns reactive value that can be used to observe current stage
      * of the application.
      **/
-    public static IRxVal<Option<B>> inAsyncSeq<A, B>(
+    public static IRxVal<Functional.Option<B>> inAsyncSeq<A, B>(
       this IEnumerable<A> enumerable, Func<A, Future<B>> asyncAction
     ) {
       var rxRef = RxRef.a(F.none<B>());
@@ -320,7 +321,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     static void inAsyncSeq<A, B>(
-      IEnumerator<A> e, IRxRef<Option<B>> rxRef,
+      IEnumerator<A> e, IRxRef<Functional.Option<B>> rxRef,
       Func<A, Future<B>> asyncAction
     ) {
       if (! e.MoveNext()) return;

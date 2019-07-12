@@ -7,11 +7,12 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   static class FT {
-    public static readonly Func<int, Either<int, string>> left = F.left<int, string>;
-    public static readonly Func<string, Either<int, string>> right = F.right<int, string>;
+    public static readonly Func<int, Functional.Either<int, string>> left = F.left<int, string>;
+    public static readonly Func<string, Functional.Either<int, string>> right = F.right<int, string>;
 
     public static IEnumerable<Future<A>> addUnfulfilled<A>(this IEnumerable<Future<A>> futures)
       { return futures.Concat(Future.unfulfilled<A>().Yield()); }
@@ -385,7 +386,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void ItemNotFoundNoCompletion() {
       new [] { FT.left(1), FT.left(2), FT.left(3), FT.left(4) }.
         Select(Future.successful).addUnfulfilled().
-        firstOfSuccessfulCollect().value.shouldEqual(F.none<Either<int[], string>>());
+        firstOfSuccessfulCollect().value.shouldEqual(F.none<Functional.Either<int[], string>>());
     }
   }
 
@@ -528,7 +529,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       tc.timePassed = d - new Duration(1);
       f.value.shouldBeNone();
       promise.complete(5);
-      f.value.shouldBeSome(Either<Duration, int>.Right(5));
+      f.value.shouldBeSome(Functional.Either<Duration, int>.Right(5));
     }
 
     [Test]
@@ -540,7 +541,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       tc.timePassed = d - new Duration(1);
       f.value.shouldBeNone();
       promise.complete(5);
-      f.value.shouldBeSome(Either<Duration, int>.Right(5));
+      f.value.shouldBeSome(Functional.Either<Duration, int>.Right(5));
       tc.timePassed += d;
       failureResult.shouldEqualEnum();
     }

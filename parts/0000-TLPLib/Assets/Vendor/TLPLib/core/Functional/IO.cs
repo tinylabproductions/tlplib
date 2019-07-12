@@ -1,4 +1,5 @@
 ﻿using System;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static class IO {

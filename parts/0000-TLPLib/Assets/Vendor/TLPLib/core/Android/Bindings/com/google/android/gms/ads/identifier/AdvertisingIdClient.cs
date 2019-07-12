@@ -1,10 +1,10 @@
-﻿using System;
-#if UNITY_ANDROID
+﻿#if UNITY_ANDROID
+using System;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content;
-#endif
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using UnityEngine;
+#endif
+using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.ads.identifier {
   public interface AdvertisingIdClientInfo {

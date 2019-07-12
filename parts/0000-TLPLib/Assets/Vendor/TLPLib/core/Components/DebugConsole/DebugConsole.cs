@@ -16,8 +16,11 @@ using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.functional;
+using pzd.lib.exts;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Option = com.tinylabproductions.TLPLib.Functional.Option;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   [PublicAPI] public partial class DConsole {
@@ -108,8 +111,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       tracker.track(sub);
       return sub;
     }
-    
-    Option<Instance> current = F.none<Instance>();
+
+    Functional.Option<Instance> current = F.none<Instance>();
 
     public static readonly ImmutableList<int> DEFAULT_MOUSE_SEQUENCE = ImmutableList.Create(0, 1, 3, 2, 0, 2, 3, 1, 0);
     public static readonly ImmutableList<Direction> DEFAULT_DIRECTION_SEQUENCE =
@@ -165,10 +168,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public static IRxObservable<Unit> registerDebugSequence(
       IDisposableTracker tracker,
-      DebugSequenceMouseData mouseData=null,
-      Option<DebugSequenceDirectionData> directionDataOpt=default,
-      DebugConsoleBinding binding=null,
-      Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
+      DebugSequenceMouseData mouseData=null, Functional.Option<DebugSequenceDirectionData> directionDataOpt=default,
+      DebugConsoleBinding binding=null, Functional.Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
@@ -196,7 +197,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
             var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
             var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
             // Both are equal, can't decide.
-            if (Math.Abs(horizontal - vertical) < 0.001f) return Option<Direction>.None;
+            if (Math.Abs(horizontal - vertical) < 0.001f) return Functional.Option<Direction>.None;
             return
               Math.Abs(horizontal) > Math.Abs(vertical)
               ? F.some(horizontal > 0 ? Direction.Right : Direction.Left)
@@ -307,7 +308,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       
       public float height => 20;
       public Percentage width => new Percentage(1f);
-      public Option<DynamicVerticalLayout.IElementWithViewData> asElementWithView => 
+      public Functional.Option<DynamicVerticalLayout.IElementWithViewData> asElementWithView => 
         this.some<DynamicVerticalLayout.IElementWithViewData>();
 
       public DynamicVerticalLayout.IElementView createItem(Transform parent) {
@@ -419,7 +420,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
   }
 
-  public delegate Option<Obj> HasObjFunc<Obj>();
+  public delegate Functional.Option<Obj> HasObjFunc<Obj>();
 
   public struct DConsoleRegistrar {
     public readonly DConsole console;
@@ -476,7 +477,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       });
     }
     
-    public void registerToggleOpt(string name, Ref<Option<bool>> r, string comment=null) {
+    public void registerToggleOpt(string name, Ref<Functional.Option<bool>> r, string comment=null) {
       register($"{name}?", () => r.value);
       register($"Clear {name}", () => r.value = F.none_);
       register($"Toggle {name}", () => {
@@ -506,10 +507,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       registerNumeric(name, a, num, num.fromInt(1), quickSetValues);
 
     public void registerNumericOpt<A>(
-      string name, Ref<Option<A>> aOpt, A showOnNone, Numeric<A> num,
+      string name, Ref<Functional.Option<A>> aOpt, A showOnNone, Numeric<A> num,
       ImmutableList<A> quickSetValues = null
     ) {
-      register($"Clear {name}", () => aOpt.value = Option<A>.None);
+      register($"Clear {name}", () => aOpt.value = Functional.Option<A>.None);
       register($"{name} opt?", () => aOpt.value);
       registerNumeric(
         name, Ref.a(
@@ -547,14 +548,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
-    static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
+    static readonly Functional.Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
     
     [PublicAPI]
     public void registerBools(string name, Ref<bool> reference, string comment = null) =>
       registerEnum(name, reference, BOOLS, comment);
     
     [PublicAPI]
-    public void registerBools(string name, Ref<Option<bool>> reference, string comment = null) =>
+    public void registerBools(string name, Ref<Functional.Option<bool>> reference, string comment = null) =>
       registerEnum(name, reference, OPT_BOOLS, comment);
   }
 }

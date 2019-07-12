@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public class EitherTestEquality {

@@ -4,6 +4,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class RxValOps {
@@ -139,16 +140,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// <summary>
     /// Returns any value that satisfies the predicate. Order is not guaranteed.
     /// </summary>
-    public static IRxVal<Option<A>> anyThat<A, Coll>(
+    public static IRxVal<Functional.Option<A>> anyThat<A, Coll>(
       this Coll vals, Func<A, bool> predicate
     ) where Coll : IEnumerable<IRxVal<A>> {
       var dict = new Dictionary<IRxVal<A>, A>();
 
       var lastKnownValue = F.none<A>();
-      var rxVal = new RxVal<Option<A>>(
+      var rxVal = new RxVal<Functional.Option<A>>(
         lastKnownValue,
         setValue => {
-          void set(Option<A> value) {
+          void set(Functional.Option<A> value) {
             lastKnownValue = value;
             setValue(value);
           }
@@ -166,7 +167,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
               else {
                 dict.Remove(rx);
                 if (lastKnownValue.isSome) {
-                  set(dict.isEmpty() ? Option<A>.None : dict.First().Value.some());
+                  set(dict.isEmpty() ? Functional.Option<A>.None : dict.First().Value.some());
                 }
               }
             }
@@ -178,7 +179,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       return rxVal;
     }
 
-    public static IRxVal<Option<A>> anyThat<A>(
+    public static IRxVal<Functional.Option<A>> anyThat<A>(
       this IEnumerable<IRxVal<A>> vals, Func<A, bool> predicate
     ) => vals.anyThat<A, IEnumerable<IRxVal<A>>>(predicate);
 
@@ -187,11 +188,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     =>
       vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isSome);
 
-    public static IRxVal<Option<A>> anyDefined<A>(
-      this IEnumerable<IRxVal<Option<A>>> vals
+    public static IRxVal<Functional.Option<A>> anyDefined<A>(
+      this IEnumerable<IRxVal<Functional.Option<A>>> vals
     ) =>
       vals
-      .anyThat<Option<A>, IEnumerable<IRxVal<Option<A>>>>(opt => opt.isSome)
+      .anyThat<Functional.Option<A>, IEnumerable<IRxVal<Functional.Option<A>>>>(opt => opt.isSome)
       .map(_ => _.flatten());
 
     // TODO: test
@@ -221,8 +222,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxObservable<Unit> toEventSource<A>(this IRxVal<A> o) =>
       o.toEventSource(_ => F.unit);
 
-    public static IRxVal<Option<B>> optFlatMap<A, B>(
-      this IRxVal<Option<A>> source, Func<A, IRxVal<Option<B>>> extractor
+    public static IRxVal<Functional.Option<B>> optFlatMap<A, B>(
+      this IRxVal<Functional.Option<A>> source, Func<A, IRxVal<Functional.Option<B>>> extractor
     ) =>
       source.flatMap(aOpt =>
         aOpt.fold(
@@ -231,23 +232,23 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         )
       );
 
-    public static IRxVal<Option<B>> optFlatMap<A, B>(
-      this IRxVal<Option<A>> source, Func<A, IRxVal<B>> extractor
+    public static IRxVal<Functional.Option<B>> optFlatMap<A, B>(
+      this IRxVal<Functional.Option<A>> source, Func<A, IRxVal<B>> extractor
     ) =>
       source.optFlatMap(a => extractor(a).map(b => b.some()));
 
-    public static IRxVal<Option<B>> optFlatMap<A, B>(
-      this IRxVal<Option<A>> source, Func<A, Option<IRxVal<Option<B>>>> extractor
+    public static IRxVal<Functional.Option<B>> optFlatMap<A, B>(
+      this IRxVal<Functional.Option<A>> source, Func<A, Functional.Option<IRxVal<Functional.Option<B>>>> extractor
     ) =>
       source.flatMap(aOpt =>
         aOpt.flatMap(extractor).getOrElse(RxVal.cached(F.none<B>()))
       );
 
-    public static IRxVal<Option<B>> optMap<A, B>(
-      this IRxVal<Option<A>> source, Func<A, B> mapper
+    public static IRxVal<Functional.Option<B>> optMap<A, B>(
+      this IRxVal<Functional.Option<A>> source, Func<A, B> mapper
     ) => source.map(aOpt => aOpt.map(mapper));
 
-    public static IRxVal<Option<A>> extract<A>(this Option<IRxVal<A>> rxOpt) =>
+    public static IRxVal<Functional.Option<A>> extract<A>(this Functional.Option<IRxVal<A>> rxOpt) =>
       rxOpt.fold(RxVal.cached(F.none<A>()), val => val.map(a => a.some()));
 
     public static Func<A, A> filterMapper<A>(Func<A, bool> predicate, Func<A> onFiltered) =>

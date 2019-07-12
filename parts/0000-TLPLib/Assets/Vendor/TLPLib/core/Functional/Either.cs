@@ -5,6 +5,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   [PublicAPI] public static class EitherExts {
@@ -78,6 +79,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
       return (aBuilder.ToImmutable(), bBuilder.ToImmutableList());
     }
+    
+    [PublicAPI] public static pzd.lib.functional.Either<A, B> toPzd<A, B>(this Either<A, B> e) => 
+      e.isLeft 
+        ? new pzd.lib.functional.Either<A, B>(e.__unsafeGetLeft) 
+        : new pzd.lib.functional.Either<A, B>(e.__unsafeGetRight);
+    
+    [PublicAPI] public static Either<A, B> fromPzd<A, B>(this pzd.lib.functional.Either<A, B> e) => 
+      e.isLeft ? new Either<A, B>(e.__unsafeGetLeft) : new Either<A, B>(e.__unsafeGetRight);
   }
 
   public static class Either {
@@ -252,9 +261,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [PublicAPI] public EitherEnumerator<A, B> GetEnumerator() => new EitherEnumerator<A, B>(this);
 
-    // Converstions from values.
+    // Conversions from values.
     [PublicAPI] public static implicit operator Either<A, B>(A left) => new Either<A, B>(left);
     [PublicAPI] public static implicit operator Either<A, B>(B right) => new Either<A, B>(right);
+    
+    [PublicAPI] public static implicit operator pzd.lib.functional.Either<A, B>(Either<A, B> e) => 
+      e.isLeft ? new pzd.lib.functional.Either<A, B>(e._leftValue) : new pzd.lib.functional.Either<A, B>(e._rightValue);
+    [PublicAPI] public static implicit operator Either<A, B>(pzd.lib.functional.Either<A, B> e) => 
+      e.isLeft ? new Either<A, B>(e.__unsafeGetLeft) : new Either<A, B>(e.__unsafeGetRight);
   }
 
   public struct EitherEnumerator<A, B> {
@@ -271,10 +285,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
       read = true;
       return either.rightOrThrow;
     } }
-  }
-
-  public class WrongEitherSideException : Exception {
-    public WrongEitherSideException(string message) : base(message) {}
   }
 
   public static class EitherBuilderExts {

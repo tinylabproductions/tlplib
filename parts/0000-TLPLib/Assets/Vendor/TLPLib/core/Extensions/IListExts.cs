@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using Smooth.Collections;
 using Random = UnityEngine.Random;
 
@@ -34,17 +35,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     
     public static Option<T> get<T>(this IList<T> list, int index) =>
       list.indexValid(index) ? F.some(list[index]) : F.none<T>();
-
-    public static bool tryGet<A>(this IList<A> list, int index, out A a) {
-      if (list.indexValid(index)) {
-        a = list[index];
-        return true;
-      }
-      else {
-        a = default;
-        return false;
-      }
-    }
 
     [PublicAPI]
     public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) =>

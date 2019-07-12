@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class StringExts {

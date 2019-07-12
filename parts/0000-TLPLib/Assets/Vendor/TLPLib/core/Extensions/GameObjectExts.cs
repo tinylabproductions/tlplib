@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 using Object = UnityEngine.Object;
@@ -72,14 +73,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return comp ? comp : go.AddComponent<A>();
     }
 
-    public static Option<A> GetComponentSafe<A>(this GameObject go) where A : Component =>
+    public static Functional.Option<A> GetComponentSafe<A>(this GameObject go) where A : Component =>
       go.GetComponent<A>().opt();
 
-    public static Either<ErrorMsg, A> GetComponentSafeE<A>(this GameObject go) where A : Component {
+    public static Functional.Either<ErrorMsg, A> GetComponentSafeE<A>(this GameObject go) where A : Component {
       var res = go.GetComponentSafe<A>();
       return
         res.isNone
-        ? (Either<ErrorMsg, A>) new ErrorMsg($"Can't find component {typeof(A)} on '{go}'")
+        ? (Functional.Either<ErrorMsg, A>) new ErrorMsg($"Can't find component {typeof(A)} on '{go}'")
         : res.__unsafeGetValue;
     }
 
@@ -88,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     // Modified from unity decompiled dll.
     // Added includeInactive parameter.
-    public static Option<T> getComponentInChildren<T>(
+    public static Functional.Option<T> getComponentInChildren<T>(
       this GameObject go, bool includeInactive
     ) where T : Component {
       if (includeInactive || go.activeInHierarchy) {
@@ -107,7 +108,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<T>();
     }
 
-    public static Option<A> getComponentInParents<A>(
+    public static Functional.Option<A> getComponentInParents<A>(
       this GameObject go, bool includeSelf = true
     ) where A : Component {
       var current = go;

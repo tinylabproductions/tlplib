@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public class IObservableTest : ImplicitSpecification {
@@ -642,7 +643,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var list = t._1;
       foreach (var a in new[] {1, 1, 2, 2, 3, 3}) subj.push(a);
       list.shouldEqual(F.list(
-        F.t(Option<int>.None, 1),
+        F.t(Functional.Option<int>.None, 1),
         F.t(1.some(), 2),
         F.t(2.some(), 3)
       ));
@@ -658,7 +659,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var list = t._1;
       foreach (var a in new[] {1, 1, 3, 3, 2, 2, 4, 4, 5, 5}) subj.push(a);
       list.shouldEqual(F.list(
-        F.t(Option<int>.None, 1),
+        F.t(Functional.Option<int>.None, 1),
         F.t(1.some(), 1),
         F.t(1.some(), 3),
         F.t(3.some(), 3),

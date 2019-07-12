@@ -1,6 +1,7 @@
 ﻿using System;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.serialization;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>

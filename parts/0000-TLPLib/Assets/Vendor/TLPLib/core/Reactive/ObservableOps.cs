@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using Smooth.Collections;
 using UnityEngine;
 using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
@@ -193,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) {
       // Saves onEvent when someone is subscribed to us, but the future has not yet
       // completed.
-      var supposedToBeSubscribed = Option<Action<A>>.None;
+      var supposedToBeSubscribed = Functional.Option<Action<A>>.None;
       // Saves the actual subscription that is filled in when the future completes
       // so that we could unsubscribe from source if everyone unsubscribes from us.
       var currentSubscription = Subscription.empty;
@@ -276,12 +277,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // TODO: test, but how? Can't do async tests in unity.
     public static IRxObservable<A> oncePerFrame<A>(this IRxObservable<A> o) =>
       new Observable<A>(onEvent => {
-        var last = Option<A>.None;
+        var last = Functional.Option<A>.None;
         var mySub = o.subscribe(NoOpDisposableTracker.instance, v => last = v.some());
         var luSub = ASync.onLateUpdate.subscribe(NoOpDisposableTracker.instance, _ => {
           foreach (var val in last) {
             // Clear last before pushing, because exception makes it loop forever.
-            last = Option<A>.None;
+            last = Functional.Option<A>.None;
             onEvent(val);
           }
         });
@@ -450,7 +451,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Only emits events that return some.
     /// </summary>
     public static IRxObservable<B> collect<A, B>(
-      this IRxObservable<A> o, Func<A, Option<B>> collector
+      this IRxObservable<A> o, Func<A, Functional.Option<B>> collector
     ) => new Observable<B>(onEvent => o.subscribe(
       NoOpDisposableTracker.instance,
       val => {
@@ -640,7 +641,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
+    public static IRxObservable<Tpl<Functional.Option<A>, A>> changesOpt<A>(
       this IRxObservable<A> o, Func<A, A, bool> areEqual = null
     ) => o.changesOpt(F.t, areEqual);
 
@@ -649,7 +650,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// If there was no events before, old may be None.
     /// </summary>
     public static IRxObservable<B> changesOpt<A, B>(
-      this IRxObservable<A> o, Func<Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<Functional.Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<B>(changesBase<A, B>(
@@ -699,7 +700,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static SubscribeToSource<Elem> changesBase<A, Elem>(
-      IRxObservable<A> o, Action<Action<Elem>, Option<A>, A> action
+      IRxObservable<A> o, Action<Action<Elem>, Functional.Option<A>, A> action
     ) => onEvent => {
       var lastValue = F.none<A>();
       return o.subscribe(

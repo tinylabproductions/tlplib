@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Collection;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.collection;
+using pzd.lib.serialization;
+using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public abstract class SerializationTestBase : ImplicitSpecification {
@@ -22,11 +23,11 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void checkWithNoiseOpt<A>(
       IDeserializer<A> deser, Rope<byte> serialized, Option<A> expected
     ) => checkWithNoiseOpt(deser, serialized, either => {
-      either.voidFold(err => expected.shouldBeNone(), a => either.shouldBeRight(a));
+      either.fromPzd().voidFold(err => expected.shouldBeNone(), a => either.fromPzd().shouldBeRight(a));
     });
 
     public void checkWithNoiseOpt<A>(
-      IDeserializer<A> deser, Rope<byte> serialized, Action<Either<string, A>> check
+      IDeserializer<A> deser, Rope<byte> serialized, Action<pzd.lib.functional.Either<string, A>> check
     ) {
       check(
         deser.deserialize(serialized.toArray(), 0)
@@ -114,7 +115,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   public class SerializationTestTplRW : SerializationTestBase {
     static readonly ISerializedRW<Tpl<int, string>> rw =
-      SerializedRW.tpl(SerializedRW.integer, SerializedRW.str);
+      SerializedRWU.tpl(SerializedRW.integer, SerializedRW.str);
 
     [Test]
     public void TestTpl() {
@@ -125,11 +126,11 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailure() =>
-      rw.deserialize(noise.toArray(), 0).shouldBeLeft();
+      rw.deserialize(noise.toArray(), 0).fromPzd().shouldBeLeft();
   }
 
   public class SerializationTestOptRW : SerializationTestBase {
-    static readonly ISerializedRW<Option<int>> rw = SerializedRW.opt(SerializedRW.integer);
+    static readonly ISerializedRW<pzd.lib.functional.Option<int>> rw = SerializedRW.opt(SerializedRW.integer);
 
     [Test]
     public void TestNone() {
@@ -147,16 +148,17 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailure() =>
-      rw.deserialize(noise.toArray(), 0).shouldBeLeft();
+      rw.deserialize(noise.toArray(), 0).fromPzd().shouldBeLeft();
   }
 
   public class SerializationTestEitherRW : SerializationTestBase {
-    static readonly ISerializedRW<Either<int, string>> rw = SerializedRW.either(SerializedRW.integer, SerializedRW.str);
+    static readonly ISerializedRW<pzd.lib.functional.Either<int, string>> rw = 
+      SerializedRW.either(SerializedRW.integer, SerializedRW.str);
 
     [Test]
     public void TestLeft() {
       const int value = int.MaxValue;
-      var leftVal = Either<int, string>.Left(value);
+      var leftVal = pzd.lib.functional.Either<int, string>.Left(value);
       var serialized = rw.serialize(leftVal);
       checkWithNoise(rw, serialized, leftVal);
     }
@@ -164,13 +166,13 @@ namespace com.tinylabproductions.TLPLib.Data {
     [Test]
     public void TestRight() {
       const string value = "test";
-      var rightVal = Either<int, string>.Right(value);
+      var rightVal = pzd.lib.functional.Either<int, string>.Right(value);
       var serialized = rw.serialize(rightVal);
       checkWithNoise(rw, serialized, rightVal);
     }
 
     [Test]
-    public void TestFailure() => rw.deserialize(noise.toArray(), 0).shouldBeLeft();
+    public void TestFailure() => rw.deserialize(noise.toArray(), 0).fromPzd().shouldBeLeft();
   }
 
   public class SerializationTestCollection : SerializationTestBase {
@@ -183,7 +185,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
 
     static readonly IDeserializer<int> failingDeserializer =
-      SerializedRW.integer.map(i => (i % 2 == 0).opt(i).toRight("failed"));
+      SerializedRW.integer.map(i => (i % 2 == 0).opt(i).toRight("failed").toPzd());
 
     static readonly ImmutableArray<int> collection = ImmutableArray.Create(1, 2, 3, 4, 5);
 
@@ -191,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestNormal() {
-      checkWithNoiseOpt(deserializer, serialized, opt => opt.shouldBeRightEnum(collection));
+      checkWithNoiseOpt(deserializer, serialized, opt => opt.fromPzd().shouldBeRightEnum(collection));
     }
 
     [Test]

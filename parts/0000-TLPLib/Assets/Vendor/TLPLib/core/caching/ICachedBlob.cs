@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.caching {
   public interface ICachedBlob {
@@ -14,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.caching {
      * Some(Success(...)) on successful read.
      * Some(Failure(...)) on failed read.
      **/
-    Option<Try<A>> read();
+    Functional.Option<Try<A>> read();
     Try<Unit> store(A data);
   }
 
@@ -25,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.caching {
 
     public bool cached => backing.cached;
     public Try<Unit> clear() => backing.clear();
-    public Option<Try<B>> read() => backing.read().map(_ => _.map(bimap.map));
+    public Functional.Option<Try<B>> read() => backing.read().map(_ => _.map(bimap.map));
     public Try<Unit> store(B data) => backing.store(bimap.comap(data));
   }
 

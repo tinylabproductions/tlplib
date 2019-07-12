@@ -1,6 +1,7 @@
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

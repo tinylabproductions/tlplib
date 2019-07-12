@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEditor;
 using UnityEngine;
+using Unit = pzd.lib.functional.Unit;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting.Sentry {
   /** An awfully incomplete management API for sentry for using from Editor. **/

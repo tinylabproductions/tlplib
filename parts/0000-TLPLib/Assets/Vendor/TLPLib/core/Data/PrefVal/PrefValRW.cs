@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.serialization;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public interface IPrefValueWriter<in A> {
@@ -24,9 +25,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static readonly IPrefValueRW<Duration> duration = new DurationRW();
     public static readonly IPrefValueRW<DateTime> dateTime = new DateTimeRW();
 
-    public static IPrefValueRW<A> custom__OLD<A>(Func<A, string> map, Func<string, A> comap) =>
-      new CustomOldRW<A>(map, comap);
-
     public static IPrefValueRW<A> custom<A>(
       Func<A, string> serialize, Func<string, Either<string, A>> deserialize,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
@@ -42,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       s => {
         try {
           var bytes = Convert.FromBase64String(s);
-          return aRW.deserialize(bytes, 0).mapRight(_ => _.value);
+          return aRW.deserialize(bytes, 0).mapRight(_ => _.value).fromPzd();
         }
         catch (FormatException e) {
           return $"converting from base64 threw {e}";
@@ -56,7 +54,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       ISerializedRW<A> baRW,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) => custom(SerializedRW.opt(baRW), onDeserializeFailure, log);
+    ) => custom(
+      SerializedRW.opt(baRW).mapNoFail(_ => _.fromPzd(), _ => _.toPzd()),
+      onDeserializeFailure, log
+    );
 
     class stringRW : IPrefValueRW<string> {
       public string read(IPrefValueBackend backend, string key, string defaultVal) =>
@@ -165,27 +166,6 @@ namespace com.tinylabproductions.TLPLib.Data {
 
       static string deserializeFailureMsg(string key, string error, string serialized, string ending = "") =>
         $"Can't deserialize {typeof(A)} because of '{error}' from '{serialized}' for PrefVal '{key}'{ending}.";
-    }
-
-    class CustomOldRW<A> : IPrefValueRW<A> {
-      /* If you store this as a value in type custom PrefValue, you'll get back a default value. */
-      const string CUSTOM_V1_DEFAULT = "";
-
-      readonly Func<A, string> map;
-      readonly Func<string, A> comap;
-
-      public CustomOldRW(Func<A, string> map, Func<string, A> comap) {
-        this.map = map;
-        this.comap = comap;
-      }
-
-      public A read(IPrefValueBackend backend, string key, A defaultVal) {
-        var str = backend.getString(key, CUSTOM_V1_DEFAULT);
-        return str == CUSTOM_V1_DEFAULT ? defaultVal : comap(str);
-      }
-
-      public void write(IPrefValueBackend backend, string key, A value) =>
-        backend.setString(key, map(value));
     }
   }
 }

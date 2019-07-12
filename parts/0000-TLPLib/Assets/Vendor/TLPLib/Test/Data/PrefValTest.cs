@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
-using com.tinylabproductions.TLPLib.Collection;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using pzdf = pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.collection;
+using pzd.lib.serialization;
+using pzd.lib.typeclasses;
 using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -181,9 +183,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     const string key = nameof(PrefValTestCollection);
 
     static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
-    static Either<string, DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
-      SerializedRW.integer.deserialize(data, startIndex).rightValue.filter(i => i.value % 2 != 0)
-        .toRight("failed");
+    static pzdf.Either<string, DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
+      SerializedRW.integer.deserialize(data, startIndex).fromPzd().rightValue.filter(i => i.value % 2 != 0)
+        .toRight("failed").toPzd();
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(

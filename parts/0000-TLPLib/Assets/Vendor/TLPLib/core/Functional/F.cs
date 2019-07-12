@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
+using pzd.lib.collection;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -124,7 +126,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static IDictionary<K, V> iDict<K, V>(params Tpl<K, V>[] args) => dict(args);
 
-    public static Unit unit => Unit.instance;
+    public static Unit unit => Unit._;
 
     public static LazyVal<A> lazy<A>(Func<A> func, Action<A> afterInitialization = null) =>
       new LazyValImpl<A>(func, afterInitialization);
@@ -133,7 +135,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       string name, Func<A> func, ILog log = null, Log.Level level = Log.Level.DEBUG
     ) => lazy(() => {
       var _log = log ?? Log.d;
-      if (_log.willLog(level)) _log.log(level, $"Initiliazing lazy value: {name}");
+      if (_log.willLog(level)) _log.log(level, $"Initializing lazy value: {name}");
       return func();
     });
 
@@ -152,11 +154,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Func<B> andThen<A, B>(this Func<A> first, Func<A, B> second) =>
       () => second(first());
 
-    static class EmptyArray<T> {
-      public static readonly T[] value = new T[0];
-    }
-
-    public static T[] emptyArray<T>() => EmptyArray<T>.value;
+    public static T[] emptyArray<T>() => EmptyArray<T>._;
 
     class EmptyDisposable : IDisposable {
       public void Dispose() { }

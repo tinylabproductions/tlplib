@@ -16,6 +16,8 @@ using com.tinylabproductions.TLPLib.Threads;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.exts;
+using pzd.lib.serialization;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = System.Object;
@@ -32,12 +34,11 @@ namespace com.tinylabproductions.TLPLib.Logger {
   [PublicAPI] public static class Log {
     public enum Level : byte { VERBOSE = 10, DEBUG = 20, INFO = 30, WARN = 40, ERROR = 50 }
     public static class Level_ {
-      public static readonly ISerializedRW<Level> rw = SerializedRW.byte_.map(
-        b => Either<string, Level>.Right((Level) b),
-        l => (byte) l
-      );
+      public static readonly ISerializedRW<Level> rw = 
+        SerializedRW.byte_.map<byte, Level>(b => (Level) b, l => (byte) l);
 
-      public static readonly ISerializedRW<Option<Level>> optRw = SerializedRW.opt(rw);
+      public static readonly ISerializedRW<Option<Level>> optRw = 
+        SerializedRW.opt(rw).mapNoFail(_ => _.fromPzd(), _ => _.toPzd());
     }
 
     // InitializeOnLoad is needed to set static variables on main thread.

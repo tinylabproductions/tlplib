@@ -9,6 +9,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using Smooth.Collections;
+using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IEnumerableExts {
@@ -63,67 +64,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       sb.Append(']');
     }
-
-    
-    public static string mkString<A>(
-      this IEnumerable<A> e, Action<StringBuilder> appendSeparator,
-      string start = null, string end = null
-    ) {
-      var sb = new StringBuilder();
-      if (start != null) sb.Append(start);
-      var first = true;
-      foreach (var a in e) {
-        if (first) first = false;
-        else appendSeparator(sb);
-        sb.Append(a);
-      }
-      if (end != null) sb.Append(end);
-      return sb.ToString();
-    }
-
-    static void throwNullStringBuilderException() {
-      // var sb = new StringBuilder();
-      // sb.Append("foo");
-      // sb.Append('\0');
-      // sb.Append("bar");
-      // sb.ToString() == "foobar" // -> false
-      // sb.ToString() == "foo" // -> true
-      throw new Exception(
-        "Can't have null char in a separator due to a Mono runtime StringBuilder bug!"
-      );
-    }
-
-    
-    public static string mkStringEnum<A>(
-      this IEnumerable<A> e, string separator = ", ", string start = "[", string end = "]"
-    ) => e.mkString(separator, start, end);
-
-    
-    public static string mkStringEnumNewLines<A>(
-      this IEnumerable<A> e, string separator = ",\n  ", string start = "[\n  ", string end = "\n]"
-    ) => e.mkString(separator, start, end);
-
-    
-    public static string mkString<A>(
-      this IEnumerable<A> e, char separator, string start = null, string end = null
-    ) {
-      if (separator == '\0') throwNullStringBuilderException();
-      return e.mkString(sb => sb.Append(separator), start, end);
-    }
-
-    
-    public static string mkString<A>(
-      this IEnumerable<A> e, string separator, string start = null, string end = null
-    ) {
-      if (separator.Contains("\0")) throwNullStringBuilderException();
-      return e.mkString(sb => sb.Append(separator), start, end);
-    }
-
     
     public static Dictionary<K, A> toDict<A, K>(
       this IEnumerable<KeyValuePair<K, A>> list
     ) => list.toDict(p => p.Key, p => p.Value);
-
     
     public static Dictionary<K, A> toDict<A, K>(
       this IEnumerable<A> list, Func<A, K> keyGetter
@@ -367,18 +311,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       return F.t(nones.ToImmutable(), somes.ToImmutable());
     }
-
-    public static IOrderedEnumerable<A> OrderBySafe<A, B>(
-      this IEnumerable<A> source, Func<A, B> keySelector
-    ) where B : IComparable<B> => source.OrderBy(keySelector);
-
-    public static IOrderedEnumerable<A> OrderByDescendingSafe<A, B>(
-      this IEnumerable<A> source, Func<A, B> keySelector
-    ) where B : IComparable<B> => source.OrderByDescending(keySelector);
-
-    public static IOrderedEnumerable<A> ThenBySafe<A, B>(
-      this IOrderedEnumerable<A> source, Func<A, B> keySelector
-    ) where B : IComparable<B> => source.ThenBy(keySelector);
 
     public static IOrderedEnumerable<A> OrderBySafe<A>(this IEnumerable<A> source, Comparable<A> cmp) => 
       source.OrderBy(a => a, cmp);

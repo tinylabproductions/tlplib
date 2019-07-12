@@ -284,6 +284,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     /// <summary>Allows implicitly converting <see cref="None"/> to None <see cref="Option{A}"/>.</summary>
     public static implicit operator Option<A>(None _) => None;
+    
+    public static implicit operator pzd.lib.functional.Option<A>(Option<A> o) => 
+      o.isSome ? new pzd.lib.functional.Option<A>(o.__unsafeGetValue) : pzd.lib.functional.None._;
+    public static implicit operator Option<A>(pzd.lib.functional.Option<A> o) => 
+      o.isSome ? new Option<A>(o.__unsafeGet) : None;
   }
 
   [PublicAPI] public struct OptionEnumerator<A> {
@@ -315,5 +320,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static Option<A> toOption<A>(this A? maybeA) where A : struct => 
       maybeA.HasValue ? new Option<A>(maybeA.Value) : Option<A>.None;
+    
+    public static pzd.lib.functional.Option<A> toPzd<A>(this Option<A> o) => 
+      o.isSome ? new pzd.lib.functional.Option<A>(o.__unsafeGetValue) : pzd.lib.functional.None._;
+    public static Option<A> fromPzd<A>(this pzd.lib.functional.Option<A> o) => 
+      o.isSome ? new Option<A>(o.__unsafeGet) : Option<A>.None;
   }
 }

@@ -6,6 +6,8 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.functional;
+using pzd.lib.serialization;
 
 namespace com.tinylabproductions.TLPLib.Data {
   // Should be class (not struct) because .write mutates object.
@@ -50,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region ICachedBlob
 
     public bool cached => true;
-    Option<Try<A>> ICachedBlob<A>.read() => F.some(F.scs(value));
+    Functional.Option<Try<A>> ICachedBlob<A>.read() => F.some(F.scs(value));
 
     public Try<Unit> store(A data) {
       value = data;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.serialization;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {

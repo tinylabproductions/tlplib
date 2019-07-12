@@ -5,12 +5,11 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI]
   public static class ICollectionExts {
-    public static bool indexValid<A>(this ICollection<A> collection, int index) =>
-      index >= 0 && index < collection.Count;
     
     public static B[] ToArray<A, B>(this ICollection<A> collection, Func<A, B> mapper) {
       var bArr = new B[collection.Count];

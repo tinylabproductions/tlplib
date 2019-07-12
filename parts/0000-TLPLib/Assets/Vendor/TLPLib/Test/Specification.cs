@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using NUnit.Framework;
+using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class Specification : TestBase {

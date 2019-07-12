@@ -1,14 +1,10 @@
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Functional;
-using Smooth.Collections;
 using Smooth.Comparisons;
-using Smooth.Compare.Comparers;
 
 namespace Smooth.Compare {
 	public static class Factory {

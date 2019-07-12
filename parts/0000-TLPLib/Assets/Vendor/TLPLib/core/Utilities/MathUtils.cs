@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Data;
+﻿using pzd.lib.exts;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -193,15 +194,8 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
       return Mathf.Sqrt(dx * dx + dy * dy);
     }
-
-    /// <summary>Re-maps a number from one range to another</summary>
-    public static float remap(this float value, float from1, float to1, float from2, float to2) => 
-      (value - from1) / (to1 - from1) * (to2 - from2) + from2;
-
-    public static float remap01(this float value, FRange fromTo) => value.remap01(fromTo.from, fromTo.to);
     
-    public static float remap01(this float value, float from1, float to1) =>
-      value.remap(from1, to1, 0f, 1f);
+    public static float remap01(this float value, FRange fromTo) => value.remap01(fromTo.from, fromTo.to);
 
     // a % b gives non positive result on negative numbers
     // this always gives positive
