@@ -5,11 +5,14 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
+using JetBrains.Annotations;
 using pzd.lib.serialization;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
-  [Serializable, Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)]
+  [
+    Serializable, PublicAPI, Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)
+  ]
   public partial struct PathStr : IComparable<PathStr>, IStr {
     #region Unity Serialized Fields
 
@@ -55,6 +58,8 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
     // Use this with Unity Resources, AssetDatabase and PrefabUtility methods
     public string unityPath => Path.DirectorySeparatorChar == '/' ? path : path.Replace('\\' , '/');
+    
+    public PathStr toAbsolute => a(Path.GetFullPath(path));
 
     public static readonly ISerializedRW<PathStr> serializedRW =
       SerializedRW.str.mapNoFail(s => new PathStr(s), path => path.path);
