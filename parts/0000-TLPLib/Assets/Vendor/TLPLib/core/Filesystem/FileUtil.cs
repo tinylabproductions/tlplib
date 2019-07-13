@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   public static class FileUtil {
@@ -10,7 +11,13 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     /// <param name="source"></param>
     /// <param name="destination"></param>
     /// <param name="overwrite">Allow overwriting existing files.</param>
-    public static void copyDirectory(PathStr source, PathStr destination, bool overwrite) {
+    /// <param name="filePredicate"></param>
+    /// <param name="directoryPredicate"></param>
+    public static void copyDirectory(
+      PathStr source, PathStr destination, bool overwrite,
+      Func<FileInfo, bool> filePredicate = null,
+      Func<DirectoryInfo, bool> directoryPredicate = null
+    ) {
       // Get the subdirectories for the specified directory.
       var dir = new DirectoryInfo(source);
 
@@ -27,14 +34,19 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       // Get the files in the directory and copy them to the new location.
       var files = dir.GetFiles();
       foreach (var file in files) {
-        var temppath = destination / file.Name;
-        file.CopyTo(temppath, overwrite: overwrite);
+        var shouldCopy = filePredicate?.Invoke(file) ?? true;
+        if (shouldCopy) {
+          file.CopyTo(destination / file.Name, overwrite: overwrite);
+        }
       }
 
       // Copying subdirectories, copy them and their contents to new location.
-      foreach (var subdir in dirs) {
-        var temppath = destination / subdir.Name;
-        copyDirectory(PathStr.a(subdir.FullName), temppath, overwrite);
+      foreach (var subDir in dirs) {
+        var shouldCopy = directoryPredicate?.Invoke(subDir) ?? true;
+        if (shouldCopy) copyDirectory(
+          PathStr.a(subDir.FullName), destination / subDir.Name, overwrite, 
+          filePredicate, directoryPredicate
+        );
       }
     }
   }
