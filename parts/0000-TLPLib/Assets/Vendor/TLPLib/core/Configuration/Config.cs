@@ -4,11 +4,11 @@ using System.Collections.Immutable;
 using System.Globalization;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Formats.MiniJSON;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.json;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {

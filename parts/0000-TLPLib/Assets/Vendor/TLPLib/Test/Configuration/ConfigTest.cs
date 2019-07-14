@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Formats.MiniJSON;
-using com.tinylabproductions.TLPLib.Functional;
+﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 
