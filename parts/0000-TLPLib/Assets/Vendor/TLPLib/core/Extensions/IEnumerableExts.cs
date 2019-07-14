@@ -13,58 +13,6 @@ using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IEnumerableExts {
-    /// <summary>
-    /// This should really be used only for debugging. It is pretty slow.
-    /// </summary>
-    
-    public static string asDebugString(
-      this IEnumerable enumerable,
-      bool newlines = true, bool fullClasses = false
-    ) {
-      if (enumerable == null) return "null";
-      var sb = new StringBuilder();
-      asStringRec(enumerable, sb, newlines, fullClasses, 1);
-      return sb.ToString();
-    }
-
-    static void asStringRec(
-      IEnumerable enumerable, StringBuilder sb,
-      bool newlines, bool fullClasses, int indent = 0
-    ) {
-      var type = enumerable.GetType();
-      sb.Append(fullClasses ? type.FullName : type.Name);
-      sb.Append('[');
-
-      var first = true;
-      foreach (var item in enumerable) {
-        if (!first) sb.Append(',');
-        if (newlines) {
-          sb.Append('\n');
-          for (var idx = 0; idx < indent; idx++) sb.Append("  ");
-        }
-        else if (!first) sb.Append(' ');
-
-        switch (item) {
-          case string str:
-            sb.Append(str);
-            break;
-          case IEnumerable enumItem:
-            asStringRec(enumItem, sb, newlines, fullClasses, indent + 1);
-            break;
-          default:
-            sb.Append(item);
-            break;
-        }
-        first = false;
-      }
-
-      if (newlines) {
-        sb.Append('\n');
-        for (var idx = 0; idx < indent - 1; idx++) sb.Append("  ");
-      }
-      sb.Append(']');
-    }
-    
     public static Dictionary<K, A> toDict<A, K>(
       this IEnumerable<KeyValuePair<K, A>> list
     ) => list.toDict(p => p.Key, p => p.Value);

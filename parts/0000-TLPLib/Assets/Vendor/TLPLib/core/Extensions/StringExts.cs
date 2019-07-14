@@ -43,11 +43,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       else return $"cannot parse as bool: '{str}'";
     }
 
-    public static Try<DateTime> parseDateTime(this string str) {
-      try { return F.scs(DateTime.Parse(str)); }
-      catch (Exception e) { return F.err<DateTime>(e); }
-    }
-
     public static Try<Uri> parseUri(this string str) {
       try { return F.scs(new Uri(str)); }
       catch (Exception e) { return F.err<Uri>(e); }
@@ -88,8 +83,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isTrimmable(this string s) =>
       s.StartsWithFast(" ") || s.EndsWithFast(" ");
 
-    public static bool isEmpty(this string s, bool trim = false) =>
-      (trim ? s.Trim() : s).Length == 0;
     public static bool isNullOrEmpty(this string s, bool trim = false) =>
       s == null || s.isEmpty(trim);
     public static bool nonEmpty(this string s) => s.Length != 0;

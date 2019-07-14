@@ -37,39 +37,5 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static A orElseIfNull<A>(this A a, A ifNull) where A : class =>
       F.isNull(a) ? ifNull : a;
-
-    public static CastBuilder<A> cast<A>(this A a) where A : class => new CastBuilder<A>(a);
-
-    public static string asDebugString<A>(this A a) {
-      // strings are enumrables, but we don't want to look at them like that...
-      if (a is string) return $"'{a}'";
-      var enumerable = a as IEnumerable;
-      // ReSharper disable once InvokeAsExtensionMethod
-      return enumerable != null
-        ? IEnumerableExts.asDebugString(enumerable)
-        : a == null ? "null" : a.ToString();
-    }
-  }
-
-  public struct CastBuilder<From> where From : class {
-    public readonly From from;
-
-    public CastBuilder(From from) { this.from = from; }
-
-    public Either<string, To> toE<To>() where To : From {
-      if (from is To to) return to;
-      else return errorMsg<To>();
-    }
-
-    string errorMsg<To>() {
-      var valueStr = from == null ? "<null>" : from.ToString();
-      return $"Can't cast {typeof(From)} (value='{valueStr}') to {typeof(To)}";
-    }
-
-    public To to<To>() where To : class, From {
-      var to = from as To;
-      if (to == null) throw new InvalidCastException(errorMsg<To>());
-      return to;
-    }
   }
 }
