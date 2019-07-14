@@ -4,9 +4,6 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UIntExts {
-    public static int toIntClamped(this uint a) =>
-      a > int.MaxValue ? int.MaxValue : (int) a;
-
     [PublicAPI] public static int toIntOrLog(
       this uint a,
       Log.Level level = Log.Level.ERROR,
