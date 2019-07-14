@@ -6,12 +6,13 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Filesystem;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using com.tinylabproductions.TLPLib.validations;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -535,7 +536,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     static ImmutableList<ObjectValidator.Error> checkForErrors<A>(
-      Func<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+      Func<A> create, Functional.Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
     ) where A : Object =>
       ObjectValidator.check(
         ObjectValidator.CheckContext.empty, new Object[] {create()},

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.config;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   public class ConfigTestOptString {

@@ -454,13 +454,11 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
           void onComplete(A t) => Debug.Log($"{prefixedName} done: {t}");
           // Check perhaps it is completed immediately.
-          returnFuture.value.voidFold(
-            () => {
-              Debug.Log($"{prefixedName} starting.");
-              returnFuture.onComplete(onComplete);
-            },
-            onComplete
-          );
+          if (returnFuture.value.valueOut(out var a)) onComplete(a);
+          else {
+            Debug.Log($"{prefixedName} starting.");
+            returnFuture.onComplete(onComplete);
+          }
         }
         else Debug.Log($"{prefixedName} not running: {typeof(Obj)} is None.");
       }));

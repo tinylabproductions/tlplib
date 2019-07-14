@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public class NotReallyLazyTestAsFuture {
@@ -19,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void ItShouldHaveTheSameValueAsFuture() =>
-      create().asFuture().value.shouldBeSome(value);
+      create().asFuture().value.fromPzd().shouldBeSome(value);
 
     [Test]
     public void ItShouldEmitOnCompleteInstantly() {
@@ -54,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       var lazy = create();
       var ftr = lazy.asFuture();
       lazy.strict.forSideEffects();
-      ftr.value.shouldBeSome(value);
+      ftr.value.fromPzd().shouldBeSome(value);
     }
 
     [Test]
@@ -104,10 +105,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       };
 
       when["#" + nameof(lazy.value.value)] = () => {
-        it["should transmit non-completion"] = () => upcasted.value.value.shouldBeNone();
+        it["should transmit non-completion"] = () => upcasted.value.value.fromPzd().shouldBeNone();
         it["should transmit completion"] = () => {
           lazy.value.strict.forSideEffects();
-          upcasted.value.value.shouldBeSome(obj);
+          upcasted.value.value.fromPzd().shouldBeSome(obj);
         };
       };
     });

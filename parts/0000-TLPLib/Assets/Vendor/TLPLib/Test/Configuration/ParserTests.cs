@@ -1,7 +1,8 @@
-﻿ using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.config;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   class ConfigOptParserTest {
@@ -11,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
     public void WhenNull() =>
       Config.parseJson(@"{""foo"": null}")
       .mapRight(_ => _.get("foo", parser))
-      .shouldBeRight(Option<string>.None);
+      .shouldBeRight(None._);
 
     [Test]
     public void WhenSome() =>

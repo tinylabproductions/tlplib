@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Configuration;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
@@ -12,7 +11,10 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using pzd.lib.config;
+using pzd.lib.exts;
 using pzd.lib.functional;
+using pzdf = pzd.lib.functional;
 using pzd.lib.json;
 
 namespace com.tinylabproductions.TLPLib.Test {
@@ -192,7 +194,10 @@ namespace com.tinylabproductions.TLPLib.Test {
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
     }
 
-    public static void shouldBeSome<A>(this Functional.Option<A> maybeA, A expected, string message=null) {
+    public static void shouldBeSome<A>(this Functional.Option<A> maybeA, A expected, string message = null) =>
+      maybeA.toPzd().shouldBeSome(expected, message);
+
+    public static void shouldBeSome<A>(this pzdf.Option<A> maybeA, A expected, string message=null) {
       if (maybeA.valueOut(out var a)) a.shouldEqual(expected, message ?? $"Expected {maybeA} to be {F.some(expected)}");
       else Assert.Fail(message ?? $"Expected to be Some({expected}, but it was None");
     }
@@ -211,9 +216,10 @@ namespace com.tinylabproductions.TLPLib.Test {
       aOpt.shouldBeSome(expected, message);
     }
 
-    public static void shouldBeNone<A>(this Functional.Option<A> a, string message=null) {
+    public static void shouldBeNone<A>(this Functional.Option<A> a, string message=null) => 
       a.shouldEqual(F.none<A>(), message);
-    }
+    public static void shouldBeNone<A>(this pzdf.Option<A> a, string message=null) => 
+      a.shouldEqual(pzdf.None._, message);
 
     public static void shouldBeLeft<A, B>(this Functional.Either<A, B> either, string message = null) {
       if (! either.isLeft) Assert.Fail(
@@ -236,7 +242,10 @@ namespace com.tinylabproductions.TLPLib.Test {
       either.shouldBeLeft(message);
     }
 
-    public static void shouldBeRight<A, B>(this Functional.Either<A, B> either, string message = null) {
+    public static void shouldBeRight<A, B>(this Functional.Either<A, B> either, string message = null) =>
+      either.toPzd().shouldBeRight(message);
+    
+    public static void shouldBeRight<A, B>(this pzdf.Either<A, B> either, string message = null) {
       if (! either.isRight) Assert.Fail(
         message ?? 
         $"Expected either to be right, but it was Left({either.__unsafeGetLeft.asDebugString()})!"
@@ -244,7 +253,10 @@ namespace com.tinylabproductions.TLPLib.Test {
     }
 
     public static void shouldBeRight<A, B>(this Functional.Either<A, B> either, B expected, string message = null) =>
-      either.shouldEqual(F.right<A, B>(expected), message);
+      either.shouldEqual(expected, message);
+
+    public static void shouldBeRight<A, B>(this pzdf.Either<A, B> either, B expected, string message = null) =>
+      either.shouldEqual(expected, message);
 
     public static void shouldBeRightEnum<A, B>(
       this Functional.Either<A, B> either, B expected, string message = null
@@ -284,18 +296,16 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldBeOfUnfulfilledType<A>(this Future<A> f, string message=null) {
       f.type.shouldEqual(FutureType.Unfulfilled, message);
-      f.value.shouldBeNone($"{message ?? ""}: it shouldn't have a value");
+      f.value.fromPzd().shouldBeNone($"{message ?? ""}: it shouldn't have a value");
     }
 
     public static void shouldBeCompleted<A>(this Future<A> f, A a, string message=null) {
-      f.value.voidFold(
-        () => Assert.Fail($"{f} should be completed, but it wasn't".joinOpt(message)),
-        v => v.shouldEqual(a, message)
-      );
+      if (f.value.valueOut(out var v)) v.shouldEqual(a, message);
+      else Assert.Fail($"{f} should be completed, but it wasn't".joinOpt(message));
     }
 
     public static void shouldNotBeCompleted<A>(this Future<A> f, string message=null) {
-      foreach (var v in f.value) Assert.Fail(
+      if (f.value.valueOut(out var v)) Assert.Fail(
         $"{f} should not be completed, but it was completed with '{v}'".joinOpt(message)
       );
     }

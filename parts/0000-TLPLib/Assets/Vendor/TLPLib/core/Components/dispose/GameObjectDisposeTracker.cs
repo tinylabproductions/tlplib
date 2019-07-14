@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.dispose {
@@ -27,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Components.dispose {
     public void OnDestroy() => Dispose();
 
     public void Dispose() {
-      foreach (var t in tracker.value)
+      if (tracker.value.valueOut(out var t))
         t.Dispose();
     }
 

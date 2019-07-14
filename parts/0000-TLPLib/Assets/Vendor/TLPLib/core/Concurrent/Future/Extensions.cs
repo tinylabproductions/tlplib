@@ -143,7 +143,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public static LazyVal<Functional.Option<A>> toLazy<A>(this Future<A> f) =>
-      F.lazy(() => f.value);
+      F.lazy(() => f.value.fromPzd());
 
     public static Future<A> first<A>(this Future<A> a, Future<A> b) {
       return Future.a<A>(p => {

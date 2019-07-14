@@ -5,6 +5,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Functional.higher_kinds;
+using pzd.lib.concurrent;
 using pzd.lib.functional;
 using UnityEngine;
 
@@ -101,7 +102,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var futures = enumerable.ToArray();
       return futures.firstOfSuccessful().map(opt => opt.fold(
         /* If this future is completed, then all futures are completed with lefts. */
-        () => Functional.Either<Collection, B>.Left(collector(futures.Select(f => f.value.get.leftValue.get))),
+        () => Functional.Either<Collection, B>.Left(
+          collector(futures.Select(f => f.value.__unsafeGet.leftValue.get))
+        ),
         Functional.Either<Collection, B>.Right
       ));
     }

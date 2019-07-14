@@ -5,12 +5,13 @@ using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   public class FilesystemDataCache : ICache<byte[]> {
     [PublicAPI]
-    public static Option<FilesystemDataCache> forPath(string pathStr) =>
+    public static Functional.Option<FilesystemDataCache> forPath(string pathStr) =>
       pathStr.nonEmptyOpt(trim: true).map(path =>
         new FilesystemDataCache(new PathStr(path))
       );
@@ -21,14 +22,14 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     /// Lazy because we can't access unity API in static class constructors.
     /// </summary>
     [PublicAPI]
-    public static LazyVal<Option<FilesystemDataCache>> persistent = 
+    public static LazyVal<Functional.Option<FilesystemDataCache>> persistent = 
       F.lazy(() => forPath(Application.persistentDataPath));
     
     /// <summary>
     /// Same thing with temporary cache path.
     /// </summary>
     [PublicAPI]
-    public static LazyVal<Option<FilesystemDataCache>> temporary = 
+    public static LazyVal<Functional.Option<FilesystemDataCache>> temporary = 
       F.lazy(() => forPath(Application.temporaryCachePath));
 
     public readonly PathStr root;

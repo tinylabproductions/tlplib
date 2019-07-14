@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -117,9 +118,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       var f = Future<int>.async(out p);
       var f2 = f.map(mapper);
       f2.type.shouldEqual(FutureType.ASync);
-      f2.value.shouldBeNone("it should not have value before original future completion");
+      f2.value.fromPzd().shouldBeNone("it should not have value before original future completion");
       p.complete(1);
-      f2.value.shouldBeSome(2, "it should have value after original future completion");
+      f2.value.fromPzd().shouldBeSome(2, "it should have value after original future completion");
     }
   }
 
@@ -275,7 +276,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         Future.successful(1),
         Future.unfulfilled<int>(),
         Future.unfulfilled<int>()
-      }.firstOf().value.get.shouldEqual(1);
+      }.firstOf().value.__unsafeGet.shouldEqual(1);
     }
 
     [Test]
@@ -287,7 +288,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         Future.unfulfilled<int>(),
         Future.successful(2),
         Future.unfulfilled<int>()
-      }.firstOf().value.get.shouldEqual(1);
+      }.firstOf().value.__unsafeGet.shouldEqual(1);
     }
 
     [Test]
@@ -297,7 +298,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         Future.unfulfilled<int>(),
         Future.unfulfilled<int>(),
         Future.unfulfilled<int>()
-      }.firstOf().value.shouldEqual(F.none<int>());
+      }.firstOf().value.shouldBeNone();
     }
   }
 
@@ -306,20 +307,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void ItemFound() {
       new[] {1, 3, 5, 6, 7}.
         Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
-        value.get.shouldEqual(6.some());
+        value.__unsafeGet.shouldEqual(6.some());
     }
     [Test]
     public void MultipleItemsFound() {
       new[] {1, 3, 5, 6, 7, 8}.
         Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
-        value.get.shouldEqual(6.some());
+        value.__unsafeGet.shouldEqual(6.some());
     }
 
     [Test]
     public void ItemNotFound() {
       new[] {1, 3, 5, 7}.
         Select(Future.successful).firstOfWhere(i => (i % 2 == 0).opt(i)).
-        value.get.shouldBeNone();
+        value.__unsafeGet.shouldBeNone();
     }
 
     [Test]
@@ -335,28 +336,28 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void RightFound() {
       new[] { FT.left(1), FT.left(3), FT.left(5), FT.right("6"), FT.left(7) }.
         Select(Future.successful).firstOfSuccessful().
-        value.get.shouldBeSome("6");
+        value.__unsafeGet.shouldBeSome("6");
     }
 
     [Test]
     public void MultipleRightsFound() {
       new[] { FT.left(1), FT.left(3), FT.left(5), FT.right("6"), FT.left(7), FT.right("8") }.
         Select(Future.successful).firstOfSuccessful().
-        value.get.shouldBeSome("6");
+        value.__unsafeGet.shouldBeSome("6");
     }
 
     [Test]
     public void RightNotFound() {
       new[] { FT.left(1), FT.left(3), FT.left(5), FT.left(7) }.
         Select(Future.successful).firstOfSuccessful().
-        value.get.shouldBeNone();
+        value.__unsafeGet.shouldBeNone();
     }
 
     [Test]
     public void RightNotFoundNoComplete() {
       new[] { FT.left(1), FT.left(3), FT.left(5), FT.left(7) }.
         Select(Future.successful).addUnfulfilled().firstOfSuccessful().
-        value.shouldBeNone();
+        value.fromPzd().shouldBeNone();
     }
   }
 
@@ -364,29 +365,28 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void ItemFound() {
       new [] { FT.left(1), FT.left(2), FT.right("a"), FT.left(3) }.
-        Select(Future.successful).firstOfSuccessfulCollect().value.get.
+        Select(Future.successful).firstOfSuccessfulCollect().value.__unsafeGet.
         shouldEqual(F.right<int[], string>("a"));
     }
 
     [Test]
     public void MultipleItemsFound() {
       new [] { FT.left(1), FT.left(2), FT.right("a"), FT.left(3), FT.right("b") }.
-        Select(Future.successful).firstOfSuccessfulCollect().value.get.
+        Select(Future.successful).firstOfSuccessfulCollect().value.__unsafeGet.
         shouldEqual(F.right<int[], string>("a"));
     }
 
     [Test]
     public void ItemNotFound() {
       new [] { FT.left(1), FT.left(2), FT.left(3), FT.left(4) }.
-        Select(Future.successful).firstOfSuccessfulCollect().value.get.
+        Select(Future.successful).firstOfSuccessfulCollect().value.__unsafeGet.
         leftValue.get.asDebugString().shouldEqual(new[] { 1, 2, 3, 4 }.asDebugString());
     }
 
     [Test]
     public void ItemNotFoundNoCompletion() {
       new [] { FT.left(1), FT.left(2), FT.left(3), FT.left(4) }.
-        Select(Future.successful).addUnfulfilled().
-        firstOfSuccessfulCollect().value.shouldEqual(F.none<Functional.Either<int[], string>>());
+        Select(Future.successful).addUnfulfilled().firstOfSuccessfulCollect().value.shouldBeNone();
     }
   }
 

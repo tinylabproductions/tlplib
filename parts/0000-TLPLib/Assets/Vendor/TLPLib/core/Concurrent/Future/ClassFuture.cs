@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
-using JetBrains.Annotations;
+using pzd.lib.concurrent;
+using pzdf = pzd.lib.functional;
 using Smooth.Pools;
+using None = pzd.lib.functional.None;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  // Can't split into two interfaces and use variance because mono runtime
-  // often crashes with variance.
-  [PublicAPI] public interface IHeapFuture<A> {
-    bool isCompleted { get; }
-    void onComplete(Action<A> action);
-    Option<A> value { get; }
-    bool valueOut(out A a);
-  }
-
   public static class IHeapFutureExts {
     public static Future<A> asFuture<A>(this IHeapFuture<A> f) => Future.a(f);
   }
@@ -24,14 +17,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     List<Action<A>> listeners = pool.Borrow();
 
     public bool isCompleted => value.isSome;
-    public Option<A> value { get; private set; } = F.none<A>();
+    public pzdf.Option<A> value { get; private set; } = None._;
     public bool valueOut(out A a) => value.valueOut(out a);
 
     public override string ToString() => $"{nameof(FutureImpl<A>)}({value})";
 
     public void complete(A v) {
       if (! tryComplete(v)) throw new IllegalStateException(
-        $"Trying to complete future with \"{v}\" but it is already completed with \"{value.get}\""
+        $"Trying to complete future with \"{v}\" but it is already completed with \"{value.__unsafeGet}\""
       );
     }
 
@@ -47,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public void onComplete(Action<A> action) {
-      if (value.isSome) action(value.get);
+      if (value.isSome) action(value.__unsafeGet);
       else listeners.Add(action);
     }
 

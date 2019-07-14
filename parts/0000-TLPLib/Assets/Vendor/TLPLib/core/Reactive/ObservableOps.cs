@@ -225,7 +225,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       ISubscription subscribeToSource(Action<A> onEvent) {
         if (lastFutureValue.isSome) {
           // If somebody subscribed to us and the future was already completed.
-          var obs = lastFutureValue.__unsafeGetValue;
+          var obs = lastFutureValue.__unsafeGet;
           currentSubscription = obs.subscribe(NoOpDisposableTracker.instance, onEvent);
         }
         else {

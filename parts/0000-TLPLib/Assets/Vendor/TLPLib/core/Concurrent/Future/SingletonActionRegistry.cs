@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.concurrent;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class SingletonActionRegistry {
@@ -44,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void singletonAction(IHeapFuture<A> ftr, Action<A> action) {
       var value = ftr.value;
       if (value.isSome) {
-        action(value.__unsafeGetValue);
+        action(value.__unsafeGet);
       }
       else {
         if (!callbacks.Remove(ftr)) {

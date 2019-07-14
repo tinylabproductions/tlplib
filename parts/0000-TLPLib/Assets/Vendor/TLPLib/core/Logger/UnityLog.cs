@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.functional;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -52,13 +53,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
               string.IsNullOrEmpty(backtraceS)
                 ? Backtrace.generateFromHere(stackFramesToSkipWhenGenerating + 1 /*this stack frame*/)
                 : Backtrace.parseUnityBacktrace(backtraceS)
-            : Option<Backtrace>.None;
+            : Functional.Option<Backtrace>.None;
         var logEvent = new LogEvent(level, new LogEntry(
           message,
           ImmutableArray<Tpl<string, string>>.Empty,
           ImmutableArray<Tpl<string, string>>.Empty,
           reportToErrorTracking: true,
-          backtrace: backtrace, context: Option<object>.None
+          backtrace: backtrace, context: Functional.Option<object>.None
         ));
         return F.scs(logEvent);
       }
