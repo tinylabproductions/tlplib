@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using pzd.lib.serialization;
 using UnityEngine;
 
@@ -81,10 +82,9 @@ namespace com.tinylabproductions.TLPLib.Configuration {
         new WWW(urls.url.ToString()).toFuture().asNonCancellable().map(wwwE => {
           var www = wwwE.fold(err => err.www, _ => _);
           var headers = www.headers();
-          return wwwE.map(
-            err => (ConfigFetchError)new ConfigWWWError(urls, headers),
-            _ => headers
-          );
+          return wwwE
+            .mapLeft(err => (ConfigFetchError)new ConfigWWWError(urls, headers))
+            .mapRight(_ => headers);
         })
       );
 
@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       return tpl.map2((urls, future) =>
         future
         .timeout(timeout, () => (ConfigFetchError) new ConfigTimeoutError(urls, timeout), timeContext)
-        .map(e => e.flatten())
+        .map(e => e.flatMapRight(_ => _))
       );
     }
 

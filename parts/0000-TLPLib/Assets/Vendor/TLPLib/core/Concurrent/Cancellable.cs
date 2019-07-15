@@ -1,5 +1,5 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Cancellable {

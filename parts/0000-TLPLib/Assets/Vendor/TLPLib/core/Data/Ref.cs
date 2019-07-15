@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Ref<B> map<A, B>(this Ref<A> r, Func<A, B> map, Func<B, A> contraMap) =>
       a(() => map(r.value), b => r.value = contraMap(b));
 
-    public static Ref<B> map<A, B>(this Ref<A> r, Func<A, B> map, Func<B, Functional.Option<A>> contraMap) =>
+    public static Ref<B> map<A, B>(this Ref<A> r, Func<A, B> map, Func<B, Option<A>> contraMap) =>
       a(() => map(r.value), b => {
         foreach (var a in contraMap(b))
           r.value = a;

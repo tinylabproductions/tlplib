@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI]

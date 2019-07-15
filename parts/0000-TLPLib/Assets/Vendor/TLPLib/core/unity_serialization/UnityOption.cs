@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -60,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       return false;
     } }
 
-    public A __unsafeGetValue => _value;
+    public A __unsafeGet => _value;
 
     public bool valueOut(out A a) {
       a = _value;
@@ -77,13 +78,13 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     // protected virtual Description description { get; } = new Description("Value");
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
-    public Option<A> value => isSome ? F.some(_value) : Option<A>.None;
+    public Option<A> value => isSome ? F.some(_value) : None._;
     Option<A> Ref<Option<A>>.value {
       get { return value; }
       set {
         _isSome = value.isSome;
         // ReSharper disable once AssignNullToNotNullAttribute
-        _value = value.isSome ? value.__unsafeGetValue : default(A);
+        _value = value.isSome ? value.__unsafeGet : default(A);
       }
     }
 

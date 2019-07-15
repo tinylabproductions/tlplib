@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public struct VersionNumber : IEquatable<VersionNumber>, IStr, IComparable<VersionNumber> {
@@ -84,10 +84,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static Either<string, VersionNumber> parseString(string s, char separator=DEFAULT_SEPARATOR) {
       var errHeader = $"Can't parse '{s}' as version number with separator '{separator}'";
       var parts = s.Split(separator);
-      if (parts.Length > 3)
-        return $"{errHeader}: too many parts!".left().r<VersionNumber>();
-      if (parts.isEmpty())
-        return $"{errHeader}: empty!".left().r<VersionNumber>();
+      if (parts.Length > 3) return $"{errHeader}: too many parts!";
+      if (parts.isEmpty()) return $"{errHeader}: empty!";
       var majorE = parts[0].parseUInt().mapLeft(e => $"{errHeader} (major): {e}");
       var minorE = getIdx(parts, 1).mapLeft(e => $"{errHeader} (minor): {e}");
       var bugfixE = getIdx(parts, 2).mapLeft(e => $"{errHeader} (bugfix): {e}");
@@ -97,6 +95,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     static Either<string, uint> getIdx(IList<string> parts, int idx) =>
-      parts.get(idx).fold(0u.right().l<string>(), _ => _.parseUInt());
+      parts.get(idx).fold(0u, _ => _.parseUInt());
   }
 }

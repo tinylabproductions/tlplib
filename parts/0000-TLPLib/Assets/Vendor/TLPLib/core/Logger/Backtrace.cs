@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public struct Backtrace {

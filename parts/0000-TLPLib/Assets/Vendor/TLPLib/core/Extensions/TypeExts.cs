@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -17,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     // http://stackoverflow.com/questions/1155529/not-getting-fields-from-gettype-getfields-with-bindingflag-default/1155549#1155549
     public static IEnumerable<FieldInfo> getAllFields(this Type t) =>
       t.GetFields(FLAGS_ANY_FIELD_TYPE)
-      .Concat(t.BaseTypeSafe().map(getAllFields).getOrEmpty());
+      .Concat(t.BaseTypeSafe().map(getAllFields).getOrElse(Enumerable.Empty<FieldInfo>()));
 
     /// <summary>
     /// Like <see cref="Type.GetField(string,System.Reflection.BindingFlags)"/>

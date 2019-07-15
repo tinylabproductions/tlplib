@@ -3,6 +3,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
@@ -220,7 +221,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       [PublicAPI]
       public Builder append(Option<TweenTimelineElement> element) =>
-        element.isSome ? append(element.__unsafeGetValue) : this;
+        element.isSome ? append(element.__unsafeGet) : this;
 
       [PublicAPI]
       public float append2(TweenTimelineElement element) =>

@@ -5,6 +5,7 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class StringExts {
@@ -187,7 +188,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     public static Option<char> lastChar(this string s) =>
-      s.isEmpty() ? Option<char>.None : s[s.Length - 1].some();
+      s.isEmpty() ? None._ : s[s.Length - 1].some();
 
     /// <summary>obfuscates the string by shifting every char code in it by given amount</summary>
     public static string shiftCharValues(this string s, int shiftBy) =>

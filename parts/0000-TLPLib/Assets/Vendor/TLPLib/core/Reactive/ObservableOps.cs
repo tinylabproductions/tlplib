@@ -194,7 +194,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) {
       // Saves onEvent when someone is subscribed to us, but the future has not yet
       // completed.
-      var supposedToBeSubscribed = Functional.Option<Action<A>>.None;
+      var supposedToBeSubscribed = Option<Action<A>>.None;
       // Saves the actual subscription that is filled in when the future completes
       // so that we could unsubscribe from source if everyone unsubscribes from us.
       var currentSubscription = Subscription.empty;
@@ -204,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         currentSubscription.unsubscribe();
         // Clean up the event handler storage, so that things would not happen
         // if future completes while no one is subscribed to this.
-        supposedToBeSubscribed = supposedToBeSubscribed.none;
+        supposedToBeSubscribed = None._;
       });
 
       // Allows us to lose the reference to the future.
@@ -217,7 +217,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         // When this completes if there is someone subscribed to this observable
         // start proxying events.
         if (supposedToBeSubscribed.isSome) {
-          var onEvent = supposedToBeSubscribed.__unsafeGetValue;
+          var onEvent = supposedToBeSubscribed.__unsafeGet;
           currentSubscription = obs.subscribe(NoOpDisposableTracker.instance, onEvent);
         }
       });
@@ -277,12 +277,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // TODO: test, but how? Can't do async tests in unity.
     public static IRxObservable<A> oncePerFrame<A>(this IRxObservable<A> o) =>
       new Observable<A>(onEvent => {
-        var last = Functional.Option<A>.None;
+        var last = Option<A>.None;
         var mySub = o.subscribe(NoOpDisposableTracker.instance, v => last = v.some());
         var luSub = ASync.onLateUpdate.subscribe(NoOpDisposableTracker.instance, _ => {
           foreach (var val in last) {
             // Clear last before pushing, because exception makes it loop forever.
-            last = Functional.Option<A>.None;
+            last = None._;
             onEvent(val);
           }
         });
@@ -451,12 +451,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Only emits events that return some.
     /// </summary>
     public static IRxObservable<B> collect<A, B>(
-      this IRxObservable<A> o, Func<A, Functional.Option<B>> collector
+      this IRxObservable<A> o, Func<A, Option<B>> collector
     ) => new Observable<B>(onEvent => o.subscribe(
       NoOpDisposableTracker.instance,
       val => {
         var opt = collector(val);
-        if (opt.isSome) onEvent(opt.__unsafeGetValue);
+        if (opt.isSome) onEvent(opt.__unsafeGet);
       }
     ));
 
@@ -641,7 +641,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
-    public static IRxObservable<Tpl<Functional.Option<A>, A>> changesOpt<A>(
+    public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
       this IRxObservable<A> o, Func<A, A, bool> areEqual = null
     ) => o.changesOpt(F.t, areEqual);
 
@@ -650,14 +650,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// If there was no events before, old may be None.
     /// </summary>
     public static IRxObservable<B> changesOpt<A, B>(
-      this IRxObservable<A> o, Func<Functional.Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
     ) {
       areEqual = areEqual ?? EqComparer<A>.Default.Equals;
       return new Observable<B>(changesBase<A, B>(
         o,
         (onEvent, lastValue, val) => {
           var valueChanged =
-            lastValue.isNone || !areEqual(lastValue.__unsafeGetValue, val);
+            lastValue.isNone || !areEqual(lastValue.__unsafeGet, val);
           if (valueChanged) onEvent(zipper(lastValue, val));
         }
       ));
@@ -674,7 +674,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         o,
         (onEvent, lastValue, val) => {
           if (lastValue.isSome) {
-            var lastVal = lastValue.__unsafeGetValue;
+            var lastVal = lastValue.__unsafeGet;
             if (! areEqual(lastVal, val))
               onEvent(F.t(lastVal, val));
           }
@@ -700,7 +700,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static SubscribeToSource<Elem> changesBase<A, Elem>(
-      IRxObservable<A> o, Action<Action<Elem>, Functional.Option<A>, A> action
+      IRxObservable<A> o, Action<Action<Elem>, Option<A>, A> action
     ) => onEvent => {
       var lastValue = F.none<A>();
       return o.subscribe(

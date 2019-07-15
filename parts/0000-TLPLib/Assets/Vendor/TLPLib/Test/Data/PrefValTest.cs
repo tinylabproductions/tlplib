@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
+
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using pzdf = pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Test;
+using Harmony;
 using NUnit.Framework;
 using pzd.lib.collection;
 using pzd.lib.serialization;
@@ -53,10 +55,10 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     protected static void setBadBase64(string key) =>
-      backend.storage[key] = new OneOf<string, int, float>("qwerty");
+      backend.storage[key] = new pzdf.OneOf<string, int, float>("qwerty");
 
     protected static void ruinBase64(string key) {
-      backend.storage[key] = new OneOf<string, int, float>(
+      backend.storage[key] = new pzdf.OneOf<string, int, float>(
         backend.storage[key].aValue.get.splice(-1, 1, "!!!!!")
       );
     }
@@ -149,7 +151,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       storage.custom(
         key2, "",
         s => Convert.ToBase64String(SerializedRW.str.serialize(s).toArray()),
-        _ => Either<string, string>.Left("failed")
+        _ => pzdf.Either<string, string>.Left("failed")
       ).value = pv.value;
       backend.storage[key].shouldEqual(backend.storage[key2]);
       var pv2 = create();
@@ -184,8 +186,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
     static pzdf.Either<string, DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
-      SerializedRW.integer.deserialize(data, startIndex).fromPzd().rightValue.filter(i => i.value % 2 != 0)
-        .toRight("failed").toPzd();
+      SerializedRW.integer.deserialize(data, startIndex).rightValue.filter(i => i.value % 2 != 0)
+        .toRight("failed");
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(

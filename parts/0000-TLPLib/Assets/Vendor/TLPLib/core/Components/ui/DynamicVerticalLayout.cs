@@ -5,11 +5,11 @@ using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -86,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public class EmptyElement : IElementData {
       public float height { get; }
       public Percentage width { get; }
-      public Option<IElementWithViewData> asElementWithView => Option<IElementWithViewData>.None;
+      public Option<IElementWithViewData> asElementWithView => None._;
 
       public EmptyElement(float height, Percentage width) {
         this.height = height;

@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using pzd.lib.json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -95,10 +96,10 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
           var reportingUri = new Uri(
             $"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/api/{projectId}/store/"
           );
-          return new DSN(reportingUri, projectId, keys).right().l<string>();
+          return new DSN(reportingUri, projectId, keys);
         }
         catch (Exception e) {
-          return e.ToString().left().r<DSN>();
+          return e.ToString();
         }
       }
     }
@@ -384,7 +385,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       var timestamp = DateTime.UtcNow;
 
       // The list of frames should be ordered by the oldest call first.
-      var stacktraceFrames = data.entry.backtrace.map(
+      var stacktraceFrames = data.entry.backtrace.fromNullable().map(
         // ReSharper disable once ConvertClosureToMethodGroup - MCS bug
         b => b.elements.a.Select(a => backtraceElemToJson(a)).Reverse().ToList()
       );

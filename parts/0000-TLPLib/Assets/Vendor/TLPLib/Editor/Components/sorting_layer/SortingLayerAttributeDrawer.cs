@@ -1,6 +1,6 @@
 ﻿using com.tinylabproductions.TLPLib.Editor.gui;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
 

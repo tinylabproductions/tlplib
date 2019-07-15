@@ -1,4 +1,5 @@
 ﻿using System;
+
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
@@ -15,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /// Complete the future with the right side, never complete if left side occurs.
     /// </summary>
     public static Future<B> dropError<A, B>(
-      this Future<Functional.Either<A, B>> future, bool logOnError = false
+      this Future<Either<A, B>> future, bool logOnError = false
     ) =>
       Future.a<B>(p => future.onComplete(either => either.voidFold(
         err => { if (logOnError) Log.d.error(err.ToString()); },
@@ -28,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return sub;
     }
 
-    public static IRxVal<Functional.Option<A>> toRxVal<A>(this Future<A> future) {
+    public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
       var rx = RxRef.a(F.none<A>());
       future.onComplete(a => rx.value = F.some(a));
       return rx;
@@ -59,10 +60,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     );
 
-    public static Future<Functional.Either<A, B>> extract<A, B>(this Functional.Either<A, Future<B>> eitherFuture) =>
+    public static Future<Either<A, B>> extract<A, B>(this Either<A, Future<B>> eitherFuture) =>
       eitherFuture.fold(
-        a => Future.successful(Functional.Either<A, B>.Left(a)),
-        bFuture => bFuture.map(Functional.Either<A, B>.Right)
+        a => Future.successful(Either<A, B>.Left(a)),
+        bFuture => bFuture.map(Either<A, B>.Right)
       );
 
     public static Future<Try<A>> extract<A>(this Try<Future<Try<A>>> tryFuture) =>
@@ -71,18 +72,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         exception => Future.successful<Try<A>>(exception)
       );
 
-    public static Future<A> extract<A>(this Functional.Option<Future<A>> futureOpt) =>
+    public static Future<A> extract<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(Future<A>.unfulfilled, f => f);
 
-    public static Future<A> extract<A>(this Future<Functional.Option<A>> optFuture) =>
+    public static Future<A> extract<A>(this Future<Option<A>> optFuture) =>
       optFuture.flatMap(opt => opt.fold(Future<A>.unfulfilled, Future.successful));
 
-    public static Future<Functional.Option<A>> extractOpt<A>(this Functional.Option<Future<A>> futureOpt) =>
+    public static Future<Option<A>> extractOpt<A>(this Option<Future<A>> futureOpt) =>
       futureOpt.fold(() => Future.successful(F.none<A>()), f => f.map(F.some));
 
     [PublicAPI]
     public static void onComplete<A, B>(
-      this Future<Functional.Either<A, B>> future,
+      this Future<Either<A, B>> future,
       Action<A> onError, Action<B> onSuccess
     ) =>
       future.onComplete(e => {
@@ -91,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
 
     [PublicAPI]
-    public static void onSuccess<A, B>(this Future<Functional.Either<A, B>> future, Action<B> action) =>
+    public static void onSuccess<A, B>(this Future<Either<A, B>> future, Action<B> action) =>
       future.onComplete(e => {
         foreach (var b in e.rightValue) action(b);
       });
@@ -103,14 +104,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
 
     [PublicAPI]
-    public static Future<Functional.Option<B>> ofSuccess<A, B>(this Future<Functional.Either<A, B>> future) =>
+    public static Future<Option<B>> ofSuccess<A, B>(this Future<Either<A, B>> future) =>
       future.map(e => e.rightValue);
 
     [PublicAPI]
-    public static Future<Functional.Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
+    public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
       future.map(e => e.value);
 
-    public static void onFailure<A, B>(this Future<Functional.Either<A, B>> future, Action<A> action) =>
+    public static void onFailure<A, B>(this Future<Either<A, B>> future, Action<A> action) =>
       future.onComplete(e => {
         foreach (var a in e.leftValue) action(a);
       });
@@ -120,10 +121,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         foreach (var ex in e.exception) action(ex);
       });
 
-    public static Future<Functional.Option<A>> ofFailure<A, B>(this Future<Functional.Either<A, B>> future) =>
+    public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future) =>
       future.map(e => e.leftValue);
 
-    public static Future<Functional.Option<Exception>> ofFailure<A>(this Future<Try<A>> future) =>
+    public static Future<Option<Exception>> ofFailure<A>(this Future<Try<A>> future) =>
       future.map(e => e.exception);
 
     /**
@@ -137,13 +138,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /** Converts option into successful/unfulfilled future. */
-    public static Future<A> toFuture<A>(this Functional.Option<A> opt) {
+    public static Future<A> toFuture<A>(this Option<A> opt) {
       foreach (var a in opt) return Future.successful(a);
       return Future<A>.unfulfilled;
     }
 
-    public static LazyVal<Functional.Option<A>> toLazy<A>(this Future<A> f) =>
-      F.lazy(() => f.value.fromPzd());
+    public static LazyVal<Option<A>> toLazy<A>(this Future<A> f) =>
+      F.lazy(() => f.value);
 
     public static Future<A> first<A>(this Future<A> a, Future<A> b) {
       return Future.a<A>(p => {

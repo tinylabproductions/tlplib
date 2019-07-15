@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -30,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected override void onPointerUp(PointerEventData eventData) {
       if (pointerData.isEmpty()) {
-        _isHeldDown.value = _isHeldDown.value.none;
+        _isHeldDown.value = None._;
       }
     }
   }

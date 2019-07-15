@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using Smooth.Collections;
 using Random = UnityEngine.Random;
 
@@ -238,7 +239,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) =>
       list.indexOfOut(a, out var idx, startAt: startAt, count: count, comparer: comparer)
         ? F.some(idx)
-        : Option<int>.None;
+        : None._;
 
     public static bool indexOfOut<A>(
       this IList<A> list, A a, out int index,

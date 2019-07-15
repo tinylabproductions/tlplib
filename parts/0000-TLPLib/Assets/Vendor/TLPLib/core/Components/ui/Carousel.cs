@@ -108,14 +108,14 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public int indexOf(A a) => elements.IndexOf(a);
 
     // disables elements for which position from center exceeds this value
-    /*[ReadOnly] */public Functional.Option<float> disableDistantElements = F.none<float>();
+    /*[ReadOnly] */public Option<float> disableDistantElements = F.none<float>();
     bool loopable => wrapCarouselAround && elements.Count >= _minElementsForWraparound;
 
     readonly IRxRef<int> _page = RxRef.a(0);
     public IRxVal<int> page => _page;
 
-    readonly LazyVal<IRxRef<Functional.Option<A>>> __currentElement;
-    public IRxVal<Functional.Option<A>> currentElement => __currentElement.strict;
+    readonly LazyVal<IRxRef<Option<A>>> __currentElement;
+    public IRxVal<Option<A>> currentElement => __currentElement.strict;
 
     [PublicAPI] public bool freezeCarouselMovement;
 
@@ -294,7 +294,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             maxElementsFromCenter.value.isNone
             ? Mathf.Lerp(OtherPagesItemsScale, AdjacentToSelectedPageItemsScale, indexDiff - 1)
             : Mathf.Lerp(
-              AdjacentToSelectedPageItemsScale, 0, indexDiff - maxElementsFromCenter.value.__unsafeGetValue
+              AdjacentToSelectedPageItemsScale, 0, indexDiff - maxElementsFromCenter.value.__unsafeGet
             )
           )
         );
@@ -303,7 +303,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     static Vector3 getPosition(
       Carousel.Direction carouselDirection, UnityMeters elementDistanceFromCenter, 
-      float absoluteDifference, Functional.Option<Vector3> centralItemOffset, UnityMeters centerPoint
+      float absoluteDifference, Option<Vector3> centralItemOffset, UnityMeters centerPoint
     ) {
       var newPosition = 
         carouselDirection == Carousel.Direction.Horizontal

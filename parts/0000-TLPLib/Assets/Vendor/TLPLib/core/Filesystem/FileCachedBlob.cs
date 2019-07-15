@@ -16,11 +16,11 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public override string ToString() => $"{nameof(FileCachedBlob)}[{path}]";
 
     public bool cached => File.Exists(path);
-    public Functional.Option<Try<byte[]>> read() => read(path);
+    public Option<Try<byte[]>> read() => read(path);
     public Try<Unit> store(byte[] data) => store(path, data);
     public Try<Unit> clear() => clear(path);
     
-    public static Functional.Option<Try<byte[]>> read(PathStr path) =>
+    public static Option<Try<byte[]>> read(PathStr path) =>
       File.Exists(path)
         ? F.doTry(() => File.ReadAllBytes(path)).some()
         : F.none<Try<byte[]>>();

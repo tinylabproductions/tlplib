@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 using pzd.lib.concurrent;
 using pzd.lib.functional;
+using pzd.lib.functional.higher_kinds;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -71,10 +72,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Returns result from the first future that satisfies the predicate as a Some.
      * If all futures do not satisfy the predicate returns None.
      **/
-    public static Future<Functional.Option<B>> firstOfWhere<A, B>
-    (this IEnumerable<Future<A>> enumerable, Func<A, Functional.Option<B>> predicate) {
+    public static Future<Option<B>> firstOfWhere<A, B>
+    (this IEnumerable<Future<A>> enumerable, Func<A, Option<B>> predicate) {
       var futures = enumerable.ToList();
-      return Future<Functional.Option<B>>.async(p => {
+      return Future<Option<B>>.async(p => {
         var completed = 0;
         foreach (var f in futures)
           f.onComplete(a => {
@@ -86,26 +87,26 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    public static Future<Functional.Option<B>> firstOfSuccessful<A, B>
-    (this IEnumerable<Future<Functional.Either<A, B>>> enumerable)
+    public static Future<Option<B>> firstOfSuccessful<A, B>
+    (this IEnumerable<Future<Either<A, B>>> enumerable)
     { return enumerable.firstOfWhere(e => e.rightValue); }
 
-    public static Future<Functional.Either<A[], B>> firstOfSuccessfulCollect<A, B>
-    (this IEnumerable<Future<Functional.Either<A, B>>> enumerable) {
+    public static Future<Either<A[], B>> firstOfSuccessfulCollect<A, B>
+    (this IEnumerable<Future<Either<A, B>>> enumerable) {
       return enumerable.firstOfSuccessfulCollect(_ => _.ToArray());
     }
 
-    public static Future<Functional.Either<Collection, B>> firstOfSuccessfulCollect<A, B, Collection>(
-      this IEnumerable<Future<Functional.Either<A, B>>> enumerable,
+    public static Future<Either<Collection, B>> firstOfSuccessfulCollect<A, B, Collection>(
+      this IEnumerable<Future<Either<A, B>>> enumerable,
       Func<IEnumerable<A>, Collection> collector
     ) {
       var futures = enumerable.ToArray();
       return futures.firstOfSuccessful().map(opt => opt.fold(
         /* If this future is completed, then all futures are completed with lefts. */
-        () => Functional.Either<Collection, B>.Left(
+        () => Either<Collection, B>.Left(
           collector(futures.Select(f => f.value.__unsafeGet.leftValue.get))
         ),
-        Functional.Either<Collection, B>.Right
+        Either<Collection, B>.Right
       ));
     }
 
@@ -126,7 +127,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
 
     public static Future<A> fromBusyLoop<A>(
-      Func<Functional.Option<A>> checker, YieldInstruction delay=null
+      Func<Option<A>> checker, YieldInstruction delay=null
     ) => Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
 
     /// <summary>Complete when checker returns true</summary>
@@ -136,20 +137,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /* Waits at most `timeout` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
-    public static Future<Functional.Either<B, A>> timeout<A, B>(
+    public static Future<Either<B, A>> timeout<A, B>(
       this Future<A> future, Duration timeout, Func<B> onTimeout, ITimeContext tc=null
     ) {
-      var timeoutF = delay(timeout, () => future.value.fold(
+      var timeoutF = delay(timeout, () => future.value.fold<Either<B, A>>(
         // onTimeout() might have side effects, so we only need to execute it if
         // there is no value in the original future once the timeout hits.
-        () => onTimeout().left().r<A>(),
-        v => v.right().l<B>()
+        () => onTimeout(),
+        v => v
       ), tc);
-      return new[] { future.map(v => v.right().l<B>()), timeoutF }.firstOf();
+      return new[] { future.map<Either<B, A>>(v => v), timeoutF }.firstOf();
     }
 
     /* Waits at most `timeout` for the future to complete. */
-    public static Future<Functional.Either<Duration, A>> timeout<A>(
+    public static Future<Either<Duration, A>> timeout<A>(
       this Future<A> future, Duration timeout, ITimeContext tc=null
     ) => future.timeout(timeout, () => timeout, tc);
 
@@ -162,7 +163,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       });
     }
 
-    static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Func<Functional.Option<A>> checker) {
+    static IEnumerator busyLoopEnum<A>(YieldInstruction delay, Promise<A> p, Func<Option<A>> checker) {
       var valOpt = checker();
       while (valOpt.isNone) {
         yield return delay;

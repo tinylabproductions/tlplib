@@ -17,6 +17,7 @@ using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using pzd.lib.serialization;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -38,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
         SerializedRW.byte_.map<byte, Level>(b => (Level) b, l => (byte) l);
 
       public static readonly ISerializedRW<Option<Level>> optRw = 
-        SerializedRW.opt(rw).mapNoFail(_ => _.fromPzd(), _ => _.toPzd());
+        SerializedRW.opt(rw).mapNoFail(_ => _, _ => _);
     }
 
     // InitializeOnLoad is needed to set static variables on main thread.
@@ -99,9 +100,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// </summary>
     public readonly ImmutableArray<Tpl<string, string>> extras;
     /// <summary>Object which is related to this entry.</summary>
-    public readonly Option<object> context;
+    public readonly object maybeContext;
     /// <summary>A log entry might have backtrace attached to it.</summary>
-    public readonly Option<Backtrace> backtrace;
+    public readonly Backtrace? backtrace;
     /// <summary>Whether this entry should be reported to any error tracking that we have.</summary>
     public readonly bool reportToErrorTracking;
 
@@ -110,32 +111,29 @@ namespace com.tinylabproductions.TLPLib.Logger {
       ImmutableArray<Tpl<string, string>> tags,
       ImmutableArray<Tpl<string, string>> extras,
       bool reportToErrorTracking = true,
-      Option<Backtrace> backtrace = default,
-      Option<object> context = default
+      Backtrace? backtrace = null,
+      object context = null
     ) {
-      Option.ensureValue(ref backtrace);
-      Option.ensureValue(ref context);
-
       this.message = message;
       this.tags = tags;
       this.extras = extras;
       this.reportToErrorTracking = reportToErrorTracking;
       this.backtrace = backtrace;
-      this.context = context;
+      maybeContext = context;
     }
 
     public override string ToString() {
       var sb = new StringBuilder(message);
-      if (context.isSome) sb.Append($" (ctx={context.__unsafeGetValue})");
+      if (maybeContext != null) sb.Append($" (ctx={maybeContext})");
       if (tags.nonEmpty()) sb.Append($"\n{nameof(tags)}={tags.mkStringEnumNewLines()}");
       if (extras.nonEmpty()) sb.Append($"\n{nameof(extras)}={extras.mkStringEnumNewLines()}");
-      if (backtrace.isSome) sb.Append($"\n{backtrace.__unsafeGetValue}");
+      if (backtrace.HasValue) sb.Append($"\n{backtrace.Value}");
       return sb.ToString();
     }
 
     [PublicAPI] public static LogEntry simple(
       string message, bool reportToErrorTracking = true, 
-      Option<Backtrace> backtrace = default, object context = null
+      Backtrace? backtrace = null, object context = null
     ) => new LogEntry(
       message: message, 
       tags: ImmutableArray<Tpl<string, string>>.Empty,
@@ -146,7 +144,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [PublicAPI] public static LogEntry tags_(
       string message, ImmutableArray<Tpl<string, string>> tags, bool reportToErrorTracking = true, 
-      Option<Backtrace> backtrace = default, object context = null
+      Backtrace? backtrace = null, object context = null
     ) => new LogEntry(
       message: message, tags: tags, extras: ImmutableArray<Tpl<string, string>>.Empty,
       backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
@@ -154,7 +152,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [PublicAPI] public static LogEntry extras_(
       string message, ImmutableArray<Tpl<string, string>> extras, bool reportToErrorTracking = true, 
-      Option<Backtrace> backtrace = default, object context = null
+      Backtrace? backtrace = null, object context = null
     ) => new LogEntry(
       message: message, tags: ImmutableArray<Tpl<string, string>>.Empty, extras: extras,
       backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
@@ -197,24 +195,24 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
       var backtrace = backtraceBuilder.ToImmutable().toNonEmpty().map(_ => new Backtrace(_));
       
-      return simple(sb.ToString(), reportToErrorTracking, backtrace, context);
+      return simple(sb.ToString(), reportToErrorTracking, backtrace.toNullable(), context);
     }
 
     [PublicAPI]
     public LogEntry withMessage(string message) =>
-      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, maybeContext);
 
     [PublicAPI]
     public LogEntry withMessage(Func<string, string> message) =>
-      new LogEntry(message(this.message), tags, extras, reportToErrorTracking, backtrace, context);
+      new LogEntry(message(this.message), tags, extras, reportToErrorTracking, backtrace, maybeContext);
 
     [PublicAPI]
     public LogEntry withExtras(ImmutableArray<Tpl<string, string>> extras) =>
-      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, context);
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, maybeContext);
 
     [PublicAPI]
     public LogEntry withExtras(Func<ImmutableArray<Tpl<string, string>>, ImmutableArray<Tpl<string, string>>> extras) =>
-      new LogEntry(message, tags, extras(this.extras), reportToErrorTracking, backtrace, context);
+      new LogEntry(message, tags, extras(this.extras), reportToErrorTracking, backtrace, maybeContext);
 
     public static readonly ISerializedRW<ImmutableArray<Tpl<string, string>>> stringTupleArraySerializedRw =
       SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));

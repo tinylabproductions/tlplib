@@ -1,11 +1,12 @@
 ﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class WaitForFuture {
     public static WaitForFuture<A> coroutineWait<A>(this Future<A> f) =>
-      new WaitForFuture<A>(f, Option<MaxWait>.None);
+      new WaitForFuture<A>(f, None._);
 
     public static WaitForFuture<A> coroutineWait<A>(
       this Future<A> f, Duration maxWait, TimeScale timeScale = TimeScale.Realtime

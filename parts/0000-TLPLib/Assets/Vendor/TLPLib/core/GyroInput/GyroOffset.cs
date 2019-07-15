@@ -1,6 +1,6 @@
 ﻿using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 using UnityEngine;
 using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 
@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
     public Vector2 axisLocks = Vector2.one;
     public float friction = 0.01f;
 
-    Option<Coroutine> updateCoroutine = Option<Coroutine>.None;
+    Option<Coroutine> updateCoroutine = None._;
 
     GyroOffset() {
       // Does side effects.
@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.GyroInput {
           offset = Vector2.zero;
           foreach (var c in updateCoroutine) {
             c.stop();
-            updateCoroutine = updateCoroutine.none;
+            updateCoroutine = None._;
           }
         }
       }

@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
 using EditorUtils = com.tinylabproductions.TLPLib.Utilities.EditorUtils;

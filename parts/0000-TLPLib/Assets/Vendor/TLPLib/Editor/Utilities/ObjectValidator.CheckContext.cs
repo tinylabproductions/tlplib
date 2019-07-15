@@ -2,12 +2,13 @@
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
     public class CheckContext {
       public static readonly CheckContext empty =
-        new CheckContext(Option<string>.None, ImmutableHashSet<Type>.Empty);
+        new CheckContext(None._, ImmutableHashSet<Type>.Empty);
 
       public readonly Option<string> value;
       public readonly ImmutableHashSet<Type> checkedComponentTypes;

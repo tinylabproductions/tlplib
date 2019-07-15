@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Platform {
@@ -25,6 +26,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
   class NoOpPlatformPackageManager : IPlatformPackageManager {
     public ImmutableSortedSet<string> packageNames => ImmutableSortedSet<string>.Empty;
     public bool hasAppInstalled(string bundleIdentifier) => false;
-    public Option<ErrorMsg> openApp(string bundleIdentifier) => Option<ErrorMsg>.None;
+    public Option<ErrorMsg> openApp(string bundleIdentifier) => None._;
   }
 }

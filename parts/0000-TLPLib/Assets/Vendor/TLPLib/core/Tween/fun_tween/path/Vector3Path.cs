@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {

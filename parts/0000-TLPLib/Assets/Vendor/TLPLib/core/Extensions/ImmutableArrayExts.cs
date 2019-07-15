@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class ImmutableArrayExts {
@@ -36,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static ImmutableArray<A>.Builder addOptAnd<A>(
       this ImmutableArray<A>.Builder b, Option<A> aOpt
     ) {
-      if (aOpt.isSome) b.Add(aOpt.__unsafeGetValue);
+      if (aOpt.isSome) b.Add(aOpt.__unsafeGet);
       return b;
     }
 

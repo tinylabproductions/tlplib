@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
@@ -148,14 +147,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
       .shouldBeLeft(3);
   }
 
-  public class EitherTestMap {
-    static char leftMapper(int i) => i.ToString()[0];
-    static char rightMapper(string s) => s[0];
-
-    [Test] public void WhenLeft() => new Either<int, string>(3).map(leftMapper, rightMapper).shouldBeLeft('3');
-    [Test] public void WhenRight() => new Either<int, string>("foo").map(leftMapper, rightMapper).shouldBeRight('f');
-  }
-
   public class EitherTestMapLeft {
     static char mapper(int i) => i.ToString()[0];
 
@@ -181,33 +172,14 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class EitherTestVoidFold {
     static void test(Either<int, string> e, char expected) {
       var result = Option<char>.None;
-      Action<int> leftFolder = i => result = i.ToString()[0].some();
-      Action<string> rightFolder = s => result = s[0].some();
+      void leftFolder(int i) => result = i.ToString()[0].some();
+      void rightFolder(string s) => result = s[0].some();
       e.voidFold(leftFolder, rightFolder);
       result.shouldBeSome(expected);
     }
 
     [Test] public void WhenLeft() => test(Either<int, string>.Left(3), '3');
     [Test] public void WhenRight() => test(Either<int, string>.Right("foo"), 'f');
-  }
-
-  public class EitherTestToTry {
-    static readonly Func<int, Exception> onLeft = i => new ArgumentException(i.ToString());
-
-    [Test] public void WhenLeft() =>
-      Either<int, string>.Left(3)
-      .toTry(onLeft)
-      .shouldBeError(typeof(ArgumentException));
-
-    [Test] public void WhenRight() =>
-      Either<int, string>.Right("foo")
-      .toTry(onLeft)
-      .shouldBeSuccess("foo");
-  }
-
-  public class EitherTestSwap {
-    [Test] public void WhenLeft() => Either<int, string>.Left(3).swap.shouldBeRight(3);
-    [Test] public void WhenRight() => Either<string, int>.Right(3).swap.shouldBeLeft(3);
   }
 
   public class EitherTestUnsafeCastLeft {
@@ -251,5 +223,4 @@ namespace com.tinylabproductions.TLPLib.Functional {
       called.shouldEqual(1, "it should yield once");
     }
   }
-
 }

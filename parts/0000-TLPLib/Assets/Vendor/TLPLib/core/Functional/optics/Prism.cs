@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional.optics {
   [PublicAPI] public sealed class Prism<From, To> {

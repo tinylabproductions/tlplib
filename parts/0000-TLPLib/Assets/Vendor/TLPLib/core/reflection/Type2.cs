@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.reflection {
   public static class Type2 {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 using Smooth.Comparisons;
 
 namespace Smooth.Compare {
@@ -24,11 +25,11 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 
 			if (!type.IsValueType) {
-				return Option<IComparer<T>>.None;
+				return None._;
 			} else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>)) {
 				return new Option<IComparer<T>>(KeyValuePairComparer<T>(type));
 			} else {
-				return Option<IComparer<T>>.None;
+				return None._;
 			}
 		}
 
@@ -49,7 +50,7 @@ namespace Smooth.Compare {
 			var type = typeof(T);
 
 			if (!type.IsValueType) {
-				return Option<IEqualityComparer<T>>.None;
+				return None._;
 			} else if (type.IsEnum) {
 				return new Option<IEqualityComparer<T>>(EnumEqComparer<T>(type));
 			} else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>)) {
@@ -62,7 +63,7 @@ namespace Smooth.Compare {
 
 				return expression.isSome ?
 					new Option<IEqualityComparer<T>>(new FuncEqComparer<T>(Expression.Lambda<Func<T, T, bool>>(expression.get, l, r).Compile())) :
-						Option<IEqualityComparer<T>>.None;
+						None._;
 			}
 		}
 
@@ -112,7 +113,7 @@ namespace Smooth.Compare {
 				Debug.LogError(e);
 			}
 
-			return Option<Expression>.None;
+			return None._;
 		}
 
 		/// <summary>

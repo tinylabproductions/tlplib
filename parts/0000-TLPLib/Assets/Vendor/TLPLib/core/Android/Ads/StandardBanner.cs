@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     readonly ImmutableList<IStandardBannerKnowsState> banners;
     public IRxVal<bool> hasAd { get; }
 
-    Option<IStandardBannerKnowsState> active = Option<IStandardBannerKnowsState>.None;
+    Option<IStandardBannerKnowsState> active = None._;
 
     public StandardBannerAggregator(
       ImmutableList<IStandardBannerKnowsState> banners
@@ -74,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     public void close() {
       foreach (var b in active) {
         b.setVisibility(false);
-        active = Option<IStandardBannerKnowsState>.None;
+        active = None._;
       }
     }
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
   [PublicAPI] public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }

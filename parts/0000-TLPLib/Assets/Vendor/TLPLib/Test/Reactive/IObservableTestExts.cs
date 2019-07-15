@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public static class IObservableTestExts {

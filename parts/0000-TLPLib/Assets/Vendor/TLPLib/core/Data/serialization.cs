@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       SerializedRW.str.map<string, Url>(_ => new Url(_), _ => _.url);
 
     [PublicAPI] public static readonly ISerializedRW<TextureFormat> textureFormat =
-      SerializedRW.integer.map<int, TextureFormat>(
+      SerializedRW.integer.map(
         i => 
           EnumUtils.GetValues<TextureFormat>().find(_ => (int) _ == i)
           .toRight($"Can't find texture format by {i}"),

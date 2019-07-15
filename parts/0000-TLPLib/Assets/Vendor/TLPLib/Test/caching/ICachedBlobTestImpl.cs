@@ -9,11 +9,11 @@ namespace com.tinylabproductions.TLPLib.caching {
     public ICachedBlobTestImpl() : this("not set") { }
     public ICachedBlobTestImpl(string name) { this.name = name; }
 
-    public Functional.Option<A> blob = Functional.Option<A>.None;
+    public Option<A> blob = None._;
 
     public bool cached => blob.isSome;
 
-    public Functional.Option<Try<A>> read() => blob.map(F.scs);
+    public Option<Try<A>> read() => blob.map(F.scs);
 
     public Try<Unit> store(A data) {
       blob = data.some();
@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.caching {
     }
 
     public Try<Unit> clear() {
-      blob = blob.none;
+      blob = None._;
       return F.scs(F.unit);
     }
   }

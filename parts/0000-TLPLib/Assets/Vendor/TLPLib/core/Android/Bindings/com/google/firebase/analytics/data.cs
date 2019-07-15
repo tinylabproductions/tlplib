@@ -4,8 +4,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.analytics {
   public interface IFirebaseAnalytics {

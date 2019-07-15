@@ -58,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     static void initTasks() {
       enabledSubscription = enabled.subscribe(NoOpDisposableTracker.instance, b => {
         if (b) {
-          refsOpt = Functional.Option<AssetReferences>.None;
+          refsOpt = None._;
           processFiles(AssetUpdate.fromAllAssets(AssetDatabase.GetAllAssetPaths().ToImmutableList()));
         }
       });
@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
     static readonly Ref<float> progress = Ref.a(0f);
     static volatile bool processing, needsRepaint;
-    static Functional.Option<AssetReferences> refsOpt;
+    static Option<AssetReferences> refsOpt;
     static readonly PCQueue worker = new PCQueue(1);
 
     public static void processFiles(AssetUpdate data) {

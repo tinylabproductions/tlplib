@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.functional;
 using Smooth.Pools;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -147,7 +148,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       public uint iterations;
       public readonly Dictionary<string, Duration> innerScopeDurations =
         new Dictionary<string, Duration>();
-      public Option<Data> parent = Option<Data>.None;
+      public Option<Data> parent = None._;
     }
 
     static readonly Pool<Data> dataPool = new Pool<Data>(() => new Data(), _ => { });
@@ -160,7 +161,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     public void openScope(string name) {
       var hasParentScope = scopes.Count != 0;
-      var parent = hasParentScope ? scopes.Peek().some() : Option<Data>.None;
+      var parent = hasParentScope ? scopes.Peek().some() : None._;
       var data = dataPool.Borrow();
       data.name = name;
       data.fullScopeName = hasParentScope ? $"{scopes.Peek().fullScopeName}.{name}" : name;

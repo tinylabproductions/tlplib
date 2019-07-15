@@ -1,6 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,13 +11,13 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
     enum LockedAxis2 { A, B }
 
     Option<GameObject> objectToMoveAroundOpt;
-    Option<LockedAxis2> lockedAxis2 = Option<LockedAxis2>.None;
-    Option<Vector3> lastPlacedPosition = Option<Vector3>.None;
+    Option<LockedAxis2> lockedAxis2 = None._;
+    Option<Vector3> lastPlacedPosition = None._;
 
     static Option<LockedAxis2> next(Option<LockedAxis2> current) =>
         current.isNone ? LockedAxis2.A.some()
       : current.exists(LockedAxis2.A) ? LockedAxis2.B.some()
-      : Option<LockedAxis2>.None;
+      : None._;
 
     public override void OnInspectorGUI() {
       const string msg =
@@ -73,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
                   Undo.RegisterCreatedObjectUndo(obj, $"Object ({obj.name}) created");
                   obj.transform.parent = _target.parent.getOrNull();
                   lastPlacedPosition = obj.transform.position.some();
-                  objectToMoveAroundOpt = Option<GameObject>.None;
+                  objectToMoveAroundOpt = None._;
                   break;
                 case 1:
                   lockedAxis2 = next(lockedAxis2);
@@ -85,9 +86,9 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       }
       else {
         foreach (var obj in objectToMoveAroundOpt) DestroyImmediate(obj);
-        objectToMoveAroundOpt = Option<GameObject>.None;
-        lockedAxis2 = Option<LockedAxis2>.None;
-        lastPlacedPosition = Option<Vector3>.None;
+        objectToMoveAroundOpt = None._;
+        lockedAxis2 = None._;
+        lastPlacedPosition = None._;
       }
     }
 
@@ -123,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
 
       return distance > 0
         ? F.some(ray.GetPoint(distance))
-        : Option<Vector3>.None;
+        : None._;
     }
 
     static Option<Vector3> projectToLine(

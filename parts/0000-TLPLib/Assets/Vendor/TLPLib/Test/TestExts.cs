@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
@@ -14,7 +15,6 @@ using NUnit.Framework;
 using pzd.lib.config;
 using pzd.lib.exts;
 using pzd.lib.functional;
-using pzdf = pzd.lib.functional;
 using pzd.lib.json;
 
 namespace com.tinylabproductions.TLPLib.Test {
@@ -194,19 +194,11 @@ namespace com.tinylabproductions.TLPLib.Test {
         failWithPrefix(message, $"Expected {a} to match predicate, but it didn't");
     }
 
-    public static void shouldBeSome<A>(this Functional.Option<A> maybeA, A expected, string message = null) =>
-      maybeA.toPzd().shouldBeSome(expected, message);
-
-    public static void shouldBeSome<A>(this pzdf.Option<A> maybeA, A expected, string message=null) {
-      if (maybeA.valueOut(out var a)) a.shouldEqual(expected, message ?? $"Expected {maybeA} to be {F.some(expected)}");
-      else Assert.Fail(message ?? $"Expected to be Some({expected}, but it was None");
-    }
-
-    public static void shouldBeAnySome<A>(this Functional.Option<A> a, string message = null) {
+    public static void shouldBeAnySome<A>(this Option<A> a, string message = null) {
       if (a.isNone) Assert.Fail(message ?? $"Expected {a} to be Some!");
     }
 
-    public static void shouldBeSomeEnum<E>(this Functional.Option<E> aOpt, E expected, string message = null)
+    public static void shouldBeSomeEnum<E>(this Option<E> aOpt, E expected, string message = null)
       where E : IEnumerable
     {
       foreach (var a in aOpt) {
@@ -216,24 +208,25 @@ namespace com.tinylabproductions.TLPLib.Test {
       aOpt.shouldBeSome(expected, message);
     }
 
-    public static void shouldBeNone<A>(this Functional.Option<A> a, string message=null) => 
-      a.shouldEqual(F.none<A>(), message);
-    public static void shouldBeNone<A>(this pzdf.Option<A> a, string message=null) => 
-      a.shouldEqual(pzdf.None._, message);
+    public static void shouldBeNone<A>(this Option<A> a, string message=null) => 
+      a.shouldEqual(None._, message);
 
-    public static void shouldBeLeft<A, B>(this Functional.Either<A, B> either, string message = null) {
+    public static void shouldBeSome<A>(this Option<A> a, A expected, string message=null) => 
+      a.shouldEqual(Some.a(expected), message);
+
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, string message = null) {
       if (! either.isLeft) Assert.Fail(
         message ?? 
         $"Expected either to be left, but it was Right({either.__unsafeGetRight.asDebugString()})!"
       );
     }
 
-    public static void shouldBeLeft<A, B>(this Functional.Either<A, B> either, A expected, string message = null) {
+    public static void shouldBeLeft<A, B>(this Either<A, B> either, A expected, string message = null) {
       either.shouldEqual(F.left<A, B>(expected), message);
     }
 
     public static void shouldBeLeftEnum<A, B>(
-      this Functional.Either<A, B> either, A expected, string message = null
+      this Either<A, B> either, A expected, string message = null
     ) where A : IEnumerable {
       foreach (var a in either.leftValue) {
         a.shouldEqualEnum(expected, message);
@@ -241,25 +234,19 @@ namespace com.tinylabproductions.TLPLib.Test {
       }
       either.shouldBeLeft(message);
     }
-
-    public static void shouldBeRight<A, B>(this Functional.Either<A, B> either, string message = null) =>
-      either.toPzd().shouldBeRight(message);
     
-    public static void shouldBeRight<A, B>(this pzdf.Either<A, B> either, string message = null) {
+    public static void shouldBeRight<A, B>(this Either<A, B> either, string message = null) {
       if (! either.isRight) Assert.Fail(
         message ?? 
         $"Expected either to be right, but it was Left({either.__unsafeGetLeft.asDebugString()})!"
       );
     }
 
-    public static void shouldBeRight<A, B>(this Functional.Either<A, B> either, B expected, string message = null) =>
-      either.shouldEqual(expected, message);
-
-    public static void shouldBeRight<A, B>(this pzdf.Either<A, B> either, B expected, string message = null) =>
+    public static void shouldBeRight<A, B>(this Either<A, B> either, B expected, string message = null) =>
       either.shouldEqual(expected, message);
 
     public static void shouldBeRightEnum<A, B>(
-      this Functional.Either<A, B> either, B expected, string message = null
+      this Either<A, B> either, B expected, string message = null
     ) where B : IEnumerable {
       foreach (var b in either.rightValue) {
         b.shouldEqualEnum(expected, message);
@@ -296,7 +283,7 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public static void shouldBeOfUnfulfilledType<A>(this Future<A> f, string message=null) {
       f.type.shouldEqual(FutureType.Unfulfilled, message);
-      f.value.fromPzd().shouldBeNone($"{message ?? ""}: it shouldn't have a value");
+      f.value.shouldBeNone($"{message ?? ""}: it shouldn't have a value");
     }
 
     public static void shouldBeCompleted<A>(this Future<A> f, A a, string message=null) {
@@ -317,7 +304,7 @@ namespace com.tinylabproductions.TLPLib.Test {
     public static IConfig asConfig(this string json) =>
       new Config(Json.Deserialize(json).cast().to<Dictionary<string, object>>());
 
-    public static Functional.Either<ConfigLookupError, A> testParser<A>(
+    public static Either<ConfigLookupError, A> testParser<A>(
       this string json, Config.Parser<object, A> parser
     ) =>
       $@"{{""item"": {json}}}".asConfig().eitherGet("item", parser);

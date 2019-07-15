@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class HashSetExts {

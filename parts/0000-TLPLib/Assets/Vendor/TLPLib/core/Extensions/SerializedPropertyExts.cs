@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿
+using pzd.lib.functional;
+#if UNITY_EDITOR
 using System.Collections;
 using com.tinylabproductions.TLPLib.Functional;
 using UnityEditor;
@@ -12,8 +14,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
       var currentSp = sp.serializedObject.FindProperty(firstFieldName);
       for (var idx = 1; idx < path.Length; idx++) {
-        if (currentOpt.isNone) return Option<object>.None;
-        var current = currentOpt.__unsafeGetValue;
+        if (currentOpt.isNone) return None._;
+        var current = currentOpt.__unsafeGet;
         var currentFieldName = path[idx];
         if (currentSp.isArray) {
           // if we have an array named myArray,

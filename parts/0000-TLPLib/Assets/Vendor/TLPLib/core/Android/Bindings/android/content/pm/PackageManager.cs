@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       }
       catch (AndroidJavaException e) {
         if (e.Message.StartsWithFast("android.content.pm.PackageManager$NameNotFoundException:"))
-          return Option<PermissionInfo>.None;
+          return None._;
         else
           throw;
       }
@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
       getLaunchIntentForPackage(bundleIdentifier).fold(
         () => F.some(new ErrorMsg($"Unknown bundle identifier '{bundleIdentifier}'")),
         intent => (context ?? AndroidActivity.current).startActivity(intent).fold(
-          Option<ErrorMsg>.None,
+          None._,
           ex => F.some(new ErrorMsg($"Error while launching app '{bundleIdentifier}': {ex}"))
         )
       );

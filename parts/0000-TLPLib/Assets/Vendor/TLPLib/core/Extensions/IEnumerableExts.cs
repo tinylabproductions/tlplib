@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using Smooth.Collections;
 using pzd.lib.exts;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IEnumerableExts {
@@ -46,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.Yield());
     
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, Option<A> aOpt) =>
-      aOpt.isSome ? e.Concat(aOpt.__unsafeGetValue) : e;
+      aOpt.isSome ? e.Concat(aOpt.__unsafeGet) : e;
 
     
     public static IEnumerable<Base> Concat2<Child, Base>(
@@ -161,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> flatten<A>(this IEnumerable<Option<A>> enumerable) =>
       from aOpt in enumerable
       where aOpt.isSome
-      select aOpt.__unsafeGetValue;
+      select aOpt.__unsafeGet;
 
     
     public static IEnumerable<A> flatten<A>(this IEnumerable<IEnumerable<A>> enumerable) =>
@@ -192,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     ) {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
-        if (bOpt.isSome) yield return bOpt.__unsafeGetValue;
+        if (bOpt.isSome) yield return bOpt.__unsafeGet;
       }
     }
 
@@ -203,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var idx = 0;
       foreach (var a in enumerable) {
         var bOpt = collector(a, idx);
-        if (bOpt.isSome) yield return bOpt.__unsafeGetValue;
+        if (bOpt.isSome) yield return bOpt.__unsafeGet;
         idx++;
       }
     }
@@ -253,7 +254,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var a in enumerable) {
         var bOpt = collector(a);
         if (bOpt.isSome)
-          somes.Add(bOpt.__unsafeGetValue);
+          somes.Add(bOpt.__unsafeGet);
         else
           nones.Add(a);
       }

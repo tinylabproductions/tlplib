@@ -1,11 +1,9 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Functional.higher_kinds;
 using pzd.lib.concurrent;
 using pzd.lib.functional;
-using pzdf = pzd.lib.functional;
-using None = pzd.lib.functional.None;
+using pzd.lib.functional.higher_kinds;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   struct UnfulfilledFuture : IEquatable<UnfulfilledFuture> {
@@ -34,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);
     // ReSharper disable once ConvertClosureToMethodGroup
-    public pzdf.Option<A> value => implementation.fold(_ => Some.a(_), _ => None._, f => f.value);
+    public Option<A> value => implementation.fold(_ => Some.a(_), _ => None._, f => f.value);
 
     public FutureType type => implementation.fold(
       _ => FutureType.Successful,
@@ -103,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Always run `action`. If the future is not completed right now, run `action` again when it
      * completes.
      */
-    public void nowAndOnComplete(Action<Functional.Option<A>> action) {
+    public void nowAndOnComplete(Action<Option<A>> action) {
       var current = value;
       action(current);
       if (current.isNone) onComplete(a => action(a.some()));
@@ -141,7 +139,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * Filter & map future on value. If collector returns Some, completes the future,
      * otherwise - never completes.
      **/
-    public Future<B> collect<B>(Func<A, Functional.Option<B>> collector) {
+    public Future<B> collect<B>(Func<A, Option<B>> collector) {
       return implementation.fold(
         a => collector(a).fold(Future<B>.unfulfilled, Future<B>.successful),
         _ => Future<B>.unfulfilled,

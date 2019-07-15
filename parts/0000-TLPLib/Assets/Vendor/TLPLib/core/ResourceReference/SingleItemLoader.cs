@@ -5,7 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
-using Object = UnityEngine.Object;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   public enum LoadPriority : byte { Low, High }
@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     // At this moment we could use Func<Tpl<ResourceRequest, Future<A>>> instead of ILoader<A>,
     // but there is no gain in refactoring this now. Just a note.
-    public readonly IRxRef<Option<ILoader<A>>> currentLoader = RxRef.a(Option<ILoader<A>>.None);
+    public readonly IRxRef<Option<ILoader<A>>> currentLoader = RxRef.a<Option<ILoader<A>>>(None._);
     public readonly IRxRef<LoadPriority> priority = RxRef.a(LoadPriority.High);
     public readonly IRxVal<Either<IsLoading, A>> itemState;
 
@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     void discardPreviousRequest() {
       foreach (var r in request.value) r.priority = PRIORITY_OFF;
-      request.value = request.value.none;
+      request.value = None._;
     }
 
     public void Dispose() {

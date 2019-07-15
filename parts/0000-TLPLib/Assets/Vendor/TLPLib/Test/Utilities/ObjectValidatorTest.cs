@@ -536,7 +536,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     static ImmutableList<ObjectValidator.Error> checkForErrors<A>(
-      Func<A> create, Functional.Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
+      Func<A> create, Option<ObjectValidator.UniqueValuesCache> uniqueValuesCache = default
     ) where A : Object =>
       ObjectValidator.check(
         ObjectValidator.CheckContext.empty, new Object[] {create()},

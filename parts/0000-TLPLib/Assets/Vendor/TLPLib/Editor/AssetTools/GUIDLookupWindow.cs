@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetTools {
           EditorGUILayout.HelpBox("Nothing found by this GUID.", MessageType.Info);
         }
         else {
-          var objPath = objPathOpt.__unsafeGetValue;
+          var objPath = objPathOpt.__unsafeGet;
           var obj = AssetDatabase.LoadAssetAtPath<Object>(objPath);
 
           EditorGUILayout.PrefixLabel($"Found at path:");

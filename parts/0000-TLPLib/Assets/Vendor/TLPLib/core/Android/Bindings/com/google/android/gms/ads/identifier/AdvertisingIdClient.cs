@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine;
 #endif
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.ads.identifier {
   public interface AdvertisingIdClientInfo {
@@ -24,9 +25,9 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.android.gms.
 #if UNITY_ANDROID
       Application.platform == RuntimePlatform.Android
         ? new AdvertisingIdClientAndroid().some<IAdvertisingIdClient>()
-        : Option<IAdvertisingIdClient>.None
+        : None._
 #else
-      Option<IAdvertisingIdClient>.None
+      None._
 #endif
       ;
   }

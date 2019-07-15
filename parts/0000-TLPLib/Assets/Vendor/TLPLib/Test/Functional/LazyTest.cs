@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Concurrent;
+﻿
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
@@ -20,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void ItShouldHaveTheSameValueAsFuture() =>
-      create().asFuture().value.fromPzd().shouldBeSome(value);
+      create().asFuture().value.shouldBeSome(value);
 
     [Test]
     public void ItShouldEmitOnCompleteInstantly() {
@@ -55,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       var lazy = create();
       var ftr = lazy.asFuture();
       lazy.strict.forSideEffects();
-      ftr.value.fromPzd().shouldBeSome(value);
+      ftr.value.shouldBeSome(value);
     }
 
     [Test]
@@ -105,10 +106,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       };
 
       when["#" + nameof(lazy.value.value)] = () => {
-        it["should transmit non-completion"] = () => upcasted.value.value.fromPzd().shouldBeNone();
+        it["should transmit non-completion"] = () => upcasted.value.value.shouldBeNone();
         it["should transmit completion"] = () => {
           lazy.value.strict.forSideEffects();
-          upcasted.value.value.fromPzd().shouldBeSome(obj);
+          upcasted.value.value.shouldBeSome(obj);
         };
       };
     });

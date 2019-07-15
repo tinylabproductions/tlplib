@@ -12,7 +12,6 @@ using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using pzd.lib.functional;
 using UnityEngine;
-using Option = com.tinylabproductions.TLPLib.Functional.Option;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /**
@@ -330,7 +329,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       Observable.interval(interval, F.some(delay));
 
     public static IRxObservable<DateTime> interval(
-      Duration interval, Functional.Option<Duration> delay=default(Functional.Option<Duration>)
+      Duration interval, Option<Duration> delay=default(Option<Duration>)
     ) {
       Option.ensureValue(ref delay);
       return new Observable<DateTime>(observer => {
@@ -348,7 +347,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static IEnumerator intervalEnum(
-      Action<DateTime> pushEvent, Duration interval, Functional.Option<Duration> delay
+      Action<DateTime> pushEvent, Duration interval, Option<Duration> delay
     ) {
       foreach (var d in delay) yield return new WaitForSeconds(d.seconds);
       var wait = new WaitForSeconds(interval.seconds);
@@ -460,7 +459,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // How many subscription removals we have pending?
     int pendingRemovals;
 
-    readonly Functional.Option<SourceProperties> sourceProps;
+    readonly Option<SourceProperties> sourceProps;
 
     protected Observable() {
       sourceProps = F.none<SourceProperties>();

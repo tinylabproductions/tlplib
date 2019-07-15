@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public class RxValTest : ImplicitSpecification {
@@ -327,7 +328,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var rx = RxRef.a(3.some());
       var dst = new[] {rx}.anyDefined();
       dst.value.shouldBeSome(3);
-      rx.value = Option<int>.None;
+      rx.value = None._;
       dst.value.shouldBeNone();
       rx.value = 4.some();
       dst.value.shouldBeSome(4);
@@ -339,13 +340,13 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var rx2 = RxRef.a(Option<int>.None);
       var dst = new[] {rx1, rx2}.anyDefined();
       dst.value.shouldBeSome(3);
-      rx1.value = Option<int>.None;
+      rx1.value = None._;
       dst.value.shouldBeNone();
       rx2.value = 4.some();
       dst.value.shouldBeSome(4);
       rx1.value = 1.some();
       dst.value.shouldBeAnySome();
-      rx2.value = Option<int>.None;
+      rx2.value = None._;
       dst.value.shouldBeSome(1);
     }
   }

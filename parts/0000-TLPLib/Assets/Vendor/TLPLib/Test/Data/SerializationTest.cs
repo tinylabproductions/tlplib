@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 using pzd.lib.collection;
+using pzd.lib.functional;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;
 
@@ -23,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void checkWithNoiseOpt<A>(
       IDeserializer<A> deser, Rope<byte> serialized, Option<A> expected
     ) => checkWithNoiseOpt(deser, serialized, either => {
-      either.fromPzd().voidFold(err => expected.shouldBeNone(), a => either.fromPzd().shouldBeRight(a));
+      either.voidFold(err => expected.shouldBeNone(), a => either.shouldBeRight(a));
     });
 
     public void checkWithNoiseOpt<A>(
@@ -126,16 +128,16 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailure() =>
-      rw.deserialize(noise.toArray(), 0).fromPzd().shouldBeLeft();
+      rw.deserialize(noise.toArray(), 0).shouldBeLeft();
   }
 
   public class SerializationTestOptRW : SerializationTestBase {
-    static readonly ISerializedRW<pzd.lib.functional.Option<int>> rw = SerializedRW.opt(SerializedRW.integer);
+    static readonly ISerializedRW<Option<int>> rw = SerializedRW.opt(SerializedRW.integer);
 
     [Test]
     public void TestNone() {
-      var serialized = rw.serialize(Option<int>.None);
-      checkWithNoise(rw, serialized, Option<int>.None);
+      var serialized = rw.serialize(None._);
+      checkWithNoise(rw, serialized, None._);
     }
 
     [Test]
@@ -148,7 +150,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestFailure() =>
-      rw.deserialize(noise.toArray(), 0).fromPzd().shouldBeLeft();
+      rw.deserialize(noise.toArray(), 0).shouldBeLeft();
   }
 
   public class SerializationTestEitherRW : SerializationTestBase {
@@ -172,7 +174,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     [Test]
-    public void TestFailure() => rw.deserialize(noise.toArray(), 0).fromPzd().shouldBeLeft();
+    public void TestFailure() => rw.deserialize(noise.toArray(), 0).shouldBeLeft();
   }
 
   public class SerializationTestCollection : SerializationTestBase {
@@ -185,7 +187,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
 
     static readonly IDeserializer<int> failingDeserializer =
-      SerializedRW.integer.map(i => (i % 2 == 0).opt(i).toRight("failed").toPzd());
+      SerializedRW.integer.map(i => (i % 2 == 0).opt(i).toRight("failed"));
 
     static readonly ImmutableArray<int> collection = ImmutableArray.Create(1, 2, 3, 4, 5);
 
@@ -193,7 +195,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void TestNormal() {
-      checkWithNoiseOpt(deserializer, serialized, opt => opt.fromPzd().shouldBeRightEnum(collection));
+      checkWithNoiseOpt(deserializer, serialized, opt => opt.shouldBeRightEnum(collection));
     }
 
     [Test]
@@ -201,7 +203,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       var deserializer = SerializedRW.collectionDeserializer(
         failingDeserializer, CollectionBuilderKnownSizeFactory<int>.immutableArray
       );
-      checkWithNoiseOpt(deserializer, serialized, Option<ImmutableArray<int>>.None);
+      checkWithNoiseOpt(deserializer, serialized, None._);
     }
   }
 }

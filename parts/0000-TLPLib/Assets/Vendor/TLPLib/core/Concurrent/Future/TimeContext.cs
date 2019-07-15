@@ -1,7 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using UnityEngine;
@@ -112,24 +111,19 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static ITimeContext DEFAULT => playMode;
 
     readonly Func<Duration> _passedSinceStartup;
-    readonly Option<MonoBehaviour> behaviour;
+    readonly MonoBehaviour maybeBehaviour;
 
-    public TimeContext(
-      Func<Duration> passedSinceStartup,
-      Option<MonoBehaviour> behaviour = default
-    ) {
-      Option.ensureValue(ref behaviour);
-
+    public TimeContext(Func<Duration> passedSinceStartup, MonoBehaviour behaviour = null) {
       _passedSinceStartup = passedSinceStartup;
-      this.behaviour = behaviour;
+      maybeBehaviour = behaviour;
     }
 
     public TimeContext withBehaviour(MonoBehaviour behaviour) =>
-      new TimeContext(_passedSinceStartup, behaviour.some());
+      new TimeContext(_passedSinceStartup, behaviour);
 
     public Duration passedSinceStartup => _passedSinceStartup();
 
     public Coroutine after(Duration duration, Action act, string name) =>
-      ASync.WithDelay(duration, act, behaviour: behaviour.orNull(), timeContext: this);
+      ASync.WithDelay(duration, act, behaviour: maybeBehaviour, timeContext: this);
   }
 }

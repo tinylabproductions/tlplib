@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public class RngTest : ImplicitSpecification {
@@ -74,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       const float min = 1f, max = 1.0001f;
       test(
         rng => rng.nextFloatInRangeT(new FRange(min, max)), min, max,
-        Option<ImmutableHashSet<float>>.None, iterations: 100000,
+        None._, iterations: 100000,
         /**
          * Imagine float having 3 discrete values.
          *

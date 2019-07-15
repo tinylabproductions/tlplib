@@ -3,21 +3,14 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  public class OptionTestFoldWithInitial {
-    [Test]
-    public void WhenNone() => F.none<string>().fold(5, (_, i) => i + 10).shouldEqual(5);
-
-    [Test]
-    public void WhenSome() => F.some(10).fold(5, (a, b) => a + b).shouldEqual(15);
-  }
-
   public class OptionTestEquality {
     [Test]
     public void WhenEqualNone() {
-      F.none<int>().shouldEqual(Option<int>.None);
-      F.none<string>().shouldEqual(Option<string>.None);
+      F.none<int>().shouldEqual(None._);
+      F.none<string>().shouldEqual(None._);
     }
 
     [Test]
@@ -48,40 +41,24 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Test]
     public void WhenSome() {
       var b = new B();
-      new Option<B>(b).asEnum<A, B>().shouldEqual(b.Yield<A>());
+      new Option<B>(b).asEnumerable.shouldEqual(b.Yield<A>());
     }
 
     [Test]
     public void WhenNone() {
-      Option<B>.None.asEnum<A, B>().shouldEqual(Enumerable.Empty<A>());
+      Option<A>.None.asEnumerable.shouldEqual(Enumerable.Empty<A>());
     }
   }
 
   public class OptionTestAsEnum {
     [Test]
     public void WhenSome() {
-      F.some(3).asEnum().shouldEqual(3.Yield());
+      F.some(3).asEnumerable.shouldEqual(3.Yield());
     }
 
     [Test]
     public void WhenOnlyA() {
-      F.none<int>().asEnum().shouldEqual(Enumerable.Empty<int>());
-    }
-  }
-
-  public class OptionTestCreateOrTap {
-    [Test]
-    public void WhenSome() {
-      new Option<string>("stuff").createOrTap(() => "new stuff", p1 => p1.shouldEqual("stuff")).
-        shouldBeSome("stuff");
-    }
-
-    [Test]
-    public void WhenNone() {
-      var ran = false;
-      Option<string>.None.createOrTap(() => "new stuff", p1 => ran = true).
-        shouldBeSome("new stuff");
-      ran.shouldBeFalse();
+      F.none<int>().asEnumerable.shouldEqual(Enumerable.Empty<int>());
     }
   }
 
@@ -189,18 +166,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public class OptionTestOrNull {
-    [Test]
-    public void WhenSome() {
-      new Option<string>("stuff").orNull().shouldEqual("stuff");
-    }
-
-    [Test]
-    public void WhenNone() {
-      Option<string>.None.orNull().shouldEqual(null);
-    }
-  }
-
   public class OptionEnumeratorTest {
     [Test]
     public void WhenSome() {
@@ -217,7 +182,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public void WhenNone() {
       var test = Option<int>.None;
       var ran = false;
-      foreach (var number in test) ran = true;
+      foreach (var _ in test) ran = true;
       ran.shouldBeFalse();
     }
   }
@@ -247,41 +212,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenNone() {
-      var option = Option<string>.None;
+      var option = None._;
       var newOption = new Option<string>("if it was not set now it is");
       (option || newOption).shouldEqual(newOption);
     }
-  }
-
-  public class OptionTestSwap {
-    [Test] public void WhenSome() => F.some(1).swap('a').shouldBeNone();
-    [Test] public void WhenNone() => F.none<int>().swap('a').shouldBeSome('a');
-    [Test] public void WhenNoneFn() => F.none<int>().swap(() => 'a').shouldBeSome('a');
-
-    [Test]
-    public void WhenSomeFn() {
-      var called = false;
-      F.some(1).swap(() => {
-        called = true;
-        return 'a';
-      }).shouldBeNone();
-      called.shouldBeFalse();
-    }
-  }
-
-  public class OptionTestJoin {
-    static string joiner(string a, string b) => $"{a}|{b}";
-
-    [Test] public void WhenFirstIsSome() =>
-      F.some("a").join(F.none<string>(), joiner).shouldBeSome("a");
-
-    [Test] public void WhenSecondIsSome() =>
-      F.none<string>().join(F.some("b"), joiner).shouldBeSome("b");
-
-    [Test] public void WhenBothAreSome() =>
-      F.some("a").join(F.some("b"), joiner).shouldBeSome("a|b");
-
-    [Test] public void WhenBothAreNone() =>
-      F.none<string>().join(F.none<string>(), joiner).shouldBeNone();
   }
 }

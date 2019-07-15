@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   /* A or B or (A and B) */
@@ -133,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public static class These {
     public static Option<C> a<A, B, C>(Option<A> aOpt, Option<B> bOpt, Func<These<A, B>, C> mapper) {
       if (aOpt.isNone && bOpt.isNone) return F.none_;
-      if (aOpt.isSome && bOpt.isSome) return mapper(F.these(aOpt.__unsafeGetValue, bOpt.__unsafeGetValue)).some();
+      if (aOpt.isSome && bOpt.isSome) return mapper(F.these(aOpt.__unsafeGet, bOpt.__unsafeGet)).some();
       if (aOpt.isSome) return mapper(F.thiz<A, B>(aOpt.get)).some();
       if (bOpt.isSome) return mapper(F.that<A, B>(bOpt.get)).some();
       throw new IllegalStateException();

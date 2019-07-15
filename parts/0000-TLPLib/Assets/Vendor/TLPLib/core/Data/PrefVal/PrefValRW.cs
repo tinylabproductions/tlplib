@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
+
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.functional;
 using pzd.lib.serialization;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -40,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       s => {
         try {
           var bytes = Convert.FromBase64String(s);
-          return aRW.deserialize(bytes, 0).mapRight(_ => _.value).fromPzd();
+          return aRW.deserialize(bytes, 0).mapRight(_ => _.value);
         }
         catch (FormatException e) {
           return $"converting from base64 threw {e}";
@@ -55,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => custom(
-      SerializedRW.opt(baRW).mapNoFail(_ => _.fromPzd(), _ => _.toPzd()),
+      SerializedRW.opt(baRW).mapNoFail(_ => _, _ => _),
       onDeserializeFailure, log
     );
 

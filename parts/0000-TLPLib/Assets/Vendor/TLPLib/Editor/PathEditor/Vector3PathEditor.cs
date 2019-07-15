@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
 
@@ -115,7 +116,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         Handles.color = Color.white;
 
         if (closestNodeID.isSome) {
-          var closestID = closestNodeID.__unsafeGetValue;
+          var closestID = closestNodeID.__unsafeGet;
           secondNodeID = (closestID + 1 < behaviour.nodes.Count).opt(closestID + 1);
           
           if (0 == closestID) closestIsFirst = true;
@@ -123,7 +124,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
           var firstDist = Vector2.Distance(mousePos, behaviour.nodes[closestID]);
           
           var pt = secondNodeID.isSome
-            ? GetClosetPointOnLine(closestID, secondNodeID.__unsafeGetValue, mousePos, true, behaviour.nodes)
+            ? GetClosetPointOnLine(closestID, secondNodeID.__unsafeGet, mousePos, true, behaviour.nodes)
             : (Vector2) behaviour.nodes[closestID];
 
           // Checks if distance to nodes are the closest distance to whole path
@@ -338,7 +339,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     
     public Option<int> getClosestNodeID(Vector2 aPoint) {
       var pathVerts = behaviour.nodes;
-      if (pathVerts.Count <= 0) return Option<int>.None;
+      if (pathVerts.Count <= 0) return None._;
   
       var dist = float.MaxValue;
       var seg = 0;

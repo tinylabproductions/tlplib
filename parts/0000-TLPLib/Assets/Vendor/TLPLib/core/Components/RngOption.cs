@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     public Rng rng { get {
       if (!__rng.isInitialized) {
         __rng = randomSeed.isSome
-          ? new Rng(new Rng.Seed(randomSeed.__unsafeGetValue))
+          ? new Rng(new Rng.Seed(randomSeed.__unsafeGet))
           : RngSeeder.global.nextRng();
       }
       return __rng;

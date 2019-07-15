@@ -24,13 +24,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
         case Log.Level.VERBOSE:
         case Log.Level.DEBUG:
         case Log.Level.INFO:
-          Debug.Log(s(entry), entry.context.getOrNull() as Object);
+          Debug.Log(s(entry), entry.maybeContext as Object);
           break;
         case Log.Level.WARN:
-          Debug.LogWarning(s(entry), entry.context.getOrNull() as Object);
+          Debug.LogWarning(s(entry), entry.maybeContext as Object);
           break;
         case Log.Level.ERROR:
-          Debug.LogError(s(entry), entry.context.getOrNull() as Object);
+          Debug.LogError(s(entry), entry.maybeContext as Object);
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(l), l, null);
@@ -53,13 +53,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
               string.IsNullOrEmpty(backtraceS)
                 ? Backtrace.generateFromHere(stackFramesToSkipWhenGenerating + 1 /*this stack frame*/)
                 : Backtrace.parseUnityBacktrace(backtraceS)
-            : Functional.Option<Backtrace>.None;
+            : None._;
         var logEvent = new LogEvent(level, new LogEntry(
           message,
           ImmutableArray<Tpl<string, string>>.Empty,
           ImmutableArray<Tpl<string, string>>.Empty,
           reportToErrorTracking: true,
-          backtrace: backtrace, context: Functional.Option<object>.None
+          backtrace: backtrace.toNullable(), context: null
         ));
         return F.scs(logEvent);
       }

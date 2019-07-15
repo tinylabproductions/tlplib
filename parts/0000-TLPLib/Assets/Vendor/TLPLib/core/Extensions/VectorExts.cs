@@ -1,5 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -40,8 +40,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector2 with2(
       this Vector2 v,
-      Option<float> x = default(Option<float>),
-      Option<float> y = default(Option<float>)
+      Option<float> x = default,
+      Option<float> y = default
     ) {
       Option.ensureValue(ref x);
       Option.ensureValue(ref y);
@@ -50,9 +50,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static Vector3 with3(
       this Vector3 v,
-      Option<float> x = default(Option<float>),
-      Option<float> y = default(Option<float>),
-      Option<float> z = default(Option<float>)
+      Option<float> x = default,
+      Option<float> y = default,
+      Option<float> z = default
     ) {
       Option.ensureValue(ref x);
       Option.ensureValue(ref y);

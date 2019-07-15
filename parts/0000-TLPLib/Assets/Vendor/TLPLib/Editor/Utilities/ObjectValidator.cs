@@ -17,6 +17,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
@@ -43,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       var scene = SceneManager.GetActiveScene();
-      var t = checkSceneWithTime(scene, Option<CustomObjectValidator>.None, DEFAULT_ON_PROGRESS, DEFAULT_ON_FINISH);
+      var t = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, DEFAULT_ON_FINISH);
       showErrors(t._1);
       if (Log.d.isInfo()) Log.d.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
@@ -57,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     static void checkSelectedObjects() {
       var errors = check(
         new CheckContext("Selection"), Selection.objects,
-        Option<CustomObjectValidator>.None,
+        None._,
         progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress.ratio
         ),

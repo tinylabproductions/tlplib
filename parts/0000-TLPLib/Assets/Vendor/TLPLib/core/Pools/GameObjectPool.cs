@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using Smooth.Dispose;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -63,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
         Action<T> wakeUp = null, Action<T> sleep = null,
         bool dontDestroyOnLoad = true
       ) => new Init<T>(
-        name, create, Option<Transform>.None, wakeUp, sleep, dontDestroyOnLoad
+        name, create, None._, wakeUp, sleep, dontDestroyOnLoad
       );
     }
 
