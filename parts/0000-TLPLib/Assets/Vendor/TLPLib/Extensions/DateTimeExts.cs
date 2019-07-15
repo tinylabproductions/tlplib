@@ -19,6 +19,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [PublicAPI] public static DateTime fromUnixTimestampInSeconds(this uint timestamp) => 
       UNIX_EPOCH_START.AddSeconds(timestamp);
 
+    [PublicAPI] public static DateTime fromUnixTimestampInSeconds(this long timestamp) =>
+      UNIX_EPOCH_START.AddSeconds(timestamp);
+
     [PublicAPI] public static DateTime fromUnixTimestampInMilliseconds(this long timestamp) => 
       UNIX_EPOCH_START.AddMilliseconds(timestamp);
 
