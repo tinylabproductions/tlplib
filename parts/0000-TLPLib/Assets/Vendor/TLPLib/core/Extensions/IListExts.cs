@@ -14,15 +14,6 @@ using Random = UnityEngine.Random;
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IListExts {
     [PublicAPI]
-    public static A a<A>(this IList<A> list, int index) {
-      if (index < 0 || index >= list.Count) throw new ArgumentOutOfRangeException(
-        nameof(index),
-        $"Index invalid for IList<{typeof(A)}> (count={list.Count}): {index}"
-      );
-      return list[index];
-    }
-
-    [PublicAPI]
     public static bool getOut<A>(this IList<A> list, int index, out A a) {
       if (list.indexValid(index)) {
         a = list[index];
