@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI] public static string toOrdinalString(this uint number) {
       var div = number % 100;
-      if (div >= 11 && div <= 13) {
+      if ((div >= 11) && (div <= 13)) {
         return $"{number}th";
       }
 
