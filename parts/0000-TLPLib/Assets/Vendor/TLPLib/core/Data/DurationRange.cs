@@ -4,6 +4,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.config;
 using pzd.lib.functional;
+using pzd.lib.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {

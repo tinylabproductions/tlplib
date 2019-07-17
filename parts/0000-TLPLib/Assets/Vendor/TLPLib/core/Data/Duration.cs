@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using pzd.lib.config;
 using pzd.lib.serialization;
+using pzd.lib.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {

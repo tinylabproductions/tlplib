@@ -10,9 +10,10 @@ using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.json;
+using pzd.lib.typeclasses;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static com.tinylabproductions.TLPLib.Data.typeclasses.Str;
+using static pzd.lib.typeclasses.Str;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   public static class SentryAPI {

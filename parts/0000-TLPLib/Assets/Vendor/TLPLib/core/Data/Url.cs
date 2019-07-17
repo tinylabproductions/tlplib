@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
+using pzd.lib.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {

@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Net {
   public class QueryString : IStr {

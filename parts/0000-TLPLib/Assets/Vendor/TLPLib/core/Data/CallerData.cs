@@ -1,6 +1,7 @@
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record(GenerateToString = false), PublicAPI] public readonly partial struct CallerData : IStr {

@@ -8,6 +8,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
 using pzd.lib.serialization;
+using pzd.lib.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {

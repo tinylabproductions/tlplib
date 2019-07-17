@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using JetBrains.Annotations;
 using pzd.lib.serialization;
+using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public enum Gender : byte { Male = 0, Female = 1 }

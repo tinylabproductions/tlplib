@@ -5,7 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using UnityEditor;
-using static com.tinylabproductions.TLPLib.Data.typeclasses.Str;
+using static pzd.lib.typeclasses.Str;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   /// <summary>
