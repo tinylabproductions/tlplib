@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class EncodingExts {

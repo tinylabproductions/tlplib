@@ -3,13 +3,6 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  public static class TryLinqExts {
-    [PublicAPI] public static Try<B> Select<A, B>(this Try<A> t, Func<A, B> f) => t.map(f);
-    [PublicAPI] public static Try<B> SelectMany<A, B>(this Try<A> t, Func<A, Try<B>> f) => t.flatMap(f);
-    [PublicAPI] public static Try<B1> SelectMany<A, B, B1>(this Try<A> t, Func<A, Try<B>> f, Func<A, B, B1> g) =>
-      t.flatMap(f, g);
-  }
-
   public static class IOLinqExts {
     [PublicAPI] public static IO<B> Select<A, B>(this IO<A> t, Func<A, B> f) => t.map(f);
     [PublicAPI] public static IO<B> SelectMany<A, B>(this IO<A> t, Func<A, IO<B>> f) => t.flatMap(f);

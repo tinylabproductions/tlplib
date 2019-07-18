@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) where A : Component =>
       Future.successful(
         F.doTry(() => SceneManager.LoadSceneAsync(scenePath, loadSceneMode))
-          .toEitherStr.mapLeft(err => new ErrorMsg($"Error while loading scene '{scenePath}': {err}"))
+          .toEither.mapLeft(err => new ErrorMsg($"Error while loading scene '{scenePath}': {err}"))
       ).flatMapT(op => op.toFuture().map(_ =>
         SceneManager.GetSceneByPath(scenePath).findComponentOnRootGameObjects<A>()
       ));

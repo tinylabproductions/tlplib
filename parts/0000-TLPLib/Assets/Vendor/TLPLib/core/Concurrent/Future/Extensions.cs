@@ -100,7 +100,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [PublicAPI]
     public static void onSuccess<A>(this Future<Try<A>> future, Action<A> action) =>
       future.onComplete(e => {
-        foreach (var a in e.value) action(a);
+        if (e.valueOut(out var a)) action(a);
       });
 
     [PublicAPI]
@@ -109,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [PublicAPI]
     public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
-      future.map(e => e.value);
+      future.map(e => e.toOption);
 
     public static void onFailure<A, B>(this Future<Either<A, B>> future, Action<A> action) =>
       future.onComplete(e => {
