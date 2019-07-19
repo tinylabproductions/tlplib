@@ -45,5 +45,17 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static void destroyGameObject(this Component c) => Object.Destroy(c.gameObject);
     public static void destroyComponent(this Component c) => Object.Destroy(c);
+
+    /// <summary>
+    /// this is made so that you could di
+    /// if (c.setActiveGO(boolean)) {
+    ///   // do stuff with c
+    /// }
+    /// </summary>
+    /// <returns>the value you passed</returns>
+    public static bool setActiveGO(this Component c, bool active) {
+      c.gameObject.SetActive(active);
+      return active;
+    }
   }
 }
