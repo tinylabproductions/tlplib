@@ -44,7 +44,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         // and run on the next frame.
         if (phaseEqualsTweenTime(instance.phase, tm.time)) {
           var timeline = tm.timeline;
-          timeline.applyStateAt(timeline.timePassed);
+          try {
+            timeline.applyStateAt(timeline.timePassed);
+          }
+          catch (Exception e) {
+            Log.d.error("Error trying to apply state at " + tm.context + ": " + e.Message);
+            Log.d.error(e);
+            return;
+          }
         }
 
         if (running) {

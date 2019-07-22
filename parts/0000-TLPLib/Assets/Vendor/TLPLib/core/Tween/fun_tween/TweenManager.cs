@@ -3,7 +3,9 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.typeclasses;
 using UnityEngine;
+using Object = System.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public enum TweenTime : byte {
@@ -72,14 +74,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public bool forwards = true;
     [PublicAPI] public Loop looping;
     [PublicAPI] public uint currentIteration;
+    [PublicAPI] public string context;
 
     // TODO: implement me: loop(times, forever, yoyo)
     // notice: looping needs to take into account that some duration might have passed in the
     // new iteration
-    public TweenManager(ITweenTimeline timeline, TweenTime time, Loop looping) {
+    public TweenManager(ITweenTimeline timeline, TweenTime time, Loop looping, GameObject context = null) {
       this.timeline = timeline;
       this.time = time;
       this.looping = looping;
+      this.context = context ? fullName(context.transform) : "no context";
+
+      string fullName(Transform t) {
+        if (t == null) return "null context";
+        if (t.parent == null) {
+          return t.gameObject.scene.name + "/" + t.name;
+        }
+        return fullName(t.parent) + "/" + t.name;
+      }
     }
 
     [PublicAPI]
