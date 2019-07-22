@@ -1,4 +1,6 @@
-﻿#if UNITY_ANDROID
+﻿
+using pzd.lib.serialization;
+#if UNITY_ANDROID
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.support.v4.content;
