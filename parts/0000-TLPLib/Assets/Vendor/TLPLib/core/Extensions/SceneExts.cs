@@ -14,8 +14,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     // may not work on scene awake
     // http://forum.unity3d.com/threads/bug-getrootgameobjects-is-not-working-in-awake.379317/
     [PublicAPI]
-    public static IEnumerable<T> findObjectsOfTypeAll<T>(this Scene scene) where T : Object {
-      return scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<T>(true));
+    public static IEnumerable<T> findObjectsOfTypeAll<T>(this Scene scene, bool includeInactive = true) where T : Object {
+      return scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<T>(includeInactive));
     }
 
     /// <summary>
