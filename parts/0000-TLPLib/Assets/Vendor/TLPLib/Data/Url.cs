@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.unity_serialization;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -54,6 +55,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       return new Url(u1.url + (lastIsSlash ? "" : "/") + u2);
     }
   }
+
+  [Serializable] public class UrlOption : UnityOption<Url> { }
 
   public static class UrlExts {
     public static Url toUrl(this Uri uri) => new Url(uri.ToString());
