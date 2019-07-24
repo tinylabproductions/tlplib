@@ -3,6 +3,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using pzd.lib.config;
+using pzd.lib.functional;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;
 using UnityEngine;
@@ -102,6 +103,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     [NonSerialized]
     public static readonly Config.Parser<object, Duration> configParser =
       Config.intParser.map(ms => new Duration(ms));
+
+    [NonSerialized] public static readonly Config.Parser<object, Option<Duration>> configOptParser =
+      Config.opt(configParser);
   }
 
   public static class DurationExts {
