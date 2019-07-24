@@ -215,6 +215,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
               rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
               rectTrans.localPosition = Vector3.zero;
               rectTrans.anchoredPosition = cellRect.center;
+              rectTrans.sizeDelta = cellRect.size;
               instanceOpt = instance.some();
             }
             _items.Add(data, instanceOpt);
