@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   }
 
   public class TweenTimeline : ITweenTimeline {
-    struct Effect {
+    class Effect {
       public readonly float startsAt, endsAt;
       public readonly TweenTimelineElement element;
 

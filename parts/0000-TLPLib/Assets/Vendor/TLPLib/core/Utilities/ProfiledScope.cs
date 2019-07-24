@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   /// }
   /// ]]></code>
   /// </summary>
-  public struct ProfiledScope : IDisposable {
+  public class ProfiledScope : IDisposable {
     public ProfiledScope(string name) {
       Profiler.BeginSample(name);
     }

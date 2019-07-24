@@ -6,12 +6,12 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Collection {
-  /* IList<A> like mutable struct which has 4 members in it and falls back
+  /* IList<A> like mutable class which has 4 members in it and falls back
    * to List<A> if overflown.
    *
    * Has a benefit of sitting on stack while static size is not exceeded.
    *
-   * Beware that this is a mutable struct - do not store it as a readonly value! Be careful!
+   * Beware that this is a mutable class - do not store it as a readonly value! Be careful!
    */
   public struct SList4<A> : IList<A> {
     const int STATIC_SIZE = 4;

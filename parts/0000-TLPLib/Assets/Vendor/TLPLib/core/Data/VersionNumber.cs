@@ -8,7 +8,7 @@ using pzd.lib.functional;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct VersionNumber : IEquatable<VersionNumber>, IStr, IComparable<VersionNumber> {
+  public class VersionNumber : IEquatable<VersionNumber>, IStr, IComparable<VersionNumber> {
     public const char DEFAULT_SEPARATOR = '.';
     public readonly uint major, minor, bugfix;
     public readonly char separator;

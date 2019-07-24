@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public delegate A Diff(A a1, A a2);
 
     [Record]
-    public partial struct Ops {
+    public partial class Ops {
       public readonly Lerp lerp;
       public readonly Diff diff;
     }

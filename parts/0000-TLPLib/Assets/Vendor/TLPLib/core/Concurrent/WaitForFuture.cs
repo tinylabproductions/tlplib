@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       timeScale.now() + maxWait.seconds, timeScale
     )));
 
-    public struct MaxWait {
+    public class MaxWait {
       public readonly float abortOn;
       public readonly TimeScale timeScale;
 

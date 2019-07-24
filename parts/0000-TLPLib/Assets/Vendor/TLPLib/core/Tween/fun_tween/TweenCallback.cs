@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public class TweenCallback : TweenTimelineElement {
-    public struct Event {
+    public class Event {
       [PublicAPI] public readonly bool playingForwards;
 
       public Event(bool playingForwards) { this.playingForwards = playingForwards; }

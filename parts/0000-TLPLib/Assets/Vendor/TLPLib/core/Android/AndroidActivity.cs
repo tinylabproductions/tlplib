@@ -13,7 +13,7 @@ using Application = UnityEngine.Application;
 
 namespace com.tinylabproductions.TLPLib.Android {
   public static class AndroidActivity {
-    public struct DPI {
+    public class DPI {
       public readonly float xDpi, yDpi;
 
       public DPI(float xDpi, float yDpi) {

@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public static class Once {
-    public struct Builder<In> {
+    public class Builder<In> {
       public Once<In, Out> to<Out>(Func<In, Out> fn) { return a(fn); }
     }
 

@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  [Record(GenerateToString = false), PublicAPI] public readonly partial struct CallerData : IStr {
+  [Record(GenerateToString = false), PublicAPI] public partial class CallerData : IStr {
     public readonly string callerMemberName;
     public readonly string callerFilePath;
     public readonly int callerLineNumber;

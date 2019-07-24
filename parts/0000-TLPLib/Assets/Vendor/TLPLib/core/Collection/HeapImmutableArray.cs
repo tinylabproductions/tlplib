@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
     IEnumerator<A> IEnumerable<A>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public struct Enumerator : IEnumerator<A> {
+    public class Enumerator : IEnumerator<A> {
       readonly ImmutableArray<A> _array;
       int _index;
 

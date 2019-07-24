@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
   //   "this component."
   // )]
   public abstract partial class SortingLayerSetter : MonoBehaviour, IMB_Awake {
-    public struct SortingLayerAndOrder {
+    public class SortingLayerAndOrder {
       public readonly int layerId, order;
 
       public SortingLayerAndOrder(int layerId, int order) {

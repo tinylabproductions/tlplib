@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
   [
     Serializable, PublicAPI, Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)
   ]
-  public partial struct PathStr : IComparable<PathStr>, IStr {
+  public partial class PathStr : IComparable<PathStr>, IStr {
     #region Unity Serialized Fields
 
 #pragma warning disable 649

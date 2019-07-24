@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 
 namespace com.tinylabproductions.TLPLib.Collection {
-  public struct IListStructEnumerator<C, A> : IEnumerator<A> where C : IList<A> {
+  public class IListStructEnumerator<C, A> : IEnumerator<A> where C : IList<A> {
     public readonly C list;
     int position;
 
-    public IListStructEnumerator(C list) : this() {
+    public IListStructEnumerator(C list) {
       this.list = list;
       position = -1;
     }

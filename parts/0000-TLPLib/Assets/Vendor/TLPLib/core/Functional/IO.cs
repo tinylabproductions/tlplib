@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   /**
    * Allows encapsulating side effects and composing them.
    */
-  public struct IO<A> {
+  public class IO<A> {
     readonly Func<A> fn;
 
     public IO(Func<A> fn) { this.fn = fn; }

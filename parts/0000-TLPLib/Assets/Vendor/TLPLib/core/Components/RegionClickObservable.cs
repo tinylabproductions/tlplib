@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Components {
       });
     }
 
-    struct SeqEntry {
+    class SeqEntry {
       public readonly float time;
       public readonly int region;
 

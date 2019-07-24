@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
   /// <summary>Integer range: [from, to].</summary>
   [Serializable]
-  public struct Range : IEnumerable<int>, OnObjectValidate {
+  public class Range : IEnumerable<int>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
   }
 
-  public struct RangeEnumerator : IEnumerator<int> {
+  public class RangeEnumerator : IEnumerator<int> {
     public readonly int start, end;
     bool firstElement;
 
@@ -85,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable, PublicAPI] 
-  public struct URange : IEnumerable<uint>, OnObjectValidate {
+  public class URange : IEnumerable<uint>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -123,7 +123,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public static URange operator +(URange r, uint i) => new URange(from: r._from + i, to: r._to + i);
   }
 
-  public struct URangeEnumerator : IEnumerator<uint> {
+  public class URangeEnumerator : IEnumerator<uint> {
     public readonly uint start, end;
     bool firstElement;
 
@@ -157,7 +157,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  public struct FRange : OnObjectValidate {
+  public class FRange : OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -193,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  public struct EnumerableFRange : IEnumerable<float>, OnObjectValidate {
+  public class EnumerableFRange : IEnumerable<float>, OnObjectValidate {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649

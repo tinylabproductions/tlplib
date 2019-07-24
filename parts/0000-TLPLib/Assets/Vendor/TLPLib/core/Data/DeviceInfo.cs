@@ -7,7 +7,7 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record]
-  public partial struct DeviceInfo {
+  public partial class DeviceInfo {
     public readonly string manufacturer, modelCode;
 
     public static Option<DeviceInfo> create() {

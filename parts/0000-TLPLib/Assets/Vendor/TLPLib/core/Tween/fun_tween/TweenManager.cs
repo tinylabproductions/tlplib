@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// </summary>
   public partial class TweenManager : IDisposable {
     [Serializable, Record(GenerateToString = false)]
-    public partial struct Loop {
+    public partial class Loop {
       public enum Mode : byte { Normal, YoYo }
 
       [PublicAPI, HideInInspector] public const uint

@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   [PublicAPI] public partial class DConsole {
     public enum Direction { Left, Up, Right, Down }
 
-    public struct Command {
+    public class Command {
       public readonly string cmdGroup, name;
       public readonly Action run;
 
@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     [Record]
-    partial struct Instance {
+    partial class Instance {
       public readonly DebugConsoleBinding view;
       public readonly DynamicVerticalLayout.Init dynamicVerticalLayout;
       public readonly Application.LogCallback logCallback;
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     [Record]
-    public partial struct LogEntry {
+    public partial class LogEntry {
       public readonly string message;
       public readonly LogType type;
     }
@@ -421,7 +421,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
   public delegate Option<Obj> HasObjFunc<Obj>();
 
-  public struct DConsoleRegistrar {
+  public class DConsoleRegistrar {
     public readonly DConsole console;
     public readonly string commandGroup;
     readonly IDisposableTracker tracker;

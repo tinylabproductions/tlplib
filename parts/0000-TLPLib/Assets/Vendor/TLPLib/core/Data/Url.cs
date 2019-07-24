@@ -8,7 +8,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Data {
   /** Stupid tag on string. Because System.Uri is heavy. */
   [Serializable]
-  public struct Url : IStr, IEquatable<Url> {
+  public class Url : IStr, IEquatable<Url> {
     #region Unity Serialized Fields
 
 #pragma warning disable 649

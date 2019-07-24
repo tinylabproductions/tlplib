@@ -8,7 +8,7 @@ namespace Plugins.Vendor.TLPLib.Components {
   [ExecuteInEditMode]
   public abstract partial class TrailDrawerBase : MonoBehaviour, IMB_LateUpdate {
     [Record]
-    protected partial struct NodeData {
+    protected partial class NodeData {
       public readonly float time;
       public Vector3 position;
 

@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.unity_serialization {
-  [Serializable] public partial struct SpriteAndRenderer {
+  [Serializable] public partial class SpriteAndRenderer {
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable UnassignedField.Global, FieldCanBeMadeReadOnly.Global

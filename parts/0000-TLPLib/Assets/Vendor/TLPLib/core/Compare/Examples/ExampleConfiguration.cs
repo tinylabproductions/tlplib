@@ -72,7 +72,7 @@ using Smooth.Compare.Comparers;
 //		//public override bool UseJit { get { return true; } }
 //	}
 //
-//	public struct ExampleStruct1 : IEquatable<ExampleStruct1>, IComparable<ExampleStruct1> {
+//	public class ExampleStruct1 : IEquatable<ExampleStruct1>, IComparable<ExampleStruct1> {
 //		public uint id;
 //		public string name;
 //
@@ -123,7 +123,7 @@ using Smooth.Compare.Comparers;
 //		}
 //	}
 //
-//	public struct ExampleStruct2 {
+//	public class ExampleStruct2 {
 //		//
 //		// The same thing as ExampleStruct1, but doesn't implement the comparable interfaces or provide a type specific == operator.
 //		//
@@ -148,7 +148,7 @@ using Smooth.Compare.Comparers;
 //		}
 //	}
 //
-//	public struct ExampleStruct3 {
+//	public class ExampleStruct3 {
 //		//
 //		// The same thing as ExampleStruct1, but doesn't override Equals(object) or have a type specific equals method.
 //		//

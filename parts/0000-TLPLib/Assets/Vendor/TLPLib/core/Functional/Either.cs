@@ -222,13 +222,13 @@
 //     public static RightEitherBuilder<B> right<B>(this B value) => new RightEitherBuilder<B>(value);
 //   }
 //
-//   public struct LeftEitherBuilder<A> {
+//   public class LeftEitherBuilder<A> {
 //     public readonly A leftValue;
 //     public LeftEitherBuilder(A leftValue) { this.leftValue = leftValue; }
 //     public Either<A, B> r<B>() => new Either<A, B>(leftValue);
 //   }
 //
-//   public struct RightEitherBuilder<B> {
+//   public class RightEitherBuilder<B> {
 //     public readonly B rightValue;
 //     public RightEitherBuilder(B rightValue) { this.rightValue = rightValue; }
 //     public Either<A, B> l<A>() => new Either<A, B>(rightValue);

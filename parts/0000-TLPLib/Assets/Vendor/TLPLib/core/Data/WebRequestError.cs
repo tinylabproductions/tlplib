@@ -6,7 +6,7 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record]
-  public partial struct WebRequestError {
+  public partial class WebRequestError {
     [PublicAPI] public readonly Url url;
     [PublicAPI] public readonly Either<LogEntry, NoInternetError> message;
 
@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
   
   [Record]
-  public partial struct NoInternetError {
+  public partial class NoInternetError {
     [PublicAPI] public readonly string message;
   }
 }

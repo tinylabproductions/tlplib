@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class ASyncNAtATimeQueue<Params, Return> : IDisposable {
-    struct QueueEntry {
+    class QueueEntry {
       public readonly Params p;
       public readonly Promise<Return> promise;
 

@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
     public void setUserId(FirebaseUserId id) {}
   }
 
-  public struct FirebaseUserId : IEquatable<FirebaseUserId> {
+  public class FirebaseUserId : IEquatable<FirebaseUserId> {
     public readonly string id;
 
     public FirebaseUserId(string id) { this.id = id; }
@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       : Either<string, FirebaseUserId>.Right(new FirebaseUserId(id));
   }
 
-  public struct FirebaseEvent {
+  public class FirebaseEvent {
     public const int
       MAX_EVENT_LENGTH = 32,
       MAX_PARAM_COUNT = 25,

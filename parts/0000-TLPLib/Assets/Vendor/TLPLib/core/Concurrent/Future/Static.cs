@@ -13,7 +13,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class Future {
     // Witness for higher kinded types simulation
-    public struct W {}
+    public class W {}
     
     public static Future<A> narrowK<A>(this HigherKind<W, A> hkt) => (Future<A>) hkt;
     

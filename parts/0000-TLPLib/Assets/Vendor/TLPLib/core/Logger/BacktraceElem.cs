@@ -11,8 +11,8 @@ using pzd.lib.functional;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Logger {
-  public struct BacktraceElem : IEquatable<BacktraceElem>, IStr {
-    public struct FileInfo : IEquatable<FileInfo> {
+  public class BacktraceElem : IEquatable<BacktraceElem>, IStr {
+    public class FileInfo : IEquatable<FileInfo> {
       public readonly string file;
       public readonly int lineNo;
 

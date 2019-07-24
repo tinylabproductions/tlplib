@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public struct BiMapper<A, B> : IEquatable<BiMapper<A, B>> {
+  public class BiMapper<A, B> : IEquatable<BiMapper<A, B>> {
     public readonly Func<A, B> map;
     public readonly Func<B, A> comap;
 

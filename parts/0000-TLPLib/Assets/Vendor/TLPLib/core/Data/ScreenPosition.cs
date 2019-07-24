@@ -5,7 +5,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   /**
    * Position in screen space. [(0, 0), (Screen.width, Screen.height)]
    **/
-  public struct ScreenPosition : IEquatable<ScreenPosition> {
+  public class ScreenPosition : IEquatable<ScreenPosition> {
     public readonly Vector2 position;
 
     public ScreenPosition(Vector2 position) { this.position = position; }

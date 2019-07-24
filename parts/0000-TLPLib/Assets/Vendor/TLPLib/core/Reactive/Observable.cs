@@ -265,7 +265,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     #region touches
 
-    public struct Touch {
+    public class Touch {
       public readonly int fingerId;
       public readonly Vector2 position, previousPosition;
       public readonly int tapCount;
@@ -402,7 +402,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     [Record]
-    partial struct Sub {
+    partial class Sub {
       public readonly Action<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.

@@ -17,7 +17,7 @@ using pzd.lib.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.dispose {
-  [Record] public partial struct TrackedDisposable : IStr {
+  [Record] public partial class TrackedDisposable : IStr {
     public readonly IDisposable disposable;
     public readonly CallerData caller;
 

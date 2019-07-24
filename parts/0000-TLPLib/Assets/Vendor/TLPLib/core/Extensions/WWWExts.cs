@@ -64,10 +64,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   }
 
   /**
-   * Struct that wraps the parsed headers, because `www.responseHeaders` parses headers
+   * class that wraps the parsed headers, because `www.responseHeaders` parses headers
    * each time it is called.
    **/
-  public struct WWWWithHeaders {
+  public class WWWWithHeaders {
     public readonly WWW www;
     public readonly IReadOnlyDictionary<string, string> headers;
 

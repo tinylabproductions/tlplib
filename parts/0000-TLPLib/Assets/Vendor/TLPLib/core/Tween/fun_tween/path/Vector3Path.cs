@@ -40,9 +40,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     /// achieve constant speed moving along the spline.
     /// </summary>
     [Record]
-    partial struct ConstantSpeedTable {
+    partial class ConstantSpeedTable {
       [Record]
-      public partial struct Entry {
+      public partial class Entry {
         /// <summary>
         /// Percentage as [0, 1] which passed to <see cref="Vector3Path.calculate"/> would
         /// give a point on the path. 
@@ -76,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     }
 
     [Record]
-    public partial struct Point {
+    public partial class Point {
       public readonly Vector3 point;
       
       /// <summary>

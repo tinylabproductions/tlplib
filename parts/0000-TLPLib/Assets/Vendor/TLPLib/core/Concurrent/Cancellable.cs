@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ));
   }
 
-  public struct Cancellable<A> {
+  public class Cancellable<A> {
     public readonly A value;
     readonly Func<bool> _cancel;
 
@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   /** Marker that an operation was cancelled. */
-  public struct Cancelled : IEquatable<Cancelled> {
+  public class Cancelled : IEquatable<Cancelled> {
     public static readonly Cancelled instance = new Cancelled();
 
     public override string ToString() => nameof(Cancelled);

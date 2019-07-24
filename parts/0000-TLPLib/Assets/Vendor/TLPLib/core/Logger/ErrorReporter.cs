@@ -7,7 +7,7 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public static class ErrorReporter {
-    public struct AppInfo {
+    public class AppInfo {
       public readonly string bundleIdentifier, productName;
       public readonly VersionNumber bundleVersion;
 

@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>
   /// Essentially a tuple, but not generic, because <see cref="Tpl{P1,P2}"/> is a class on IL2CPP.
   /// </summary>
-  [Record] public partial struct BytePair {
+  [Record] public partial class BytePair {
     public readonly byte b1, b2;
 
     [PublicAPI] public void Deconstruct(out byte b1, out byte b2) {

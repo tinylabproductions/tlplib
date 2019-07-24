@@ -17,7 +17,7 @@ using static pzd.lib.typeclasses.Str;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   public static class SentryAPI {
-    public struct Tag : IEquatable<Tag> {
+    public class Tag : IEquatable<Tag> {
       // max tag value length = 200
       public readonly string s;
 
@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       });
     }
 
-    public struct DSN {
+    public class DSN {
       public readonly Uri reportingUrl;
       public readonly string projectId;
       public readonly ApiKeys keys;
@@ -105,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    public struct ApiKeys {
+    public class ApiKeys {
       public readonly string publicKey, secretKey;
 
       public ApiKeys(string publicKey, string secretKey) {
@@ -120,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         $"]";
     }
 
-    public struct ExtraData {
+    public class ExtraData {
       /// <summary>
       /// This is needed, because tag values can change over the runtime. Therefore
       /// we want to add the tags to the data immediatelly before sending the data.
@@ -141,14 +141,14 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     }
 
     // https://docs.sentry.io/clientdev/interfaces/user/
-    public struct UserInterface {
-      public struct Id {
+    public class UserInterface {
+      public class Id {
         public readonly string value;
         public Id(string value) { this.value = value; }
         public override string ToString() => $"{nameof(Id)}({value})";
       }
 
-      public struct IpAddress {
+      public class IpAddress {
         public readonly string value;
         public IpAddress(string value) { this.value = value; }
         public override string ToString() => $"{nameof(IpAddress)}({value})";
@@ -177,7 +177,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       }
     }
 
-    public struct SendOnErrorData {
+    public class SendOnErrorData {
       public readonly ErrorReporter.AppInfo appInfo;
       public readonly ExtraData addExtraData;
       public readonly Option<UserInterface> userOpt;
@@ -308,7 +308,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   }
 
   public static class SentryRESTAPI {
-    public struct Message {
+    public class Message {
       public readonly SentryAPI.ApiKeys keys;
       public readonly Guid eventId;
       public readonly DateTime timestamp;

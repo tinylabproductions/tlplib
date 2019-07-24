@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  struct PointBounds : IEnumerable<Point2D> {
+  class PointBounds : IEnumerable<Point2D> {
     public readonly Point2D center, extents;
 
     public PointBounds(Point2D center, Point2D extents) {

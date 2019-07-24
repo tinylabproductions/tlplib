@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public enum Direction : byte { Horizontal = 0, Vertical = 1 }
     
     [Record]
-    public partial struct Pages {
+    public partial class Pages {
       [PublicAPI] public readonly float pages;
       
       [PublicAPI] public static Pages a(float pages) => new Pages(pages);
@@ -400,7 +400,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
   }
 
-  public struct CarouselGameObject : ICarouselItem {
+  public class CarouselGameObject : ICarouselItem {
     public GameObject gameObject { get; }
 
     public CarouselGameObject(GameObject gameObject) {

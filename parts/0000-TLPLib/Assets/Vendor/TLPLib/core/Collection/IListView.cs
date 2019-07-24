@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
    * Read-only view into IList.
    */
   // TODO: test
-  public struct IListView<A> : IList<A>, IReadOnlyList<A> {
+  public class IListView<A> : IList<A>, IReadOnlyList<A> {
     readonly IList<A> list;
     readonly int startIndex;
     public int Count { get; }

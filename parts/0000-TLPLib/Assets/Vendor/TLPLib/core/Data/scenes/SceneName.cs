@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data.scenes {
-  public struct SceneName : IEquatable<SceneName>, IStr {
+  public class SceneName : IEquatable<SceneName>, IStr {
     public readonly string name;
 
     #region Equality

@@ -5,7 +5,7 @@ using pzd.lib.functional;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct Age : IEquatable<Age>, IStr {
+  public class Age : IEquatable<Age>, IStr {
     public readonly uint value;
 
     public Age(uint value) { this.value = value; }

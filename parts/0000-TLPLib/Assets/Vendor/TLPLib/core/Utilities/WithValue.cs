@@ -35,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   }
   
   [PublicAPI]
-  public struct WithValue<A> : IDisposable {
+  public class WithValue<A> : IDisposable {
     public readonly Ref<A> @ref;
     public readonly A oldValue;
 

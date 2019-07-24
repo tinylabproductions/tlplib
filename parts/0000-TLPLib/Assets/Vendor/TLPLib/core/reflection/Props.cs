@@ -5,7 +5,7 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.reflection {
   /** Allows to create some type easily. */
-  public struct Props<A> where A : class {
+  public class Props<A> where A : class {
     public readonly Type type;
 
     public Props(Type type) { this.type = type; }

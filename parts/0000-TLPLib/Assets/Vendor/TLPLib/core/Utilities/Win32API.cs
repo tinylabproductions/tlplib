@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool FlashWindowEx(ref FLASHWINFO pwfi);
     
-    [StructLayout(LayoutKind.Sequential)] public struct FLASHWINFO {
+    [StructLayout(LayoutKind.Sequential)] public class FLASHWINFO {
       /// The size of the structure in bytes.
       public uint cbSize;
 

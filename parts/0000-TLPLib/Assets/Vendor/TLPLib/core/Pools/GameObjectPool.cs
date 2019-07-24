@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Pools {
       ) => Init<T>.noReparenting(name, create, wakeUp, sleep, dontDestroyOnLoad);
     }
     
-    public struct Init<T> {
+    public class Init<T> {
       public readonly string name;
       public readonly Func<T> create;
       public readonly Option<Action<T>> wakeUp, sleep;

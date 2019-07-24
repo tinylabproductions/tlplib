@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent.unity_web_request {
   /// https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
   /// </summary>
   [Record(GenerateToString = false)]
-  public partial struct AcceptedResponseCodes {
+  public partial class AcceptedResponseCodes {
     [PublicAPI] public readonly ImmutableArray<long> codes;
 
     [PublicAPI]

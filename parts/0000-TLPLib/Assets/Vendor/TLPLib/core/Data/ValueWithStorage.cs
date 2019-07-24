@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct ValueWithStorage {
+  public class ValueWithStorage {
     public uint value;
     public uint storage;
 

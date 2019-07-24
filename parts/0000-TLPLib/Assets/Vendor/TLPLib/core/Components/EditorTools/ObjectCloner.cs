@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
   public class ObjectCloner : MonoBehaviour {
     public enum LockedAxis { X, Y, Z }
 
-    public struct EditorData {
+    public class EditorData {
       public readonly GameObject prefab;
       public readonly Transform sourceTransform;
 

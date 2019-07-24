@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Components {
     }
   }
 
-  public struct CornersData {
+  public class CornersData {
     public readonly Vector3 res1, res2;
     public CornersData(Vector3 res1, Vector3 res2) {
       this.res1 = res1;

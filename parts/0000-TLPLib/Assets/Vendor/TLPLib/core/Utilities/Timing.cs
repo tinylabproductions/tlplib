@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     void closeScope();
   }
 
-  public struct FrameTimingScope : IDisposable {
+  public class FrameTimingScope : IDisposable {
     readonly ITiming timing;
 
     public FrameTimingScope(string name, ITiming timing) {
@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
   }
 
-  public struct TimingData {
+  public class TimingData {
     public readonly string scope;
     public readonly DateTime startTime, endTime;
     public readonly uint iterations;

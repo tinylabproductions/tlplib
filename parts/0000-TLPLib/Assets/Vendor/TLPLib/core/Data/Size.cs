@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct Size : IEquatable<Size> {
+  public class Size : IEquatable<Size> {
     public readonly int width, height;
 
     public Size(int width, int height) {

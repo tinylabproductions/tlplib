@@ -4,7 +4,7 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   /* A or B or (A and B) */
-  public struct These<A, B> {
+  public class These<A, B> {
     enum State { A, B, BOTH }
 
     readonly A a;
@@ -166,7 +166,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     }
   }
 
-  public struct ThisTheseBuilder<A> {
+  public class ThisTheseBuilder<A> {
     public readonly A thisValue;
 
     public ThisTheseBuilder(A thisValue) {
@@ -176,7 +176,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public These<A, B> t<B>() { return new These<A, B>(thisValue); }
   }
 
-  public struct ThatEitherBuilder<B> {
+  public class ThatEitherBuilder<B> {
     public readonly B thatValue;
 
     public ThatEitherBuilder(B thatValue) {

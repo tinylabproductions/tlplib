@@ -6,7 +6,7 @@ using pzd.lib.functional;
 using pzd.lib.functional.higher_kinds;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  struct UnfulfilledFuture : IEquatable<UnfulfilledFuture> {
+  class UnfulfilledFuture : IEquatable<UnfulfilledFuture> {
     #region Equality
     public bool Equals(UnfulfilledFuture other) => true;
 
@@ -24,10 +24,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public enum FutureType { Successful, Unfulfilled, ASync }
 
   /**
-   * Struct based future which does not generate garbage if it's actually
+   * class based future which does not generate garbage if it's actually
    * synchronous.
    **/
-  public struct Future<A> : IEquatable<Future<A>>, HigherKind<Future.W, A> {
+  public class Future<A> : IEquatable<Future<A>>, HigherKind<Future.W, A> {
     /* Future with a known value|unfulfilled future|async future. */
     readonly OneOf<A, UnfulfilledFuture, IHeapFuture<A>> implementation;
     public bool isCompleted => implementation.fold(_ => true, _ => false, f => f.isCompleted);

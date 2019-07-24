@@ -341,7 +341,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     } 
   }
 
-  public struct Partitioned<A> : IEquatable<Partitioned<A>> {
+  public class Partitioned<A> : IEquatable<Partitioned<A>> {
     public readonly ImmutableList<A> trues, falses;
 
     public Partitioned(ImmutableList<A> trues, ImmutableList<A> falses) {

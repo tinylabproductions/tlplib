@@ -3,7 +3,7 @@ using com.tinylabproductions.TLPLib.Data.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public struct Price : IEquatable<Price> {
+  public class Price : IEquatable<Price> {
     public readonly int cents;
 
     public Price(int cents) { this.cents = cents; }

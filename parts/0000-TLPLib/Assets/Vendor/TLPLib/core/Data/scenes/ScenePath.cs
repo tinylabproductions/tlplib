@@ -6,7 +6,7 @@ using GenerationAttributes;
 
 namespace com.tinylabproductions.TLPLib.Data.scenes {
   [Record]
-  public partial struct ScenePath : IComparable<ScenePath> {
+  public partial class ScenePath : IComparable<ScenePath> {
     public readonly string path;
     
     #region Comparer

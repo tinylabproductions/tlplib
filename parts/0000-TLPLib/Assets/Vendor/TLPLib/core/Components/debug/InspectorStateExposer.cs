@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
     }
 #if UNITY_EDITOR
     [Record]
-    public readonly partial struct ForRepresentation {
+    public partial class ForRepresentation {
       public readonly object objectReference;
       public readonly string name;
       public readonly IValue value;

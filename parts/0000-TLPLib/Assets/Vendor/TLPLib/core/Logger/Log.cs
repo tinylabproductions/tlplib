@@ -88,7 +88,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static void editor(object o) => EditorLog.log(o);
   }
 
-  public struct LogEntry {
+  public class LogEntry {
     /// <summary>Message for the log entry.</summary>
     public readonly string message;
     /// <summary>key -> value pairs where values make up a set. Things like
@@ -218,7 +218,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       SerializedRW.immutableArray(SerializedRW.str.tpl(SerializedRW.str));
   }
 
-  [Record] public readonly partial struct LogEvent {
+  [Record] public partial class LogEvent {
     public readonly Log.Level level;
     public readonly LogEntry entry;
   }

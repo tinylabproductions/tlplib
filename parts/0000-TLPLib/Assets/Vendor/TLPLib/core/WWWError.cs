@@ -2,7 +2,7 @@
 
 namespace com.tinylabproductions.TLPLib {
   /** Error that has a www context. */
-  public struct WWWError {
+  public class WWWError {
     public readonly WWW www;
     public readonly string error;
 

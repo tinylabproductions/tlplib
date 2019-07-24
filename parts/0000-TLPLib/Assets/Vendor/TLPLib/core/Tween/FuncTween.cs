@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Tween {
     }
   }
 
-  public struct TweenCfg<A> {
+  public class TweenCfg<A> {
     public readonly TweenFacade<A> facade;
     public readonly GoTweenConfig config;
 

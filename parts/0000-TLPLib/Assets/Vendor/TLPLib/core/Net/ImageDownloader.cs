@@ -16,14 +16,14 @@ using Object = UnityEngine.Object;
 namespace com.tinylabproductions.TLPLib.Net {
   public partial class ImageDownloader {
     [Record]
-    partial struct InternalResult {
+    partial class InternalResult {
       public readonly Future<Either<WWWError, UsageCountedDisposable<Texture2D>>> future;
       
       public Result toResult() => new Result(future.mapT(_ => _.use()));
     } 
     
     [Record]
-    public partial struct Result {
+    public partial class Result {
       public readonly Future<Either<WWWError, Disposable<Texture2D>>> future;
     }
     

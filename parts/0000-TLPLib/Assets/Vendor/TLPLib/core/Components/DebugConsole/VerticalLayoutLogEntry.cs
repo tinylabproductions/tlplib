@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     #endregion
 
     [Record]
-    public partial struct Data {
+    public partial class Data {
       public readonly string text;
       public readonly Color color;
     }

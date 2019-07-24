@@ -34,7 +34,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       PRIORITY_OFF = 0;
 
     [Record]
-    public partial struct IsLoading {
+    public partial class IsLoading {
       public readonly bool value;
     }
 

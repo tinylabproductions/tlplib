@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record(GenerateToString = false), Serializable]
-  public partial struct Point2D {
+  public partial class Point2D {
     // ReSharper disable FieldCanBeMadeReadOnly.Local
     [SerializeField, PublicAccessor] int _x, _y;
     // ReSharper restore FieldCanBeMadeReadOnly.Local

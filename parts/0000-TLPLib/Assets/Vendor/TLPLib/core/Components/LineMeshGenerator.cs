@@ -7,7 +7,7 @@ namespace com.tinylabproductions.TLPLib.Components {
   public partial class LineMeshGenerator {
 
     [Record]
-    public partial struct NodeData {
+    public partial class NodeData {
       public readonly Vector3 relativePosition;
       public readonly float distanceToPrevNode;
     }

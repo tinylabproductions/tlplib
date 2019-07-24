@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   public static class ConfigFetcher {
-    public struct UrlWithContext : IEquatable<UrlWithContext> {
+    public class UrlWithContext : IEquatable<UrlWithContext> {
       // C# calls URLs URIs. See http://stackoverflow.com/a/1984225/935259 for distinction.
       public readonly Uri url;
 

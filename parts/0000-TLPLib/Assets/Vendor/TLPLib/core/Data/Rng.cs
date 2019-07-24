@@ -10,8 +10,8 @@ namespace com.tinylabproductions.TLPLib.Data {
   ///
   /// This implementation uses xorshift* version.
   /// </summary>
-  public struct Rng {
-    public struct Seed {
+  public class Rng {
+    public class Seed {
       public readonly ulong seed;
 
       public Seed(ulong seed) {

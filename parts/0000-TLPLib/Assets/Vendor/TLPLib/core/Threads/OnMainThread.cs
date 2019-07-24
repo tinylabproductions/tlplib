@@ -95,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
     }
   }
 
-  [Record(GenerateToString = false), PublicAPI] public readonly partial struct TaskFailed {
+  [Record(GenerateToString = false), PublicAPI] public partial class TaskFailed {
     readonly AggregateException exception;
 
     public bool cancelled => exception == null;

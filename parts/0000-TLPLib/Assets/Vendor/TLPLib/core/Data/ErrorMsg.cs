@@ -9,7 +9,7 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record(GenerateConstructor = GeneratedConstructor.None)]
-  public partial struct ErrorMsg {
+  public partial class ErrorMsg {
     [PublicAPI] public readonly string s;
     /// <see cref="LogEntry.reportToErrorTracking"/>
     [PublicAPI] public readonly bool reportToErrorTracking;

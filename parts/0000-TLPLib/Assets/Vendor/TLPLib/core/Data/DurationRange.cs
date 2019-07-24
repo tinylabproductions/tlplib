@@ -8,7 +8,7 @@ using pzd.lib.typeclasses;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  [Serializable, Record, PublicAPI] public partial struct DurationRange : IStr {
+  [Serializable, Record, PublicAPI] public partial class DurationRange : IStr {
     [SerializeField, PublicAccessor] Duration _from, _to;
 
     public string asString() => $"[{_from}..{_to}]";

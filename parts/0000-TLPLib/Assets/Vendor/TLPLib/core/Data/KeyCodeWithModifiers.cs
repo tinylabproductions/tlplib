@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  [Record, PublicAPI, Serializable] public partial struct KeyCodeWithModifiers {
+  [Record, PublicAPI, Serializable] public partial class KeyCodeWithModifiers {
 #pragma warning disable 649
     [PublicAccessor, SerializeField] KeyCode _keyCode;
     [PublicAccessor, SerializeField] bool _shift, _alt, _ctrl;

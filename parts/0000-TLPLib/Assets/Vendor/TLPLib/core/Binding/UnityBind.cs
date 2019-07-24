@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       return pool;
     }
 
-    [Record] public readonly partial struct BindEnumerableEntry<Template> {
+    [Record] public partial class BindEnumerableEntry<Template> {
       public readonly Template instance;
       public readonly IDisposable subscription;
     }

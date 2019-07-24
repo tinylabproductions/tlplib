@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Data.units {
   [Record]
-  public partial struct UnityMeters {
+  public partial class UnityMeters {
     [PublicAPI] public readonly float meters;
 
     [PublicAPI] public static UnityMeters a(float meters) => new UnityMeters(meters);

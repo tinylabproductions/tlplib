@@ -7,7 +7,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.app {
   public class AlertDialog : Binding {
     public class Builder : Binding {
-      public struct PositiveButton {
+      public class PositiveButton {
         public readonly string text;
         public readonly Action onClick;
 

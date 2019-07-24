@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.Cryptography {
-  public struct CryptoHash : IStr, IEquatable<CryptoHash> {
+  public class CryptoHash : IStr, IEquatable<CryptoHash> {
     // http://stackoverflow.com/a/33568064/935259
     static readonly MD5 md5 = new MD5CryptoServiceProvider();
     static readonly SHA1 sha1 = new SHA1CryptoServiceProvider();
