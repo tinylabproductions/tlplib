@@ -23,7 +23,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       TransparentEdgesLeft = 101,
       TransparentEdgesRight = 102,
       SlicedOutside = 103,
-      SlicedOutsideFixedBorderSize = 104
+      SlicedOutsideFixedBorderSize = 104,
+      Cropped = 105,
     }
 
     public enum FillMethod {
@@ -335,6 +336,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         case Type.SlicedOutsideFixedBorderSize:
           GenerateSlicedSpriteV2(toFill, true);
           break;
+        case Type.Cropped:
+          GenerateSimpleCroppedSprite(toFill);
+          break;
       }
     }
 
@@ -428,6 +432,44 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     void GenerateSimpleSprite(VertexHelper vh, bool lPreserveAspect) {
       Vector4 v = GetDrawingDimensions(lPreserveAspect);
       var uv = (activeSprite != null) ? DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
+
+      var color32 = color;
+      vh.Clear();
+      vh.AddVert(new Vector3(v.x, v.y), color32, new Vector2(uv.x, uv.y));
+      vh.AddVert(new Vector3(v.x, v.w), color32, new Vector2(uv.x, uv.w));
+      vh.AddVert(new Vector3(v.z, v.w), color32, new Vector2(uv.z, uv.w));
+      vh.AddVert(new Vector3(v.z, v.y), color32, new Vector2(uv.z, uv.y));
+
+      vh.AddTriangle(0, 1, 2);
+      vh.AddTriangle(2, 3, 0);
+    }
+
+    void GenerateSimpleCroppedSprite(VertexHelper vh) {
+      Vector4 v = GetDrawingDimensions(false);
+      var uv = (activeSprite != null) ? DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
+
+      {
+        var size = activeSprite == null ? Vector2.zero : new Vector2(activeSprite.rect.width, activeSprite.rect.height);
+        Rect r = GetPixelAdjustedRect();
+
+        if (size.sqrMagnitude > 0.0f) {
+          var spriteRatio = size.x / size.y;
+          var rectRatio = r.width / r.height;
+
+          if (spriteRatio < rectRatio) {
+            var oldHeight = uv.w - uv.y;
+            var diff = oldHeight / 2 * (1 - spriteRatio / rectRatio);
+            uv.y += diff;
+            uv.w -= diff;
+          }
+          else {
+            var oldHeight = uv.z - uv.x;
+            var diff = oldHeight / 2 * (1 - rectRatio / spriteRatio);
+            uv.x += diff;
+            uv.z -= diff;
+          }
+        }
+      }
 
       var color32 = color;
       vh.Clear();
