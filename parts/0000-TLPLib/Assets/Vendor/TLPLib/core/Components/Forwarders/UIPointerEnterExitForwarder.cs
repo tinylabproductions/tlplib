@@ -14,14 +14,14 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     public void OnPointerEnter(PointerEventData eventData) {
       if (eventData.button == PointerEventData.InputButton.Left && IsActive()) {
-        _onEnter.push(new Unit());
+        _onEnter.push(Unit._);
         isEntered = true;
       }
     }
 
     public void OnPointerExit(PointerEventData eventData) {
       if (eventData.button == PointerEventData.InputButton.Left && IsActive()) {
-        _onExit.push(new Unit());
+        _onExit.push(Unit._);
         isEntered = false;
       }
     }

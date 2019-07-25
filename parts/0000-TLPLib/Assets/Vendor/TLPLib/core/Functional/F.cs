@@ -126,7 +126,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static IDictionary<K, V> iDict<K, V>(params Tpl<K, V>[] args) => dict(args);
 
-    public static Unit unit => Unit._;
+    public static readonly Unit unit = Unit._;
 
     public static LazyVal<A> lazy<A>(Func<A> func, Action<A> afterInitialization = null) =>
       new LazyValImpl<A>(func, afterInitialization);

@@ -15,13 +15,13 @@ namespace com.tinylabproductions.TLPLib.Components {
     public bool isDown { get; private set; }
 
     void up() {
-      _onUp.push(new Unit());
+      _onUp.push(Unit._);
       isDown = false;
     }
 
     protected override void onPointerDown(PointerEventData eventData) {
       if (eventData.button == PointerEventData.InputButton.Left && isActiveAndEnabled) {
-        _onDown.push(new Unit());
+        _onDown.push(Unit._);
         isDown = true;
       }
     }

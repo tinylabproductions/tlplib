@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Android {
       SyncOtherThreadOp.a(AndroidUIThreadExecutor.a(f)).execute();
 
     public static void runOnUIBlocking(Action act) =>
-      runOnUIBlocking(() => { act(); return new Unit(); });
+      runOnUIBlocking(() => { act(); return Unit._; });
 
     /**
      * To use this, add the following to your AndroidManifest.xml
