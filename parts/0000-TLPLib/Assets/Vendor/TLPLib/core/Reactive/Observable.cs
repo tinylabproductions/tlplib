@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
+using JetBrains.Annotations;
 using pzd.lib.functional;
 using UnityEngine;
 
@@ -450,7 +451,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
-    SList4<A> pendingSubmits = new SList4<A>();
+    [CanBeNull] List<A> pendingSubmits = null;
 
     // Are we currently iterating through subscriptions?
     bool iterating;
@@ -472,7 +473,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     protected void submit(A a) {
       if (iterating) {
         // Do not submit if iterating.
-        pendingSubmits.add(a);
+        if (pendingSubmits == null) pendingSubmits = new List<A>(4);
+        pendingSubmits.Add(a);
         return;
       }
 
@@ -503,7 +505,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         iterating = false;
         afterIteration(brokenSubsDetected);
         // Process pending submits.
-        if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
+        if (pendingSubmits != null && pendingSubmits.Count > 0) {
+          var item = pendingSubmits[0];
+          pendingSubmits.RemoveAt(0);
+          submit(item);
+        }
       }
     }
 
