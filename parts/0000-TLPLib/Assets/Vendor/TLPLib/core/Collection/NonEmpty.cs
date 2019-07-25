@@ -130,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Collection {
   }
 
   [Record(GenerateToString = false)]
-  public  readonly partial struct NonEmpty<A> {
+  public partial class NonEmpty<A> {
     public readonly A a;
 
     /// <summary>You should never use this method directly.</summary>
