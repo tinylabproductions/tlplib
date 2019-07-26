@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
     [SerializeField, NotNull] Gradient gradient = new Gradient();
     [SerializeField] Direction direction = Direction.Horizontal;
 
-    enum Direction : byte { Vertical = 0, Horizontal = 1 }
+    enum Direction : { Vertical = 0, Horizontal = 1 }
 
     public void Awake() => generate();
 

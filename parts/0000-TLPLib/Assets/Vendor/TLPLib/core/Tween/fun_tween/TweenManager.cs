@@ -8,7 +8,7 @@ using UnityEngine;
 using Object = System.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
-  public enum TweenTime : byte {
+  public enum TweenTime : {
     OnUpdate, OnUpdateUnscaled, OnLateUpdate, OnLateUpdateUnscaled, OnFixedUpdate
   }
 
@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public partial class TweenManager : IDisposable {
     [Serializable, Record(GenerateToString = false)]
     public partial class Loop {
-      public enum Mode : byte { Normal, YoYo }
+      public enum Mode : { Normal, YoYo }
 
       [PublicAPI, HideInInspector] public const uint
         TIMES_FOREVER = 0,

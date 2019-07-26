@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
     [Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)]
     public partial struct Error {
-      public enum Type : byte {
+      public enum Type : {
         MissingComponent,
         MissingRequiredComponent,
         MissingReference,

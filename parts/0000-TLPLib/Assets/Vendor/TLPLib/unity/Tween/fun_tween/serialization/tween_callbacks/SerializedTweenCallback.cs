@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks {
   public abstract class SerializedTweenCallback : SerializedTweenTimelineElement {
-    protected enum InvokeOn : byte { Both = 0, Forward = 1, Backward = 2 }
+    protected enum InvokeOn : { Both = 0, Forward = 1, Backward = 2 }
 
     protected abstract TweenCallback createCallback();
 

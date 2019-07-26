@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Compare {
-  public enum Operator : byte { Less, LessOrEqual, Equals, GreaterOrEqual, Greater }
+  public enum Operator : { Less, LessOrEqual, Equals, GreaterOrEqual, Greater }
 
   public static class OperatorUtils {
     static bool compare<A>(A a, Operator op, A b) where A : IComparable<A> {

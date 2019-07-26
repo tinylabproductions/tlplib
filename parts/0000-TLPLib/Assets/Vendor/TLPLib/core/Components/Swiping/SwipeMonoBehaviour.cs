@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.Swiping {
-  public enum SwipeDirection : byte {
+  public enum SwipeDirection : {
     Left, Right, Up, Down
   }
 

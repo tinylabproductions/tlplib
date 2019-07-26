@@ -14,7 +14,7 @@ namespace com.tinylabproductions.Cryptography {
     static readonly SHA1 sha1 = new SHA1CryptoServiceProvider();
     static readonly SHA256 sha256 = new SHA256CryptoServiceProvider();
 
-    public enum Kind : byte { MD5, SHA1, SHA256 }
+    public enum Kind : { MD5, SHA1, SHA256 }
 
     [PublicAPI] public readonly ImmutableArray<byte> bytes;
     [PublicAPI] public readonly Kind kind;

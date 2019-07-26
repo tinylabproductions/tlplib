@@ -5,7 +5,7 @@ using pzd.lib.serialization;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public enum Gender : byte { Male = 0, Female = 1 }
+  public enum Gender : { Male = 0, Female = 1 }
   [PublicAPI] public static class Gender_ {
     public static readonly Str<Gender> str = new Str.LambdaStr<Gender>(g => {
       switch (g) {

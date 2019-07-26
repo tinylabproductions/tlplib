@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.google.firebase.ana
       MAX_PARAM_KEY_LENGTH = 24,
       MAX_PARAM_VALUE_LENGTH = 36;
 
-    public enum Trim : byte { KeepLeftSide, KeepRightSide, None }
+    public enum Trim : { KeepLeftSide, KeepRightSide, None }
 
     static readonly ImmutableHashSet<string> reservedEventNames = ImmutableHashSet.Create(
       "app_clear_data",

@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data.typeclasses {
-  [PublicAPI] public enum CompareResult : sbyte { LT = -1, EQ = 0, GT = 1 }
+  [PublicAPI] public enum CompareResult : { LT = -1, EQ = 0, GT = 1 }
 
   [PublicAPI] public static class CompareResultExts {
     public static int asInt(this CompareResult res) => (int) res;
