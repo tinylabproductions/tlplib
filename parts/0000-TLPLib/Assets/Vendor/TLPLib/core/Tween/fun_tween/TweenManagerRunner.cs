@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
-  public enum UnityPhase : { Update, LateUpdate, FixedUpdate }
+  public enum UnityPhase { Update, LateUpdate, FixedUpdate }
   
   /// <summary>
   /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.

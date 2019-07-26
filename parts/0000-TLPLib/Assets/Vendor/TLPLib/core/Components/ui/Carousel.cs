@@ -18,7 +18,7 @@ using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
   public partial class Carousel : Carousel<CarouselGameObject> {
-    public enum Direction : { Horizontal = 0, Vertical = 1 }
+    public enum Direction { Horizontal = 0, Vertical = 1 }
     
     [Record]
     public partial class Pages {

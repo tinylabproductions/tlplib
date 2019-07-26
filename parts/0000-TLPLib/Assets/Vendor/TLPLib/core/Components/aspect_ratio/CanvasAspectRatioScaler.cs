@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Components.aspect_ratio {
     // )
   ]
   public class CanvasAspectRatioScaler : UIBehaviour, ILayoutController {
-    enum StretchMode : { None, Horizontal, Vertical }
+    enum StretchMode { None, Horizontal, Vertical }
 
     #region Unity Serialized Fields
 

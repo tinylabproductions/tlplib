@@ -8,7 +8,7 @@ using GenerationAttributes;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
-  public enum LoadPriority : { Low, High }
+  public enum LoadPriority { Low, High }
 
   /// <summary>
   /// A loader that only loads one item. If you set a new item to be loaded, old item

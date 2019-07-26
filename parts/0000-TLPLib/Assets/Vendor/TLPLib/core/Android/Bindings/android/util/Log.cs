@@ -7,7 +7,7 @@ using ULog = com.tinylabproductions.TLPLib.Logger.Log;
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.util {
   public static class Log {
     // ReSharper disable once EnumUnderlyingTypeIsInt - just to make sure we don't forget.
-    public enum Level : int {
+    public enum Level int {
       VERBOSE = 2,
       DEBUG = 3,
       INFO = 4,

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
   public partial class Vector3Path {
-    public enum InterpolationMethod : { Linear, CatmullRom, Cubic, Hermite }
+    public enum InterpolationMethod { Linear, CatmullRom, Cubic, Hermite }
 
     /// <summary>
     /// If a path uses non-linear <see cref="InterpolationMethod"/>, the path is curved, as you can

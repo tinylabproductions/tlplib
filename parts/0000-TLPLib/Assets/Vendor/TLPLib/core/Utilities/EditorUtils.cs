@@ -67,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
 
 #if UNITY_EDITOR
-    public enum DisplayDialogResult : { OK, Alt, Cancel }
+    public enum DisplayDialogResult { OK, Alt, Cancel }
     public static DisplayDialogResult displayDialogComplex(
       string title, string message, string ok, string cancel, string alt
     ) {

@@ -16,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
     [Serializable]
     // Can't be struct, because AdvancedInspector freaks out.
     public partial class Element : Invalidatable {
-      enum At : { AfterLastElement, WithLastElement, SpecificTime }
+      enum At { AfterLastElement, WithLastElement, SpecificTime }
       
       #region Unity Serialized Fields
 

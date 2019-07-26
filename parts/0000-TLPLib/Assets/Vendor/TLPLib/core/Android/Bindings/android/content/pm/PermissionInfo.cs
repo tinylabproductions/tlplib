@@ -4,7 +4,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
   public class PermissionInfo : Binding {
     // ReSharper disable once EnumUnderlyingTypeIsInt
-    public enum ProtectionLevel : int {
+    public enum ProtectionLevel int {
       // https://developer.android.com/reference/android/content/pm/PermissionInfo.html#PROTECTION_NORMAL
       Normal = 0,
       // https://developer.android.com/reference/android/content/pm/PermissionInfo.html#PROTECTION_DANGEROUS

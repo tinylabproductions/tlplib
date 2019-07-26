@@ -16,9 +16,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   public class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
     const string TAB_FIELDS = "Fields", TAB_ACTIONS = "Actions";
     // ReSharper disable once UnusedMember.Local
-    enum RunMode : { Local, Global }
+    enum RunMode { Local, Global }
     // ReSharper disable once UnusedMember.Local
-    enum AutoplayMode : {
+    enum AutoplayMode {
       Disabled = 0, Enabled = 1, ApplyZeroStateOnStart = 2, ApplyEndStateOnStart = 3, EnabledAndApplyZeroStateOnStart = 4
     }
 
@@ -173,7 +173,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       if (_autoplay == AutoplayMode.Enabled || _autoplay == AutoplayMode.EnabledAndApplyZeroStateOnStart) manager.play();
     }
     
-    public enum Action : {
+    public enum Action {
       PlayForwards = 0, 
       PlayBackwards = 1, 
       ResumeForwards = 2, 

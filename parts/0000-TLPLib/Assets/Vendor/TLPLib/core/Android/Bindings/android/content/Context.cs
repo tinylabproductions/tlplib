@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
       SERVICE_TELEPHONY_MANAGER = "phone",
       NOTIFICATION_MANAGER = "notification";
 
-    public enum SharedPreferencesMode : {
+    public enum SharedPreferencesMode {
       // File creation mode: the default mode, where the created file can only be accessed by the
       // calling application (or all applications sharing the same user ID).
       MODE_PRIVATE = 0

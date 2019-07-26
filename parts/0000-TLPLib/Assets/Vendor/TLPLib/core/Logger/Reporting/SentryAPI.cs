@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public static implicit operator Tag(string s) => new Tag(s);
     }
 
-    public enum LogLevel : { FATAL, ERROR, WARNING, INFO, DEBUG }
+    public enum LogLevel { FATAL, ERROR, WARNING, INFO, DEBUG }
     public static class LogLevel_ {
       public static readonly Str<LogLevel> str = new LambdaStr<LogLevel>(s => {
         switch (s) {
