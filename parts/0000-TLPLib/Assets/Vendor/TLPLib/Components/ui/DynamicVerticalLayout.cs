@@ -78,6 +78,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       /// and release an item to the pool on <see cref="IDisposable.Dispose"/>
       /// </summary>
       IElementView createItem(Transform parent);
+      bool isSpecial { get; }
     }
 
     /// <summary>
@@ -176,6 +177,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         var currentRowHeight = 0f;
         var currentWidthPerc = 0f;
 
+        var containsSpecialItems = layoutData.anyGCFree(e => e.asElementWithView.fold(false, withView => withView.isSpecial));
         var direction = renderLatestItemsFirst ? -1 : 1;
         for (
           var idx = renderLatestItemsFirst ? layoutData.Count - 1 : 0;
@@ -215,7 +217,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
               rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
               rectTrans.localPosition = Vector3.zero;
               rectTrans.anchoredPosition = cellRect.center;
-              rectTrans.sizeDelta = cellRect.size;
+              
+              if (containsSpecialItems)
+                rectTrans.sizeDelta = cellRect.size;
+              
               instanceOpt = instance.some();
             }
             _items.Add(data, instanceOpt);

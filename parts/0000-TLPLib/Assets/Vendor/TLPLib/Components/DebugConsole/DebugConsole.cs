@@ -287,6 +287,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public Percentage width => new Percentage(1f);
       public Option<DynamicVerticalLayout.IElementWithViewData> asElementWithView => 
         this.some<DynamicVerticalLayout.IElementWithViewData>();
+      public bool isSpecial => false;
 
       public DynamicVerticalLayout.IElementView createItem(Transform parent) {
         var logEntry = pool.BorrowDisposable();
