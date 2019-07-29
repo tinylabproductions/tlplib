@@ -12,20 +12,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
   /// C# does not have higher kinded types, so we need to specify every combination of monads here
   /// as an extension method. However this reduces visual noise in the usage sites.
   /// </summary>
-  public static class MonadTransformers {
+  [PublicAPI] public static class MonadTransformers {
     #region Option
 
     #region of Either
 
-    [PublicAPI] public static Option<Either<A, BB>> mapT<A, B, BB>(
+    public static Option<Either<A, BB>> mapT<A, B, BB>(
       this Option<Either<A, B>> m, Func<B, BB> mapper
     ) => m.map(_ => _.mapRight(mapper));
 
-    [PublicAPI] public static Option<Either<A, BB>> flatMapT<A, B, BB>(
+    public static Option<Either<A, BB>> flatMapT<A, B, BB>(
       this Option<Either<A, B>> m, Func<B, Either<A, BB>> mapper
     ) => m.map(_ => _.flatMapRight(mapper));
 
-    [PublicAPI] public static Either<A, Option<B>> extract<A, B>(this Option<Either<A, B>> o) {
+    public static Either<A, Option<B>> extract<A, B>(this Option<Either<A, B>> o) {
       if (o.isSome) {
         var e = o.__unsafeGet;
         return
@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of IEnumerable
 
-    [PublicAPI] public static IEnumerable<Option<A>> extract<A>(
+    public static IEnumerable<Option<A>> extract<A>(
       this Option<IEnumerable<A>> opt
     ) =>
       opt.isNone
@@ -53,13 +53,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region Either
 
-    #region ofOption
+    #region of Option
 
-    [PublicAPI] public static Either<A, Option<BB>> mapT<A, B, BB>(
+    public static Either<A, Option<BB>> mapT<A, B, BB>(
       this Either<A, Option<B>> m, Func<B, BB> mapper
     ) => m.mapRight(_ => _.map(mapper));
 
-    [PublicAPI] public static Either<A, Option<BB>> flatMapT<A, B, BB>(
+    public static Either<A, Option<BB>> flatMapT<A, B, BB>(
       this Either<A, Option<B>> m, Func<B, Option<BB>> mapper
     ) => m.mapRight(_ => _.flatMap(mapper));
 
@@ -71,15 +71,15 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Option
 
-    [PublicAPI] public static Future<Option<B>> mapT<A, B>(
+    public static Future<Option<B>> mapT<A, B>(
       this Future<Option<A>> m, Func<A, B> mapper
     ) => m.map(_ => _.map(mapper));
 
-    [PublicAPI] public static Future<Option<B>> flatMapT<A, B>(
+    public static Future<Option<B>> flatMapT<A, B>(
       this Future<Option<A>> m, Func<A, Option<B>> mapper
     ) => m.map(_ => _.flatMap(mapper));
 
-    [PublicAPI] public static Future<Option<B>> flatMapT<A, B>(
+    public static Future<Option<B>> flatMapT<A, B>(
       this Future<Option<A>> m, Func<A, Future<Option<B>>> mapper
     ) => m.flatMap(_ => _.fold(
       () => Future.successful(F.none<B>()),
@@ -90,22 +90,22 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Either
 
-    [PublicAPI] public static Future<Either<A, BB>> mapT<A, B, BB>(
+    public static Future<Either<A, BB>> mapT<A, B, BB>(
       this Future<Either<A, B>> m, Func<B, BB> mapper
     ) => m.map(_ => _.mapRight(mapper));
 
-    [PublicAPI] public static Future<Either<A, BB>> flatMapT<A, B, BB>(
+    public static Future<Either<A, BB>> flatMapT<A, B, BB>(
       this Future<Either<A, B>> m, Func<B, Either<A, BB>> mapper
     ) => m.map(_ => _.flatMapRight(mapper));
 
-    [PublicAPI] public static Future<Either<A, BB>> flatMapT<A, B, BB>(
+    public static Future<Either<A, BB>> flatMapT<A, B, BB>(
       this Future<Either<A, B>> m, Func<B, Future<Either<A, BB>>> mapper
     ) => m.flatMap(_ => _.fold(
       a => Future.successful(Either<A, BB>.Left(a)),
       mapper
     ));
 
-    [PublicAPI] public static Future<Either<A, BB>> flatMapT<B, BB, A>(
+    public static Future<Either<A, BB>> flatMapT<B, BB, A>(
       this Future<Either<A, B>> m, Func<B, Future<BB>> mapper
     ) => m.flatMap(_ => _.fold(
       err => Future.successful(Either<A, BB>.Left(err)),
@@ -117,7 +117,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Try
 
-    [PublicAPI] public static Future<Try<To>> flatMapT<From, To>(
+    public static Future<Try<To>> flatMapT<From, To>(
       this Future<Try<From>> m, Func<From, Future<To>> mapper
     ) => m.flatMap(_ => _.fold(
       from => mapper(from).map(F.scs),
@@ -146,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Try
 
-    [PublicAPI] public static LazyVal<Try<B>> lazyMapT<A, B>(
+    public static LazyVal<Try<B>> lazyMapT<A, B>(
       this LazyVal<Try<A>> m, Func<A, B> mapper
     ) => m.lazyMap(_ => _.map(mapper));
 
@@ -154,7 +154,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Future
 
-    [PublicAPI] public static LazyVal<Future<B>> lazyMapT<A, B>(
+    public static LazyVal<Future<B>> lazyMapT<A, B>(
       this LazyVal<Future<A>> m, Func<A, B> mapper
     ) => m.lazyMap(_ => _.map(mapper));
 
@@ -166,9 +166,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Option
 
-    [PublicAPI] public static IRxVal<Option<B>> mapT<A, B>(
+    public static IRxVal<Option<B>> mapT<A, B>(
       this IRxVal<Option<A>> rxMaybeA, Func<A, B> f
     ) => rxMaybeA.map(maybeA => maybeA.map(f));
+
+    public static IRxObservable<B> flatMapT<A, B>(
+      this IRxVal<Option<A>> rxMaybeA, Func<A, IRxObservable<B>> f
+    ) => rxMaybeA.flatMap(maybeA => maybeA.valueOut(out var a) ? f(a) : Observable<B>.empty);
 
     #endregion
 
