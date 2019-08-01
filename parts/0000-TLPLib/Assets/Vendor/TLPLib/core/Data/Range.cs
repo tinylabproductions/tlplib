@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
+using pzd.lib.config;
+using pzd.replays.messaging;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -121,6 +123,9 @@ namespace com.tinylabproductions.TLPLib.Data {
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     
     public static URange operator +(URange r, uint i) => new URange(from: r._from + i, to: r._to + i);
+
+    public static Config.Parser<object, URange> parser =
+      Config.uintParser.tpl(Config.uintParser, (a, b) => new URange(a, b));
   }
 
   public struct URangeEnumerator : IEnumerator<uint> {
