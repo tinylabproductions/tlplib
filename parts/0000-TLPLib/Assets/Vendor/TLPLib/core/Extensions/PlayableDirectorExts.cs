@@ -17,16 +17,48 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         );
       }
       else {
-        director.gameObject.SetActive(true);
-        director.enabled = true;
-        director.Play(asset, DirectorWrapMode.Hold);
-        director.Evaluate();
+        playSimple(director, asset, logErrorIfInactive = false);
         while (!Mathf.Approximately((float) director.time, (float) asset.duration))
           yield return null;
       }
     }
-    
-    
+
+    public static void playSimple(
+      this PlayableDirector director, PlayableAsset asset, bool logErrorIfInactive = true
+    ) {
+      // Directors do not play if the game object is not active.
+      if (!director.isActiveAndEnabled) {
+        if (logErrorIfInactive) Log.d.error(
+          $"Wanted to play {asset} on director, which is not active and enabled! " +
+          "This does not work, ensure the director is active and enabled.",
+          director
+        );
+      }
+      director.gameObject.SetActive(true);
+      director.enabled = true;
+      director.Play(asset, DirectorWrapMode.Hold);
+      director.Evaluate();
+    }
+
+    public static void jumpToEnd(this PlayableDirector director, bool logErrorIfInactive = true) {
+      if (!director.isActiveAndEnabled) {
+        if (logErrorIfInactive) Log.d.error(
+          $"Wanted jump to end on director, which is not active and enabled! " +
+          "This does not work, ensure the director is active and enabled.",
+          director
+        );
+      }
+      else {
+        var asset = director.playableAsset;
+        if (asset) {
+          director.time = asset.duration;
+        }
+      }
+    }
+
+    public static bool isPlaying(this PlayableDirector director) =>
+      !Mathf.Approximately((float) director.time, (float) director.playableAsset.duration);
+
     public static IEnumerator play(this PlayableDirector director) {
        yield return director.play(director.playableAsset);
     }
