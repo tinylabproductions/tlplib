@@ -124,8 +124,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     
     public static URange operator +(URange r, uint i) => new URange(from: r._from + i, to: r._to + i);
 
-    public static Config.Parser<object, URange> parser =
-      Config.uintParser.tpl(Config.uintParser, (a, b) => new URange(a, b));
+    public static readonly Config.Parser<object, URange> parser =
+      Config.uintParser.tpl(Config.uintParser, (from, to) => new URange(from, to));
   }
 
   public struct URangeEnumerator : IEnumerator<uint> {
