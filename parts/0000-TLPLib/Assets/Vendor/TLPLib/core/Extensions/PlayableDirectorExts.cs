@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// Plays to end while `continuePlaying` is true.
     /// Stops and goes to last frame when `continuePlaying` becomes false
     /// </summary>
-    public static IEnumerator playWhile(
+    public static IEnumerator playWithCancel(
       this PlayableDirector director, PlayableAsset asset, Func<bool> continuePlaying, bool logErrorIfInactive = true
     ) {
       // Directors do not play if the game object is not active.
