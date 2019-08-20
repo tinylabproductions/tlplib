@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.collection;
 using pzd.lib.exts;
 using pzd.lib.functional;
 
@@ -19,6 +20,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
 
     public static Option<NonEmpty<ImmutableArray<A>>> toNonEmpty<A>(this ImmutableArray<A> c) =>
       NonEmpty<ImmutableArray<A>>.__unsafeApply(c, _ => _.IsEmpty);
+
+    public static Option<NonEmpty<ImmutableArrayC<A>>> toNonEmpty<A>(this ImmutableArrayC<A> c) =>
+      NonEmpty<ImmutableArrayC<A>>.__unsafeApply(c, _ => _.Count == 0);
 
     public static Option<NonEmpty<A[]>> toNonEmpty<A>(this A[] c) =>
       NonEmpty<A[]>.__unsafeApply(c, _ => _.isEmpty());
