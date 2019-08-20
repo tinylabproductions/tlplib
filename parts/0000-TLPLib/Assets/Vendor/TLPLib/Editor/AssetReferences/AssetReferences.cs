@@ -89,7 +89,8 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         p.EndsWithFast(".asset")
         || p.EndsWithFast(".prefab")
         || p.EndsWithFast(".unity")
-        || p.EndsWithFast(".mat");
+        || p.EndsWithFast(".mat")
+        || p.EndsWithFast(".spriteatlas");
 
       var assets = data.filter(predicate, _ => predicate(_.fromPath));
       var firstScan = children.isEmpty() && parents.isEmpty();
