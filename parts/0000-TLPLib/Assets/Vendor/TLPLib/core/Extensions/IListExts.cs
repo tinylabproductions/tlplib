@@ -176,12 +176,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<int>();
     }
 
-    /* Returns a random element. The probability is selected by elements
-     * weight. Non-iter version. */
+    /// <summary>
+    /// Returns a random element. The probability is selected by element weight.
+    /// </summary>
     public static Option<A> randomElementByWeight<A>(
-      this IList<A> list,
-      // If we change to Func here, Unity crashes. So fun.
-      Func<A, float> weightSelector
+      this IList<A> list, Func<A, float> weightSelector, ref Rng rng
     ) {
       if (list.isEmpty()) return F.none<A>();
 
@@ -191,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         totalWeight += weightSelector(list[idx]);
 
       // The weight we are after...
-      var itemWeightIndex = Random.value * totalWeight;
+      var itemWeightIndex = rng.nextFloat(out rng) * totalWeight;
       var currentWeightIndex = 0f;
 
       // ReSharper disable once ForCanBeConvertedToForeach

@@ -24,7 +24,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public MarkovState<A> next { get {
-      return transitions.strict.randomElementByWeight(_ => _.weight).get.nextState;
+      var rng = Rng.now;
+      return transitions.strict.randomElementByWeight(_ => _.weight, ref rng).get.nextState;
     } }
   }
 
