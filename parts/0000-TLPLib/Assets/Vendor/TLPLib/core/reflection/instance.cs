@@ -8,12 +8,16 @@ using pzd.lib.exts;
 namespace com.tinylabproductions.TLPLib.reflection {
   public static class PrivateField {
     [PublicAPI]
-    public static Func<object, FieldType> getter<FieldType>(Type type, string fieldName) =>
-      a => accessor<FieldType>(type, fieldName)(a).value;
-    
+    public static Func<object, FieldType> getter<FieldType>(Type type, string fieldName) {
+      var accessor = accessor<FieldType>(type, fieldName);
+      return a => accessor(a).value;
+    }
+
     [PublicAPI]
-    public static Func<ObjectType, FieldType> getter<ObjectType, FieldType>(string fieldName) =>
-      a => accessor<ObjectType, FieldType>(fieldName)(a).value;
+    public static Func<ObjectType, FieldType> getter<ObjectType, FieldType>(string fieldName) {
+      var accessor = accessor<ObjectType, FieldType>(fieldName);
+      return a => accessor(a).value;
+    }
 
     [PublicAPI]
     public static Func<object, Ref<FieldType>> accessor<FieldType>(Type type, string fieldName) {
