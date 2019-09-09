@@ -5,6 +5,8 @@ using static com.tinylabproductions.TLPLib.Functional.F;
 
 namespace System {
   public static class TupleExts {
+    public static Tpl<A, B> toTpl<A, B>(this (A, B) t) => F.t(t.Item1, t.Item2);
+    
     public static Tpl<AA, B> map1<A, AA, B>(this Tpl<A, B> t, Func<A, AA> f) => F.t(f(t._1), t._2);
     public static Tpl<AA, B> map1<A, AA, B>(this Tpl<A, B> t, Func<A, B, AA> f) => F.t(f(t._1, t._2), t._2);
     public static Tpl<A, BB> map2<A, B, BB>(this Tpl<A, B> t, Func<B, BB> f) => F.t(t._1, f(t._2));

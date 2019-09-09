@@ -5,6 +5,7 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.data;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.import {
@@ -63,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.import {
     public Data[] pallete;
     public Color32[] ignoredColors;
     public string holderGameObjectName = "Generated from Texture";
-    public ulong randomSeed = Rng.now.nextUIntInRangeT(new URange(1, uint.MaxValue))._2;
+    public ulong randomSeed = Rng.now.nextUIntInRangeT(1, uint.MaxValue).Item2;
 #pragma warning restore 649
 
     #endregion

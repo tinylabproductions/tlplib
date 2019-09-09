@@ -1,4 +1,6 @@
-﻿namespace com.tinylabproductions.TLPLib.Data {
+﻿using pzd.lib.data;
+
+namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>
   /// Generates different random number generators by maintaining a seed variable.
   ///
