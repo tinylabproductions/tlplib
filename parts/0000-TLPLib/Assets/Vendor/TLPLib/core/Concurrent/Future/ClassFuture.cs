@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.concurrent;
+using pzd.lib.reactive;
 using pzdf = pzd.lib.functional;
 using Smooth.Pools;
 using None = pzd.lib.functional.None;
@@ -15,6 +16,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     static readonly Pool<List<Action<A>>> pool = ListPool<Action<A>>.Instance;
 
     List<Action<A>> listeners = pool.Borrow();
+    bool iterating;
 
     public bool isCompleted => value.isSome;
     public pzdf.Option<A> value { get; private set; } = None._;
@@ -39,12 +41,22 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return ret;
     }
 
-    public void onComplete(Action<A> action) {
-      if (value.isSome) action(value.__unsafeGet);
-      else listeners.Add(action);
+    public ISubscription onComplete(Action<A> action) {
+      if (value.isSome) {
+        action(value.__unsafeGet);
+        return Subscription.empty;
+      }
+      else {
+        listeners.Add(action);
+        return new Subscription(() => {
+          if (iterating || listeners == null) return;
+          listeners.Remove(action);
+        });
+      }
     }
 
     void completed(A v) {
+      iterating = true;
       foreach (var action in listeners) action(v);
       listeners.Clear();
       pool.Release(listeners);

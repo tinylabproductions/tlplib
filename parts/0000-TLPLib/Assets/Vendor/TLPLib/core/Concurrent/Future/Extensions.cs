@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI] public static class FutureExts {

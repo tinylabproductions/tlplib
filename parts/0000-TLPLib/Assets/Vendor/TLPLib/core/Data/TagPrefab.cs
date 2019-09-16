@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -10,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>Mark that A is a prefab.</summary>
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
   /// to serialize it, because Unity does not serialize generic classes.
-  [Record]
+  [Record, PublicAPI]
   public partial class TagPrefab<A> : TagPrefab, OnObjectValidate where A : Object {
     #region Unity Serialized Fields
 
@@ -22,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #endregion
     
-    [PublicAPI] protected TagPrefab() {}
+    protected TagPrefab() {}
     
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
 #if UNITY_EDITOR
@@ -34,19 +36,30 @@ namespace com.tinylabproductions.TLPLib.Data {
 #endif
     }
 
-    [PublicAPI] public static implicit operator bool(TagPrefab<A> _prefab) => _prefab._prefab;
+    public static implicit operator bool(TagPrefab<A> _prefab) => _prefab._prefab;
   }
   
   public abstract class TagPrefab {
     [PublicAPI] public static TagPrefab<A> a<A>(A prefab) where A : Object => new TagPrefab<A>(prefab);
   }
 
+  [PublicAPI]
   public static class TagPrefabExts {
-    [PublicAPI]
     public static TagPrefab<B> upcastPrefab<A, B>(this TagPrefab<A> aPrefab, B example)
       where A : B 
       where B : Object => 
       TagPrefab.a<B>(aPrefab.prefab);
+
+    public static B instantiate<A, B>(
+      this TagPrefab<A> prefab, Transform parent, Func<A, B> mapper
+    ) where A : Object {
+      var instance = Object.Instantiate(prefab.prefab, parent);
+      return mapper(instance);
+    }
+
+    public static LazyVal<B> lazyMap<A, B>(
+      this TagPrefab<A> prefab, Transform parent, Func<A, B> mapper
+    ) where A : Object => F.lazy(() => instantiate(prefab, parent, mapper));
   }
   
   [Serializable, PublicAPI] public class GameObjectPrefab : TagPrefab<GameObject> { }

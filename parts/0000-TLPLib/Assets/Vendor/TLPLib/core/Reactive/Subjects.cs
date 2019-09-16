@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.dispose;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public interface ISubject : IRxObservable {}
