@@ -18,6 +18,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
 using pzd.lib.exts;
+using pzd.lib.reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -53,6 +54,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     static readonly Deque<LogEntry> logEntries = new Deque<LogEntry>();
     static LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
     public static DConsole instance => _instance.strict;
+    static bool dconsoleUnlocked = false;
 
     [RuntimeInitializeOnLoadMethod]
     static void registerLogMessages() {
@@ -166,7 +168,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static IRxObservable<Unit> registerDebugSequence(
-      IDisposableTracker tracker,
+      IDisposableTracker tracker, Option<string> unlockCode,
       DebugSequenceMouseData mouseData=null, Option<DebugSequenceDirectionData> directionDataOpt=default,
       DebugConsoleBinding binding=null, Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
       [CallerMemberName] string callerMemberName = "",
@@ -217,7 +219,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       );
 
       var obs = mouseObs.joinAll(new [] {directionObs, keyboardShortcutObs});
-      obs.subscribe(tracker, _ => instance.show(binding));
+      obs.subscribe(tracker, _ => instance.show(unlockCode, binding));
       return obs;
     }
 
@@ -254,7 +256,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
     
-    public void show(DebugConsoleBinding binding = null) {
+    public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
 
       destroy();
@@ -265,7 +267,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       Object.DontDestroyOnLoad(view);
 
       var currentGroupButtons = ImmutableList<ButtonBinding>.Empty;
-      setupList(view.commands, () => currentGroupButtons);
+      setupList(F.none_, view.commands, () => currentGroupButtons);
 
       var commandGroups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
         var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
@@ -275,7 +277,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         );
         return button;
       }).ToImmutableList();
-      setupList(view.commandGroups, () => commandGroups);
+      setupList(unlockCode, view.commandGroups, () => commandGroups);
       
       var logEntryPool = GameObjectPool.a(GameObjectPool.Init<VerticalLayoutLogEntry>.noReparenting(
         nameof(DConsole) + " log entry pool",
@@ -317,14 +319,26 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    static void setupList(DebugConsoleListBinding listBinding, Func<ImmutableList<ButtonBinding>> contents) {
+    static void setupList(Option<string> unlockCodeOpt, DebugConsoleListBinding listBinding, Func<ImmutableList<ButtonBinding>> contents) {
       listBinding.clearFilterButton.onClick.AddListener(() => listBinding.filterInput.text = "");
-      listBinding.filterInput.onValueChanged.AddListener(value => {
+      listBinding.filterInput.onValueChanged.AddListener(update);
+      update("");
+
+      void update(string query) {
+        if (unlockCodeOpt.valueOut(out var unlockCode)) {
+          if (unlockCode.Equals(query, StringComparison.OrdinalIgnoreCase)) {
+            dconsoleUnlocked = true;
+            // disable filter while query matches unlock code
+            query = "";
+          }
+        }
+        var hideButtons = unlockCodeOpt.isSome && !dconsoleUnlocked;
+        var showButtons = !hideButtons;
         foreach (var button in contents()) {
-          var active = button.text.text.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+          var active = showButtons && button.text.text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
           button.gameObject.SetActive(active);
         }
-      });
+      }
     }
 
     static ImmutableList<ButtonBinding> showGroup(

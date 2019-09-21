@@ -25,20 +25,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Either<string, V> getE<K, V>(this IDictionary<K, V> dict, K key) =>
       dict.get(key).toRight($"Can't find '{key}'!");
 
-    public static V getOrUpdate<K, V>(
-      this IDictionary<K, V> dict, K key, Func<V> ifNotFound
-    ) => getOrUpdate(dict, key, _ => ifNotFound());
-
-    public static V getOrUpdate<K, V>(
-      this IDictionary<K, V> dict, K key, Func<K, V> ifNotFound
-    ) {
-      if (dict.TryGetValue(key, out var outVal))
-        return outVal;
-      var v = ifNotFound(key);
-      dict.Add(key, v);
-      return v;
-    }
-
     public static V getOrElse<K, V>(
       this IDictionary<K, V> dict, K key, Func<V> orElse
     ) => dict.TryGetValue(key, out var outVal) ? outVal : orElse();

@@ -1,8 +1,8 @@
 using System;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.config;
+using pzd.lib.data;
 using pzd.lib.functional;
 using pzd.lib.typeclasses;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public string asString() => $"[{_from}..{_to}]";
 
     public Duration random(ref Rng rng) => 
-      new Duration(rng.nextIntInRange(new Range(_from.millis, _to.millis), out rng));
+      new Duration(rng.nextIntInRange(_from.millis, _to.millis, out rng));
 
     public static readonly Config.Parser<object, DurationRange> parser =
       Config.immutableArrayParser(Duration.configParser).flatMap((_, cfg) => {

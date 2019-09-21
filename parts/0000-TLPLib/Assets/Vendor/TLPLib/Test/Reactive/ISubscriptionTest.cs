@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   class ISubscriptionHelpers {

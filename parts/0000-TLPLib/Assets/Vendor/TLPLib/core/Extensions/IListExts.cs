@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using Smooth.Collections;
@@ -72,10 +72,10 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     [PublicAPI] public static void shuffle<A>(this IList<A> list, ref Rng rng) {
       var n = list.Count;
-      var range = new Range(0, n - 1);
+      var to = n - 1;
       while (n > 1) {
         n--;
-        var k = rng.nextIntInRange(range, out rng);
+        var k = rng.nextIntInRange(0, to, out rng);
         var value = list[k];
         list[k] = list[n];
         list[n] = value;
@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static A random<C, A>(this NonEmpty<C> list, ref Rng rng)
       where C : IReadOnlyList<A>
     =>
-      list.a[rng.nextIntInRange(new Range(0, list.a.Count - 1), out rng)];
+      list.a[rng.nextIntInRange(0, list.a.Count - 1, out rng)];
 
     public static A random<A>(this NonEmpty<ImmutableList<A>> list, ref Rng rng) =>
       random<ImmutableList<A>, A>(list, ref rng);
@@ -108,12 +108,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<int> randomIndex<A>(this IList<A> list, ref Rng rng) =>
       list.Count == 0
       ? F.none<int>()
-      : F.some(rng.nextIntInRange(new Range(0, list.Count - 1), out rng));
+      : F.some(rng.nextIntInRange(0, list.Count - 1, out rng));
 
     public static Option<Tpl<Rng, int>> randomIndexT<A>(this IList<A> list, Rng rng) =>
       list.Count == 0
       ? F.none<Tpl<Rng, int>>()
-      : F.some(rng.nextIntInRangeT(new Range(0, list.Count - 1)));
+      : F.some(rng.nextIntInRangeT(0, list.Count - 1).toTpl());
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {
       var temp = list[aIndex];
@@ -176,12 +176,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<int>();
     }
 
-    /* Returns a random element. The probability is selected by elements
-     * weight. Non-iter version. */
+    /// <summary>
+    /// Returns a random element. The probability is selected by element weight.
+    /// </summary>
     public static Option<A> randomElementByWeight<A>(
-      this IList<A> list,
-      // If we change to Func here, Unity crashes. So fun.
-      Func<A, float> weightSelector
+      this IList<A> list, Func<A, float> weightSelector, ref Rng rng
     ) {
       if (list.isEmpty()) return F.none<A>();
 
@@ -191,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         totalWeight += weightSelector(list[idx]);
 
       // The weight we are after...
-      var itemWeightIndex = Random.value * totalWeight;
+      var itemWeightIndex = rng.nextFloat(out rng) * totalWeight;
       var currentWeightIndex = 0f;
 
       // ReSharper disable once ForCanBeConvertedToForeach

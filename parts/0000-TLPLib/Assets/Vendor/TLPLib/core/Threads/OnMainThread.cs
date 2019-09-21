@@ -22,7 +22,8 @@ namespace com.tinylabproductions.TLPLib.Threads {
     public static bool isMainThread {
       get {
         if (mainThread == null) {
-          Log.d.error(
+          // can't use Log.d here, because it calls isMainThread
+          Debug.LogError(
             $"{nameof(OnMainThread)}#{nameof(isMainThread)} does not know which thread is main!"
           );
         }

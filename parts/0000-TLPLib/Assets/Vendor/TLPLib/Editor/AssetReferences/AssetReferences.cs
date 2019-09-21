@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.exts;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
@@ -89,7 +90,8 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         p.EndsWithFast(".asset")
         || p.EndsWithFast(".prefab")
         || p.EndsWithFast(".unity")
-        || p.EndsWithFast(".mat");
+        || p.EndsWithFast(".mat")
+        || p.EndsWithFast(".spriteatlas");
 
       var assets = data.filter(predicate, _ => predicate(_.fromPath));
       var firstScan = children.isEmpty() && parents.isEmpty();

@@ -53,6 +53,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     public PathStr dirname => new PathStr(Path.GetDirectoryName(path));
     public PathStr basename => new PathStr(Path.GetFileName(path));
     public string extension => Path.GetExtension(path);
+    public PathStr withoutExtension => a(_path.Substring(0, _path.Length - extension.Length));
     public PathStr ensureBeginsWith(PathStr p) => path.StartsWithFast(p.path) ? this : p / path;
     public override string ToString() => asString();
     public string asString() => path;

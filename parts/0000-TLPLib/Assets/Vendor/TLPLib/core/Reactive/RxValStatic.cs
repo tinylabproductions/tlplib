@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /// <summary>RxVal which has a constant value.</summary>

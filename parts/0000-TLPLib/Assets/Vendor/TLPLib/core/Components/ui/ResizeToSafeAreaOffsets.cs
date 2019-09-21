@@ -1,34 +1,47 @@
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Vendor.TLPLib.Components.ui {
   public class ResizeToSafeAreaOffsets : UIBehaviour, IMB_Update {
-
 #pragma warning disable 649
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField, NotNull] RectTransform _rt;
-    [SerializeField, NotNull] RectTransform[] _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll;
+    [SerializeField, NotNull] List<RectTransform> _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     RectTransform parent;
     Rect lastSafeArea = new Rect(0, 0, 0, 0);
+    bool forceRefresh;
 
     protected override void Awake() {
       parent = (RectTransform) _rt.parent;
       refresh();
     }
 
-    public void Update () => refresh();
+    public void Update() => refresh();
+
+    public void addToNegativeOffsetLeft(RectTransform t) {
+      _negativeOffsetLeft.Add(t);
+      forceRefresh = true;
+    }
+
+    public void addToNegativeOffsetRight(RectTransform t) {
+      _negativeOffsetRight.Add(t);
+      forceRefresh = true;
+    }
+
+    public void addToNegativeOffsetAll(RectTransform t) {
+      _negativeOffsetAll.Add(t);
+      forceRefresh = true;
+    }
 
     void refresh() {
       var safeArea = Screen.safeArea;
-      if (safeArea != lastSafeArea) {
+      if (forceRefresh || safeArea != lastSafeArea) {
         lastSafeArea = safeArea;
         applySafeArea(safeArea, new Vector2(Screen.width, Screen.height));
       }

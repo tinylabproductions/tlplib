@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.data;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -60,21 +61,21 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void TestIntRange() {
       const int min = -3, max = 3;
       var range = new Range(min, max);
-      test(rng => rng.nextIntInRangeT(range), min, max, range.ToImmutableHashSet().some());
+      test(rng => rng.nextIntInRangeT(min, max).toTpl(), min, max, range.ToImmutableHashSet().some());
     }
 
     [Test]
     public void TestUIntRange() {
       const uint min = 3, max = 6;
       var range = new URange(min, max);
-      test(rng => rng.nextUIntInRangeT(range), min, max, range.ToImmutableHashSet().some());
+      test(rng => rng.nextUIntInRangeT(min, max).toTpl(), min, max, range.ToImmutableHashSet().some());
     }
 
     [Test]
     public void TestFloatRange() {
       const float min = 1f, max = 1.0001f;
       test(
-        rng => rng.nextFloatInRangeT(new FRange(min, max)), min, max,
+        rng => rng.nextFloatInRangeT(min, max).toTpl(), min, max,
         None._, iterations: 100000,
         /**
          * Imagine float having 3 discrete values.

@@ -1,5 +1,6 @@
 ﻿using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.data;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
@@ -24,7 +25,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     }
 
     public MarkovState<A> next { get {
-      return transitions.strict.randomElementByWeight(_ => _.weight).get.nextState;
+      var rng = Rng.now;
+      return transitions.strict.randomElementByWeight(_ => _.weight, ref rng).get.nextState;
     } }
   }
 
