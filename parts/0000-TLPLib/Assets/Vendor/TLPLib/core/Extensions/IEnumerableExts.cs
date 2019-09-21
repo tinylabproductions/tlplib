@@ -14,34 +14,6 @@ using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IEnumerableExts {
-    public static Dictionary<K, A> toDict<A, K>(
-      this IEnumerable<KeyValuePair<K, A>> list
-    ) => list.toDict(p => p.Key, p => p.Value);
-    
-    public static Dictionary<K, A> toDict<A, K>(
-      this IEnumerable<A> list, Func<A, K> keyGetter
-    ) => list.toDict(keyGetter, _ => _);
-
-    // AOT safe version of ToDictionary.
-    
-    public static Dictionary<K, V> toDict<A, K, V>(
-      this IEnumerable<A> list, Func<A, K> keyGetter, Func<A, V> valueGetter
-    ) {
-      var dict = new Dictionary<K, V>();
-      // ReSharper disable once LoopCanBeConvertedToQuery
-      // We're trying to avoid LINQ to avoid iOS AOT related issues.
-      foreach (var item in list) {
-        var key = keyGetter(item);
-        var value = valueGetter(item);
-        if (dict.ContainsKey(key)) {
-          throw new ArgumentException(
-            $"Can't add duplicate key '{key}', current value={dict[key]}, new value={value}"
-          );
-        }
-        dict.Add(key, value);
-      }
-      return dict;
-    }
 
     
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.Yield());
