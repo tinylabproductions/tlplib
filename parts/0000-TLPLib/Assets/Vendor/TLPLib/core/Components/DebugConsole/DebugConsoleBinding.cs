@@ -10,10 +10,11 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     [NotNull] public DebugConsoleListBinding commandGroups, commands;
     [NotNull] public Text commandGroupLabel;
     [NotNull] public ButtonBinding buttonPrefab;
-    [NotNull] public Button closeButton;
+    [NotNull] public Button closeButton, minimiseButton;
     [NotNull] public DynamicVerticalLayout dynamicLayout;
     [NotNull] public VerticalLayoutLogEntryPrefab logEntry;
-    
+    [NotNull] public GameObject logPanel;
+
     public float lineWidth => dynamicLayout.maskRect.rect.width;
   }
 

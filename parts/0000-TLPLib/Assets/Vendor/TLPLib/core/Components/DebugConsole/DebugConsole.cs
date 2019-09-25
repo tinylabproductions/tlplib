@@ -297,6 +297,17 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var logCallback = onLogMessageReceived(logEntryPool, cache);
       Application.logMessageReceivedThreaded += logCallback;
       view.closeButton.onClick.AddListener(destroy);
+      {
+        var minimised = false;
+        view.minimiseButton.onClick.AddListener(() => {
+          var active = minimised;
+          minimised = !minimised;
+          view.closeButton.setActiveGO(active);
+          view.commandGroups.setActiveGO(active);
+          view.commands.setActiveGO(active);
+          view.logPanel.SetActive(active);
+        });
+      }
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
     }
