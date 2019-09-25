@@ -139,7 +139,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       tags: ImmutableArray<Tpl<string, string>>.Empty,
       extras: ImmutableArray<Tpl<string, string>>.Empty,
       reportToErrorTracking: reportToErrorTracking,
-      backtrace: backtrace, context: context.opt()
+      backtrace: backtrace, context: context
     );
 
     [PublicAPI] public static LogEntry tags_(
@@ -147,7 +147,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Backtrace? backtrace = null, object context = null
     ) => new LogEntry(
       message: message, tags: tags, extras: ImmutableArray<Tpl<string, string>>.Empty,
-      backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
+      backtrace: backtrace, context: context, reportToErrorTracking: reportToErrorTracking
     );
 
     [PublicAPI] public static LogEntry extras_(
@@ -155,7 +155,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       Backtrace? backtrace = null, object context = null
     ) => new LogEntry(
       message: message, tags: ImmutableArray<Tpl<string, string>>.Empty, extras: extras,
-      backtrace: backtrace, context: context.opt(), reportToErrorTracking: reportToErrorTracking
+      backtrace: backtrace, context: context, reportToErrorTracking: reportToErrorTracking
     );
 
     public static LogEntry fromException(

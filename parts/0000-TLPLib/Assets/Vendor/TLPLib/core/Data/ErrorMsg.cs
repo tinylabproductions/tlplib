@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       s,
       ImmutableArray<Tpl<string, string>>.Empty,
       ImmutableArray<Tpl<string, string>>.Empty,
-      context: context,
+      context: context.getOrNull(),
       reportToErrorTracking: reportToErrorTracking
     );
     
