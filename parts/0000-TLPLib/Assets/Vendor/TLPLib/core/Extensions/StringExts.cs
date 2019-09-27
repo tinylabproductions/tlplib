@@ -168,21 +168,51 @@ namespace com.tinylabproductions.TLPLib.Extensions {
      * That is about 30 times slower than StringComparison.Ordinal.
      */
     public static bool StartsWithFast(
-      this string s, string value, bool ignoreCase = false
-    ) =>
-      s.StartsWith(value, ordinalStringComparison(ignoreCase));
+      // ReSharper disable once MethodOverloadWithOptionalParameter
+      this string s, string value, bool ignoreCase
+    ) => ignoreCase
+      ? s.StartsWith(value, StringComparison.OrdinalIgnoreCase)
+      : StartsWithFast(s, value);
 
     /** See #StartsWithFast */
     public static bool EndsWithFast(
-      this string s, string value, bool ignoreCase = false
-    ) =>
-      s.EndsWith(value, ordinalStringComparison(ignoreCase));
+      // ReSharper disable once MethodOverloadWithOptionalParameter
+      this string s, string value, bool ignoreCase
+    ) => ignoreCase
+      ? s.EndsWith(value, StringComparison.OrdinalIgnoreCase)
+      : EndsWithFast(s, value);
 
     /** See #StartsWithFast */
     public static int IndexOfFast(
       this string s, string value, bool ignoreCase = false
     ) =>
       s.IndexOf(value, ordinalStringComparison(ignoreCase));
+
+    /**
+     * Even faster version of StartsWith taken from unity docs
+     * https://docs.unity3d.com/Manual/BestPracticeUnderstandingPerformanceInUnity5.html
+     */
+    public static bool StartsWithFast(this string a, string b) {
+      var aLen = a.Length;
+      var bLen = b.Length;
+      var ap = 0; 
+      var bp = 0;
+      while (ap < aLen && bp < bLen && a[ap] == b[bp]) {
+        ap++;
+        bp++;
+      }
+      return bp == bLen;
+    }
+    
+    public static bool EndsWithFast(this string a, string b) {
+      var ap = a.Length - 1;
+      var bp = b.Length - 1;
+      while (ap >= 0 && bp >= 0 && a[ap] == b[bp]) {
+        ap--;
+        bp--;
+      }
+      return bp < 0;
+    }
 
     static StringComparison ordinalStringComparison(bool ignoreCase) =>
       ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
