@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using JetBrains.Annotations;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -42,6 +44,28 @@ namespace com.tinylabproductions.TLPLib.Data {
     static int bool2int(bool b) => b ? 1 : 0;
   }
 
+  [PublicAPI] public sealed class ScopedPrefValueBackend : IPrefValueBackend {
+    public readonly IPrefValueBackend backend;
+    public readonly string scope;
+
+    public ScopedPrefValueBackend(IPrefValueBackend backend, string scope) {
+      this.backend = backend;
+      this.scope = scope;
+    }
+
+    public string key(string name) => $"{scope}{name}";
+
+    public bool hasKey(string name) => backend.hasKey(key(name));
+    public string getString(string name, string defaultValue) => backend.getString(key(name), defaultValue);
+    public void setString(string name, string value) => backend.setString(key(name), value);
+    public int getInt(string name, int defaultValue) => backend.getInt(key(name), defaultValue);
+    public void setInt(string name, int value) => backend.setInt(key(name), value);
+    public float getFloat(string name, float defaultValue) => backend.getFloat(key(name), defaultValue);
+    public void setFloat(string name, float value) => backend.setFloat(key(name), value);
+    public void save() => backend.save();
+    public void delete(string name) => backend.delete(key(name));
+  }
+
   class PlayerPrefsBackend : IPrefValueBackend {
     public static readonly PlayerPrefsBackend instance = new PlayerPrefsBackend();
     PlayerPrefsBackend() {}
@@ -57,8 +81,40 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void delete(string name) => PlayerPrefs.DeleteKey(name);
   }
 
+  [PublicAPI] public sealed class InMemoryPlayerPrefsBackend : IPrefValueBackend {
+    readonly Dictionary<string, string> strings = new Dictionary<string, string>();
+    readonly Dictionary<string, int> ints = new Dictionary<string, int>();
+    readonly Dictionary<string, float> floats = new Dictionary<string, float>();
+
+    public bool hasKey(string name) => 
+      strings.ContainsKey(name) || ints.ContainsKey(name) || floats.ContainsKey(name);
+
+    public string getString(string name, string defaultValue) =>
+      strings.TryGetValue(name, out var v) ? v : defaultValue;
+
+    public void setString(string name, string value) => strings[name] = value;
+
+    public int getInt(string name, int defaultValue) =>
+      ints.TryGetValue(name, out var v) ? v : defaultValue;
+
+    public void setInt(string name, int value) => ints[name] = value;
+
+    public float getFloat(string name, float defaultValue) =>
+      floats.TryGetValue(name, out var v) ? v : defaultValue;
+
+    public void setFloat(string name, float value) => floats[name] = value;
+
+    public void save() {}
+
+    public void delete(string name) {
+      if (strings.Remove(name)) return;
+      if (ints.Remove(name)) return;
+      floats.Remove(name);
+    }
+  }
+  
 #if UNITY_EDITOR
-  class EditorPrefsBackend : IPrefValueBackend {
+  sealed class EditorPrefsBackend : IPrefValueBackend {
     public static readonly EditorPrefsBackend instance = new EditorPrefsBackend();
     EditorPrefsBackend() {}
 
