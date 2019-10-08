@@ -3,18 +3,26 @@
     "references": [
         "tlplib-core",
         "tlplib",
-        "tlplib-editor"
-    ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
+        "tlplib-editor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": []
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "pzd.lib.dll",
+        "System.Collections.Immutable.dll",
+        "GenerationAttributes.dll",
+        "0Harmony.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": []
 }
