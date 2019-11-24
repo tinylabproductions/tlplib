@@ -55,6 +55,13 @@ namespace com.tinylabproductions.TLPLib.Collection {
       return NonEmpty<ImmutableArray<A>>.__unsafeNew(b.MoveToImmutable());
     }
 
+    public static NonEmpty<ImmutableArrayC<A>> arrayC<A>(A first, params A[] rest) {
+      var arr = new A[rest.Length + 1];
+      arr[0] = first;
+      Array.Copy(rest, 0, arr, 1, rest.Length);
+      return NonEmpty<ImmutableArrayC<A>>.__unsafeNew(ImmutableArrayC.move(arr));
+    }
+
     public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.Create(a1));
 
