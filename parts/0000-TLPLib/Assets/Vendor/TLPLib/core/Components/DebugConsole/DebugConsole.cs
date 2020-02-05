@@ -14,6 +14,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
@@ -446,7 +447,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
   public delegate Option<Obj> HasObjFunc<Obj>();
 
-  public struct DConsoleRegistrar {
+  [PublicAPI] public struct DConsoleRegistrar {
     public readonly DConsole console;
     public readonly string commandGroup;
     readonly IDisposableTracker tracker;
@@ -567,6 +568,39 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           reference.value = a;
           return comment == null ? a.ToString() : $"{comment}: value={a}";
         });
+    }
+
+    public delegate bool IsSet<in A>(A value, A flag);
+    public delegate A Set<A>(A value, A flag);
+    public delegate A Unset<A>(A value, A flag);
+    public void registerFlagsEnum<A>(
+      string name, Ref<A> reference,
+      IsSet<A> isSet, Set<A> set, Unset<A> unset,
+      string comment = null
+    ) where A : Enum {
+      var values = EnumUtils.GetValues<A>();
+      register($"{name}?", () => 
+        values
+          .Select(a => $"{a}={isSet(reference.value, a)}")
+          .OrderBySafe(_ => _)
+          .mkString(", ")
+      );
+      register(
+        $"Set all {name}",
+        () => reference.value = values.Aggregate(reference.value, (c, a) => set(c, a))
+      );
+      register(
+        $"Clear all {name}",
+        () => reference.value = values.Aggregate(reference.value, (c, a) => unset(c, a))
+      );
+      foreach (var a in values) {
+        register($"Toggle {a}", () =>
+          reference.value = 
+            isSet(reference.value, a) 
+              ? unset(reference.value, a) 
+              : set(reference.value, a)
+        );
+      }
     }
 
     public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
