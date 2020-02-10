@@ -55,6 +55,13 @@ namespace com.tinylabproductions.TLPLib.Collection {
       return NonEmpty<ImmutableArray<A>>.__unsafeNew(b.MoveToImmutable());
     }
 
+    public static NonEmpty<ImmutableArrayC<A>> arrayC<A>(A first, params A[] rest) {
+      var arr = new A[rest.Length + 1];
+      arr[0] = first;
+      Array.Copy(rest, 0, arr, 1, rest.Length);
+      return NonEmpty<ImmutableArrayC<A>>.__unsafeNew(ImmutableArrayC.move(arr));
+    }
+
     public static NonEmpty<ImmutableHashSet<A>> hashSet<A>(A a1) =>
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ImmutableHashSet.Create(a1));
 
@@ -79,6 +86,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static NonEmpty<ImmutableHashSet<A>> add<A>(this NonEmpty<ImmutableHashSet<A>> ne, A a) => 
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ne.a.Add(a));
 
+    /// <summary>Transform non-empty. You have to ensure that transform keeps the non-emptiness constraint.</summary>
+    public static NonEmpty<B> transform<A, B>(this NonEmpty<A> ne, Func<A, B> f) =>
+      new NonEmpty<B>(f(ne.a));
+    
     public static NonEmpty<IEnumerable<B>> map<A, B, C>(
       this NonEmpty<C> ne, Func<A, B> f
     ) where C : IEnumerable<A> =>

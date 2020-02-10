@@ -95,6 +95,15 @@ namespace com.tinylabproductions.TLPLib.Data.typeclasses {
       }
     );
 
+    public static Comparable<Option<A>> opt<A>(Comparable<A> cmp) => lambda<Option<A>>(
+      (ma1, ma2) => {
+        { if (ma1.valueOut(out var a1) && ma2.valueOut(out var a2)) return cmp.compare(a1, a2); }
+        if (ma1.isSome) return CompareResult.GT;
+        if (ma2.isSome) return CompareResult.LT;
+        return CompareResult.EQ;
+      }
+    );
+
     public static Comparable<A> by<A, B>(Func<A, B> mapper, Comparable<B> cmp) => lambda<A>((a1, a2) => {
       var b1 = mapper(a1);
       var b2 = mapper(a2);

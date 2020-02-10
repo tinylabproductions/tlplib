@@ -42,6 +42,7 @@ namespace Vendor.TLPLib.Components.ui {
     void refresh() {
       var safeArea = Screen.safeArea;
       if (forceRefresh || safeArea != lastSafeArea) {
+        forceRefresh = false;
         lastSafeArea = safeArea;
         applySafeArea(safeArea, new Vector2(Screen.width, Screen.height));
       }
