@@ -86,6 +86,10 @@ namespace com.tinylabproductions.TLPLib.Collection {
     public static NonEmpty<ImmutableHashSet<A>> add<A>(this NonEmpty<ImmutableHashSet<A>> ne, A a) => 
       NonEmpty<ImmutableHashSet<A>>.__unsafeNew(ne.a.Add(a));
 
+    /// <summary>Transform non-empty. You have to ensure that transform keeps the non-emptiness constraint.</summary>
+    public static NonEmpty<B> transform<A, B>(this NonEmpty<A> ne, Func<A, B> f) =>
+      new NonEmpty<B>(f(ne.a));
+    
     public static NonEmpty<IEnumerable<B>> map<A, B, C>(
       this NonEmpty<C> ne, Func<A, B> f
     ) where C : IEnumerable<A> =>
