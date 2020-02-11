@@ -19,9 +19,7 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       InspectorProperty property, IPropertyValueEntry<TOpt> valueEntry, GUIContent label
     ) where TOpt : new() {
       var isSet = property.Children[isSomeName];
-      var value = property.Children[valueName] 
-        // When placed in any PropertyGroupAttribute, value gets placed as child element in parent #groupName
-        ?? property.Children.First(_ => _.Info.PropertyType == PropertyType.Group).Children.First();
+      var value = property.getChildSmart(valueName);
 
       var oneLine = value.Children.Count == 1 && value.Children[0].Children.Count == 0;
 
@@ -52,9 +50,8 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
 
   [UsedImplicitly]
   public class OptionDrawer<TOpt, A> : OdinValueDrawer<TOpt> where TOpt : UnityOption<A>, new() {
-    protected override void DrawPropertyLayout(GUIContent label) {
+    protected override void DrawPropertyLayout(GUIContent label) => 
       OptionDrawer.drawPropertyLayout("_isSome", "_value", Property, ValueEntry, label);
-    }
   }
 
   [UsedImplicitly]
