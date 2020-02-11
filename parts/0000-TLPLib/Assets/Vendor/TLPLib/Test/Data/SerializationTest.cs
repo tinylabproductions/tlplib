@@ -178,7 +178,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   public class SerializationTestCollection : SerializationTestBase {
-    static readonly ISerializer<ICollection<int>> serializer =
+    static readonly ISerializer<IReadOnlyCollection<int>> serializer =
       SerializedRW.collectionSerializer(SerializedRW.integer);
 
     static readonly IDeserializer<ImmutableArray<int>> deserializer =
