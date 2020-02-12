@@ -5,7 +5,6 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.config;
-using Sirenix.Utilities;
 
 namespace com.tinylabproductions.TLPLib.Configuration {
   public static class ConfigLookupErrorExts {
