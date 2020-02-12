@@ -61,8 +61,8 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
 
     [PublicAPI]
-    public static Exception userException(string title, string body) {
-      userInfo(title, body, Log.Level.ERROR);
+    public static Exception userException(string title, string body, Object context = null) {
+      userInfo(title, body, Log.Level.ERROR, context);
       return new Exception("Aborting.");
     }
 
