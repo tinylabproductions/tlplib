@@ -38,6 +38,9 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public bool isA => _isA;
     public bool isB => !_isA;
 
+    public A __unsafeGetLeft => a;
+    public B __unsafeGetRight => b;
+
     // protected virtual Description isADescription { get; } = new Description($"Is {typeof(A).Name}");
     // protected virtual Description aDescription { get; } = new Description(typeof(A).Name);
     // protected virtual Description bDescription { get; } = new Description(typeof(B).Name);

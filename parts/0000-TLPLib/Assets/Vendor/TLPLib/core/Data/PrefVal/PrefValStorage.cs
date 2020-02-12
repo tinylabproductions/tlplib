@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using pzd.lib.functional;
@@ -132,7 +131,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) where C : ICollection<A> {
+    ) where C : IReadOnlyCollection<A> {
       var collectionRw = SerializedRW.a(
         SerializedRW.collectionSerializer<A, C>(rw),
         SerializedRW.collectionDeserializer(rw, factory)
@@ -147,7 +146,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) where C : ICollection<A> =>
+    ) where C : IReadOnlyCollection<A> =>
       custom(key, defaultVal, rw, onDeserializeFailure, log);
 
     #endregion
