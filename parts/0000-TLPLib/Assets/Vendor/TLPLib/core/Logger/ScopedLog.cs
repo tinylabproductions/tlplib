@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public void log(Log.Level l, LogEntry entry) =>
       backing.log(l, entry.withMessage(wrap(entry.message)));
 
-    string wrap(object o) => $"{scope} {o}";
+    string wrap(object o) => $"[{scope}] {o}";
   }
 
   public static class ScopedLogExts {
