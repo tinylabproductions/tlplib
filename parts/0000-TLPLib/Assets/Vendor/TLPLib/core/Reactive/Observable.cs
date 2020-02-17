@@ -246,12 +246,29 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxObservable<A> empty<A>() => Observable<A>.empty;
 
     public static IRxObservable<A> fromEvent<A>(
-      Action<Action<A>> registerCallback, Action unregisterCallback
-    ) {
-      return new Observable<A>(obs => {
-        registerCallback(obs);
-        return new Subscription(unregisterCallback);
+      Action<Action<A>> registerCallback, Action<Action<A>> unregisterCallback
+    ) =>
+      new Observable<A>(push => {
+        registerCallback(push);
+        return new Subscription(() => unregisterCallback(push));
       });
+
+    public static IRxObservable<Unit> fromEventUnit(
+      Action<Action> registerCallback, Action<Action> unregisterCallback
+    ) {
+      var mapping = new Dictionary<Action<Unit>, Action>();
+      return fromEvent<Unit>(
+        push => {
+          // ReSharper disable once ConvertToLocalFunction
+          Action a = () => push(F.unit);
+          mapping[push] = a;
+          registerCallback(a);
+        },
+        push => {
+          var a = mapping.a(push);
+          unregisterCallback(a);
+        }
+      );
     }
 
     static IRxObservable<Unit> everyFrameInstance;
