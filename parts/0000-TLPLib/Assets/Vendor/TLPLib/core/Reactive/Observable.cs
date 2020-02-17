@@ -255,6 +255,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     static IRxObservable<Unit> everyFrameInstance;
+    
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+    static void reset() {
+      everyFrameInstance = null;
+    }
 
     public static IRxObservable<Unit> everyFrame =>
       everyFrameInstance ?? (
