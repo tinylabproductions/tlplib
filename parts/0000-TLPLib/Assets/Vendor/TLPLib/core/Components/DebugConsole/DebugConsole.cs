@@ -421,18 +421,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     Application.LogCallback onLogMessageReceived(
       GameObjectPool<VerticalLayoutLogEntry> pool,
       List<string> resultsTo
-    ) {
-      return (message, stackTrace, type) => {
-        foreach (var instance in current) {
-          ASync.OnMainThread(() => {
+    ) =>
+      (message, stackTrace, type) => {
+        if (!current.isSome) return;
+        ASync.OnMainThread(() => {
+          // The instance can go away while we're switching threads.
+          foreach (var instance in current) {
             foreach (var e in createEntries(
               new LogEntry(message, type), pool, resultsTo,
               instance.view.lineWidth
             )) instance.dynamicVerticalLayout.appendDataIntoLayoutData(e);
-          });
-        }
+          }
+        });
       };
-    }
 
     public void destroy() {
       foreach (var instance in current) {
