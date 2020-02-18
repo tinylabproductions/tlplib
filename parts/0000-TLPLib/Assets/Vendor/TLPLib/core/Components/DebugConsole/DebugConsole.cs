@@ -574,6 +574,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public delegate bool IsSet<in A>(A value, A flag);
     public delegate A Set<A>(A value, A flag);
     public delegate A Unset<A>(A value, A flag);
+    /// <param name="name"></param>
+    /// <param name="reference"></param>
+    /// <param name="isSet">Always <code>(value, flag) => (value & flag) != 0</code></param>
+    /// <param name="set">Always <code>(value, flag) => value | flag</code></param>
+    /// <param name="unset">Always <code>(value, flag) => value & ~flag</code></param>
+    /// <param name="comment"></param>
     public void registerFlagsEnum<A>(
       string name, Ref<A> reference,
       IsSet<A> isSet, Set<A> set, Unset<A> unset,
