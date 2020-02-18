@@ -440,8 +440,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #else
       readonly WeakReference<Subscription> subscription;
 #endif
-      public readonly string callerMemberName, callerFilePath;
-      public readonly int callerLineNumber;
+      public readonly CallerData callerData;
 
       public bool isSubscribed(out bool isBroken) {
         isBroken = false;
@@ -459,16 +458,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #endif
       }
 
-      public string subscribedFrom => $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}.";
+      public string subscribedFrom => $"Subscribed from {callerData}.";
 
       public Sub withActive(bool active) => new Sub(
         onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription,
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        callerData: callerData
       );
 
       public Sub unsubscribe() => new Sub(
         onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription,
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        callerData: callerData
       );
     }
 
@@ -556,8 +555,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #else
         subscription: new WeakReference<Subscription>(sub),
 #endif
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath,
-        callerLineNumber: callerLineNumber
+        callerData: new CallerData(memberName: callerMemberName, filePath: callerFilePath, lineNumber: callerLineNumber)
       ));
       if (!active) pendingSubscriptionActivations++;
 
