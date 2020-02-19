@@ -31,7 +31,11 @@ namespace com.tinylabproductions.TLPLib.Components {
 #endif
 
     [Conditional("UNITY_EDITOR")] 
-    public void setComment(string comment) => _comment = comment;
+    public void setComment(string comment) {
+#if UNITY_EDITOR
+      _comment = comment;
+#endif
+    }
 
     public static ISubscription createGameObject(string name, string comment="") {
       if (Application.isEditor) {
