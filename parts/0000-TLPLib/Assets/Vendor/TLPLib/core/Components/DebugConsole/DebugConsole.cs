@@ -260,7 +260,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
 
-      destroy();
+      {
+        if (current.valueOut(out var currentInstance)) {
+          currentInstance.view.toggleMinimised();
+          return;
+        }
+      }
       onShow?.Invoke(this);
       onShow = null;
 
@@ -298,17 +303,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var logCallback = onLogMessageReceived(logEntryPool, cache);
       Application.logMessageReceivedThreaded += logCallback;
       view.closeButton.onClick.AddListener(destroy);
-      {
-        var minimised = false;
-        view.minimiseButton.onClick.AddListener(() => {
-          var active = minimised;
-          minimised = !minimised;
-          view.closeButton.setActiveGO(active);
-          view.commandGroups.setActiveGO(active);
-          view.commands.setActiveGO(active);
-          view.logPanel.SetActive(active);
-        });
-      }
+      view.minimiseButton.onClick.AddListener(view.toggleMinimised);
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
     }
@@ -601,7 +596,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         () => reference.value = values.Aggregate(reference.value, (c, a) => unset(c, a))
       );
       foreach (var a in values) {
-        register($"Toggle {a}", () =>
+        register($"{name}: toggle {a}", () =>
           reference.value = 
             isSet(reference.value, a) 
               ? unset(reference.value, a) 
