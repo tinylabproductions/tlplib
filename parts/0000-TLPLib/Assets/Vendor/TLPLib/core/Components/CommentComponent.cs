@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using com.tinylabproductions.TLPLib.Extensions;
+using JetBrains.Annotations;
+using pzd.lib.reactive;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -9,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Components {
   /// so you would not keep wondering what the heck is happening (e.g. why my properties are changed)
   /// in the editor when inspecting an object.
   /// </summary>
-  public class CommentComponent : MonoBehaviour {
+  [PublicAPI] public sealed class CommentComponent : MonoBehaviour {
 #if UNITY_EDITOR
 
     #region Unity Serialized Fields
@@ -27,6 +29,25 @@ namespace com.tinylabproductions.TLPLib.Components {
       set { _comment = value; }
     }
 #endif
+
+    [Conditional("UNITY_EDITOR")] 
+    public void setComment(string comment) {
+#if UNITY_EDITOR
+      _comment = comment;
+#endif
+    }
+
+    public static ISubscription createGameObject(string name, string comment="") {
+      if (Application.isEditor) {
+        var go = new GameObject(name);
+        go.EnsureComponent<CommentComponent>().setComment(comment);
+        DontDestroyOnLoad(go);
+        return new Subscription(() => Destroy(go));
+      }
+      else {
+        return Subscription.empty;
+      }
+    }
   }
 
   public static class CommentComponentExts {

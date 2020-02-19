@@ -246,12 +246,29 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxObservable<A> empty<A>() => Observable<A>.empty;
 
     public static IRxObservable<A> fromEvent<A>(
-      Action<Action<A>> registerCallback, Action unregisterCallback
-    ) {
-      return new Observable<A>(obs => {
-        registerCallback(obs);
-        return new Subscription(unregisterCallback);
+      Action<Action<A>> registerCallback, Action<Action<A>> unregisterCallback
+    ) =>
+      new Observable<A>(push => {
+        registerCallback(push);
+        return new Subscription(() => unregisterCallback(push));
       });
+
+    public static IRxObservable<Unit> fromEventUnit(
+      Action<Action> registerCallback, Action<Action> unregisterCallback
+    ) {
+      var mapping = new Dictionary<Action<Unit>, Action>();
+      return fromEvent<Unit>(
+        push => {
+          // ReSharper disable once ConvertToLocalFunction
+          Action a = () => push(F.unit);
+          mapping[push] = a;
+          registerCallback(a);
+        },
+        push => {
+          var a = mapping.a(push);
+          unregisterCallback(a);
+        }
+      );
     }
 
     static IRxObservable<Unit> everyFrameInstance;
@@ -423,8 +440,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #else
       readonly WeakReference<Subscription> subscription;
 #endif
-      public readonly string callerMemberName, callerFilePath;
-      public readonly int callerLineNumber;
+      public readonly CallerData callerData;
 
       public bool isSubscribed(out bool isBroken) {
         isBroken = false;
@@ -442,16 +458,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #endif
       }
 
-      public string subscribedFrom => $"Subscribed from {callerMemberName} @ {callerFilePath}:{callerLineNumber}.";
+      public string subscribedFrom => $"Subscribed from {callerData}.";
 
       public Sub withActive(bool active) => new Sub(
         onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription,
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        callerData: callerData
       );
 
       public Sub unsubscribe() => new Sub(
         onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription,
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        callerData: callerData
       );
     }
 
@@ -539,8 +555,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 #else
         subscription: new WeakReference<Subscription>(sub),
 #endif
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath,
-        callerLineNumber: callerLineNumber
+        callerData: new CallerData(memberName: callerMemberName, filePath: callerFilePath, lineNumber: callerLineNumber)
       ));
       if (!active) pendingSubscriptionActivations++;
 

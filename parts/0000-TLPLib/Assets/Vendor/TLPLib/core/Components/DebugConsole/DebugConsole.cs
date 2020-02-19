@@ -421,18 +421,19 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     Application.LogCallback onLogMessageReceived(
       GameObjectPool<VerticalLayoutLogEntry> pool,
       List<string> resultsTo
-    ) {
-      return (message, stackTrace, type) => {
-        foreach (var instance in current) {
-          ASync.OnMainThread(() => {
+    ) =>
+      (message, stackTrace, type) => {
+        if (!current.isSome) return;
+        ASync.OnMainThread(() => {
+          // The instance can go away while we're switching threads.
+          foreach (var instance in current) {
             foreach (var e in createEntries(
               new LogEntry(message, type), pool, resultsTo,
               instance.view.lineWidth
             )) instance.dynamicVerticalLayout.appendDataIntoLayoutData(e);
-          });
-        }
+          }
+        });
       };
-    }
 
     public void destroy() {
       foreach (var instance in current) {
@@ -573,6 +574,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public delegate bool IsSet<in A>(A value, A flag);
     public delegate A Set<A>(A value, A flag);
     public delegate A Unset<A>(A value, A flag);
+    /// <param name="name"></param>
+    /// <param name="reference"></param>
+    /// <param name="isSet">Always <code>(value, flag) => (value & flag) != 0</code></param>
+    /// <param name="set">Always <code>(value, flag) => value | flag</code></param>
+    /// <param name="unset">Always <code>(value, flag) => value & ~flag</code></param>
+    /// <param name="comment"></param>
     public void registerFlagsEnum<A>(
       string name, Ref<A> reference,
       IsSet<A> isSet, Set<A> set, Unset<A> unset,
