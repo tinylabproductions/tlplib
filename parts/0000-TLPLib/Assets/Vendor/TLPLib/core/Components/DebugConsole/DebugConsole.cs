@@ -35,12 +35,13 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly string cmdGroup, name;
       public readonly Option<KeyCodeWithModifiers> shortcut; 
       public readonly Action run;
+      public readonly Func<bool> canShow;
 
       public string label => shortcut.valueOut(out var sc) ? $"[{s(sc)}] {name}" : name;
 
       // ReSharper disable once ParameterHidesMember
       public Command withShortcut(Option<KeyCodeWithModifiers> shortcut) => new Command(
-        cmdGroup: cmdGroup, name: name, shortcut: shortcut, run: run
+        cmdGroup: cmdGroup, name: name, shortcut: shortcut, run: run, canShow: canShow
       );
     }
 
@@ -313,10 +314,11 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       setupList(F.none_, view.commands, () => currentGroupButtons);
 
       var commandGroups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
+        var validGroupCommands = commandGroup.Value.Where(cmd => cmd.canShow()).ToArray();
         var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
         button.text.text = commandGroup.Key;
         button.button.onClick.AddListener(() =>
-          currentGroupButtons = showGroup(view, commandGroup.Key, commandGroup.Value)
+          currentGroupButtons = showGroup(view, commandGroup.Key, validGroupCommands)
         );
         return button;
       }).ToImmutableList();
@@ -507,18 +509,27 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     static readonly HasObjFunc<Unit> unitSomeFn = () => F.some(F.unit);
 
-    public ISubscription register(string name, Action run, KeyCodeWithModifiers? shortcut = null) =>
-      register(name, () => { run(); return F.unit; }, shortcut);
-    public ISubscription register<A>(string name, Func<A> run, KeyCodeWithModifiers? shortcut = null) =>
-      register(name, unitSomeFn, _ => run(), shortcut);
-    public ISubscription register<A>(string name, Func<Future<A>> run, KeyCodeWithModifiers? shortcut = null) =>
-      register(name, unitSomeFn, _ => run(), shortcut);
-    public ISubscription register<Obj>(string name, HasObjFunc<Obj> objOpt, Action<Obj> run, KeyCodeWithModifiers? shortcut = null) =>
-      register(name, objOpt, obj => { run(obj); return F.unit; }, shortcut);
-    public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, A> run, KeyCodeWithModifiers? shortcut = null) =>
-      register(name, objOpt, obj => Future.successful(run(obj)), shortcut);
+    public ISubscription register(
+      string name, Action run, KeyCodeWithModifiers? shortcut = null, Func<bool> canShow = null
+    ) => register(name, () => { run(); return F.unit; }, shortcut, canShow);
+    public ISubscription register<A>(
+      string name, Func<A> run, KeyCodeWithModifiers? shortcut = null, Func<bool> canShow = null
+    ) => register(name, unitSomeFn, _ => run(), shortcut, canShow);
+    public ISubscription register<A>(
+      string name, Func<Future<A>> run, KeyCodeWithModifiers? shortcut = null,
+      Func<bool> canShow = null
+    ) => register(name, unitSomeFn, _ => run(), shortcut, canShow);
+    public ISubscription register<Obj>(
+      string name, HasObjFunc<Obj> objOpt, Action<Obj> run, KeyCodeWithModifiers? shortcut = null,
+      Func<bool> canShow = null
+    ) => register(name, objOpt, obj => { run(obj); return F.unit; }, shortcut, canShow);
     public ISubscription register<Obj, A>(
-      string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run, KeyCodeWithModifiers? shortcut = null
+      string name, HasObjFunc<Obj> objOpt, Func<Obj, A> run, KeyCodeWithModifiers? shortcut = null,
+      Func<bool> canShow = null
+    ) => register(name, objOpt, obj => Future.successful(run(obj)), shortcut, canShow);
+    public ISubscription register<Obj, A>(
+      string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run, KeyCodeWithModifiers? shortcut = null,
+      Func<bool> canShow = null
     ) {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
       return console.register(tracker, new DConsole.Command(commandGroup, name, shortcut.toOption(), () => {
@@ -535,33 +546,34 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           }
         }
         else Debug.Log($"{prefixedName} not running: {typeof(Obj)} is None.");
-      }));
+      }, canShow ?? (() => true)));
     }
 
     public void registerToggle(
       string name, Ref<bool> r, string comment=null,
-      KeyCodeWithModifiers? shortcut=null
+      KeyCodeWithModifiers? shortcut=null,
+      Func<bool> canShow = null
     ) =>
-      registerToggle(name, () => r.value, v => r.value = v, comment, shortcut);
+      registerToggle(name, () => r.value, v => r.value = v, comment, shortcut, canShow);
 
     public void registerToggle(
       string name, Func<bool> getter, Action<bool> setter, string comment=null,
-      KeyCodeWithModifiers? shortcut=null
+      KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
     ) {
-      register($"{name}?", getter);
+      register($"{name}?", getter, canShow: canShow);
       register($"Toggle {name}", shortcut: shortcut, run: () => {
         setter(!getter());
         return comment == null ? getter().ToString() : $"{comment}: value={getter()}";
-      });
+      }, canShow: canShow);
     }
     
     public void registerToggleOpt(
       string name, Ref<Option<bool>> r, string comment=null,
-      KeyCodeWithModifiers? shortcut=null
+      KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
     ) {
-      register($"{name}?", () => r.value);
-      register($"Clear {name}", () => r.value = F.none_);
-      register($"Toggle {name}", shortcut: shortcut, run: () => {
+      register($"{name}?", () => r.value, canShow: canShow);
+      register($"Clear {name}", () => r.value = F.none_, canShow: canShow);
+      register($"Toggle {name}", shortcut: shortcut, canShow: canShow, run: () => {
         var current = r.value.getOrElse(false);
         r.value = F.some(!current);
         return comment == null ? r.value.ToString() : $"{comment}: value={r.value}";
@@ -570,38 +582,40 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public void registerNumeric<A>(
       string name, Ref<A> a, Numeric<A> num, A step,
-      ImmutableList<A> quickSetValues = null
+      ImmutableList<A> quickSetValues = null, Func<bool> canShow = null
     ) {
-      register($"{name}?", () => a.value);
-      register($"{name} += {step}", () => a.value = num.add(a.value, step));
-      register($"{name} -= {step}", () => a.value = num.subtract(a.value, step));
+      register($"{name}?", () => a.value, canShow: canShow);
+      register($"{name} += {step}", () => a.value = num.add(a.value, step), canShow: canShow);
+      register($"{name} -= {step}", () => a.value = num.subtract(a.value, step), canShow: canShow);
       if (quickSetValues != null) {
         foreach (var value in quickSetValues)
-          register($"{name} = {value}", () => a.value = value);
+          register($"{name} = {value}", () => a.value = value, canShow: canShow);
       }
     }
 
     public void registerNumeric<A>(
       string name, Ref<A> a, Numeric<A> num,
-      ImmutableList<A> quickSetValues = null
+      ImmutableList<A> quickSetValues = null, Func<bool> canShow = null
     ) =>
-      registerNumeric(name, a, num, num.fromInt(1), quickSetValues);
+      registerNumeric(name, a, num, num.fromInt(1), quickSetValues, canShow: canShow);
 
     public void registerNumericOpt<A>(
       string name, Ref<Option<A>> aOpt, A showOnNone, Numeric<A> num,
-      ImmutableList<A> quickSetValues = null
+      ImmutableList<A> quickSetValues = null, Func<bool> canShow = null
     ) {
-      register($"Clear {name}", () => aOpt.value = None._);
-      register($"{name} opt?", () => aOpt.value);
+      register($"Clear {name}", () => aOpt.value = None._, canShow: canShow);
+      register($"{name} opt?", () => aOpt.value, canShow: canShow);
       registerNumeric(
         name, Ref.a(
           () => aOpt.value.getOrElse(showOnNone),
           v => aOpt.value = v.some()
-        ), num, quickSetValues
+        ), num, quickSetValues, canShow: canShow
       );
     }
 
-    public void registerCountdown(string name, uint count, Action run, KeyCodeWithModifiers? shortcut=null) {
+    public void registerCountdown(
+      string name, uint count, Action run, KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
+    ) {
       var countdown = count;
       register(name, shortcut: shortcut, run: () => {
         countdown--;
@@ -611,54 +625,59 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           return $"{name} EXECUTED.";
         }
         return $"Press me {countdown} more times to execute.";
-      });
+      }, canShow: canShow);
     }
 
     public void registerEnum<A>(
-      string name, Ref<A> reference, IEnumerable<A> enumerable, string comment = null
+      string name, Ref<A> reference, IEnumerable<A> enumerable, string comment = null, Func<bool> canShow = null
     ) {
       register($"{name}?", () => {
         var v = reference.value;
         return comment == null ? v.ToString() : $"{comment}: value={v}";
-      });
+      }, canShow: canShow);
       foreach (var a in enumerable)
         register($"{name}={a}", () => {
           reference.value = a;
           return comment == null ? a.ToString() : $"{comment}: value={a}";
-        });
+        }, canShow: canShow);
     }
 
     public delegate bool IsSet<in A>(A value, A flag);
     public delegate A Set<A>(A value, A flag);
     public delegate A Unset<A>(A value, A flag);
+
     /// <param name="name"></param>
     /// <param name="reference"></param>
     /// <param name="isSet">Always <code>(value, flag) => (value & flag) != 0</code></param>
     /// <param name="set">Always <code>(value, flag) => value | flag</code></param>
     /// <param name="unset">Always <code>(value, flag) => value & ~flag</code></param>
     /// <param name="comment"></param>
+    /// <param name="canShow"></param>
     public void registerFlagsEnum<A>(
       string name, Ref<A> reference,
       IsSet<A> isSet, Set<A> set, Unset<A> unset,
-      string comment = null
+      string comment = null, Func<bool> canShow = null
     ) where A : Enum {
       var values = EnumUtils.GetValues<A>();
-      register($"{name}?", () => 
-        values
+      register(
+        $"{name}?", 
+        () => 
+          values
           .Select(a => $"{a}={isSet(reference.value, a)}")
           .OrderBySafe(_ => _)
-          .mkString(", ")
+          .mkString(", "),
+        canShow: canShow
       );
       register(
         $"Set all {name}",
-        () => reference.value = values.Aggregate(reference.value, (c, a) => set(c, a))
+        () => reference.value = values.Aggregate(reference.value, (c, a) => set(c, a)), canShow: canShow
       );
       register(
         $"Clear all {name}",
-        () => reference.value = values.Aggregate(reference.value, (c, a) => unset(c, a))
+        () => reference.value = values.Aggregate(reference.value, (c, a) => unset(c, a)), canShow: canShow
       );
       foreach (var a in values) {
-        register($"{name}: toggle {a}", () =>
+        register($"{name}: toggle {a}", canShow: canShow, run: () =>
           reference.value = 
             isSet(reference.value, a) 
               ? unset(reference.value, a) 
@@ -670,10 +689,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
     static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
     
-    public void registerBools(string name, Ref<bool> reference, string comment = null) =>
-      registerEnum(name, reference, BOOLS, comment);
+    public void registerBools(
+      string name, Ref<bool> reference, string comment = null, Func<bool> canShow = null
+    ) => registerEnum(name, reference, BOOLS, comment, canShow);
     
-    public void registerBools(string name, Ref<Option<bool>> reference, string comment = null) =>
-      registerEnum(name, reference, OPT_BOOLS, comment);
+    public void registerBools(
+      string name, Ref<Option<bool>> reference, string comment = null, Func<bool> canShow = null
+    ) => registerEnum(name, reference, OPT_BOOLS, comment, canShow);
   }
 }
