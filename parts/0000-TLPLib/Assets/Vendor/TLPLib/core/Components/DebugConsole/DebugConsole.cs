@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Collection;
+using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
@@ -22,6 +24,7 @@ using pzd.lib.exts;
 using pzd.lib.reactive;
 using UnityEngine;
 using static pzd.lib.typeclasses.Str;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
@@ -56,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     static readonly Deque<LogEntry> logEntries = new Deque<LogEntry>();
-    static LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
+    static readonly LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
     public static DConsole instance => _instance.strict;
     static bool dconsoleUnlocked;
 
@@ -73,6 +76,14 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
             logEntries.Add(new LogEntry(message, type));
           }
         };
+      }
+    }
+
+    [Conditional("UNITY_EDITOR"), RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void cleanUpCommandsOnRestart() {
+      // With quick Unity restarts the view can be gone, but the static variable still hold the reference.
+      foreach (var dConsole in _instance.value) {
+        dConsole.commands.Clear();
       }
     }
 
@@ -328,6 +339,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       var logCallback = onLogMessageReceived(logEntryPool, cache);
       Application.logMessageReceivedThreaded += logCallback;
+      // Make sure to clean up on app quit to prevent problems with unity quick play mode enter.
+      ASync.onAppQuit.subscribe(view.gameObject.asDisposableTracker(), _ => destroy());
       view.closeButton.onClick.AddListener(destroy);
       view.minimiseButton.onClick.AddListener(view.toggleMinimised);
       view.onUpdate += () => {
@@ -469,6 +482,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public void destroy() {
       foreach (var instance in current) {
+        Debug.Log("Destroying DConsole.");
         Application.logMessageReceivedThreaded -= instance.logCallback;
         instance.dynamicVerticalLayout.Dispose();
         instance.pool.dispose(Object.Destroy);
