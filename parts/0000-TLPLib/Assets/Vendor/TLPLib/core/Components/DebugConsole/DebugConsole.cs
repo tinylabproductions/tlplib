@@ -21,21 +21,24 @@ using pzd.lib.functional;
 using pzd.lib.exts;
 using pzd.lib.reactive;
 using UnityEngine;
+using static pzd.lib.typeclasses.Str;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   [PublicAPI] public partial class DConsole {
     public enum Direction { Left, Up, Right, Down }
 
-    public struct Command {
+    [Record] public partial struct Command {
       public readonly string cmdGroup, name;
+      public readonly Option<KeyCodeWithModifiers> shortcut; 
       public readonly Action run;
 
-      public Command(string cmdGroup, string name, Action run) {
-        this.cmdGroup = cmdGroup;
-        this.name = name;
-        this.run = run;
-      }
+      public string label => shortcut.valueOut(out var sc) ? $"[{s(sc)}] {name}" : name;
+
+      // ReSharper disable once ParameterHidesMember
+      public Command withShortcut(Option<KeyCodeWithModifiers> shortcut) => new Command(
+        cmdGroup: cmdGroup, name: name, shortcut: shortcut, run: run
+      );
     }
 
     [Record]
@@ -55,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     static readonly Deque<LogEntry> logEntries = new Deque<LogEntry>();
     static LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
     public static DConsole instance => _instance.strict;
-    static bool dconsoleUnlocked = false;
+    static bool dconsoleUnlocked;
 
     [RuntimeInitializeOnLoadMethod]
     static void registerLogMessages() {
@@ -225,6 +228,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public ISubscription register(IDisposableTracker tracker, Command command) {
+      foreach (var shortcut in command.shortcut) {
+        if (checkShortcutForDuplication(shortcut)) {
+          command = command.withShortcut(None._);
+        }
+      }
+
       var list = commands.get(command.cmdGroup).getOrElse(() => {
         var lst = new List<Command>();
         commands[command.cmdGroup] = lst;
@@ -234,6 +243,23 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var sub = new Subscription(() => list.Remove(command));
       tracker.track(sub, callerMemberName: $"DConsole register: {command.cmdGroup}/{command.name}");
       return sub;
+
+      bool checkShortcutForDuplication(KeyCodeWithModifiers shortcut) {
+        var hasConflicts = false;
+        foreach (var (groupName, groupCommands) in commands) {
+          foreach (var otherCommand in groupCommands) {
+            if (otherCommand.shortcut.exists(shortcut)) {
+              Debug.LogError(
+                $"{command.cmdGroup}/{command.name} shortcut {s(shortcut)} " +
+                $"conflicts with {groupName}/{otherCommand.name}"
+              );
+              hasConflicts = true;
+            }
+          }
+        }
+
+        return hasConflicts;
+      }
     }
 
     public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker) =>
@@ -304,6 +330,17 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       Application.logMessageReceivedThreaded += logCallback;
       view.closeButton.onClick.AddListener(destroy);
       view.minimiseButton.onClick.AddListener(view.toggleMinimised);
+      view.onUpdate += () => {
+        foreach (var kv in commands) {
+          foreach (var command in kv.Value) {
+            foreach (var shortcut in command.shortcut) {
+              if (shortcut.getKeyDown) {
+                command.run();
+              }
+            }
+          }
+        }
+      };
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
     }
@@ -356,7 +393,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       foreach (var t in commandsHolder.transform.children()) Object.Destroy(t.gameObject);
       return commands.Select(command => {
         var button = addButton(view.buttonPrefab, commandsHolder.transform);
-        button.text.text = command.name;
+        button.text.text = command.label;
         button.button.onClick.AddListener(() => command.run());
         return button;
       }).ToImmutableList();
@@ -456,19 +493,21 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     static readonly HasObjFunc<Unit> unitSomeFn = () => F.some(F.unit);
 
-    public ISubscription register(string name, Action run) =>
-      register(name, () => { run(); return F.unit; });
-    public ISubscription register<A>(string name, Func<A> run) =>
-      register(name, unitSomeFn, _ => run());
-    public ISubscription register<A>(string name, Func<Future<A>> run) =>
-      register(name, unitSomeFn, _ => run());
-    public ISubscription register<Obj>(string name, HasObjFunc<Obj> objOpt, Action<Obj> run) =>
-      register(name, objOpt, obj => { run(obj); return F.unit; });
-    public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, A> run) =>
-      register(name, objOpt, obj => Future.successful(run(obj)));
-    public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run) {
+    public ISubscription register(string name, Action run, KeyCodeWithModifiers? shortcut = null) =>
+      register(name, () => { run(); return F.unit; }, shortcut);
+    public ISubscription register<A>(string name, Func<A> run, KeyCodeWithModifiers? shortcut = null) =>
+      register(name, unitSomeFn, _ => run(), shortcut);
+    public ISubscription register<A>(string name, Func<Future<A>> run, KeyCodeWithModifiers? shortcut = null) =>
+      register(name, unitSomeFn, _ => run(), shortcut);
+    public ISubscription register<Obj>(string name, HasObjFunc<Obj> objOpt, Action<Obj> run, KeyCodeWithModifiers? shortcut = null) =>
+      register(name, objOpt, obj => { run(obj); return F.unit; }, shortcut);
+    public ISubscription register<Obj, A>(string name, HasObjFunc<Obj> objOpt, Func<Obj, A> run, KeyCodeWithModifiers? shortcut = null) =>
+      register(name, objOpt, obj => Future.successful(run(obj)), shortcut);
+    public ISubscription register<Obj, A>(
+      string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run, KeyCodeWithModifiers? shortcut = null
+    ) {
       var prefixedName = $"[DC|{commandGroup}]> {name}";
-      return console.register(tracker, new DConsole.Command(commandGroup, name, () => {
+      return console.register(tracker, new DConsole.Command(commandGroup, name, shortcut.toOption(), () => {
         var opt = objOpt();
         if (opt.isSome) {
           var returnFuture = run(opt.get);
@@ -485,21 +524,30 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }));
     }
 
-    public void registerToggle(string name, Ref<bool> r, string comment=null) =>
-      registerToggle(name, () => r.value, v => r.value = v, comment);
+    public void registerToggle(
+      string name, Ref<bool> r, string comment=null,
+      KeyCodeWithModifiers? shortcut=null
+    ) =>
+      registerToggle(name, () => r.value, v => r.value = v, comment, shortcut);
 
-    public void registerToggle(string name, Func<bool> getter, Action<bool> setter, string comment=null) {
+    public void registerToggle(
+      string name, Func<bool> getter, Action<bool> setter, string comment=null,
+      KeyCodeWithModifiers? shortcut=null
+    ) {
       register($"{name}?", getter);
-      register($"Toggle {name}", () => {
+      register($"Toggle {name}", shortcut: shortcut, run: () => {
         setter(!getter());
         return comment == null ? getter().ToString() : $"{comment}: value={getter()}";
       });
     }
     
-    public void registerToggleOpt(string name, Ref<Option<bool>> r, string comment=null) {
+    public void registerToggleOpt(
+      string name, Ref<Option<bool>> r, string comment=null,
+      KeyCodeWithModifiers? shortcut=null
+    ) {
       register($"{name}?", () => r.value);
       register($"Clear {name}", () => r.value = F.none_);
-      register($"Toggle {name}", () => {
+      register($"Toggle {name}", shortcut: shortcut, run: () => {
         var current = r.value.getOrElse(false);
         r.value = F.some(!current);
         return comment == null ? r.value.ToString() : $"{comment}: value={r.value}";
@@ -539,12 +587,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       );
     }
 
-    public void registerCountdown(string name, uint count, Action act) {
+    public void registerCountdown(string name, uint count, Action run, KeyCodeWithModifiers? shortcut=null) {
       var countdown = count;
-      register(name, () => {
+      register(name, shortcut: shortcut, run: () => {
         countdown--;
         if (countdown == 0) {
-          act();
+          run();
           countdown = count;
           return $"{name} EXECUTED.";
         }
@@ -608,11 +656,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
     static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
     
-    [PublicAPI]
     public void registerBools(string name, Ref<bool> reference, string comment = null) =>
       registerEnum(name, reference, BOOLS, comment);
     
-    [PublicAPI]
     public void registerBools(string name, Ref<Option<bool>> reference, string comment = null) =>
       registerEnum(name, reference, OPT_BOOLS, comment);
   }

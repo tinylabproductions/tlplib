@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -7,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
-  public class DebugConsoleBinding : MonoBehaviour {
+  public class DebugConsoleBinding : MonoBehaviour, IMB_Update {
     [NotNull] public DebugConsoleListBinding commandGroups, commands;
     [NotNull] public Text commandGroupLabel;
     [NotNull] public ButtonBinding buttonPrefab;
@@ -28,6 +29,9 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       commands.setActiveGO(active);
       logPanel.SetActive(active);
     }
+
+    public event Action onUpdate;
+    public void Update() => onUpdate?.Invoke();
   }
 
   [Serializable]
