@@ -1,11 +1,12 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Collection;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public class ToggleableMultiplier : IDisposable {
     public class Manager {
-      readonly RandomList<ToggleableMultiplier> list = new RandomList<ToggleableMultiplier>();
+      readonly List<ToggleableMultiplier> list = new List<ToggleableMultiplier>();
       readonly IRxRef<float> _totalMultiplier = RxRef.a(1f);
       public IRxVal<float> totalMultiplier => _totalMultiplier;
 
@@ -17,13 +18,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         new ToggleableMultiplier(multiplier, list, _totalMultiplier, active);
     }
 
-    readonly RandomList<ToggleableMultiplier> list;
+    readonly List<ToggleableMultiplier> list;
     readonly IRxRef<float> totalMultiplier;
     bool _active;
     float _multiplier;
 
     ToggleableMultiplier(
-      float multiplier, RandomList<ToggleableMultiplier> list,
+      float multiplier, List<ToggleableMultiplier> list,
       IRxRef<float> totalMultiplier, bool active
     ) {
       _multiplier = multiplier;
@@ -43,7 +44,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       set {
         if (_active) {
           if (!value) {
-            list.Remove(this);
+            list.removeReplacingWithLast(this);
             refresh();
           }
         }

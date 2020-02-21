@@ -1,4 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Collection;
+﻿using pzd.lib.collection;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
@@ -6,7 +6,8 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     bool _active;
     float _multiplier;
 
-    static readonly RandomList<TimeScaleMultiplier> list = new RandomList<TimeScaleMultiplier>();
+    static TimeScaleMultiplier[] list = EmptyArray<TimeScaleMultiplier>._;
+    static uint listCount;
 
     static void refresh() {
       var newScale = 1f;
@@ -29,13 +30,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       set {
         if (_active) {
           if (!value) {
-            list.Remove(this);
+            AList.removeReplacingWithLast(list, ref listCount, this);
             refresh();
           }
         }
         else {
           if (value) {
-            list.Add(this);
+            AList.add(ref list, ref listCount, this);
             refresh();
           }
         }
