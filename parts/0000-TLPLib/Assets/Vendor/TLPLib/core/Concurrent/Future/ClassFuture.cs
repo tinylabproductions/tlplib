@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.collection;
 using pzd.lib.concurrent;
 using pzd.lib.reactive;
 using pzdf = pzd.lib.functional;
-using Smooth.Pools;
 using None = pzd.lib.functional.None;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -13,9 +12,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
-    static readonly Pool<List<Action<A>>> pool = ListPool<Action<A>>.Instance;
-
-    List<Action<A>> listeners = pool.Borrow();
+    Action<A>[] listeners = EmptyArray<Action<A>>._;
+    uint listenersCount;
+    
     bool iterating;
 
     public bool isCompleted => value.isSome;
@@ -47,19 +46,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return Subscription.empty;
       }
       else {
-        listeners.Add(action);
+        AList.add(ref listeners, ref listenersCount, action);
         return new Subscription(() => {
           if (iterating || listeners == null) return;
-          listeners.Remove(action);
+          AList.removeReplacingWithLast(listeners, ref listenersCount, action);
         });
       }
     }
 
     void completed(A v) {
       iterating = true;
-      foreach (var action in listeners) action(v);
-      listeners.Clear();
-      pool.Release(listeners);
+      for (var idx = 0u; idx < listenersCount; idx++) listeners[idx](v);
+      AList.clear(listeners, ref listenersCount);
       listeners = null;
     }
   }
