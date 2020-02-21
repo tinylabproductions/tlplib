@@ -90,15 +90,13 @@ namespace com.tinylabproductions.TLPLib.Configuration {
 
     public static Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> withTimeout(
       this Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> tpl,
-      Duration timeout, ITimeContext timeContext = default(ITimeContext)
-    ) {
-      timeContext = timeContext.orDefault();
-      return tpl.map2((urls, future) =>
+      Duration timeout, ITimeContext timeContext
+    ) =>
+      tpl.map2((urls, future) =>
         future
-        .timeout(timeout, () => (ConfigFetchError) new ConfigTimeoutError(urls, timeout), timeContext)
-        .map(e => e.flatMapRight(_ => _))
+          .timeout(timeout, () => (ConfigFetchError) new ConfigTimeoutError(urls, timeout), timeContext)
+          .map(e => e.flatMapRight(_ => _))
       );
-    }
 
     public static Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> checkingServerHeader(
       this Tpl<UrlWithContext, Future<Either<ConfigFetchError, WWWWithHeaders>>> tpl,

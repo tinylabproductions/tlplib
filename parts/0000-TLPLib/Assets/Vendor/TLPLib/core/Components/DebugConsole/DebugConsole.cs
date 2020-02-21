@@ -92,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var r = registrarFor(nameof(DConsole), NeverDisposeDisposableTracker.instance);
       r.register("Run GC", GC.Collect);
       r.register("Self-test", () => "self-test");
-      r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s", TimeContext.DEFAULT));
+      r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s", TimeContext.unscaledTime));
       
       void clearVisibleLog() {
         foreach (var i in instance.current) {

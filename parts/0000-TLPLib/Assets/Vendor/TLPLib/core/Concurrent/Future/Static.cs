@@ -138,7 +138,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Waits at most `timeout` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
     public static Future<Either<B, A>> timeout<A, B>(
-      this Future<A> future, Duration timeout, Func<B> onTimeout, ITimeContext tc=null
+      this Future<A> future, Duration timeout, Func<B> onTimeout, ITimeContext tc
     ) {
       var timeoutF = delay(timeout, () => future.value.fold<Either<B, A>>(
         // onTimeout() might have side effects, so we only need to execute it if
@@ -149,9 +149,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       return new[] { future.map<Either<B, A>>(v => v), timeoutF }.firstOf();
     }
 
-    /* Waits at most `timeout` for the future to complete. */
+    /// <summary>Waits at most `timeout` for the future to complete.</summary>
     public static Future<Either<Duration, A>> timeout<A>(
-      this Future<A> future, Duration timeout, ITimeContext tc=null
+      this Future<A> future, Duration timeout, ITimeContext tc
     ) => future.timeout(timeout, () => timeout, tc);
 
     /** Measures how much time has passed from call to timed to future completion. **/
