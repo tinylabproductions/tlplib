@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -13,8 +13,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public class TestTimeContext : ITimeContext {
     public readonly Duration timePerFrame;
 
-    readonly RandomList<Tpl<Duration, Action, string>> actions =
-      new RandomList<Tpl<Duration, Action, string>>();
+    readonly List<Tpl<Duration, Action, string>> actions = new List<Tpl<Duration, Action, string>>();
 
     public IOrderedEnumerable<Tpl<Duration, ImmutableList<string>>> debugActions =>
       actions
@@ -61,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return shouldRun;
       }).ToList();
       foreach (var t in toRun) t._2();
-      actions.RemoveWhere(toRun.Contains);
+      actions.removeWhere(toRun.Contains, replaceRemovedElementWithLast: true);
     }
 
     public Duration passedSinceStartup => timePassed;
