@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
@@ -10,6 +9,8 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
+using pzd.lib.collection;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 using UnityEngine;
@@ -101,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ///
     /// Transformations are observables that emit events based on one or more source observables.
     ///
-    /// For example <see cref="ObservableOps.zip{A1,A2,R}(IRxObservable,IRxObservable,System.Fn{A1,A2,R})"/>
+    /// For example <see cref="ObservableOps.zip{A1,A2,R}(IRxObservable,IRxObservable,Fn)"/>
     /// takes two observables and produces an observable that emits tupled values.
     ///
     /// Transformations have a nice property, that if nobody is listening to them, they do not have to listen
@@ -471,8 +472,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
     }
 
-    readonly RandomList<Sub> subscriptions = new RandomList<Sub>();
-    SList4<A> pendingSubmits = new SList4<A>();
+    Sub[] subscriptions = EmptyArray<Sub>._;
+    uint subscriptionsCount;
+    A[] pendingSubmits = EmptyArray<A>._;
+    uint pendingSubmitsCount;
 
     // Are we currently iterating through subscriptions?
     bool iterating;
@@ -494,7 +497,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     protected void submit(A a) {
       if (iterating) {
         // Do not submit if iterating.
-        pendingSubmits.add(a);
+        AList.add(ref pendingSubmits, ref pendingSubmitsCount, a);
         return;
       }
 
@@ -504,7 +507,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var brokenSubsDetected = false;
       try {
         // ReSharper disable once ForCanBeConvertedToForeach
-        for (var idx = 0; idx < subscriptions.Count; idx++) {
+        for (var idx = 0; idx < subscriptionsCount; idx++) {
           var sub = subscriptions[idx];
           if (sub.active) {
             if (sub.isSubscribed(out var isBroken)) {
@@ -525,11 +528,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         iterating = false;
         afterIteration(brokenSubsDetected);
         // Process pending submits.
-        if (pendingSubmits.size > 0) submit(pendingSubmits.removeAt(0));
+        if (pendingSubmitsCount > 0) 
+          submit(AList.removeAtReplacingWithLast(pendingSubmits, ref pendingSubmitsCount, 0));
       }
     }
 
-    public int subscribers => subscriptions.Count - pendingSubscriptionActivations - pendingRemovals;
+    public int subscribers => subscriptionsCount.toIntClamped() - pendingSubscriptionActivations - pendingRemovals;
 
     public virtual void subscribe(
       IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
@@ -548,7 +552,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
 
       var active = !iterating;
-      subscriptions.Add(new Sub(
+      AList.add(ref subscriptions, ref subscriptionsCount, new Sub(
         onEvent: onEvent, active: active, haveUnsubscribed: false,
 #if LEGACY_OBSERVABLES
         subscription: sub,
@@ -582,7 +586,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #region private methods
 
     void unsubscribe(Action<A> onEvent) {
-      for (var idx = 0; idx < subscriptions.Count; idx++) {
+      for (var idx = 0; idx < subscriptionsCount; idx++) {
         var sub = subscriptions[idx];
         if (sub.onEvent == onEvent) {
           unsubscribe(sub, idx);
@@ -600,14 +604,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     void afterIteration(bool brokenSubsDetected) {
       if (pendingSubscriptionActivations != 0) {
-        for (var idx = 0; idx < subscriptions.Count; idx++) {
+        for (var idx = 0; idx < subscriptionsCount; idx++) {
           var sub = subscriptions[idx];
           if (!sub.active) subscriptions[idx] = sub.withActive(true);
         }
         pendingSubscriptionActivations = 0;
       }
       if (brokenSubsDetected || pendingRemovals != 0) {
-        subscriptions.RemoveWhere(sub => !sub.isSubscribed(out _));
+        AList.removeWhere(
+          subscriptions, ref subscriptionsCount, sub => !sub.isSubscribed(out _),
+          replaceRemovedElementWithLast: true
+        );
         pendingRemovals = 0;
         
         // Unsubscribe from source if we don't have any subscribers that are
