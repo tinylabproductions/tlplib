@@ -24,11 +24,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> successful<A>(A value) => Future<A>.successful(value);
     public static Future<A> unfulfilled<A>() => Future<A>.unfulfilled;
 
-    public static Future<A> delay<A>(Duration duration, Func<A> createValue, ITimeContext tc=null) =>
-      a<A>(p => tc.orDefault().after(duration, () => p.complete(createValue())));
+    public static Future<A> delay<A>(Duration duration, Func<A> createValue, ITimeContext tc) =>
+      a<A>(p => tc.after(duration, () => p.complete(createValue())));
 
-    public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc=null) =>
-      a<A>(p => tc.orDefault().after(duration, () => p.complete(value)));
+    public static Future<A> delay<A>(Duration duration, A value, ITimeContext tc) =>
+      a<A>(p => tc.after(duration, () => p.complete(value)));
 
     public static Future<A> delayFrames<A>(int framesToSkip, Func<A> createValue) =>
       a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(createValue())));
