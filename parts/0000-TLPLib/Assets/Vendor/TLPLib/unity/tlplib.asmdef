@@ -4,13 +4,18 @@
         "GUID:3a8072f1f9ca72944a288441fb9c98a6",
         "GUID:6055be8ebefd69e48b49212b09b47b2f"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "pzd.lib.dll",
+        "GenerationAttributes.dll",
+        "Sirenix.OdinInspector.Attributes.dll",
+        "System.Collections.Immutable.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }
