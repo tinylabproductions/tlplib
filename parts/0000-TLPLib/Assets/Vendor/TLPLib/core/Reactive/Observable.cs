@@ -425,14 +425,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       }
     }
 
-    [Record]
-    partial struct Sub {
+    [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
+    partial class Sub {
       public readonly Action<A> onEvent;
       // When subscriptions happen whilst we are processing other event, they are
       // initially inactive.
-      public readonly bool active;
+      public bool active;
 
-      readonly bool haveUnsubscribed;
+      bool haveUnsubscribed;
 
       // LEGACY_OBSERVABLES define makes hard references from source to subscription instead of default weak references
       // we use this mode in Gummy Bear to avoid major refactoring
@@ -461,15 +461,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
       public string subscribedFrom => $"Subscribed from {callerData}.";
 
-      public Sub withActive(bool active) => new Sub(
-        onEvent: onEvent, active: active, haveUnsubscribed: haveUnsubscribed, subscription: subscription,
-        callerData: callerData
-      );
-
-      public Sub unsubscribe() => new Sub(
-        onEvent: onEvent, active: false, haveUnsubscribed: true, subscription: subscription,
-        callerData: callerData
-      );
+      public void unsubscribe() {
+        active = false;
+        haveUnsubscribed = true;
+      }
     }
 
     Sub[] subscriptions = EmptyArray<Sub>._;
@@ -516,7 +511,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
               }
               catch (Exception e) {
                 Log.d.error("Exception on event, unsubscribing! " + sub.subscribedFrom, e);
-                unsubscribe(sub, idx);
+                unsubscribe(idx);
               }
             }
 
@@ -589,14 +584,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       for (var idx = 0; idx < subscriptionsCount; idx++) {
         var sub = subscriptions[idx];
         if (sub.onEvent == onEvent) {
-          unsubscribe(sub, idx);
+          unsubscribe(idx);
           return;
         }
       }
     }
 
-    void unsubscribe(Sub sub, int idx) {
-      subscriptions[idx] = sub.unsubscribe();
+    void unsubscribe(int idx) {
+      subscriptions[idx].unsubscribe();
       pendingRemovals++;
       if (iterating) return;
       afterIteration(false);
@@ -605,8 +600,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     void afterIteration(bool brokenSubsDetected) {
       if (pendingSubscriptionActivations != 0) {
         for (var idx = 0; idx < subscriptionsCount; idx++) {
-          var sub = subscriptions[idx];
-          if (!sub.active) subscriptions[idx] = sub.withActive(true);
+          subscriptions[idx].active = true;
         }
         pendingSubscriptionActivations = 0;
       }
