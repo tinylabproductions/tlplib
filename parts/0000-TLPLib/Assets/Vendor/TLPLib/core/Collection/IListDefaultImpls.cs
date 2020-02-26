@@ -5,8 +5,9 @@ using Smooth.Collections;
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class IListDefaultImpls {
     public static int indexOf<A, C>(C c, A item) where C : IList<A> {
+      var comparer = EqualityComparer<A>.Default;
       for (var idx = 0; idx < c.Count; idx++)
-        if (EqComparer<A>.Default.Equals(c[idx], item))
+        if (comparer.Equals(c[idx], item))
           return idx;
       return -1;
     }
@@ -15,8 +16,9 @@ namespace com.tinylabproductions.TLPLib.Collection {
       indexOf(c, item) != -1;
 
     public static bool remove<A, C>(ref C c, A item) where C : IList<A> {
+      var comparer = EqualityComparer<A>.Default;
       for (var idx = 0; idx < c.Count; idx++)
-        if (EqComparer<A>.Default.Equals(c[idx], item)) {
+        if (comparer.Equals(c[idx], item)) {
           c.RemoveAt(idx);
           return true;
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Logger;
 using Smooth.Collections;
 using UnityEditor;
@@ -18,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       ) {
         var instanceV = get(instanceTransform);
         var prefabV = get(prefabTransform);
-        var same = EqComparer<A>.Default.Equals(instanceV, prefabV);
+        var same = EqualityComparer<A>.Default.Equals(instanceV, prefabV);
         EditorGUILayout.LabelField($"{name} in prefab", same ? "same" : prefabV.ToString());
         if (!same) {
           if (GUILayout.Button($"Apply current {name.ToLower()} to prefab")) {
