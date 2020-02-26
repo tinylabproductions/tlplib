@@ -155,6 +155,6 @@ namespace com.tinylabproductions.TLPLib.Pools {
       values.Clear();
     }
 
-    public Disposable<T> BorrowDisposable() => Disposable<T>.Borrow(borrow(), release);
+    public Disposable<T> BorrowDisposable() => new Disposable<T>(borrow(), release);
   }
 }
