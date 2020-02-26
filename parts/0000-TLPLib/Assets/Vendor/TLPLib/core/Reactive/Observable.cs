@@ -392,39 +392,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
-    /** Properties if this observable was created from other source. **/
-    class SourceProperties {
-      readonly Action<A> onEvent;
-      readonly SubscribeToSource<A> subscribeFn;
-
-      // not an option due to that option is reference type on il2cpp
-      ISubscription subscription;
-
-      public SourceProperties(
-        Action<A> onEvent, SubscribeToSource<A> subscribeFn
-      ) {
-        this.onEvent = onEvent;
-        this.subscribeFn = subscribeFn;
-      }
-
-      public bool trySubscribe() {
-        if (subscription == null) {
-          subscription = subscribeFn(onEvent);
-          return true;
-        }
-        return false;
-      }
-
-      public bool tryUnsubscribe() {
-        if (subscription != null) {
-          var sub = subscription;
-          subscription = null;
-          return sub.unsubscribe();
-        }
-        return false;
-      }
-    }
-
     [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
     partial class Sub {
       public readonly Action<A> onEvent;
@@ -479,14 +446,40 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // How many subscription removals we have pending?
     int pendingRemovals;
 
-    readonly Option<SourceProperties> sourceProps;
+    /*
+     * Properties if this observable was created from other source.
+     * Optimized, because we do not want to create another type for il2cpp
+     */
+    bool hasSourceProps;
+    readonly Action<A> sourceProps_onEvent;
+    readonly SubscribeToSource<A> sourceProps_subscribeFn;
+    ISubscription sourceProps_subscription;
+    
+    public bool sourceProps_trySubscribe() {
+      if (sourceProps_subscription == null) {
+        sourceProps_subscription = sourceProps_subscribeFn(sourceProps_onEvent);
+        return true;
+      }
+      return false;
+    }
+
+    public bool sourceProps_tryUnsubscribe() {
+      if (sourceProps_subscription != null) {
+        var sub = sourceProps_subscription;
+        sourceProps_subscription = null;
+        return sub.unsubscribe();
+      }
+      return false;
+    }
 
     protected Observable() {
-      sourceProps = F.none<SourceProperties>();
+      hasSourceProps = false;
     }
 
     public Observable(SubscribeToSource<A> subscribeFn) {
-      sourceProps = new SourceProperties(submit, subscribeFn).some();
+      hasSourceProps = true;
+      sourceProps_subscribeFn = subscribeFn;
+      sourceProps_onEvent = submit;
     }
 
     protected void submit(A a) {
@@ -559,8 +552,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (!active) pendingSubscriptionActivations++;
 
       // Subscribe to source if we have a first subscriber.
-      foreach (var source in sourceProps)
-        source.trySubscribe();
+      if (hasSourceProps)
+        sourceProps_trySubscribe();
     }
 
     public ISubscription subscribe(
@@ -613,9 +606,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         
         // Unsubscribe from source if we don't have any subscribers that are
         // subscribed to us.
-        foreach (var source in sourceProps) {
-          if (subscribers == 0)
-            source.tryUnsubscribe();
+        if (hasSourceProps) {
+          if (subscribers == 0) 
+            sourceProps_tryUnsubscribe();
         }
       }
     }
