@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text;
-using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using Smooth.Collections;
-using Random = UnityEngine.Random;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IListExts {
@@ -81,39 +78,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         list[n] = value;
       }
     }
-
-    public static Option<A> random<A>(this IList<A> list) =>
-      list.randomIndex().map(idx => list[idx]);
-
-    public static Option<A> random<A>(this IList<A> list, ref Rng rng) =>
-      list.randomIndex(ref rng).map(idx => list[idx]);
-
-    public static Option<Tpl<Rng, A>> randomT<A>(this IList<A> list, Rng rng) =>
-      list.randomIndexT(rng).map(t => t.map2(idx => list[idx]));
-
-    public static A random<C, A>(this NonEmpty<C> list, ref Rng rng)
-      where C : IReadOnlyList<A>
-    =>
-      list.a[rng.nextIntInRange(0, list.a.Count - 1, out rng)];
-
-    public static A random<A>(this NonEmpty<ImmutableList<A>> list, ref Rng rng) =>
-      random<ImmutableList<A>, A>(list, ref rng);
-
-    public static A random<A>(this NonEmpty<ImmutableArray<A>> list, ref Rng rng) =>
-      random<ImmutableArray<A>, A>(list, ref rng);
-
-    public static Option<int> randomIndex<A>(this IList<A> list) =>
-      list.Count == 0 ? F.none<int>() : F.some(Random.Range(0, list.Count));
-
-    public static Option<int> randomIndex<A>(this IList<A> list, ref Rng rng) =>
-      list.Count == 0
-      ? F.none<int>()
-      : F.some(rng.nextIntInRange(0, list.Count - 1, out rng));
-
-    public static Option<Tpl<Rng, int>> randomIndexT<A>(this IList<A> list, Rng rng) =>
-      list.Count == 0
-      ? F.none<Tpl<Rng, int>>()
-      : F.some(rng.nextIntInRangeT(0, list.Count - 1).toTpl());
 
     public static void swap<A>(this IList<A> list, int aIndex, int bIndex) {
       var temp = list[aIndex];
