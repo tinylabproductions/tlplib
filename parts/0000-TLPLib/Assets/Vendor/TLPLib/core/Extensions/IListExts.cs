@@ -140,34 +140,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return F.none<int>();
     }
 
-    /// <summary>
-    /// Returns a random element. The probability is selected by element weight.
-    /// </summary>
-    public static Option<A> randomElementByWeight<A>(
-      this IList<A> list, Func<A, float> weightSelector, ref Rng rng
-    ) {
-      if (list.isEmpty()) return F.none<A>();
-
-      var totalWeight = 0f;
-      // ReSharper disable once LoopCanBeConvertedToQuery
-      for (var idx = 0; idx < list.Count; idx++)
-        totalWeight += weightSelector(list[idx]);
-
-      // The weight we are after...
-      var itemWeightIndex = rng.nextFloat(out rng) * totalWeight;
-      var currentWeightIndex = 0f;
-
-      // ReSharper disable once ForCanBeConvertedToForeach
-      for (var idx = 0; idx < list.Count; idx++) {
-        var a = list[idx];
-        currentWeightIndex += weightSelector(a);
-        // If we've hit or passed the weight we are after for this item then it's the one we want....
-        if (currentWeightIndex >= itemWeightIndex) return F.some(a);
-      }
-
-      throw new IllegalStateException();
-    }
-
     public static Option<A> headOption<A>(this IList<A> list) => 
       list.Count == 0 ? F.none<A>() : list[0].some();
 

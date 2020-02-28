@@ -46,5 +46,33 @@ namespace com.tinylabproductions.TLPLib.Extensions {
 
     public static A random<A>(this NonEmpty<ImmutableArrayC<A>> list, ref Rng rng) =>
       random<ImmutableArrayC<A>, A>(list, ref rng);
+    
+    /// <summary>
+    /// Returns a random element. The probability is selected by element weight.
+    /// </summary>
+    public static Option<A> randomElementByWeight<A>(
+      this IReadOnlyList<A> list, Func<A, float> weightSelector, ref Rng rng
+    ) {
+      if (list.Count == 0) return F.none<A>();
+
+      var totalWeight = 0f;
+      // ReSharper disable once LoopCanBeConvertedToQuery
+      for (var idx = 0; idx < list.Count; idx++)
+        totalWeight += weightSelector(list[idx]);
+
+      // The weight we are after...
+      var itemWeightIndex = rng.nextFloat(out rng) * totalWeight;
+      var currentWeightIndex = 0f;
+
+      // ReSharper disable once ForCanBeConvertedToForeach
+      for (var idx = 0; idx < list.Count; idx++) {
+        var a = list[idx];
+        currentWeightIndex += weightSelector(a);
+        // If we've hit or passed the weight we are after for this item then it's the one we want....
+        if (currentWeightIndex >= itemWeightIndex) return F.some(a);
+      }
+
+      throw new IllegalStateException();
+    }
   }
 }
