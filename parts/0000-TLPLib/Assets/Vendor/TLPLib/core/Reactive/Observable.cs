@@ -387,54 +387,58 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   // when the delegate is in the class.
   // ReSharper disable once TypeParameterCanBeVariant
   public delegate ISubscription SubscribeToSource<A>(Action<A> onEvent);
+  
+  // Class moved out of Observable<A> because il2cpp would generate different variants for 
+  // different types of A
+  [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
+  partial class ObservableSub {
+    
+    // Real type Action<A>, optimized for il2cpp
+    public readonly object onEvent;
+    // When subscriptions happen whilst we are processing other event, they are
+    // initially inactive.
+    public bool active;
+
+    bool haveUnsubscribed;
+
+    // LEGACY_OBSERVABLES define makes hard references from source to subscription instead of default weak references
+    // we use this mode in Gummy Bear to avoid major refactoring
+#if LEGACY_OBSERVABLES
+      readonly Subscription subscription;
+#else
+    readonly WeakReference<Subscription> subscription;
+#endif
+    public readonly CallerData callerData;
+
+    public bool isSubscribed(out bool isBroken) {
+      isBroken = false;
+      if (haveUnsubscribed) return false;
+#if LEGACY_OBSERVABLES
+        return subscription.isSubscribed;
+#else
+      if (subscription.TryGetTarget(out var sub)) return sub.isSubscribed;
+      Log.d.error(
+        $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
+        subscribedFrom
+      );
+      isBroken = true;
+      return false;
+#endif
+    }
+
+    public string subscribedFrom => $"Subscribed from {callerData}.";
+
+    public void unsubscribe() {
+      active = false;
+      haveUnsubscribed = true;
+    }
+  }
 
   public partial class Observable<A> : IRxObservable<A> {
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
-    [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
-    partial class Sub {
-      public readonly Action<A> onEvent;
-      // When subscriptions happen whilst we are processing other event, they are
-      // initially inactive.
-      public bool active;
-
-      bool haveUnsubscribed;
-
-      // LEGACY_OBSERVABLES define makes hard references from source to subscription instead of default weak references
-      // we use this mode in Gummy Bear to avoid major refactoring
-#if LEGACY_OBSERVABLES
-      readonly Subscription subscription;
-#else
-      readonly WeakReference<Subscription> subscription;
-#endif
-      public readonly CallerData callerData;
-
-      public bool isSubscribed(out bool isBroken) {
-        isBroken = false;
-        if (haveUnsubscribed) return false;
-#if LEGACY_OBSERVABLES
-        return subscription.isSubscribed;
-#else
-        if (subscription.TryGetTarget(out var sub)) return sub.isSubscribed;
-        Log.d.error(
-          $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
-          subscribedFrom
-        );
-        isBroken = true;
-        return false;
-#endif
-      }
-
-      public string subscribedFrom => $"Subscribed from {callerData}.";
-
-      public void unsubscribe() {
-        active = false;
-        haveUnsubscribed = true;
-      }
-    }
-
-    Sub[] subscriptions = EmptyArray<Sub>._;
+    ObservableSub[] subscriptions = EmptyArray<ObservableSub>._;
     uint subscriptionsCount;
     A[] pendingSubmits = EmptyArray<A>._;
     uint pendingSubmitsCount;
@@ -500,7 +504,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           if (sub.active) {
             if (sub.isSubscribed(out var isBroken)) {
               try {
-                sub.onEvent(a);
+                ((Action<A>)sub.onEvent).Invoke(a);
               }
               catch (Exception e) {
                 Log.d.error("Exception on event, unsubscribing! " + sub.subscribedFrom, e);
@@ -540,7 +544,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
 
       var active = !iterating;
-      AList.add(ref subscriptions, ref subscriptionsCount, new Sub(
+      AList.add(ref subscriptions, ref subscriptionsCount, new ObservableSub(
         onEvent: onEvent, active: active, haveUnsubscribed: false,
 #if LEGACY_OBSERVABLES
         subscription: sub,

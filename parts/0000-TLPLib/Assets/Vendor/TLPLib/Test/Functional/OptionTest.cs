@@ -41,24 +41,24 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Test]
     public void WhenSome() {
       var b = new B();
-      new Option<B>(b).asEnumerable.shouldEqual(b.Yield<A>());
+      new Option<B>(b).asEnumerable().shouldEqual(b.Yield<A>());
     }
 
     [Test]
     public void WhenNone() {
-      Option<A>.None.asEnumerable.shouldEqual(Enumerable.Empty<A>());
+      Option<A>.None.asEnumerable().shouldEqual(Enumerable.Empty<A>());
     }
   }
 
   public class OptionTestAsEnum {
     [Test]
     public void WhenSome() {
-      F.some(3).asEnumerable.shouldEqual(3.Yield());
+      F.some(3).asEnumerable().shouldEqual(3.Yield());
     }
 
     [Test]
     public void WhenOnlyA() {
-      F.none<int>().asEnumerable.shouldEqual(Enumerable.Empty<int>());
+      F.none<int>().asEnumerable().shouldEqual(Enumerable.Empty<int>());
     }
   }
 

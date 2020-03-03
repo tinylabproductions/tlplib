@@ -12,13 +12,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   class FutureImpl<A> : IHeapFuture<A>, Promise<A> {
-    Action<A>[] listeners = EmptyArray<Action<A>>._;
+    // type optimized for il2cpp
+    object[] listeners = EmptyArray<object>._;
     uint listenersCount;
     
     bool iterating;
 
     public bool isCompleted => value.isSome;
-    public pzdf.Option<A> value { get; private set; } = None._;
+    public pzdf.Option<A> value { get; private set; } = pzdf.Option<A>.None;
     public bool valueOut(out A a) => value.valueOut(out a);
 
     public override string ToString() => $"{nameof(FutureImpl<A>)}({value})";
@@ -56,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     void completed(A v) {
       iterating = true;
-      for (var idx = 0u; idx < listenersCount; idx++) listeners[idx](v);
+      for (var idx = 0u; idx < listenersCount; idx++) ((Action<A>)listeners[idx])(v);
       AList.clear(listeners, ref listenersCount);
       listeners = null;
     }
