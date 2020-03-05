@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         var aList = scene.GetRootGameObjects().collect(go => go.GetComponentSafe<A>()).ToImmutableList();
         return (aList.Count != 1).opt(new ErrorMsg(
           $"Found {aList.Count} of {typeof(A)} in scene '{scene.path}' root game objects, expected 1."
-        )).asEnumerable.ToImmutableList();
+        )).asEnumerable().ToImmutableList();
       };
 
     public static SceneValidator validateForNRootObjects(int n) =>
@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         var rootObjectCount = scene.GetRootGameObjects().Length;
         return (rootObjectCount != n).opt(
           new ErrorMsg($"Expected {n} root game objects but found {rootObjectCount}")
-        ).asEnumerable.ToImmutableList();
+        ).asEnumerable().ToImmutableList();
       };
 
     public static SceneValidator validateForGameObjectWithComponent<C>(string path) where C : Component =>
@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         from go in GameObject.Find(path).opt().toRight(new ErrorMsg($"Can't find GO at path {path}"))
         from _ in go.GetComponentSafeE<C>()
         select _
-      ).leftValue.asEnumerable.ToImmutableList();
+      ).leftValue.asEnumerable().ToImmutableList();
   }
 
   public static class WithSceneValidator {
