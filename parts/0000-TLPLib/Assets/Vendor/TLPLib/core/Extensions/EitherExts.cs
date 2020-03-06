@@ -17,6 +17,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         );
       }
       return either.rightValue;
-    }  
+    }
+
+    public static B getOrLogAndDefault<A, B>(
+      this Either<A, B> either, B defaultValue, string errorMessage = null, object context = null, ILog log = null
+    ) {
+      var opt = either.getOrLog(errorMessage, context, log);
+      return opt.valueOut(out var b) ? b : defaultValue;
+    }
   }
 }
