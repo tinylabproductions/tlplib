@@ -18,7 +18,7 @@ namespace Smooth.Collections {
 		/// However, it has a best case time complexity of O(n) for lists that are already sorted and is quite fast when used on nearly sorted input.
 		/// </remarks>
 		public static void InsertionSort<T>(this IList<T> ts) {
-			InsertionSort(ts, Comparisons<T>.Default);
+			InsertionSort(ts, Comparer<T>.Default);
 		}
 
 		/// <summary>

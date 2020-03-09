@@ -5,40 +5,6 @@ using Smooth.Dispose;
 
 namespace Smooth.Pools {
 	/// <summary>
-	/// Singleton Dictionary<K, V> pool.
-	/// </summary>
-	public static class DictionaryPool<K, V> {
-		private static readonly KeyedPoolWithDefaultKey<IEqualityComparer<K>, Dictionary<K, V>> _Instance =
-			new KeyedPoolWithDefaultKey<IEqualityComparer<K>, Dictionary<K, V>>(
-				comparer => new Dictionary<K, V>(comparer),
-				dictionary => { dictionary.Clear(); return dictionary.Comparer; },
-				() => Smooth.Collections.EqComparer<K>.Default
-			);
-
-		/// <summary>
-		/// Singleton Dictionary<K, V> pool instance.
-		/// </summary>
-		public static KeyedPoolWithDefaultKey<IEqualityComparer<K>, Dictionary<K, V>> Instance { get { return _Instance; } }
-	}
-
-	/// <summary>
-	/// Singleton HashSet<T> pool.
-	/// </summary>
-	public static class HashSetPool<T> {
-		private static readonly KeyedPoolWithDefaultKey<IEqualityComparer<T>, HashSet<T>> _Instance =
-			new KeyedPoolWithDefaultKey<IEqualityComparer<T>, HashSet<T>>(
-				comparer => new HashSet<T>(comparer),
-				hashSet => { hashSet.Clear(); return hashSet.Comparer; },
-				() => Smooth.Collections.EqComparer<T>.Default
-			);
-
-		/// <summary>
-		/// Singleton HashSet<T> pool instance.
-		/// </summary>
-		public static KeyedPoolWithDefaultKey<IEqualityComparer<T>, HashSet<T>> Instance { get { return _Instance; } }
-	}
-
-	/// <summary>
 	/// Singleton List<T> pool.
 	/// </summary>
 	public static class ListPool<T> {

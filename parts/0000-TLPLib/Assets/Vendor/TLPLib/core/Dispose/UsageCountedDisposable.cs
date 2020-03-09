@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Dispose {
       );
 
       totalUsers++;
-      return Disposable<A>.Borrow(value, _ => {
+      return new Disposable<A>(value, _ => {
         totalUsers--;
         if (totalUsers == 0) {
           onDispose(value);

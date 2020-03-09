@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
@@ -655,7 +656,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     [Test]
     public void WithCustomEq() {
       var subj = new Subject<int>();
-      var obs = subj.changesOpt((a, b) => false);
+      var obs = subj.changesOpt(Eql.lambda<int>((a, b) => false).asEqualityComparer());
       var t = obs.pipeToList(tracker);
       var list = t._1;
       foreach (var a in new[] {1, 1, 3, 3, 2, 2, 4, 4, 5, 5}) subj.push(a);
@@ -693,7 +694,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     [Test]
     public void WithCustomEq() {
       var subj = new Subject<int>();
-      var obs = subj.changes((a, b) => false);
+      var obs = subj.changes(Eql.lambda<int>((a, b) => false).asEqualityComparer());
       var t = obs.pipeToList(tracker);
       foreach (var a in new[] {1, 1, 2, 2, 3, 3, 4, 4}) subj.push(a);
       t._1.shouldEqual(F.list(
@@ -724,7 +725,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public void WithCustomEq() {
       var subj = new Subject<int>();
       var elems = new[] {1, 1, 2, 2, 3, 3, 4, 4};
-      var obs = subj.changedValues((a, b) => false);
+      var obs = subj.changedValues(Eql.lambda<int>((a, b) => false).asEqualityComparer());
       var t = obs.pipeToList(tracker);
       foreach (var a in elems) subj.push(a);
       t._1.shouldEqual(elems.ToList());

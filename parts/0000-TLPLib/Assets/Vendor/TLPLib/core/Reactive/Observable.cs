@@ -387,87 +387,58 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   // when the delegate is in the class.
   // ReSharper disable once TypeParameterCanBeVariant
   public delegate ISubscription SubscribeToSource<A>(Action<A> onEvent);
+  
+  // Class moved out of Observable<A> because il2cpp would generate different variants for 
+  // different types of A
+  [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
+  partial class ObservableSub {
+    
+    // Real type Action<A>, optimized for il2cpp
+    public readonly object onEvent;
+    // When subscriptions happen whilst we are processing other event, they are
+    // initially inactive.
+    public bool active;
+
+    bool haveUnsubscribed;
+
+    // LEGACY_OBSERVABLES define makes hard references from source to subscription instead of default weak references
+    // we use this mode in Gummy Bear to avoid major refactoring
+#if LEGACY_OBSERVABLES
+      readonly Subscription subscription;
+#else
+    readonly WeakReference<Subscription> subscription;
+#endif
+    public readonly CallerData callerData;
+
+    public bool isSubscribed(out bool isBroken) {
+      isBroken = false;
+      if (haveUnsubscribed) return false;
+#if LEGACY_OBSERVABLES
+        return subscription.isSubscribed;
+#else
+      if (subscription.TryGetTarget(out var sub)) return sub.isSubscribed;
+      Log.d.error(
+        $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
+        subscribedFrom
+      );
+      isBroken = true;
+      return false;
+#endif
+    }
+
+    public string subscribedFrom => $"Subscribed from {callerData}.";
+
+    public void unsubscribe() {
+      active = false;
+      haveUnsubscribed = true;
+    }
+  }
 
   public partial class Observable<A> : IRxObservable<A> {
     public static readonly Observable<A> empty =
       new Observable<A>(_ => Subscription.empty);
 
-    /** Properties if this observable was created from other source. **/
-    class SourceProperties {
-      readonly Action<A> onEvent;
-      readonly SubscribeToSource<A> subscribeFn;
-
-      // not an option due to that option is reference type on il2cpp
-      ISubscription subscription;
-
-      public SourceProperties(
-        Action<A> onEvent, SubscribeToSource<A> subscribeFn
-      ) {
-        this.onEvent = onEvent;
-        this.subscribeFn = subscribeFn;
-      }
-
-      public bool trySubscribe() {
-        if (subscription == null) {
-          subscription = subscribeFn(onEvent);
-          return true;
-        }
-        return false;
-      }
-
-      public bool tryUnsubscribe() {
-        if (subscription != null) {
-          var sub = subscription;
-          subscription = null;
-          return sub.unsubscribe();
-        }
-        return false;
-      }
-    }
-
-    [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
-    partial class Sub {
-      public readonly Action<A> onEvent;
-      // When subscriptions happen whilst we are processing other event, they are
-      // initially inactive.
-      public bool active;
-
-      bool haveUnsubscribed;
-
-      // LEGACY_OBSERVABLES define makes hard references from source to subscription instead of default weak references
-      // we use this mode in Gummy Bear to avoid major refactoring
-#if LEGACY_OBSERVABLES
-      readonly Subscription subscription;
-#else
-      readonly WeakReference<Subscription> subscription;
-#endif
-      public readonly CallerData callerData;
-
-      public bool isSubscribed(out bool isBroken) {
-        isBroken = false;
-        if (haveUnsubscribed) return false;
-#if LEGACY_OBSERVABLES
-        return subscription.isSubscribed;
-#else
-        if (subscription.TryGetTarget(out var sub)) return sub.isSubscribed;
-        Log.d.error(
-          $"Active subscription was garbage collected! You should always properly track your subscriptions. " +
-          subscribedFrom
-        );
-        isBroken = true;
-        return false;
-#endif
-      }
-
-      public string subscribedFrom => $"Subscribed from {callerData}.";
-
-      public void unsubscribe() {
-        active = false;
-        haveUnsubscribed = true;
-      }
-    }
-
-    Sub[] subscriptions = EmptyArray<Sub>._;
+    ObservableSub[] subscriptions = EmptyArray<ObservableSub>._;
     uint subscriptionsCount;
     A[] pendingSubmits = EmptyArray<A>._;
     uint pendingSubmitsCount;
@@ -479,14 +450,40 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     // How many subscription removals we have pending?
     int pendingRemovals;
 
-    readonly Option<SourceProperties> sourceProps;
+    /*
+     * Properties if this observable was created from other source.
+     * Optimized, because we do not want to create another type for il2cpp
+     */
+    bool hasSourceProps;
+    readonly Action<A> sourceProps_onEvent;
+    readonly SubscribeToSource<A> sourceProps_subscribeFn;
+    ISubscription sourceProps_subscription;
+    
+    public bool sourceProps_trySubscribe() {
+      if (sourceProps_subscription == null) {
+        sourceProps_subscription = sourceProps_subscribeFn(sourceProps_onEvent);
+        return true;
+      }
+      return false;
+    }
+
+    public bool sourceProps_tryUnsubscribe() {
+      if (sourceProps_subscription != null) {
+        var sub = sourceProps_subscription;
+        sourceProps_subscription = null;
+        return sub.unsubscribe();
+      }
+      return false;
+    }
 
     protected Observable() {
-      sourceProps = F.none<SourceProperties>();
+      hasSourceProps = false;
     }
 
     public Observable(SubscribeToSource<A> subscribeFn) {
-      sourceProps = new SourceProperties(submit, subscribeFn).some();
+      hasSourceProps = true;
+      sourceProps_subscribeFn = subscribeFn;
+      sourceProps_onEvent = submit;
     }
 
     protected void submit(A a) {
@@ -507,7 +504,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           if (sub.active) {
             if (sub.isSubscribed(out var isBroken)) {
               try {
-                sub.onEvent(a);
+                ((Action<A>)sub.onEvent).Invoke(a);
               }
               catch (Exception e) {
                 Log.d.error("Exception on event, unsubscribing! " + sub.subscribedFrom, e);
@@ -547,7 +544,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       );
 
       var active = !iterating;
-      AList.add(ref subscriptions, ref subscriptionsCount, new Sub(
+      AList.add(ref subscriptions, ref subscriptionsCount, new ObservableSub(
         onEvent: onEvent, active: active, haveUnsubscribed: false,
 #if LEGACY_OBSERVABLES
         subscription: sub,
@@ -559,8 +556,8 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       if (!active) pendingSubscriptionActivations++;
 
       // Subscribe to source if we have a first subscriber.
-      foreach (var source in sourceProps)
-        source.trySubscribe();
+      if (hasSourceProps)
+        sourceProps_trySubscribe();
     }
 
     public ISubscription subscribe(
@@ -613,9 +610,9 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         
         // Unsubscribe from source if we don't have any subscribers that are
         // subscribed to us.
-        foreach (var source in sourceProps) {
-          if (subscribers == 0)
-            source.tryUnsubscribe();
+        if (hasSourceProps) {
+          if (subscribers == 0) 
+            sourceProps_tryUnsubscribe();
         }
       }
     }
