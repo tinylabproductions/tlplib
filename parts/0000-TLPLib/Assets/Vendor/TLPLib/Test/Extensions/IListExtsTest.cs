@@ -22,20 +22,20 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   public class IListExtsTestIsEmpty {
     [Test]
     public void WhenEmpty() =>
-      ImmutableList<int>.Empty.downcast().isEmpty().shouldBeTrue();
+      ImmutableList<int>.Empty.downcast().isEmptyAllocating().shouldBeTrue();
 
     [Test]
     public void WhenNonEmpty() =>
-      ImmutableList.Create(1).downcast().isEmpty().shouldBeFalse();
+      ImmutableList.Create(1).downcast().isEmptyAllocating().shouldBeFalse();
   }
 
   public class IListExtsTestNonEmpty {
     [Test]
     public void WhenEmpty() =>
-      ImmutableList<int>.Empty.downcast().nonEmpty().shouldBeFalse();
+      ImmutableList<int>.Empty.downcast().nonEmptyAllocating().shouldBeFalse();
 
     [Test]
     public void WhenNonEmpty() =>
-      ImmutableList.Create(1).downcast().nonEmpty().shouldBeTrue();
+      ImmutableList.Create(1).downcast().nonEmptyAllocating().shouldBeTrue();
   }
 }

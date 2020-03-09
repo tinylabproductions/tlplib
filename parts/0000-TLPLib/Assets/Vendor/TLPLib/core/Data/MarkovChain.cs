@@ -1,6 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
-using pzd.lib.data;
+﻿using pzd.lib.data;
+using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {

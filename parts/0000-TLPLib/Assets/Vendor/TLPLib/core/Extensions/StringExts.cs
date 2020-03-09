@@ -84,8 +84,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static bool isTrimmable(this string s) =>
       s.StartsWithFast(" ") || s.EndsWithFast(" ");
 
-    public static bool isNullOrEmpty(this string s, bool trim = false) =>
-      s == null || s.isEmpty(trim);
     public static bool nonEmpty(this string s) => s.Length != 0;
 
     public static Option<string> nonEmptyOpt(this string s, bool trim = false) {

@@ -11,7 +11,7 @@ using Smooth.Collections;
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IListExts {
     [PublicAPI]
-    public static bool getOut<A>(this IList<A> list, int index, out A a) {
+    public static bool getOut<A>(this IReadOnlyList<A> list, int index, out A a) {
       if (list.indexValid(index)) {
         a = list[index];
         return true;
@@ -22,15 +22,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
     
-    public static Option<T> get<T>(this IList<T> list, int index) =>
+    public static Option<T> get<T>(this IReadOnlyList<T> list, int index) =>
       list.indexValid(index) ? F.some(list[index]) : F.none<T>();
 
     [PublicAPI]
-    public static T getOrElse<T>(this IList<T> list, int index, T defaultValue) =>
+    public static T getOrElse<T>(this IReadOnlyList<T> list, int index, T defaultValue) =>
       list.indexValid(index) ? list[index] : defaultValue;
 
     [PublicAPI]
-    public static Option<T> last<T>(this IList<T> list) => list.get(list.Count - 1);
+    public static Option<T> last<T>(this IReadOnlyList<T> list) => list.get(list.Count - 1);
 
     [PublicAPI]
     public static List<A> reversed<A>(this List<A> list) {
