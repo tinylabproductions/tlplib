@@ -176,7 +176,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this C list, A a, out int index, 
       int startAt = 0, int? count = null, IEqualityComparer<A> comparer = null
     ) where C : IList<A> {
-      comparer = comparer ?? EqComparer<A>.Default;
+      comparer = comparer ?? EqualityComparer<A>.Default;
       var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
       for (index = startAt; index < endIdx; index++) {
         if (comparer.Equals(list[index], a)) return true;

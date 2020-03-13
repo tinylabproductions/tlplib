@@ -132,7 +132,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       IEqualityComparer<A> comparer = null
     ) {
       _value = initialValue;
-      this.comparer = comparer ?? EqComparer<A>.Default;
+      this.comparer = comparer ?? EqualityComparer<A>.Default;
 
       var wr = new WeakReference<RxVal<A>>(this);
       var sub = Subscription.empty;

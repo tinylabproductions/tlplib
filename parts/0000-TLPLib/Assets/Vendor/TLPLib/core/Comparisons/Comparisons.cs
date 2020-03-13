@@ -51,16 +51,6 @@ namespace Smooth.Comparisons {
 		private static Dictionary<IEqualityComparer<T>, Func<T, T, bool>> toPredicate = new Dictionary<IEqualityComparer<T>, Func<T, T, bool>>();
 
 		/// <summary>
-		/// The comparison method of the default sort comparer for T in delegate form.
-		/// </summary>
-		public static Comparison<T> Default { get { return ToComparison(Smooth.Collections.Comparer<T>.Default); } }
-
-		/// <summary>
-		/// The comparison method of the default equality comparer for T in delegate form.
-		/// </summary>
-		public static Func<T, T, bool> DefaultPredicate { get { return ToPredicate(Smooth.Collections.EqComparer<T>.Default); } }
-
-		/// <summary>
 		/// Returns the comparison method of the specfied sort comparer in delegate form.
 		/// </summary>
 		public static Comparison<T> ToComparison(IComparer<T> comparer) {

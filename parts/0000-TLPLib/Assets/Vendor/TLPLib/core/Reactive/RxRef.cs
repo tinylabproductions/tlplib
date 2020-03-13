@@ -30,7 +30,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public RxRef(A value, IEqualityComparer<A> comparer = null) {
-      this.comparer = comparer ?? EqComparer<A>.Default;
+      this.comparer = comparer ?? EqualityComparer<A>.Default;
       _value = value;
     }
 

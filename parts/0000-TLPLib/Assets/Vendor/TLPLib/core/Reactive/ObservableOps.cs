@@ -643,22 +643,22 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// If there was no events before, old may be None.
     /// </summary>
     public static IRxObservable<Tpl<Option<A>, A>> changesOpt<A>(
-      this IRxObservable<A> o, Func<A, A, bool> areEqual = null
-    ) => o.changesOpt(F.t, areEqual);
+      this IRxObservable<A> o, IEqualityComparer<A> comparer = null
+    ) => o.changesOpt(F.t, comparer);
 
     /// <summary>
     /// Returns pairs of (old, new) values when they are changing.
     /// If there was no events before, old may be None.
     /// </summary>
     public static IRxObservable<B> changesOpt<A, B>(
-      this IRxObservable<A> o, Func<Option<A>, A, B> zipper, Func<A, A, bool> areEqual = null
+      this IRxObservable<A> o, Func<Option<A>, A, B> zipper, IEqualityComparer<A> comparer = null
     ) {
-      areEqual = areEqual ?? EqComparer<A>.Default.Equals;
+      comparer = comparer ?? EqualityComparer<A>.Default;
       return new Observable<B>(changesBase<A, B>(
         o,
         (onEvent, lastValue, val) => {
           var valueChanged =
-            lastValue.isNone || !areEqual(lastValue.__unsafeGet, val);
+            lastValue.isNone || !comparer.Equals(lastValue.__unsafeGet, val);
           if (valueChanged) onEvent(zipper(lastValue, val));
         }
       ));
@@ -668,15 +668,15 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Like changesOpt() but does not emit if old was None.
     /// </summary>
     public static IRxObservable<Tpl<A, A>> changes<A>(
-      this IRxObservable<A> o, Func<A, A, bool> areEqual = null
+      this IRxObservable<A> o, IEqualityComparer<A> comparer = null
     ) {
-      areEqual = areEqual ?? EqComparer<A>.Default.Equals;
+      comparer = comparer ?? EqualityComparer<A>.Default;
       return new Observable<Tpl<A, A>>(changesBase<A, Tpl<A, A>>(
         o,
         (onEvent, lastValue, val) => {
           if (lastValue.isSome) {
             var lastVal = lastValue.__unsafeGet;
-            if (! areEqual(lastVal, val))
+            if (! comparer.Equals(lastVal, val))
               onEvent(F.t(lastVal, val));
           }
         }
@@ -687,14 +687,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     /// Emits new values. Always emits first value and then emits changed values.
     /// </summary>
     public static IRxObservable<A> changedValues<A>(
-      this IRxObservable<A> o, Func<A, A, bool> areEqual = null
+      this IRxObservable<A> o, IEqualityComparer<A> comparer = null
     ) {
-      areEqual = areEqual ?? EqComparer<A>.Default.Equals;
+      comparer = comparer ?? EqualityComparer<A>.Default;
       return new Observable<A>(changesBase<A, A>(
         o,
         (onEvent, lastValue, val) => {
           if (lastValue.isNone) onEvent(val);
-          else if (! areEqual(lastValue.get, val))
+          else if (! comparer.Equals(lastValue.get, val))
             onEvent(val);
         }
       ));

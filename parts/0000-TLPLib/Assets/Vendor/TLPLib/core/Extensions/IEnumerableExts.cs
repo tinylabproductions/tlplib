@@ -73,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<A> find<A, B>(
       this IEnumerable<A> enumerable, Func<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
     ) {
-      comparer = comparer ?? EqComparer<B>.Default;
+      comparer = comparer ?? EqualityComparer<B>.Default;
       foreach (var a in enumerable) {
         var b = mapper(a);
         if (comparer.Equals(b, toFind)) return F.some(a);
@@ -208,7 +208,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<A> Except<A>(
       this IEnumerable<A> enumerable, A except, IEqualityComparer<A> cmp = null
     ) {
-      cmp = cmp ?? EqComparer<A>.Default;
+      cmp = cmp ?? EqualityComparer<A>.Default;
       return enumerable.Where(a => !cmp.Equals(a, except));
     }
 

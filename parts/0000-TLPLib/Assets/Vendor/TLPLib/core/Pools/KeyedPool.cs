@@ -54,7 +54,7 @@ namespace Smooth.Pools {
 		/// Borrows a wrapped value with the specified key from the pool.
 		/// </summary>
 		public Disposable<T> BorrowDisposable(K key) {
-			return Disposable<T>.Borrow(Borrow(key), release);
+			return new Disposable<T>(Borrow(key), release);
 		}
 	}
 }

@@ -47,7 +47,7 @@ namespace Smooth.Pools {
 		/// Borrows a wrapped value from the pool.
 		/// </summary>
 		public Disposable<T> BorrowDisposable() {
-			return Disposable<T>.Borrow(Borrow(), release);
+			return new Disposable<T>(Borrow(), release);
 		}
 	}
 }
