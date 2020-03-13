@@ -160,52 +160,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
     }
 
-    
-    public static IEnumerable<B> collect<A, B>(
-      this IEnumerable<A> enumerable, Func<A, Option<B>> collector
-    ) {
-      foreach (var a in enumerable) {
-        var bOpt = collector(a);
-        if (bOpt.isSome) yield return bOpt.__unsafeGet;
-      }
-    }
-
-    
-    public static IEnumerable<B> collect<A, B>(
-      this IEnumerable<A> enumerable, Func<A, int, Option<B>> collector
-    ) {
-      var idx = 0;
-      foreach (var a in enumerable) {
-        var bOpt = collector(a, idx);
-        if (bOpt.isSome) yield return bOpt.__unsafeGet;
-        idx++;
-      }
-    }
-
-    
-    public static Option<B> collectFirst<A, B>(
-      this IEnumerable<A> enumerable, Func<A, Option<B>> collector
-    ) {
-      foreach (var a in enumerable) {
-        var bOpt = collector(a);
-        if (bOpt.isSome) return bOpt;
-      }
-      return F.none<B>();
-    }
-
-    
-    public static Option<B> collectFirst<A, B>(
-      this IEnumerable<A> enumerable, Func<A, B> mapper, B toFind, IEqualityComparer<B> comparer = null
-    ) {
-      comparer = comparer ?? EqualityComparer<B>.Default;
-      foreach (var a in enumerable) {
-        var b = mapper(a);
-        if (comparer.Equals(b, toFind)) return F.some(b);
-      }
-      return F.none<B>();
-    }
-
-    
     public static HashSet<A> toHashSet<A>(this IEnumerable<A> enumerable) =>
       new HashSet<A>(enumerable);
 

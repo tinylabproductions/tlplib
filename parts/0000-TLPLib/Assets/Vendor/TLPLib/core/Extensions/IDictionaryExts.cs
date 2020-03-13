@@ -22,15 +22,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<V> get_<K, V>(this IReadOnlyDictionary<K, V> dict, K key) =>
       dict.TryGetValue(key, out var outVal) ? F.some(outVal) : F.none<V>();
 
-    public static Either<string, V> getE<K, V>(this IDictionary<K, V> dict, K key) =>
-      dict.get(key).toRight($"Can't find '{key}'!");
+    public static Either<string, V> getE<K, V>(this IReadOnlyDictionary<K, V> dict, K key) =>
+      dict.get_(key).toRight($"Can't find '{key}'!");
 
     public static V getOrElse<K, V>(
-      this IDictionary<K, V> dict, K key, Func<V> orElse
+      this IReadOnlyDictionary<K, V> dict, K key, Func<V> orElse
     ) => dict.TryGetValue(key, out var outVal) ? outVal : orElse();
 
     public static V getOrElse<K, V>(
-      this IDictionary<K, V> dict, K key, V orElse
+      this IReadOnlyDictionary<K, V> dict, K key, V orElse
     ) => dict.TryGetValue(key, out var outVal) ? outVal : orElse;
 
     /* as #[], but has a better error message */

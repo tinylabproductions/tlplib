@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using pzd.lib.functional;
@@ -95,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       )));
     }
 
-    static Either<string, uint> getIdx(IList<string> parts, int idx) =>
+    static Either<string, uint> getIdx(IReadOnlyList<string> parts, int idx) =>
       parts.get(idx).fold(0u, _ => _.parseUInt());
   }
 }
