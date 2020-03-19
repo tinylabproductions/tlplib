@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -40,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     [PublicAPI]
     public static void userInfo(
-      string title, string body, Log.Level level = Log.Level.INFO, Object context = null
+      string title, string body, Log.Level level = Log.Level.INFO, object context = null
     ) {
       var log = Log.@default;
       if (log.willLog(level)) log.log(
@@ -60,11 +62,13 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 #endif
     }
 
-    [PublicAPI]
-    public static Exception userException(string title, string body, Object context = null) {
+    [PublicAPI] public static Exception userException(string title, string body, object context = null) {
       userInfo(title, body, Log.Level.ERROR, context);
       return new Exception("Aborting.");
     }
+
+    [PublicAPI] public static Exception userException(string title, ErrorMsg errorMsg) =>
+      userException(title, errorMsg.s, errorMsg.context.getOrNull());
 
 #if UNITY_EDITOR
     public enum DisplayDialogResult : byte { OK, Alt, Cancel }
