@@ -9,6 +9,7 @@
         "pzd.lib.dll",
         "System.Collections.Immutable.dll",
         "GenerationAttributes.dll",
+        "GenerationAttributes.Java.dll",
         "Sirenix.OdinInspector.Attributes.dll"
     ],
     "autoReferenced": true,
