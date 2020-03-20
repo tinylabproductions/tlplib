@@ -212,6 +212,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return enumerable.Where(a => !cmp.Equals(a, except));
     }
 
+    public static IEnumerable<A> Except<A>(
+      this IEnumerable<A> collection, Option<A> maybeExcept, IEqualityComparer<A> cmp = null
+    ) => maybeExcept.valueOut(out var a) ? collection.Except(a, cmp) : collection;
     
     public static Option<A> headOption<A>(this IEnumerable<A> enumerable) {
       foreach (var a in enumerable)
