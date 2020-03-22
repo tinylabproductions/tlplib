@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Settings>
+
+  <!-- 
+    PrebuiltOutputReuse:
+    - None : Alway emit fresh one
+    - WhenNoChange : When nothing changed in sources and references, reuse prebuilt results.
+    - WhenNoSourceChange : When nothing changed in sources and references (except update of some references),
+                           reuse prebuilt results.
+  -->
+  <PrebuiltOutputReuse>WhenNoChange</PrebuiltOutputReuse>
+
+</Settings>
