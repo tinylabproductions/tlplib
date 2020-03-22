@@ -4,6 +4,11 @@
         <name>CompilationExtensionInterfaces</name>
     </assembly>
     <members>
+        <member name="T:CompilationExtensionInterfaces.IProcessCompilation">
+            <summary>
+            Implement this and put the resulting dll in the compiler directory to hook into the compilation process.
+            </summary>
+        </member>
         <member name="M:CompilationExtensionInterfaces.IProcessCompilation.process(System.Object@)">
             <summary>
             Untyped, because we can't reference Microsoft.CodeAnalysis due to circular references.
