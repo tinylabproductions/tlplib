@@ -6,7 +6,7 @@
     <members>
         <member name="M:CompilationExtensionInterfaces.IProcessCompilation.process(System.Object@)">
             <summary>
-            Untyped, because we can't reference Microsoft.CodeAnalysis due to circular-references.
+            Untyped, because we can't reference Microsoft.CodeAnalysis due to circular references.
             </summary>
             <param name="compilation">Microsoft.CodeAnalysis.Compilation</param>
             <returns>IEnumerable&lt;Microsoft.CodeAnalysis.Diagnostic&gt;</returns>
