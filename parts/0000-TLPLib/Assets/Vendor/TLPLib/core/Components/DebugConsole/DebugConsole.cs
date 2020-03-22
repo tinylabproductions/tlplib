@@ -38,11 +38,6 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly Func<bool> canShow;
 
       public string label => shortcut.valueOut(out var sc) ? $"[{s(sc)}] {name}" : name;
-
-      // ReSharper disable once ParameterHidesMember
-      public Command withShortcut(Option<KeyCodeWithModifiers> shortcut) => new Command(
-        cmdGroup: cmdGroup, name: name, shortcut: shortcut, run: run, canShow: canShow
-      );
     }
 
     [Record]
