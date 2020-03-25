@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Concurrent;
@@ -25,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       });
 
     public static WWWWithHeaders headers(this WWW www) =>
-      new WWWWithHeaders(www, www.responseHeaders.asReadOnly());
+      new WWWWithHeaders(www, www.responseHeaders.ToImmutableDictionary());
 
     public static void trackWWWSend(this WWW www, string prefix, Dictionary<string, string> headers) {
       ASync.StartCoroutine(ASync.WWWEnumerator(www).afterThis(() => {

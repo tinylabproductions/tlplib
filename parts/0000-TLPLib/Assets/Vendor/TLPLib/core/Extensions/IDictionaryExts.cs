@@ -33,12 +33,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this IReadOnlyDictionary<K, V> dict, K key, V orElse
     ) => dict.TryGetValue(key, out var outVal) ? outVal : orElse;
 
-    /* as #[], but has a better error message */
-    public static V a<K, V>(this IDictionary<K, V> dict, K key) {
-      foreach (var val in dict.get(key)) return val;
-      throw new KeyNotFoundException($"Cannot find {key} in {dict.asDebugString()}");
-    }
-
     public static bool isEmpty<K, V>(this IDictionary<K, V> dict) => dict.Count == 0;
     public static bool nonEmpty<K, V>(this IDictionary<K, V> dict) => dict.Count != 0;
 

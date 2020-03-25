@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.exts;
 using pzd.lib.functional;
-using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public class BiMap<A, B> : IEnumerable<KeyValuePair<A, B>>  {
