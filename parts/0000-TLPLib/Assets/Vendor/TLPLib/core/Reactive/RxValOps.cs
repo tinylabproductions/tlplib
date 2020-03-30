@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.dispose;
@@ -193,6 +194,12 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       where C : IEnumerable<IRxVal<A>>
     =>
       vals.anyThat<A, C>(b => searchFor ? toBool(b) : !toBool(b)).map(_ => _.isSome);
+    
+    public static IRxVal<bool> anyOf<A, C>(this C vals, A searchFor)
+      where C : IEnumerable<IRxVal<A>> {
+      var comparer = EqualityComparer<A>.Default;
+      return vals.anyThat<A, C>(val => comparer.Equals(val, searchFor)).map(_ => _.isSome);
+    }
 
     public static IRxVal<Option<A>> anyDefined<A>(
       this IEnumerable<IRxVal<Option<A>>> vals
