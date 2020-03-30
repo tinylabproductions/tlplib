@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -12,13 +13,14 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>Mark that A is a prefab.</summary>
   /// You need to extend this class and mark it as <see cref="SerializableAttribute"/>
   /// to serialize it, because Unity does not serialize generic classes.
-  [Record, PublicAPI]
+  [Record, PublicAPI, InlineProperty]
   public partial class TagPrefab<A> : TagPrefab, OnObjectValidate where A : Object {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
-    [SerializeField, NotNull, PublicAccessor] A _prefab;
+    [SerializeField, NotNull, PublicAccessor, AssetsOnly, HideLabel, GUIColor(167f/255, 183f/255, 211f/255)] 
+    A _prefab;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
