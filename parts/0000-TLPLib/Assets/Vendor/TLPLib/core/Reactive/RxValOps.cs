@@ -189,6 +189,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     =>
       vals.anyThat<bool, C>(b => searchFor ? b : !b).map(_ => _.isSome);
 
+    public static IRxVal<bool> anyOf<A, C>(this C vals, Func<A, bool> toBool, bool searchFor=true)
+      where C : IEnumerable<IRxVal<A>>
+    =>
+      vals.anyThat<A, C>(b => searchFor ? toBool(b) : !toBool(b)).map(_ => _.isSome);
+
     public static IRxVal<Option<A>> anyDefined<A>(
       this IEnumerable<IRxVal<Option<A>>> vals
     ) =>
