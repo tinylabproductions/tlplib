@@ -1,0 +1,248 @@
+2020-03-29 21:27:47.9039 INFO|Dev|Started|
+2020-03-29 21:27:47.9688 INFO|CompilerService|Build(projectPath=C:\work\compiler\Unity3D.IncrementalCompiler\samples\Basic, output=Temp/Assembly-CSharp.dll)|
+2020-03-29 21:27:47.9808 INFO|CompilerService|Flush old project. (Project=C:\work\compiler\Unity3D.IncrementalCompiler\samples\Basic)|
+2020-03-29 21:27:48.0118 INFO|CompilerService|Add new project. (Project=C:\work\compiler\Unity3D.IncrementalCompiler\samples\Basic)|
+2020-03-29 21:27:48.0398 INFO|Compiler|BuildFull|
+2020-03-29 21:27:48.0718 INFO|Compiler|Time elapsed 00:00:00.0334849 on Loaded references|
+2020-03-29 21:27:48.1278 INFO|Compiler|Time elapsed 00:00:00.0540491 on Loaded sources|
+2020-03-29 21:27:48.1278 INFO|Compiler|Time elapsed 00:00:00.0068506 on Compilation created|
+2020-03-29 21:27:48.2657 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 21:27:48.7146 INFO|Compiler|Analyzers:|
+2020-03-29 21:27:48.7176 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-Assembly-CSharp\DiagnosticAnalyzer.dll|
+2020-03-29 21:27:48.7456 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 21:27:48.7466 INFO|Compiler|Time elapsed 00:00:00.6107818 on Loaded analyzers|
+2020-03-29 21:27:48.9905 INFO|Compiler|Time elapsed 00:00:00.2433578 on Code generated|
+2020-03-29 21:27:49.7603 INFO|Compiler|Time elapsed 00:00:00.7690031 on Macros completed|
+2020-03-29 21:27:50.0002 INFO|Compiler|Writing data to file C:\work\compiler\Unity3D.IncrementalCompiler\samples\Basic\Temp/Assembly-CSharp.dll, size: 29,184|
+2020-03-29 21:27:50.0002 INFO|Compiler|Writing data to file C:\work\compiler\Unity3D.IncrementalCompiler\samples\Basic\Temp/Assembly-CSharp.pdb, size: 10,780|
+2020-03-29 21:27:50.0002 INFO|Compiler|Time elapsed 00:00:00.2414084 on Emitted dll|
+2020-03-29 21:27:50.0002 INFO|Compiler|Total elapsed 00:00:01.9647393|
+2020-03-29 21:55:48.7539 INFO|Dev|Started|
+2020-03-29 21:55:48.8888 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/advanced-inspector.dll)|
+2020-03-29 21:55:48.8888 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 21:55:48.9538 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 21:55:48.9918 INFO|Compiler|BuildFull|
+2020-03-29 21:55:49.0618 INFO|Compiler|Time elapsed 00:00:00.0679607 on Loaded references|
+2020-03-29 21:55:49.4046 INFO|Compiler|Time elapsed 00:00:00.3383975 on Loaded sources|
+2020-03-29 21:55:49.4843 INFO|Compiler|Time elapsed 00:00:00.0796798 on Compilation created|
+2020-03-29 21:55:49.9961 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 21:55:51.6159 INFO|Compiler|Analyzers:|
+2020-03-29 21:55:51.6159 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-advanced-inspector\DiagnosticAnalyzer.dll|
+2020-03-29 21:55:51.6949 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 21:55:51.6949 INFO|Compiler|Time elapsed 00:00:02.2116734 on Loaded analyzers|
+2020-03-29 21:55:51.8578 INFO|Compiler|Time elapsed 00:00:00.1603947 on Code generated|
+2020-03-29 21:55:54.4519 INFO|Compiler|Time elapsed 00:00:02.5933082 on Macros completed|
+2020-03-29 21:55:55.0567 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/advanced-inspector.dll, size: 67,072|
+2020-03-29 21:55:55.0597 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/advanced-inspector.pdb, size: 35,608|
+2020-03-29 21:55:55.0597 INFO|Compiler|Time elapsed 00:00:00.6079724 on Emitted dll|
+2020-03-29 21:55:55.0597 INFO|Compiler|Total elapsed 00:00:06.0724723|
+2020-03-29 22:01:41.1147 INFO|Dev|Started|
+2020-03-29 22:01:41.3066 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/advanced-inspector.dll)|
+2020-03-29 22:01:41.3146 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:01:41.3656 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:01:41.3906 INFO|Compiler|BuildFull|
+2020-03-29 22:01:41.4556 INFO|Compiler|Time elapsed 00:00:00.0667664 on Loaded references|
+2020-03-29 22:01:41.8265 INFO|Compiler|Time elapsed 00:00:00.3707405 on Loaded sources|
+2020-03-29 22:01:41.9050 INFO|Compiler|Time elapsed 00:00:00.0779241 on Compilation created|
+2020-03-29 22:01:42.4818 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:01:44.4625 INFO|Compiler|Analyzers:|
+2020-03-29 22:01:44.4625 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-advanced-inspector\DiagnosticAnalyzer.dll|
+2020-03-29 22:01:44.5265 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:01:44.5285 INFO|Compiler|Time elapsed 00:00:02.6216325 on Loaded analyzers|
+2020-03-29 22:01:44.6784 INFO|Compiler|Time elapsed 00:00:00.1498155 on Code generated|
+2020-03-29 22:01:47.9030 INFO|Compiler|Time elapsed 00:00:03.2234976 on Macros completed|
+2020-03-29 22:03:30.4859 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/advanced-inspector.dll, size: 67,072|
+2020-03-29 22:03:30.4859 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/advanced-inspector.pdb, size: 35,608|
+2020-03-29 22:03:30.4859 INFO|Compiler|Time elapsed 00:01:42.5866400 on Emitted dll|
+2020-03-29 22:03:30.4859 INFO|Compiler|Total elapsed 00:01:49.1047633|
+2020-03-29 22:20:14.8933 INFO|Dev|Started|
+2020-03-29 22:20:14.9893 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:20:14.9893 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:20:15.0273 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:20:15.0503 INFO|Compiler|BuildFull|
+2020-03-29 22:20:15.1003 INFO|Compiler|Time elapsed 00:00:00.0525134 on Loaded references|
+2020-03-29 22:20:15.5921 INFO|Compiler|Time elapsed 00:00:00.4909856 on Loaded sources|
+2020-03-29 22:20:15.6461 INFO|Compiler|Time elapsed 00:00:00.0530868 on Compilation created|
+2020-03-29 22:20:16.0835 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:20:17.3581 INFO|Compiler|Analyzers:|
+2020-03-29 22:20:17.3581 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib-core\DiagnosticAnalyzer.dll|
+2020-03-29 22:20:17.4121 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:20:17.4121 INFO|Compiler|Time elapsed 00:00:01.7670566 on Loaded analyzers|
+2020-03-29 22:20:17.9313 INFO|Compiler|Time elapsed 00:00:00.5167123 on Code generated|
+2020-03-29 22:20:20.7736 INFO|Compiler|Time elapsed 00:00:02.8422726 on Macros completed|
+2020-03-29 22:20:41.1835 INFO|Compiler|Time elapsed 00:00:20.4092178 on Emitted dll|
+2020-03-29 22:20:41.1866 INFO|Compiler|Total elapsed 00:00:26.1399943|
+2020-03-29 22:23:41.6212 INFO|Dev|Started|
+2020-03-29 22:25:21.8228 INFO|Dev|Started|
+2020-03-29 22:25:21.9537 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:25:21.9537 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:25:22.0107 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:25:22.0687 INFO|Compiler|BuildFull|
+2020-03-29 22:25:22.1367 INFO|Compiler|Time elapsed 00:00:00.0765437 on Loaded references|
+2020-03-29 22:25:22.7794 INFO|Compiler|Time elapsed 00:00:00.6420523 on Loaded sources|
+2020-03-29 22:25:22.8434 INFO|Compiler|Time elapsed 00:00:00.0639790 on Compilation created|
+2020-03-29 22:25:23.4262 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:25:24.9532 INFO|Compiler|Analyzers:|
+2020-03-29 22:25:24.9532 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib-core\DiagnosticAnalyzer.dll|
+2020-03-29 22:25:25.0182 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:25:25.0182 INFO|Compiler|Time elapsed 00:00:02.1752596 on Loaded analyzers|
+2020-03-29 22:25:25.7052 INFO|Compiler|Time elapsed 00:00:00.6854716 on Code generated|
+2020-03-29 22:25:29.4571 INFO|Compiler|Time elapsed 00:00:03.7505817 on Macros completed|
+2020-03-29 22:26:03.4483 INFO|Dev|Started|
+2020-03-29 22:26:03.5343 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:26:03.5543 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:26:03.5892 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:26:03.6312 INFO|Compiler|BuildFull|
+2020-03-29 22:26:03.6822 INFO|Compiler|Time elapsed 00:00:00.0522825 on Loaded references|
+2020-03-29 22:26:03.9101 INFO|Compiler|Time elapsed 00:00:00.2272911 on Loaded sources|
+2020-03-29 22:26:03.9241 INFO|Compiler|Time elapsed 00:00:00.0084756 on Compilation created|
+2020-03-29 22:26:04.1189 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:26:04.6727 INFO|Compiler|Analyzers:|
+2020-03-29 22:26:04.6727 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib-core\DiagnosticAnalyzer.dll|
+2020-03-29 22:26:04.7187 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:26:04.7187 INFO|Compiler|Time elapsed 00:00:00.7963267 on Loaded analyzers|
+2020-03-29 22:26:05.1915 INFO|Compiler|Time elapsed 00:00:00.4687148 on Code generated|
+2020-03-29 22:26:06.9195 INFO|Compiler|Time elapsed 00:00:01.7265942 on Macros completed|
+2020-03-29 22:26:08.1751 INFO|Compiler|Time elapsed 00:00:01.2549968 on Emitted dll|
+2020-03-29 22:26:08.1751 INFO|Compiler|Total elapsed 00:00:04.5470156|
+2020-03-29 22:26:38.5902 INFO|Dev|Started|
+2020-03-29 22:26:38.7231 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:26:38.7341 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:26:38.7921 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:26:38.8781 INFO|Compiler|BuildFull|
+2020-03-29 22:26:38.9551 INFO|Compiler|Time elapsed 00:00:00.0784739 on Loaded references|
+2020-03-29 22:26:39.1770 INFO|Compiler|Time elapsed 00:00:00.2094096 on Loaded sources|
+2020-03-29 22:26:39.1910 INFO|Compiler|Time elapsed 00:00:00.0077078 on Compilation created|
+2020-03-29 22:26:39.4180 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:26:40.0338 INFO|Compiler|Analyzers:|
+2020-03-29 22:26:40.0338 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib-core\DiagnosticAnalyzer.dll|
+2020-03-29 22:26:40.0917 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:26:40.0917 INFO|Compiler|Time elapsed 00:00:00.8881223 on Loaded analyzers|
+2020-03-29 22:26:40.5576 INFO|Compiler|Time elapsed 00:00:00.4634271 on Code generated|
+2020-03-29 22:26:42.5330 INFO|Compiler|Time elapsed 00:00:01.9748204 on Macros completed|
+2020-03-29 22:26:43.7679 INFO|Compiler|Time elapsed 00:00:01.2266252 on Emitted dll|
+2020-03-29 22:26:43.7679 INFO|Compiler|Total elapsed 00:00:04.8917709|
+2020-03-29 22:41:58.1809 INFO|Dev|Started|
+2020-03-29 22:41:58.2329 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:41:58.2329 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:41:58.2749 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:41:58.2929 INFO|Compiler|BuildFull|
+2020-03-29 22:41:58.3249 INFO|Compiler|Time elapsed 00:00:00.0334836 on Loaded references|
+2020-03-29 22:41:58.4828 INFO|Compiler|Time elapsed 00:00:00.1568765 on Loaded sources|
+2020-03-29 22:41:58.4828 INFO|Compiler|Time elapsed 00:00:00.0055820 on Compilation created|
+2020-03-29 22:41:58.6255 INFO|Compiler|Time elapsed 00:00:00.1360287 on Loaded analyzers|
+2020-03-29 22:41:59.0344 INFO|Compiler|Time elapsed 00:00:00.4092679 on Code generated|
+2020-03-29 22:42:00.6354 INFO|Compiler|Time elapsed 00:00:01.5997869 on Macros completed|
+2020-03-29 22:42:01.8740 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.dll, size: 1,040,384|
+2020-03-29 22:42:01.8740 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.pdb, size: 393,216|
+2020-03-29 22:42:01.8740 INFO|Compiler|Time elapsed 00:00:01.2412165 on Emitted dll|
+2020-03-29 22:42:01.8740 INFO|Compiler|Total elapsed 00:00:03.5862238|
+2020-03-29 22:42:45.8342 INFO|Dev|Started|
+2020-03-29 22:42:45.9481 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:42:45.9541 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:42:45.9921 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:42:46.0151 INFO|Compiler|BuildFull|
+2020-03-29 22:42:46.0771 INFO|Compiler|Time elapsed 00:00:00.0623975 on Loaded references|
+2020-03-29 22:42:46.6249 INFO|Compiler|Time elapsed 00:00:00.5454453 on Loaded sources|
+2020-03-29 22:42:46.6859 INFO|Compiler|Time elapsed 00:00:00.0606863 on Compilation created|
+2020-03-29 22:42:47.2060 INFO|Compiler|Time elapsed 00:00:00.5191711 on Loaded analyzers|
+2020-03-29 22:42:48.1613 INFO|Compiler|Time elapsed 00:00:00.9552871 on Code generated|
+2020-03-29 22:42:51.5346 INFO|Compiler|Time elapsed 00:00:03.3725415 on Macros completed|
+2020-03-29 22:42:54.0878 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.dll, size: 1,040,384|
+2020-03-29 22:42:54.0908 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.pdb, size: 393,216|
+2020-03-29 22:42:54.0908 INFO|Compiler|Time elapsed 00:00:02.5569048 on Emitted dll|
+2020-03-29 22:42:54.0908 INFO|Compiler|Total elapsed 00:00:08.0799436|
+2020-03-29 22:43:31.8763 INFO|Dev|Started|
+2020-03-29 22:43:31.9612 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:43:31.9692 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:43:31.9962 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:43:32.0182 INFO|Compiler|BuildFull|
+2020-03-29 22:43:32.0612 INFO|Compiler|Time elapsed 00:00:00.0434706 on Loaded references|
+2020-03-29 22:43:32.2691 INFO|Compiler|Time elapsed 00:00:00.2082094 on Loaded sources|
+2020-03-29 22:43:32.2791 INFO|Compiler|Time elapsed 00:00:00.0085779 on Compilation created|
+2020-03-29 22:43:32.4881 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:43:32.9649 INFO|Compiler|Analyzers:|
+2020-03-29 22:43:32.9679 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib-core\DiagnosticAnalyzer.dll|
+2020-03-29 22:43:32.9959 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:43:32.9979 INFO|Compiler|Time elapsed 00:00:00.7181445 on Loaded analyzers|
+2020-03-29 22:43:33.4473 INFO|Compiler|Time elapsed 00:00:00.4488390 on Code generated|
+2020-03-29 22:43:35.1117 INFO|Compiler|Time elapsed 00:00:01.6632443 on Macros completed|
+2020-03-29 22:43:36.6560 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.dll, size: 1,040,384|
+2020-03-29 22:43:36.6560 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.pdb, size: 393,216|
+2020-03-29 22:43:36.6560 INFO|Compiler|Time elapsed 00:00:01.5467838 on Emitted dll|
+2020-03-29 22:43:36.6560 INFO|Compiler|Total elapsed 00:00:04.6422314|
+2020-03-29 22:44:01.6211 INFO|Dev|Started|
+2020-03-29 22:44:01.7031 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib-core.dll)|
+2020-03-29 22:44:01.7031 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:44:01.7381 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:44:01.7631 INFO|Compiler|BuildFull|
+2020-03-29 22:44:01.8110 INFO|Compiler|Time elapsed 00:00:00.0508102 on Loaded references|
+2020-03-29 22:44:02.0100 INFO|Compiler|Time elapsed 00:00:00.1977596 on Loaded sources|
+2020-03-29 22:44:02.0220 INFO|Compiler|Time elapsed 00:00:00.0116452 on Compilation created|
+2020-03-29 22:44:02.2229 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:44:02.6928 INFO|Compiler|Analyzers:|
+2020-03-29 22:44:02.6928 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib-core\DiagnosticAnalyzer.dll|
+2020-03-29 22:44:02.7238 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:44:02.7238 INFO|Compiler|Time elapsed 00:00:00.7016425 on Loaded analyzers|
+2020-03-29 22:44:03.2152 INFO|Compiler|Time elapsed 00:00:00.4897624 on Code generated|
+2020-03-29 22:44:04.8447 INFO|Compiler|Time elapsed 00:00:01.6278406 on Macros completed|
+2020-03-29 22:44:06.4291 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.dll, size: 1,040,384|
+2020-03-29 22:44:06.4291 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/tlplib-core.pdb, size: 393,216|
+2020-03-29 22:44:06.4291 INFO|Compiler|Time elapsed 00:00:01.5866019 on Emitted dll|
+2020-03-29 22:44:06.4291 INFO|Compiler|Total elapsed 00:00:04.6717832|
+2020-03-29 22:45:27.9110 INFO|Dev|Started|
+2020-03-29 22:45:27.9570 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib.dll)|
+2020-03-29 22:45:27.9650 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:45:27.9900 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:45:28.0090 INFO|Compiler|BuildFull|
+2020-03-29 22:45:28.0359 INFO|Compiler|Time elapsed 00:00:00.0277917 on Loaded references|
+2020-03-29 22:45:28.1009 INFO|Compiler|Time elapsed 00:00:00.0650390 on Loaded sources|
+2020-03-29 22:45:28.1079 INFO|Compiler|Time elapsed 00:00:00.0061044 on Compilation created|
+2020-03-29 22:45:28.2239 INFO|Compiler|Compiling analyzer: ./Analyzers\DiagnosticAnalyzer.cs|
+2020-03-29 22:45:28.6439 INFO|Compiler|Analyzers:|
+2020-03-29 22:45:28.6439 INFO|Compiler|Analyzer dll: Temp\compiled-analyzers-tlplib\DiagnosticAnalyzer.dll|
+2020-03-29 22:45:28.6699 INFO|Compiler|SwitchEnum.SwitchEnumAnalyzer|
+2020-03-29 22:45:28.6699 INFO|Compiler|Time elapsed 00:00:00.5627558 on Loaded analyzers|
+2020-03-29 22:45:28.8168 INFO|Compiler|Time elapsed 00:00:00.1456899 on Code generated|
+2020-03-29 22:45:28.8168 INFO|Compiler|Time elapsed 00:00:00.0052081 on Macros completed|
+2020-03-29 22:45:29.1147 INFO|Compiler|Time elapsed 00:00:00.2914215 on Emitted dll|
+2020-03-29 22:45:29.1147 INFO|Compiler|Total elapsed 00:00:01.1077359|
+2020-03-29 22:45:52.1435 INFO|Dev|Started|
+2020-03-29 22:45:52.2035 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib.dll)|
+2020-03-29 22:45:52.2035 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:45:52.2505 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:45:52.2751 INFO|Compiler|BuildFull|
+2020-03-29 22:45:52.3170 INFO|Compiler|Time elapsed 00:00:00.0436452 on Loaded references|
+2020-03-29 22:45:52.3910 INFO|Compiler|Time elapsed 00:00:00.0733354 on Loaded sources|
+2020-03-29 22:45:52.3910 INFO|Compiler|Time elapsed 00:00:00.0079491 on Compilation created|
+2020-03-29 22:45:52.5830 INFO|Compiler|Time elapsed 00:00:00.1824745 on Loaded analyzers|
+2020-03-29 22:45:52.8038 INFO|Compiler|Time elapsed 00:00:00.2195555 on Code generated|
+2020-03-29 22:45:52.8108 INFO|Compiler|Time elapsed 00:00:00.0067924 on Macros completed|
+2020-03-29 22:45:53.1257 INFO|Compiler|Time elapsed 00:00:00.3139831 on Emitted dll|
+2020-03-29 22:45:53.1387 INFO|Compiler|Total elapsed 00:00:00.8651777|
+2020-03-29 22:47:51.6486 INFO|Dev|Started|
+2020-03-29 22:47:51.7065 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib.dll)|
+2020-03-29 22:47:51.7065 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:47:51.7425 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:47:51.7685 INFO|Compiler|BuildFull|
+2020-03-29 22:47:51.7995 INFO|Compiler|Time elapsed 00:00:00.0329740 on Loaded references|
+2020-03-29 22:47:51.8773 INFO|Compiler|Time elapsed 00:00:00.0771759 on Loaded sources|
+2020-03-29 22:47:51.8773 INFO|Compiler|Time elapsed 00:00:00.0064474 on Compilation created|
+2020-03-29 22:47:52.0032 INFO|Compiler|Time elapsed 00:00:00.1187645 on Loaded analyzers|
+2020-03-29 22:47:52.2122 INFO|Compiler|Time elapsed 00:00:00.2082743 on Code generated|
+2020-03-29 22:47:52.2182 INFO|Compiler|Time elapsed 00:00:00.0054572 on Macros completed|
+2020-03-29 22:47:52.5161 INFO|Compiler|Time elapsed 00:00:00.2976014 on Emitted dll|
+2020-03-29 22:47:52.5161 INFO|Compiler|Total elapsed 00:00:00.7507835|
+2020-03-29 22:59:55.4711 INFO|Dev|Started|
+2020-03-29 22:59:55.5261 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/tlplib.dll)|
+2020-03-29 22:59:55.5331 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:59:55.5701 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-03-29 22:59:55.6091 INFO|Compiler|BuildFull|
+2020-03-29 22:59:55.6351 INFO|Compiler|Time elapsed 00:00:00.0270749 on Loaded references|
+2020-03-29 22:59:55.8451 INFO|Compiler|Time elapsed 00:00:00.2092860 on Loaded sources|
+2020-03-29 22:59:55.8811 INFO|Compiler|Time elapsed 00:00:00.0357901 on Compilation created|
+2020-03-29 22:59:56.1900 INFO|Compiler|Time elapsed 00:00:00.3079907 on Loaded analyzers|
+2020-03-29 22:59:56.9249 INFO|Compiler|Time elapsed 00:00:00.7342156 on Code generated|
+2020-03-29 22:59:56.9249 INFO|Compiler|Time elapsed 00:00:00.0055638 on Macros completed|
+2020-03-29 22:59:57.7547 INFO|Compiler|Time elapsed 00:00:00.8232393 on Emitted dll|
+2020-03-29 22:59:57.7547 INFO|Compiler|Total elapsed 00:00:02.1471063|
