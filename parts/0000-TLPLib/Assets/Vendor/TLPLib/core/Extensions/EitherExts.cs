@@ -1,4 +1,5 @@
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
 
@@ -8,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this Either<A, B> either, string errorMessage = null, object context = null, ILog log = null
     ) {
       if (either.isLeft) {
-        log = log ?? Log.@default;
+        log ??= Log.@default;
         log.error(
           errorMessage == null 
           ? either.__unsafeGetLeft.ToString() 
