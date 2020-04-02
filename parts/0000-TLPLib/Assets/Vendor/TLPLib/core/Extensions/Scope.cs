@@ -1,11 +1,11 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
-  public static class Scope {
-    public static void create(Action local) => local();
+  [PublicAPI] public static class Scope {
+    public static void create<A>(Action local) => local();
+    public static void create<A, Data>(Data d, Action<Data> local) => local(d);
     public static T create<T>(Func<T> local) => local();
-
-    public static void locally(this object any, Action local) => local();
-    public static T locally<T>(this object any, Func<T> local) => local();
+    public static T create<Data, T>(Data d, Func<Data, T> local) => local(d);
   }
 }
