@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    [Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)]
+    [Record(GenerateConstructor = ConstructorFlags.None, GenerateToString = false)]
     public partial struct Error {
       public enum Type : byte {
         MissingComponent,

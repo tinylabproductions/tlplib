@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  [Record(GenerateConstructor = GeneratedConstructor.None)]
+  [Record(GenerateConstructor = ConstructorFlags.None)]
   public partial struct ErrorMsg {
     [PublicAPI] public readonly string s;
     /// <see cref="LogEntry.reportToErrorTracking"/>

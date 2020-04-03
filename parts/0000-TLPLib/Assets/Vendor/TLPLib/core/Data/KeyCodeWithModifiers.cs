@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Data {
   /// 
   /// var keyCodeWithModifiers = Ctrl+Alt+Z;
   /// </code>
-  [Record(GenerateConstructor = GeneratedConstructor.None)] public partial struct KeyModifier {
+  [Record(GenerateConstructor = ConstructorFlags.None)] public partial struct KeyModifier {
     public static readonly KeyModifier 
       Ctrl = new KeyModifier(Val.Ctrl), Alt = new KeyModifier(Val.Alt), Shift = new KeyModifier(Val.Shift);
     

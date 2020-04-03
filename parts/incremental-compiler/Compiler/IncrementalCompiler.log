@@ -246,3 +246,557 @@
 2020-03-29 22:59:56.9249 INFO|Compiler|Time elapsed 00:00:00.0055638 on Macros completed|
 2020-03-29 22:59:57.7547 INFO|Compiler|Time elapsed 00:00:00.8232393 on Emitted dll|
 2020-03-29 22:59:57.7547 INFO|Compiler|Total elapsed 00:00:02.1471063|
+2020-04-01 01:28:08.9952 INFO|Dev|Started|
+2020-04-01 01:28:09.0562 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:28:09.0562 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:28:09.1151 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:28:09.1201 ERROR|CompilerService|Error in build.|System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri.CreateThis(String uri, Boolean dontEscape, UriKind uriKind)
+   at IncrementalCompiler.Compiler.Build(CompileOptions options) in C:\work\compiler\Unity3D.IncrementalCompiler\core\IncrementalCompiler\Compiler.cs:line 236
+   at IncrementalCompiler.CompilerService.Build(String projectPath, CompileOptions options) in C:\work\compiler\Unity3D.IncrementalCompiler\core\IncrementalCompiler\CompilerService.cs:line 64
+2020-04-01 01:28:27.4987 INFO|Dev|Started|
+2020-04-01 01:28:27.6317 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:28:27.6317 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:28:27.6926 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:33:41.6815 INFO|Dev|Started|
+2020-04-01 01:33:41.7354 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:33:41.7424 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:33:41.7654 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:33:41.8124 INFO|Compiler|BuildFull|
+2020-04-01 01:33:41.8534 INFO|Compiler|Time elapsed 00:00:00.0422306 on Loaded references|
+2020-04-01 01:33:42.1463 INFO|Compiler|Time elapsed 00:00:00.2918388 on Loaded sources|
+2020-04-01 01:33:42.1803 INFO|Compiler|Time elapsed 00:00:00.0331338 on Compilation created|
+2020-04-01 01:33:42.5062 INFO|Compiler|Time elapsed 00:00:00.3237838 on Loaded analyzers|
+2020-04-01 01:33:43.1110 INFO|Compiler|Time elapsed 00:00:00.6042684 on Code generated|
+2020-04-01 01:33:45.3963 INFO|Compiler|Time elapsed 00:00:02.2844687 on Macros completed|
+2020-04-01 01:33:46.4999 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:33:46.4999 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:33:46.4999 INFO|Compiler|Time elapsed 00:00:01.1046547 on Emitted dll|
+2020-04-01 01:33:46.4999 INFO|Compiler|Total elapsed 00:00:04.6915798|
+2020-04-01 01:36:21.9438 INFO|Dev|Started|
+2020-04-01 01:36:22.0168 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:36:22.0248 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:36:22.0627 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:36:22.1297 INFO|Compiler|BuildFull|
+2020-04-01 01:36:22.1767 INFO|Compiler|Time elapsed 00:00:00.0483020 on Loaded references|
+2020-04-01 01:36:22.5798 INFO|Compiler|Time elapsed 00:00:00.4025208 on Loaded sources|
+2020-04-01 01:36:22.6158 INFO|Compiler|Time elapsed 00:00:00.0342984 on Compilation created|
+2020-04-01 01:36:23.0297 INFO|Compiler|Time elapsed 00:00:00.4130201 on Loaded analyzers|
+2020-04-01 01:36:23.7368 INFO|Compiler|Time elapsed 00:00:00.7015825 on Code generated|
+2020-04-01 01:36:23.7428 INFO|Compiler|Time elapsed 00:00:00.0053351 on macros 1|
+2020-04-01 01:36:23.7428 INFO|Compiler|Time elapsed 00:00:00.0000002 on macros 2|
+2020-04-01 01:36:25.2076 INFO|Compiler|Time elapsed 00:00:01.4632681 on macros 3|
+2020-04-01 01:36:25.2076 INFO|Compiler|Time elapsed 00:00:00.0000432 on macros 4|
+2020-04-01 01:36:26.0547 INFO|Compiler|Time elapsed 00:00:00.8455350 on macros 5|
+2020-04-01 01:36:26.0547 INFO|Compiler|Time elapsed 00:00:00.0000272 on macros 6|
+2020-04-01 01:36:26.0547 INFO|Compiler|Time elapsed 00:00:00.0000004 on Macros completed|
+2020-04-01 01:36:27.1818 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:36:27.1818 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:36:27.1818 INFO|Compiler|Time elapsed 00:00:01.1277367 on Emitted dll|
+2020-04-01 01:36:27.1818 INFO|Compiler|Total elapsed 00:00:05.0570309|
+2020-04-01 01:36:57.5119 INFO|Dev|Started|
+2020-04-01 01:36:57.6339 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:36:57.6339 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:36:57.6829 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:36:57.7409 INFO|Compiler|BuildFull|
+2020-04-01 01:36:57.8428 INFO|Compiler|Time elapsed 00:00:00.1029671 on Loaded references|
+2020-04-01 01:36:58.2107 INFO|Compiler|Time elapsed 00:00:00.3657260 on Loaded sources|
+2020-04-01 01:36:58.2727 INFO|Compiler|Time elapsed 00:00:00.0607705 on Compilation created|
+2020-04-01 01:36:58.8845 INFO|Compiler|Time elapsed 00:00:00.6112959 on Loaded analyzers|
+2020-04-01 01:36:59.4093 INFO|Compiler|Time elapsed 00:00:00.5234760 on Code generated|
+2020-04-01 01:36:59.4213 INFO|Compiler|Time elapsed 00:00:00.0109086 on macros 1|
+2020-04-01 01:36:59.4213 INFO|Compiler|Time elapsed 00:00:00.0000009 on macros 2|
+2020-04-01 01:37:02.8606 INFO|Compiler|Time elapsed 00:00:03.4378184 on macros 3|
+2020-04-01 01:37:02.8606 INFO|Compiler|Time elapsed 00:00:00.0003998 on macros 4|
+2020-04-01 01:37:03.4146 INFO|Compiler|Time elapsed 00:00:00.5513534 on macros 5|
+2020-04-01 01:37:35.7945 INFO|Dev|Started|
+2020-04-01 01:37:35.8405 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:37:35.8405 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:37:35.8714 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:37:35.9324 INFO|Compiler|BuildFull|
+2020-04-01 01:37:35.9894 INFO|Compiler|Time elapsed 00:00:00.0585928 on Loaded references|
+2020-04-01 01:37:36.3603 INFO|Compiler|Time elapsed 00:00:00.3695622 on Loaded sources|
+2020-04-01 01:37:36.4123 INFO|Compiler|Time elapsed 00:00:00.0514529 on Compilation created|
+2020-04-01 01:37:36.7932 INFO|Compiler|Time elapsed 00:00:00.3783250 on Loaded analyzers|
+2020-04-01 01:37:37.4980 INFO|Compiler|Time elapsed 00:00:00.7041549 on Code generated|
+2020-04-01 01:37:37.4980 INFO|Compiler|Time elapsed 00:00:00.0064584 on macros 1|
+2020-04-01 01:37:37.4980 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2|
+2020-04-01 01:37:39.0789 INFO|Compiler|Time elapsed 00:00:01.5726155 on macros 3|
+2020-04-01 01:37:39.0789 INFO|Compiler|Time elapsed 00:00:00.0000452 on macros 4|
+2020-04-01 01:37:39.9319 INFO|Compiler|Time elapsed 00:00:00.8512834 on macros 5|
+2020-04-01 01:37:39.9319 INFO|Compiler|Time elapsed 00:00:00.0000376 on macros 6|
+2020-04-01 01:37:39.9319 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 01:37:41.0986 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:37:41.0986 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:37:41.1006 INFO|Compiler|Time elapsed 00:00:01.1655127 on Emitted dll|
+2020-04-01 01:37:41.1006 INFO|Compiler|Total elapsed 00:00:05.1709862|
+2020-04-01 01:37:49.7327 INFO|Dev|Started|
+2020-04-01 01:37:49.7797 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:37:49.7797 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:37:49.8116 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:37:49.8516 INFO|Compiler|BuildFull|
+2020-04-01 01:37:49.8956 INFO|Compiler|Time elapsed 00:00:00.0445635 on Loaded references|
+2020-04-01 01:37:50.1515 INFO|Compiler|Time elapsed 00:00:00.2550333 on Loaded sources|
+2020-04-01 01:37:50.1885 INFO|Compiler|Time elapsed 00:00:00.0365572 on Compilation created|
+2020-04-01 01:37:50.5074 INFO|Compiler|Time elapsed 00:00:00.3174900 on Loaded analyzers|
+2020-04-01 01:37:51.0772 INFO|Compiler|Time elapsed 00:00:00.5692855 on Code generated|
+2020-04-01 01:37:51.0772 INFO|Compiler|Time elapsed 00:00:00.0049705 on macros 1|
+2020-04-01 01:37:51.0772 INFO|Compiler|Time elapsed 00:00:00.0000008 on macros 2|
+2020-04-01 01:37:52.5168 INFO|Compiler|Time elapsed 00:00:01.4313791 on macros 3|
+2020-04-01 01:37:52.5168 INFO|Compiler|Time elapsed 00:00:00.0000468 on macros 4|
+2020-04-01 01:37:53.4465 INFO|Compiler|Time elapsed 00:00:00.9289127 on macros 5|
+2020-04-01 01:37:53.4465 INFO|Compiler|Time elapsed 00:00:00.0000258 on macros 6|
+2020-04-01 01:37:53.4465 INFO|Compiler|Time elapsed 00:00:00.0000004 on Macros completed|
+2020-04-01 01:37:54.5661 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:37:54.5661 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:37:54.5691 INFO|Compiler|Time elapsed 00:00:01.1198586 on Emitted dll|
+2020-04-01 01:37:54.5691 INFO|Compiler|Total elapsed 00:00:04.7191088|
+2020-04-01 01:38:07.7387 INFO|Dev|Started|
+2020-04-01 01:38:07.7877 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:38:07.7947 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:38:07.8277 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:38:07.8827 INFO|Compiler|BuildFull|
+2020-04-01 01:38:07.9287 INFO|Compiler|Time elapsed 00:00:00.0469317 on Loaded references|
+2020-04-01 01:38:08.2676 INFO|Compiler|Time elapsed 00:00:00.3373459 on Loaded sources|
+2020-04-01 01:38:08.3145 INFO|Compiler|Time elapsed 00:00:00.0460096 on Compilation created|
+2020-04-01 01:38:08.6897 INFO|Compiler|Time elapsed 00:00:00.3743359 on Loaded analyzers|
+2020-04-01 01:38:09.3756 INFO|Compiler|Time elapsed 00:00:00.6854753 on Code generated|
+2020-04-01 01:38:09.3826 INFO|Compiler|Time elapsed 00:00:00.0053577 on macros 1|
+2020-04-01 01:38:09.3826 INFO|Compiler|Time elapsed 00:00:00 on macros 2|
+2020-04-01 01:38:10.9499 INFO|Compiler|Time elapsed 00:00:01.5666911 on macros 3|
+2020-04-01 01:38:10.9499 INFO|Compiler|Time elapsed 00:00:00.0000523 on macros 4|
+2020-04-01 01:38:11.7960 INFO|Compiler|Time elapsed 00:00:00.8433156 on macros 5|
+2020-04-01 01:38:11.7960 INFO|Compiler|Time elapsed 00:00:00.0000218 on macros 6|
+2020-04-01 01:38:11.7960 INFO|Compiler|Time elapsed 00:00:00.0000002 on Macros completed|
+2020-04-01 01:38:12.8989 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:38:12.8989 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:38:12.8989 INFO|Compiler|Time elapsed 00:00:01.1043403 on Emitted dll|
+2020-04-01 01:38:12.8989 INFO|Compiler|Total elapsed 00:00:05.0208057|
+2020-04-01 01:42:01.6662 INFO|Dev|Started|
+2020-04-01 01:42:01.7272 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:42:01.7272 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:42:01.7722 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:42:01.8462 INFO|Compiler|BuildFull|
+2020-04-01 01:42:01.9002 INFO|Compiler|Time elapsed 00:00:00.0548932 on Loaded references|
+2020-04-01 01:42:02.2434 INFO|Compiler|Time elapsed 00:00:00.3428540 on Loaded sources|
+2020-04-01 01:42:02.2824 INFO|Compiler|Time elapsed 00:00:00.0382896 on Compilation created|
+2020-04-01 01:42:02.6518 INFO|Compiler|Time elapsed 00:00:00.3672723 on Loaded analyzers|
+2020-04-01 01:42:03.4106 INFO|Compiler|Time elapsed 00:00:00.7575394 on Code generated|
+2020-04-01 01:42:03.4196 INFO|Compiler|Time elapsed 00:00:00.0077696 on macros 1|
+2020-04-01 01:42:03.4196 INFO|Compiler|Time elapsed 00:00:00.0000011 on macros 2|
+2020-04-01 01:42:04.8462 INFO|Compiler|Time elapsed 00:00:01.4244228 on macros 3|
+2020-04-01 01:42:04.8462 INFO|Compiler|Time elapsed 00:00:00.0000502 on macros 4|
+2020-04-01 01:42:05.7081 INFO|Compiler|Time elapsed 00:00:00.8596012 on macros 5|
+2020-04-01 01:42:05.7081 INFO|Compiler|Time elapsed 00:00:00.0000219 on macros 6|
+2020-04-01 01:42:05.7101 INFO|Compiler|Time elapsed 00:00:00.0000001 on Macros completed|
+2020-04-01 01:42:06.8212 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:42:06.8212 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:42:06.8212 INFO|Compiler|Time elapsed 00:00:01.1132819 on Emitted dll|
+2020-04-01 01:42:06.8212 INFO|Compiler|Total elapsed 00:00:04.9798008|
+2020-04-01 01:43:03.3568 INFO|Dev|Started|
+2020-04-01 01:43:03.4158 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:43:03.4158 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:43:03.4508 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:43:03.5107 INFO|Compiler|BuildFull|
+2020-04-01 01:43:03.5557 INFO|Compiler|Time elapsed 00:00:00.0460441 on Loaded references|
+2020-04-01 01:43:03.8706 INFO|Compiler|Time elapsed 00:00:00.3140036 on Loaded sources|
+2020-04-01 01:43:03.9086 INFO|Compiler|Time elapsed 00:00:00.0369322 on Compilation created|
+2020-04-01 01:43:04.2435 INFO|Compiler|Time elapsed 00:00:00.3345132 on Loaded analyzers|
+2020-04-01 01:43:04.9033 INFO|Compiler|Time elapsed 00:00:00.6589441 on Code generated|
+2020-04-01 01:43:04.9033 INFO|Compiler|Time elapsed 00:00:00.0045490 on macros 1|
+2020-04-01 01:43:04.9033 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2|
+2020-04-01 01:43:05.8880 INFO|Compiler|Time elapsed 00:00:00.9777140 on macros 2.1|
+2020-04-01 01:43:06.3138 INFO|Compiler|Time elapsed 00:00:00.4245772 on macros 3|
+2020-04-01 01:43:06.3138 INFO|Compiler|Time elapsed 00:00:00.0000433 on macros 4|
+2020-04-01 01:43:07.1836 INFO|Compiler|Time elapsed 00:00:00.8683505 on macros 5|
+2020-04-01 01:43:07.1836 INFO|Compiler|Time elapsed 00:00:00.0000182 on macros 6|
+2020-04-01 01:43:07.1836 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 01:43:08.3222 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:43:08.3222 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:43:08.3222 INFO|Compiler|Time elapsed 00:00:01.1393218 on Emitted dll|
+2020-04-01 01:43:08.3222 INFO|Compiler|Total elapsed 00:00:04.8170165|
+2020-04-01 01:44:18.1816 INFO|Dev|Started|
+2020-04-01 01:44:18.2466 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:44:18.2466 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:44:18.2885 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:44:18.3535 INFO|Compiler|BuildFull|
+2020-04-01 01:44:18.4005 INFO|Compiler|Time elapsed 00:00:00.0486003 on Loaded references|
+2020-04-01 01:44:18.7073 INFO|Compiler|Time elapsed 00:00:00.3061505 on Loaded sources|
+2020-04-01 01:44:18.7483 INFO|Compiler|Time elapsed 00:00:00.0394310 on Compilation created|
+2020-04-01 01:44:19.0752 INFO|Compiler|Time elapsed 00:00:00.3260170 on Loaded analyzers|
+2020-04-01 01:44:19.7158 INFO|Compiler|Time elapsed 00:00:00.6401010 on Code generated|
+2020-04-01 01:44:19.7158 INFO|Compiler|Time elapsed 00:00:00.0045391 on macros 1|
+2020-04-01 01:44:19.7158 INFO|Compiler|Time elapsed 00:00:00.0000005 on macros 2|
+2020-04-01 01:44:19.9168 INFO|Compiler|Time elapsed 00:00:00.1940950 on macros 2.1|
+2020-04-01 01:44:20.6835 INFO|Compiler|Time elapsed 00:00:00.7652560 on macros 2.2|
+2020-04-01 01:44:21.0474 INFO|Compiler|Time elapsed 00:00:00.3636215 on macros 3|
+2020-04-01 01:44:21.0474 INFO|Compiler|Time elapsed 00:00:00.0000488 on macros 4|
+2020-04-01 01:44:21.9132 INFO|Compiler|Time elapsed 00:00:00.8635203 on macros 5|
+2020-04-01 01:44:21.9132 INFO|Compiler|Time elapsed 00:00:00.0000189 on macros 6|
+2020-04-01 01:44:21.9132 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 01:44:22.9968 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:44:22.9968 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:44:22.9968 INFO|Compiler|Time elapsed 00:00:01.0843534 on Emitted dll|
+2020-04-01 01:44:22.9968 INFO|Compiler|Total elapsed 00:00:04.6477485|
+2020-04-01 01:45:07.5600 INFO|Dev|Started|
+2020-04-01 01:45:07.6110 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:45:07.6170 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:45:07.6440 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:45:07.7049 INFO|Compiler|BuildFull|
+2020-04-01 01:45:07.7539 INFO|Compiler|Time elapsed 00:00:00.0498325 on Loaded references|
+2020-04-01 01:45:08.0548 INFO|Compiler|Time elapsed 00:00:00.2997917 on Loaded sources|
+2020-04-01 01:45:08.0868 INFO|Compiler|Time elapsed 00:00:00.0315406 on Compilation created|
+2020-04-01 01:45:08.4047 INFO|Compiler|Time elapsed 00:00:00.3163515 on Loaded analyzers|
+2020-04-01 01:45:09.0435 INFO|Compiler|Time elapsed 00:00:00.6377751 on Code generated|
+2020-04-01 01:45:09.0435 INFO|Compiler|Time elapsed 00:00:00.0039592 on macros 1|
+2020-04-01 01:45:09.0435 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2|
+2020-04-01 01:45:09.2405 INFO|Compiler|Time elapsed 00:00:00.1907156 on macros 2.1|
+2020-04-01 01:45:09.7263 INFO|Compiler|Time elapsed 00:00:00.4840408 on macros 2.2|
+2020-04-01 01:45:10.0432 INFO|Compiler|Time elapsed 00:00:00.3156742 on macros 3|
+2020-04-01 01:45:10.0432 INFO|Compiler|Time elapsed 00:00:00.0000638 on macros 4|
+2020-04-01 01:45:10.9389 INFO|Compiler|Time elapsed 00:00:00.8940744 on macros 5|
+2020-04-01 01:45:10.9389 INFO|Compiler|Time elapsed 00:00:00.0000269 on macros 6|
+2020-04-01 01:45:10.9389 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 01:45:12.0305 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:45:12.0305 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:45:12.0305 INFO|Compiler|Time elapsed 00:00:01.0923170 on Emitted dll|
+2020-04-01 01:45:12.0305 INFO|Compiler|Total elapsed 00:00:04.3296924|
+2020-04-01 01:57:28.0335 INFO|Dev|Started|
+2020-04-01 01:57:28.0915 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 01:57:28.0915 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:57:28.1225 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 01:57:28.1785 INFO|Compiler|BuildFull|
+2020-04-01 01:57:28.2244 INFO|Compiler|Time elapsed 00:00:00.0474259 on Loaded references|
+2020-04-01 01:57:28.5294 INFO|Compiler|Time elapsed 00:00:00.3044578 on Loaded sources|
+2020-04-01 01:57:28.5633 INFO|Compiler|Time elapsed 00:00:00.0325098 on Compilation created|
+2020-04-01 01:57:28.8972 INFO|Compiler|Time elapsed 00:00:00.3325769 on Loaded analyzers|
+2020-04-01 01:57:29.5800 INFO|Compiler|Time elapsed 00:00:00.6821416 on Code generated|
+2020-04-01 01:57:29.5850 INFO|Compiler|Time elapsed 00:00:00.0042094 on macros 1|
+2020-04-01 01:57:29.5850 INFO|Compiler|Time elapsed 00:00:00.0000002 on macros 2|
+2020-04-01 01:57:29.5850 INFO|Compiler|Time elapsed 00:00:00.0000994 on macros 2.1|
+2020-04-01 01:57:29.7760 INFO|Compiler|Time elapsed 00:00:00.1875112 on macros 2.2|
+2020-04-01 01:57:30.2568 INFO|Compiler|Time elapsed 00:00:00.4803242 on macros 2.3|
+2020-04-01 01:57:30.5717 INFO|Compiler|Time elapsed 00:00:00.3142560 on macros 3|
+2020-04-01 01:57:30.5717 INFO|Compiler|Time elapsed 00:00:00.0000429 on macros 4|
+2020-04-01 01:57:31.5816 INFO|Compiler|Time elapsed 00:00:01.0073290 on macros 5|
+2020-04-01 01:57:31.5816 INFO|Compiler|Time elapsed 00:00:00.0000185 on macros 6|
+2020-04-01 01:57:31.5816 INFO|Compiler|Time elapsed 00:00:00.0000002 on Macros completed|
+2020-04-01 01:57:32.6733 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 01:57:32.6733 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 01:57:32.6733 INFO|Compiler|Time elapsed 00:00:01.0918241 on Emitted dll|
+2020-04-01 01:57:32.6733 INFO|Compiler|Total elapsed 00:00:04.4993620|
+2020-04-01 02:03:12.1911 INFO|Dev|Started|
+2020-04-01 02:03:12.2381 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:03:12.2451 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:03:12.2691 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:03:12.3270 INFO|Compiler|BuildFull|
+2020-04-01 02:03:12.3820 INFO|Compiler|Time elapsed 00:00:00.0568040 on Loaded references|
+2020-04-01 02:03:12.7019 INFO|Compiler|Time elapsed 00:00:00.3183173 on Loaded sources|
+2020-04-01 02:03:12.7359 INFO|Compiler|Time elapsed 00:00:00.0335956 on Compilation created|
+2020-04-01 02:03:13.0428 INFO|Compiler|Time elapsed 00:00:00.3053183 on Loaded analyzers|
+2020-04-01 02:03:13.7086 INFO|Compiler|Time elapsed 00:00:00.6649430 on Code generated|
+2020-04-01 02:03:13.7146 INFO|Compiler|Time elapsed 00:00:00.0052536 on macros 1|
+2020-04-01 02:03:13.7146 INFO|Compiler|Time elapsed 00:00:00.0000010 on macros 2|
+2020-04-01 02:03:13.8716 INFO|Compiler|Time elapsed 00:00:00.1556435 on macros 2.1|
+2020-04-01 02:03:13.9165 INFO|Compiler|Time elapsed 00:00:00.0434989 on macros 2.2|
+2020-04-01 02:03:14.3684 INFO|Compiler|Time elapsed 00:00:00.4516128 on macros 2.3|
+2020-04-01 02:03:14.7083 INFO|Compiler|Time elapsed 00:00:00.3385673 on macros 3|
+2020-04-01 02:03:14.7083 INFO|Compiler|Time elapsed 00:00:00.0000450 on macros 4|
+2020-04-01 02:03:15.5890 INFO|Compiler|Time elapsed 00:00:00.8789737 on macros 5|
+2020-04-01 02:03:15.5890 INFO|Compiler|Time elapsed 00:00:00.0000223 on macros 6|
+2020-04-01 02:03:15.5890 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:03:16.6637 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:03:16.6637 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:03:16.6637 INFO|Compiler|Time elapsed 00:00:01.0751083 on Emitted dll|
+2020-04-01 02:03:16.6637 INFO|Compiler|Total elapsed 00:00:04.3417489|
+2020-04-01 02:03:53.4026 INFO|Dev|Started|
+2020-04-01 02:03:53.4546 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:03:53.4626 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:03:53.4896 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:03:53.5456 INFO|Compiler|BuildFull|
+2020-04-01 02:03:53.5895 INFO|Compiler|Time elapsed 00:00:00.0461517 on Loaded references|
+2020-04-01 02:03:53.8984 INFO|Compiler|Time elapsed 00:00:00.3077926 on Loaded sources|
+2020-04-01 02:03:53.9314 INFO|Compiler|Time elapsed 00:00:00.0317293 on Compilation created|
+2020-04-01 02:03:54.2373 INFO|Compiler|Time elapsed 00:00:00.3047716 on Loaded analyzers|
+2020-04-01 02:03:54.8701 INFO|Compiler|Time elapsed 00:00:00.6317789 on Code generated|
+2020-04-01 02:03:54.8701 INFO|Compiler|Time elapsed 00:00:00.0040807 on macros 1|
+2020-04-01 02:03:54.8701 INFO|Compiler|Time elapsed 00:00:00.0000004 on macros 2|
+2020-04-01 02:03:54.8701 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2.1|
+2020-04-01 02:03:55.0631 INFO|Compiler|Time elapsed 00:00:00.1851835 on macros 2.2|
+2020-04-01 02:03:55.5409 INFO|Compiler|Time elapsed 00:00:00.4773128 on macros 2.3|
+2020-04-01 02:03:55.8538 INFO|Compiler|Time elapsed 00:00:00.3110858 on macros 3|
+2020-04-01 02:03:55.8538 INFO|Compiler|Time elapsed 00:00:00.0000441 on macros 4|
+2020-04-01 02:03:56.7276 INFO|Compiler|Time elapsed 00:00:00.8719304 on macros 5|
+2020-04-01 02:03:56.7276 INFO|Compiler|Time elapsed 00:00:00.0000179 on macros 6|
+2020-04-01 02:03:56.7276 INFO|Compiler|Time elapsed 00:00:00.0000004 on Macros completed|
+2020-04-01 02:03:57.7837 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:03:57.7837 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:03:57.7837 INFO|Compiler|Time elapsed 00:00:01.0580368 on Emitted dll|
+2020-04-01 02:03:57.7887 INFO|Compiler|Total elapsed 00:00:04.2445160|
+2020-04-01 02:04:26.8930 INFO|Dev|Started|
+2020-04-01 02:04:26.9480 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:04:26.9480 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:04:26.9869 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:04:27.0399 INFO|Compiler|BuildFull|
+2020-04-01 02:04:27.0949 INFO|Compiler|Time elapsed 00:00:00.0563905 on Loaded references|
+2020-04-01 02:04:27.4418 INFO|Compiler|Time elapsed 00:00:00.3449935 on Loaded sources|
+2020-04-01 02:04:27.4768 INFO|Compiler|Time elapsed 00:00:00.0340274 on Compilation created|
+2020-04-01 02:04:27.7997 INFO|Compiler|Time elapsed 00:00:00.3219473 on Loaded analyzers|
+2020-04-01 02:04:28.4515 INFO|Compiler|Time elapsed 00:00:00.6510736 on Code generated|
+2020-04-01 02:04:28.4515 INFO|Compiler|Time elapsed 00:00:00.0039505 on macros 1|
+2020-04-01 02:04:28.4515 INFO|Compiler|Time elapsed 00:00:00.0000001 on macros 2|
+2020-04-01 02:04:28.6014 INFO|Compiler|Time elapsed 00:00:00.1433758 on macros 2.1|
+2020-04-01 02:04:28.6464 INFO|Compiler|Time elapsed 00:00:00.0437054 on macros 2.2|
+2020-04-01 02:04:29.1133 INFO|Compiler|Time elapsed 00:00:00.4658340 on macros 2.3|
+2020-04-01 02:04:29.4422 INFO|Compiler|Time elapsed 00:00:00.3279634 on macros 3|
+2020-04-01 02:04:29.4422 INFO|Compiler|Time elapsed 00:00:00.0000478 on macros 4|
+2020-04-01 02:04:30.3559 INFO|Compiler|Time elapsed 00:00:00.9113710 on macros 5|
+2020-04-01 02:04:30.3559 INFO|Compiler|Time elapsed 00:00:00.0000301 on macros 6|
+2020-04-01 02:04:30.3559 INFO|Compiler|Time elapsed 00:00:00.0000007 on Macros completed|
+2020-04-01 02:04:31.4215 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:04:31.4215 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:04:31.4215 INFO|Compiler|Time elapsed 00:00:01.0636682 on Emitted dll|
+2020-04-01 02:04:31.4215 INFO|Compiler|Total elapsed 00:00:04.3853477|
+2020-04-01 02:05:35.1454 INFO|Dev|Started|
+2020-04-01 02:05:35.1974 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:05:35.1974 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:05:35.2334 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:05:35.2874 INFO|Compiler|BuildFull|
+2020-04-01 02:05:35.3324 INFO|Compiler|Time elapsed 00:00:00.0461308 on Loaded references|
+2020-04-01 02:05:35.6403 INFO|Compiler|Time elapsed 00:00:00.3068976 on Loaded sources|
+2020-04-01 02:05:35.6743 INFO|Compiler|Time elapsed 00:00:00.0335449 on Compilation created|
+2020-04-01 02:05:36.0221 INFO|Compiler|Time elapsed 00:00:00.3467541 on Loaded analyzers|
+2020-04-01 02:05:36.6615 INFO|Compiler|Time elapsed 00:00:00.6377890 on Code generated|
+2020-04-01 02:05:36.6665 INFO|Compiler|Time elapsed 00:00:00.0043645 on macros 1|
+2020-04-01 02:05:36.6665 INFO|Compiler|Time elapsed 00:00:00.0000004 on macros 2|
+2020-04-01 02:05:37.2803 INFO|Compiler|Time elapsed 00:00:00.6124758 on macros 2.1|
+2020-04-01 02:05:37.3253 INFO|Compiler|Time elapsed 00:00:00.0443708 on macros 2.2|
+2020-04-01 02:05:37.3473 INFO|Compiler|Time elapsed 00:00:00.0209001 on macros 2.3|
+2020-04-01 02:05:37.6522 INFO|Compiler|Time elapsed 00:00:00.3038191 on macros 3|
+2020-04-01 02:05:37.6522 INFO|Compiler|Time elapsed 00:00:00.0000440 on macros 4|
+2020-04-01 02:05:38.5164 INFO|Compiler|Time elapsed 00:00:00.8622745 on macros 5|
+2020-04-01 02:05:38.5164 INFO|Compiler|Time elapsed 00:00:00.0000163 on macros 6|
+2020-04-01 02:05:38.5164 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:05:39.6081 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:05:39.6081 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:05:39.6081 INFO|Compiler|Time elapsed 00:00:01.0921766 on Emitted dll|
+2020-04-01 02:05:39.6081 INFO|Compiler|Total elapsed 00:00:04.3253609|
+2020-04-01 02:06:09.7677 INFO|Dev|Started|
+2020-04-01 02:06:09.8267 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:06:09.8347 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:06:09.8617 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:06:09.9231 INFO|Compiler|BuildFull|
+2020-04-01 02:06:09.9671 INFO|Compiler|Time elapsed 00:00:00.0450835 on Loaded references|
+2020-04-01 02:06:10.2810 INFO|Compiler|Time elapsed 00:00:00.3123406 on Loaded sources|
+2020-04-01 02:06:10.3170 INFO|Compiler|Time elapsed 00:00:00.0350021 on Compilation created|
+2020-04-01 02:06:10.6548 INFO|Compiler|Time elapsed 00:00:00.3372050 on Loaded analyzers|
+2020-04-01 02:06:11.4117 INFO|Compiler|Time elapsed 00:00:00.7549501 on Code generated|
+2020-04-01 02:06:11.4167 INFO|Compiler|Time elapsed 00:00:00.0042057 on macros 1|
+2020-04-01 02:06:11.4167 INFO|Compiler|Time elapsed 00:00:00.0000005 on macros 2|
+2020-04-01 02:06:11.4167 INFO|Compiler|Time elapsed 00:00:00.0000005 on macros 2.1|
+2020-04-01 02:06:11.6117 INFO|Compiler|Time elapsed 00:00:00.1930574 on macros 2.2|
+2020-04-01 02:06:12.1179 INFO|Compiler|Time elapsed 00:00:00.5045105 on macros 2.3|
+2020-04-01 02:06:12.5078 INFO|Compiler|Time elapsed 00:00:00.3883181 on macros 3|
+2020-04-01 02:06:12.5078 INFO|Compiler|Time elapsed 00:00:00.0000549 on macros 4|
+2020-04-01 02:06:13.3735 INFO|Compiler|Time elapsed 00:00:00.8636393 on macros 5|
+2020-04-01 02:06:13.3735 INFO|Compiler|Time elapsed 00:00:00.0000204 on macros 6|
+2020-04-01 02:06:13.3735 INFO|Compiler|Time elapsed 00:00:00.0000002 on Macros completed|
+2020-04-01 02:06:14.4697 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:06:14.4697 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:06:14.4697 INFO|Compiler|Time elapsed 00:00:01.0968995 on Emitted dll|
+2020-04-01 02:06:14.4697 INFO|Compiler|Total elapsed 00:00:04.5514296|
+2020-04-01 02:07:04.3803 INFO|Dev|Started|
+2020-04-01 02:07:04.4353 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:07:04.4473 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:07:04.4763 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:07:04.5413 INFO|Compiler|BuildFull|
+2020-04-01 02:07:04.5843 INFO|Compiler|Time elapsed 00:00:00.0439786 on Loaded references|
+2020-04-01 02:07:04.8952 INFO|Compiler|Time elapsed 00:00:00.3109646 on Loaded sources|
+2020-04-01 02:07:04.9341 INFO|Compiler|Time elapsed 00:00:00.0373753 on Compilation created|
+2020-04-01 02:07:05.2970 INFO|Compiler|Time elapsed 00:00:00.3613558 on Loaded analyzers|
+2020-04-01 02:07:05.9768 INFO|Compiler|Time elapsed 00:00:00.6792930 on Code generated|
+2020-04-01 02:07:05.9768 INFO|Compiler|Time elapsed 00:00:00.0044981 on macros 1|
+2020-04-01 02:07:05.9768 INFO|Compiler|Time elapsed 00:00:00.0000001 on macros 2|
+2020-04-01 02:07:06.6466 INFO|Compiler|Time elapsed 00:00:00.6628011 on macros 2.1|
+2020-04-01 02:07:06.6796 INFO|Compiler|Time elapsed 00:00:00.0316968 on macros 2.2|
+2020-04-01 02:07:06.7036 INFO|Compiler|Time elapsed 00:00:00.0230232 on macros 2.3|
+2020-04-01 02:07:07.0185 INFO|Compiler|Time elapsed 00:00:00.3143625 on macros 3|
+2020-04-01 02:07:07.0185 INFO|Compiler|Time elapsed 00:00:00.0000533 on macros 4|
+2020-04-01 02:07:07.9382 INFO|Compiler|Time elapsed 00:00:00.9177577 on macros 5|
+2020-04-01 02:07:07.9382 INFO|Compiler|Time elapsed 00:00:00.0000294 on macros 6|
+2020-04-01 02:07:07.9382 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:07:09.0889 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:07:09.0889 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:07:09.0889 INFO|Compiler|Time elapsed 00:00:01.1521800 on Emitted dll|
+2020-04-01 02:07:09.0889 INFO|Compiler|Total elapsed 00:00:04.5537817|
+2020-04-01 02:15:14.5922 INFO|Dev|Started|
+2020-04-01 02:15:14.6501 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:15:14.6501 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:15:14.6841 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:15:14.7451 INFO|Compiler|BuildFull|
+2020-04-01 02:15:14.7901 INFO|Compiler|Time elapsed 00:00:00.0466034 on Loaded references|
+2020-04-01 02:15:15.1110 INFO|Compiler|Time elapsed 00:00:00.3204896 on Loaded sources|
+2020-04-01 02:15:15.1500 INFO|Compiler|Time elapsed 00:00:00.0379051 on Compilation created|
+2020-04-01 02:15:15.5119 INFO|Compiler|Time elapsed 00:00:00.3604908 on Loaded analyzers|
+2020-04-01 02:15:16.1916 INFO|Compiler|Time elapsed 00:00:00.6785484 on Code generated|
+2020-04-01 02:15:16.1967 INFO|Compiler|Time elapsed 00:00:00.0045581 on macros 1|
+2020-04-01 02:15:16.1967 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2|
+2020-04-01 02:15:16.8804 INFO|Compiler|Time elapsed 00:00:00.6820265 on macros 2.1|
+2020-04-01 02:15:16.9094 INFO|Compiler|Time elapsed 00:00:00.0281642 on macros 2.2|
+2020-04-01 02:15:16.9464 INFO|Compiler|Time elapsed 00:00:00.0360966 on macros 2.3|
+2020-04-01 02:15:17.2693 INFO|Compiler|Time elapsed 00:00:00.3209410 on macros 3|
+2020-04-01 02:15:17.2693 INFO|Compiler|Time elapsed 00:00:00.0000474 on macros 4|
+2020-04-01 02:15:18.2290 INFO|Compiler|Time elapsed 00:00:00.9584223 on macros 5|
+2020-04-01 02:15:18.2290 INFO|Compiler|Time elapsed 00:00:00.0000152 on macros 6|
+2020-04-01 02:15:18.2290 INFO|Compiler|Time elapsed 00:00:00.0000004 on Macros completed|
+2020-04-01 02:15:19.3786 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:15:19.3786 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:15:19.3786 INFO|Compiler|Time elapsed 00:00:01.1483248 on Emitted dll|
+2020-04-01 02:15:19.3816 INFO|Compiler|Total elapsed 00:00:04.6380111|
+2020-04-01 02:18:47.7636 INFO|Dev|Started|
+2020-04-01 02:18:47.8096 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:18:47.8096 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:18:47.8406 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:18:47.8806 INFO|Compiler|BuildFull|
+2020-04-01 02:18:47.9256 INFO|Compiler|Time elapsed 00:00:00.0463099 on Loaded references|
+2020-04-01 02:18:48.1885 INFO|Compiler|Time elapsed 00:00:00.2614126 on Loaded sources|
+2020-04-01 02:18:48.2215 INFO|Compiler|Time elapsed 00:00:00.0329005 on Compilation created|
+2020-04-01 02:18:48.5514 INFO|Compiler|Time elapsed 00:00:00.3288046 on Loaded analyzers|
+2020-04-01 02:18:49.1402 INFO|Compiler|Time elapsed 00:00:00.5879548 on Code generated|
+2020-04-01 02:18:49.1402 INFO|Compiler|Time elapsed 00:00:00.0041888 on macros 1|
+2020-04-01 02:18:49.1402 INFO|Compiler|Time elapsed 00:00:00.0000004 on macros 2|
+2020-04-01 02:18:49.8375 INFO|Compiler|Time elapsed 00:00:00.6904274 on macros 2.1|
+2020-04-01 02:18:49.8605 INFO|Compiler|Time elapsed 00:00:00.0223009 on macros 2.2|
+2020-04-01 02:18:49.8835 INFO|Compiler|Time elapsed 00:00:00.0214333 on macros 2.3|
+2020-04-01 02:18:50.2044 INFO|Compiler|Time elapsed 00:00:00.3204581 on macros 3|
+2020-04-01 02:18:50.2044 INFO|Compiler|Time elapsed 00:00:00.0000579 on macros 4|
+2020-04-01 02:18:51.1471 INFO|Compiler|Time elapsed 00:00:00.9406200 on macros 5|
+2020-04-01 02:18:51.1481 INFO|Compiler|Time elapsed 00:00:00.0000166 on macros 6|
+2020-04-01 02:18:51.1481 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:18:52.3061 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:18:52.3061 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:18:52.3061 INFO|Compiler|Time elapsed 00:00:01.1595291 on Emitted dll|
+2020-04-01 02:18:52.3061 INFO|Compiler|Total elapsed 00:00:04.4299243|
+2020-04-01 02:19:32.1832 INFO|Dev|Started|
+2020-04-01 02:19:32.2462 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:19:32.2462 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:19:32.2842 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:19:32.3422 INFO|Compiler|BuildFull|
+2020-04-01 02:19:32.3922 INFO|Compiler|Time elapsed 00:00:00.0519661 on Loaded references|
+2020-04-01 02:19:32.7650 INFO|Compiler|Time elapsed 00:00:00.3713550 on Loaded sources|
+2020-04-01 02:19:32.8070 INFO|Compiler|Time elapsed 00:00:00.0416132 on Compilation created|
+2020-04-01 02:19:33.1649 INFO|Compiler|Time elapsed 00:00:00.3566542 on Loaded analyzers|
+2020-04-01 02:19:33.9018 INFO|Compiler|Time elapsed 00:00:00.7322666 on Code generated|
+2020-04-01 02:19:33.9018 INFO|Compiler|Time elapsed 00:00:00.0051871 on macros 1|
+2020-04-01 02:19:33.9018 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2|
+2020-04-01 02:19:34.6875 INFO|Compiler|Time elapsed 00:00:00.7776098 on macros 2.1|
+2020-04-01 02:19:34.7145 INFO|Compiler|Time elapsed 00:00:00.0263643 on macros 2.2|
+2020-04-01 02:19:34.7445 INFO|Compiler|Time elapsed 00:00:00.0289515 on macros 2.3|
+2020-04-01 02:19:35.2211 INFO|Compiler|Time elapsed 00:00:00.4753371 on macros 3|
+2020-04-01 02:19:35.2211 INFO|Compiler|Time elapsed 00:00:00.0000480 on macros 4|
+2020-04-01 02:19:36.1316 INFO|Compiler|Time elapsed 00:00:00.9088361 on macros 5|
+2020-04-01 02:19:36.1316 INFO|Compiler|Time elapsed 00:00:00.0000274 on macros 6|
+2020-04-01 02:19:36.1316 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:19:37.2463 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:19:37.2463 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:19:37.2463 INFO|Compiler|Time elapsed 00:00:01.1153565 on Emitted dll|
+2020-04-01 02:19:37.2463 INFO|Compiler|Total elapsed 00:00:04.9098244|
+2020-04-01 02:19:58.2372 INFO|Dev|Started|
+2020-04-01 02:19:58.2882 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:19:58.2882 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:19:58.3292 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:19:58.3962 INFO|Compiler|BuildFull|
+2020-04-01 02:19:58.4622 INFO|Compiler|Time elapsed 00:00:00.0667880 on Loaded references|
+2020-04-01 02:19:58.7691 INFO|Compiler|Time elapsed 00:00:00.3055521 on Loaded sources|
+2020-04-01 02:19:58.8041 INFO|Compiler|Time elapsed 00:00:00.0347746 on Compilation created|
+2020-04-01 02:19:59.1240 INFO|Compiler|Time elapsed 00:00:00.3183547 on Loaded analyzers|
+2020-04-01 02:19:59.7913 INFO|Compiler|Time elapsed 00:00:00.6664276 on Code generated|
+2020-04-01 02:19:59.7913 INFO|Compiler|Time elapsed 00:00:00.0044857 on macros 1|
+2020-04-01 02:19:59.7913 INFO|Compiler|Time elapsed 00:00:00.0000003 on macros 2|
+2020-04-01 02:20:00.4801 INFO|Compiler|Time elapsed 00:00:00.6819386 on macros 2.1|
+2020-04-01 02:20:00.5040 INFO|Compiler|Time elapsed 00:00:00.0230849 on macros 2.2|
+2020-04-01 02:20:00.5350 INFO|Compiler|Time elapsed 00:00:00.0298705 on macros 2.3|
+2020-04-01 02:20:00.8285 INFO|Compiler|Time elapsed 00:00:00.2920166 on macros 3|
+2020-04-01 02:20:00.8285 INFO|Compiler|Time elapsed 00:00:00.0000582 on macros 4|
+2020-04-01 02:20:01.7822 INFO|Compiler|Time elapsed 00:00:00.9518381 on macros 5|
+2020-04-01 02:20:01.7822 INFO|Compiler|Time elapsed 00:00:00.0000301 on macros 6|
+2020-04-01 02:20:01.7822 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:20:02.8944 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:20:02.8944 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:20:02.8974 INFO|Compiler|Time elapsed 00:00:01.1137862 on Emitted dll|
+2020-04-01 02:20:02.8974 INFO|Compiler|Total elapsed 00:00:04.5033325|
+2020-04-01 02:36:36.9431 INFO|Dev|Started|
+2020-04-01 02:36:37.0430 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:36:37.0430 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:36:37.1010 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:36:37.1680 INFO|Compiler|BuildFull|
+2020-04-01 02:36:37.2480 INFO|Compiler|Time elapsed 00:00:00.0814855 on Loaded references|
+2020-04-01 02:36:37.6918 INFO|Compiler|Time elapsed 00:00:00.4261940 on Loaded sources|
+2020-04-01 02:36:37.7278 INFO|Compiler|Time elapsed 00:00:00.0357117 on Compilation created|
+2020-04-01 02:36:38.0907 INFO|Compiler|Time elapsed 00:00:00.3618346 on Loaded analyzers|
+2020-04-01 02:36:38.7245 INFO|Compiler|Time elapsed 00:00:00.6329071 on Code generated|
+2020-04-01 02:36:38.7305 INFO|Compiler|Time elapsed 00:00:00.0044079 on macros 1|
+2020-04-01 02:36:39.6422 INFO|Compiler|Time elapsed 00:00:00.9115587 on macros vvv|
+2020-04-01 02:36:39.6422 INFO|Compiler|Time elapsed 00:00:00.0000002 on macros 2|
+2020-04-01 02:36:39.7272 INFO|Compiler|Time elapsed 00:00:00.0829361 on macros 2.1|
+2020-04-01 02:36:39.7452 INFO|Compiler|Time elapsed 00:00:00.0168306 on macros 2.2|
+2020-04-01 02:36:39.7662 INFO|Compiler|Time elapsed 00:00:00.0203117 on macros 2.3|
+2020-04-01 02:36:40.1640 INFO|Compiler|Time elapsed 00:00:00.3965284 on macros 3|
+2020-04-01 02:36:40.1640 INFO|Compiler|Time elapsed 00:00:00.0000476 on macros 4|
+2020-04-01 02:36:41.0398 INFO|Compiler|Time elapsed 00:00:00.8744215 on macros 5|
+2020-04-01 02:36:41.0398 INFO|Compiler|Time elapsed 00:00:00.0000311 on macros 6|
+2020-04-01 02:36:41.0398 INFO|Compiler|Time elapsed 00:00:00.0000001 on Macros completed|
+2020-04-01 02:36:42.1624 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:36:42.1644 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:36:42.1644 INFO|Compiler|Time elapsed 00:00:01.1235555 on Emitted dll|
+2020-04-01 02:36:42.1644 INFO|Compiler|Total elapsed 00:00:04.9995871|
+2020-04-01 02:39:20.5975 INFO|Dev|Started|
+2020-04-01 02:39:20.6595 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:39:20.6704 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:39:20.6994 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:39:20.7484 INFO|Compiler|BuildFull|
+2020-04-01 02:39:20.8014 INFO|Compiler|Time elapsed 00:00:00.0548566 on Loaded references|
+2020-04-01 02:39:21.1063 INFO|Compiler|Time elapsed 00:00:00.3030955 on Loaded sources|
+2020-04-01 02:39:21.1393 INFO|Compiler|Time elapsed 00:00:00.0327770 on Compilation created|
+2020-04-01 02:39:21.5172 INFO|Compiler|Time elapsed 00:00:00.3759973 on Loaded analyzers|
+2020-04-01 02:39:22.1610 INFO|Compiler|Time elapsed 00:00:00.6433001 on Code generated|
+2020-04-01 02:39:22.1670 INFO|Compiler|Time elapsed 00:00:00.0052076 on macros 1|
+2020-04-01 02:39:22.1670 INFO|Compiler|Time elapsed 00:00:00.0003312 on macros vvv|
+2020-04-01 02:39:22.1670 INFO|Compiler|Time elapsed 00:00:00.0000002 on macros 2|
+2020-04-01 02:39:22.8787 INFO|Compiler|Time elapsed 00:00:00.7092586 on macros 2.1|
+2020-04-01 02:39:22.9037 INFO|Compiler|Time elapsed 00:00:00.0247701 on macros 2.2|
+2020-04-01 02:39:22.9347 INFO|Compiler|Time elapsed 00:00:00.0291186 on macros 2.3|
+2020-04-01 02:39:23.2606 INFO|Compiler|Time elapsed 00:00:00.3253092 on macros 3|
+2020-04-01 02:39:23.2606 INFO|Compiler|Time elapsed 00:00:00.0000765 on macros 4|
+2020-04-01 02:39:24.1813 INFO|Compiler|Time elapsed 00:00:00.9183198 on macros 5|
+2020-04-01 02:39:24.1813 INFO|Compiler|Time elapsed 00:00:00.0000241 on macros 6|
+2020-04-01 02:39:24.1813 INFO|Compiler|Time elapsed 00:00:00.0000002 on Macros completed|
+2020-04-01 02:39:25.3159 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:39:25.3159 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:39:25.3159 INFO|Compiler|Time elapsed 00:00:01.1342513 on Emitted dll|
+2020-04-01 02:39:25.3159 INFO|Compiler|Total elapsed 00:00:04.5719141|
+2020-04-01 02:40:34.1907 INFO|Dev|Started|
+2020-04-01 02:40:34.2507 INFO|CompilerService|Build(projectPath=G:\work\battleroyale\quantum_unity, output=Temp/Assembly-CSharp-Editor.dll)|
+2020-04-01 02:40:34.2617 INFO|CompilerService|Flush old project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:40:34.2907 INFO|CompilerService|Add new project. (Project=G:\work\battleroyale\quantum_unity)|
+2020-04-01 02:40:34.3567 INFO|Compiler|BuildFull|
+2020-04-01 02:40:34.4057 INFO|Compiler|Time elapsed 00:00:00.0503287 on Loaded references|
+2020-04-01 02:40:34.7176 INFO|Compiler|Time elapsed 00:00:00.3109734 on Loaded sources|
+2020-04-01 02:40:34.7555 INFO|Compiler|Time elapsed 00:00:00.0367730 on Compilation created|
+2020-04-01 02:40:35.0874 INFO|Compiler|Time elapsed 00:00:00.3308224 on Loaded analyzers|
+2020-04-01 02:40:35.7982 INFO|Compiler|Time elapsed 00:00:00.7095606 on Code generated|
+2020-04-01 02:40:35.8042 INFO|Compiler|Time elapsed 00:00:00.0052146 on macros 1|
+2020-04-01 02:40:36.7199 INFO|Compiler|Time elapsed 00:00:00.9138568 on macros vvv|
+2020-04-01 02:40:36.7199 INFO|Compiler|Time elapsed 00:00:00.0000004 on macros 2|
+2020-04-01 02:40:36.7969 INFO|Compiler|Time elapsed 00:00:00.0756997 on macros 2.1|
+2020-04-01 02:40:36.8159 INFO|Compiler|Time elapsed 00:00:00.0171192 on macros 2.2|
+2020-04-01 02:40:36.8379 INFO|Compiler|Time elapsed 00:00:00.0207085 on macros 2.3|
+2020-04-01 02:40:37.2347 INFO|Compiler|Time elapsed 00:00:00.3959136 on macros 3|
+2020-04-01 02:40:37.2347 INFO|Compiler|Time elapsed 00:00:00.0000675 on macros 4|
+2020-04-01 02:40:38.1695 INFO|Compiler|Time elapsed 00:00:00.9327328 on macros 5|
+2020-04-01 02:40:38.1695 INFO|Compiler|Time elapsed 00:00:00.0000288 on macros 6|
+2020-04-01 02:40:38.1695 INFO|Compiler|Time elapsed 00:00:00.0000003 on Macros completed|
+2020-04-01 02:40:39.2981 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.dll, size: 17,920|
+2020-04-01 02:40:39.2981 INFO|Compiler|Writing data to file G:\work\battleroyale\quantum_unity\Temp/Assembly-CSharp-Editor.pdb, size: 5,300|
+2020-04-01 02:40:39.2981 INFO|Compiler|Time elapsed 00:00:01.1293521 on Emitted dll|
+2020-04-01 02:40:39.2981 INFO|Compiler|Total elapsed 00:00:04.9476593|

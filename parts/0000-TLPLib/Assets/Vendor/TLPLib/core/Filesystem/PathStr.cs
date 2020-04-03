@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   [
-    Serializable, PublicAPI, Record(GenerateConstructor = GeneratedConstructor.None, GenerateToString = false)
+    Serializable, PublicAPI, Record(GenerateConstructor = ConstructorFlags.None, GenerateToString = false)
   ]
   public partial struct PathStr : IComparable<PathStr>, IStr {
     #region Unity Serialized Fields
