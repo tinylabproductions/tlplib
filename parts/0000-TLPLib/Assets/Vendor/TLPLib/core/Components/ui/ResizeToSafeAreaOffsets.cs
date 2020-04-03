@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -16,6 +17,8 @@ namespace Vendor.TLPLib.Components.ui {
     RectTransform parent;
     Rect lastSafeArea = new Rect(0, 0, 0, 0);
     bool forceRefresh;
+
+    [ShowInInspector] float __editor_leftOffsetTest, __editor_rightOffsetTest;
 
     protected override void Awake() {
       parent = (RectTransform) _rt.parent;
@@ -41,6 +44,10 @@ namespace Vendor.TLPLib.Components.ui {
 
     void refresh() {
       var safeArea = Screen.safeArea;
+      if (Application.isEditor) {
+        safeArea.xMin += __editor_leftOffsetTest;
+        safeArea.xMax -= __editor_rightOffsetTest;
+      }
       if (forceRefresh || safeArea != lastSafeArea) {
         forceRefresh = false;
         lastSafeArea = safeArea;
