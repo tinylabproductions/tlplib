@@ -141,6 +141,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       reportToErrorTracking: reportToErrorTracking,
       backtrace: backtrace, context: context
     );
+    public static implicit operator LogEntry(string s) => simple(s); 
 
     [PublicAPI] public static LogEntry tags_(
       string message, ImmutableArray<Tpl<string, string>> tags, bool reportToErrorTracking = true, 
@@ -258,6 +259,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
       log.error(ex.Message, ex, context);
     public static void error(this ILog log, string msg, Exception ex, object context = null) =>
       log.error(LogEntry.fromException(msg, ex, context: context));
+    
+    /// <summary>If success is false, logs the statement and returns.</summary>
+    [StatementMethodMacro(
+@"if (!${success}) {
+  if (${log}.willLog(${level})) ${log}.log(${level}, ${msg});
+  return;
+}")]
+    public static void outOr_LOG_AND_RETURN(
+      this ILog log, bool success, LogEntry msg, Log.Level level
+    ) => throw new MacroException();
   }
 
   /**
