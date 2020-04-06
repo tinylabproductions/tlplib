@@ -29,7 +29,7 @@
 //     }
 //
 //     public static IEnumerable<Base> asEnum<Base, Child>(this Option<Child> opt) where Child : Base =>
-//       opt.isSome ? ((Base) opt.get).Yield() : Enumerable.Empty<Base>();
+//       opt.isSome ? ((Base) opt.get).yield() : Enumerable.Empty<Base>();
 //
 //     public static A getOrNull<A>(this Option<A> opt) where A : class =>
 //       opt.isSome ? opt.get : null;

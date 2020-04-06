@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static readonly Func<string, Either<int, string>> right = F.right<int, string>;
 
     public static IEnumerable<Future<A>> addUnfulfilled<A>(this IEnumerable<Future<A>> futures)
-      { return futures.Concat(Future.unfulfilled<A>().Yield()); }
+      { return futures.Concat(Future.unfulfilled<A>().yield()); }
   }
 
   public class FutureTestEquality : TestBase {

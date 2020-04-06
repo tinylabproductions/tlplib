@@ -11,6 +11,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 
@@ -449,7 +450,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       var aSubj = new Subject<A>();
       var otherSubjects = ImmutableList.Create(new Subject<B>(), new Subject<B>());
       var otherObservables = otherSubjects.Select(s => s.map(_ => (A)_)).ToImmutableList();
-      var allObservables = aSubj.Yield<IRxObservable>().Concat(otherObservables).ToArray();
+      var allObservables = aSubj.yield<IRxObservable>().Concat(otherObservables).ToArray();
 
       var obs = aSubj.joinAll(otherObservables);
       var t = obs.pipeToList(tracker);

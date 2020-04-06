@@ -10,6 +10,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 using Smooth.Collections;
@@ -534,7 +535,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxObservable<A> joinAll<A>(
       this IRxObservable<A> o, IEnumerable<IRxObservable<A>> others
-    ) => joinAll(o.Yield().Concat(others));
+    ) => joinAll(o.yield().Concat(others));
 
     /// <summary>
     /// Joins all events from all observables into one stream.
