@@ -94,5 +94,10 @@
              <li>${argumentName} - refers to argument named 'argumentName'</li>
              </ul>
         </member>
+        <member name="T:GenerationAttributes.TypesWithMacroAttributes">
+            <summary>
+            Used internally by compiler
+            </summary>
+        </member>
     </members>
 </doc>
