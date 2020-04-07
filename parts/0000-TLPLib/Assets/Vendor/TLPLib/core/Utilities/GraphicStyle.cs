@@ -35,9 +35,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       foreach (var grad in F.opt(graphic.GetComponent<GradientSimple>())) {
         if (gradientOn) {
           grad.enabled = true;
-          grad.topColor = graphicColor;
-          grad.bottomColor = gradientColor;
-          graphic.SetAllDirty();
+          grad.setColor(graphicColor, gradientColor);
         }
         else {
           grad.enabled = false;
