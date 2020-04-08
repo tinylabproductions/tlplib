@@ -26,5 +26,42 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var opt = either.getOrLog(errorMessage, context, log);
       return opt.valueOut(out var b) ? b : defaultValue;
     }
+
+    /// <summary>
+    /// If Either is Right - return the value.
+    /// If Either is Left - log the provided message and return from scope.
+    /// </summary>
+    [VarMethodMacro(
+@"var ${varName}__either = ${either};
+if (!${varName}__either.rightValueOut(out var ${varName})) {
+  var ${varName}__log = ${log};
+  var ${varName}__level = ${level};
+  if (${varName}__log.willLog(${varName}__level)) ${varName}__log.log(${varName}__level, ${message});
+  return;
+}")]
+    public static B rightOr_LOG_MSG_AND_RETURN<A, B>(
+      this Either<A, B> either, ILog log, string message, Log.Level level = Log.Level.ERROR
+    ) => throw new MacroException();
+    
+    /// <summary>
+    /// If Either is Right - return the value.
+    /// If Either is Left - log the provided message and left value turned to string and return from scope.
+    /// </summary>
+    [VarMethodMacro(
+@"var ${varName}__either = ${either};
+if (!${varName}__either.rightValueOut(out var ${varName})) {
+  var ${varName}__log = ${log};
+  var ${varName}__level = ${level};
+  if (${varName}__log.willLog(${varName}__level)) {
+    string ${varName}__msg = ${message};
+    if (${varName}__msg == null) ${varName}__msg = ${varName}__either.__unsafeGetLeft.ToString();
+    else ${varName}__msg = $""{${varName}__msg}: {${varName}__either.__unsafeGetLeft}"";
+    ${varName}__log.log(${varName}__level, ${varName}__msg);
+  }
+  return;
+}")]
+    public static B rightOr_LOG_LEFT_AND_RETURN<A, B>(
+      this Either<A, B> either, ILog log, string message = null, Log.Level level = Log.Level.ERROR
+    ) => throw new MacroException();
   }
 }
