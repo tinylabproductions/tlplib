@@ -200,7 +200,7 @@ namespace com.tinylabproductions.TLPLib.Test {
           return Enumerable.Empty<Test<Exception>>();
         }
         catch (Exception e) {
-          return new Test<Exception>(test.name, e, test.stackFrame).Yield();
+          return new Test<Exception>(test.name, e, test.stackFrame).yield();
         }
       }).ToImmutableList();
       if (failures.nonEmpty()) throw new SpecTestFailedException(failures);

@@ -1,23 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.data;
-using Smooth.Collections;
 using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IEnumerableExts {
-
-    
-    public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.Yield());
+    public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, A a) => e.Concat(a.yield());
     
     public static IEnumerable<A> Concat<A>(this IEnumerable<A> e, Option<A> aOpt) =>
       aOpt.isSome ? e.Concat(aOpt.__unsafeGet) : e;
@@ -37,9 +31,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       foreach (var _base in e1) yield return _base;
       foreach (var _child in e2) yield return _child;
     }
-
-    
-    public static IEnumerable<A> Yield<A>(this A any) { yield return any; }
 
     public static Option<A> find<A>(this IEnumerable<A> enumerable, Func<A, bool> predicate) {
       foreach (var a in enumerable) if (predicate(a)) return F.some(a);

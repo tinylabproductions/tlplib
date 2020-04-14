@@ -3,6 +3,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -41,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Test]
     public void WhenSome() {
       var b = new B();
-      new Option<B>(b).asEnumerable().shouldEqual(b.Yield<A>());
+      new Option<B>(b).asEnumerable().shouldEqual(b.yield<A>());
     }
 
     [Test]
@@ -53,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class OptionTestAsEnum {
     [Test]
     public void WhenSome() {
-      F.some(3).asEnumerable().shouldEqual(3.Yield());
+      F.some(3).asEnumerable().shouldEqual(3.yield());
     }
 
     [Test]
