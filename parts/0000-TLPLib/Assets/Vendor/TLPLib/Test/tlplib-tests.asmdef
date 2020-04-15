@@ -18,11 +18,13 @@
         "pzd.lib.dll",
         "System.Collections.Immutable.dll",
         "GenerationAttributes.dll",
-        "0Harmony.dll"
+        "0Harmony.dll",
+        "Macros.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }

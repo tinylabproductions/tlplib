@@ -165,9 +165,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       foreach (var o in objects) {
         onProgress?.Invoke(new Progress(scanned++, objects.Count));
 
-        var goOpt = F.opt(o as GameObject);
-        if (goOpt.isSome) {
-          var go = goOpt.get;
+        if (o is GameObject go) {
           foreach (var transform in go.transform.andAllChildrenRecursive()) {
             var components = transform.GetComponents<Component>();
             foreach (var c in components) {
@@ -206,11 +204,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option.ensureValue(ref uniqueCache);
       var errors = ImmutableList<Error>.Empty;
 
-      foreach (var mb in F.opt(value: component as MonoBehaviour)) {
-        var componentType = component.GetType();
-        if (!context.checkedComponentTypes.Contains(item: componentType)) {
-          errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
-          context = context.withCheckedComponentType(c: componentType);
+      {
+        if (component is MonoBehaviour mb) {
+          var componentType = component.GetType();
+          if (!context.checkedComponentTypes.Contains(item: componentType)) {
+            errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
+            context = context.withCheckedComponentType(c: componentType);
+          }
         }
       }
 
@@ -242,16 +242,21 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static ImmutableList<Error> checkComponentType(
       CheckContext context, GameObject go, Type type
-    ) => (
-      from rc in type.getAttributes<RequireComponent>(inherit: true)
-      from requiredType in new[] {F.opt(rc.m_Type0), F.opt(rc.m_Type1), F.opt(rc.m_Type2)}.flatten()
-      where !go.GetComponent(requiredType)
-      select requiredType
-    ).Aggregate(
-      ImmutableList<Error>.Empty,
-      (current, requiredType) =>
-        current.Add(Error.requiredComponentMissing(go, requiredType, type, context))
-    );
+    ) {
+      var requiredComponents = type
+        .getAttributes<RequireComponent>(inherit: true)
+        .SelectMany(rc => new[] {F.opt(rc.m_Type0), F.opt(rc.m_Type1), F.opt(rc.m_Type2)}.flatten(),
+          (rc, requiredType) => new {rc, requiredType})
+        .ToArray();
+      return requiredComponents
+        .Where(@t => !go.GetComponent(@t.requiredType))
+        .Select(@t => @t.requiredType)
+        .Aggregate(
+          ImmutableList<Error>.Empty,
+          (current, requiredType) =>
+            current.Add(Error.requiredComponentMissing(go, requiredType, type, context))
+        );
+    }
 
     static IEnumerable<Error> checkUnityEvent(
       IErrorFactory errorFactory, FieldHierarchyStr fieldHierarchy, UnityEventBase evt
@@ -296,7 +301,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
       Option.ensureValue(ref uniqueValuesCache);
-      fieldHierarchy = fieldHierarchy ?? new FieldHierarchy();
+      fieldHierarchy ??= new FieldHierarchy();
 
       if (objectBeingValidated is OnObjectValidate onObjectValidatable) {
         // Try because custom validations can throw exceptions.
@@ -315,9 +320,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      foreach (var unityEvent in F.opt(objectBeingValidated as UnityEventBase)) {
-        var errors = checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent);
-        foreach (var error in errors) yield return error;
+      {
+        if (objectBeingValidated is UnityEventBase unityEvent) {
+          var errors = checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent);
+          foreach (var error in errors) yield return error;
+        }
       }
 
       foreach (var customValidator in customObjectValidatorOpt) {
