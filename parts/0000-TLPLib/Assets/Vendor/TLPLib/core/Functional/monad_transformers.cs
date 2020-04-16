@@ -174,6 +174,10 @@ namespace com.tinylabproductions.TLPLib.Functional {
       this IRxVal<Option<A>> rxMaybeA, Func<A, IRxObservable<B>> f
     ) => rxMaybeA.flatMap(maybeA => maybeA.valueOut(out var a) ? f(a) : Observable<B>.empty);
 
+    public static IRxVal<Option<B>> flatMapT<A, B>(
+      this IRxVal<Option<A>> rxMaybeA, Func<A, IRxVal<B>> f
+    ) => rxMaybeA.flatMap(maybeA => maybeA.valueOut(out var a) ? f(a).map(Some.a) : RxVal.cached(Option<B>.None));
+
     #endregion
 
     #endregion

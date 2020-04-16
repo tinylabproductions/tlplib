@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
+using JetBrains.Annotations;
+using pzd.lib.functional;
 using pzd.lib.reactive;
-using Smooth.Collections;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   /// <summary>
@@ -200,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public override string ToString() => $"RxVal({value})";
   }
 
-  public static class RxVal {
+  [PublicAPI] public static class RxVal {
     #region Constructors
 
     /// <summary>
@@ -210,5 +214,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     public static IRxVal<A> cached<A>(A value) => RxValCache<A>.get(value);
 
     #endregion
+
+    public static IRxVal<Option<A>> fromBusyLoop<A>(Func<Option<A>> func, YieldInstruction delay=null) {
+      var rx = RxRef.a(Option<A>.None);
+      ASync.StartCoroutine(coroutine());
+      return rx;
+
+      IEnumerator coroutine() {
+        while (true) {
+          var maybeValue = func();
+          if (maybeValue.valueOut(out var value)) {
+            rx.value = Some.a(value);
+            yield break;
+          }
+          else {
+            yield return delay;
+          }
+        }
+      }
+    }
   }
 }
