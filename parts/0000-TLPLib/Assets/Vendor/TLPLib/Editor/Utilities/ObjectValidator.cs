@@ -223,7 +223,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           && sp.objectReferenceValue == null
           && sp.objectReferenceInstanceIDValue != 0
         ) errors = errors.Add(value: Error.missingReference(
-          o: component, property: sp.name, context: context
+          o: component, property: sp.propertyPath, context: context
         ));
 
       }
@@ -365,19 +365,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (list.Count == 0 && hasNonEmpty) {
                 yield return createError.emptyCollection(fieldHierarchy.asString());
               }
-              var fieldValidationResults = validateListElementsFields(
-                containingComponent, list, fi, hasNotNull,
-                fieldHierarchy, createError, customObjectValidatorOpt,
-                uniqueValuesCache
-              );
-              foreach (var _err in fieldValidationResults) yield return _err;
+              if (listIsSerializable(list)) {
+                var fieldValidationResults = validateListElementsFields(
+                  containingComponent, list, fi, hasNotNull,
+                  fieldHierarchy, createError, customObjectValidatorOpt,
+                  uniqueValuesCache
+                );
+                foreach (var _err in fieldValidationResults) yield return _err;
+              }
             }
             else {
               var fieldType = fi.FieldType;
-              // Check non-primitive serialized fields.
               if (
-                !fieldType.IsPrimitive
-                && fieldType.hasAttribute<SerializableAttribute>()
+                typeIsSerializableAsValue(fieldType)
               ) {
                 var validationErrors = validateFields(
                   containingComponent, fieldValue, createError,
@@ -387,6 +387,20 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 foreach (var _err in validationErrors) yield return _err;
               }
             }
+            
+            static bool listIsSerializable(IList list) {
+              var type = list.GetType();
+              if (type.IsGenericType) {
+                return typeIsSerializableAsValue(type.GenericTypeArguments[0]);
+              }
+              return false;
+            }
+
+            static bool typeIsSerializableAsValue(Type type) =>
+              !type.IsPrimitive
+              && type.hasAttribute<SerializableAttribute>()
+              // sometimes serializable attribute is added on ScriptableObject, we want to skip that
+              && !unityObjectType.IsAssignableFrom(type);
           }
         }
         fieldHierarchy.stack.Pop();

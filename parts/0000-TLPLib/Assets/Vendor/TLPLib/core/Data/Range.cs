@@ -161,7 +161,9 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable]
-  public struct FRange : OnObjectValidate {
+  public struct FRange 
+    // : OnObjectValidate 
+  {
     #region Unity Serialized Fields
     // ReSharper disable FieldCanBeMadeReadOnly.Local
 #pragma warning disable 649
@@ -189,11 +191,11 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [PublicAPI] public EnumerableFRange by(float step) => new EnumerableFRange(@from, to, step);
 
-    public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
+    /*public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       if (_from > _to) yield return new ErrorMsg(
         $"Expected from ({_from}) to be <= to ({_to})"
       );
-    }
+    }*/
   }
 
   [Serializable]
