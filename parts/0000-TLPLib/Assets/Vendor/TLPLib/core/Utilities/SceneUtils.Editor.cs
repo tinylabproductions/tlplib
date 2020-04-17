@@ -31,9 +31,9 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return result;
     }
 
-    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Action<Scene> doWithLoadedScene) {
+    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Action<Scene> doWithLoadedScene, bool askToSave = true) {
       try {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
+        if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
           return false;
         }
         var scenesToUse = scenes.ToImmutableArray();
