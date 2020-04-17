@@ -77,9 +77,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           // If context is a MonoBehaviour,
           // then unity does not ping the object (only a folder) when clicked on the log message.
           // But it works fine for GameObjects
-          var maybeMb = error.obj as MonoBehaviour;
-          var context = maybeMb ? maybeMb : error.obj;
+          var maybeComponent = error.obj as Component;
+          var hasGameObject = maybeComponent && maybeComponent.gameObject;
+          var context = hasGameObject ? getRootGO(maybeComponent) : error.obj;
           log.log(level, LogEntry.simple(error.ToString(), context: context));
+          
+          static GameObject getRootGO(Component component) {
+            var t = component.transform;
+            while (true) {
+              if (t.parent == null) return t.gameObject;
+              t = t.parent;
+            }
+          }
         }
     }
     
