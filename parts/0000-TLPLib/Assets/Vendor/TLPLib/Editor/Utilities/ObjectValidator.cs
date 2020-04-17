@@ -79,7 +79,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           // But it works fine for GameObjects
           var maybeComponent = error.obj as Component;
           var hasGameObject = maybeComponent && maybeComponent.gameObject;
-          var context = hasGameObject ? getRootGO(maybeComponent) : error.obj;
+          var isInScene = hasGameObject && maybeComponent.gameObject?.scene.name != null;
+          var context = hasGameObject && !isInScene ? getRootGO(maybeComponent) : error.obj;
           log.log(level, LogEntry.simple(error.ToString(), context: context));
           
           static GameObject getRootGO(Component component) {
