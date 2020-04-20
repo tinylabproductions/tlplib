@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿﻿using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -18,13 +18,19 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using UnityEngine.Playables;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    public static readonly Action<Progress> DEFAULT_ON_PROGRESS = progress => EditorUtility.DisplayProgressBar(
-      "Validating Objects", "Please wait...", progress.ratio
-    );
+    public static readonly Action<Progress> DEFAULT_ON_PROGRESS = progress => {
+      // calling DisplayProgressBar too often affects performance
+      if (progress.currentIdx % 100 == 0) {
+        EditorUtility.DisplayProgressBar(
+          "Validating Objects", $"{progress.currentIdx} / {progress.total}", progress.ratio
+        );
+      }
+    };
     public static readonly Action DEFAULT_ON_FINISH = EditorUtility.ClearProgressBar;
     
     #region Menu Items
@@ -227,17 +233,25 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       {
         if (component is MonoBehaviour mb) {
           var componentType = component.GetType();
-          if (!context.checkedComponentTypes.Contains(item: componentType)) {
-            errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
-            context = context.withCheckedComponentType(c: componentType);
-          }
+          errors = errors.AddRange(checkRequireComponents(context: context, go: mb.gameObject, type: componentType));
+          // checkRequireComponents should be called every time
+          // if (!context.checkedComponentTypes.Contains(item: componentType)) {
+          //   errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
+          //   context = context.withCheckedComponentType(c: componentType);
+          // }
         }
       }
 
       var serObj = new SerializedObject(obj: component);
       var sp = serObj.GetIterator();
 
+      var isPlayableDirector = component is PlayableDirector;
+
       while (sp.NextVisible(enterChildren: true)) {
+        if (isPlayableDirector && sp.name == "m_SceneBindings") {
+          // skip Scene Bindings of PlayableDirector, because they often have missing references
+          if (!sp.NextVisible(enterChildren: false)) break;
+        }
         if (
           sp.propertyType == SerializedPropertyType.ObjectReference
           && sp.objectReferenceValue == null
@@ -245,7 +259,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ) errors = errors.Add(value: Error.missingReference(
           o: component, property: sp.propertyPath, context: context
         ));
-
       }
 
       var fieldErrors = validateFields(
@@ -258,24 +271,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       errors = errors.AddRange(items: fieldErrors);
 
       return errors;
-    }
-
-    public static ImmutableList<Error> checkComponentType(
-      CheckContext context, GameObject go, Type type
-    ) {
-      var requiredComponents = type
-        .getAttributes<RequireComponent>(inherit: true)
-        .SelectMany(rc => new[] {F.opt(rc.m_Type0), F.opt(rc.m_Type1), F.opt(rc.m_Type2)}.flatten(),
-          (rc, requiredType) => new {rc, requiredType})
-        .ToArray();
-      return requiredComponents
-        .Where(@t => !go.GetComponent(@t.requiredType))
-        .Select(@t => @t.requiredType)
-        .Aggregate(
-          ImmutableList<Error>.Empty,
-          (current, requiredType) =>
-            current.Add(Error.requiredComponentMissing(go, requiredType, type, context))
-        );
     }
 
     static IEnumerable<Error> checkUnityEvent(
