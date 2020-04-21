@@ -381,14 +381,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               if (list.Count == 0 && hasNonEmpty) {
                 yield return createError.emptyCollection(fieldHierarchy.asString());
               }
-              if (listIsSerializable(list)) {
-                var fieldValidationResults = validateListElementsFields(
-                  containingComponent, list, fi, hasNotNull,
-                  fieldHierarchy, createError, customObjectValidatorOpt,
-                  uniqueValuesCache
-                );
-                foreach (var _err in fieldValidationResults) yield return _err;
-              }
+              var fieldValidationResults = validateListElementsFields(
+                containingComponent, list, fi, hasNotNull,
+                fieldHierarchy, createError, customObjectValidatorOpt,
+                uniqueValuesCache
+              );
+              foreach (var _err in fieldValidationResults) yield return _err;
             }
             else {
               var fieldType = fi.FieldType;
@@ -403,25 +401,21 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
                 foreach (var _err in validationErrors) yield return _err;
               }
             }
-            
-            static bool listIsSerializable(IList list) {
-              var type = list.GetType();
-              if (type.IsGenericType) {
-                return typeIsSerializableAsValue(type.GenericTypeArguments[0]);
-              }
-              return false;
-            }
-
-            static bool typeIsSerializableAsValue(Type type) =>
-              !type.IsPrimitive
-              && type.hasAttribute<SerializableAttribute>()
-              // sometimes serializable attribute is added on ScriptableObject, we want to skip that
-              && !unityObjectType.IsAssignableFrom(type);
           }
         }
         fieldHierarchy.stack.Pop();
       }
     }
+    
+    static bool typeIsSerializableAsValue(Type type) =>
+      type.IsPrimitive || type == typeof(string)
+      || 
+      (
+        type.hasAttribute<SerializableAttribute>()
+        &&
+        // sometimes serializable attribute is added on ScriptableObject, we want to skip that
+        !unityObjectType.IsAssignableFrom(type)
+      );
 
     static IEnumerable<FieldInfo> getFilteredFields(object o) {
       if (o == null) return Enumerable.Empty<FieldInfo>();
@@ -442,14 +436,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<CustomObjectValidator> customObjectValidatorOpt,
       Option<UniqueValuesCache> uniqueValuesCache
     ) {
-      var listItemType = listFieldInfo.FieldType.GetElementType();
+      var listItemType = getListItemType(list);
       var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
 
       if (listItemIsUnityObject) {
         if (hasNotNull && list.Contains(null))
           yield return createError.nullField(fieldHierarchy.asString());
       }
-      else {
+      else if (typeIsSerializableAsValue(listItemType)) {
         var index = 0;
         foreach (var listItem in list) {
           fieldHierarchy.stack.Push($"[{index}]");
@@ -463,6 +457,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           index++;
         }
       }
+    }
+    
+    static Type getListItemType(IList list) {
+      var type = list.GetType();
+      if (type.IsGenericType) {
+        return type.GenericTypeArguments[0];
+      }
+      if (type.IsArray) {
+        return type.GetElementType();
+      }
+      throw new Exception($"Could not determine IList element type for {type.FullName}");
     }
 
     static ImmutableList<Object> getSceneObjects(Scene scene) =>
