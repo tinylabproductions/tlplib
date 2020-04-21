@@ -113,11 +113,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// Collect all objects that are needed to create given roots. 
     /// </summary>
     [PublicAPI]
-    public static ImmutableList<Object> collectDependencies(Object[] roots) => 
+    public static ImmutableArray<Object> collectDependencies(Object[] roots) => 
       EditorUtility.CollectDependencies(roots)
         .Where(o => o is GameObject || o is ScriptableObject)
         .Distinct()
-        .ToImmutableList();
+        .ToImmutableArray();
 
     [PublicAPI]
     public static ImmutableList<Error> checkScene(
