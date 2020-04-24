@@ -18,8 +18,23 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static bool isInfo(this ILog log) => log.willLog(Log.Level.INFO);
     public static bool isWarn(this ILog log) => log.willLog(Log.Level.WARN);
 
-    public static void log(this ILog log, Log.Level l, string message) =>
-      log.log(l, LogEntry.simple(message));
+    [StatementMethodMacro(
+      @"{
+  var macro__log__ = ${log};
+  var macro__level__ = ${l};
+  if (macro__log__.willLog(macro__level__)) macro__log__.log(l: macro__level__, entry: ${entry});
+}")]
+    public static void mLog(this ILog log, Log.Level l, LogEntry entry) => throw new MacroException();
+    
+    [StatementMethodMacro(
+      @"{
+  var macro__log__ = ${log};
+  var macro__level__ = ${l};
+  if (macro__log__.willLog(macro__level__)) macro__log__.log(l: macro__level__, msg: ${msg}, context: ${context});
+}")]
+    public static void mLog(this ILog log, Log.Level l, string msg, object context = null) => throw new MacroException();
+    public static void log(this ILog log, Log.Level l, string msg, object context = null) =>
+      log.log(l, LogEntry.simple(msg, context: context));
 
     [StatementMethodMacro(
 @"{

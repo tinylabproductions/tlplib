@@ -1,17 +1,12 @@
-﻿using System;
-using com.tinylabproductions.TLPLib.Components.DebugConsole;
-using com.tinylabproductions.TLPLib.Concurrent;
+﻿using com.tinylabproductions.TLPLib.Components.DebugConsole;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.config;
 using pzd.lib.functional;
 using pzd.lib.serialization;
-using pzd.lib.typeclasses;
 using pzd.lib.utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -32,7 +27,14 @@ namespace com.tinylabproductions.TLPLib.Logger {
         SerializedRW.byte_.map<byte, Level>(b => (Level) b, l => (byte) l);
 
       public static readonly Config.Parser<object, Level> parser =
-        Config.byteParser.flatMap((_, b) => EnumUtils.GetValues<Level>().find(l => (byte) l == b));
+        Config.stringParser.flatMap((_, str) => str switch {
+          "verbose" => Level.VERBOSE,
+          "debug" => Level.DEBUG,
+          "info" => Level.INFO,
+          "warn" => Level.WARN,
+          "error" => Level.ERROR,
+          _ => Either<ConfigLookupError, Level>.Left(ConfigLookupError.fromString($"Unknown level '{str}'"))
+        });
     }
 
     // InitializeOnLoad is needed to set static variables on main thread.

@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
 
@@ -14,7 +15,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
   /// Upon creation starts buffering all log events that match <see cref="bufferingLevel"/>. It also forwards all
   /// log events to <see cref="backing"/> logger.
   ///
-  /// Once you have a sink (where to put the buffered log entries) you can connect that using <see cref="set_sink"/>.
+  /// Once you have a sink (where to put the buffered log entries) you can connect that using
+  /// <see cref="setSinkAndStartDispatching"/>.
   ///
   /// Each log entry will be passed to the <see cref="Sink"/>. The order is not guaranteed.
   /// </summary>
@@ -27,6 +29,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public bool disabled { get; private set; }
     
     Option<SinkRuntimeData> _sinkData = None._;
+    uint sequenceNo;
 
     public BufferingAndForwardingLog(ILog backing, Log.Level bufferingLevel) {
       this.backing = backing;
@@ -38,7 +41,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public void disable() {
       disabled = true;
-      buffer.Clear();
+      lock (buffer) {
+        buffer.Clear();
+      }
       setSink(None._);
       tracker.Dispose();
     }
@@ -55,7 +60,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// Removes all messages from buffer which do not satisfy at least given level. 
     /// </summary>
     public void removeEntriesFromBuffer(Log.Level requiredLevel) {
-      buffer.removeWhere(tpl => tpl.level < requiredLevel, replaceRemovedElementWithLast: true);
+      lock (buffer) {
+        buffer.removeWhere(tpl => tpl.level < requiredLevel, replaceRemovedElementWithLast: true);
+      }
     }
 
     public void setSinkAndStartDispatching(SinkData sinkData) => setSink(Some.a(sinkData));
@@ -64,14 +71,19 @@ namespace com.tinylabproductions.TLPLib.Logger {
     
     void setSink(Option<SinkData> maybeSink) {
       {
-        if (_sinkData.valueOut(out var previousSinkData)) 
+        if (_sinkData.valueOut(out var previousSinkData)) {
+          debugLog.mDebug("Cleaning up previous sink");
           previousSinkData.cleanup();
+        }
       }
       _sinkData = maybeSink.map(sinkData => {
+        debugLog.mDebug($"Launching new sink: {sinkData}");
         SinkRuntimeData runtimeData = null;
         var coroutine = ASync.EveryXSeconds(sinkData.deliveryInterval.seconds, () => {
           // ReSharper disable once AccessToModifiedClosure
-          tryToDispatch(runtimeData);
+          var data = runtimeData;
+          // First invocation has this null.
+          if (data != null) tryToDispatch(data);
           return true;
         });
         runtimeData = new SinkRuntimeData(sinkData, coroutine);
@@ -80,36 +92,58 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     void tryToDispatch(SinkRuntimeData sinkRuntimeData) {
-      {
-        if (sinkRuntimeData.currentRequest.valueOut(out var currentRequest) && !currentRequest.isCompleted) {
-          debugLog.mDebug(nameof(tryToDispatch) + " returning because current request is not yet completed");
-          return;
+      try {
+        debugLog.mDebug($"{nameof(tryToDispatch)}: entering");
+
+        {
+          if (sinkRuntimeData.currentRequest.valueOut(out var currentRequest) && !currentRequest.isCompleted) {
+            debugLog.mDebug(nameof(tryToDispatch) + " returning because current request is not yet completed");
+            return;
+          }
         }
+        BufferEntry[] entriesToSend;
+        lock (buffer) {
+          if (buffer.isEmpty()) {
+            debugLog.mDebug(nameof(tryToDispatch) + " returning because we have no entries");
+            return;
+          }
+
+          // Ensure at least 1 element gets removed.
+          var batchSize = Math.Min(Math.Max(1, sinkRuntimeData.sinkData.maxBatchSize), buffer.Count);
+          entriesToSend = buffer.dropFromHead(batchSize.toIntClamped());
+        }
+
+        // Copy the entries. 
+        var entries = entriesToSend.asReadOnlyCollection().toNonEmpty().getOrThrow("developer error!");
+
+        // We have the sink and current request is completed.
+        debugLog.mDebug($"{nameof(tryToDispatch)} dispatching {entries.a.Count} entries");
+
+        // Dispatch the request
+        var dispatchFuture = sinkRuntimeData.sinkData.sink(entries);
+        sinkRuntimeData.currentRequest = Some.a(dispatchFuture);
+
+        dispatchFuture.onComplete(success => {
+          debugLog.mDebug($"{nameof(tryToDispatch)}: dispatch future has finished, {success.echo()}");
+          // If data dispatch failed add it back to the buffer.
+          if (!success) {
+            lock (buffer) {
+              buffer.AddRange(entries.a);
+            }
+          }
+        });
       }
-      
-      // We have the sink and current request is completed.
-      debugLog.mDebug(nameof(tryToDispatch));
-      
-      // Copy the entries. 
-      var entries = buffer.ToArray();
-      // Clear current buffer
-      buffer.Clear();
-      // Dispatch the request
-      var dispatchFuture = sinkRuntimeData.sinkData.sink(entries);
-      sinkRuntimeData.currentRequest = Some.a(dispatchFuture);
-      
-      dispatchFuture.onComplete(success => {
-        debugLog.mDebug($"{nameof(tryToDispatch)}: dispatch future has finished, {success.echo()}");
-        // If data dispatch failed add it back to the buffer.
-        if (!success) {
-          buffer.AddRange(entries);
-        }
-      });
+      catch (Exception e) {
+        debugLog.error($"Error in {nameof(tryToDispatch)}", e);
+      }
     }
     
     void bufferLog(Log.Level l, LogEntry o) {
       if (l < bufferingLevel) return;
-      buffer.Add(new BufferEntry(DateTime.UtcNow, l, o));
+      lock (buffer) {
+        buffer.Add(new BufferEntry(DateTime.UtcNow, l, o, sequenceNo));
+        sequenceNo++;
+      }
     }
     
     /// <returns>
@@ -118,11 +152,12 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// If it was the entries will be forgotten. If it was not the entries will be rescheduled (in
     /// for later dispatch.
     /// </returns>
-    public delegate Future<bool> Sink(IReadOnlyCollection<BufferEntry> bufferEntries);
+    public delegate Future<bool> Sink(NonEmpty<IReadOnlyCollection<BufferEntry>> bufferEntries);
     
     [Record] public sealed partial class SinkData {
       public readonly Sink sink;
       public readonly Duration deliveryInterval;
+      public readonly uint maxBatchSize;
     }
 
     [Record] sealed partial class SinkRuntimeData {
@@ -138,6 +173,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       public readonly DateTime timestamp;
       public readonly Log.Level level;
       public readonly LogEntry entry;
+      public readonly uint sequenceNo;
     }
   }
 }
