@@ -8,14 +8,17 @@ using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Logger {
-  public struct Backtrace {
+  public struct Backtrace : IStr {
     public readonly NonEmpty<ImmutableList<BacktraceElem>> elements;
 
     public Backtrace(NonEmpty<ImmutableList<BacktraceElem>> elements) { this.elements = elements; }
 
     public override string ToString() => $"{nameof(Backtrace)}({elements.a.mkStringEnumNewLines()})";
+    
+    public string asString() => elements.a.Select(elem => elem.asString()).mkString("\n");
 
     #region Parsing
 
