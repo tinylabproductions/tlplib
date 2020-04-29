@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void Test() {
       var dict = new Dictionary<int, Promise<string>>();
       var queue = ASyncNAtATimeQueue.a(
-        (int i) => Future<string>.async(p => dict[i] = p),
+        (int i) => Future.async<string>(p => dict[i] = p),
         2
       );
 

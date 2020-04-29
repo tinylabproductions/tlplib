@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       IResourceRequest request = new WrappedResourceRequest(Resources.LoadAsync<A>(path));
       return F.t(
         request.upcast(default(IAsyncOperation)), 
-        Future<Either<ErrorMsg, A>>.async(
+        Future.async<Either<ErrorMsg, A>>(
           p => ASync.StartCoroutine(waitForLoadCoroutine<A>(request, p.complete, path))
         )
       );

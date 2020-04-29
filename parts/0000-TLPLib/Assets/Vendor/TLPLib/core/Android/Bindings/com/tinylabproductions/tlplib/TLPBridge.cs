@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
     }
     
     public static Future<Either<string, Option<string>>> countryCodeFromLastKnownLocation { get {
-      return Future<Either<string, Option<string>>>.async(p => new JThread(() => {
+      return Future.async<Either<string, Option<string>>>(p => new JThread(() => {
         Either<string, Option<string>> ret;
         try {
           ret = Either<string, Option<string>>.Right(

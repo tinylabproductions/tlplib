@@ -32,9 +32,9 @@ namespace com.tinylabproductions.TLPLib.Functional {
         v.shouldEqual(value);
         invoked++;
       });
-      invoked.shouldEqual(1u, $"it should immediately invoke {nameof(ftr.onComplete)}");
+      invoked.shouldEqual(1u, $"it should immediately invoke onComplete");
       lazy.strict.forSideEffects();
-      invoked.shouldEqual(1u, $"it should not invoke {nameof(ftr.onComplete)} twice");
+      invoked.shouldEqual(1u, $"it should not invoke onComplete twice");
     }
   }
 
@@ -68,11 +68,11 @@ namespace com.tinylabproductions.TLPLib.Functional {
         v.shouldEqual(value);
         invoked++;
       });
-      invoked.shouldEqual(0u, $"it should'nt invoke {nameof(ftr.onComplete)} before .get.forSideEffects()");
+      invoked.shouldEqual(0u, $"it should not invoke onComplete before .get.forSideEffects()");
       lazy.strict.forSideEffects();
-      invoked.shouldEqual(1u, $"it should invoke {nameof(ftr.onComplete)} after .get.forSideEffects()");
+      invoked.shouldEqual(1u, $"it should invoke onComplete after .get.forSideEffects()");
       lazy.strict.forSideEffects();
-      invoked.shouldEqual(1u, $"it should not invoke {nameof(ftr.onComplete)} twice");
+      invoked.shouldEqual(1u, $"it should not invoke onComplete twice");
     }
   }
 

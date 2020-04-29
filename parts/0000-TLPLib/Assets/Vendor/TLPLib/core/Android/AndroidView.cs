@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Android {
 
       if (Log.d.isDebug()) Log.d.debug("Trying to hide android navigation bar.");
       var activity = AndroidActivity.current;
-      return Future<bool>.async(p => {
+      return Future.async<bool>(p => {
         AndroidActivity.runOnUI(() => {
           try {
             var flags =

@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void Equals() {
       Promise<int> asyncP;
-      var asyncF = Future<int>.async(out asyncP);
+      var asyncF = Future.async<int>(out asyncP);
       var unfullfilled = Future.unfulfilled<int>();
       var completed = Future.successful(3);
 
@@ -60,7 +60,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WhenASync() {
       Promise<int> p;
-      var f = Future<int>.async(out p);
+      var f = Future.async<int>(out p);
 
       var result = 0;
       f.onComplete(i => result = i);
@@ -90,7 +90,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WhenASync() {
       Promise<int> p;
-      var f = Future<int>.async(out p);
+      var f = Future.async<int>(out p);
 
       var result = 0;
       f.nowAndOnComplete(iOpt => result += iOpt.fold(-1, _ => _));
@@ -105,7 +105,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenSuccessful() {
-      Future<int>.successful(1).map(mapper).shouldBeOfSuccessfulType(2);
+      Future.successful(1).map(mapper).shouldBeOfSuccessfulType(2);
     }
 
     [Test]
@@ -115,8 +115,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenASync() {
-      Promise<int> p;
-      var f = Future<int>.async(out p);
+      var f = Future.async(out Promise<int> p);
       var f2 = f.map(mapper);
       f2.type.shouldEqual(FutureType.ASync);
       f2.value.shouldBeNone("it should not have value before original future completion");
@@ -144,7 +143,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void SuccessfulToASync() {
       Promise<int> p2;
-      var f2 = Future<int>.async(out p2);
+      var f2 = Future.async<int>(out p2);
       var f = successful.flatMap(_ => f2);
       f.type.shouldEqual(FutureType.ASync);
       f.value.shouldBeNone("it should be uncompleted if source future is incomplete");
@@ -177,7 +176,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void ASyncToSuccessful() {
       Promise<int> p;
-      var f = Future<int>.async(out p);
+      var f = Future.async<int>(out p);
       var called = false;
       var f2 = f.flatMap(i => {
         called = true;
@@ -194,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void ASyncToUnfulfilled() {
       Promise<int> p;
-      var f = Future<int>.async(out p);
+      var f = Future.async<int>(out p);
       var called = false;
       var f2 = f.flatMap(_ => {
         called = true;
@@ -211,9 +210,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void ASyncToASync() {
       Promise<int> p1;
-      var f1 = Future<int>.async(out p1);
+      var f1 = Future.async<int>(out p1);
       Promise<int> p2;
-      var f2 = Future<int>.async(out p2);
+      var f2 = Future.async<int>(out p2);
 
       var called = false;
       var f = f1.flatMap(_ => {
@@ -256,8 +255,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     static void whenASync(bool completeFirst) {
       Promise<int> p1, p2;
-      var f1 = Future<int>.async(out p1);
-      var f2 = Future<int>.async(out p2);
+      var f1 = Future.async<int>(out p1);
+      var f2 = Future.async<int>(out p2);
       var f = f1.zip(f2);
       f.type.shouldEqual(FutureType.ASync);
       f.value.shouldBeNone();
@@ -457,7 +456,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void NotCompletedThenCompletionThenSignal() {
       Promise<Unit> p;
-      var t = Future<Unit>.async(out p).delayUntilSignal();
+      var t = Future.async<Unit>(out p).delayUntilSignal();
       t._1.shouldNotBeCompleted();
       p.complete(F.unit);
       t._1.shouldNotBeCompleted();
@@ -468,7 +467,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void NotCompletedThenSignalThenCompletion() {
       Promise<Unit> p;
-      var t = Future<Unit>.async(out p).delayUntilSignal();
+      var t = Future.async<Unit>(out p).delayUntilSignal();
       t._1.shouldNotBeCompleted();
       t._2();
       t._1.shouldNotBeCompleted();
@@ -489,7 +488,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WithUnknownType() {
       Promise<int> promise;
-      var f = Future<int>.async(out promise);
+      var f = Future.async<int>(out promise);
       var rx = f.toRxVal();
       rx.value.shouldBeNone();
       promise.complete(10);
@@ -499,7 +498,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WithRxValInside() {
       Promise<IRxVal<int>> p;
-      var f = Future<IRxVal<int>>.async(out p);
+      var f = Future.async<IRxVal<int>>(out p);
       var rx = f.toRxVal(0);
       rx.value.shouldEqual(0);
       var rx2 = RxRef.a(100);
@@ -519,7 +518,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [SetUp]
     public void setup() {
-      sourceFuture = Future<int>.async(out promise);
+      sourceFuture = Future.async<int>(out promise);
       tc = new TestTimeContext();
     }
 

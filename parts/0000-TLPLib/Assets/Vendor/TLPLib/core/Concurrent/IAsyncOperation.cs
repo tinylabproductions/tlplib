@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -27,14 +28,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   /// <summary>
   /// <see cref="IAsyncOperation"/> operation which is not really an operation.
   /// </summary>
-  [PublicAPI]
-  public class ASyncOperationFake : IAsyncOperation {
-    [PublicAPI] public static readonly IAsyncOperation instance = new ASyncOperationFake();
-    ASyncOperationFake() {}
-    
+  [PublicAPI, Singleton] public sealed partial class ASyncOperationCompleted : IAsyncOperation {
     public int priority { get => 0; set { } }
     public float progress => 1;
     public bool isDone => true;
+    public IEnumerator yieldInstruction { get { yield break; } }
+  }
+  
+  [PublicAPI, Singleton] public sealed partial class ASyncOperationUnfulfilled : IAsyncOperation {
+    public int priority { get => 0; set { } }
+    public float progress => 0;
+    public bool isDone => false;
     public IEnumerator yieldInstruction { get { yield break; } }
   }
 

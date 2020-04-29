@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Action<Params, Promise<Return>> execute, ushort maxTasks = 1
     ) => new ASyncNAtATimeQueue<Params,Return>(
       maxTasks,
-      p => Future<Return>.async(promise => execute(p, promise))
+      p => Future.async<Return>(promise => execute(p, promise))
     );
   }
 

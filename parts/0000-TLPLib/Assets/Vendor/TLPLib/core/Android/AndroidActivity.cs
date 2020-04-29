@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Android {
     public static string rateURL => "market://details?id=" + packageName;
 
     public static void runOnUI(Action act) => current.runOnUIThread(act);
-    public static Future<A> runOnUI<A>(Func<A> f) => Future<A>.async(promise => runOnUI(() => {
+    public static Future<A> runOnUI<A>(Func<A> f) => Future.async<A>(promise => runOnUI(() => {
       var ret = f();
       ASync.OnMainThread(() => promise.complete(ret));
     }));

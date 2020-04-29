@@ -65,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
     public Tpl<IAsyncOperation, Future<A>> loadASync() {
       var loaded = ResourceLoader.loadAsync<A>(assetRuntimeResourcePath);
       var valuedFuture = loaded._2.flatMap(either => {
-        if (either.isRight) return Future<A>.successful(either.rightOrThrow);
+        if (either.isRight) return Future.successful(either.rightOrThrow);
         Log.d.error(either.leftOrThrow);
         return Future<A>.unfulfilled;
       });

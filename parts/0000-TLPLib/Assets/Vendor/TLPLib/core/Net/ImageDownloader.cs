@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Net {
     }
 
     InternalResult download(Url url) => new InternalResult(
-      Future<Either<WWWError, UsageCountedDisposable<Texture2D>>>.async((promise, f) => {
+      Future.async<Either<WWWError, UsageCountedDisposable<Texture2D>>>((promise, f) => {
         ASync.StartCoroutine(textureLoader(
           // TODO: change to UnityWebRequest.GetTexture from old WWW implementation
           // Here is sample code, but I don't remember why it is not used. Try it and see

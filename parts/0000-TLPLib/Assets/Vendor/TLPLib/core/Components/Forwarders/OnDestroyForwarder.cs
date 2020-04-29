@@ -11,7 +11,7 @@ namespace com.tinylabproductions.TLPLib.Components.Forwarders {
     [PublicAPI] public readonly Future<Unit> onEvent;
 
     OnDestroyForwarder() {
-      onEvent = Future<Unit>.async(out _onDestroy);
+      onEvent = Future.async<Unit>(out _onDestroy);
     }
 
     public void OnDestroy() => _onDestroy.complete(F.unit);

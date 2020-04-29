@@ -5,11 +5,97 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI] public static class FutureExts {
+    public static void onComplete<A>(this Future<A> f, Action<A> action) {
+      if (f.type == FutureType.Successful) action(f.__unsafeGetSuccessful);
+      else if (f.type == FutureType.ASync) f.__unsafeGetHeapFuture.onComplete(action);
+    }
+
+    public static Future<B> map<A, B>(this Future<A> f, Func<A, B> mapper) => f.type switch {
+      FutureType.Successful => Future.successful(mapper(f.__unsafeGetSuccessful)),
+      FutureType.Unfulfilled => Future<B>.unfulfilled,
+      FutureType.ASync => Future.async<B>(p => f.__unsafeGetHeapFuture.onComplete(v => p.complete(mapper(v)))),
+      _ => throw new DeveloperError("unreachable") 
+    };
+
+    public static Future<B> flatMap<A, B>(this Future<A> f, Func<A, Future<B>> mapper) => f.type switch {
+      FutureType.Successful => mapper(f.__unsafeGetSuccessful),
+      FutureType.Unfulfilled => Future<B>.unfulfilled,
+      FutureType.ASync => Future.async<B>(p =>
+        f.__unsafeGetHeapFuture.onComplete(v => mapper(v).onComplete(p.complete))
+      ),
+      _ => throw new DeveloperError("unreachable")
+    };
+
+    public static Future<C> flatMap<A, B, C>(this Future<A> f, Func<A, Future<B>> mapper, Func<A, B, C> joiner) =>
+      f.type switch {
+        FutureType.Successful => mapper(f.__unsafeGetSuccessful).map(b => joiner(f.__unsafeGetSuccessful, b)),
+        FutureType.Unfulfilled => Future<C>.unfulfilled,
+        FutureType.ASync => Future.async<C>(p => 
+          f.__unsafeGetHeapFuture.onComplete(a => mapper(a).onComplete(b => p.complete(joiner(a, b))))
+        ),
+        _ => throw new DeveloperError("unreachable")
+      };
+
+    /// <summary>
+    /// Filter future on value - if predicate matches turns completed future into unfulfilled.
+    /// </summary>
+    public static Future<A> filter<A>(this Future<A> f, Func<A, bool> predicate) =>
+      f.type switch {
+        FutureType.Successful => predicate(f.__unsafeGetSuccessful) ? f : Future<A>.unfulfilled,
+        FutureType.Unfulfilled => f,
+        FutureType.ASync => Future.async<A>(p => f.onComplete(a => { if (predicate(a)) p.complete(a); })),
+        _ => throw new DeveloperError("unreachable")
+      };
+
+    /// <summary>
+    /// Filter & map future on value. If collector returns Some, completes the future, otherwise - never completes.
+    /// </summary>
+    public static Future<B> collect<A, B>(this Future<A> f, Func<A, Option<B>> collector) =>
+      f.type switch {
+        FutureType.Successful => collector(f.__unsafeGetSuccessful).fold(Future<B>.unfulfilled, Future.successful),
+        FutureType.Unfulfilled => Future<B>.unfulfilled,
+        FutureType.ASync => Future.async<B>(p => f.onComplete(a => {
+          foreach (var b in collector(a)) p.complete(b);
+        })),
+        _ => throw new DeveloperError("unreachable")
+      };
+
+    /// <summary>
+    /// Waits until both futures yield a result.
+    /// </summary>
+    public static Future<Tpl<A, B>> zip<A, B>(this Future<A> f, Future<B> fb) => f.zip(fb, F.t);
+
+    public static Future<C> zip<A, B, C>(this Future<A> fa, Future<B> fb, Func<A, B, C> mapper) {
+      if (fa.type == FutureType.Unfulfilled || fb.type == FutureType.Unfulfilled) return Future<C>.unfulfilled;
+      if (fa.type == FutureType.Successful && fb.type == FutureType.Successful)
+        return Future.successful(mapper(fa.__unsafeGetSuccessful, fb.__unsafeGetSuccessful));
+
+      return Future.async<C>(p => {
+        void tryComplete() {
+          if (fa.value.valueOut(out var a) && fb.value.valueOut(out var b))
+            p.tryComplete(mapper(a, b));
+        }
+
+        fa.onComplete(a => tryComplete());
+        fb.onComplete(b => tryComplete());
+      });
+    }
+    
+    /// <summary>
+    /// Always run `action`. If the future is not completed right now, run `action` again when it completes.
+    /// </summary>
+    public static void nowAndOnComplete<A>(this Future<A> future, Action<Option<A>> action) {
+      var current = future.value;
+      action(current);
+      if (current.isNone) future.onComplete(a => action(Some.a(a)));
+    }
+    
     public static Future<A> flatten<A>(this Future<Future<A>> future) =>
       future.flatMap(_ => _);
 
@@ -128,14 +214,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Option<Exception>> ofFailure<A>(this Future<Try<A>> future) =>
       future.map(e => e.exception);
 
-    /**
-     * Delays completing of given future until the returned action is called.
-     **/
+    /// <summary>
+    /// Delays completing of given future until the returned action is called.
+    /// </summary>
     public static Tpl<Future<A>, Action> delayUntilSignal<A>(this Future<A> future) {
-      Promise<Unit> signalP;
-      var f = future.zip(Future<Unit>.async(out signalP), (a, _) => a);
-      Action act = () => signalP.tryComplete(F.unit);
-      return F.t(f, act);
+      var f = future.zip(Future.async(out Promise<Unit> signalP), (a, _) => a);
+      void act() => signalP.tryComplete(F.unit);
+      return F.t(f, (Action) act);
     }
 
     /** Converts option into successful/unfulfilled future. */

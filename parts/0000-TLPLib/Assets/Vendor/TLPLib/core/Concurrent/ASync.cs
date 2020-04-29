@@ -64,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<A> StartCoroutine<A>(
       Func<Promise<A>, IEnumerator> coroutine
-    ) => Future<A>.async(p => behaviour.StartCoroutine(coroutine(p)));
+    ) => Future.async<A>(p => behaviour.StartCoroutine(coroutine(p)));
 
     public static Coroutine StartCoroutine(IEnumerator coroutine) =>
       new UnityCoroutine(behaviour, coroutine);
@@ -173,7 +173,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /* Do async cancellable WWW request. */
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
       Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
-      var f = Future<Either<Cancelled, Either<WWWError, WWW>>>.async(out promise);
+      var f = Future.async<Either<Cancelled, Either<WWWError, WWW>>>(out promise);
 
       var wwwCoroutine = StartCoroutine(WWWEnumerator(www, promise));
 
@@ -193,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, 
       Func<UnityWebRequest, A> onSuccess
     ) {
-      var f = Future<Either<WebRequestError, A>>.async(out var promise);
+      var f = Future.async<Either<WebRequestError, A>>(out var promise);
       var op = req.SendWebRequest();
       op.completed += operation => {
         var responseCode = req.responseCode;

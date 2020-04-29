@@ -4,24 +4,41 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Functional.higher_kinds;
+using JetBrains.Annotations;
 using pzd.lib.concurrent;
 using pzd.lib.functional;
 using pzd.lib.functional.higher_kinds;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public static class Future {
+  [PublicAPI] public static class Future {
     // Witness for higher kinded types simulation
     public struct W {}
     
     public static Future<A> narrowK<A>(this HigherKind<W, A> hkt) => (Future<A>) hkt;
     
-    public static Future<A> a<A>(Action<Promise<A>> action) => Future<A>.async(action);
+    public static Future<A> a<A>(Action<Promise<A>> action) => async(action);
     public static Future<A> a<A>(IHeapFuture<A> future) => new Future<A>(future);
-    public static Future<A> async<A>(out Promise<A> promise) => Future<A>.async(out promise);
 
-    public static Future<A> successful<A>(A value) => Future<A>.successful(value);
+    public static Future<A> async<A>(out Promise<A> promise) {
+      var impl = new FutureImpl<A>();
+      promise = impl;
+      return new Future<A>(impl);
+    }
+    
+    /// <summary>Asynchronous heap based future which can be completed later.</summary>
+    public static Future<A> async<A>(Action<Promise<A>> body) => async<A>((p, _) => body(p));
+
+    /// <summary>Asynchronous heap based future which can be completed later.</summary>
+    public static Future<A> async<A>(Action<Promise<A>, Future<A>> body) {
+      var future = async<A>(out var promise);
+      body(promise, future);
+      return future;
+    }
+
+    /// <summary>Lift an ordinary value into a future.</summary>
+    public static Future<A> successful<A>(A value) => new Future<A>(value);
+    /// <summary>Future that will never be completed.</summary>
     public static Future<A> unfulfilled<A>() => Future<A>.unfulfilled;
 
     public static Future<A> delay<A>(Duration duration, Func<A> createValue, ITimeContext tc) =>
@@ -62,11 +79,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     /**
      * Returns result from the first future that completes.
      **/
-    public static Future<A> firstOf<A>(this IEnumerable<Future<A>> enumerable) {
-      return Future<A>.async(p => {
+    public static Future<A> firstOf<A>(this IEnumerable<Future<A>> enumerable) =>
+      async<A>(p => {
         foreach (var f in enumerable) f.onComplete(v => p.tryComplete(v));
       });
-    }
 
     /**
      * Returns result from the first future that satisfies the predicate as a Some.
@@ -75,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Option<B>> firstOfWhere<A, B>
     (this IEnumerable<Future<A>> enumerable, Func<A, Option<B>> predicate) {
       var futures = enumerable.ToList();
-      return Future<Option<B>>.async(p => {
+      return async<Option<B>>(p => {
         var completed = 0;
         foreach (var f in futures)
           f.onComplete(a => {
@@ -114,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       fromCoroutine(ASync.StartCoroutine(enumerator));
 
     public static Future<Unit> fromCoroutine(Coroutine coroutine) =>
-      Future<Unit>.async(p => {
+      async<Unit>(p => {
         if (coroutine.finished) p.complete(F.unit);
         else {
           void onComplete() {
@@ -128,12 +144,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static Future<A> fromBusyLoop<A>(
       Func<Option<A>> checker, YieldInstruction delay=null
-    ) => Future<A>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
+    ) => async<A>(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
 
     /// <summary>Complete when checker returns true</summary>
     public static Future<Unit> fromBusyLoop(
       Func<bool> checker, YieldInstruction delay=null
-    ) => Future<Unit>.async(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
+    ) => async<Unit>(p => ASync.StartCoroutine(busyLoopEnum(delay, p, checker)));
 
     /* Waits at most `timeout` for the future to complete. Completes with
        exception produced by `onTimeout` on timeout. */
@@ -146,7 +162,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         () => onTimeout(),
         v => v
       ), tc);
-      return new[] { future.map<Either<B, A>>(v => v), timeoutF }.firstOf();
+      return new[] { future.map(v => (Either<B, A>) v), timeoutF }.firstOf();
     }
 
     /// <summary>Waits at most `timeout` for the future to complete.</summary>

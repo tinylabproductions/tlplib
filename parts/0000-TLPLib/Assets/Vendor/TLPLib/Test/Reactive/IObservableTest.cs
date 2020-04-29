@@ -317,7 +317,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     [Test]
     public void TestFuture() {
-      var gateF = Future<Unit>.async(out var gateP);
+      var gateF = Future.async<Unit>(out var gateP);
       var subj = new Subject<int>();
       var obs = subj.flatMap(i => gateF.map(_ => i));
       var t = obs.pipeToList(tracker);
