@@ -39,10 +39,11 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static Option<Backtrace> fromException(Exception e) =>
       convertFromStacktrace(new StackTrace(e, true));
 
-    public static Option<Backtrace> convertFromStacktrace(StackTrace trace) =>
-      from frames in F.opt(trace.GetFrames())
-      from _ in frames.Select(_ => _.toBacktraceElem()).ToImmutableList().toNonEmpty()
-      select new Backtrace(_);
+    public static Option<Backtrace> convertFromStacktrace(StackTrace trace) {
+      var frames = F.opt(trace.GetFrames()).getOr_RETURN();
+      var elems = frames.Select(_ => _.toBacktraceElem()).ToImmutableList().toNonEmpty().getOr_RETURN();
+      return Some.a(new Backtrace(elems));
+    }
 
     #endregion
   }

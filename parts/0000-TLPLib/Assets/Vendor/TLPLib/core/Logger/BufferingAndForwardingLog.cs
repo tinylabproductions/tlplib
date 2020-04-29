@@ -24,6 +24,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     readonly ILog backing, debugLog;
     readonly List<BufferEntry> buffer = new List<BufferEntry>();
     readonly IDisposableTracker tracker = new DisposableTracker();
+    readonly Option<Log.Level> generateBacktraceIfMissingFor;
 
     public Log.Level bufferingLevel;
     public bool disabled { get; private set; }
@@ -31,10 +32,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
     Option<SinkRuntimeData> _sinkData = None._;
     uint sequenceNo;
 
-    public BufferingAndForwardingLog(ILog backing, Log.Level bufferingLevel) {
+    public BufferingAndForwardingLog(
+      ILog backing, Log.Level bufferingLevel, Option<Log.Level> generateBacktraceIfMissingFor
+    ) {
       this.backing = backing;
       debugLog = backing.withScope(nameof(BufferingAndForwardingLog));
       this.bufferingLevel = bufferingLevel;
+      this.generateBacktraceIfMissingFor = generateBacktraceIfMissingFor;
       // Gather logs from Debug.Log and friends as well.
       UnityLog.fromUnityLogMessages.strict.subscribe(tracker, logEvent => bufferLog(logEvent.level, logEvent.entry));
     }
@@ -140,6 +144,18 @@ namespace com.tinylabproductions.TLPLib.Logger {
     
     void bufferLog(Log.Level l, LogEntry o) {
       if (l < bufferingLevel) return;
+
+      {
+        if (
+          o.backtrace == null
+          && generateBacktraceIfMissingFor.valueOut(out var genBacktraceLevel)
+          && l >= genBacktraceLevel
+          && Backtrace.generateFromHere().valueOut(out var backtrace)
+        ) {
+          o = o.withBacktrace(backtrace);
+        }
+      }
+
       lock (buffer) {
         buffer.Add(new BufferEntry(DateTime.UtcNow, l, o, sequenceNo));
         sequenceNo++;

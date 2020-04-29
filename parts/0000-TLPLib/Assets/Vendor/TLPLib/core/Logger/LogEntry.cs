@@ -125,6 +125,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
       return simple(sb.ToString(), reportToErrorTracking, backtrace.toNullable(), context);
     }
 
+    public LogEntry withBacktrace(Backtrace backtrace) =>
+      new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, maybeContext);
+    
     public LogEntry withMessage(string message) =>
       new LogEntry(message, tags, extras, reportToErrorTracking, backtrace, maybeContext);
 
