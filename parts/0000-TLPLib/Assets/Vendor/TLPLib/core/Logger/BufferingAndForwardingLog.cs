@@ -97,18 +97,18 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     void tryToDispatch(SinkRuntimeData sinkRuntimeData) {
       try {
-        debugLog.mDebug($"{nameof(tryToDispatch)}: entering");
+        debugLog.mVerbose($"{nameof(tryToDispatch)}: entering");
 
         {
           if (sinkRuntimeData.currentRequest.valueOut(out var currentRequest) && !currentRequest.isCompleted) {
-            debugLog.mDebug(nameof(tryToDispatch) + " returning because current request is not yet completed");
+            debugLog.mVerbose(nameof(tryToDispatch) + " returning because current request is not yet completed");
             return;
           }
         }
         BufferEntry[] entriesToSend;
         lock (buffer) {
           if (buffer.isEmpty()) {
-            debugLog.mDebug(nameof(tryToDispatch) + " returning because we have no entries");
+            debugLog.mVerbose(nameof(tryToDispatch) + " returning because we have no entries");
             return;
           }
 
