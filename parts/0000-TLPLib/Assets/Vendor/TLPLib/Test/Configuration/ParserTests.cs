@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 using pzd.lib.config;
+using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Configuration {

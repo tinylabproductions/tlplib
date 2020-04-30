@@ -8,6 +8,7 @@ using pzdf = pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 using pzd.lib.collection;
+using pzd.lib.exts;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;
 using Random = UnityEngine.Random;

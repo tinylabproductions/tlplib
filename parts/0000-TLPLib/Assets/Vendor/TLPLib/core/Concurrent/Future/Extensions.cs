@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using pzd.lib.data;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 
@@ -196,7 +197,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [PublicAPI]
     public static Future<Option<A>> ofSuccess<A>(this Future<Try<A>> future) =>
-      future.map(e => e.toOption);
+      future.map(e => e.toOption());
 
     public static void onFailure<A, B>(this Future<Either<A, B>> future, Action<A> action) =>
       future.onComplete(e => {
@@ -205,14 +206,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static void onFailure<A>(this Future<Try<A>> future, Action<Exception> action) =>
       future.onComplete(e => {
-        foreach (var ex in e.exception) action(ex);
+        foreach (var ex in e.exception()) action(ex);
       });
 
     public static Future<Option<A>> ofFailure<A, B>(this Future<Either<A, B>> future) =>
       future.map(e => e.leftValue);
 
     public static Future<Option<Exception>> ofFailure<A>(this Future<Try<A>> future) =>
-      future.map(e => e.exception);
+      future.map(e => e.exception());
 
     /// <summary>
     /// Delays completing of given future until the returned action is called.

@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Functional {
@@ -180,30 +181,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test] public void WhenLeft() => test(Either<int, string>.Left(3), '3');
     [Test] public void WhenRight() => test(Either<int, string>.Right("foo"), 'f');
-  }
-
-  public class EitherTestUnsafeCastLeft {
-    [Test]
-    public void WhenLeft() =>
-      Assert.Throws<WrongEitherSideException>(() =>
-        new Either<int, string>(3).__unsafeCastLeft<char>()
-      );
-
-    [Test]
-    public void WhenRight() =>
-      new Either<int, string>("3").__unsafeCastLeft<char>().shouldBeRight("3");
-  }
-
-  public class EitherTestUnsafeCastRight {
-    [Test]
-    public void WhenLeft() =>
-      new Either<int, string>(3).__unsafeCastRight<char>().shouldBeLeft(3);
-
-    [Test]
-    public void WhenRight() =>
-      Assert.Throws<WrongEitherSideException>(() =>
-        new Either<int, string>("3").__unsafeCastRight<char>()
-      );
   }
 
   public class EitherTestForeach {

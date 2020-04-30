@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) where A : Component =>
       Future.successful(
         F.doTry(() => SceneManager.LoadSceneAsync(scenePath, loadSceneMode))
-          .toEither.mapLeft(err => new ErrorMsg($"Error while loading scene '{scenePath}': {err}"))
+          .toEither().mapLeft(err => new ErrorMsg($"Error while loading scene '{scenePath}': {err}"))
       ).flatMapT(op => op.toFuture().map(_ =>
         SceneManager.GetSceneByPath(scenePath).findComponentOnRootGameObjects<A>()
       ));

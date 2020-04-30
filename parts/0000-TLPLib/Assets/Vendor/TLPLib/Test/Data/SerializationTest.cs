@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 using pzd.lib.collection;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;

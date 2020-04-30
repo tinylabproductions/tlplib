@@ -5,6 +5,7 @@ using System.Text;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
+using pzd.lib.exts;
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   public class FileCachedBlobTest {
@@ -53,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
     [Test]
     public void WhenFileExistsAndCanBeRead() =>
       Encoding.UTF8.GetString(
-        new FileCachedBlob(randomFileWithContent("foobar")).read().get.getOrThrow
+        new FileCachedBlob(randomFileWithContent("foobar")).read().get.getOrThrow()
       ).shouldEqual("foobar");
 
     [Test, Ignore("Unknown reasons")]

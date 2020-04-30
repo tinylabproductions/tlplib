@@ -55,12 +55,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static string fromBase64(this string source, Encoding encoding = null) {
-      encoding = encoding ?? Encoding.UTF8;
+      encoding ??= Encoding.UTF8;
       return encoding.GetString(Convert.FromBase64String(source));
     }
 
     public static Either<Exception, string> fromBase64Safe(this string source, Encoding encoding = null) =>
-      F.doTry(() => fromBase64(source, encoding)).toEither;
+      F.doTry(() => fromBase64(source, encoding)).toEither();
 
     public static string trimTo(this string s, int length, bool fromRight=false) =>
       s.Length > length ? s.Substring(

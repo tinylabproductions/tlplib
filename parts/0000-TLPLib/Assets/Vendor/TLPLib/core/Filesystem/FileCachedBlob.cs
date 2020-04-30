@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.serialization;
 
@@ -34,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       ISerializedRW<A> rw, PathStr path, A defaultValue, 
       ILog log = null, Log.Level onDeserializeFailureLogLevel = Log.Level.ERROR
     ) {
-      log = log ?? Log.d;
+      log ??= Log.d;
       return new FileCachedBlob(path).bimap(BiMapper.a(
         (byte[] bytes) => {
           var deserializedEither = rw.deserialize(bytes, 0);

@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.functional.higher_kinds;
 using UnityEngine;
@@ -156,11 +157,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<Either<B, A>> timeout<A, B>(
       this Future<A> future, Duration timeout, Func<B> onTimeout, ITimeContext tc
     ) {
-      var timeoutF = delay(timeout, () => future.value.fold<Either<B, A>>(
+      var timeoutF = delay(timeout, () => future.value.fold(
         // onTimeout() might have side effects, so we only need to execute it if
         // there is no value in the original future once the timeout hits.
         () => onTimeout(),
-        v => v
+        v => (Either<B, A>) v
       ), tc);
       return new[] { future.map(v => (Either<B, A>) v), timeoutF }.firstOf();
     }
