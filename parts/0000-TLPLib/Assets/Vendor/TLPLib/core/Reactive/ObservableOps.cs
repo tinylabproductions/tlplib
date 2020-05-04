@@ -13,7 +13,6 @@ using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
-using Smooth.Collections;
 using UnityEngine;
 using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 
@@ -290,6 +289,16 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         });
         return mySub.join(luSub);
       });
+    
+    /// <summary>Only emit an event if it's the first event in this frame.</summary>
+    public static IRxObservable<A> oncePerFrameShared<A>(this IRxObservable<A> o, Ref<int> frameNoRx) =>
+      new Observable<A>(onEvent => o.subscribe(NoOpDisposableTracker.instance, a => {
+        var frameNo = Time.frameCount;
+        if (frameNoRx.value != frameNo) {
+          frameNoRx.value = frameNo;
+          onEvent(a);
+        }
+      }));
 
     #region #zip
 
