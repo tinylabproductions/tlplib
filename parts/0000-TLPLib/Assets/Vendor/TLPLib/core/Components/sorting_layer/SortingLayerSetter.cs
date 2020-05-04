@@ -3,6 +3,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
@@ -39,12 +40,14 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     ValueDropdownList<SortingLayerReference> all {
       get {
         var list = new ValueDropdownList<SortingLayerReference>();
+        var idToLayer = SortingLayerUtils.idToLayer();
         foreach (var item in Resources
           .FindObjectsOfTypeAll<SortingLayerReference>()
-          .OrderBy(_ => _.sortingLayer)
-          .ThenBy(_ => _.orderInLayer)
-          .Select(_ =>
-            new ValueDropdownItem<SortingLayerReference>($"{_.orderInLayer,4}: {_.name}", _))
+          .OrderBySafe(_ => idToLayer[_.sortingLayer].value)
+          .ThenBySafe(_ => _.orderInLayer)
+          .Select(_ => new ValueDropdownItem<SortingLayerReference>(
+            $"{_.orderInLayer,4}: {_.name} [{idToLayer[_.sortingLayer].name}]", _
+          ))
         ) {
           list.Add(item);
         }
