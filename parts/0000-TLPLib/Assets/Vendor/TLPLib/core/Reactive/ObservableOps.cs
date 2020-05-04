@@ -290,7 +290,11 @@ namespace com.tinylabproductions.TLPLib.Reactive {
         return mySub.join(luSub);
       });
     
-    /// <summary>Only emit an event if it's the first event in this frame.</summary>
+    /// <summary>
+    /// Only emit an event if it's the first event in this frame.
+    /// </summary>
+    /// <param name="o"></param>
+    /// <param name="frameNoRx">Reference to last frame number. Can be shared between several observables.</param>
     public static IRxObservable<A> oncePerFrameShared<A>(this IRxObservable<A> o, Ref<int> frameNoRx) =>
       new Observable<A>(onEvent => o.subscribe(NoOpDisposableTracker.instance, a => {
         var frameNo = Time.frameCount;
