@@ -281,7 +281,6 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         if (idx == length - 1) return Color.red;
         return Color.magenta;
       }
-
       Handles.color = getHandleColor();
 
       var currentNode = getWorldPos(behaviour.nodes[idx]);
@@ -303,7 +302,9 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         if (behaviour.closed && idx == behaviour.nodes.Count - 1) {
           behaviour.nodes[0] = calculatedNode;
         }
-      } 
+      }
+      
+      Handles.Label(currentNode, idx.ToString());
     }
 
     void drawArrows(Vector3 currentNode, int idx, float size) {
