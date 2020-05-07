@@ -68,30 +68,37 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
     }
 
-    public static readonly LazyVal<IRxObservable<LogEvent>> fromUnityLogMessages = F.lazy(() => {
-      var subject = new Subject<LogEvent>();
-      Application.logMessageReceivedThreaded += (message, backtrace, type) => {
-        // Ignore messages that we ourselves sent to Unity.
-        if (message.StartsWithFast(MESSAGE_PREFIX)) return;
-        var logEventTry = convertUnityMessageToLogEvent(
-          message, backtrace, type,
-          stackFramesToSkipWhenGenerating: 1 /* This stack frame */
-        );
-        var logEvent =
-          logEventTry.isSuccess ? logEventTry.__unsafeGet
-          : new LogEvent(Log.Level.ERROR, LogEntry.fromException(
-            $"Error while converting Unity log message (type: {type}): {message}, backtrace: [{backtrace}]",
-            logEventTry.__unsafeException
-          ));
+    public static readonly LazyVal<IRxObservable<LogEvent>> fromUnityLogMessages = F.lazy(() =>
+      Observable.fromEvent2<LogEvent, Application.LogCallback>(
+        onEvent => {
+          Application.logMessageReceivedThreaded += callback;
+          return callback;
+          
+          void callback(string message, string backtrace, LogType type) {
+            // Ignore messages that we ourselves sent to Unity.
+            if (message.StartsWithFast(MESSAGE_PREFIX)) return;
+            var logEventTry = convertUnityMessageToLogEvent(
+              message, backtrace, type, stackFramesToSkipWhenGenerating: 1 /* This stack frame */
+            );
+            var logEvent = logEventTry.isSuccess
+              ? logEventTry.__unsafeGet
+              : new LogEvent(
+                Log.Level.ERROR, 
+                LogEntry.fromException(
+                  $"Error while converting Unity log message (type: {type}): {message}, backtrace: [{backtrace}]", 
+                  logEventTry.__unsafeException
+                ));
 
-        ASync.OnMainThread(
-          () => subject.push(logEvent),
-          // Do not run code that might throw an exception itself in logMessageReceived.
-          runNowIfOnMainThread: false
-        );
-      };
-      return subject.asObservable();
-    });
+            ASync.OnMainThread(
+              () => onEvent(logEvent),
+              // Do not run code that might throw an exception itself in logMessageReceived.
+              runNowIfOnMainThread: false
+            );
+          }
+        },
+        callback => Application.logMessageReceivedThreaded -= callback
+      )
+    );
 
     static Log.Level convertLevel(LogType type) {
       switch (type) {
