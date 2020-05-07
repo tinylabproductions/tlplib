@@ -18,7 +18,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       get {
         TweenManagerRunner create() {
           var go = new GameObject(nameof(TweenManagerRunner));
-          DontDestroyOnLoad(go);
+          if (Application.isPlaying) {
+            DontDestroyOnLoad(go);
+          }
+          else {
+            go.hideFlags = HideFlags.HideAndDontSave;
+          }
           return go.AddComponent<TweenManagerRunner>();
         }
 

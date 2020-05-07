@@ -102,5 +102,30 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
       foreach (var element in _elements)
         element.invalidate();
     }
+    
+#if UNITY_EDITOR
+    [ShowInInspector, PropertyRange(0, nameof(duration)), PropertyOrder(-1)] float __setProgress {
+      get {
+        try {
+          return timeline.timePassed;
+        }
+        catch (Exception e) {
+          return 0;
+        }
+      }
+      set => timeline.timePassed = value;
+    }
+
+    float duration {
+      get {
+        try {
+          return timeline.duration;
+        }
+        catch (Exception e) {
+          return 0;
+        }
+      }
+    }
+#endif
   }
 }
