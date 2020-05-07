@@ -248,11 +248,17 @@ namespace com.tinylabproductions.TLPLib.Reactive {
 
     public static IRxObservable<A> fromEvent<A>(
       Action<Action<A>> registerCallback, Action<Action<A>> unregisterCallback
-    ) =>
-      new Observable<A>(push => {
-        registerCallback(push);
-        return new Subscription(() => unregisterCallback(push));
-      });
+    ) => new Observable<A>(push => {
+      registerCallback(push);
+      return new Subscription(() => unregisterCallback(push));
+    });
+    
+    public static IRxObservable<A> fromEvent2<A, Callback>(
+      Func<Action<A>, Callback> registerCallback, Action<Callback> unregisterCallback
+    ) => new Observable<A>(push => {
+      var callback = registerCallback(push);
+      return new Subscription(() => unregisterCallback(callback));
+    });
 
     public static IRxObservable<Unit> fromEventUnit(
       Action<Action> registerCallback, Action<Action> unregisterCallback
