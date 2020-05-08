@@ -38,40 +38,40 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
   }
   public static class SimpleSerializedEase_ {
     [PublicAPI] public static Ease toEase(this SimpleSerializedEase simple) {
-      switch (simple) {
-        case SimpleSerializedEase.Linear: return Eases.linear;
-        case SimpleSerializedEase.QuadIn: return Eases.quadIn;
-        case SimpleSerializedEase.QuadOut: return Eases.quadOut;
-        case SimpleSerializedEase.QuadInOut: return Eases.quadInOut;
-        case SimpleSerializedEase.CubicIn: return Eases.cubicIn;
-        case SimpleSerializedEase.CubicOut: return Eases.cubicOut;
-        case SimpleSerializedEase.CubicInOut: return Eases.cubicInOut;
-        case SimpleSerializedEase.QuartIn: return Eases.quartIn;
-        case SimpleSerializedEase.QuartOut: return Eases.quartOut;
-        case SimpleSerializedEase.QuartInOut: return Eases.quartInOut;
-        case SimpleSerializedEase.QuintIn: return Eases.quintIn;
-        case SimpleSerializedEase.QuintOut: return Eases.quintOut;
-        case SimpleSerializedEase.QuintInOut: return Eases.quintInOut;
-        case SimpleSerializedEase.SineIn: return Eases.sineIn;
-        case SimpleSerializedEase.SineOut: return Eases.sineOut;
-        case SimpleSerializedEase.SineInOut: return Eases.sineInOut;
-        case SimpleSerializedEase.CircularIn: return Eases.circularIn;
-        case SimpleSerializedEase.CircularOut: return Eases.circularOut;
-        case SimpleSerializedEase.CircularInOut: return Eases.circularInOut;
-        case SimpleSerializedEase.ExpoIn: return Eases.expoIn;
-        case SimpleSerializedEase.ExpoOut: return Eases.expoOut;
-        case SimpleSerializedEase.ExpoInOut: return Eases.expoInOut;
-        case SimpleSerializedEase.ElasticIn: return Eases.elasticIn;
-        case SimpleSerializedEase.ElasticOut: return Eases.elasticOut;
-        case SimpleSerializedEase.ElasticInOut: return Eases.elasticInOut;
-        case SimpleSerializedEase.BackIn: return Eases.backIn;
-        case SimpleSerializedEase.BackOut: return Eases.backOut;
-        case SimpleSerializedEase.BackInOut: return Eases.backInOut;
-        case SimpleSerializedEase.BounceIn: return Eases.bounceIn;
-        case SimpleSerializedEase.BounceOut: return Eases.bounceOut;
-        case SimpleSerializedEase.BounceInOut: return Eases.bounceInOut;
-        default: throw new Exception($"Unknown ease {simple}!");
-      }
+      return simple switch {
+        SimpleSerializedEase.Linear => Eases.linear,
+        SimpleSerializedEase.QuadIn => Eases.quadIn,
+        SimpleSerializedEase.QuadOut => Eases.quadOut,
+        SimpleSerializedEase.QuadInOut => Eases.quadInOut,
+        SimpleSerializedEase.CubicIn => Eases.cubicIn,
+        SimpleSerializedEase.CubicOut => Eases.cubicOut,
+        SimpleSerializedEase.CubicInOut => Eases.cubicInOut,
+        SimpleSerializedEase.QuartIn => Eases.quartIn,
+        SimpleSerializedEase.QuartOut => Eases.quartOut,
+        SimpleSerializedEase.QuartInOut => Eases.quartInOut,
+        SimpleSerializedEase.QuintIn => Eases.quintIn,
+        SimpleSerializedEase.QuintOut => Eases.quintOut,
+        SimpleSerializedEase.QuintInOut => Eases.quintInOut,
+        SimpleSerializedEase.SineIn => Eases.sineIn,
+        SimpleSerializedEase.SineOut => Eases.sineOut,
+        SimpleSerializedEase.SineInOut => Eases.sineInOut,
+        SimpleSerializedEase.CircularIn => Eases.circularIn,
+        SimpleSerializedEase.CircularOut => Eases.circularOut,
+        SimpleSerializedEase.CircularInOut => Eases.circularInOut,
+        SimpleSerializedEase.ExpoIn => Eases.expoIn,
+        SimpleSerializedEase.ExpoOut => Eases.expoOut,
+        SimpleSerializedEase.ExpoInOut => Eases.expoInOut,
+        SimpleSerializedEase.ElasticIn => Eases.elasticIn,
+        SimpleSerializedEase.ElasticOut => Eases.elasticOut,
+        SimpleSerializedEase.ElasticInOut => Eases.elasticInOut,
+        SimpleSerializedEase.BackIn => Eases.backIn,
+        SimpleSerializedEase.BackOut => Eases.backOut,
+        SimpleSerializedEase.BackInOut => Eases.backInOut,
+        SimpleSerializedEase.BounceIn => Eases.bounceIn,
+        SimpleSerializedEase.BounceOut => Eases.bounceOut,
+        SimpleSerializedEase.BounceInOut => Eases.bounceInOut,
+        _ => throw new Exception($"Unknown ease {simple}!")
+      };
     }
   }
 }

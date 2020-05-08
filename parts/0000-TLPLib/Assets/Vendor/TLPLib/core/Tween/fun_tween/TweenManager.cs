@@ -60,15 +60,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public readonly TweenTime time;
 
     IDisposableTracker _tracker;
-    IDisposableTracker tracker => _tracker ?? (_tracker = new DisposableTracker());
+    IDisposableTracker tracker => _tracker ??= new DisposableTracker();
 
     // These are null intentionally. We try not to create objects if they are not needed.
     ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
 
     [PublicAPI] public IRxObservable<TweenCallback.Event> onStart => 
-      __onStartSubject ?? (__onStartSubject = new Subject<TweenCallback.Event>());
+      __onStartSubject ??= new Subject<TweenCallback.Event>();
     [PublicAPI] public IRxObservable<TweenCallback.Event> onEnd =>
-      __onEndSubject ?? (__onEndSubject = new Subject<TweenCallback.Event>());
+      __onEndSubject ??= new Subject<TweenCallback.Event>();
 
     [PublicAPI] public float timescale = 1;
     [PublicAPI] public bool forwards = true;

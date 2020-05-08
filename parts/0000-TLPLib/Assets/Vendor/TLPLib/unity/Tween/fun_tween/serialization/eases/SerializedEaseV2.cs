@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.attributes;
-using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.utils;
@@ -10,31 +9,23 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
   [Serializable, InlineProperty]
-  public partial class SerializedEase : ISkipObjectValidationFields, Invalidatable {
+  public partial struct SerializedEaseV2 : ISkipObjectValidationFields, Invalidatable {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
+    // TODO: implement complex eases
+    [HideInInspector]
     [SerializeField, HideLabel, HorizontalGroup, OnValueChanged(nameof(complexChanged)), PublicAccessor] bool _isComplex;
     [SerializeField, HideLabel, HorizontalGroup, ShowIf(nameof(isSimple))] SimpleSerializedEase _simple;
-    [SerializeField, HideLabel, HorizontalGroup, ShowIf(nameof(isComplex)), TLPCreateDerived, NotNull] ComplexSerializedEase _complex;
+    [SerializeField, HideLabel, HorizontalGroup, ShowIf(nameof(isComplex)), TLPCreateDerived, NotNull] IComplexSerializedEase _complex;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
     #endregion
-
-    [HideLabel, HorizontalGroup, ShowIf(nameof(isSimple)), ShowInInspector, PreviewField]
+    
+    [HideLabel, HorizontalGroup(Width = 50), ShowIf(nameof(displayPreview)), ShowInInspector, PreviewField]
     Texture2D _simplePreview => SerializedEasePreview.editorPreview(_simple);
-
-    [PublicAPI] public SerializedEase(SimpleSerializedEase simple) {
-      _isComplex = false;
-      _simple = simple;
-    }
-
-    [PublicAPI] public SerializedEase(ComplexSerializedEase complex) {
-      _isComplex = true;
-      _complex = complex;
-    }
     
     void complexChanged() {
       // ReSharper disable AssignNullToNotNullAttribute
@@ -42,24 +33,32 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
       // ReSharper restore AssignNullToNotNullAttribute
     }
     
+    bool displayPreview => SerializedTweenTimelineV2.editorDisplayEasePreview && isSimple;
     [PublicAPI] public bool isSimple => !_isComplex;
 
     Ease _ease;
-    [PublicAPI] public Ease ease => _ease ?? (_ease = _isComplex ? _complex.ease : _simple.toEase());
+    [PublicAPI] public Ease ease => _ease ??= _isComplex ? _complex.ease : _simple.toEase();
     
     public void invalidate() {
       _ease = null;
-      if (_complex) _complex.invalidate();
+      _complex?.invalidate();
     }
 
     public override string ToString() => 
       _isComplex 
-        ? (_complex ? _complex.easeName : "not set") 
+        ? (_complex?.easeName ?? "not set") 
         : _simple.ToString();
 
     public string[] blacklistedFields() => 
       _isComplex
         ? new [] { nameof(_simple) }
         : new [] { nameof(_complex) };
+
+    // TODO: implement instances
+    interface IComplexSerializedEase {
+      public string easeName { get; }
+      public void invalidate();
+      public Ease ease { get; }
+    }
   }
 }
