@@ -8,7 +8,22 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   public class FunTweenManagerV2 : MonoBehaviour {
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
+    [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
     [SerializeField, HideLabel, InlineProperty] SerializedTweenTimelineV2 _timeline;
+    
+    TweenManager _manager;
+
+    [PublicAPI]
+    public TweenManager manager {
+      get {
+        TweenManager create() {
+          var tm = new TweenManager(_timeline.timeline, _time, _looping, context: gameObject);
+          return tm;
+        }
+
+        return _manager ??= create();
+      }
+    }
   }
 
   [Serializable]
@@ -20,7 +35,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized
       [SerializeField, HorizontalGroup(Width = 140), HideLabel] At _at;
-      [SerializeField, HorizontalGroup(MarginLeft = 10), LabelWidth(80), Tooltip("in seconds"), LabelText("$" + nameof(timeOffsetLabel))] 
+      
+      [
+        SerializeField, HorizontalGroup(MarginLeft = 10), LabelWidth(80), Tooltip("in seconds"), 
+        LabelText("$" + nameof(timeOffsetLabel))
+      ] 
       float _timeOffset;
       [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty] 
       ISerializedTweenTimelineElement _element;
