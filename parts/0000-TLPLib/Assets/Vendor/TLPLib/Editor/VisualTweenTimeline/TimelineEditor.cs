@@ -748,12 +748,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             case SettingsEvents.AddTween:
               var newNode = new TimelineNode(new Element(), 0);
 
-              if (!funNodes.isEmpty()) {
-                funNodes.Insert(0, newNode);
-              }
-              else {
-                funNodes = new List<TimelineNode> {newNode};
-              }
+              funNodes.Insert(0, newNode);
 
               selectedNodesList.Clear();
               selectedNodesList.Add(newNode);
