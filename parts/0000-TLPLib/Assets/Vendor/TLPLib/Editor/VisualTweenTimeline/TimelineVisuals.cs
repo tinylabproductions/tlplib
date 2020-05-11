@@ -485,34 +485,34 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
             GUILayout.EndHorizontal();
 
-            if (oneNodeSelected && rootSelectedNodeOpt.valueOut(out var selectedNode)) {
-              var linkButtonText = "LINK";
-              var unlinkButtonText = "UNLINK";
-              GUILayout.BeginHorizontal();
-
-              if (selectedNode.linkedNode.isNone) {
-                GUI.enabled = false;
-                unlinkButtonText = "UNLINKED";
-              }
-
-              if (GUILayout.Button(unlinkButtonText)) {
-                onNewSettings(TimelineEditor.SettingsEvents.Unlink);
-              }
-
-              GUI.enabled = guiEnabled;
-
-              if (selectedNode.linkedNode.isSome) {
-                GUI.enabled = false;
-                linkButtonText = "LINKED";
-              }
-
-              if (GUILayout.Button(linkButtonText)) {
-                onNewSettings(TimelineEditor.SettingsEvents.Link);
-              }
-
-              GUI.enabled = guiEnabled;
-              GUILayout.EndHorizontal();
-            }
+            // if (oneNodeSelected && rootSelectedNodeOpt.valueOut(out var selectedNode)) {
+            //   var linkButtonText = "LINK";
+            //   var unlinkButtonText = "UNLINK";
+            //   GUILayout.BeginHorizontal();
+            //
+            //   if (selectedNode.linkedNode.isNone) {
+            //     GUI.enabled = false;
+            //     unlinkButtonText = "UNLINKED";
+            //   }
+            //
+            //   if (GUILayout.Button(unlinkButtonText)) {
+            //     onNewSettings(TimelineEditor.SettingsEvents.Unlink);
+            //   }
+            //
+            //   GUI.enabled = guiEnabled;
+            //
+            //   if (selectedNode.linkedNode.isSome) {
+            //     GUI.enabled = false;
+            //     linkButtonText = "LINKED";
+            //   }
+            //
+            //   if (GUILayout.Button(linkButtonText)) {
+            //     onNewSettings(TimelineEditor.SettingsEvents.Link);
+            //   }
+            //
+            //   GUI.enabled = guiEnabled;
+            //   GUILayout.EndHorizontal();
+            // }
 
           }
         }

@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 
     #endregion
     
-    [HideLabel, HorizontalGroup(Width = 50), ShowIf(nameof(displayPreview)), ShowInInspector, PreviewField]
+    [HideLabel, HorizontalGroup(Width = 50), ShowIf("displayPreview"), ShowInInspector, PreviewField]
     Texture2D _simplePreview => SerializedEasePreview.editorPreview(_simple);
     
     void complexChanged() {
@@ -36,7 +36,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
       // ReSharper restore AssignNullToNotNullAttribute
     }
     
-    bool displayPreview => SerializedTweenTimelineV2.editorDisplayEasePreview && isSimple;
     [PublicAPI] public bool isSimple => !_isComplex;
 
     Ease _ease;
@@ -63,5 +62,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
       public void invalidate();
       public Ease ease { get; }
     }
+    
+#if UNITY_EDITOR
+    [UsedImplicitly] bool displayPreview => SerializedTweenTimelineV2.editorDisplayEasePreview && isSimple;
+#endif
   }
 }

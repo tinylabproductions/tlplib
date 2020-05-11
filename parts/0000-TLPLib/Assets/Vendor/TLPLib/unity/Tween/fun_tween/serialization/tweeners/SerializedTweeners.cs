@@ -19,7 +19,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     const string DURATION = "duration";
     const int LABEL_WIDTH = 50;
     const string CHANGE = "editorSetDirty";
-    const string SHOW_DELTA = nameof(displayAsDelta);
+    const string SHOW_CURRENT = "showCurrent";
+    const string SHOW_DELTA = "displayAsDelta";
 
     [SerializeField, OnValueChanged(CHANGE), PropertyOrder(-1), NotNull] protected TObject _target;
     [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)] protected TValue _start;
@@ -56,19 +57,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     public void applyStateAt(float time) => set(lerp(_ease.ease.Invoke(time / duration)));
 
-    [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(nameof(showCurrent))] 
+    [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(SHOW_CURRENT)] 
     TValue __current {
       get {
         try { return get; } catch (Exception _) { return default; }
       }
     }
-    
-    bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
 
     // Equals(null) checks if unity object is alive
     bool hasTarget => _target != null && !_target.Equals(null);
 
-    bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
     
     protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
     protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
@@ -81,6 +79,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     public bool __editorDirty { get; private set; } = true;
     public abstract string[] __editorSerializedProps { get; }
     [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
+    [UsedImplicitly] bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
+    [UsedImplicitly] bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
     
     [Button("Start"), PropertyOrder(-1), HorizontalGroup(START, Width = LABEL_WIDTH)]
     void __setStart() => _start = get;

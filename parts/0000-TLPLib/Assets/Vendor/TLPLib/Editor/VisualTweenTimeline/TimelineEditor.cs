@@ -482,7 +482,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           () => { },
           rightNode => {
             if (rightNode.linkedNode.valueOut(out var nodeLinkedTo) && nodeLinkedTo == node) {
-              rightNode.setStartTime(node.getEnd() + rightNode.element.timeOffset);
+              rightNode.setStartTime(node.getEnd() + rightNode.element.startsAt);
             }
 
             updateLinkedNodeStartTimes(rightNode);
@@ -646,12 +646,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           if (elements != null) {
             funNodes = manager.serializedTimeline.elements.Select(
               (element, idx) => {
-                if (idx != 0 && element.startAt == Element.At.AfterLastElement
-                ) {
-                  element.timelineChannelIdx = elements[idx - 1].timelineChannelIdx;
-                }
-
-                var newNode = new TimelineNode(element, whereToStart(idx));
+                var newNode = new TimelineNode(element, elements[idx].startsAt);
 
                 return selectedNodesList
                   .find(selectedNode => selectedNode.element == element)
@@ -673,22 +668,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
           //Relinking linked nodes, since we dont serialize nodeLinkedTo
           foreach (var node in funNodes) {
-            if (getLeftNode(node).valueOut(out var leftNode)) {
-              if (node.element.startAt == Element.At.AfterLastElement) {
-                node.linkTo(leftNode);
-              }
-            }
+            // if (getLeftNode(node).valueOut(out var leftNode)) {
+            //   if (node.element.startAt == Element.At.AfterLastElement) {
+            //     node.linkTo(leftNode);
+            //   }
+            // }
 
             node.refreshColor();
-          }
-
-          float whereToStart(int idx) {
-            return idx == 0
-              ? elements[idx].at(0, 0)
-              : elements[idx].at(
-                whereToStart(idx - 1),
-                elements[idx - 1].element == null ? 0 : elements[idx - 1].element.duration
-              );
           }
         }
       }
@@ -748,13 +734,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 element.element.trySetDuration(found.duration);
                 element.timelineChannelIdx = found.channel;
                 
-                if (found.linkedNode.valueOut(out var linked)) {
-                  element.startAt = Element.At.AfterLastElement;
-                  element.timeOffset = found.startTime - linked.getEnd();
+                if (found.linkedNode.valueOut(out var _)) {
+                  throw new NotImplementedException("node linking is not implemented");
                 }
                 else {
-                  element.startAt = Element.At.SpecificTime;
-                  element.timeOffset = found.startTime;
+                  element.setStartsAt(found.startTime);
                 }
               }
             }
@@ -767,10 +751,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       void doNewSettings(SettingsEvents settingsEvent) {
           switch (settingsEvent) {
             case SettingsEvents.AddTween:
-              var newElement = new Element {
-                startAt = Element.At.SpecificTime
-              };
-              var newNode = new TimelineNode(newElement, 0);
+              var newNode = new TimelineNode(new Element(), 0);
 
               if (!funNodes.isEmpty()) {
                 funNodes.Insert(0, newNode);

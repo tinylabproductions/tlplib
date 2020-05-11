@@ -25,10 +25,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     public void linkTo(TimelineNode linkTo) {
       linkedNode = linkTo.some();
-
-      if (element.startAt != Element.At.AfterLastElement) {
-        convert(Element.At.AfterLastElement);
-      }
     }
 
     void setChannel(int idx) => channel = Mathf.Clamp(idx, 0, int.MaxValue);
@@ -46,13 +42,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     public void unlink() {
       linkedNode = F.none_;
-      convert(Element.At.SpecificTime);
     }
 
     public void refreshColor() =>
       nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
 
-    public void setTimeOffset(float time) => element.timeOffset = time;
+    public void setTimeOffset(float time) => element.setStartsAt(time);
 
     public TimelineNode(Element element, float startTime) {
       if (element.element != null && false) { // TODO
@@ -88,39 +83,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       //   default:                           return Color.white;
       // }
     }
-    
-    public void convert(Element.At newStartType) {
-      if (element.element != null) {
-        switch (newStartType) {
-          case Element.At.AfterLastElement: {
-            if (linkedNode.valueOut(out var linked)) {
-              setTimeOffset(startTime - linked.getEnd());
-              element.startAt = newStartType;
-              setDuration(duration);
-            }
-
-            break;
-          }
-          case Element.At.SpecificTime: {
-            setTimeOffset(startTime);
-            element.startAt = newStartType;
-            setDuration(duration);
-            
-            break;
-          }
-          case Element.At.WithLastElement: {
-            if (linkedNode.valueOut(out var linked)) {
-              setTimeOffset(startTime - linked.startTime);
-              element.startAt = newStartType;
-              setDuration(duration);
-            }
-
-            break;
-          }
-        }
-      }
-    }
-    
   }
 }
 #endif
