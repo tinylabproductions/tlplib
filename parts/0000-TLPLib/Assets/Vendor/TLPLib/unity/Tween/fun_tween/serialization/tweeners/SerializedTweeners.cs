@@ -1,10 +1,13 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
@@ -114,6 +117,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override float add(float a, float b) => a + b;
     protected override float subtract(float a, float b) => a - b;
   }
+  
+  public abstract class SerializedTweenerColor<T> : SerializedTweenerV2<T, Color> {
+    protected override Color lerp(float percentage) => Color.LerpUnclamped(_start, _end, percentage);
+    protected override Color add(Color a, Color b) => a + b;
+    protected override Color subtract(Color a, Color b) => a - b;
+  }
 
   // ReSharper disable NotNullMemberIsNotInitialized
 
@@ -147,6 +156,42 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withZ(value);
     
     // public override string[] __editorSerializedProps => spQuaternion("m_LocalRotation");
+  }
+  
+  [Serializable]
+  public sealed class ImageColor : SerializedTweenerColor<Image> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
+  }
+  
+  [Serializable]
+  public sealed class CustomImageColor : SerializedTweenerColor<CustomImage> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
+  }
+  
+  [Serializable]
+  public sealed class TextMeshColor : SerializedTweenerColor<TextMeshProUGUI> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
+  }
+  
+  [Serializable]
+  public sealed class CanvasGroupAlpha : SerializedTweenerFloat<CanvasGroup> {
+    protected override float get => _target.alpha;
+    protected override void set(float value) => _target.alpha = value;
+  }
+  
+  [Serializable]
+  public sealed class RectTransformSize : SerializedTweenerVector2<RectTransform> {
+    protected override Vector2 get => _target.sizeDelta;
+    protected override void set(Vector2 value) => _target.sizeDelta = value;
+  }
+  
+  [Serializable]
+  public sealed class RectTransformSimpleAnchors : SerializedTweenerVector2<RectTransform> {
+    protected override Vector2 get => _target.anchorMin;
+    protected override void set(Vector2 value) => _target.anchorMin = _target.anchorMax = value;
   }
 
   // ReSharper restore NotNullMemberIsNotInitialized
