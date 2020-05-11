@@ -10,16 +10,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 
     public static Texture2D editorPreview(SimpleSerializedEase simple) => 
       // ReSharper disable once ConvertClosureToMethodGroup
-      _imagesCache.getOrUpdate(simple, simple_ => generateTexture(simple_));
+      _imagesCache.getOrUpdate(simple, simple_ => generateTexture(simple_.toEase()));
 
-    static Texture2D generateTexture(SimpleSerializedEase simple) {
+    public static Texture2D generateTexture(Ease ease) {
       const float VERTICAL_OFFSET = 0.25f;
       const int SIZE = 46 * 2;
       var texture = new Texture2D(SIZE, SIZE);
       texture.fill(Color.black);
       for (var _x = 0; _x < texture.width; _x++) {
         var _y = (int) (
-          simple.toEase().Invoke(_x / (float) texture.width)
+          ease.Invoke(_x / (float) texture.width)
           * texture.height
           * (1f - VERTICAL_OFFSET * 2f) 
           + VERTICAL_OFFSET * texture.height

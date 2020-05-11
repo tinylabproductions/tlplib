@@ -158,7 +158,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     
 #if UNITY_EDITOR
     bool __editorDirty { get; }
-    string[] __editorSerializedProps { get; }
+    // string[] __editorSerializedProps { get; }
 #endif
   }
 }

@@ -119,30 +119,29 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           else if (!beforeCursorDataIsSaved) {
             manager.recreate();
             beforeCursorDataIsSaved = true;
-            // Undo.RegisterCompleteObjectUndo(data, "targets saved");
+            Undo.RegisterCompleteObjectUndo(data, "targets saved");
             savedTargetDataOpt = data.some();
             
-            AnimationMode.StartAnimationMode();
-            foreach (var element in manager.serializedTimeline.elements) {
-              foreach (var prop in element.element.__editorSerializedProps) {
-                var pm = new PropertyModification() {
-                  target = element.element.getTarget(),
-                  propertyPath = prop,
-                  value = new SerializedObject(element.element.getTarget()).FindProperty(prop)
-                    .floatValue.ToString(CultureInfo.InvariantCulture)
-                };
-                AnimationMode.AddPropertyModification(curve, pm, true);
-              }
-            }
+            // TODO: implement this properly later
+            // AnimationMode.StartAnimationMode();
+            // foreach (var element in manager.serializedTimeline.elements) {
+            //   foreach (var prop in element.element.__editorSerializedProps) {
+            //     var pm = new PropertyModification() {
+            //       target = element.element.getTarget(),
+            //       propertyPath = prop,
+            //       value = new SerializedObject(element.element.getTarget()).FindProperty(prop)
+            //         .floatValue.ToString(CultureInfo.InvariantCulture)
+            //     };
+            //     AnimationMode.AddPropertyModification(curve, pm, true);
+            //   }
+            // }
           }
         }
         else {
             manager.run(FunTweenManagerV2.Action.Stop);
         }
         
-        // foreach (var entry in data) {
-        //   EditorUtility.SetDirty(entry);
-        // }
+        EditorUtility.SetDirty(manager);
 
         manager.timeline.timePassed = time;
 
@@ -154,8 +153,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     public void stopCursorEvaluation() {
       if (!visualizationMode.value && beforeCursorDataIsSaved && !Application.isPlaying) {
-        // Undo.RevertAllInCurrentGroup();
-        AnimationMode.StopAnimationMode();
+        Undo.RevertAllInCurrentGroup();
+        // AnimationMode.StopAnimationMode();
         savedTargetDataOpt = F.none_;
         beforeCursorDataIsSaved = false;
       }

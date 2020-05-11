@@ -1,5 +1,4 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.attributes;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -15,20 +14,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
     // TODO: implement complex eases
-    [HideInInspector]
     [HideLabel, HorizontalGroup, OnValueChanged(nameof(complexChanged)), PublicAccessor] 
     [SerializeField] bool _isComplex;
-    [HideLabel, HorizontalGroup, OnValueChanged(nameof(invalidate)), ShowIf(nameof(isSimple))] 
+    [HideLabel, HorizontalGroup, OnValueChanged(nameof(invalidate)), ShowIf(nameof(isSimple), animate: false)] 
     [SerializeField] SimpleSerializedEase _simple;
-    [HideLabel, HorizontalGroup, OnValueChanged(nameof(invalidate)), ShowIf(nameof(isComplex)), TLPCreateDerived]
-    [SerializeField, NotNull] IComplexSerializedEase _complex;
+    [HideLabel, HorizontalGroup, OnValueChanged(nameof(invalidate)), ShowIf(nameof(isComplex), animate: false), InlineProperty]
+    [SerializeField, NotNull, SerializeReference] IComplexSerializedEase _complex;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 
     #endregion
-    
-    [HideLabel, HorizontalGroup(Width = 50), ShowIf("displayPreview"), ShowInInspector, PreviewField]
-    Texture2D _simplePreview => SerializedEasePreview.editorPreview(_simple);
+
+    Texture2D _preview;
+    [HideLabel, HorizontalGroup(Width = 50), ShowIf("displayPreview", animate: false), ShowInInspector, PreviewField]
+    Texture2D preview => _preview ? _preview : _preview = (
+      isSimple 
+      ? SerializedEasePreview.editorPreview(_simple) 
+      : (_complex != null ? SerializedEasePreview.generateTexture(ease) : null)
+    );
     
     void complexChanged() {
       // ReSharper disable AssignNullToNotNullAttribute
@@ -43,6 +46,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
     
     public void invalidate() {
       _ease = null;
+      _preview = null;
       _complex?.invalidate();
     }
 
@@ -56,15 +60,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
         ? new [] { nameof(_simple) }
         : new [] { nameof(_complex) };
 
-    // TODO: implement instances
-    interface IComplexSerializedEase {
+    public interface IComplexSerializedEase {
       public string easeName { get; }
       public void invalidate();
       public Ease ease { get; }
     }
     
 #if UNITY_EDITOR
-    [UsedImplicitly] bool displayPreview => SerializedTweenTimelineV2.editorDisplayEasePreview && isSimple;
+    [UsedImplicitly] bool displayPreview => SerializedTweenTimelineV2.editorDisplayEasePreview;
 #endif
+  }
+  
+  [Serializable] public class ComplexEase_AnimationCurve : SerializedEaseV2.IComplexSerializedEase {
+    [SerializeField, NotNull] AnimationCurve _curve = AnimationCurve.Linear(0, 0, 1, 1);
+    
+    protected Ease createEase() => _curve.Evaluate;
+    public string easeName => nameof(AnimationCurve);
+    public void invalidate() { }
+    public Ease ease => _curve.Evaluate;
   }
 }

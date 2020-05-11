@@ -69,16 +69,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     bool hasTarget => _target != null && !_target.Equals(null);
 
     
-    protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
-    protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
-    protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
+    // protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
+    // protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
+    // protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
     
 #if UNITY_EDITOR
     
     public void trySetDuration(float duration) => _duration = duration;
 
     public bool __editorDirty { get; private set; } = true;
-    public abstract string[] __editorSerializedProps { get; }
     [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
     [UsedImplicitly] bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
     [UsedImplicitly] bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
@@ -99,19 +98,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
 
   public abstract class SerializedTweenerVector3<T> : SerializedTweenerV2<T, Vector3> {
-    protected override Vector3 lerp(float percentage) => Vector3.Lerp(_start, _end, percentage);
+    protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start, _end, percentage);
     protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
     protected override Vector3 subtract(Vector3 a, Vector3 b) => a - b;
   }
 
   public abstract class SerializedTweenerVector2<T> : SerializedTweenerV2<T, Vector2> {
-    protected override Vector2 lerp(float percentage) => Vector2.Lerp(_start, _end, percentage);
+    protected override Vector2 lerp(float percentage) => Vector2.LerpUnclamped(_start, _end, percentage);
     protected override Vector2 add(Vector2 a, Vector2 b) => a + b;
     protected override Vector2 subtract(Vector2 a, Vector2 b) => a - b;
   }
   
   public abstract class SerializedTweenerFloat<T> : SerializedTweenerV2<T, float> {
-    protected override float lerp(float percentage) => Mathf.Lerp(_start, _end, percentage);
+    protected override float lerp(float percentage) => Mathf.LerpUnclamped(_start, _end, percentage);
     protected override float add(float a, float b) => a + b;
     protected override float subtract(float a, float b) => a - b;
   }
@@ -123,7 +122,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector2 get => _target.anchoredPosition;
     protected override void set(Vector2 value) => _target.anchoredPosition = value;
 
-    public override string[] __editorSerializedProps => spVector2("m_AnchoredPosition");
+    // public override string[] __editorSerializedProps => spVector2("m_AnchoredPosition");
   }
 
   [Serializable]
@@ -131,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector3 get => _target.localScale;
     protected override void set(Vector3 value) => _target.localScale = value;
     
-    public override string[] __editorSerializedProps => spVector3("m_LocalScale");
+    // public override string[] __editorSerializedProps => spVector3("m_LocalScale");
   }
   
   [Serializable]
@@ -139,15 +138,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector3 get => _target.localPosition;
     protected override void set(Vector3 value) => _target.localPosition = value;
     
-    public override string[] __editorSerializedProps => spVector3("m_LocalPosition");
+    // public override string[] __editorSerializedProps => spVector3("m_LocalPosition");
   }
   
   [Serializable]
-  public sealed class Rotation2D : SerializedTweenerFloat<Transform> {
+  public sealed class LocalRotation2D : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localEulerAngles.z;
     protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withZ(value);
     
-    public override string[] __editorSerializedProps => spQuaternion("m_LocalRotation");
+    // public override string[] __editorSerializedProps => spQuaternion("m_LocalRotation");
   }
 
   // ReSharper restore NotNullMemberIsNotInitialized
