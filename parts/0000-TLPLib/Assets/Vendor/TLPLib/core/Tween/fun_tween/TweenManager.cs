@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.typeclasses;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = System.Object;
 
@@ -17,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
   public partial class TweenManager : IDisposable {
-    [Serializable, Record(GenerateToString = false)]
+    [Serializable, Record(GenerateToString = false), InlineProperty]
     public partial struct Loop {
       public enum Mode : byte { Normal, YoYo }
 
@@ -29,8 +30,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
-      [SerializeField, PublicAccessor, Tooltip("0 means loop forever")] uint _times_;
-      [SerializeField, PublicAccessor] Mode _mode;
+      [SerializeField, PublicAccessor, HorizontalGroup, HideLabel, Tooltip("0 means loop forever")] uint _times_;
+      [SerializeField, PublicAccessor, HorizontalGroup, HideLabel] Mode _mode;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 

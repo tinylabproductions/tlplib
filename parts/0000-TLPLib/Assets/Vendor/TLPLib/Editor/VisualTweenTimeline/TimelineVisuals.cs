@@ -448,19 +448,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     public void doSettingsGUI(Option<FunTweenManagerV2> funTweenManager, List<TimelineNode> funNodes,
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootSelectedNodeOpt
-      ) {
+    ) {
       if (funTweenManager.isSome) {
-          GUILayout.BeginVertical();
-          GUI.enabled = !visualizationMode.value && GUI.enabled;
+        GUILayout.BeginVertical();
+        GUI.enabled = !visualizationMode.value && GUI.enabled;
 
-          funNodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
+        funNodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
 
-          if (GUILayout.Button("Add Tween")) {
-            onNewSettings(TimelineEditor.SettingsEvents.AddTween);
-          }
-
-          GUILayout.EndVertical();
+        if (GUILayout.Button("Add Tween")) {
+          onNewSettings(TimelineEditor.SettingsEvents.AddTween);
         }
+
+        GUILayout.EndVertical();
+      }
 
       var guiEnabled = GUI.enabled;
       var oneNodeSelected = selectedNodesList.Count == 1;
@@ -631,6 +631,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 
               EditorGUI.FocusTextInControl("");
               ev.Use();
+              return;
             }
 
             if (nodeEndRect(node).Contains(Event.current.mousePosition) && !node.isCallback && !ev.alt) {
@@ -643,6 +644,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 
               EditorGUI.FocusTextInControl("");
               ev.Use();
+              return;
             }
             
             if (nodeBodyRect(node).Contains(Event.current.mousePosition)) {
@@ -651,7 +653,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   onNodeEvent(
                     TimelineEditor.NodeEvents.NodeClicked_MB1, node.some(), GUIToSeconds(Event.current.mousePosition.x)
                   );
-
                   EditorGUI.FocusTextInControl("");
                   break;
                 case 1:
@@ -661,23 +662,22 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   break;
               }
               ev.Use();
+              return;
             }
           }
         
-          //Deselect by clicking away
+          // Deselect by clicking away
           if (!ev.control && timelineRect.Contains(Event.current.mousePosition)) {
-              onNodeEvent(TimelineEditor.NodeEvents.DeselectAll, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+            onNodeEvent(TimelineEditor.NodeEvents.DeselectAll, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+            return;
           }
-
           break;
         case EventType.MouseDrag:
-            onNodeEvent(TimelineEditor.NodeEvents.Drag, F.none_, GUIToSeconds(Event.current.mousePosition.x));
-          
-          break;
+          onNodeEvent(TimelineEditor.NodeEvents.Drag, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+          return;
         case EventType.MouseUp:
-            onNodeEvent(TimelineEditor.NodeEvents.Refresh, F.none_, GUIToSeconds(Event.current.mousePosition.x));
-          break;
-        
+          onNodeEvent(TimelineEditor.NodeEvents.Refresh, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+          return;
         default: break;
       }
     }

@@ -80,6 +80,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized
       [SerializeField, PublicAccessor] float _startsAt;
+      [SerializeField, HideInInspector] int _timelineChannelIdx;
       [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty] 
       ISerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized

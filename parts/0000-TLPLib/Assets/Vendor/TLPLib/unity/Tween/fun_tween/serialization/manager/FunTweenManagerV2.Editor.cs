@@ -25,7 +25,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         return _element.GetType().Name + " : " + (target ? target.name : "NULL");
       }
 
-      public int timelineChannelIdx { get; set; }
+      public int timelineChannelIdx {
+        get => _timelineChannelIdx;
+        set => _timelineChannelIdx = value;
+      }
 
       public void invalidate() {
         _title = null;

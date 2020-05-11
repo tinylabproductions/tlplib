@@ -85,11 +85,18 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     void OnLostFocus() => init?.onLostFocus();
 
-    // Removed on purpose
+    // Removed, because it causes problems
     // void OnHierarchyChange() {
     //   var initOpt = F.opt(init);
     //   refreshInit(initOpt.flatMap(_ => _.selectedFunTweenManager), initOpt.flatMap(_ => _.rootSelectedNodeOpt));
     // }
+    
+    [MenuItem("TLP/TweenTimeline", false)]
+    public static void showWindow() {
+      var window = GetWindow<TimelineEditor>(false, "TweenTimeline");
+      window.wantsMouseMove = true;
+      DontDestroyOnLoad(window);
+    }
 
     partial class Init : IDisposable {
       const int SNAPPING_POWER = 10;
@@ -111,13 +118,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       Option<NodeSnappedTo> nodeSnappedToOpt;
       Option<TweenPlaybackController> tweenPlaybackController;
       float timeClickOffset;
-
-      [MenuItem("TLP/TweenTimeline", false)]
-      public static void ShowWindow() {
-        var window = GetWindow<TimelineEditor>(false, "TweenTimeline");
-        window.wantsMouseMove = true;
-        DontDestroyOnLoad(window);
-      }
 
       void OnPlaymodeStateChanged() { backing.OnEnable(); }
 
@@ -286,6 +286,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             foreach (var timelineNode in timelineNodeOpt) {
               removeRootNodeIfHasNoElement();
               manageSelectedNode(timelineNode, Event.current);
+              selectedNodesList.Clear();
+              selectedNodesList.Add(timelineNode);
               rootSelectedNodeOpt = timelineNodeOpt;
               resizeNodeStart = true;
             }
