@@ -1,9 +1,11 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [Serializable]
@@ -32,6 +34,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 #endif
       return this;
     }
+
+    public Object getTarget() => _target as Object;
 
     public float duration => _duration;
 
@@ -66,8 +70,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
     
+    protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
+    protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
+    protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
+    
 #if UNITY_EDITOR
-    public bool __editorDirty { get; private set; }
+    
+    public void trySetDuration(float duration) => _duration = duration;
+
+    public bool __editorDirty { get; private set; } = true;
+    public abstract string[] __editorSerializedProps { get; }
     [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
     
     [Button("Start"), PropertyOrder(-1), HorizontalGroup(START, Width = LABEL_WIDTH)]
@@ -96,6 +108,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector2 add(Vector2 a, Vector2 b) => a + b;
     protected override Vector2 subtract(Vector2 a, Vector2 b) => a - b;
   }
+  
+  public abstract class SerializedTweenerFloat<T> : SerializedTweenerV2<T, float> {
+    protected override float lerp(float percentage) => Mathf.Lerp(_start, _end, percentage);
+    protected override float add(float a, float b) => a + b;
+    protected override float subtract(float a, float b) => a - b;
+  }
 
   // ReSharper disable NotNullMemberIsNotInitialized
 
@@ -103,12 +121,32 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class AnchoredPosition : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.anchoredPosition;
     protected override void set(Vector2 value) => _target.anchoredPosition = value;
+
+    public override string[] __editorSerializedProps => spVector2("m_AnchoredPosition");
   }
 
   [Serializable]
   public sealed class LocalScale : SerializedTweenerVector3<Transform> {
     protected override Vector3 get => _target.localScale;
     protected override void set(Vector3 value) => _target.localScale = value;
+    
+    public override string[] __editorSerializedProps => spVector3("m_LocalScale");
+  }
+  
+  [Serializable]
+  public sealed class LocalPosition : SerializedTweenerVector3<Transform> {
+    protected override Vector3 get => _target.localPosition;
+    protected override void set(Vector3 value) => _target.localPosition = value;
+    
+    public override string[] __editorSerializedProps => spVector3("m_LocalPosition");
+  }
+  
+  [Serializable]
+  public sealed class Rotation2D : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localEulerAngles.z;
+    protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withZ(value);
+    
+    public override string[] __editorSerializedProps => spQuaternion("m_LocalRotation");
   }
 
   // ReSharper restore NotNullMemberIsNotInitialized

@@ -16,9 +16,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
     // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
     // TODO: implement complex eases
     [HideInInspector]
-    [SerializeField, HideLabel, HorizontalGroup, OnValueChanged(nameof(complexChanged)), PublicAccessor] bool _isComplex;
-    [SerializeField, HideLabel, HorizontalGroup, ShowIf(nameof(isSimple))] SimpleSerializedEase _simple;
-    [SerializeField, HideLabel, HorizontalGroup, ShowIf(nameof(isComplex)), TLPCreateDerived, NotNull] IComplexSerializedEase _complex;
+    [HideLabel, HorizontalGroup, OnValueChanged(nameof(complexChanged)), PublicAccessor] 
+    [SerializeField] bool _isComplex;
+    [HideLabel, HorizontalGroup, OnValueChanged(nameof(invalidate)), ShowIf(nameof(isSimple))] 
+    [SerializeField] SimpleSerializedEase _simple;
+    [HideLabel, HorizontalGroup, OnValueChanged(nameof(invalidate)), ShowIf(nameof(isComplex)), TLPCreateDerived]
+    [SerializeField, NotNull] IComplexSerializedEase _complex;
     // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
 

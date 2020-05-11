@@ -1,15 +1,16 @@
-﻿#if ADV_INS_CHANGES && UNITY_EDITOR && FALSE //TODO
+﻿#if UNITY_EDITOR
 #pragma warning disable SwitchEnumAnalyzer
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using AdvancedInspector;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
+using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
 using SnapType = com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline.TimelineEditor.SnapType;
@@ -63,7 +64,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     readonly NodeEventsCallback onNodeEvent;
     readonly SettingsEventsCallback onNewSettings;
     readonly LockButtonCallback onLockButton;
-    readonly ExternalEditor advancedEditor;
     readonly FTMSelectedCallback onFTMselectionChange;
     readonly Texture toStartButtonTexture,
       startButtonTexture,
@@ -92,7 +92,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       PlaybackControllerCallback playbackControllerCallback, LockButtonCallback onLockButton,
       TimelineCursorLineCallback cursorLineCallback, NodeEventsCallback nodeEventsCallback,
       SettingsEventsCallback settingsEventsCallback, FTMSelectedCallback FTMSelectedCallback,
-      Val<bool> visualizationMode, Val<bool> isLocked, ExternalEditor advancedEditor, ImmutableArray<FunTweenManager> ftms,
+      Val<bool> visualizationMode, Val<bool> isLocked, ImmutableArray<FunTweenManagerV2> ftms,
       TimelineVisualsSettings visualsSettings
     ) {
       this.visualizationMode = visualizationMode;
@@ -103,7 +103,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       onFTMselectionChange = FTMSelectedCallback;
       this.isLocked = isLocked;
       this.onLockButton = onLockButton;
-      this.advancedEditor = advancedEditor;
       _visualsSettings = visualsSettings;
       ftmsLabels = ftms.Select((ftm, idx) => $"{idx}: {ftm.title}").ToArray();
 
@@ -127,7 +126,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
  
   
-    public void doTimeline(Rect position, Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes,
+    public void doTimeline(Rect position, Option<FunTweenManagerV2> funTweenManager, List<TimelineNode> funNodes,
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootNode,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt
       ) {
@@ -137,7 +136,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       blackBarRect = new Rect (position.x + _visualsSettings.timelineOffset - 1, position.y + 19, position.width, 16);
   
       if (funTweenManager.valueOut(out var ftm) && (visualizationMode.value || applicationPlaying)) {
-        currentTime = ftm.timeline.timeline.timePassed;
+        currentTime = ftm.timeline.timePassed;
       }
       doCursor(funNodes);
       doToolbarGUI(position, funTweenManager, funNodes, selectedNodesList, snapping, rootNode);
@@ -170,12 +169,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           timelineRect.height + 400 + expandView.y),
         true, true
       );
+
+    static GUIStyle barStyle;
     
     public void drawNodes(
       List<TimelineNode> funNodes, List<TimelineNode> selectedNodes, Option<TimelineNode> root,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt
-      ) {
+    ) {
       GUI.enabled = GUI.enabled && !EditorApplication.isCompiling;
+      
+      if (barStyle == null) barStyle = "flow node 0"; // "TL LogicBar 0"
   
       Option<Rect> snapIndicatorOpt = F.none_;
       callbackVisualsList.Clear();
@@ -210,7 +213,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 aroundRect.y + OUTLINE_WIDTH,
                 aroundRect.width - OUTLINE_WIDTH * 2,
                 aroundRect.height - OUTLINE_WIDTH * 2
-              ), "", "TL LogicBar 0");
+              ), "", barStyle);
             }
             else {
               EditorGUI.DrawRect(iconRect, outlineColor);
@@ -251,7 +254,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
           }
           else if (!currNode.isCallback) {
-            GUI.Box(boxRect, "", "TL LogicBar 0");
+            GUI.Box(boxRect, "", barStyle);
           }
           
           if (currNode.isCallback) {
@@ -271,13 +274,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               Color.green
             );
           }
-          
-          if ( (currNode.element.element.getTargets().Length == 0
-              || currNode.element.element.getTargets().Any(target => target == null)) && !currNode.isCallback
-          ) {
-            drawOutline(boxRect, Color.red);
+
+          if (!currNode.isCallback) {
+            if (!currNode.element.element.getTarget()) {
+              drawOutline(boxRect, Color.red);
+            }
           }
-  
+
           var style = new GUIStyle("Label");
           style.fontSize = selectedCurrentNode.isSome ? 12 : style.fontSize;
           style.fontStyle = FontStyle.Bold;
@@ -356,7 +359,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    public void doToolbarGUI(Rect position, Option<FunTweenManager> funTweenManager,
+    public void doToolbarGUI(Rect position, Option<FunTweenManagerV2> funTweenManager,
       List<TimelineNode> funNodes, List<TimelineNode> selectedNodes, bool snapping, Option<TimelineNode> rootNode
       ){
       
@@ -443,7 +446,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       GUILayout.EndArea ();
     }
 
-    public void doSettingsGUI(Option<FunTweenManager> funTweenManager, List<TimelineNode> funNodes,
+    public void doSettingsGUI(Option<FunTweenManagerV2> funTweenManager, List<TimelineNode> funNodes,
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootSelectedNodeOpt
       ) {
       if (funTweenManager.isSome) {
@@ -530,20 +533,21 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         GUILayout.EndScrollView();
       }
 
-    void drawElementSettings(FunTweenManager manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
-      foreach (var rootSelectedObject in rootSelectedNodeOpt) {
-        if (manager.timeline != null
-          && (advancedEditor.Instances.isEmpty() || advancedEditor.Instances[0] != rootSelectedObject.element)
-        ) {
-          advancedEditor.Instances = new object[] {rootSelectedObject.element};
-        }
-      }
-
-      if (advancedEditor.Instances.Length > 0
-        && advancedEditor.Draw(new Rect(0, 0, width, timelineRect.height - 100))
-      ) {
-        Undo.RecordObject(manager, "Tween Manager Changes");
-      }
+    void drawElementSettings(FunTweenManagerV2 manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
+      // TODO:
+      // foreach (var rootSelectedObject in rootSelectedNodeOpt) {
+      //   if (manager.timeline != null
+      //     && (advancedEditor.Instances.isEmpty() || advancedEditor.Instances[0] != rootSelectedObject.element)
+      //   ) {
+      //     advancedEditor.Instances = new object[] {rootSelectedObject.element};
+      //   }
+      // }
+      //
+      // if (advancedEditor.Instances.Length > 0
+      //   && advancedEditor.Draw(new Rect(0, 0, width, timelineRect.height - 100))
+      // ) {
+      //   Undo.RecordObject(manager, "Tween Manager Changes");
+      // }
     }
     
     void drawTicksGUI(){
@@ -598,17 +602,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var ev = Event.current;
       
       switch (ev.keyCode) {
-        case KeyCode.A when ev.control && ev.type == EventType.keyUp:
+        case KeyCode.A when ev.control && ev.type == EventType.KeyUp:
           onNodeEvent(
             TimelineEditor.NodeEvents.SelectAll, F.none_, GUIToSeconds(Event.current.mousePosition.x)
           );
           break;
-        case KeyCode.Delete when ev.type == EventType.keyDown:
+        case KeyCode.Delete when ev.type == EventType.KeyDown:
           onNodeEvent(
             TimelineEditor.NodeEvents.RemoveSelected, F.none_, GUIToSeconds(Event.current.mousePosition.x)
           );
           break;
-        case KeyCode.L when ev.type == EventType.keyDown:
+        case KeyCode.L when ev.type == EventType.KeyDown:
           onLockButton();
           break;
       }

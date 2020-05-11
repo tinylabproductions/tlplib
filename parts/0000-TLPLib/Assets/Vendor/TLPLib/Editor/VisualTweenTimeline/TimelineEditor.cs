@@ -1,21 +1,22 @@
-﻿#if ADV_INS_CHANGES && UNITY_EDITOR && FALSE //TODO
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
-using Smooth.Collections;
+using pzd.lib.data;
+using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Element = com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences.SerializedTweenTimeline.Element;
+using Element = com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager.SerializedTweenTimelineV2.Element;
 
 namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   public partial class TimelineEditor : EditorWindow, IMB_OnGUI, IMB_OnEnable, IMB_OnDisable {
@@ -49,25 +50,23 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     [Record]
-    public partial struct NodeSnappedTo {
+    public readonly partial struct NodeSnappedTo {
       public readonly TimelineNode node;
       public readonly SnapType snapType;
     }
 
     Init init;
 
-    readonly Dictionary<FunTweenManager, TimelineVisuals.TimelineVisualsSettings>
-      mappedSettings = new Dictionary<FunTweenManager, TimelineVisuals.TimelineVisualsSettings>();
+    readonly Dictionary<FunTweenManagerV2, TimelineVisuals.TimelineVisualsSettings>
+      mappedSettings = new Dictionary<FunTweenManagerV2, TimelineVisuals.TimelineVisualsSettings>();
 
-    public void OnGUI() {
-      if (init != null) init.onGUI(Event.current);
-    }
+    public void OnGUI() => init?.onGUI(Event.current);
 
     public void OnEnable() {
       refreshInit(F.none_, F.none_);
     }
 
-    void refreshInit(Option<FunTweenManager> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet) {
+    void refreshInit(Option<FunTweenManagerV2> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet) {
       if (init == null) init = new Init(this, ftmToSetOpt, rootSelectedNodeToSet);
       else if (!init.isLocked.value) init = new Init(this, ftmToSetOpt, rootSelectedNodeToSet);
     }
@@ -80,32 +79,32 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     void OnSelectionChange() {
-      if (init != null) init.saveCurrentVisualSettings();
+      init?.saveCurrentVisualSettings();
       refreshInit(F.none_, F.none_);
     } 
     
-    void OnLostFocus() { if (init != null) init.onLostFocus(); }
+    void OnLostFocus() => init?.onLostFocus();
 
-    void OnHierarchyChange() {
-      var initOpt = F.opt(init);
-      refreshInit(initOpt.flatMap(_ => _.selectedFunTweenManager_), initOpt.flatMap(_ => _.rootSelectedNodeOpt_));
-    }
+    // Removed on purpose
+    // void OnHierarchyChange() {
+    //   var initOpt = F.opt(init);
+    //   refreshInit(initOpt.flatMap(_ => _.selectedFunTweenManager), initOpt.flatMap(_ => _.rootSelectedNodeOpt));
+    // }
 
     partial class Init : IDisposable {
-      
       const int SNAPPING_POWER = 10;
       public readonly Ref<bool> isLocked = new SimpleRef<bool>(false);
-      readonly ImmutableArray<FunTweenManager> ftms;
+      readonly ImmutableArray<FunTweenManagerV2> ftms;
       readonly TimelineEditor backing;
       readonly TimelineVisuals timelineVisuals;
-      readonly ExternalEditor advancedEditor;
+      // readonly ExternalEditor advancedEditor;
       readonly Option<GameObject> selectedGameObjectOpt;
       readonly List<float> diffList = new List<float>();
       readonly List<TimelineNode> selectedNodesList = new List<TimelineNode>();
       readonly Ref<bool> visualizationMode = new SimpleRef<bool>(false);
 
-      [PublicAccessor] Option<FunTweenManager> selectedFunTweenManager;
-      [PublicAccessor] Option<TimelineNode> rootSelectedNodeOpt;
+      public Option<FunTweenManagerV2> selectedFunTweenManager { get; private set; }
+      public Option<TimelineNode> rootSelectedNodeOpt { get; private set; }
       
       List<TimelineNode> funNodes = new List<TimelineNode>();
       bool isStartSnapped, isEndSnapped, resizeNodeStart, resizeNodeEnd, dragNode, snapping = true;
@@ -129,14 +128,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       public Init(
-        TimelineEditor backing, Option<FunTweenManager> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet
+        TimelineEditor backing, Option<FunTweenManagerV2> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet
       ) {
         EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
         Undo.undoRedoPerformed += undoCallback;
         EditorSceneManager.sceneSaving += EditorSceneManagerOnSceneSaving;
 
-        advancedEditor = CreateInstance<ExternalEditor>();
-        advancedEditor.Instances = new object[] { };
+        // advancedEditor = CreateInstance<ExternalEditor>();
+        // advancedEditor.Instances = new object[] { };
         selectedGameObjectOpt = Selection.activeGameObject.opt();
 
         isStartSnapped = false;
@@ -159,7 +158,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
         timelineVisuals = new TimelineVisuals(
           manageAnimationPlayback, toggleLock, manageCursorLine, doNodeEvents, doNewSettings, selectNewFunTweenManager,
-          visualizationMode, isLocked, advancedEditor, ftms,
+          visualizationMode, isLocked, ftms,
           getSettings()
         );
 
@@ -169,7 +168,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             : 0;
 
           return selectedFunTweenManager.flatMap(
-              ftm => backing.mappedSettings.TryGet(ftm)
+              ftm => backing.mappedSettings.get(ftm)
                 .map(settings => {
                   settings.selectedFTMindex = idx;
                   return settings;
@@ -182,7 +181,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           () => funNodes.Clear(),
           manager => {
             tweenPlaybackController = new TweenPlaybackController(manager, visualizationMode).some();
-            advancedEditor.unityObjects = new UnityEngine.Object[] {manager};
+            // TODO
+            // advancedEditor.unityObjects = new UnityEngine.Object[] {manager};
             funNodes.Clear();
             importTimeline();
           }
@@ -417,7 +417,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   }
                 }
   
-                void updateLinkedNodeChannels(TimelineNode node, Act<TimelineNode> changeChannel) {
+                void updateLinkedNodeChannels(TimelineNode node, Action<TimelineNode> changeChannel) {
                   getLinkedRightNode(node, node).voidFold(
                     () => { },
                     rightNode => { updateLinkedNodeChannels(rightNode, changeChannel); }
@@ -564,7 +564,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       delegate bool CompareFloats(float a, float b);
 
-      void manageSnap(float selectedNodePoint, GetNodePoint nodePoint, CompareFloats cmpr, Act<TimelineNode> snap) =>
+      void manageSnap(float selectedNodePoint, GetNodePoint nodePoint, CompareFloats cmpr, Action<TimelineNode> snap) =>
         funNodes
           .Except(selectedNodesList)
           .Where(node => cmpr(selectedNodePoint, nodePoint(node)))
@@ -635,28 +635,23 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
           }
         );
-
-      //creates nodeList from elements info
+      
+      // creates nodeList from elements info
       void importTimeline() {
-        advancedEditor.Instances = new object[] { };
+        // TODO:
+        // advancedEditor.Instances = new object[] { };
         if (selectedFunTweenManager.valueOut(out var manager) && manager.timeline != null) {
-          var elements = manager.timeline.elements;
+          var elements = manager.serializedTimeline.elements;
 
           if (elements != null) {
-            funNodes = manager.timeline.elements.Select(
+            funNodes = manager.serializedTimeline.elements.Select(
               (element, idx) => {
                 if (idx != 0 && element.startAt == Element.At.AfterLastElement
                 ) {
                   element.timelineChannelIdx = elements[idx - 1].timelineChannelIdx;
                 }
 
-                if (element.title == "")
-                  element.title =
-                    element.element == null
-                      ? ""
-                      : element.element.GetType().Name;
-
-                var newNode = new TimelineNode(element, whereToStart(idx), element.title);
+                var newNode = new TimelineNode(element, whereToStart(idx));
 
                 return selectedNodesList
                   .find(selectedNode => selectedNode.element == element)
@@ -741,19 +736,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             );
           }
           
-          manager.timeline.elements = arr.Select(elem => {
+          manager.serializedTimeline.elements = arr.Select(elem => {
             elem.element.timelineChannelIdx = elem.channel;
             return elem.element;
           }).ToArray();
 
-          foreach (var element in manager.timeline.elements) {
+          foreach (var element in manager.serializedTimeline.elements) {
             foreach (var found in funNodes.find(funNode => funNode.element == element)) {
               if (element.element != null) {
-                EditorUtility.SetDirty(element.element);
-                if (element.element.durationSetterOpt().valueOut(out var durationSetter)) {
-                  durationSetter(found.duration);
-                }
-
+                EditorUtility.SetDirty(manager);
+                element.element.trySetDuration(found.duration);
                 element.timelineChannelIdx = found.channel;
                 
                 if (found.linkedNode.valueOut(out var linked)) {
@@ -767,10 +759,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               }
             }
           }
-
         }
 
-        if (funNodes.isEmpty()) manager.timeline.elements = new Element[0];
+        if (funNodes.isEmpty()) manager.serializedTimeline.elements = new Element[0];
       }
 
       void doNewSettings(SettingsEvents settingsEvent) {
@@ -779,7 +770,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               var newElement = new Element {
                 startAt = Element.At.SpecificTime
               };
-              var newNode = new TimelineNode(newElement, 0, "");
+              var newNode = new TimelineNode(newElement, 0);
 
               if (!funNodes.isEmpty()) {
                 funNodes.Insert(0, newNode);
@@ -801,12 +792,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             case SettingsEvents.Link:
               foreach (var selectedNode in rootSelectedNodeOpt)
                 if (selectedFunTweenManager.valueOut(out var ftm)) {
-                Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
-                if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
-                  selectedNode.linkTo(leftNode);
+                  Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
+                  if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
+                    selectedNode.linkTo(leftNode);
+                  }
                 }
-                
-              }
               break;
             case SettingsEvents.Unlink:
               foreach (var selectedNode in rootSelectedNodeOpt) {
@@ -873,7 +863,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void addFunTweenManagerComponent(GameObject gameObject) {
-        selectedFunTweenManager = Undo.AddComponent<FunTweenManager>(gameObject).some();
+        selectedFunTweenManager = Undo.AddComponent<FunTweenManagerV2>(gameObject).some();
         importTimeline();
         EditorUtility.SetDirty(gameObject);
         backing.OnEnable(); 
@@ -904,10 +894,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         backing.Repaint();
       }
 
-      static ImmutableArray<FunTweenManager> getFunTweenManagers(Option<GameObject> gameObjectOpt) =>
+      static ImmutableArray<FunTweenManagerV2> getFunTweenManagers(Option<GameObject> gameObjectOpt) =>
         gameObjectOpt.fold(
-          () => ImmutableArray<FunTweenManager>.Empty,
-          gameObject => gameObject.GetComponents<FunTweenManager>().ToImmutableArray()
+          () => ImmutableArray<FunTweenManagerV2>.Empty,
+          gameObject => gameObject.GetComponents<FunTweenManagerV2>().ToImmutableArray()
         );
 
       void manageAnimationPlayback(TweenPlaybackController.AnimationPlaybackEvent playbackEvent) {
