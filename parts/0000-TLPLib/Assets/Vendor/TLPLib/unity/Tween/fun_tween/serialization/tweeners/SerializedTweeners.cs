@@ -55,6 +55,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       return true;
     }
 
+    // TODO: cache ease function
     public void applyStateAt(float time) => set(lerp(_ease.ease.Invoke(time / duration)));
 
     [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(SHOW_CURRENT)] 

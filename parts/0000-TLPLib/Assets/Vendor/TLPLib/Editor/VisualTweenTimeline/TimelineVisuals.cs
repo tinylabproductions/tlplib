@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 #pragma warning disable SwitchEnumAnalyzer
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -11,6 +12,8 @@ using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using GenerationAttributes;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
 using SnapType = com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline.TimelineEditor.SnapType;
@@ -87,6 +90,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     Vector2 expandView, settingsScroll;
     bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
     float timePosition, clickOffset;
+    
+    PropertyTree tree;
+    InspectorProperty property;
+    Vector2 elementPreviewScrollPosition;
     
     public TimelineVisuals(
       PlaybackControllerCallback playbackControllerCallback, LockButtonCallback onLockButton,
@@ -534,20 +541,54 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
     void drawElementSettings(FunTweenManagerV2 manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
-      // TODO:
-      // foreach (var rootSelectedObject in rootSelectedNodeOpt) {
-      //   if (manager.timeline != null
-      //     && (advancedEditor.Instances.isEmpty() || advancedEditor.Instances[0] != rootSelectedObject.element)
-      //   ) {
-      //     advancedEditor.Instances = new object[] {rootSelectedObject.element};
-      //   }
-      // }
-      //
-      // if (advancedEditor.Instances.Length > 0
-      //   && advancedEditor.Draw(new Rect(0, 0, width, timelineRect.height - 100))
-      // ) {
-      //   Undo.RecordObject(manager, "Tween Manager Changes");
-      // }
+      foreach (var rootSelectedObject in rootSelectedNodeOpt) {
+        if (tree == null || tree.WeakTargets[0] != manager) {
+          tree = new PropertyTree<FunTweenManagerV2>(new[] { manager }, new SerializedObject(manager));
+        }
+        if (property == null || property.ValueEntry.WeakSmartValue != rootSelectedObject.element) {
+          var idx = Array.IndexOf(manager.serializedTimeline.elements, rootSelectedObject.element);
+          if (idx >= 0) {
+            property = tree.GetPropertyAtPath($"_timeline._elements.${idx}");
+          }
+        }
+      }
+      
+      if (tree != null) {
+        const float OFFSET = 15;
+        GUILayout.BeginArea(new Rect(0 + OFFSET, 0, width - OFFSET * 2, timelineRect.height - 100));
+        elementPreviewScrollPosition = GUILayout.BeginScrollView(elementPreviewScrollPosition);
+        InspectorUtilities.BeginDrawPropertyTree(tree, true);
+
+        {
+          // use this to list all property paths
+          // foreach (var inspectorProperty in tree.EnumerateTree(true)) {
+          //   GUILayout.Label(inspectorProperty.Path);
+          // }
+        }
+
+        if (property != null) {
+          foreach (var p in property.Children) {
+            try {
+              p.Draw(p.Label);
+            }
+            catch (Exception ex) {
+              // taken from InspectorUtilities.DrawPropertiesInTree
+              // if (ex.IsExitGUIException()) throw ex.AsExitGUIException();
+              Debug.LogException(new OdinPropertyException(
+                "This error occurred while being drawn by Odin. \n" +
+                "Odin Property Path: " + p.Path + "\n" +
+                "Odin Drawer Chain: " + string.Join(
+                  ", ",
+                  p.GetActiveDrawerChain().BakedDrawerArray.Select(n => n.GetType().GetNiceName()).ToArray()
+                ) + ".", ex));
+            }
+          }
+        }
+
+        InspectorUtilities.EndDrawPropertyTree(tree);
+        GUILayout.EndScrollView();
+        GUILayout.EndArea();
+      }
     }
     
     void drawTicksGUI(){

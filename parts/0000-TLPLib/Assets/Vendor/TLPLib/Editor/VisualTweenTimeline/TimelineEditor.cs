@@ -104,14 +104,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       readonly ImmutableArray<FunTweenManagerV2> ftms;
       readonly TimelineEditor backing;
       readonly TimelineVisuals timelineVisuals;
-      // readonly ExternalEditor advancedEditor;
       readonly Option<GameObject> selectedGameObjectOpt;
       readonly List<float> diffList = new List<float>();
       readonly List<TimelineNode> selectedNodesList = new List<TimelineNode>();
       readonly Ref<bool> visualizationMode = new SimpleRef<bool>(false);
 
-      public Option<FunTweenManagerV2> selectedFunTweenManager { get; private set; }
-      public Option<TimelineNode> rootSelectedNodeOpt { get; private set; }
+      Option<FunTweenManagerV2> selectedFunTweenManager { get; set; }
+      Option<TimelineNode> rootSelectedNodeOpt { get; set; }
       
       List<TimelineNode> funNodes = new List<TimelineNode>();
       bool isStartSnapped, isEndSnapped, resizeNodeStart, resizeNodeEnd, dragNode, snapping = true;
@@ -134,8 +133,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         Undo.undoRedoPerformed += undoCallback;
         EditorSceneManager.sceneSaving += EditorSceneManagerOnSceneSaving;
 
-        // advancedEditor = CreateInstance<ExternalEditor>();
-        // advancedEditor.Instances = new object[] { };
         selectedGameObjectOpt = Selection.activeGameObject.opt();
 
         isStartSnapped = false;
@@ -181,8 +178,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           () => funNodes.Clear(),
           manager => {
             tweenPlaybackController = new TweenPlaybackController(manager, visualizationMode).some();
-            // TODO
-            // advancedEditor.unityObjects = new UnityEngine.Object[] {manager};
             funNodes.Clear();
             importTimeline();
           }
@@ -640,8 +635,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       
       // creates nodeList from elements info
       void importTimeline() {
-        // TODO:
-        // advancedEditor.Instances = new object[] { };
         if (selectedFunTweenManager.valueOut(out var manager) && manager.timeline != null) {
           var elements = manager.serializedTimeline.elements;
 
