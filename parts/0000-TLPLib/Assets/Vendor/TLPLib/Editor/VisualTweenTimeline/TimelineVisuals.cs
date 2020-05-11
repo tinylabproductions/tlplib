@@ -91,8 +91,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
     float timePosition, clickOffset;
     
-    PropertyTree tree;
-    InspectorProperty property;
+    PropertyTree maybeTree;
+    InspectorProperty maybeProperty;
     Vector2 elementPreviewScrollPosition;
     
     public TimelineVisuals(
@@ -542,53 +542,51 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     void drawElementSettings(FunTweenManagerV2 manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
       foreach (var rootSelectedObject in rootSelectedNodeOpt) {
-        if (tree == null || tree.WeakTargets[0] != manager) {
-          tree = new PropertyTree<FunTweenManagerV2>(new[] { manager }, new SerializedObject(manager));
+        if (maybeTree == null || maybeTree.WeakTargets[0] != manager) {
+          maybeTree = new PropertyTree<FunTweenManagerV2>(new[] { manager }, new SerializedObject(manager));
         }
-        if (property == null || property.ValueEntry.WeakSmartValue != rootSelectedObject.element) {
+        if (maybeProperty == null || maybeProperty.ValueEntry.WeakSmartValue != rootSelectedObject.element) {
           var idx = Array.IndexOf(manager.serializedTimeline.elements, rootSelectedObject.element);
           if (idx >= 0) {
-            property = tree.GetPropertyAtPath($"_timeline._elements.${idx}");
+            maybeProperty = maybeTree.GetPropertyAtPath($"_timeline._elements.${idx}");
           }
         }
       }
       
-      if (tree != null) {
-        const float OFFSET = 15;
-        GUILayout.BeginArea(new Rect(0 + OFFSET, 0, width - OFFSET * 2, timelineRect.height - 100));
-        elementPreviewScrollPosition = GUILayout.BeginScrollView(elementPreviewScrollPosition);
-        InspectorUtilities.BeginDrawPropertyTree(tree, true);
-
-        {
-          // use this to list all property paths
-          // foreach (var inspectorProperty in tree.EnumerateTree(true)) {
-          //   GUILayout.Label(inspectorProperty.Path);
-          // }
-        }
-
-        if (property != null) {
-          foreach (var p in property.Children) {
-            try {
-              p.Draw(p.Label);
-            }
-            catch (Exception ex) {
-              // taken from InspectorUtilities.DrawPropertiesInTree
-              // if (ex.IsExitGUIException()) throw ex.AsExitGUIException();
-              Debug.LogException(new OdinPropertyException(
-                "This error occurred while being drawn by Odin. \n" +
-                "Odin Property Path: " + p.Path + "\n" +
-                "Odin Drawer Chain: " + string.Join(
-                  ", ",
-                  p.GetActiveDrawerChain().BakedDrawerArray.Select(n => n.GetType().GetNiceName()).ToArray()
-                ) + ".", ex));
-            }
+      const float OFFSET = 15;
+      GUILayout.BeginArea(new Rect(0 + OFFSET, 0, width - OFFSET * 2, timelineRect.height - 100));
+      elementPreviewScrollPosition = GUILayout.BeginScrollView(elementPreviewScrollPosition);
+      
+      {
+        // use this to list all property paths
+        // foreach (var inspectorProperty in tree.EnumerateTree(true)) {
+        //   GUILayout.Label(inspectorProperty.Path);
+        // }
+      }
+      
+      if (maybeTree != null && maybeProperty != null) {
+        InspectorUtilities.BeginDrawPropertyTree(maybeTree, true);
+        foreach (var p in maybeProperty.Children) {
+          try {
+            p.Draw(p.Label);
+          }
+          catch (Exception ex) {
+            // taken from InspectorUtilities.DrawPropertiesInTree
+            // if (ex.IsExitGUIException()) throw ex.AsExitGUIException();
+            Debug.LogException(new OdinPropertyException(
+              "This error occurred while being drawn by Odin. \n" +
+              "Odin Property Path: " + p.Path + "\n" +
+              "Odin Drawer Chain: " + string.Join(
+                ", ",
+                p.GetActiveDrawerChain().BakedDrawerArray.Select(n => n.GetType().GetNiceName()).ToArray()
+              ) + ".", ex));
           }
         }
-
-        InspectorUtilities.EndDrawPropertyTree(tree);
-        GUILayout.EndScrollView();
-        GUILayout.EndArea();
+        InspectorUtilities.EndDrawPropertyTree(maybeTree);
       }
+      
+      GUILayout.EndScrollView();
+      GUILayout.EndArea();
     }
     
     void drawTicksGUI(){
