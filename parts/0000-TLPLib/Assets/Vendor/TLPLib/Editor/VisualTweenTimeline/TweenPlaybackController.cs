@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var previous = manager.timeline.timePassed;
       var updated = previous + timeDiff * (playingBackwards ? -1 : 1);
       manager.timeline.timePassed = updated;
-      if (updated < 0 || updated >= manager.timeline.duration) stopTimeUpdate();
+      // if (updated < 0 || updated >= manager.timeline.duration) stopVisualization();
     }
 
     void startUpdatingTime() {
