@@ -72,16 +72,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     // Equals(null) checks if unity object is alive
     bool hasTarget => _target != null && !_target.Equals(null);
-
+    
+    public void trySetDuration(float duration) => _duration = duration;
     
     // protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
     // protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
     // protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
     
 #if UNITY_EDITOR
-    
-    public void trySetDuration(float duration) => _duration = duration;
-
     public bool __editorDirty { get; private set; } = true;
     [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
     [UsedImplicitly] bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
