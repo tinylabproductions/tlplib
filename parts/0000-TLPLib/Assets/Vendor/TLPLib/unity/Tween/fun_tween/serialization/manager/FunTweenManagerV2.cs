@@ -10,23 +10,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   public partial class FunTweenManagerV2 : MonoBehaviour {
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
-    [SerializeField, HideLabel, InlineProperty] SerializedTweenTimelineV2 _timeline;
-
-    // [OnInspectorGUI(nameof(ttt))]
-    // public string sss;
-    //
-    // void ttt() {
-    //   foreach (var style in GUI.skin.customStyles) {
-    //     if (style.name.ToLower().Contains(sss)) GUILayout.Button(style.name, style);
-    //   }
-    // }
+    [
+      SerializeField, 
+      HideLabel, 
+      InlineProperty, 
+      // timeline editor fails to update if we edit it from multiple places
+      HideIf(nameof(timelineEditorIsOpen), animate: false)
+    ] 
+    SerializedTweenTimelineV2 _timeline;
 
     public SerializedTweenTimelineV2 serializedTimeline => _timeline;
     public TweenTimeline timeline => _timeline.timeline;
-
-    TweenManager _manager;
-
     public string title => getGameObjectPath(transform);
+    
+    public static bool timelineEditorIsOpen;
+    
+    TweenManager _manager;
     
     static string getGameObjectPath(Transform transform) {
       var path = transform.gameObject.name;

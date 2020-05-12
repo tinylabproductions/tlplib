@@ -7,7 +7,6 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   public partial class FunTweenManagerV2 {
-    
   }
 
   public partial class SerializedTweenTimelineV2 {
