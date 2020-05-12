@@ -69,7 +69,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     public void run(Action action) {
-      // TODO: implement
+      switch (action) {
+        case Action.PlayForwards:                 manager.play(forwards: true);    break;
+        case Action.PlayBackwards:                manager.play(forwards: false);   break;
+        case Action.ResumeForwards:               manager.resume(forwards: true);  break;
+        case Action.ResumeBackwards:              manager.resume(forwards: false); break;
+        case Action.Resume:                       manager.resume();                break;
+        case Action.Stop:                         manager.stop();                  break;
+        case Action.Reverse:                      manager.reverse();               break;
+        case Action.Rewind:                       manager.rewind(applyEffectsForRelativeTweens: false);     break;
+        case Action.RewindWithEffectsForRelative: manager.rewind(applyEffectsForRelativeTweens: true);      break;
+        case Action.ApplyZeroState:               manager.timeline.applyStateAt(0);                         break;
+        case Action.ApplyMaxDurationState:        manager.timeline.applyStateAt(manager.timeline.duration); break;
+        default: throw new ArgumentOutOfRangeException(nameof(action), action, null);
+      }
     }
   }
 
@@ -102,7 +115,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenTimeline timeline {
       get {
 #if UNITY_EDITOR
-        if (_timeline != null) {
+        if (!Application.isPlaying && _timeline != null) {
           foreach (var element in _elements) {
             if (element.element.__editorDirty) {
               element.invalidate();
@@ -112,6 +125,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         }
 #endif
         if (_timeline == null) {
+          Debug.LogWarning("Creating timeline " + _elements.Length);
           var builder = new TweenTimeline.Builder();
           foreach (var element in _elements) {
             var timelineElement = element.element.toTimelineElement();
@@ -119,24 +133,26 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
           }
           _timeline = builder.build();
 #if UNITY_EDITOR
-          // restore cached position
-          _timeline.timePassed = __editor_cachedTimePassed;
+          if (!Application.isPlaying) {
+            // restore cached position
+            _timeline.timePassed = __editor_cachedTimePassed;
+            {
+              // find all key frames
+              var keyframes = new List<float>();
+              keyframes.Add(_timeline.duration);
+              foreach (var e in _timeline.effects) {
+                keyframes.Add(e.startsAt);
+                keyframes.Add(e.endsAt);
+              }
 
-          {
-            // find all key frames
-            var keyframes = new List<float>();
-            keyframes.Add(_timeline.duration);
-            foreach (var e in _timeline.effects) {
-              keyframes.Add(e.startsAt);
-              keyframes.Add(e.endsAt);
-            }
-            keyframes.Sort();
-            var filtered = __editor_keyframes;
-            filtered.Clear();
-            filtered.Add(0);
-            foreach (var keyframe in keyframes) {
-              if (!Mathf.Approximately(filtered[filtered.Count - 1], keyframe)) {
-                filtered.Add(keyframe);
+              keyframes.Sort();
+              var filtered = __editor_keyframes;
+              filtered.Clear();
+              filtered.Add(0);
+              foreach (var keyframe in keyframes) {
+                if (!Mathf.Approximately(filtered[filtered.Count - 1], keyframe)) {
+                  filtered.Add(keyframe);
+                }
               }
             }
           }
