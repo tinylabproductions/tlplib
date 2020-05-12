@@ -38,8 +38,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
       texture.Apply();
       return texture;
     }
-  }
 #else
-  public static Texture2D editorPreview(SimpleSerializedEase simple) => null;
+    public static Texture2D editorPreview(SimpleSerializedEase simple) => null;
 #endif
+  }
 }
