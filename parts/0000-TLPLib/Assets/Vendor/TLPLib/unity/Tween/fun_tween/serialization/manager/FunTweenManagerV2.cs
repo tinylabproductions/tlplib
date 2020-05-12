@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       [SerializeField, PublicAccessor] float _startsAt;
       [SerializeField, HideInInspector] int _timelineChannelIdx;
       [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty] 
-      ISerializedTweenTimelineElement _element;
+      ISerializedTweenTimelineElementBase _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
     }
@@ -124,7 +124,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         }
 #endif
         if (_timeline == null) {
-          Debug.LogWarning("Creating timeline " + _elements.Length);
           var builder = new TweenTimeline.Builder();
           foreach (var element in _elements) {
             var timelineElement = element.element.toTimelineElement();
@@ -164,16 +163,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
     public void invalidate() => _timeline = null;
   }
-
-  public interface ISerializedTweenTimelineElement {
+  
+  public interface ISerializedTweenTimelineElementBase {
     TweenTimelineElement toTimelineElement();
-    Object getTarget();
     float duration { get; }
     void trySetDuration(float duration);
-    
+    Object getTarget();
+
 #if UNITY_EDITOR
     bool __editorDirty { get; }
     // string[] __editorSerializedProps { get; }
 #endif
+  }
+  
+  public interface ISerializedTweenTimelineCallback : ISerializedTweenTimelineElementBase {
+    
+  }
+
+  public interface ISerializedTweenTimelineElement : ISerializedTweenTimelineElementBase {
   }
 }
