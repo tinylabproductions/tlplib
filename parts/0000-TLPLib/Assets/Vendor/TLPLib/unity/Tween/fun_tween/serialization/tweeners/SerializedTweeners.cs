@@ -21,6 +21,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     const string DELTA = "delta";
     const string DURATION = "duration";
     const int LABEL_WIDTH = 50;
+    
+    // Don't use nameof, because those fields exist only in UNITY_EDITOR
     const string CHANGE = "editorSetDirty";
     const string SHOW_CURRENT = "showCurrent";
     const string SHOW_DELTA = "displayAsDelta";

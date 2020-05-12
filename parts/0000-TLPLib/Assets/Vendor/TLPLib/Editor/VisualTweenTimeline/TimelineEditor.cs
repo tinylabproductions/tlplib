@@ -63,6 +63,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void OnGUI() => init?.onGUI(Event.current);
 
     public void OnEnable() {
+      FunTweenManagerV2.timelineEditorIsOpen = true;
       refreshInit(F.none_, F.none_);
     }
 
@@ -72,6 +73,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
    
     public void OnDisable() {
+      FunTweenManagerV2.timelineEditorIsOpen = false;
       if (init != null) {
         init.Dispose();
         init = null;
@@ -93,7 +95,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     [MenuItem("TLP/TweenTimeline", false)]
     public static void showWindow() {
-      var window = GetWindow<TimelineEditor>(false, "TweenTimeline");
+      var window = GetWindow<TimelineEditor>("Tween Timeline");
       window.wantsMouseMove = true;
       DontDestroyOnLoad(window);
     }
