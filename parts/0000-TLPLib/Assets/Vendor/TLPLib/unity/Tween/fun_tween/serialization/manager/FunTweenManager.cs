@@ -23,11 +23,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
-    float timePassed => _manager == null ? -1 : _manager.timeline.timePassed;
+    float timePassed => _manager?.timeline.timePassed ?? -1;
     [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
-    uint currentIteration => _manager == null ? 0 : _manager.currentIteration;
+    uint currentIteration => _manager?.currentIteration ?? 0;
     [ShowInInspector, TabGroup(TAB_ACTIONS), UsedImplicitly, ReadOnly]
-    float timescale => _manager == null ? -1 : _manager.timescale;
+    float timescale => _manager?.timescale ?? -1;
 
     #region Unity Serialized Fields
 #pragma warning disable 649
@@ -78,7 +78,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
           return tm;
         }
 
-        return _manager ?? (_manager = create());
+        return _manager ??= create();
       }
     }
 
@@ -163,9 +163,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #endif
 
     public void invalidate() {
-      if (_manager != null) {
-        _manager.stop();
-      }
+      _manager?.stop();
       lastStateWasPlaying = false;
       _timeline.invalidate();
       _manager = null;
