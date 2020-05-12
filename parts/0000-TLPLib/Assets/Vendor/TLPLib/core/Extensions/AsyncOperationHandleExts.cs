@@ -6,13 +6,13 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class AsyncOperationHandleExts {
-    public static Future<AsyncOperationHandle<A>> toFuture<A>(this AsyncOperationHandle<A> handle) {
+    public static Future<AsyncOperationHandle<A>> operationHandleToFuture<A>(this AsyncOperationHandle<A> handle) {
       var f = Future.async<AsyncOperationHandle<A>>(out var promise);
       handle.Completed += h => promise.complete(h);
       return f;
     }
 
-    public static Either<Exception, A> toEither<A>(this AsyncOperationHandle<A> handle) =>
+    public static Either<Exception, A> operationHandleToEither<A>(this AsyncOperationHandle<A> handle) =>
       handle.Status switch {
         AsyncOperationStatus.None => new Exception("Handle is in status None!"),
         AsyncOperationStatus.Succeeded => handle.Result,
