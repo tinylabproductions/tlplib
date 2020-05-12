@@ -24,14 +24,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 #pragma warning restore 649
 
     #endregion
-
-    Texture2D _preview;
-    [HideLabel, HorizontalGroup(Width = 50), ShowIf("displayPreview", animate: false), ShowInInspector, PreviewField]
-    Texture2D preview => _preview ? _preview : _preview = (
-      isSimple 
-      ? SerializedEasePreview.editorPreview(_simple) 
-      : (_complex != null ? SerializedEasePreview.generateTexture(ease) : null)
-    );
     
     void complexChanged() {
       // ReSharper disable AssignNullToNotNullAttribute
@@ -46,8 +38,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
     
     public void invalidate() {
       _ease = null;
-      _preview = null;
       _complex?.invalidate();
+#if UNITY_EDITOR
+      _preview = null;
+#endif
     }
 
     public override string ToString() => 
@@ -67,6 +61,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
     }
     
 #if UNITY_EDITOR
+    Texture2D _preview;
+    [HideLabel, HorizontalGroup(Width = 50), ShowIf("displayPreview", animate: false), ShowInInspector, PreviewField]
+    Texture2D preview => _preview ? _preview : _preview = (
+      isSimple 
+        ? SerializedEasePreview.editorPreview(_simple) 
+        : (_complex != null ? SerializedEasePreview.generateTexture(ease) : null)
+    );
+    
     [UsedImplicitly] bool displayPreview => SerializedTweenTimelineV2.editorDisplayEasePreview;
 #endif
   }
