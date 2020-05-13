@@ -74,7 +74,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     bool hasTarget => _target != null && !_target.Equals(null);
     
     public void trySetDuration(float duration) => _duration = duration;
-    
+    public bool isValid => hasTarget;
+
     // protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
     // protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
     // protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };

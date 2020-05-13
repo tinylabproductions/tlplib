@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
@@ -97,16 +98,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       ISerializedTweenTimelineElement _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
+
+      public bool isValid => _element.isValid;
     }
     
     #region Unity Serialized Fields
-
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
     [SerializeField, NotNull, OnValueChanged(nameof(invalidate))] Element[] _elements;
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
-
     #endregion
 
     TweenTimeline _timeline;
@@ -124,11 +125,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         }
 #endif
         if (_timeline == null) {
-          Debug.LogWarning("Creating timeline " + _elements.Length);
           var builder = new TweenTimeline.Builder();
           foreach (var element in _elements) {
-            var timelineElement = element.element.toTimelineElement();
-            builder.insert(element.startsAt, timelineElement);
+            if (element.isValid) {
+              var timelineElement = element.element.toTimelineElement();
+              builder.insert(element.startsAt, timelineElement);
+            }
+            else if (Application.isPlaying) {
+              // TODO: add context
+              Log.d.error("Element in animation is invalid. Skipping broken element.", this);
+            }
           }
           _timeline = builder.build();
 #if UNITY_EDITOR
@@ -170,6 +176,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     Object getTarget();
     float duration { get; }
     void trySetDuration(float duration);
+    bool isValid { get; }
     
 #if UNITY_EDITOR
     bool __editorDirty { get; }
