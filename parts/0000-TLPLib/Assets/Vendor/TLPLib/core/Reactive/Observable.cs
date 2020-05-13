@@ -586,7 +586,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     void unsubscribe(Action<A> onEvent) {
       for (var idx = 0; idx < subscriptionsCount; idx++) {
         var sub = subscriptions[idx];
-        if (sub.onEvent == onEvent) {
+        if (ReferenceEquals(sub.onEvent, onEvent)) {
           unsubscribe(idx);
           return;
         }
