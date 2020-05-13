@@ -50,13 +50,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void setTimeOffset(float time) => element.setStartsAt(time);
 
     public TimelineNode(Element element, float startTime) {
-      if (element.element != null && false) { // TODO
+      duration = element.element?.duration ?? 10;
+      if (element.element is ISerializedTweenTimelineCallback) {
         isCallback = true;
-        duration = 0;
       }
       else {
         isCallback = false;
-        duration = element.element?.toTimelineElement().duration ?? 10;
       }
       this.element = element;
       channel = element.timelineChannelIdx;
@@ -64,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
     }
 
-    static Color elementToColor(ISerializedTweenTimelineElement element) {
+    static Color elementToColor(ISerializedTweenTimelineElementBase element) {
       return element switch {
         LocalScale _ => new Color(0.75f, 0.25f, 1),
         AnchoredPosition _ => Color.yellow,
