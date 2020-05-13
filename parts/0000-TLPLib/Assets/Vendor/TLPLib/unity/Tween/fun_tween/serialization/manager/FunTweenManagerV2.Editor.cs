@@ -1,0 +1,86 @@
+using System;
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
+using UnityEngine;
+
+#if UNITY_EDITOR
+
+namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
+  public partial class FunTweenManagerV2 {
+  }
+
+  public partial class SerializedTweenTimelineV2 {
+    public partial class Element {
+      public float setStartsAt(float value) => _startsAt = value;
+      
+      string _title;
+      public string title => _title ??= generateTitle();
+
+      string generateTitle() {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (_element == null) return "NULL";
+        var target = _element.getTarget();
+        if (target is Component c) target = c.gameObject;
+        return _element.GetType().Name + " : " + (target ? target.name : "NULL");
+      }
+
+      public int timelineChannelIdx {
+        get => _timelineChannelIdx;
+        set => _timelineChannelIdx = value;
+      }
+
+      public void invalidate() {
+        _title = null;
+      }
+    }
+    
+    [ShowInInspector] public static bool editorDisplayEndAsDelta;
+    [ShowInInspector] public static bool editorDisplayCurrent = true;
+    [ShowInInspector] public static bool editorDisplayEasePreview = true;
+    
+    public Element[] elements {
+      get => _elements;
+      set => _elements = value;
+    }
+    
+    [ShowInInspector, PropertyRange(0, nameof(__editor_duration)), PropertyOrder(-2), LabelText("Set Progress"), LabelWidth(100)] 
+    float __editor_progress {
+      get { try { return timeline.timePassed; } catch (Exception _) { return default; } }
+      set {
+        timeline.timePassed = value;
+        __editor_cachedTimePassed = value;
+      }
+    }
+    
+    [ShowInInspector, PropertyRange(0, nameof(__editor_keyFrameCount)), PropertyOrder(-1), LabelText("Keyframes"), LabelWidth(100)] 
+    int __editor_setProgressKeyframes {
+      get {
+        var closest = 0;
+        var dist = float.PositiveInfinity;
+        var progress = __editor_progress;
+        for (var i = 0; i < __editor_keyframes.Count; i++) {
+          var newDist = Math.Abs(__editor_keyframes[i] - progress);
+          if (newDist < dist) {
+            dist = newDist;
+            closest = i;
+          }
+        }
+        return closest;
+      }
+      set {
+        if (value < __editor_keyframes.Count) __editor_progress = __editor_keyframes[value];
+      }
+    }
+    
+    float __editor_duration {
+      get { try { return timeline.duration; } catch (Exception _) { return 0; } }
+    }
+    
+    List<float> __editor_keyframes = new List<float>();
+    int __editor_keyFrameCount => __editor_keyframes.Count - 1;
+
+    float __editor_cachedTimePassed;
+  }
+}
+
+#endif
