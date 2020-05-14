@@ -193,6 +193,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector2 get => _target.anchorMin;
     protected override void set(Vector2 value) => _target.anchorMin = _target.anchorMax = value;
   }
+  
+  [Serializable]
+  public sealed class MaterialColor : SerializedTweenerColor<Material> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
+  }
 
   // ReSharper restore NotNullMemberIsNotInitialized
 }
