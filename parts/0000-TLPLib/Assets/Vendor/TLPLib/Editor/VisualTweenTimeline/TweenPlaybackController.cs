@@ -77,7 +77,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     void stopTimeUpdate() => EditorApplication.update -= updateDelegate;
   
     void startVisualization() {
-      if (!visualizationMode.value && getTimelineTargets(manager).valueOut(out var data)) {
+      if (!visualizationMode.value) {
+        var data = getValidTimelineTargets(manager);
         manager.recreate();
         Undo.RegisterCompleteObjectUndo(data, "Animating targets");
         savedTargetDataOpt = data.some();
@@ -94,10 +95,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    static Option<Object[]> getTimelineTargets(FunTweenManagerV2 ftm) =>
-      ftm.serializedTimeline.elements.opt().map(elements =>
-        elements.map(elem => elem.element.getTarget())
-      );
+    static Object[] getValidTimelineTargets(FunTweenManagerV2 ftm) =>
+      ftm.serializedTimeline.elements.Where(_ => _.isValid).Select(elem => elem.element.getTarget()).ToArray();
     
     static string getPath(Transform transform) {
       var path = transform.gameObject.name;
@@ -111,7 +110,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     static EditorCurveBinding curve = EditorCurveBinding.FloatCurve("", typeof(object), "");
 
     public void evaluateCursor(float time) {
-      if (getTimelineTargets(manager).valueOut(out var data) && data.All(target => target != null)) {
+      var data = getValidTimelineTargets(manager);
+      if (data.All(target => target != null)) {
         if (!Application.isPlaying) {
           if (visualizationMode.value) {
             stopTimeUpdate();

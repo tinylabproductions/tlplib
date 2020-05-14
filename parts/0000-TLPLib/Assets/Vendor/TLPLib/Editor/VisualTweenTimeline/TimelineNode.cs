@@ -35,9 +35,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       duration = Mathf.Clamp(durationToSet, 0.01f, float.MaxValue);
 
     public void setStartTime(float timeToSet, float lowerBound = 0) {
-      if (element.element != null) {
-         startTime = Mathf.Clamp(timeToSet, lowerBound, float.MaxValue);
-      }
+      startTime = Mathf.Clamp(timeToSet, lowerBound, float.MaxValue);
     }
     
     public void unlink() {
@@ -50,13 +48,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void setTimeOffset(float time) => element.setStartsAt(time);
 
     public TimelineNode(Element element, float startTime) {
-      if (element.element != null && false) { // TODO
+      // display invalid elements of length 1
+      duration = element.element?.duration ?? 1;
+      if (element.element is ISerializedTweenTimelineCallback) {
         isCallback = true;
-        duration = 0;
       }
       else {
         isCallback = false;
-        duration = element.element?.toTimelineElement().duration ?? 10;
       }
       this.element = element;
       channel = element.timelineChannelIdx;
@@ -64,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
     }
 
-    static Color elementToColor(ISerializedTweenTimelineElement element) {
+    static Color elementToColor(ISerializedTweenTimelineElementBase element) {
       return element switch {
         LocalScale _ => new Color(0.75f, 0.25f, 1),
         AnchoredPosition _ => Color.yellow,
