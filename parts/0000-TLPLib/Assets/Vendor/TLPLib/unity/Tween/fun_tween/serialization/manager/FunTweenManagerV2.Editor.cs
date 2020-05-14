@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -31,7 +32,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
       public void invalidate() {
         _title = null;
+        ___editorDirty = false;
       }
+      
+      bool ___editorDirty = true;
+      public bool __editorDirty => ___editorDirty || (_element?.__editorDirty ?? false);
+      [UsedImplicitly] void editorSetDirty() => ___editorDirty = true;
     }
     
     [ShowInInspector] public static bool editorDisplayEndAsDelta;

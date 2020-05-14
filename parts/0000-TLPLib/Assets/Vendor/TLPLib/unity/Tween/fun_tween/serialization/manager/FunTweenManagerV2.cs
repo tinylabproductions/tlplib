@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       // timeline editor fails to update if we edit it from multiple places
       HideIf(nameof(timelineEditorIsOpen), animate: false)
     ] 
-    SerializedTweenTimelineV2 _timeline;
+    SerializedTweenTimelineV2 _timeline = new SerializedTweenTimelineV2();
 
     public SerializedTweenTimelineV2 serializedTimeline => _timeline;
     public TweenTimeline timeline => _timeline.timeline;
@@ -90,11 +90,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   public partial class SerializedTweenTimelineV2 {
     [Serializable]
     public partial class Element {
+      // Don't use nameof, because those fields exist only in UNITY_EDITOR
+      const string CHANGE = "editorSetDirty";
+      
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized
       [SerializeField, PublicAccessor] float _startsAt;
       [SerializeField, HideInInspector] int _timelineChannelIdx;
-      [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty] 
+      [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] 
       ISerializedTweenTimelineElementBase _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
@@ -105,7 +108,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     #region Unity Serialized Fields
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
-    [SerializeField, NotNull, OnValueChanged(nameof(invalidate))] Element[] _elements;
+    [SerializeField, NotNull, OnValueChanged(nameof(invalidate))] Element[] _elements = new Element[0];
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
     #endregion
@@ -117,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #if UNITY_EDITOR
         if (!Application.isPlaying && _timeline != null) {
           foreach (var element in _elements) {
-            if (element.element.__editorDirty) {
+            if (element.__editorDirty) {
               element.invalidate();
               _timeline = null;
             }
