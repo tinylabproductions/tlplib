@@ -262,8 +262,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       void doNodeEvents(NodeEvents nodeEvent, Option<TimelineNode> timelineNodeOpt, float mousePositionSeconds) {
         var snappingEnabled = !Event.current.shift && snapping;
-        //Cleaning up nodes list from nodes without element.element
-        funNodes = funNodes.Where(funNode => funNode.element.element != null).ToList();
         
         switch (nodeEvent) {
           case NodeEvents.RemoveSelected:
@@ -397,7 +395,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
                 diffList.Clear();
   
-                if (Event.current.mousePosition.y > rootSelected.channel * 20 + 25) {
+                while (Event.current.mousePosition.y > rootSelected.channel * 20 + 25) {
                   foreach (var node in selectedNodesList) {
                     updateLinkedNodeChannels(node, _ => _.increaseChannel());
                     if (node == rootSelected) {
@@ -406,8 +404,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   }
                 }
   
-                if (Event.current.mousePosition.y < rootSelected.channel * 20 - 5
-                  && selectedNodesList.find(node => node.channel == 0).isNone) {
+                while (Event.current.mousePosition.y < rootSelected.channel * 20 - 5
+                       && selectedNodesList.find(node => node.channel == 0).isNone) {
                   foreach (var node in selectedNodesList) {
                     updateLinkedNodeChannels(node, _ => _.decreaseChannel());
                     if (node == rootSelected) {
@@ -723,20 +721,18 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             elem.element.timelineChannelIdx = elem.channel;
             return elem.element;
           }).ToArray();
+          
+          EditorUtility.SetDirty(manager);
 
           foreach (var element in manager.serializedTimeline.elements) {
             foreach (var found in funNodes.find(funNode => funNode.element == element)) {
-              if (element.element != null) {
-                EditorUtility.SetDirty(manager);
-                element.element.trySetDuration(found.duration);
-                element.timelineChannelIdx = found.channel;
-                
-                if (found.linkedNode.valueOut(out var _)) {
-                  throw new NotImplementedException("node linking is not implemented");
-                }
-                else {
-                  element.setStartsAt(found.startTime);
-                }
+              element.timelineChannelIdx = found.channel;
+              element.element?.trySetDuration(found.duration);
+              if (found.linkedNode.valueOut(out _)) {
+                throw new NotImplementedException("node linking is not implemented");
+              }
+              else {
+                element.setStartsAt(found.startTime);
               }
             }
           }
@@ -750,7 +746,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             case SettingsEvents.AddTween:
               var newNode = new TimelineNode(new Element(), 0);
 
-              funNodes.Insert(0, newNode);
+              funNodes.Add(newNode);
 
               selectedNodesList.Clear();
               selectedNodesList.Add(newNode);
@@ -830,9 +826,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void removeRootNodeIfHasNoElement() {
-        foreach (var rootNode in rootSelectedNodeOpt) {
-          removeNodeIfHasNoElement(rootNode);
-        }
+        // why did we need this code?
+        // foreach (var rootNode in rootSelectedNodeOpt) {
+        //   removeNodeIfHasNoElement(rootNode);
+        // }
       }
 
       void addFunTweenManagerComponent(GameObject gameObject) {

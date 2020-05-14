@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (_element == null) return "NULL";
         var target = _element.getTarget();
-        if (target is Component c) target = c.gameObject;
+        if (target is Component c && c) target = c.gameObject;
         return _element.GetType().Name + " : " + (target ? target.name : "NULL");
       }
 

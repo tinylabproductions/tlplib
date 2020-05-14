@@ -102,7 +102,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
 
-      public bool isValid => _element.isValid;
+      public bool isValid => _element?.isValid ?? false;
     }
     
     #region Unity Serialized Fields
