@@ -35,9 +35,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       duration = Mathf.Clamp(durationToSet, 0.01f, float.MaxValue);
 
     public void setStartTime(float timeToSet, float lowerBound = 0) {
-      if (element.element != null) {
-         startTime = Mathf.Clamp(timeToSet, lowerBound, float.MaxValue);
-      }
+      startTime = Mathf.Clamp(timeToSet, lowerBound, float.MaxValue);
     }
     
     public void unlink() {
@@ -50,7 +48,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public void setTimeOffset(float time) => element.setStartsAt(time);
 
     public TimelineNode(Element element, float startTime) {
-      duration = element.element?.duration ?? 10;
+      // display invalid elements of length 1
+      duration = element.element?.duration ?? 1;
       if (element.element is ISerializedTweenTimelineCallback) {
         isCallback = true;
       }

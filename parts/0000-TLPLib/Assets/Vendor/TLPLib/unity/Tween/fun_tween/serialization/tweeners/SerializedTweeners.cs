@@ -74,7 +74,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     bool hasTarget => _target != null && !_target.Equals(null);
     
     public void trySetDuration(float duration) => _duration = duration;
-    
+    public bool isValid => hasTarget;
+
     // protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
     // protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
     // protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
@@ -192,6 +193,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class RectTransformSimpleAnchors : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.anchorMin;
     protected override void set(Vector2 value) => _target.anchorMin = _target.anchorMax = value;
+  }
+  
+  [Serializable]
+  public sealed class MaterialColor : SerializedTweenerColor<Material> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
   }
 
   // ReSharper restore NotNullMemberIsNotInitialized

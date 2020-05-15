@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (_element == null) return "NULL";
         var target = _element.getTarget();
-        if (target is Component c) target = c.gameObject;
+        if (target is Component c && c) target = c.gameObject;
         return _element.GetType().Name + " : " + (target ? target.name : "NULL");
       }
 
@@ -31,7 +32,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
       public void invalidate() {
         _title = null;
+        ___editorDirty = false;
       }
+      
+      bool ___editorDirty = true;
+      public bool __editorDirty => ___editorDirty || (_element?.__editorDirty ?? false);
+      [UsedImplicitly] void editorSetDirty() => ___editorDirty = true;
     }
     
     [ShowInInspector] public static bool editorDisplayEndAsDelta;
