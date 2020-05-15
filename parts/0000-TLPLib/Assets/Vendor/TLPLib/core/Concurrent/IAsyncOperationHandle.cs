@@ -12,6 +12,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI] public interface IAsyncOperationHandle<A> {
     AsyncOperationStatus Status { get; }
+    bool IsDone { get; }
     float PercentComplete { get; }
     Future<Try<A>> asFuture { get; }
     Try<A> toTry();
@@ -54,6 +55,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public AsyncOperationStatus Status => handle.Status;
+    public bool IsDone => handle.IsDone;
     public float PercentComplete => handle.PercentComplete;
     public Try<A> toTry() => handle.toTry();
     [LazyProperty] public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
@@ -79,6 +81,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public AsyncOperationStatus Status => handle.Status;
+    public bool IsDone => handle.IsDone;
     public float PercentComplete => handle.PercentComplete;
     public Try<object> toTry() => handle.toTry();
     [LazyProperty] public Future<Try<object>> asFuture => handle.toFuture().map(h => h.toTry());
@@ -100,6 +103,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     public AsyncOperationStatus Status => handle.Status;
+    public bool IsDone => handle.IsDone;
     public float PercentComplete => handle.PercentComplete;
     [LazyProperty] public Future<Try<B>> asFuture => handle.asFuture.map(try_ => try_.map(mapper));
     public Try<B> toTry() => handle.toTry().map(mapper);
@@ -125,6 +129,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => 
       bHandleF.value.valueOut(out var b) ? b.fold(h => h.Status, e => AsyncOperationStatus.Failed) : aHandle.Status;
 
+    public bool IsDone => bHandleF.value.valueOut(out var b) && b.fold(h => h.IsDone, e => true);
+    
     public float PercentComplete => 
       bHandleF.value.valueOut(out var b) 
         ? aHandleProgressPercentage + b.fold(h => h.PercentComplete, e => 1) * bHandleProgressPercentage 
