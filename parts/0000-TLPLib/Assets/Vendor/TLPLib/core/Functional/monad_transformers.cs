@@ -118,6 +118,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     #region of Try
 
+    public static Future<Try<AA>> mapT<A, AA>(this Future<Try<A>> m, Func<A, AA> mapper) => m.map(_ => _.map(mapper));
+
     public static Future<Try<To>> flatMapT<From, To>(
       this Future<Try<From>> m, Func<From, Future<To>> mapper
     ) => m.flatMap(_ => _.fold(
