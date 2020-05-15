@@ -124,6 +124,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       from => mapper(from).map(F.scs),
       err => Future.successful(F.err<To>(err))
     ));
+    
+    public static Future<Try<To>> flatMapT<From, To>(
+      this Future<Try<From>> m, Func<From, Future<Try<To>>> mapper
+    ) => m.flatMap(_ => _.fold(
+      mapper,
+      err => Future.successful(F.err<To>(err))
+    ));
 
     #endregion
 

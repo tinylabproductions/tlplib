@@ -53,8 +53,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Try<Unit> doTry(Action action) {
       return doTry(() => { action(); return unit; });
     }
-    public static Try<A> scs<A>(A value) { return new Try<A>(value); }
-    public static Try<A> err<A>(Exception ex) { return new Try<A>(ex); }
+    public static Try<A> scs<A>(A value) => Try<A>.value(value);
+    public static Try<A> err<A>(Exception ex) => Try<A>.failed(ex);
 
     public static KeyValuePair<K, V> kv<K, V>(K key, V value) =>
       new KeyValuePair<K, V>(key, value);

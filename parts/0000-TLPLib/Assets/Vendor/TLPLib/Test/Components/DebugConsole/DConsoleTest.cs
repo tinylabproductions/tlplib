@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Components.DebugConsole;
-using com.tinylabproductions.TLPLib.Data;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Test.Components.DebugConsole {
