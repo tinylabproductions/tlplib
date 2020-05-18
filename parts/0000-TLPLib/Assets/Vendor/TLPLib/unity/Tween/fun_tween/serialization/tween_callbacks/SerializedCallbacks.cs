@@ -46,6 +46,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
 #endif
   }
   
+  // ReSharper disable NotNullMemberIsNotInitialized
+  
   [Serializable]
   public abstract class ParticleSystemBase : CallbackBase {
     [SerializeField, NotNull, NonEmpty, OnValueChanged(CHANGE), ListDrawerSettings(Expanded = true)] 
@@ -91,4 +93,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
       ps.Stop(withChildren: _withChildren, stopBehavior: _stopBehavior);
     }
   }
+  
+  [Serializable]
+  public class TweenManagerCallback : CallbackBase {
+    [SerializeField, NotNull, OnValueChanged(CHANGE)] FunTweenManagerV2 _manager;
+    [SerializeField, OnValueChanged(CHANGE)] FunTweenManagerV2.Action _action = FunTweenManagerV2.Action.PlayForwards;
+
+    protected override void invoke() => _manager.run(_action);
+
+    public override bool isValid => _manager;
+
+    public override Object getTarget() => _manager;
+  }
+  
+  // ReSharper restore NotNullMemberIsNotInitialized
 }
