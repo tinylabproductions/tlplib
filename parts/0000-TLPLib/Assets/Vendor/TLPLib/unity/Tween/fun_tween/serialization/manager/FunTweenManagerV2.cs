@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -8,7 +9,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
-  public partial class FunTweenManagerV2 : MonoBehaviour {
+  public partial class FunTweenManagerV2 : MonoBehaviour, IMB_OnDestroy {
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
     [
@@ -83,6 +84,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         case Action.ApplyMaxDurationState:        manager.timeline.applyStateAt(manager.timeline.duration); break;
         default: throw new ArgumentOutOfRangeException(nameof(action), action, null);
       }
+    }
+
+    public void OnDestroy() {
+      _manager?.stop();
     }
   }
 
