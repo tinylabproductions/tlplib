@@ -106,5 +106,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public override Object getTarget() => _manager;
   }
   
+  [Serializable]
+  public class EnableGameObjectCallback : CallbackBase {
+    [SerializeField, NotNull, OnValueChanged(CHANGE)] GameObject _gameObject;
+    [SerializeField, OnValueChanged(CHANGE)] bool _state;
+
+    protected override void invoke() => _gameObject.SetActive(_state);
+
+    public override bool isValid => _gameObject;
+
+    public override Object getTarget() => _gameObject;
+  }
+  
   // ReSharper restore NotNullMemberIsNotInitialized
 }
