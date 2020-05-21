@@ -18,6 +18,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     Try<A> toTry();
     void release();
   }
+
+  [PublicAPI] public static class IASyncOperationHandle_ {
+    public static IAsyncOperationHandle<Unit> delay(uint durationInFrames) => 
+      new DelayAsyncOperationHandle<Unit>(durationInFrames, Unit._); 
+  }
   
   [PublicAPI] public static class IAsyncOperationHandleExts {
     public static IAsyncOperationHandle<A> wrap<A>(
@@ -38,6 +43,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this IAsyncOperationHandle<A> handle, Func<A, IAsyncOperationHandle<A>, IAsyncOperationHandle<B>> mapper, 
       float aHandleProgressPercentage=0.5f
     ) => new FlatMappedAsyncOperationHandle<A, B>(handle, a => mapper(a, handle), aHandleProgressPercentage);
+
+    public static IAsyncOperationHandle<A> delayed<A>(
+      this IAsyncOperationHandle<A> handle, uint durationInFrames
+    ) => handle.flatMap((a, h) => new DelayAsyncOperationHandle<A>(durationInFrames, a, h.release));
   }
   
 #region implementations
@@ -147,6 +156,43 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       { if (bHandleF.value.valueOut(out var b) && b.valueOut(out var h)) h.release(); }
       aHandle.release();
     }
+  }
+
+  public sealed class DelayAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
+    public readonly uint startedAtFrame, endAtFrame, durationInFrames;
+    readonly Option<Action> onRelease;
+    readonly A value;
+
+    public DelayAsyncOperationHandle(uint durationInFrames, A value, Action onRelease=null) {
+      this.durationInFrames = durationInFrames;
+      startedAtFrame = Time.frameCount.toUIntClamped();
+      endAtFrame = startedAtFrame + durationInFrames;
+      this.value = value;
+      this.onRelease = onRelease.opt();
+    }
+
+    long framesPassed => Time.frameCount - startedAtFrame;
+    long framesLeft => endAtFrame - Time.frameCount;
+
+    public override string ToString() => 
+      $"{nameof(DelayAsyncOperationHandle<A>)}({startedAtFrame.echo()}, {endAtFrame.echo()})";
+
+    public AsyncOperationStatus Status => IsDone ? AsyncOperationStatus.Succeeded : AsyncOperationStatus.None;
+    public bool IsDone => Time.frameCount >= endAtFrame;
+    public float PercentComplete => framesPassed / (float) durationInFrames;
+
+    [LazyProperty] public Future<Try<A>> asFuture {
+      get {
+        var left = framesLeft;
+        return left <= 0 
+          ? Future.successful(Try.value(value)) : Future.delayFrames(left.toIntClamped(), Try.value(value));
+      }
+    }
+
+    public Try<A> toTry() => 
+      IsDone ? Try.value(value) : Try<A>.failed(new Exception($"{ToString()} isn't finished yet!"));
+
+    public void release() { if (onRelease.valueOut(out var action)) action(); }
   }
 #endregion
 }
