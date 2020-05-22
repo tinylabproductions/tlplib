@@ -3,6 +3,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using pzd.lib.typeclasses;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -97,11 +98,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI]
     public void update(float deltaTime) {
+      if (!updateInner(deltaTime, 0)) {
+        throw new Exception($"Stack overflow in tween update: {deltaTime.echo()}, {timescale.echo()}, {currentIteration.echo()}, {context.echo()}, {time.echo()}, {timeline.duration.echo()}, {timeline.timePassed.echo()}");
+      }
+    }
+    
+    bool updateInner(float deltaTime, int level) {
       if (!forwards) deltaTime *= -1;
       deltaTime *= timescale;
 
       // ReSharper disable once CompareOfFloatsByEqualityOperator
-      if (deltaTime == 0) return;
+      if (deltaTime == 0) return true;
+      if (level > 500) return false;
 
       if (
         currentIteration == 0 
@@ -128,13 +136,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             default:
               throw new ArgumentOutOfRangeException();
           }
-          update(unusedTime);
+
+          return updateInner(unusedTime, level + 1);
         }
         else {
           __onEndSubject?.push(new TweenCallback.Event(forwards));
           stop();
         }
       }
+      return true;
     }
 
     [PublicAPI]
