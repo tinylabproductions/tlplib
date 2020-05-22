@@ -11,6 +11,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
     readonly int retryCount;
     readonly float retryDelay;
     readonly Func<Future<Either<Error, Result>>> tryAction;
+    readonly Func<Error, bool> shouldRetry;
     readonly TimeScale timeScale;
     readonly Promise<Either<Option<Error>, Result>> promise;
     public readonly Future<Either<Option<Error>, Result>> future;
@@ -23,12 +24,14 @@ namespace com.tinylabproductions.TLPLib.Retry {
       int retryCount,
       float retryDelay,
       Func<Future<Either<Error, Result>>> tryAction,
+      Func<Error, bool> shouldRetry,
       TimeScale timeScale = TimeScale.Realtime
     ) {
       future = Future.async(out promise);
       this.retryCount = retryCount;
       this.retryDelay = retryDelay;
       this.tryAction = tryAction;
+      this.shouldRetry = shouldRetry;
       this.timeScale = timeScale;
       newRequest();
     }
@@ -49,12 +52,12 @@ namespace com.tinylabproductions.TLPLib.Retry {
 
     void failure(Error error) {
       lastError = Some.a(error);
-      if (retries < retryCount) {
+      if (retries < retryCount && shouldRetry(error)) {
         retries++;
         coroutine = ASync.WithDelay(retryDelay, newRequest, timeScale: timeScale);
       }
       else {
-        promise.tryComplete(Some.a(error));
+        promise.tryComplete(lastError);
       }
     }
   }
