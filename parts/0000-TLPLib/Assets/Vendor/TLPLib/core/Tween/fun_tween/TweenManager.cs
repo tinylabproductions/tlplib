@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -110,6 +111,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return true;
       if (level > 500) return false;
+      if (level > 400) {
+        Log.d.info($"TWEEN NONONO: {deltaTime.echo()}, {level.echo()}, {timescale.echo()}, {currentIteration.echo()}, {context.echo()}, {time.echo()}, {timeline.duration.echo()}, {timeline.timePassed.echo()}");
+      }
 
       if (
         currentIteration == 0 
