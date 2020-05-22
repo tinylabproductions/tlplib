@@ -96,9 +96,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
 
     [PublicAPI]
-    public void update(float deltaTime) {
+    public void update(float deltaTime) => updateWithScaledTime(deltaTime * timescale);
+
+    void updateWithScaledTime(float deltaTime) {
       if (!forwards) deltaTime *= -1;
-      deltaTime *= timescale;
 
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
@@ -128,7 +129,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             default:
               throw new ArgumentOutOfRangeException();
           }
-          update(unusedTime);
+          updateWithScaledTime(unusedTime);
         }
         else {
           __onEndSubject?.push(new TweenCallback.Event(forwards));
