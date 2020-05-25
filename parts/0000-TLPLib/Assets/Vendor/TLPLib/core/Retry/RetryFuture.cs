@@ -1,6 +1,7 @@
 ﻿
 using System;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using pzd.lib.exts;
@@ -9,11 +10,14 @@ using pzd.lib.functional;
 namespace com.tinylabproductions.TLPLib.Retry {
   public class RetryFuture<Error, Result> {
     readonly int retryCount;
-    readonly float retryDelay;
+    readonly Duration retryDelay;
     readonly Func<Future<Either<Error, Result>>> tryAction;
     readonly Func<Error, bool> shouldRetry;
     readonly TimeScale timeScale;
     readonly Promise<Either<Option<Error>, Result>> promise;
+    /// <summary>
+    /// Left value is last error that happened. It will be None if we cancel before first request completes.
+    /// </summary>
     public readonly Future<Either<Option<Error>, Result>> future;
     
     int retries;
@@ -22,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
 
     public RetryFuture(
       int retryCount,
-      float retryDelay,
+      Duration retryDelay,
       Func<Future<Either<Error, Result>>> tryAction,
       Func<Error, bool> shouldRetry,
       TimeScale timeScale = TimeScale.Realtime
