@@ -21,7 +21,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   [PublicAPI] public static class IASyncOperationHandle_ {
     public static IAsyncOperationHandle<Unit> delay(uint durationInFrames) => 
-      new DelayAsyncOperationHandle<Unit>(durationInFrames, Unit._); 
+      new DelayAsyncOperationHandle<Unit>(durationInFrames, Unit._);
+
+    public static IAsyncOperationHandle<Unit> done => DoneAsyncOperationHandle.instance;
   }
   
   [PublicAPI] public static class IAsyncOperationHandleExts {
@@ -193,6 +195,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       IsDone ? Try.value(value) : Try<A>.failed(new Exception($"{ToString()} isn't finished yet!"));
 
     public void release() { if (onRelease.valueOut(out var action)) action(); }
+  }
+
+  [Singleton] public sealed partial class DoneAsyncOperationHandle : IAsyncOperationHandle<Unit> {
+    public AsyncOperationStatus Status => AsyncOperationStatus.Succeeded;
+    public bool IsDone => true;
+    public float PercentComplete => 1;
+    public Future<Try<Unit>> asFuture => Future.successful(toTry());
+    public Try<Unit> toTry() => Try.value(Unit._);
+    public void release() {}
   }
 #endregion
 }
