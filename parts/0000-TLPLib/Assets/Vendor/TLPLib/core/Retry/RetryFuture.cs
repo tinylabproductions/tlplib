@@ -1,20 +1,27 @@
-﻿
-using System;
+﻿using System;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
+using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Retry {
-  public class RetryFuture<Error, Result> {
+  public partial class RetryFuture<Error, Result> {
+    [Record, PublicAPI] public partial class ErrorResult {
+      public readonly Option<Error> maybeError;
+      public readonly bool canceledByUser;
+    }
+    
     readonly int retryCount;
-    readonly float retryDelay;
+    readonly Duration retryDelay;
     readonly Func<Future<Either<Error, Result>>> tryAction;
     readonly Func<Error, bool> shouldRetry;
     readonly TimeScale timeScale;
-    readonly Promise<Either<Option<Error>, Result>> promise;
-    public readonly Future<Either<Option<Error>, Result>> future;
+    readonly Promise<Either<ErrorResult, Result>> promise;
+    
+    public readonly Future<Either<ErrorResult, Result>> future;
     
     int retries;
     IDisposable coroutine = F.emptyDisposable;
@@ -22,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
 
     public RetryFuture(
       int retryCount,
-      float retryDelay,
+      Duration retryDelay,
       Func<Future<Either<Error, Result>>> tryAction,
       Func<Error, bool> shouldRetry,
       TimeScale timeScale = TimeScale.Realtime
@@ -38,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
 
     public void cancel() {
       coroutine.Dispose();
-      promise.tryComplete(lastError);
+      promise.tryComplete(new ErrorResult(lastError, canceledByUser: true));
     }
 
     void newRequest() {
@@ -57,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
         coroutine = ASync.WithDelay(retryDelay, newRequest, timeScale: timeScale);
       }
       else {
-        promise.tryComplete(lastError);
+        promise.tryComplete(new ErrorResult(lastError, canceledByUser: false));
       }
     }
   }

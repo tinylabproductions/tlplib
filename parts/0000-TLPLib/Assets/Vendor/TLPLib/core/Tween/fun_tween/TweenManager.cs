@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -76,6 +77,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public Loop looping;
     [PublicAPI] public uint currentIteration;
     [PublicAPI] public string context;
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(TweenManager));
 
     // TODO: implement me: loop(times, forever, yoyo)
     // notice: looping needs to take into account that some duration might have passed in the
@@ -95,8 +98,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
     }
 
-    [PublicAPI]
-    public void update(float deltaTime) => updateWithScaledTime(deltaTime * timescale);
+    public bool update(float deltaTime) {
+      try {
+        updateWithScaledTime(deltaTime * timescale);
+        return true;
+      }
+      catch (Exception e) {
+        log.error(e);
+        return false;
+      }
+    }
 
     void updateWithScaledTime(float deltaTime) {
       if (!forwards) deltaTime *= -1;
