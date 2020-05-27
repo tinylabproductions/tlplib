@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   [PublicAPI] public static class IASyncOperationHandle_ {
-    public static IAsyncOperationHandle<Unit> delay(uint durationInFrames) => 
+    public static IAsyncOperationHandle<Unit> delayFrames(uint durationInFrames) => 
       new DelayAsyncOperationHandle<Unit>(durationInFrames, Unit._);
 
     public static IAsyncOperationHandle<Unit> done => DoneAsyncOperationHandle.instance;
@@ -46,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       float aHandleProgressPercentage=0.5f
     ) => new FlatMappedAsyncOperationHandle<A, B>(handle, a => mapper(a, handle), aHandleProgressPercentage);
 
-    public static IAsyncOperationHandle<A> delayed<A>(
+    public static IAsyncOperationHandle<A> delayedFrames<A>(
       this IAsyncOperationHandle<A> handle, uint durationInFrames
     ) => handle.flatMap((a, h) => new DelayAsyncOperationHandle<A>(durationInFrames, a, h.release));
   }
