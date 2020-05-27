@@ -54,7 +54,17 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     /// Given an object GUID find all scenes where that particular GUID is being used.
     /// </summary>
     /// <returns>guids for scenes where given guid is used</returns>
-    public ImmutableList<string> findParentScenes(string guid) {
+    public ImmutableList<string> findParentScenes(string guid) => 
+      findParentX(guid, path => path.EndsWithFast(".unity"));
+    
+    /// <summary>
+    /// Given an object GUID find all resources where that particular GUID is being used.
+    /// </summary>
+    /// <returns>guids for resources where given guid is used</returns>
+    public ImmutableList<string> findParentResources(string guid) => 
+      findParentX(guid, path => path.ToLowerInvariant().Contains("/resources/"));
+
+    public ImmutableList<string> findParentX(string guid, Func<string, bool> pathPredicate) {
       // TODO: expensive operation. Need to cache results
       // Dijkstra
       var visited = new HashSet<string>();
@@ -66,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         if (visited.Contains(cur)) continue;
         visited.Add(cur);
         var path = AssetDatabase.GUIDToAssetPath(cur);
-        if (path.EndsWithFast(".unity")) {
+        if (pathPredicate(path)) {
           res.Add(cur);
         }
         if (parents.ContainsKey(cur)) {

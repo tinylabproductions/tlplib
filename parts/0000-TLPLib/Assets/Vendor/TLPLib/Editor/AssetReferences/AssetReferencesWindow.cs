@@ -98,7 +98,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       }
     }
 
-    bool foldout1 = true, foldout2 = true, foldout3 = true;
+    bool foldout1 = true, foldout2 = true, foldout3 = true, foldout4 = true;
     Object hoverItem, previousHoverItem, lockedObj;
     readonly IRxRef<bool> locked = RxRef.a(false);
     bool showActions;
@@ -127,6 +127,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
             displayObjects(currentGUID, "Used by objects (parents)", refs.parents, ref foldout1);
             displayObjects(currentGUID, "Contains (children)", refs.children, ref foldout2);
             displayObjects("Placed in scenes", refs.findParentScenes(currentGUID), ref foldout3);
+            displayObjects("Placed in resources", refs.findParentResources(currentGUID), ref foldout4);
           }
           if (!isMouseMoveEvent && hoverItem) {
             GUI.Label(new Rect(Event.current.mousePosition, new Vector2(128, 128)), AssetPreview.GetAssetPreview(previousHoverItem));
