@@ -32,6 +32,6 @@ namespace com.tinylabproductions.TLPLib.Logger {
       $"[{(DateTime.Now - initAt).TotalSeconds:F3}|{thread}|{frame}|{level}]> {o}";
 
     static string thread => (OnMainThread.isMainThread ? "Tm" : "T") + Thread.CurrentThread.ManagedThreadId;
-    static string frame => (OnMainThread.isMainThread ? "f" + Time.frameCount : "fX");
+    static string frame => (OnMainThread.isMainThread ? "f" + Time.frameCount : "f-");
   }
 }
