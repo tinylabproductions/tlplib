@@ -7,7 +7,12 @@ using com.tinylabproductions.TLPLib.Logger;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public partial class ObjectValidator {
+    /// <summary>
+    /// Manages efficient parallel job execution for object validator.
+    /// </summary>
     public sealed class JobController {
+      // We batch jobs that are executed in parallel because it's faster to run them in batches rather
+      // than running very many small jobs.
       const int BATCH_SIZE = 100;
       
       readonly ILog log = Log.d.withScope(nameof(ObjectValidator) + "." + nameof(JobController));
@@ -28,11 +33,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         });
       }
 
-      public void enqueueJob(Action action) => batchedJobs.Enqueue(action);
+      public void enqueueParallelJob(Action action) => batchedJobs.Enqueue(action);
 
       // DateTime lastTime = DateTime.Now;
       public enum MainThreadAction : byte { RerunImmediately, RerunAfterDelay, Halt }
-      /// <returns>Whether we should keep servicing main thread.</returns>
+      
+      /// <summary>
+      /// Keep calling this from main thread until it instructs you to halt.
+      /// </summary>
       public MainThreadAction serviceMainThread() {
         var jobsLeft = Interlocked.Read(ref runningNonMainThreadJobs);
         // if (jobsLeft < 0) {
@@ -59,7 +67,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
 
           if (batch.Count != 0) {
-            launchJob(() => {
+            launchParallelJob(() => {
               foreach (var job in batch) {
                 job();
               }
@@ -68,19 +76,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
         }
 
-        var ranHighPriority = false;
+        var ranMainThreadJobs = false;
         while (mainThreadJobs.TryDequeue(out var highPriorityJob)) {
           highPriorityJob();
-          ranHighPriority = true;
+          ranMainThreadJobs = true;
         }
-        if (ranHighPriority) {
+        if (ranMainThreadJobs) {
           return MainThreadAction.RerunImmediately;
         }
 
         return jobsLeft == 0 ? MainThreadAction.Halt : MainThreadAction.RerunAfterDelay;
       }
 
-      void launchJob(Action action) {
+      void launchParallelJob(Action action) {
         Interlocked.Increment(ref runningNonMainThreadJobs);
         Interlocked.Increment(ref _jobsMax);
         Parallel.Invoke(() => {

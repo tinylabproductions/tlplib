@@ -1,4 +1,6 @@
-﻿//#define DO_PROFILE
+﻿// From my experiments profiling doesn't add any overhead but it might have issues with multithreading so it is
+// turned off by default.
+//#define DO_PROFILE
 ﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -10,7 +12,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
-using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -40,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     
     public static readonly Action<Progress> 
       DEFAULT_ON_PROGRESS = createOnProgress(100),
-      FREQUENT_ON_PROGRESS = createOnProgress(1000);
+      DEFAULT_ON_PROGRESS_FREQUENT = createOnProgress(1000);
     public static readonly Action DEFAULT_ON_FINISH = EditorUtility.ClearProgressBar;
     
     #region Menu Items
@@ -60,7 +61,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       var scene = SceneManager.GetActiveScene();
-      var t = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, FREQUENT_ON_PROGRESS, DEFAULT_ON_FINISH);
+      var t = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, DEFAULT_ON_PROGRESS_FREQUENT, DEFAULT_ON_FINISH);
       showErrors(t._1);
       if (Log.d.isInfo()) Log.d.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
@@ -205,7 +206,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option.ensureValue(ref uniqueValuesCache);
 
       var errors = new ConcurrentQueue<Error>();
-      var addError = new AddError(e => errors.Enqueue(e));
+      AddError addError = errors.Enqueue;
       var structureCache = new StructureCache(
         getFieldsForType: type => 
           type.type.getAllFields().Select(fi => new StructureCache.Field(type, fi)).toImmutableArrayC()
@@ -404,7 +405,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<CustomObjectValidator> customObjectValidatorOpt,
       FieldHierarchy fieldHierarchy = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
-    ) => jobController.enqueueJob(() => {
+    ) => jobController.enqueueParallelJob(() => {
 #if DO_PROFILE
       using var _ = new ProfiledScope(nameof(validateFields));
 #endif
