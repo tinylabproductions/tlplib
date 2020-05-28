@@ -8,7 +8,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
@@ -18,9 +17,10 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.validations;
 using pzd.lib.exts;
 using pzd.lib.functional;
- using pzd.lib.utils;
- using UnityEngine.Playables;
-using Object = UnityEngine.Object;
+using pzd.lib.utils;
+using UnityEngine.Playables;
+ using Debug = UnityEngine.Debug;
+ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
@@ -187,7 +187,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option.ensureValue(ref customValidatorOpt);
       Option.ensureValue(ref uniqueValuesCache);
 
-      var errors = ImmutableList<Error>.Empty;
+      var errors = new List<Error>();
       var scanned = 0;
       foreach (var o in objects) {
         onProgress?.Invoke(new Progress(scanned++, objects.Count));
@@ -196,22 +196,24 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           foreach (var transform in go.transform.andAllChildrenRecursive()) {
             var components = transform.GetComponents<Component>();
             foreach (var c in components) {
-              errors =
-                c
-                ? errors.AddRange(checkComponent(context, c, customValidatorOpt, uniqueValuesCache))
-                : errors.Add(Error.missingComponent(transform.gameObject));
+              if (c) {
+                checkComponent(context, c, customValidatorOpt, errors, uniqueValuesCache);
+              }
+              else {
+                errors.Add(Error.missingComponent(transform.gameObject));
+              }
             }
           }
         }
         else {
-          errors = errors.AddRange(checkComponent(context, o, customValidatorOpt, uniqueValuesCache));
+          checkComponent(context, o, customValidatorOpt, errors, uniqueValuesCache);
         }
       }
 
       foreach (var valuesCache in uniqueValuesCache)
         foreach (var df in valuesCache.getDuplicateFields())
           foreach (var obj in df.objectsWithThisValue) {
-            errors = errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context));
+            errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context));
           }
 
       onFinish?.Invoke();
@@ -224,17 +226,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// Check one component non-recursively. 
     /// </summary>
     [PublicAPI]
-    public static ImmutableList<Error> checkComponent(
+    public static void checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
-      Option<UniqueValuesCache> uniqueCache = default
+      List<Error> errors, Option<UniqueValuesCache> uniqueCache = default
     ) {
       Option.ensureValue(ref uniqueCache);
-      var errors = ImmutableList<Error>.Empty;
-
       {
         if (component is MonoBehaviour mb) {
           var componentType = component.GetType();
-          errors = errors.AddRange(checkRequireComponents(context: context, go: mb.gameObject, type: componentType));
+          checkRequireComponents(context: context, go: mb.gameObject, type: componentType, errors);
           // checkRequireComponents should be called every time
           // if (!context.checkedComponentTypes.Contains(item: componentType)) {
           //   errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
@@ -245,9 +245,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var serObj = new SerializedObject(obj: component);
       var sp = serObj.GetIterator();
-
+      
       var isPlayableDirector = component is PlayableDirector;
-
+      
       while (sp.NextVisible(enterChildren: true)) {
         if (isPlayableDirector && sp.name == "m_SceneBindings") {
           // skip Scene Bindings of PlayableDirector, because they often have missing references
@@ -257,21 +257,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           sp.propertyType == SerializedPropertyType.ObjectReference
           && sp.objectReferenceValue == null
           && sp.objectReferenceInstanceIDValue != 0
-        ) errors = errors.Add(value: Error.missingReference(
-          o: component, property: sp.propertyPath, context: context
-        ));
+        ) {
+          errors.Add(Error.missingReference(o: component, property: sp.propertyPath, context: context));
+        }
       }
 
-      var fieldErrors = validateFields(
-        containingComponent: component,
-        objectBeingValidated: component,
-        createError: new ErrorFactory(component, context),
-        customObjectValidatorOpt: customObjectValidatorOpt,
-        uniqueValuesCache: uniqueCache
-      );
-      errors = errors.AddRange(items: fieldErrors);
-
-      return errors;
+      // var fieldErrors = validateFields(
+      //   containingComponent: component,
+      //   objectBeingValidated: component,
+      //   createError: new ErrorFactory(component, context),
+      //   customObjectValidatorOpt: customObjectValidatorOpt,
+      //   uniqueValuesCache: uniqueCache
+      // );
+      // errors = errors.AddRange(items: fieldErrors);
     }
 
     static IEnumerable<Error> checkUnityEvent(

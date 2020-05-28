@@ -25,8 +25,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
     static readonly Dictionary<Type, Type[]> requireComponentCache = new Dictionary<Type, Type[]>();
 
-    public static ImmutableList<Error> checkRequireComponents(
-      CheckContext context, GameObject go, Type type
+    public static void checkRequireComponents(
+      CheckContext context, GameObject go, Type type, List<Error> errors
     ) {
       var requiredComponents = requireComponentCache.getOrUpdate(type, _type => {
         return _type
@@ -35,14 +35,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             (rc, requiredType) => requiredType)
           .ToArray();
       });
-      if (requiredComponents.Length == 0) return ImmutableList<Error>.Empty;
-      return requiredComponents
-        .Where(requiredType => !go.GetComponent(requiredType))
-        .Aggregate(
-          ImmutableList<Error>.Empty,
-          (current, requiredType) =>
-            current.Add(Error.requiredComponentMissing(go, requiredType, type, context))
-        );
+      foreach (var requiredType in requiredComponents) {
+        if (!go.GetComponent(requiredType)) {
+          errors.Add(Error.requiredComponentMissing(go, requiredType, type, context));
+        }
+      }
     }
   }
 }
