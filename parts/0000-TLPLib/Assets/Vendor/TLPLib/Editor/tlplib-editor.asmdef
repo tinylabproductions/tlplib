@@ -13,6 +13,7 @@
     "precompiledReferences": [
         "pzd.lib.dll",
         "GenerationAttributes.dll",
+        "Macros.dll",
         "System.Collections.Immutable.dll",
         "Sirenix.OdinInspector.Editor.dll",
         "Sirenix.Utilities.Editor.dll",

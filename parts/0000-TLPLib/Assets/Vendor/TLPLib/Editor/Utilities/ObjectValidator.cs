@@ -1,5 +1,5 @@
-﻿﻿using System.Linq;
-using System.Reflection;
+﻿#define DO_PROFILE
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,13 +14,13 @@ using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
-using com.tinylabproductions.TLPLib.validations;
+using pzd.lib.collection;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.utils;
+using Smooth.Collections;
 using UnityEngine.Playables;
- using Debug = UnityEngine.Debug;
- using Object = UnityEngine.Object;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
@@ -188,6 +188,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option.ensureValue(ref uniqueValuesCache);
 
       var errors = new List<Error>();
+      var structureCache = new StructureCache(
+        getFieldsForType: type => 
+          type.type.getAllFields().Select(fi => new StructureCache.Field(type, fi)).toImmutableArrayC()
+      );
+      var unityTags = UnityEditorInternal.InternalEditorUtility.tags.ToImmutableHashSet();
       var scanned = 0;
       foreach (var o in objects) {
         onProgress?.Invoke(new Progress(scanned++, objects.Count));
@@ -197,7 +202,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             var components = transform.GetComponents<Component>();
             foreach (var c in components) {
               if (c) {
-                checkComponent(context, c, customValidatorOpt, errors, uniqueValuesCache);
+                checkComponent(context, c, customValidatorOpt, errors, structureCache, unityTags, uniqueValuesCache);
               }
               else {
                 errors.Add(Error.missingComponent(transform.gameObject));
@@ -206,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
         }
         else {
-          checkComponent(context, o, customValidatorOpt, errors, uniqueValuesCache);
+          checkComponent(context, o, customValidatorOpt, errors, structureCache, unityTags, uniqueValuesCache);
         }
       }
 
@@ -228,48 +233,79 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static void checkComponent(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
-      List<Error> errors, Option<UniqueValuesCache> uniqueCache = default
+      List<Error> errors, StructureCache structureCache, ImmutableHashSet<string> unityTags, 
+      Option<UniqueValuesCache> uniqueCache = default
     ) {
       Option.ensureValue(ref uniqueCache);
       {
-        if (component is MonoBehaviour mb) {
-          var componentType = component.GetType();
-          checkRequireComponents(context: context, go: mb.gameObject, type: componentType, errors);
-          // checkRequireComponents should be called every time
-          // if (!context.checkedComponentTypes.Contains(item: componentType)) {
-          //   errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
-          //   context = context.withCheckedComponentType(c: componentType);
-          // }
+        if (component is MonoBehaviour mb)
+#if DO_PROFILE
+          using (new ProfiledScope(nameof(checkRequireComponents)))
+#endif
+          {
+            var componentType = structureCache.getTypeFor(component.GetType());
+            checkRequireComponents(context: context, go: mb.gameObject, type: componentType.type, errors);
+            // checkRequireComponents should be called every time
+            // if (!context.checkedComponentTypes.Contains(item: componentType)) {
+            //   errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
+            //   context = context.withCheckedComponentType(c: componentType);
+            // }
+          }
+      }
+
+#if DO_PROFILE
+      using (new ProfiledScope("Serialized object"))
+#endif
+      {
+        SerializedObject serObj;
+        
+#if DO_PROFILE
+        using (new ProfiledScope("Create serialized object"))
+#endif
+        {
+          serObj = new SerializedObject(obj: component);
+        }
+
+        SerializedProperty sp;
+        
+#if DO_PROFILE
+        using (new ProfiledScope("Get iterator"))
+#endif
+        {
+          sp = serObj.GetIterator();
+        }
+
+        var isPlayableDirector = component is PlayableDirector;
+
+#if DO_PROFILE
+        using (new ProfiledScope("Iteration"))
+#endif
+        {
+          while (sp.NextVisible(enterChildren: true)) {
+            if (isPlayableDirector && sp.name == "m_SceneBindings") {
+              // skip Scene Bindings of PlayableDirector, because they often have missing references
+              if (!sp.NextVisible(enterChildren: false)) break;
+            }
+
+            if (
+              sp.propertyType == SerializedPropertyType.ObjectReference
+              && !sp.objectReferenceValue
+              && sp.objectReferenceInstanceIDValue != 0
+            ) {
+              errors.Add(Error.missingReference(o: component, property: sp.propertyPath, context: context));
+            }
+          }
         }
       }
 
-      var serObj = new SerializedObject(obj: component);
-      var sp = serObj.GetIterator();
-      
-      var isPlayableDirector = component is PlayableDirector;
-      
-      while (sp.NextVisible(enterChildren: true)) {
-        if (isPlayableDirector && sp.name == "m_SceneBindings") {
-          // skip Scene Bindings of PlayableDirector, because they often have missing references
-          if (!sp.NextVisible(enterChildren: false)) break;
-        }
-        if (
-          sp.propertyType == SerializedPropertyType.ObjectReference
-          && sp.objectReferenceValue == null
-          && sp.objectReferenceInstanceIDValue != 0
-        ) {
-          errors.Add(Error.missingReference(o: component, property: sp.propertyPath, context: context));
-        }
-      }
-
-      // var fieldErrors = validateFields(
-      //   containingComponent: component,
-      //   objectBeingValidated: component,
-      //   createError: new ErrorFactory(component, context),
-      //   customObjectValidatorOpt: customObjectValidatorOpt,
-      //   uniqueValuesCache: uniqueCache
-      // );
-      // errors = errors.AddRange(items: fieldErrors);
+      validateFields(
+        containingComponent: component,
+        objectBeingValidated: component,
+        createError: new ErrorFactory(component, context),
+        errors, structureCache, unityTags,
+        customObjectValidatorOpt: customObjectValidatorOpt,
+        uniqueValuesCache: uniqueCache
+      );
     }
 
     static IEnumerable<Error> checkUnityEvent(
@@ -294,7 +330,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
-    public struct FieldHierarchyStr {
+    public readonly struct FieldHierarchyStr {
       public readonly string s;
       public FieldHierarchyStr(string s) { this.s = s; }
       public override string ToString() => $"{nameof(FieldHierarchy)}({s})";
@@ -306,166 +342,207 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public FieldHierarchyStr asString() => new FieldHierarchyStr(stack.Reverse().mkString('.'));
     }
 
-    static IEnumerable<Error> validateFields(
+    static void validateFields(
       Object containingComponent,
       object objectBeingValidated,
       IErrorFactory createError,
+      List<Error> errors,
+      StructureCache structureCache,
+      ImmutableHashSet<string> unityTags,
       Option<CustomObjectValidator> customObjectValidatorOpt,
       FieldHierarchy fieldHierarchy = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
+#if DO_PROFILE
+      using var _ = new ProfiledScope(nameof(validateFields));
+#endif
       Option.ensureValue(ref uniqueValuesCache);
       fieldHierarchy ??= new FieldHierarchy();
 
       if (objectBeingValidated is OnObjectValidate onObjectValidatable) {
-        // Try because custom validations can throw exceptions.
-        var validateResult = F.doTry(() => 
-          // Force strict enumerable evaluation, because it might throw an exception while evaluating.
-          onObjectValidatable.onObjectValidate(containingComponent).ToArray()
-        );
-        if (validateResult.isSuccess) {
-          foreach (var error in validateResult.__unsafeGet) {
-            yield return createError.custom(fieldHierarchy.asString(), error, true);
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(OnObjectValidate)))
+#endif
+        {
+          // Try because custom validations can throw exceptions.
+          try {
+            var objectErrors = onObjectValidatable.onObjectValidate(containingComponent);
+            errors.AddRange(objectErrors.Select(error => createError.custom(fieldHierarchy.asString(), error, true)));
           }
-        }
-        else {
-          var error = validateResult.__unsafeException;
-          yield return createError.exceptionInCustomValidator(fieldHierarchy.asString(), error);
+          catch (Exception error) {
+            errors.Add(createError.exceptionInCustomValidator(fieldHierarchy.asString(), error));
+          }
         }
       }
 
       {
         if (objectBeingValidated is UnityEventBase unityEvent) {
-          var errors = checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent);
-          foreach (var error in errors) yield return error;
+#if DO_PROFILE
+          using (new ProfiledScope(nameof(checkUnityEvent)))
+#endif
+          {
+            errors.AddRange(checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent));
+          }
         }
       }
 
       foreach (var customValidator in customObjectValidatorOpt) {
-        foreach (var _err in customValidator(containingComponent, objectBeingValidated)) {
-          yield return createError.custom(fieldHierarchy.asString(), _err, true);
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(customValidator)))
+#endif
+        {
+          errors.AddRange(
+            customValidator(containingComponent, objectBeingValidated)
+              .Select(_err => createError.custom(fieldHierarchy.asString(), _err, true))
+          );
         }
       }
 
-      var fields = getFilteredFields(objectBeingValidated);
-      foreach (var fi in fields) {
-        fieldHierarchy.stack.Push(fi.Name);
-        var fieldValue = fi.GetValue(objectBeingValidated);
-        var hasNonEmpty = fi.hasAttribute<NonEmptyAttribute>();
-        
-        foreach (var cache in uniqueValuesCache) {
-          foreach (var attribute in fi.getAttributes<UniqueValue>()) {
-            cache.addCheckedField(attribute.category, fieldValue, containingComponent);
-          }
-        }
-        if (fieldValue is string s) {
-          if (fi.getAttributes<UnityTagAttribute>().nonEmptyAllocating()) {
-            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(s)) {
-              yield return createError.badTextFieldTag(fieldHierarchy.asString());
+      ImmutableArrayC<StructureCache.Field> fields;
+#if DO_PROFILE
+      using (new ProfiledScope("get object fields"))
+#endif
+      {
+        fields = structureCache.getFieldsFor(objectBeingValidated);
+      }
+
+      HashSet<string> blacklistedFields;
+#if DO_PROFILE
+      using (new ProfiledScope("get blacklisted object fields"))
+#endif
+      {
+        blacklistedFields = new HashSet<string>();
+        if (objectBeingValidated is ISkipObjectValidationFields svf) 
+          blacklistedFields.AddAll(svf.blacklistedFields());
+      }
+      
+      foreach (var field in fields) {
+        validateField(
+          containingComponent, objectBeingValidated, createError, errors, structureCache, unityTags,
+          customObjectValidatorOpt, fieldHierarchy, uniqueValuesCache, blacklistedFields, field
+        );
+      }
+    }
+
+    static void validateField(
+      Object containingComponent, object objectBeingValidated, IErrorFactory createError,
+      List<Error> errors, StructureCache structureCache, ImmutableHashSet<string> unityTags, 
+      Option<CustomObjectValidator> customObjectValidatorOpt,
+      FieldHierarchy fieldHierarchy, Option<UniqueValuesCache> uniqueValuesCache, HashSet<string> blacklistedFields, 
+      StructureCache.Field field
+    ) {
+#if DO_PROFILE
+      using var _ = new ProfiledScope(nameof(validateField));
+#endif
+      if (blacklistedFields.Contains(field.fieldInfo.Name)) return;
+
+      fieldHierarchy.stack.Push(field.fieldInfo.Name);
+      var fieldValue = field.fieldInfo.GetValue(objectBeingValidated);
+
+      {
+        if (uniqueValuesCache.valueOut(out var cache)) {
+#if DO_PROFILE
+          using (new ProfiledScope(nameof(uniqueValuesCache)))
+#endif
+          {
+            foreach (var attribute in field.uniqueValueAttributes) {
+              cache.addCheckedField(attribute.category, fieldValue, containingComponent);
             }
           }
-          
-          if (s.isEmpty() && hasNonEmpty)
-            yield return createError.emptyString(fieldHierarchy.asString());
         }
-        if (fi.isSerializable()) {
-          var hasNotNull = fi.hasAttribute<NotNullAttribute>();
-          // Sometimes we get empty unity object. Equals catches that
-          if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError.nullField(fieldHierarchy.asString());
+      }
+      if (fieldValue is string s) {
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(field.unityTagAttributes)))
+#endif
+        {
+          var unityTagAttributes = field.unityTagAttributes;
+          if (unityTagAttributes.nonEmpty()) {
+            if (!unityTags.Contains(s)) {
+              errors.Add(createError.badTextFieldTag(fieldHierarchy.asString()));
+            }
           }
-          else {
-            if (fieldValue is IList list) {
-              if (list.Count == 0 && hasNonEmpty) {
-                yield return createError.emptyCollection(fieldHierarchy.asString());
+        }
+
+        if (field.hasNonEmptyAttribute && s.isEmpty()) {
+          errors.Add(createError.emptyString(fieldHierarchy.asString()));
+        }
+      }
+
+      if (field.isSerializable) {
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(field.isSerializable)))
+#endif
+        {
+          switch (fieldValue) {
+            case null:
+            // Sometimes we get empty unity object.
+            case Object unityObj when !unityObj: {
+              if (field.hasNotNullAttribute) errors.Add(createError.nullField(fieldHierarchy.asString()));
+              break;
+            }
+            case IList list: {
+              if (list.Count == 0) {
+                if (field.hasNonEmptyAttribute) {
+                  errors.Add(createError.emptyCollection(fieldHierarchy.asString()));
+                }
               }
-              var fieldValidationResults = validateListElementsFields(
-                containingComponent, list, fi, hasNotNull,
-                fieldHierarchy, createError, customObjectValidatorOpt,
-                uniqueValuesCache
-              );
-              foreach (var _err in fieldValidationResults) yield return _err;
-            }
-            else {
-              var fieldType = fi.FieldType;
-              if (
-                typeIsSerializableAsValue(fieldType)
-              ) {
-                var validationErrors = validateFields(
-                  containingComponent, fieldValue, createError,
-                  customObjectValidatorOpt, fieldHierarchy,
-                  uniqueValuesCache
+              else {
+                validateListElementsFields(
+                  containingComponent, list, field.hasNotNullAttribute,
+                  fieldHierarchy, createError, errors, structureCache, unityTags,
+                  customObjectValidatorOpt, uniqueValuesCache
                 );
-                foreach (var _err in validationErrors) yield return _err;
               }
+
+              break;
+            }
+            default: {
+              if (field.type.isSerializableAsValue) {
+                validateFields(
+                  containingComponent, fieldValue, createError, errors, structureCache, unityTags,
+                  customObjectValidatorOpt, fieldHierarchy, uniqueValuesCache
+                );
+              }
+
+              break;
             }
           }
         }
-        fieldHierarchy.stack.Pop();
       }
-    }
-    
-    static bool typeIsSerializableAsValue(Type type) =>
-      type.IsPrimitive || type == typeof(string)
-      || 
-      (
-        type.hasAttribute<SerializableAttribute>()
-        &&
-        // sometimes serializable attribute is added on ScriptableObject, we want to skip that
-        !unityObjectType.IsAssignableFrom(type)
-      );
 
-    static IEnumerable<FieldInfo> getFilteredFields(object o) {
-      if (o == null) return Enumerable.Empty<FieldInfo>();
-      var fields = o.GetType().getAllFields();
-      foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
-        var blacklisted = sv.blacklistedFields();
-        return fields.Where(fi => !blacklisted.Contains(fi.Name));
-      }
-      return fields;
+      fieldHierarchy.stack.Pop();
     }
 
-    static readonly Type unityObjectType = typeof(Object);
-
-    static IEnumerable<Error> validateListElementsFields(
-      Object containingComponent, IList list, FieldInfo listFieldInfo,
+    static void validateListElementsFields(
+      Object containingComponent, IList list,
       bool hasNotNull, FieldHierarchy fieldHierarchy,
-      IErrorFactory createError,
+      IErrorFactory createError, List<Error> errors, StructureCache structureCache, ImmutableHashSet<string> unityTags,
       Option<CustomObjectValidator> customObjectValidatorOpt,
       Option<UniqueValuesCache> uniqueValuesCache
     ) {
-      var listItemType = getListItemType(list);
-      var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
+#if DO_PROFILE
+      using var _ = new ProfiledScope(nameof(validateListElementsFields));
+#endif
+      var listItemType = structureCache.getListItemType(list);
 
-      if (listItemIsUnityObject) {
+      if (listItemType.isUnityObject) {
         if (hasNotNull && list.Contains(null))
-          yield return createError.nullField(fieldHierarchy.asString());
+          errors.Add(createError.nullField(fieldHierarchy.asString()));
       }
-      else if (typeIsSerializableAsValue(listItemType)) {
+      else if (listItemType.isSerializableAsValue) {
         var index = 0;
         foreach (var listItem in list) {
           fieldHierarchy.stack.Push($"[{index}]");
-          var validationResults = validateFields(
-            containingComponent, listItem, createError,
+          validateFields(
+            containingComponent, listItem, createError, errors, structureCache, unityTags,
             customObjectValidatorOpt, fieldHierarchy,
             uniqueValuesCache
           );
-          foreach (var _err in validationResults) yield return _err;
           fieldHierarchy.stack.Pop();
           index++;
         }
       }
-    }
-    
-    static Type getListItemType(IList list) {
-      var type = list.GetType();
-      if (type.IsGenericType) {
-        return type.GenericTypeArguments[0];
-      }
-      if (type.IsArray) {
-        return type.GetElementType();
-      }
-      throw new Exception($"Could not determine IList element type for {type.FullName}");
     }
 
     static ImmutableList<Object> getSceneObjects(Scene scene) =>
