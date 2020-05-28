@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.validations;
@@ -16,10 +16,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// Caches structure of our code so that we wouldn't have to constantly use reflection.
     /// </summary>
     public sealed partial class StructureCache {
+      // Implementation notes:
+      //
+      // When adding to concurrent dictionaries we ignore failures because they just mean that some other thread
+      // already did the work and our work can be ignored.
+      //
+      // [LazyProperty] should also be safe, because the worst that can happen is that two threads will calculate
+      // the same value because our properties are pure functions.
+      
       readonly Func<Type, ImmutableArrayC<Field>> _getFieldsForType;
-      readonly Dictionary<System.Type, Type> typeForSystemType = new Dictionary<System.Type, Type>();
-      readonly Dictionary<Type, ImmutableArrayC<Field>> fieldsForType = 
-        new Dictionary<Type, ImmutableArrayC<Field>>();
+      readonly ConcurrentDictionary<System.Type, Type> typeForSystemType = 
+        new ConcurrentDictionary<System.Type, Type>();
+      readonly ConcurrentDictionary<Type, ImmutableArrayC<Field>> fieldsForType = 
+        new ConcurrentDictionary<Type, ImmutableArrayC<Field>>();
 
       public StructureCache(Func<Type, ImmutableArrayC<Field>> getFieldsForType) {
         _getFieldsForType = getFieldsForType;
@@ -28,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public Type getTypeFor(System.Type systemType) {
         if (!typeForSystemType.TryGetValue(systemType, out var t)) {
           t = new Type(systemType);
-          typeForSystemType.Add(systemType, t);
+          typeForSystemType.TryAdd(systemType, t);
         }
 
         return t;
@@ -43,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public ImmutableArrayC<Field> getFieldsForType(Type type) {
         if (!fieldsForType.TryGetValue(type, out var fields)) {
           fields = _getFieldsForType(type);
-          fieldsForType.Add(type, fields);
+          fieldsForType.TryAdd(type, fields);
         }
 
         return fields;

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       public static readonly IEqualityComparer<object> comparer = new ValidatorComparer();
       
-      private readonly List<CheckedField> checkedFields = new List<CheckedField>();
+      readonly ConcurrentQueue<CheckedField> checkedFields = new ConcurrentQueue<CheckedField>();
 
       public IEnumerable<DuplicateField> getDuplicateFields() {
         var categories = checkedFields.GroupBy(f => f.category);
@@ -42,10 +43,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
       
       public void addCheckedField(string category, object identifier, Object unityObject) =>
-        checkedFields.Add(new CheckedField(category, identifier, unityObject));
+        checkedFields.Enqueue(new CheckedField(category, identifier, unityObject));
 
       class ValidatorComparer : IEqualityComparer<object> {
-        public bool Equals(object o1, object o2) {
+        bool IEqualityComparer<object>.Equals(object o1, object o2) {
           var o1Null = o1 == null;
           var o2Null = o2 == null;
           if (o1Null && o2Null) return true;
