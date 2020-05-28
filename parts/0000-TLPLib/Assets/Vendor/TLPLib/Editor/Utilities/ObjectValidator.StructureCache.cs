@@ -23,16 +23,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       //
       // [LazyProperty] should also be safe, because the worst that can happen is that two threads will calculate
       // the same value because our properties are pure functions.
+
+      public delegate ImmutableArrayC<Field> GetFieldsForType(Type type, StructureCache cache);
       
-      readonly Func<Type, ImmutableArrayC<Field>> _getFieldsForType;
+      readonly GetFieldsForType _getFieldsForType;
       readonly ConcurrentDictionary<System.Type, Type> typeForSystemType = 
         new ConcurrentDictionary<System.Type, Type>();
       readonly ConcurrentDictionary<Type, ImmutableArrayC<Field>> fieldsForType = 
         new ConcurrentDictionary<Type, ImmutableArrayC<Field>>();
 
-      public StructureCache(Func<Type, ImmutableArrayC<Field>> getFieldsForType) {
-        _getFieldsForType = getFieldsForType;
-      }
+      public StructureCache(GetFieldsForType getFieldsForType) => _getFieldsForType = getFieldsForType;
 
       public Type getTypeFor(System.Type systemType) {
         if (!typeForSystemType.TryGetValue(systemType, out var t)) {
@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       
       public ImmutableArrayC<Field> getFieldsForType(Type type) {
         if (!fieldsForType.TryGetValue(type, out var fields)) {
-          fields = _getFieldsForType(type);
+          fields = _getFieldsForType(type, this);
           fieldsForType.TryAdd(type, fields);
         }
 
@@ -95,10 +95,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         static readonly System.Type unityObjectType = typeof(UnityEngine.Object);
       }
       
-      [Record] public sealed partial class Field {
+      [Record(GenerateConstructor = ConstructorFlags.None)] public sealed partial class Field {
         public readonly Type type;
         public readonly FieldInfo fieldInfo;
-        
+
+        public Field(FieldInfo fieldInfo, StructureCache cache) {
+          this.fieldInfo = fieldInfo;
+          type = cache.getTypeFor(fieldInfo.FieldType);
+        }
+
         [LazyProperty] public bool hasNonEmptyAttribute => fieldInfo.hasAttribute<NonEmptyAttribute>();
         [LazyProperty] public bool hasNotNullAttribute => fieldInfo.hasAttribute<NotNullAttribute>();
 

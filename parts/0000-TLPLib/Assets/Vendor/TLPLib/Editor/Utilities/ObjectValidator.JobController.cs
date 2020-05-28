@@ -42,7 +42,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       /// Keep calling this from main thread until it instructs you to halt.
       /// </summary>
       public MainThreadAction serviceMainThread() {
-        var jobsLeft = Interlocked.Read(ref runningNonMainThreadJobs);
         // if (jobsLeft < 0) {
         //   log.error($"Jobs left < 0! ({jobsLeft})");
         //   jobsLeft = 0;
@@ -58,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         //   lastTime = time;
         // }
         
-        if (batchedJobs.Count >= BATCH_SIZE || jobsLeft == 0) {
+        if (batchedJobs.Count >= BATCH_SIZE || Interlocked.Read(ref runningNonMainThreadJobs) == 0) {
           var batch = new List<Action>(BATCH_SIZE);
           while (true) {
             if (batch.Count >= BATCH_SIZE) break;
@@ -69,10 +68,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           if (batch.Count != 0) {
             launchParallelJob(() => {
               foreach (var job in batch) {
-                job();
+                try {
+                  job();
+                }
+                catch (Exception e) {
+                  log.error("Error in enqueued job", e);
+                }
               }
             });
-            jobsLeft = Interlocked.Read(ref runningNonMainThreadJobs);
+            return MainThreadAction.RerunImmediately;
           }
         }
 
@@ -85,7 +89,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           return MainThreadAction.RerunImmediately;
         }
 
-        return jobsLeft == 0 ? MainThreadAction.Halt : MainThreadAction.RerunAfterDelay;
+        return 
+          Interlocked.Read(ref runningNonMainThreadJobs) == 0 
+          ? MainThreadAction.Halt : MainThreadAction.RerunAfterDelay;
       }
 
       void launchParallelJob(Action action) {

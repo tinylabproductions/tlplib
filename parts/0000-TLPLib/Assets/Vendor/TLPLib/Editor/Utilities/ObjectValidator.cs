@@ -208,8 +208,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var errors = new ConcurrentQueue<Error>();
       AddError addError = errors.Enqueue;
       var structureCache = new StructureCache(
-        getFieldsForType: type => 
-          type.type.getAllFields().Select(fi => new StructureCache.Field(type, fi)).toImmutableArrayC()
+        getFieldsForType: (type, cache) => 
+          type.type.getAllFields().Select(fi => new StructureCache.Field(fi, cache)).toImmutableArrayC()
       );
       var unityTags = UnityEditorInternal.InternalEditorUtility.tags.ToImmutableHashSet();
       var jobController = new JobController();
