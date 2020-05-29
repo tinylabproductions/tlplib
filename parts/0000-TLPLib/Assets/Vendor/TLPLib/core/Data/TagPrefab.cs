@@ -28,6 +28,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     
     protected TagPrefab() {}
     
+    public bool onObjectValidateIsThreadSafe => false;
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
 #if UNITY_EDITOR
       var type = UnityEditor.PrefabUtility.GetPrefabType(_prefab);

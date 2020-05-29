@@ -41,6 +41,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public int this[Percentage p] => from + (int) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
     
+    public bool onObjectValidateIsThreadSafe => true;
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       if (_from > _to) yield return new ErrorMsg(
         $"Expected from ({_from}) to be <= to ({_to})"
@@ -111,6 +112,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public uint this[Percentage p] => from + (uint) ((to - from) * p.value);
     public override string ToString() => $"({from} to {to})";
     
+    public bool onObjectValidateIsThreadSafe => true;
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       if (_from > _to) yield return new ErrorMsg(
         $"Expected from ({_from}) to be <= to ({_to})"
@@ -224,6 +226,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public float this[Percentage p] => from + (to - from) * p.value;
     public override string ToString() => $"({from} to {to} by {step})";
 
+    public bool onObjectValidateIsThreadSafe => true;
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       if (_from > _to) yield return new ErrorMsg(
         $"Expected from ({_from}) to be <= to ({_to})"

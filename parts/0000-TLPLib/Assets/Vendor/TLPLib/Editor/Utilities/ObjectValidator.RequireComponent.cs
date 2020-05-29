@@ -22,7 +22,7 @@ using pzd.lib.exts;
       });
       foreach (var requiredType in requiredComponents) {
         if (!go.GetComponent(requiredType)) {
-          addError(Error.requiredComponentMissing(go, requiredType, type, context));
+          addError(() => Error.requiredComponentMissing(go, requiredType, type, context));
         }
       }
     }
