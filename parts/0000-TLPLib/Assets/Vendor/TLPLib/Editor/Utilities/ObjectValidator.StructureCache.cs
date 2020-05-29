@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using pzd.lib.collection;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public partial class ObjectValidator {
@@ -114,6 +115,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           fieldInfo.getAttributes<UnityTagAttribute>().toImmutableArrayC();
 
         [LazyProperty] public bool isSerializable => fieldInfo.isSerializable();
+        [LazyProperty] public bool isSerializableAsReference =>
+          isSerializable && fieldInfo.hasAttribute<SerializeReference>();
       }
     }
   }

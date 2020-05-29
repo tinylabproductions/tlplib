@@ -602,7 +602,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               break;
             }
             default: {
-              if (field.type.isSerializableAsValue) {
+              if (field.type.isSerializableAsValue || field.isSerializableAsReference) {
                 validateFields(
                   containingComponent, fieldValue, createError, addError, structureCache, jobController, 
                   unityTags, customObjectValidatorOpt, fieldHierarchy, uniqueValuesCache
