@@ -24,7 +24,8 @@ using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.utils;
 using UnityEngine.Playables;
-using Object = UnityEngine.Object;
+ using Debug = UnityEngine.Debug;
+ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
@@ -216,38 +217,48 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       );
       var unityTags = UnityEditorInternal.InternalEditorUtility.tags.ToImmutableHashSet();
       var scanned = 0;
-      foreach (var o in objects) {
-        onProgress?.Invoke(new Progress(scanned++, objects.Count, () => jobController.ToString()));
 
+      var componentsDuplicated = objects.SelectMany(o => {
         if (o is GameObject go) {
-          foreach (var transform in go.transform.andAllChildrenRecursive()) {
-            var components = transform.GetComponents<Component>();
-            foreach (var c in components) {
-              if (c) {
-                checkComponent(
-                  context: context, component: c, customObjectValidatorOpt: customValidatorOpt, addError: addError, 
-                  structureCache: structureCache, jobController: jobController, unityTags: unityTags, 
-                  uniqueCache: uniqueValuesCache
-                );
-              }
-              else {
-                errors.Add(Error.missingComponent(transform.gameObject));
-              }
-            }
-          }
+          return go.transform
+            .andAllChildrenRecursive()
+            .SelectMany(transform => transform.GetComponents<Component>().collect(c => {
+              if (c) return Some.a((Object) c);
+              else errors.Add(Error.missingComponent(transform.gameObject));
+              return None._;
+            }))
+            .ToArray();
         }
         else {
-          checkComponent(
-            context: context, component: o, customObjectValidatorOpt: customValidatorOpt, addError: addError, 
+          return new[] { o };
+        }
+      }).ToArray();
+
+      var components = componentsDuplicated.Distinct().ToArray();
+      
+      // Debug.Log($"All components: {componentsDuplicated.Length} distinct: {components.Length}");
+
+      // It runs faster if we put everything on one thread
+      // Increased performance when validating all prefabs: 26s -> 19s
+      // single thread of this runs faster than checkComponentMainThreadPart
+      // checkComponentMainThreadPart completes in 16s
+      var t = new Thread(() => {
+        foreach (var component in components) {
+          checkComponentThreadSafePart(
+            context: context, component: component, customObjectValidatorOpt: customValidatorOpt, addError: addError, 
             structureCache: structureCache, jobController: jobController, unityTags: unityTags, 
             uniqueCache: uniqueValuesCache
           );
         }
-        
-        // Ensure parallel jobs are launched. 
-        jobController.serviceMainThread(launchUnderBatchSize: false);
+      });
+      t.Start();
+      
+      foreach (var component in components) {
+        onProgress?.Invoke(new Progress(scanned++, components.Length, () => jobController.ToString()));
+        checkComponentMainThreadPart(context, component, addError, structureCache);
       }
-      onProgress?.Invoke(new Progress(objects.Count, objects.Count, () => jobController.ToString()));
+      
+      onProgress?.Invoke(new Progress(components.Length, components.Length, () => jobController.ToString()));
 
       // Wait till jobs are completed
       while (true) {
@@ -265,13 +276,14 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           onProgressFrequent?.Invoke(new Progress(
             jobController.jobsMax.toIntClamped(), jobController.jobsMax.toIntClamped(), () => jobController.ToString()
           ));
-          break;
+          // break;
+          if (!t.IsAlive) break;
         }
         else {
           throw new Exception($"Unknown value {action}");
         }
       }
-
+      
       var exceptionCount = jobController.jobExceptions.Count;
       if (exceptionCount != 0) {
         throw new AggregateException(
@@ -296,27 +308,24 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// <summary>
     /// Check one component non-recursively. 
     /// </summary>
-    [PublicAPI]
-    public static void checkComponent(
+    static void checkComponentThreadSafePart(
       CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt,
       AddError addError, StructureCache structureCache, JobController jobController,
       ImmutableHashSet<string> unityTags,
       Option<UniqueValuesCache> uniqueCache = default
     ) {
       Option.ensureValue(ref uniqueCache);
-      checkComponentMainThread(context, component, addError, structureCache);
-
-      jobController.enqueueParallelJob(() => validateFields(
+      validateFields(
         containingComponent: component,
         objectBeingValidated: component,
         createError: new ErrorFactory(component, context),
         addError, structureCache, jobController, unityTags,
         customObjectValidatorOpt: customObjectValidatorOpt,
         uniqueValuesCache: uniqueCache
-      ));
+      );
     }
 
-    static void checkComponentMainThread(
+    static void checkComponentMainThreadPart(
       CheckContext context, Object component, AddError addError, StructureCache structureCache
     ) {
       {

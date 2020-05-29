@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public sealed class JobController {
       // We batch jobs that are executed in parallel because it's faster to run them in batches rather
       // than running very many small jobs.
-      const int BATCH_SIZE = 1000;
+      const int BATCH_SIZE = 100;
       
       readonly ConcurrentBag<Action> 
         mainThreadJobs = new ConcurrentBag<Action>(),
@@ -40,16 +40,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       public void enqueueParallelJob(Action action) => batchedJobs.Add(action);
 
-      public enum MainThreadAction : byte { RerunImmediately, RerunAfterDelay, Halt }
-      
-      /// <summary>
-      /// Keep calling this from main thread until it instructs you to halt.
-      /// </summary>
-      public MainThreadAction serviceMainThread(bool launchUnderBatchSize) {
-        var parallelJobsLaunched = false;
+      public bool launchParallelJobs(bool launchUnderBatchSize) {
+        var jobsLaunched = false;
         while (
           batchedJobs.Count >= BATCH_SIZE 
-          || launchUnderBatchSize && Interlocked.Read(ref runningNonMainThreadJobs) == 0
+          || launchUnderBatchSize
         ) {
           var batch = new List<Action>(BATCH_SIZE);
           while (true) {
@@ -70,8 +65,19 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               }
             }
           });
-          parallelJobsLaunched = true;
+          jobsLaunched = true;
         }
+
+        return jobsLaunched;
+      }
+      
+      public enum MainThreadAction : byte { RerunImmediately, RerunAfterDelay, Halt }
+      
+      /// <summary>
+      /// Keep calling this from main thread until it instructs you to halt.
+      /// </summary>
+      public MainThreadAction serviceMainThread(bool launchUnderBatchSize) {
+        var parallelJobsLaunched = launchParallelJobs(launchUnderBatchSize);
         if (parallelJobsLaunched) return MainThreadAction.RerunImmediately;
 
         var mainThreadJobsLaunched = false;
