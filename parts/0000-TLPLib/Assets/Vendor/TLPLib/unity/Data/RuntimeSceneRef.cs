@@ -59,6 +59,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 #endif
     }
 
+    public bool onObjectValidateIsThreadSafe => false;
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
       containingComponent.recordEditorChanges($"{nameof(RuntimeSceneRef)}.{nameof(onObjectValidate)}");
       prepareForRuntime();

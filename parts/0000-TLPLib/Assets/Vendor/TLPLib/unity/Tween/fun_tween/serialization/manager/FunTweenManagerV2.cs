@@ -70,6 +70,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     public void run(Action action) {
+      if (!this) return;
       switch (action) {
         case Action.PlayForwards:                 manager.play(forwards: true);    break;
         case Action.PlayBackwards:                manager.play(forwards: false);   break;

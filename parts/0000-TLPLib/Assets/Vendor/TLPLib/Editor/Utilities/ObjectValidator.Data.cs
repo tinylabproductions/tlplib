@@ -1,20 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Data;
 using GenerationAttributes;
-using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    /// <param name="containingObject">Unity object </param>
-    /// <param name="obj">Object that is being validated.</param>
-    /// <returns></returns>
-    public delegate IEnumerable<ErrorMsg> CustomObjectValidator(Object containingObject, object obj);
+    public interface CustomObjectValidator {
+      bool isThreadSafe { get; }
+      
+      /// <param name="containingObject">Unity object </param>
+      /// <param name="obj">Object that is being validated.</param>
+      IEnumerable<ErrorMsg> validate(Object containingObject, object obj);
+    }
 
-    [Record]
-    public partial struct Progress {
+    [Record] public partial struct Progress {
       public readonly int currentIdx, total;
+      public readonly Func<string> customText;
 
       public float ratio => (float) currentIdx / total;
+      
+      public string text {
+        get {
+          var custom = customText();
+          var txt = $"{currentIdx} / {total}";
+          return string.IsNullOrEmpty(custom) ? txt : $"{custom} ({txt})";
+        }
+      }
     }
   }
 }

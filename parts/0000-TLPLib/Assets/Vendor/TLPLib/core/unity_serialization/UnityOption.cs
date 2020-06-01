@@ -94,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public static bool operator !=(UnityOption<A> left, UnityOption<A> right) => left.value != right.value;
 
     public string[] blacklistedFields() =>
-      isSome
+      _isSome
       ? new string[] {}
       : new [] { nameof(_value) };
 

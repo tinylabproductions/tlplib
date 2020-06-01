@@ -13,5 +13,6 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     /// </param>
     /// </summary>
     IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent);
+    bool onObjectValidateIsThreadSafe { get; }
   }
 }
