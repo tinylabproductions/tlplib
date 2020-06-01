@@ -24,25 +24,28 @@ using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.utils;
 using UnityEngine.Playables;
- using Debug = UnityEngine.Debug;
- using Object = UnityEngine.Object;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
     public delegate void AddError(Func<Error> createError);
     
-    public static Action<Progress> createOnProgress(uint everyIdx) => progress => {
-      // calling DisplayProgressBar too often affects performance
-      if (progress.currentIdx % everyIdx == 0) {
-        EditorUtility.DisplayProgressBar(
-          "Validating Objects", progress.text, progress.ratio
-        );
-      }
-    };
-    
-    public static readonly Action<Progress> 
-      DEFAULT_ON_PROGRESS = createOnProgress(100),
-      DEFAULT_ON_PROGRESS_FREQUENT = createOnProgress(5000);
+    public static Action<Progress> createOnProgress() {
+      const float TIME_DIFF = 1f / 30;
+      var nextProgressAt = 0f;
+      return progress => {
+        // calling DisplayProgressBar too often affects performance
+        var currentTime = Time.realtimeSinceStartup;
+        if (currentTime >= nextProgressAt) {
+          nextProgressAt = currentTime + TIME_DIFF;
+          EditorUtility.DisplayProgressBar(
+            "Validating Objects", progress.text, progress.ratio
+          );
+        }
+      };
+    }
+
+    public static Action<Progress> DEFAULT_ON_PROGRESS => createOnProgress();
     public static readonly Action DEFAULT_ON_FINISH = EditorUtility.ClearProgressBar;
     
     #region Menu Items
@@ -62,7 +65,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       var scene = SceneManager.GetActiveScene();
-      var t = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, DEFAULT_ON_PROGRESS_FREQUENT, DEFAULT_ON_FINISH);
+      var t = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, DEFAULT_ON_FINISH);
       showErrors(t._1);
       if (Log.d.isInfo()) Log.d.info(
         $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
@@ -134,12 +137,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkScene(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
-      Action<Progress> onProgress = null, Action<Progress> onProgressFrequent = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var objects = getSceneObjects(scene);
       var errors = check(
         new CheckContext(scene.name), objects, customValidatorOpt, 
-        onProgress: onProgress, onProgressFrequent: onProgressFrequent, onFinish: onFinish
+        onProgress: onProgress, onFinish: onFinish
       );
       return errors;
     }
@@ -147,12 +150,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static Tpl<ImmutableList<Error>, TimeSpan> checkSceneWithTime(
       Scene scene, Option<CustomObjectValidator> customValidatorOpt = default,
-      Action<Progress> onProgress = null, Action<Progress> onProgressFrequent = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = Stopwatch.StartNew();
       var errors = checkScene(
         scene, customValidatorOpt, 
-        onProgress: onProgress, onProgressFrequent: onProgressFrequent, onFinish: onFinish
+        onProgress: onProgress, onFinish: onFinish
       );
       return F.t(errors, stopwatch.Elapsed);
     }
@@ -160,7 +163,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableList<Error> checkAssetsAndDependencies(
       IEnumerable<PathStr> assets, Option<CustomObjectValidator> customValidatorOpt = default,
-      Action<Progress> onProgress = null, Action<Progress> onProgressFrequent = null, Action onFinish = null
+      Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var loadedAssets =
         assets.Select(s => AssetDatabase.LoadMainAssetAtPath(s)).ToArray();
@@ -169,7 +172,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         // and instead of &, because unity does not show '&' in some windows
         new CheckContext("Assets and Deps"),
         dependencies, customValidatorOpt, 
-        onProgress: onProgress, onProgressFrequent: onProgressFrequent, onFinish: onFinish, 
+        onProgress: onProgress, onFinish: onFinish, 
         uniqueValuesCache: UniqueValuesCache.create.some()
       );
     }
@@ -198,8 +201,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
-      Action<Progress> onProgress = null, 
-      Action<Progress> onProgressFrequent = null, 
+      Action<Progress> onProgress = null,
       Action onFinish = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
@@ -254,17 +256,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       t.Start();
       
       foreach (var component in components) {
-        onProgress?.Invoke(new Progress(scanned++, components.Length, () => jobController.ToString()));
+        onProgress?.Invoke(new Progress(scanned++, components.Length, () => $"[{activeThreads("Main")}] {jobController}"));
         checkComponentMainThreadPart(context, component, addError, structureCache);
       }
       
       onProgress?.Invoke(new Progress(components.Length, components.Length, () => jobController.ToString()));
-
+      
       // Wait till jobs are completed
       while (true) {
-        onProgressFrequent?.Invoke(new Progress(
-          jobController.jobsDone.toIntClamped(), jobController.jobsMax.toIntClamped(), () => jobController.ToString()
-        ));
+        progressFrequent();
         var action = jobController.serviceMainThread(launchUnderBatchSize: true);
         if (action == JobController.MainThreadAction.RerunAfterDelay) {
           Thread.Sleep(10);
@@ -273,17 +273,30 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           // do nothing
         }
         else if (action == JobController.MainThreadAction.Halt) {
-          onProgressFrequent?.Invoke(new Progress(
-            jobController.jobsMax.toIntClamped(), jobController.jobsMax.toIntClamped(), () => jobController.ToString()
-          ));
-          // break;
-          if (!t.IsAlive) break;
+          progressFrequent();
+          if (t.IsAlive) {
+            Thread.Sleep(10);
+          }
+          else {
+            break;
+          }
         }
         else {
           throw new Exception($"Unknown value {action}");
         }
+
+        void progressFrequent() {
+          onProgress?.Invoke(new Progress(
+            jobController.jobsDone.toIntClamped(),
+            jobController.jobsMax.toIntClamped(), 
+            () => $"[{activeThreads("Loop")}] {jobController}"
+          ));
+        }
       }
-      
+
+      string activeThreads(string currentName) => 
+        t.IsAlive ? currentName + ", Thread" : currentName;
+
       var exceptionCount = jobController.jobExceptions.Count;
       if (exceptionCount != 0) {
         throw new AggregateException(
@@ -661,6 +674,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       .ToImmutableList();
 
     static string fullPath(Object o) {
+      if (o == null) return "null";
       var go = o as GameObject;
       return
         go && go.transform.parent != null
