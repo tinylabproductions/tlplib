@@ -10,19 +10,16 @@ using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
-using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
 using pzd.lib.exts;
 using pzd.lib.reactive;
-using pzd.lib.utils;
 using UnityEngine;
 using static pzd.lib.typeclasses.Str;
 using Debug = UnityEngine.Debug;
@@ -35,8 +32,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     [Record] public partial struct Command {
       public readonly string cmdGroup, name;
       public readonly Option<KeyCodeWithModifiers> shortcut; 
-      public readonly Action run;
+      public readonly Action<API> run;
       public readonly Func<bool> canShow;
+      /// <summary>If false this command will be removed from commands list on DConsole re-render.</summary>
+      public readonly bool persistent;
 
       public string label => shortcut.valueOut(out var sc) ? $"[{s(sc)}] {name}" : name;
     }
@@ -58,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     static readonly Deque<LogEntry> logEntries = new Deque<LogEntry>();
     static readonly LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
     public static DConsole instance => _instance.strict;
-    static bool dconsoleUnlocked;
+    static bool dConsoleUnlocked;
 
     [RuntimeInitializeOnLoadMethod]
     static void registerLogMessages() {
@@ -115,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
 
       void onShowDo(DConsole console) {
-        var r = console.registrarFor(prefix, tracker);
+        var r = console.registrarFor(prefix, tracker, persistent: false);
         action(console, r);
       }
       
@@ -164,7 +163,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         this.horizonalAxisName = horizonalAxisName;
         this.verticalAxisName = verticalAxisName;
         this.timeframe = timeframe == default(Duration) ? 5.seconds() : timeframe;
-        sequence = sequence ?? DEFAULT_DIRECTION_SEQUENCE;
+        sequence ??= DEFAULT_DIRECTION_SEQUENCE;
         this.sequence = sequence;
 
         for (var idx = 0; idx < sequence.Count - 1; idx++) {
@@ -190,7 +189,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       Option.ensureValue(ref directionDataOpt);
       Option.ensureValue(ref keyboardShortcutOpt);
 
-      mouseData = mouseData ?? DEFAULT_MOUSE_DATA;
+      mouseData ??= DEFAULT_MOUSE_DATA;
 
       var mouseObs =
         new RegionClickObservable(mouseData.width, mouseData.height)
@@ -242,11 +241,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
       }
 
-      var list = commands.get(command.cmdGroup).getOrElse(() => {
-        var lst = new List<Command>();
-        commands[command.cmdGroup] = lst;
-        return lst;
-      });
+      var list = commands.getOrUpdate(command.cmdGroup, () => new List<Command>());
       list.Add(command);
       var sub = new Subscription(() => list.Remove(command));
       tracker.track(sub, callerMemberName: $"DConsole register: {command.cmdGroup}/{command.name}");
@@ -270,26 +265,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker) =>
-      new DConsoleRegistrar(this, prefix, tracker);
-
-    public void registerHashSet<A>(
-      string name, IDisposableTracker tracker, Ref<ImmutableHashSet<A>> pv, IEnumerable<A> options
-    ) {
-      var r = registrarFor(name, tracker);
-      r.register("List", () => pv.value.asDebugString());
-      r.register("Clear", () => {
-        pv.value = ImmutableHashSet<A>.Empty;
-        return pv.value.asDebugString();
-      });
-      foreach (var f in options) {
-        r.register($"{f}?", () => pv.value.Contains(f));
-        r.register($"Toggle {f}", () => {
-          pv.value = pv.value.toggle(f);
-          return $"in set={pv.value.Contains(f)}";
-        });
-      }
-    }
+    public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker, bool persistent=true) =>
+      new DConsoleRegistrar(this, prefix, tracker, persistent);
     
     public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
@@ -300,25 +277,25 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           return;
         }
       }
-      onShow?.Invoke(this);
+      var maybeOnShow = onShow.opt();
       onShow = null;
+      maybeOnShow.getOrNull()?.Invoke(this);
 
+      BoundGroups commandGroups = null;
+      var selectedGroup = Option<SelectedGroup>.None;
       var view = binding.clone();
+      view.hideModals();
+      
+      var commandsList = setupList(
+        F.none_, view.commands, clearFilterText: true,
+        () => selectedGroup.fold(ImmutableList<ButtonBinding>.Empty, _ => _.buttons)
+      );
+      
+      APIImpl apiForClosures = null;
+      var api = apiForClosures = new APIImpl(view, rerender: rerender);
       Object.DontDestroyOnLoad(view);
 
-      var currentGroupButtons = ImmutableList<ButtonBinding>.Empty;
-      setupList(F.none_, view.commands, () => currentGroupButtons);
-
-      var commandGroups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
-        var validGroupCommands = commandGroup.Value.Where(cmd => cmd.canShow()).ToArray();
-        var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
-        button.text.text = commandGroup.Key;
-        button.button.onClick.AddListener(() =>
-          currentGroupButtons = showGroup(view, commandGroup.Key, validGroupCommands)
-        );
-        return button;
-      }).ToImmutableList();
-      setupList(unlockCode, view.commandGroups, () => commandGroups);
+      commandGroups = setupGroups(clearCommandsFilterText: true);
       
       var logEntryPool = GameObjectPool.a(GameObjectPool.Init<VerticalLayoutLogEntry>.noReparenting(
         nameof(DConsole) + " log entry pool",
@@ -346,7 +323,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
           foreach (var command in kv.Value) {
             foreach (var shortcut in command.shortcut) {
               if (shortcut.getKeyDown) {
-                command.run();
+                command.run(api);
               }
             }
           }
@@ -354,6 +331,69 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       };
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
+
+      BoundGroups setupGroups(bool clearCommandsFilterText) {
+        var groups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
+          var validGroupCommands = commandGroup.Value.Where(cmd => cmd.canShow()).ToArray();
+          var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
+          Action show = null;
+          // ReSharper disable once PossibleNullReferenceException, AccessToModifiedClosure
+          var group = new BoundGroup(commandGroup.Key, button, () => show());
+          show = showThisGroup;
+          button.text.text = commandGroup.Key;
+          button.button.onClick.AddListener(showThisGroup);
+          return group;
+
+          void showThisGroup() {
+            // ReSharper disable once AccessToModifiedClosure
+            var commandButtons = showGroup(view, apiForClosures, commandGroup.Key, validGroupCommands);
+            selectedGroup = Some.a(new SelectedGroup(group, commandButtons));
+          }
+        }).ToImmutableList();
+        var list = setupList(
+          unlockCode, view.commandGroups, clearFilterText: clearCommandsFilterText, 
+          () => groups.Select(_ => _.button)
+        );
+        return new BoundGroups(groups, list);
+      }
+
+      void rerender() {
+        var maybeSelectedGroupName = selectedGroup.map(_ => _.@group.name);
+        Log.d.info($"Re-rendering DConsole, currently selected group = {maybeSelectedGroupName}.");
+
+        // Update command lists.
+        foreach (var (_, groupCommands) in commands) {
+          groupCommands.removeWhere(cmd => !cmd.persistent);
+        }
+
+        foreach (var groupName in commands.Keys.ToArray()) {
+          if (commands[groupName].isEmpty()) commands.Remove(groupName);
+        }
+
+        maybeOnShow.getOrNull()?.Invoke(this);
+
+        // Clean up existing groups
+        {
+          // ReSharper disable once AccessToModifiedClosure
+          var existingGroups = commandGroups;
+          System.Diagnostics.Debug.Assert(existingGroups != null, nameof(existingGroups) + " != null");
+          existingGroups.list.subscription.Dispose();
+          foreach (var existingGroup in existingGroups.groups) {
+            existingGroup.button.destroyGameObject();
+          }
+        }
+        var groups = commandGroups = setupGroups(clearCommandsFilterText: false);
+
+        {
+          if (
+            maybeSelectedGroupName.valueOut(out var selectedGroupName)
+            && groups.groups.findOut(selectedGroupName, (g, n) => g.name == n, out var group)
+          ) {
+            group.show();
+            commandsList.applyFilter();
+          }
+        }
+      }
     }
     
     // DO NOT generate comparer and hashcode - we need reference equality for dynamic vertical layout!
@@ -374,20 +414,33 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    static void setupList(Option<string> unlockCodeOpt, DebugConsoleListBinding listBinding, Func<ImmutableList<ButtonBinding>> contents) {
-      listBinding.clearFilterButton.onClick.AddListener(() => listBinding.filterInput.text = "");
+    static SetUpList setupList(
+      Option<string> unlockCodeOpt, DebugConsoleListBinding listBinding, bool clearFilterText,
+      Func<IEnumerable<ButtonBinding>> contents
+    ) {
+      listBinding.clearFilterButton.onClick.AddListener(onClearFilter);
       listBinding.filterInput.onValueChanged.AddListener(update);
-      update("");
+      if (clearFilterText) listBinding.filterInput.text = "";
+      applyFilter();
+
+      var sub = new Subscription(() => {
+        listBinding.clearFilterButton.onClick.RemoveListener(onClearFilter);
+        listBinding.filterInput.onValueChanged.RemoveListener(update);
+      });
+      return new SetUpList(applyFilter, sub);
+      
+      void onClearFilter() => listBinding.filterInput.text = "";
+      void applyFilter() => update(listBinding.filterInput.text);
 
       void update(string query) {
         if (unlockCodeOpt.valueOut(out var unlockCode)) {
           if (unlockCode.Equals(query, StringComparison.OrdinalIgnoreCase)) {
-            dconsoleUnlocked = true;
+            dConsoleUnlocked = true;
             // disable filter while query matches unlock code
             query = "";
           }
         }
-        var hideButtons = unlockCodeOpt.isSome && !dconsoleUnlocked;
+        var hideButtons = unlockCodeOpt.isSome && !dConsoleUnlocked;
         var showButtons = !hideButtons;
         foreach (var button in contents()) {
           var active = showButtons && button.text.text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
@@ -397,7 +450,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     static ImmutableList<ButtonBinding> showGroup(
-      DebugConsoleBinding view, string groupName, IEnumerable<Command> commands
+      DebugConsoleBinding view, API api, string groupName, IEnumerable<Command> commands
     ) {
       view.commandGroupLabel.text = groupName;
       var commandsHolder = view.commands.holder;
@@ -405,7 +458,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       return commands.Select(command => {
         var button = addButton(view.buttonPrefab, commandsHolder.transform);
         button.text.text = command.label;
-        button.button.onClick.AddListener(() => command.run());
+        button.button.onClick.AddListener(() => command.run(api));
         return button;
       }).ToImmutableList();
     }
@@ -492,205 +545,91 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
   public delegate Option<Obj> HasObjFunc<Obj>();
 
-  [PublicAPI] public struct DConsoleRegistrar {
-    public readonly DConsole console;
-    public readonly string commandGroup;
-    readonly IDisposableTracker tracker;
+  [PublicAPI] public interface ModalInputAPI {
+    public string inputText { get; set; }
+    public string errorText { get; set; }
+    public void closeDialog();
+  }
 
-    public DConsoleRegistrar(DConsole console, string commandGroup, IDisposableTracker tracker) {
-      this.console = console;
-      this.commandGroup = commandGroup;
-      this.tracker = tracker;
+  class ModalInputAPIImpl : ModalInputAPI {
+    readonly DebugConsoleBinding view;
+
+    public ModalInputAPIImpl(DebugConsoleBinding view) => this.view = view;
+
+    public string inputText { get => view.inputModal.input.text; set => view.inputModal.input.text = value; }
+    public string errorText { get => view.inputModal.error.text; set => view.inputModal.error.text = value; }
+    public void closeDialog() => view.hideModals();
+  }
+  
+  [PublicAPI] public interface API {
+    void showModalInput(
+      string inputLabel, string inputPlaceholder,
+      ButtonData<ModalInputAPI> button1, Option<ButtonData<ModalInputAPI>> button2 = default
+    );
+
+    void rerender();
+  }
+
+  class APIImpl : API {
+    readonly DebugConsoleBinding view;
+    readonly Action _rerender;
+
+    public APIImpl(DebugConsoleBinding view, Action rerender) {
+      this.view = view;
+      _rerender = rerender;
     }
 
-    static readonly HasObjFunc<Unit> unitSomeFn = () => F.some(F.unit);
-
-    public ISubscription register(
-      string name, Action run, KeyCodeWithModifiers? shortcut = null, Func<bool> canShow = null
-    ) => register(name, () => { run(); return F.unit; }, shortcut, canShow);
-    public ISubscription register<A>(
-      string name, Func<A> run, KeyCodeWithModifiers? shortcut = null, Func<bool> canShow = null
-    ) => register(name, unitSomeFn, _ => run(), shortcut, canShow);
-    public ISubscription register<A>(
-      string name, Func<Future<A>> run, KeyCodeWithModifiers? shortcut = null,
-      Func<bool> canShow = null
-    ) => register(name, unitSomeFn, _ => run(), shortcut, canShow);
-    public ISubscription register<Obj>(
-      string name, HasObjFunc<Obj> objOpt, Action<Obj> run, KeyCodeWithModifiers? shortcut = null,
-      Func<bool> canShow = null
-    ) => register(name, objOpt, obj => { run(obj); return F.unit; }, shortcut, canShow);
-    public ISubscription register<Obj, A>(
-      string name, HasObjFunc<Obj> objOpt, Func<Obj, A> run, KeyCodeWithModifiers? shortcut = null,
-      Func<bool> canShow = null
-    ) => register(name, objOpt, obj => Future.successful(run(obj)), shortcut, canShow);
-    public ISubscription register<Obj, A>(
-      string name, HasObjFunc<Obj> objOpt, Func<Obj, Future<A>> run, KeyCodeWithModifiers? shortcut = null,
-      Func<bool> canShow = null
+    public void showModalInput(
+      string inputLabel, string inputPlaceholder, 
+      ButtonData<ModalInputAPI> button1, Option<ButtonData<ModalInputAPI>> button2 = default
     ) {
-      var prefixedName = $"[DC|{commandGroup}]> {name}";
-      return console.register(tracker, new DConsole.Command(commandGroup, name, shortcut.toOption(), () => {
-        var opt = objOpt();
-        if (opt.isSome) {
-          var returnFuture = run(opt.get);
+      view.showModal(inputModal: true);
+      var m = view.inputModal;
+      m.label.text = inputLabel;
+      m.error.text = "";
+      m.inputPlaceholder.text = inputPlaceholder;
+      var inputApi = new ModalInputAPIImpl(view);
+      setupButton(m.button1, button1);
+      m.button2.button.setActiveGO(button2.isSome);
+      { if (button2.valueOut(out var b2)) setupButton(m.button2, b2); }
 
-          void onComplete(A t) => Debug.Log($"{prefixedName} done: {t}");
-          // Check perhaps it is completed immediately.
-          if (returnFuture.value.valueOut(out var a)) onComplete(a);
-          else {
-            Debug.Log($"{prefixedName} starting.");
-            returnFuture.onComplete(onComplete);
-          }
-        }
-        else Debug.Log($"{prefixedName} not running: {typeof(Obj)} is None.");
-      }, canShow ?? (() => true)));
-    }
-
-    public void registerToggle(
-      string name, Ref<bool> r, string comment=null,
-      KeyCodeWithModifiers? shortcut=null,
-      Func<bool> canShow = null
-    ) =>
-      registerToggle(name, () => r.value, v => r.value = v, comment, shortcut, canShow);
-
-    public void registerToggle(
-      string name, Func<bool> getter, Action<bool> setter, string comment=null,
-      KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
-    ) {
-      register($"{name}?", getter, canShow: canShow);
-      register($"Toggle {name}", shortcut: shortcut, run: () => {
-        setter(!getter());
-        return comment == null ? getter().ToString() : $"{comment}: value={getter()}";
-      }, canShow: canShow);
-    }
-    
-    public void registerToggleOpt(
-      string name, Ref<Option<bool>> r, string comment=null,
-      KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
-    ) {
-      register($"{name}?", () => r.value, canShow: canShow);
-      register($"Clear {name}", () => r.value = F.none_, canShow: canShow);
-      register($"Toggle {name}", shortcut: shortcut, canShow: canShow, run: () => {
-        var current = r.value.getOrElse(false);
-        r.value = F.some(!current);
-        return comment == null ? r.value.ToString() : $"{comment}: value={r.value}";
-      });
-    }
-
-    public void registerNumeric<A>(
-      string name, Ref<A> a, Numeric<A> num, A step,
-      ImmutableList<A> quickSetValues = null, Func<bool> canShow = null
-    ) {
-      register($"{name}?", () => a.value, canShow: canShow);
-      register($"{name} += {step}", () => a.value = num.add(a.value, step), canShow: canShow);
-      register($"{name} -= {step}", () => a.value = num.subtract(a.value, step), canShow: canShow);
-      if (quickSetValues != null) {
-        foreach (var value in quickSetValues)
-          register($"{name} = {value}", () => a.value = value, canShow: canShow);
+      void setupButton(ButtonBinding b, ButtonData<ModalInputAPI> data) {
+        b.text.text = data.label;
+        b.button.onClick.RemoveAllListeners();
+        b.button.onClick.AddListener(() => data.onClick(inputApi));
       }
     }
 
-    public void registerNumeric<A>(
-      string name, Ref<A> a, Numeric<A> num,
-      ImmutableList<A> quickSetValues = null, Func<bool> canShow = null
-    ) =>
-      registerNumeric(name, a, num, num.fromInt(1), quickSetValues, canShow: canShow);
-
-    public void registerNumericOpt<A>(
-      string name, Ref<Option<A>> aOpt, A showOnNone, Numeric<A> num,
-      ImmutableList<A> quickSetValues = null, Func<bool> canShow = null
-    ) {
-      register($"Clear {name}", () => aOpt.value = None._, canShow: canShow);
-      register($"{name} opt?", () => aOpt.value, canShow: canShow);
-      registerNumeric(
-        name, Ref.a(
-          () => aOpt.value.getOrElse(showOnNone),
-          v => aOpt.value = v.some()
-        ), num, quickSetValues, canShow: canShow
-      );
-    }
-
-    public void registerCountdown(
-      string name, uint count, Action run, KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
-    ) {
-      var countdown = count;
-      register(name, shortcut: shortcut, run: () => {
-        countdown--;
-        if (countdown == 0) {
-          run();
-          countdown = count;
-          return $"{name} EXECUTED.";
-        }
-        return $"Press me {countdown} more times to execute.";
-      }, canShow: canShow);
-    }
-
-    public void registerEnum<A>(
-      string name, Ref<A> reference, IEnumerable<A> enumerable, string comment = null, Func<bool> canShow = null
-    ) {
-      register($"{name}?", () => {
-        var v = reference.value;
-        return comment == null ? v.ToString() : $"{comment}: value={v}";
-      }, canShow: canShow);
-      foreach (var a in enumerable)
-        register($"{name}={a}", () => {
-          reference.value = a;
-          return comment == null ? a.ToString() : $"{comment}: value={a}";
-        }, canShow: canShow);
-    }
-
-    public delegate bool IsSet<in A>(A value, A flag);
-    public delegate A Set<A>(A value, A flag);
-    public delegate A Unset<A>(A value, A flag);
-
-    /// <param name="name"></param>
-    /// <param name="reference"></param>
-    /// <param name="isSet">Always <code>(value, flag) => (value & flag) != 0</code></param>
-    /// <param name="set">Always <code>(value, flag) => value | flag</code></param>
-    /// <param name="unset">Always <code>(value, flag) => value & ~flag</code></param>
-    /// <param name="comment"></param>
-    /// <param name="canShow"></param>
-    public void registerFlagsEnum<A>(
-      string name, Ref<A> reference,
-      IsSet<A> isSet, Set<A> set, Unset<A> unset,
-      string comment = null, Func<bool> canShow = null
-    ) where A : Enum {
-      var values = EnumUtils.GetValues<A>();
-      register(
-        $"{name}?", 
-        () => 
-          values
-          .Select(a => $"{a}={isSet(reference.value, a)}")
-          .OrderBySafe(_ => _)
-          .mkString(", "),
-        canShow: canShow
-      );
-      register(
-        $"Set all {name}",
-        () => reference.value = values.Aggregate(reference.value, (c, a) => set(c, a)), canShow: canShow
-      );
-      register(
-        $"Clear all {name}",
-        () => reference.value = values.Aggregate(reference.value, (c, a) => unset(c, a)), canShow: canShow
-      );
-      foreach (var a in values) {
-        register($"{name}: toggle {a}", canShow: canShow, run: () =>
-          reference.value = 
-            isSet(reference.value, a) 
-              ? unset(reference.value, a) 
-              : set(reference.value, a)
-        );
-      }
-    }
-
-    public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
-    static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
+    public void rerender() => _rerender();
+  }
     
-    public void registerBools(
-      string name, Ref<bool> reference, string comment = null, Func<bool> canShow = null
-    ) => registerEnum(name, reference, BOOLS, comment, canShow);
-    
-    public void registerBools(
-      string name, Ref<Option<bool>> reference, string comment = null, Func<bool> canShow = null
-    ) => registerEnum(name, reference, OPT_BOOLS, comment, canShow);
+  [Record(GenerateConstructor = ConstructorFlags.Apply)] public sealed partial class ButtonData<A> {
+    public readonly string label;
+    public readonly Action<A> onClick;
+  }
+
+  [PublicAPI] public static partial class ButtonData {
+    public static readonly ButtonData<ModalInputAPI> cancel = a<ModalInputAPI>("Cancel", api => api.closeDialog());
+  }
+
+  [Record] sealed partial class BoundGroup {
+    public readonly string name;
+    public readonly ButtonBinding button;
+    public readonly Action show;
+  }
+
+  [Record] sealed partial class SetUpList {
+    public readonly Action applyFilter;
+    public readonly ISubscription subscription;
+  }
+  
+  [Record] sealed partial class BoundGroups {
+    public readonly ImmutableList<BoundGroup> groups;
+    public readonly SetUpList list;
+  }
+
+  [Record] sealed partial class SelectedGroup {
+    public readonly BoundGroup group;
+    public readonly ImmutableList<ButtonBinding> buttons;
   }
 }
