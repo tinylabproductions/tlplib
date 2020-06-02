@@ -84,7 +84,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     DConsole() {
-      var r = registrarFor(nameof(DConsole), NeverDisposeDisposableTracker.instance);
+      var r = registrarFor(nameof(DConsole), NeverDisposeDisposableTracker.instance, persistent: true);
       r.register("Run GC", GC.Collect);
       r.register("Self-test", () => "self-test");
       r.register("Future Self-test", () => Future.delay(Duration.fromSeconds(1), () => "after 1 s", TimeContext.unscaledTime));
@@ -265,7 +265,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker, bool persistent=true) =>
+    public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker, bool persistent) =>
       new DConsoleRegistrar(this, prefix, tracker, persistent);
     
     public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {
@@ -281,21 +281,21 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       onShow = null;
       maybeOnShow.getOrNull()?.Invoke(this);
 
-      BoundGroups commandGroups = null;
+      BoundButtonList commandButtonList = null;
       var selectedGroup = Option<SelectedGroup>.None;
       var view = binding.clone();
       view.hideModals();
       
       var commandsList = setupList(
         F.none_, view.commands, clearFilterText: true,
-        () => selectedGroup.fold(ImmutableList<ButtonBinding>.Empty, _ => _.buttons)
+        () => selectedGroup.fold(ImmutableList<ButtonBinding>.Empty, _ => _.commandButtons)
       );
       
       APIImpl apiForClosures = null;
       var api = apiForClosures = new APIImpl(view, rerender: rerender);
       Object.DontDestroyOnLoad(view);
 
-      commandGroups = setupGroups(clearCommandsFilterText: true);
+      commandButtonList = setupGroups(clearCommandsFilterText: true);
       
       var logEntryPool = GameObjectPool.a(GameObjectPool.Init<VerticalLayoutLogEntry>.noReparenting(
         nameof(DConsole) + " log entry pool",
@@ -332,33 +332,32 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       current = new Instance(view, layout, logCallback, logEntryPool).some();
 
-      BoundGroups setupGroups(bool clearCommandsFilterText) {
-        var groups = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
+      BoundButtonList setupGroups(bool clearCommandsFilterText) {
+        var groupButtons = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
           var validGroupCommands = commandGroup.Value.Where(cmd => cmd.canShow()).ToArray();
           var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
           Action show = null;
           // ReSharper disable once PossibleNullReferenceException, AccessToModifiedClosure
-          var group = new BoundGroup(commandGroup.Key, button, () => show());
           show = showThisGroup;
           button.text.text = commandGroup.Key;
           button.button.onClick.AddListener(showThisGroup);
-          return group;
+          return button;
 
           void showThisGroup() {
             // ReSharper disable once AccessToModifiedClosure
             var commandButtons = showGroup(view, apiForClosures, commandGroup.Key, validGroupCommands);
-            selectedGroup = Some.a(new SelectedGroup(group, commandButtons));
+            selectedGroup = Some.a(new SelectedGroup(button, commandButtons));
           }
         }).ToImmutableList();
         var list = setupList(
           unlockCode, view.commandGroups, clearFilterText: clearCommandsFilterText, 
-          () => groups.Select(_ => _.button)
+          () => groupButtons
         );
-        return new BoundGroups(groups, list);
+        return new BoundButtonList(groupButtons, list);
       }
 
       void rerender() {
-        var maybeSelectedGroupName = selectedGroup.map(_ => _.@group.name);
+        var maybeSelectedGroupName = selectedGroup.map(_ => _.groupButton.text.text);
         Log.d.info($"Re-rendering DConsole, currently selected group = {maybeSelectedGroupName}.");
 
         // Update command lists.
@@ -375,21 +374,21 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         // Clean up existing groups
         {
           // ReSharper disable once AccessToModifiedClosure
-          var existingGroups = commandGroups;
+          var existingGroups = commandButtonList;
           System.Diagnostics.Debug.Assert(existingGroups != null, nameof(existingGroups) + " != null");
           existingGroups.list.subscription.Dispose();
-          foreach (var existingGroup in existingGroups.groups) {
+          foreach (var existingGroup in existingGroups.buttons) {
             existingGroup.button.destroyGameObject();
           }
         }
-        var groups = commandGroups = setupGroups(clearCommandsFilterText: false);
+        var groups = commandButtonList = setupGroups(clearCommandsFilterText: false);
 
         {
           if (
             maybeSelectedGroupName.valueOut(out var selectedGroupName)
-            && groups.groups.findOut(selectedGroupName, (g, n) => g.name == n, out var group)
+            && groups.buttons.findOut(selectedGroupName, (g, n) => g.text.text == n, out var group)
           ) {
-            group.show();
+            group.button.onClick.Invoke();
             commandsList.applyFilter();
           }
         }
@@ -612,24 +611,20 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public static readonly ButtonData<ModalInputAPI> cancel = a<ModalInputAPI>("Cancel", api => api.closeDialog());
   }
 
-  [Record] sealed partial class BoundGroup {
-    public readonly string name;
-    public readonly ButtonBinding button;
-    public readonly Action show;
-  }
-
+  /// <summary>Set-up button list instance.</summary>
   [Record] sealed partial class SetUpList {
     public readonly Action applyFilter;
     public readonly ISubscription subscription;
   }
   
-  [Record] sealed partial class BoundGroups {
-    public readonly ImmutableList<BoundGroup> groups;
+  /// <summary>List of all the buttons and it's list control instance.</summary>
+  [Record] sealed partial class BoundButtonList {
+    public readonly ImmutableList<ButtonBinding> buttons;
     public readonly SetUpList list;
   }
 
   [Record] sealed partial class SelectedGroup {
-    public readonly BoundGroup group;
-    public readonly ImmutableList<ButtonBinding> buttons;
+    public readonly ButtonBinding groupButton;
+    public readonly ImmutableList<ButtonBinding> commandButtons;
   }
 }
