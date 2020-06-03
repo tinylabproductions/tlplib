@@ -185,14 +185,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static bool indexWhereOut<A>(
-      this IList<A> list, Func<A, bool> predicate, out int index,
+      this IReadOnlyList<A> list, Func<A, bool> predicate, out int index,
       int startAt = 0, int? count = null
     ) => indexWhereOutC(list, predicate, out index, startAt: startAt, count: count);
 
     public static bool indexWhereOutC<A, Coll>(
       this Coll list, Func<A, bool> predicate, out int index, 
       int startAt = 0, int? count = null
-    ) where Coll : IList<A> {
+    ) where Coll : IReadOnlyList<A> {
       var endIdx = startAt + count.GetValueOrDefault(list.Count - startAt);
       for (index = startAt; index < endIdx; index++) {
         if (predicate(list[index])) return true;
