@@ -4,12 +4,13 @@ using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
-  public partial class FunTweenManagerV2 : MonoBehaviour, IMB_OnDestroy {
+  public partial class FunTweenManagerV2 : MonoBehaviour, IMB_OnDestroy, IMB_Awake {
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
     [
@@ -27,7 +28,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     
     public static bool timelineEditorIsOpen;
     
+    bool awakeCalled;
     TweenManager _manager;
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(FunTweenManagerV2));
     
     static string getGameObjectPath(Transform transform) {
       var path = transform.gameObject.name;
@@ -42,7 +46,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
-          var tm = new TweenManager(_timeline.timeline, _time, _looping, context: gameObject);
+          // if gameobject was never enabled, then OnDestroy will not be called :(
+          var maybeParentComponent = (Application.isPlaying && !awakeCalled) ? Some.a<Component>(this) : None._;
+          
+          var tm = new TweenManager(
+            _timeline.timeline, _time, _looping, context: gameObject, 
+            maybeParentComponent: maybeParentComponent
+          );
+          
+          if (maybeParentComponent.isSome) {
+            log.mWarn(
+              $"Trying to create tween manager while tween gameobject was not enabled. " +
+              $"Using a workaround. Context: {tm.context}"
+            );
+          }
+          
           return tm;
         }
 
@@ -89,6 +107,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
     public void OnDestroy() {
       _manager?.stop();
+    }
+
+    public void Awake() {
+      awakeCalled = true;
     }
   }
 

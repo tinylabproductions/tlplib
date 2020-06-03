@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
@@ -138,19 +139,13 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       var progressIdx = 0;
       Action updateProgress = () => progress.value = (float)progressIdx / assets.totalAssets;
 
-      var addedPool = new PCQueue(workers);
-      foreach (var added in assets.newAssets) {
-        updateProgress();
-        addedPool.EnqueueItem(() => {
-          parseFile(pathToGuid, log, added, updatedChildren);
-          lock (data) {
-            progressIdx++;
-            updateProgress();
-          }
-        });
-      }
-      // Block until parallel part is done.
-      addedPool.Shutdown(waitForWorkers: true);
+      Parallel.ForEach(assets.newAssets, added => {
+        parseFile(pathToGuid, log, added, updatedChildren);
+        lock (data) {
+          progressIdx++;
+          updateProgress();
+        }
+      });
 
       foreach (var deleted in assets.deletedAssets) {
         updateProgress();

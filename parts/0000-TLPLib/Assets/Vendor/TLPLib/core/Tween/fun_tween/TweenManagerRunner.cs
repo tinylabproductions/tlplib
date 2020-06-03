@@ -87,7 +87,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         try {
           running = true;
           foreach (var t in current) {
-            if (!t.update(deltaTime)) {
+            // hot loop
+            if (t.maybeParentComponent.isSome && !t.maybeParentComponent.__unsafeGet) {
+              // Parent component was destroyed. Stop playing this tween
+              toRemove.Add(t);
+            }
+            else if (!t.update(deltaTime)) {
               log.error($"Tween stopped, because it threw an exception. Context: {t.context}");
               toRemove.Add(t);
             }
