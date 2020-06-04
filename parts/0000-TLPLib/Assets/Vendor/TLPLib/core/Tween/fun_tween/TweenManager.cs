@@ -1,12 +1,12 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
-using pzd.lib.typeclasses;
+using pzd.lib.functional;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Object = System.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public enum TweenTime : byte {
@@ -18,11 +18,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// your specified terms (for example loop 3 times, run on fixed update).
   /// </summary>
   public partial class TweenManager : IDisposable {
-    [Serializable, Record(GenerateToString = false), InlineProperty]
+    [Serializable, Record(GenerateToString = false), InlineProperty, PublicAPI]
     public partial struct Loop {
       public enum Mode : byte { Normal, YoYo }
 
-      [PublicAPI, HideInInspector] public const uint
+      public const uint
         TIMES_FOREVER = 0,
         TIMES_SINGLE = 1;
 
@@ -42,18 +42,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         return $"Loop({_mode} x {timesS})";
       }
 
-      [PublicAPI] public bool shouldLoop(uint currentIteration) => isForever || currentIteration < times_ - 1;
-      [PublicAPI] public bool isForever => times_ == TIMES_FOREVER;
+      public bool shouldLoop(uint currentIteration) => isForever || currentIteration < times_ - 1;
+      public bool isForever => times_ == TIMES_FOREVER;
 
-      [PublicAPI]
       public static Loop forever(Mode mode = Mode.Normal) => new Loop(TIMES_FOREVER, mode);
-      [PublicAPI]
       public static Loop foreverYoYo => new Loop(TIMES_FOREVER, Mode.YoYo);
-      [PublicAPI]
       public static Loop single => new Loop(TIMES_SINGLE, Mode.Normal);
-      [PublicAPI]
       public static Loop singleYoYo => new Loop(2, Mode.YoYo);
-      [PublicAPI]
       public static Loop times(uint times, Mode mode = Mode.Normal) => new Loop(times, mode);
     }
 
@@ -75,15 +70,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public bool forwards = true;
     [PublicAPI] public Loop looping;
     [PublicAPI] public uint currentIteration;
-    [PublicAPI] public string context;
+    public readonly string context;
+    public readonly Option<Component> maybeParentComponent;
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(TweenManager));
 
-    // TODO: implement me: loop(times, forever, yoyo)
-    // notice: looping needs to take into account that some duration might have passed in the
-    // new iteration
-    public TweenManager(ITweenTimeline timeline, TweenTime time, Loop looping, GameObject context = null) {
+    public TweenManager(
+      ITweenTimeline timeline, TweenTime time, Loop looping, GameObject context = null,
+      // stops playing the tween when parent component gets destroyed
+      // this is a workaround, for missing OnDestroy callback
+      Option<Component> maybeParentComponent = default
+    ) {
       this.timeline = timeline;
       this.time = time;
       this.looping = looping;
+      this.maybeParentComponent = maybeParentComponent;
       this.context = context ? fullName(context.transform) : "no context";
 
       string fullName(Transform t) {
@@ -95,10 +96,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
     }
 
-    [PublicAPI]
-    public void update(float deltaTime) {
+    public bool update(float deltaTime) {
+      try {
+        updateWithScaledTime(deltaTime * timescale);
+        return true;
+      }
+      catch (Exception e) {
+        log.error(e);
+        return false;
+      }
+    }
+
+    void updateWithScaledTime(float deltaTime) {
       if (!forwards) deltaTime *= -1;
-      deltaTime *= timescale;
 
       // ReSharper disable once CompareOfFloatsByEqualityOperator
       if (deltaTime == 0) return;
@@ -128,7 +138,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             default:
               throw new ArgumentOutOfRangeException();
           }
-          update(unusedTime);
+          updateWithScaledTime(unusedTime);
         }
         else {
           __onEndSubject?.push(new TweenCallback.Event(forwards));

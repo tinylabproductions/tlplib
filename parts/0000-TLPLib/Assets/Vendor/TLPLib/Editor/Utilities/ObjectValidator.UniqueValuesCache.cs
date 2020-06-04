@@ -1,8 +1,8 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using GenerationAttributes;
 using Object = UnityEngine.Object;
 
@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       public static readonly IEqualityComparer<object> comparer = new ValidatorComparer();
       
-      private readonly List<CheckedField> checkedFields = new List<CheckedField>();
+      readonly ConcurrentBag<CheckedField> checkedFields = new ConcurrentBag<CheckedField>();
 
       public IEnumerable<DuplicateField> getDuplicateFields() {
         var categories = checkedFields.GroupBy(f => f.category);
@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         checkedFields.Add(new CheckedField(category, identifier, unityObject));
 
       class ValidatorComparer : IEqualityComparer<object> {
-        public bool Equals(object o1, object o2) {
+        bool IEqualityComparer<object>.Equals(object o1, object o2) {
           var o1Null = o1 == null;
           var o2Null = o2 == null;
           if (o1Null && o2Null) return true;
@@ -54,16 +54,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           var t1 = o1.GetType();
           var t2 = o2.GetType();
           if (t1 != t2) return false;
-
-          bool sequenceEquals(IEnumerable _e1, IEnumerable _e2) {
-            var enumerator1 = _e1.GetEnumerator();
-            var enumerator2 = _e2.GetEnumerator();
-            while (enumerator1.MoveNext()) {
-              if (!enumerator2.MoveNext() || !comparer.Equals(enumerator1.Current, enumerator2.Current))
-                return false;
-            }
-            return !enumerator2.MoveNext();
-          }
 
           if (t1.IsValueType) {
             // Compare all fields of a struct to see if they are equal.
@@ -74,6 +64,16 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             return sequenceEquals(e1, e2);
           }
           return o1.Equals(o2);
+
+          static bool sequenceEquals(IEnumerable _e1, IEnumerable _e2) {
+            var enumerator1 = _e1.GetEnumerator();
+            var enumerator2 = _e2.GetEnumerator();
+            while (enumerator1.MoveNext()) {
+              if (!enumerator2.MoveNext() || !comparer.Equals(enumerator1.Current, enumerator2.Current))
+                return false;
+            }
+            return !enumerator2.MoveNext();
+          }
         }
 
         // force to run Equals every time by returning the same hash

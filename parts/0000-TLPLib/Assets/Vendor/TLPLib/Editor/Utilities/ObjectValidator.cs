@@ -1,5 +1,7 @@
-﻿﻿using System.Linq;
-using System.Reflection;
+﻿// From my experiments profiling doesn't add any overhead but it might have issues with multithreading so it is
+// turned off by default.
+//#define DO_PROFILE
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,30 +10,42 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-
+using System.Threading;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using UnityEngine.Events;
 using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
-using com.tinylabproductions.TLPLib.validations;
+using GenerationAttributes;
+using pzd.lib.collection;
 using pzd.lib.exts;
 using pzd.lib.functional;
- using pzd.lib.utils;
- using UnityEngine.Playables;
+using pzd.lib.utils;
+using UnityEngine.Playables;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
-    public static readonly Action<Progress> DEFAULT_ON_PROGRESS = progress => {
-      // calling DisplayProgressBar too often affects performance
-      if (progress.currentIdx % 100 == 0) {
-        EditorUtility.DisplayProgressBar(
-          "Validating Objects", $"{progress.currentIdx} / {progress.total}", progress.ratio
-        );
-      }
-    };
+    public delegate void AddError(Func<Error> createError);
+    
+    public static Action<Progress> createOnProgress() {
+      const float TIME_DIFF = 1f / 30;
+      var nextProgressAt = 0f;
+      return progress => {
+        // calling DisplayProgressBar too often affects performance
+        var currentTime = Time.realtimeSinceStartup;
+        if (currentTime >= nextProgressAt) {
+          nextProgressAt = currentTime + TIME_DIFF;
+          EditorUtility.DisplayProgressBar(
+            "Validating Objects", progress.text, progress.ratio
+          );
+        }
+      };
+    }
+
+    public static Action<Progress> DEFAULT_ON_PROGRESS => createOnProgress();
     public static readonly Action DEFAULT_ON_FINISH = EditorUtility.ClearProgressBar;
     
     #region Menu Items
@@ -66,10 +80,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var errors = check(
         new CheckContext("Selection"), Selection.objects,
         None._,
-        progress => EditorUtility.DisplayProgressBar(
+        onProgress: progress => EditorUtility.DisplayProgressBar(
           "Validating Objects", "Please wait...", progress.ratio
         ),
-        EditorUtility.ClearProgressBar, UniqueValuesCache.create.some()
+        onFinish: EditorUtility.ClearProgressBar, 
+        uniqueValuesCache: UniqueValuesCache.create.some()
       );
       showErrors(errors);
     }
@@ -127,7 +142,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var objects = getSceneObjects(scene);
       var errors = check(
         new CheckContext(scene.name), objects, customValidatorOpt, 
-        onProgress, onFinish
+        onProgress: onProgress, onFinish: onFinish
       );
       return errors;
     }
@@ -138,7 +153,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Action<Progress> onProgress = null, Action onFinish = null
     ) {
       var stopwatch = Stopwatch.StartNew();
-      var errors = checkScene(scene, customValidatorOpt, onProgress, onFinish);
+      var errors = checkScene(
+        scene, customValidatorOpt, 
+        onProgress: onProgress, onFinish: onFinish
+      );
       return F.t(errors, stopwatch.Elapsed);
     }
 
@@ -153,7 +171,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       return check(
         // and instead of &, because unity does not show '&' in some windows
         new CheckContext("Assets and Deps"),
-        dependencies, customValidatorOpt, onProgress, onFinish, UniqueValuesCache.create.some()
+        dependencies, customValidatorOpt, 
+        onProgress: onProgress, onFinish: onFinish, 
+        uniqueValuesCache: UniqueValuesCache.create.some()
       );
     }
 
@@ -181,38 +201,116 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     public static ImmutableList<Error> check(
       CheckContext context, ICollection<Object> objects,
       Option<CustomObjectValidator> customValidatorOpt = default,
-      Action<Progress> onProgress = null, Action onFinish = null,
+      Action<Progress> onProgress = null,
+      Action onFinish = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
       Option.ensureValue(ref customValidatorOpt);
       Option.ensureValue(ref uniqueValuesCache);
 
-      var errors = ImmutableList<Error>.Empty;
+      var jobController = new JobController();
+      var errors = new List<Error>();
+      // Creating errors might involve Unity API thus we defer it to main thread.
+      void addError(Func<Error> e) => jobController.enqueueMainThreadJob(() => errors.Add(e()));
+      
+      var structureCache = new StructureCache(
+        getFieldsForType: (type, cache) => 
+          type.type.getAllFields().Select(fi => new StructureCache.Field(fi, cache)).toImmutableArrayC()
+      );
+      var unityTags = UnityEditorInternal.InternalEditorUtility.tags.ToImmutableHashSet();
       var scanned = 0;
-      foreach (var o in objects) {
-        onProgress?.Invoke(new Progress(scanned++, objects.Count));
 
+      var componentsDuplicated = objects.SelectMany(o => {
         if (o is GameObject go) {
-          foreach (var transform in go.transform.andAllChildrenRecursive()) {
-            var components = transform.GetComponents<Component>();
-            foreach (var c in components) {
-              errors =
-                c
-                ? errors.AddRange(checkComponent(context, c, customValidatorOpt, uniqueValuesCache))
-                : errors.Add(Error.missingComponent(transform.gameObject));
-            }
+          return go.transform
+            .andAllChildrenRecursive()
+            .SelectMany(transform => transform.GetComponents<Component>().collect(c => {
+              if (c) return Some.a((Object) c);
+              else errors.Add(Error.missingComponent(transform.gameObject));
+              return None._;
+            }))
+            .ToArray();
+        }
+        else {
+          return new[] { o };
+        }
+      }).ToArray();
+
+      var components = componentsDuplicated.Distinct().ToArray();
+      
+      // Debug.Log($"All components: {componentsDuplicated.Length} distinct: {components.Length}");
+
+      // It runs faster if we put everything on one thread
+      // Increased performance when validating all prefabs: 26s -> 19s
+      // single thread of this runs faster than checkComponentMainThreadPart
+      // checkComponentMainThreadPart completes in 16s
+      var t = new Thread(() => {
+        foreach (var component in components) {
+          checkComponentThreadSafePart(
+            context: context, component: component, customObjectValidatorOpt: customValidatorOpt, addError: addError, 
+            structureCache: structureCache, jobController: jobController, unityTags: unityTags, 
+            uniqueCache: uniqueValuesCache
+          );
+        }
+      });
+      t.Start();
+      
+      foreach (var component in components) {
+        onProgress?.Invoke(new Progress(scanned++, components.Length, () => $"[{activeThreads("Main")}] {jobController}"));
+        checkComponentMainThreadPart(context, component, addError, structureCache);
+      }
+      
+      onProgress?.Invoke(new Progress(components.Length, components.Length, () => jobController.ToString()));
+      
+      // Wait till jobs are completed
+      while (true) {
+        progressFrequent();
+        var action = jobController.serviceMainThread(launchUnderBatchSize: true);
+        if (action == JobController.MainThreadAction.RerunAfterDelay) {
+          Thread.Sleep(10);
+        }
+        else if (action == JobController.MainThreadAction.RerunImmediately) {
+          // do nothing
+        }
+        else if (action == JobController.MainThreadAction.Halt) {
+          progressFrequent();
+          if (t.IsAlive) {
+            Thread.Sleep(10);
+          }
+          else {
+            break;
           }
         }
         else {
-          errors = errors.AddRange(checkComponent(context, o, customValidatorOpt, uniqueValuesCache));
+          throw new Exception($"Unknown value {action}");
+        }
+
+        void progressFrequent() {
+          onProgress?.Invoke(new Progress(
+            jobController.jobsDone.toIntClamped(),
+            jobController.jobsMax.toIntClamped(), 
+            () => $"[{activeThreads("Loop")}] {jobController}"
+          ));
         }
       }
 
-      foreach (var valuesCache in uniqueValuesCache)
+      string activeThreads(string currentName) => 
+        t.IsAlive ? currentName + ", Thread" : currentName;
+
+      var exceptionCount = jobController.jobExceptions.Count;
+      if (exceptionCount != 0) {
+        throw new AggregateException(
+          $"Job controller had {exceptionCount} exceptions, returning max 25!",
+          jobController.jobExceptions.Take(25)
+        );
+      }
+
+      foreach (var valuesCache in uniqueValuesCache) {
         foreach (var df in valuesCache.getDuplicateFields())
           foreach (var obj in df.objectsWithThisValue) {
-            errors = errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context));
+            errors.Add(Error.duplicateUniqueValueError(df.category, df.fieldValue, obj, context));
           }
+      }
 
       onFinish?.Invoke();
 
@@ -223,18 +321,34 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// <summary>
     /// Check one component non-recursively. 
     /// </summary>
-    [PublicAPI]
-    public static ImmutableList<Error> checkComponent(
-      CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt, 
+    static void checkComponentThreadSafePart(
+      CheckContext context, Object component, Option<CustomObjectValidator> customObjectValidatorOpt,
+      AddError addError, StructureCache structureCache, JobController jobController,
+      ImmutableHashSet<string> unityTags,
       Option<UniqueValuesCache> uniqueCache = default
     ) {
       Option.ensureValue(ref uniqueCache);
-      var errors = ImmutableList<Error>.Empty;
+      validateFields(
+        containingComponent: component,
+        objectBeingValidated: component,
+        createError: new ErrorFactory(component, context),
+        addError, structureCache, jobController, unityTags,
+        customObjectValidatorOpt: customObjectValidatorOpt,
+        uniqueValuesCache: uniqueCache
+      );
+    }
 
+    static void checkComponentMainThreadPart(
+      CheckContext context, Object component, AddError addError, StructureCache structureCache
+    ) {
       {
-        if (component is MonoBehaviour mb) {
-          var componentType = component.GetType();
-          errors = errors.AddRange(checkRequireComponents(context: context, go: mb.gameObject, type: componentType));
+        if (component is MonoBehaviour mb)
+#if DO_PROFILE
+          using (new ProfiledScope(nameof(checkRequireComponents)))
+#endif
+        {
+          var componentType = structureCache.getTypeFor(component.GetType());
+          checkRequireComponents(context: context, go: mb.gameObject, type: componentType.type, addError);
           // checkRequireComponents should be called every time
           // if (!context.checkedComponentTypes.Contains(item: componentType)) {
           //   errors = errors.AddRange(items: checkComponentType(context: context, go: mb.gameObject, type: componentType));
@@ -243,35 +357,50 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      var serObj = new SerializedObject(obj: component);
-      var sp = serObj.GetIterator();
+#if DO_PROFILE
+      using (new ProfiledScope("Serialized object"))
+#endif
+      {
+        SerializedObject serObj;
 
-      var isPlayableDirector = component is PlayableDirector;
-
-      while (sp.NextVisible(enterChildren: true)) {
-        if (isPlayableDirector && sp.name == "m_SceneBindings") {
-          // skip Scene Bindings of PlayableDirector, because they often have missing references
-          if (!sp.NextVisible(enterChildren: false)) break;
+#if DO_PROFILE
+        using (new ProfiledScope("Create serialized object"))
+#endif
+        {
+          serObj = new SerializedObject(obj: component);
         }
-        if (
-          sp.propertyType == SerializedPropertyType.ObjectReference
-          && sp.objectReferenceValue == null
-          && sp.objectReferenceInstanceIDValue != 0
-        ) errors = errors.Add(value: Error.missingReference(
-          o: component, property: sp.propertyPath, context: context
-        ));
+
+        SerializedProperty sp;
+
+#if DO_PROFILE
+        using (new ProfiledScope("Get iterator"))
+#endif
+        {
+          sp = serObj.GetIterator();
+        }
+
+        var isPlayableDirector = component is PlayableDirector;
+
+#if DO_PROFILE
+        using (new ProfiledScope("Iteration"))
+#endif
+        {
+          while (sp.NextVisible(enterChildren: true)) {
+            if (isPlayableDirector && sp.name == "m_SceneBindings") {
+              // skip Scene Bindings of PlayableDirector, because they often have missing references
+              if (!sp.NextVisible(enterChildren: false)) break;
+            }
+
+            if (
+              sp.propertyType == SerializedPropertyType.ObjectReference
+              && !sp.objectReferenceValue
+              && sp.objectReferenceInstanceIDValue != 0
+            ) {
+              addError(() => Error.missingReference(o: component, property: sp.propertyPath, context: context));
+            }
+          }
+        }
       }
-
-      var fieldErrors = validateFields(
-        containingComponent: component,
-        objectBeingValidated: component,
-        createError: new ErrorFactory(component, context),
-        customObjectValidatorOpt: customObjectValidatorOpt,
-        uniqueValuesCache: uniqueCache
-      );
-      errors = errors.AddRange(items: fieldErrors);
-
-      return errors;
     }
 
     static IEnumerable<Error> checkUnityEvent(
@@ -296,178 +425,246 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
     }
 
-    public struct FieldHierarchyStr {
+    public readonly struct FieldHierarchyStr {
       public readonly string s;
       public FieldHierarchyStr(string s) { this.s = s; }
       public override string ToString() => $"{nameof(FieldHierarchy)}({s})";
     }
 
-    class FieldHierarchy {
-      public readonly Stack<string> stack = new Stack<string>();
+    [Record] sealed partial class FieldHierarchy {
+      readonly ImmutableStack<string> stack;
+      
+      public FieldHierarchy push(string s) => new FieldHierarchy(stack.Push(s));
 
       public FieldHierarchyStr asString() => new FieldHierarchyStr(stack.Reverse().mkString('.'));
     }
 
-    static IEnumerable<Error> validateFields(
+    static void validateFields(
       Object containingComponent,
       object objectBeingValidated,
       IErrorFactory createError,
+      AddError addError,
+      StructureCache structureCache,
+      JobController jobController,
+      ImmutableHashSet<string> unityTags,
       Option<CustomObjectValidator> customObjectValidatorOpt,
       FieldHierarchy fieldHierarchy = null,
       Option<UniqueValuesCache> uniqueValuesCache = default
     ) {
+#if DO_PROFILE
+      using var _ = new ProfiledScope(nameof(validateFields));
+#endif
       Option.ensureValue(ref uniqueValuesCache);
-      fieldHierarchy ??= new FieldHierarchy();
+      fieldHierarchy ??= new FieldHierarchy(ImmutableStack<string>.Empty);
 
       if (objectBeingValidated is OnObjectValidate onObjectValidatable) {
-        // Try because custom validations can throw exceptions.
-        var validateResult = F.doTry(() => 
-          // Force strict enumerable evaluation, because it might throw an exception while evaluating.
-          onObjectValidatable.onObjectValidate(containingComponent).ToArray()
-        );
-        if (validateResult.isSuccess) {
-          foreach (var error in validateResult.__unsafeGet) {
-            yield return createError.custom(fieldHierarchy.asString(), error, true);
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(OnObjectValidate)))
+#endif
+        {
+          if (onObjectValidatable.onObjectValidateIsThreadSafe) run();
+          else jobController.enqueueMainThreadJob(run);
+
+          void run() {
+            // Try because custom validations can throw exceptions.
+            try {
+              var objectErrors = onObjectValidatable.onObjectValidate(containingComponent);
+              foreach (var error in objectErrors) {
+                addError(() => createError.custom(fieldHierarchy.asString(), error, true));
+              }
+            }
+            catch (Exception error) {
+              addError(() => createError.exceptionInCustomValidator(fieldHierarchy.asString(), error));
+            }
           }
-        }
-        else {
-          var error = validateResult.__unsafeException;
-          yield return createError.exceptionInCustomValidator(fieldHierarchy.asString(), error);
         }
       }
 
       {
         if (objectBeingValidated is UnityEventBase unityEvent) {
-          var errors = checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent);
-          foreach (var error in errors) yield return error;
+          // Unity events use unity API
+          jobController.enqueueMainThreadJob(() => {
+#if DO_PROFILE
+            using (new ProfiledScope(nameof(checkUnityEvent)))
+#endif
+            {
+              foreach (var error in checkUnityEvent(createError, fieldHierarchy.asString(), unityEvent)) {
+                addError(() => error);
+              }
+            }
+          });
         }
       }
 
+      // todo: mark if it's thread safe
       foreach (var customValidator in customObjectValidatorOpt) {
-        foreach (var _err in customValidator(containingComponent, objectBeingValidated)) {
-          yield return createError.custom(fieldHierarchy.asString(), _err, true);
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(customValidator)))
+#endif
+        {
+          if (customValidator.isThreadSafe) run();
+          else jobController.enqueueMainThreadJob(run);
+
+          void run() {
+            var customValidatorErrors =
+              customValidator.validate(containingComponent, objectBeingValidated)
+              .Select(_err => createError.custom(fieldHierarchy.asString(), _err, true));
+            foreach (var error in customValidatorErrors) addError(() => error);
+          }
         }
       }
 
-      var fields = getFilteredFields(objectBeingValidated);
-      foreach (var fi in fields) {
-        fieldHierarchy.stack.Push(fi.Name);
-        var fieldValue = fi.GetValue(objectBeingValidated);
-        var hasNonEmpty = fi.hasAttribute<NonEmptyAttribute>();
-        
-        foreach (var cache in uniqueValuesCache) {
-          foreach (var attribute in fi.getAttributes<UniqueValue>()) {
-            cache.addCheckedField(attribute.category, fieldValue, containingComponent);
-          }
-        }
-        if (fieldValue is string s) {
-          if (fi.getAttributes<UnityTagAttribute>().nonEmptyAllocating()) {
-            if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(s)) {
-              yield return createError.badTextFieldTag(fieldHierarchy.asString());
+      ImmutableArrayC<StructureCache.Field> fields;
+#if DO_PROFILE
+      using (new ProfiledScope("get object fields"))
+#endif
+      {
+        fields = structureCache.getFieldsFor(objectBeingValidated);
+      }
+
+      ImmutableHashSet<string> blacklistedFields;
+#if DO_PROFILE
+      using (new ProfiledScope("get blacklisted object fields"))
+#endif
+      {
+        blacklistedFields = 
+          objectBeingValidated is ISkipObjectValidationFields svf
+          ? svf.blacklistedFields().ToImmutableHashSet()
+          : ImmutableHashSet<string>.Empty;
+      }
+
+      foreach (var field in fields) {
+        validateField(
+          containingComponent, objectBeingValidated, createError, addError, structureCache, jobController, unityTags,
+          customObjectValidatorOpt, fieldHierarchy, uniqueValuesCache, blacklistedFields, field
+        );
+      }
+    }
+
+    static void validateField(
+      Object containingComponent, object objectBeingValidated, IErrorFactory createError,
+      AddError addError, StructureCache structureCache, JobController jobController,
+      ImmutableHashSet<string> unityTags, Option<CustomObjectValidator> customObjectValidatorOpt,
+      FieldHierarchy parentFieldHierarchy, Option<UniqueValuesCache> uniqueValuesCache, 
+      ImmutableHashSet<string> blacklistedFields,
+      StructureCache.Field field
+    ) {
+#if DO_PROFILE
+      using var _ = new ProfiledScope(nameof(validateField));
+#endif
+      if (blacklistedFields.Contains(field.fieldInfo.Name)) return;
+
+      var fieldValue = field.fieldInfo.GetValue(objectBeingValidated);
+      var fieldHierarchy = parentFieldHierarchy.push(field.fieldInfo.Name);
+
+      {
+        if (uniqueValuesCache.valueOut(out var cache)) {
+#if DO_PROFILE
+          using (new ProfiledScope(nameof(uniqueValuesCache)))
+#endif
+          {
+            foreach (var attribute in field.uniqueValueAttributes) {
+              cache.addCheckedField(attribute.category, fieldValue, containingComponent);
             }
           }
-          
-          if (s.isEmpty() && hasNonEmpty)
-            yield return createError.emptyString(fieldHierarchy.asString());
         }
-        if (fi.isSerializable()) {
-          var hasNotNull = fi.hasAttribute<NotNullAttribute>();
-          // Sometimes we get empty unity object. Equals catches that
-          if (fieldValue == null || fieldValue.Equals(null)) {
-            if (hasNotNull) yield return createError.nullField(fieldHierarchy.asString());
+      }
+      if (fieldValue is string s) {
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(field.unityTagAttributes)))
+#endif
+        {
+          var unityTagAttributes = field.unityTagAttributes;
+          if (unityTagAttributes.nonEmpty()) {
+            if (!unityTags.Contains(s)) {
+              addError(() => createError.badTextFieldTag(fieldHierarchy.asString()));
+            }
           }
-          else {
-            if (fieldValue is IList list) {
-              if (list.Count == 0 && hasNonEmpty) {
-                yield return createError.emptyCollection(fieldHierarchy.asString());
+        }
+
+        if (field.hasNonEmptyAttribute && s.isEmpty()) {
+          addError(() => createError.emptyString(fieldHierarchy.asString()));
+        }
+      }
+
+      if (field.isSerializable) {
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(field.isSerializable)))
+#endif
+        {
+          void addNotNullError() => addError(() => createError.nullField(fieldHierarchy.asString()));
+
+          switch (fieldValue) {
+            case null:
+              if (field.hasNotNullAttribute) addNotNullError();
+              break;
+            // Sometimes we get empty unity object.
+            case Object unityObj:
+              if (field.hasNotNullAttribute) {
+                jobController.enqueueMainThreadJob(() => {
+                  if (!unityObj) addNotNullError();
+                });
               }
-              var fieldValidationResults = validateListElementsFields(
-                containingComponent, list, fi, hasNotNull,
-                fieldHierarchy, createError, customObjectValidatorOpt,
-                uniqueValuesCache
-              );
-              foreach (var _err in fieldValidationResults) yield return _err;
-            }
-            else {
-              var fieldType = fi.FieldType;
-              if (
-                typeIsSerializableAsValue(fieldType)
-              ) {
-                var validationErrors = validateFields(
-                  containingComponent, fieldValue, createError,
-                  customObjectValidatorOpt, fieldHierarchy,
-                  uniqueValuesCache
+
+              break;
+            case IList list: {
+              if (list.Count == 0) {
+                if (field.hasNonEmptyAttribute) {
+                  addError(() => createError.emptyCollection(fieldHierarchy.asString()));
+                }
+              }
+              else {
+                validateListElementsFields(
+                  containingComponent, list, field.hasNotNullAttribute,
+                  fieldHierarchy, createError, addError, structureCache, jobController, 
+                  unityTags, customObjectValidatorOpt, uniqueValuesCache
                 );
-                foreach (var _err in validationErrors) yield return _err;
               }
+
+              break;
+            }
+            default: {
+              if (field.type.isSerializableAsValue || field.isSerializableAsReference) {
+                validateFields(
+                  containingComponent, fieldValue, createError, addError, structureCache, jobController, 
+                  unityTags, customObjectValidatorOpt, fieldHierarchy, uniqueValuesCache
+                );
+              }
+
+              break;
             }
           }
         }
-        fieldHierarchy.stack.Pop();
       }
     }
-    
-    static bool typeIsSerializableAsValue(Type type) =>
-      type.IsPrimitive || type == typeof(string)
-      || 
-      (
-        type.hasAttribute<SerializableAttribute>()
-        &&
-        // sometimes serializable attribute is added on ScriptableObject, we want to skip that
-        !unityObjectType.IsAssignableFrom(type)
-      );
 
-    static IEnumerable<FieldInfo> getFilteredFields(object o) {
-      if (o == null) return Enumerable.Empty<FieldInfo>();
-      var fields = o.GetType().getAllFields();
-      foreach (var sv in (o as ISkipObjectValidationFields).opt()) {
-        var blacklisted = sv.blacklistedFields();
-        return fields.Where(fi => !blacklisted.Contains(fi.Name));
-      }
-      return fields;
-    }
-
-    static readonly Type unityObjectType = typeof(Object);
-
-    static IEnumerable<Error> validateListElementsFields(
-      Object containingComponent, IList list, FieldInfo listFieldInfo,
+    static void validateListElementsFields(
+      Object containingComponent, IList list,
       bool hasNotNull, FieldHierarchy fieldHierarchy,
-      IErrorFactory createError,
+      IErrorFactory createError, AddError addError, StructureCache structureCache,
+      JobController jobController, ImmutableHashSet<string> unityTags,
       Option<CustomObjectValidator> customObjectValidatorOpt,
       Option<UniqueValuesCache> uniqueValuesCache
     ) {
-      var listItemType = getListItemType(list);
-      var listItemIsUnityObject = unityObjectType.IsAssignableFrom(listItemType);
+#if DO_PROFILE
+      using var _ = new ProfiledScope(nameof(validateListElementsFields));
+#endif
+      var listItemType = structureCache.getListItemType(list);
 
-      if (listItemIsUnityObject) {
+      if (listItemType.isUnityObject) {
         if (hasNotNull && list.Contains(null))
-          yield return createError.nullField(fieldHierarchy.asString());
+          addError(() => createError.nullField(fieldHierarchy.asString()));
       }
-      else if (typeIsSerializableAsValue(listItemType)) {
+      else if (listItemType.isSerializableAsValue) {
         var index = 0;
         foreach (var listItem in list) {
-          fieldHierarchy.stack.Push($"[{index}]");
-          var validationResults = validateFields(
-            containingComponent, listItem, createError,
-            customObjectValidatorOpt, fieldHierarchy,
-            uniqueValuesCache
+          validateFields(
+            containingComponent, listItem, createError, addError, structureCache, jobController, 
+            unityTags, customObjectValidatorOpt, fieldHierarchy.push($"[{index}]"), uniqueValuesCache
           );
-          foreach (var _err in validationResults) yield return _err;
-          fieldHierarchy.stack.Pop();
           index++;
         }
       }
-    }
-    
-    static Type getListItemType(IList list) {
-      var type = list.GetType();
-      if (type.IsGenericType) {
-        return type.GenericTypeArguments[0];
-      }
-      if (type.IsArray) {
-        return type.GetElementType();
-      }
-      throw new Exception($"Could not determine IList element type for {type.FullName}");
     }
 
     static ImmutableList<Object> getSceneObjects(Scene scene) =>
@@ -477,6 +674,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       .ToImmutableList();
 
     static string fullPath(Object o) {
+      if (o == null) return "null";
       var go = o as GameObject;
       return
         go && go.transform.parent != null
@@ -485,9 +683,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
   }
 
-  public static class CustomObjectValidatorExts {
+  [PublicAPI] public static class CustomObjectValidatorExts {
     public static ObjectValidator.CustomObjectValidator join(
       this ObjectValidator.CustomObjectValidator a, ObjectValidator.CustomObjectValidator b
-    ) => (containingObject, obj) => a(containingObject, obj).Concat(b(containingObject, obj));
+    ) => new JoinedCustomValidator(a, b);
+  }
+
+  class JoinedCustomValidator : ObjectValidator.CustomObjectValidator {
+    readonly ObjectValidator.CustomObjectValidator a, b;
+
+    public JoinedCustomValidator(ObjectValidator.CustomObjectValidator a, ObjectValidator.CustomObjectValidator b) {
+      this.a = a;
+      this.b = b;
+    }
+
+    public bool isThreadSafe => a.isThreadSafe && b.isThreadSafe;
+    
+    public IEnumerable<ErrorMsg> validate(Object containingObject, object obj) => 
+      a.validate(containingObject, obj).Concat(b.validate(containingObject, obj));
   }
 }

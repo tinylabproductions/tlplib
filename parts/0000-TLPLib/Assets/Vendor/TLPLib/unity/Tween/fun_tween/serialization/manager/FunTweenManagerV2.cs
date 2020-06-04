@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
-  public partial class FunTweenManagerV2 : MonoBehaviour {
+  public partial class FunTweenManagerV2 : MonoBehaviour, IMB_OnDestroy, IMB_Awake {
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
     [
@@ -17,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       // timeline editor fails to update if we edit it from multiple places
       HideIf(nameof(timelineEditorIsOpen), animate: false)
     ] 
-    SerializedTweenTimelineV2 _timeline;
+    SerializedTweenTimelineV2 _timeline = new SerializedTweenTimelineV2();
 
     public SerializedTweenTimelineV2 serializedTimeline => _timeline;
     public TweenTimeline timeline => _timeline.timeline;
@@ -25,7 +28,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     
     public static bool timelineEditorIsOpen;
     
+    bool awakeCalled;
     TweenManager _manager;
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(FunTweenManagerV2));
     
     static string getGameObjectPath(Transform transform) {
       var path = transform.gameObject.name;
@@ -40,7 +46,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
-          var tm = new TweenManager(_timeline.timeline, _time, _looping, context: gameObject);
+          // if gameobject was never enabled, then OnDestroy will not be called :(
+          var maybeParentComponent = (Application.isPlaying && !awakeCalled) ? Some.a<Component>(this) : None._;
+          
+          var tm = new TweenManager(
+            _timeline.timeline, _time, _looping, context: gameObject, 
+            maybeParentComponent: maybeParentComponent
+          );
+          
+          if (maybeParentComponent.isSome) {
+            log.mWarn(
+              $"Trying to create tween manager while tween gameobject was not enabled. " +
+              $"Using a workaround. Context: {tm.context}"
+            );
+          }
+          
           return tm;
         }
 
@@ -68,6 +88,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
 
     public void run(Action action) {
+      if (!this) return;
       switch (action) {
         case Action.PlayForwards:                 manager.play(forwards: true);    break;
         case Action.PlayBackwards:                manager.play(forwards: false);   break;
@@ -83,30 +104,41 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         default: throw new ArgumentOutOfRangeException(nameof(action), action, null);
       }
     }
+
+    public void OnDestroy() {
+      _manager?.stop();
+    }
+
+    public void Awake() {
+      awakeCalled = true;
+    }
   }
 
   [Serializable]
   public partial class SerializedTweenTimelineV2 {
     [Serializable]
     public partial class Element {
+      // Don't use nameof, because those fields exist only in UNITY_EDITOR
+      const string CHANGE = "editorSetDirty";
+      
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized
       [SerializeField, PublicAccessor] float _startsAt;
       [SerializeField, HideInInspector] int _timelineChannelIdx;
-      [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty] 
+      [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] 
       ISerializedTweenTimelineElementBase _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
+
+      public bool isValid => _element?.isValid ?? false;
     }
     
     #region Unity Serialized Fields
-
 #pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
-    [SerializeField, NotNull, OnValueChanged(nameof(invalidate))] Element[] _elements;
+    [SerializeField, NotNull, OnValueChanged(nameof(invalidate))] Element[] _elements = new Element[0];
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
-
     #endregion
 
     TweenTimeline _timeline;
@@ -116,7 +148,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 #if UNITY_EDITOR
         if (!Application.isPlaying && _timeline != null) {
           foreach (var element in _elements) {
-            if (element.element.__editorDirty) {
+            if (element.__editorDirty) {
               element.invalidate();
               _timeline = null;
             }
@@ -126,8 +158,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         if (_timeline == null) {
           var builder = new TweenTimeline.Builder();
           foreach (var element in _elements) {
-            var timelineElement = element.element.toTimelineElement();
-            builder.insert(element.startsAt, timelineElement);
+            if (element.isValid) {
+              var timelineElement = element.element.toTimelineElement();
+              builder.insert(element.startsAt, timelineElement);
+            }
+            else if (Application.isPlaying) {
+              // TODO: add context
+              Log.d.error("Element in animation is invalid. Skipping broken element.", this);
+            }
           }
           _timeline = builder.build();
 #if UNITY_EDITOR
@@ -169,6 +207,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     float duration { get; }
     void trySetDuration(float duration);
     Object getTarget();
+    bool isValid { get; }
 
 #if UNITY_EDITOR
     bool __editorDirty { get; }

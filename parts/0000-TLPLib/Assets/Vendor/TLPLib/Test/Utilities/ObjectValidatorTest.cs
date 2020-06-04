@@ -128,10 +128,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     class OnObjectValidateThrowException : MonoBehaviour, OnObjectValidate {
+      public bool onObjectValidateIsThreadSafe => true;
       public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) { throw new Exception("I'm broken"); }
     }
 
     class OnObjectValidateThrowLazyException : MonoBehaviour, OnObjectValidate {
+      public bool onObjectValidateIsThreadSafe => true;
       public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
         yield return new ErrorMsg("test1");
         throw new Exception("I'm broken");
@@ -139,6 +141,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     class OnObjectValidateReturnsNull : MonoBehaviour, OnObjectValidate {
+      public bool onObjectValidateIsThreadSafe => true;
       public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) => null;
     }
 

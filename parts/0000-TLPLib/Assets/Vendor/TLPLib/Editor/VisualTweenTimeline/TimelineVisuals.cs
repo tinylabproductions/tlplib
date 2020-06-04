@@ -192,7 +192,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var indicatorColor = Color.green;
   
       foreach (var currNode in funNodes) {
-        if (currNode.element.element != null) {
+        {
           if (!currNode.isCallback) {
             var mouseCursor = Event.current.alt
               ? MouseCursor.Pan 
@@ -282,10 +282,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             );
           }
 
-          if (!currNode.isCallback) {
-            if (!currNode.element.element.getTarget()) {
-              drawOutline(boxRect, Color.red);
-            }
+          if (!currNode.element.isValid) {
+            drawOutline(boxRect, Color.red);
           }
 
           var style = new GUIStyle("Label");

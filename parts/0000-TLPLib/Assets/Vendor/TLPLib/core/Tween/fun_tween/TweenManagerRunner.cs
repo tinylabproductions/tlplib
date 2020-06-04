@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -34,6 +35,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public static bool hasActiveInstance => _instance;
 
     [PublicAPI] public UnityPhase phase { get; private set; }
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(TweenManagerRunner));
 
     class Tweens {
       readonly HashSet<TweenManager>
@@ -53,8 +56,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             timeline.applyStateAt(timeline.timePassed);
           }
           catch (Exception e) {
-            Log.d.error("Error trying to apply state at " + tm.context + ": " + e.Message);
-            Log.d.error(e);
+            log.error("Error trying to apply state at " + tm.context + ": " + e.Message);
+            log.error(e);
             return;
           }
         }
@@ -83,8 +86,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public void runOn(float deltaTime) {
         try {
           running = true;
-          foreach (var t in current)
-            t.update(deltaTime);
+          foreach (var t in current) {
+            // hot loop
+            if (t.maybeParentComponent.isSome && !t.maybeParentComponent.__unsafeGet) {
+              // Parent component was destroyed. Stop playing this tween
+              toRemove.Add(t);
+            }
+            else if (!t.update(deltaTime)) {
+              log.error($"Tween stopped, because it threw an exception. Context: {t.context}");
+              toRemove.Add(t);
+            }
+          }
         }
         finally {
           running = false;

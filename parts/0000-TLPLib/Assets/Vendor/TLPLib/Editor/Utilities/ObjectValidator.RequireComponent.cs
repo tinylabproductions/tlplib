@@ -1,32 +1,17 @@
 ﻿﻿using System.Linq;
-using System.Reflection;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
-
 using com.tinylabproductions.TLPLib.Extensions;
-using UnityEngine.Events;
-using JetBrains.Annotations;
-using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
-using com.tinylabproductions.TLPLib.validations;
 using pzd.lib.exts;
-using pzd.lib.functional;
-using UnityEngine.Playables;
-using Object = UnityEngine.Object;
 
-namespace com.tinylabproductions.TLPLib.Utilities.Editor {
+ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
     static readonly Dictionary<Type, Type[]> requireComponentCache = new Dictionary<Type, Type[]>();
 
-    public static ImmutableList<Error> checkRequireComponents(
-      CheckContext context, GameObject go, Type type
+    public static void checkRequireComponents(
+      CheckContext context, GameObject go, Type type, AddError addError
     ) {
       var requiredComponents = requireComponentCache.getOrUpdate(type, _type => {
         return _type
@@ -35,14 +20,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
             (rc, requiredType) => requiredType)
           .ToArray();
       });
-      if (requiredComponents.Length == 0) return ImmutableList<Error>.Empty;
-      return requiredComponents
-        .Where(requiredType => !go.GetComponent(requiredType))
-        .Aggregate(
-          ImmutableList<Error>.Empty,
-          (current, requiredType) =>
-            current.Add(Error.requiredComponentMissing(go, requiredType, type, context))
-        );
+      foreach (var requiredType in requiredComponents) {
+        if (!go.GetComponent(requiredType)) {
+          addError(() => Error.requiredComponentMissing(go, requiredType, type, context));
+        }
+      }
     }
   }
 }

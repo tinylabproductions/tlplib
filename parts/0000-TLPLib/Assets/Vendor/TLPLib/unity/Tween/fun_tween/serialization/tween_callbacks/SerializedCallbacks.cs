@@ -38,12 +38,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
 
     protected abstract void invoke();
     public abstract Object getTarget();
-    
+    public abstract bool isValid { get; }
+
 #if UNITY_EDITOR
     public bool __editorDirty { get; private set; } = true;
     [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
 #endif
   }
+  
+  // ReSharper disable NotNullMemberIsNotInitialized
   
   [Serializable]
   public abstract class ParticleSystemBase : CallbackBase {
@@ -52,6 +55,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
 
     protected override void invoke() {
       foreach (var ps in _particleSystems) invoke(ps);
+    }
+
+    public override bool isValid {
+      get {
+        if (_particleSystems.Length == 0) return false;
+        foreach (var ps in _particleSystems) {
+          if (!ps) return false;
+        }
+        return true;
+      }
     }
 
     // TODO: do something better with multiple targets
@@ -80,4 +93,30 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
       ps.Stop(withChildren: _withChildren, stopBehavior: _stopBehavior);
     }
   }
+  
+  [Serializable]
+  public class TweenManagerCallback : CallbackBase {
+    [SerializeField, NotNull, OnValueChanged(CHANGE)] FunTweenManagerV2 _manager;
+    [SerializeField, OnValueChanged(CHANGE)] FunTweenManagerV2.Action _action = FunTweenManagerV2.Action.PlayForwards;
+
+    protected override void invoke() => _manager.run(_action);
+
+    public override bool isValid => _manager;
+
+    public override Object getTarget() => _manager;
+  }
+  
+  [Serializable]
+  public class EnableGameObjectCallback : CallbackBase {
+    [SerializeField, NotNull, OnValueChanged(CHANGE)] GameObject _gameObject;
+    [SerializeField, OnValueChanged(CHANGE)] bool _state;
+
+    protected override void invoke() => _gameObject.SetActive(_state);
+
+    public override bool isValid => _gameObject;
+
+    public override Object getTarget() => _gameObject;
+  }
+  
+  // ReSharper restore NotNullMemberIsNotInitialized
 }
