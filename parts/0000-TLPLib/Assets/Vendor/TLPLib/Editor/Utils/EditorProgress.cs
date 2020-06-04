@@ -26,17 +26,17 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
-    /// <param name="minTimeBeforeShowingUI">
+    /// <param name="minTimeBeforeShowingUi">
     /// Duration to wait before allowing to show the progressbar dialog.
     /// Use case: When tasks using <see cref="EditorProgress"/> are called frequently (ex. every time you save project)
     /// and it takes a short amount of time (ex. loading small amount of files), that can only be seen as a flicker.
     /// You can prevent this, by setting <see cref="minTimeBeforeShowingUi"/> to a certain value to not allow
     /// progressbar dialog appear in screen before time after creation passes this value. Default is to show instantly.
     /// </param>
-    public EditorProgress(string title, ILog log = null, Duration minTimeBeforeShowingUI = default) {
+    public EditorProgress(string title, ILog log = null, Duration minTimeBeforeShowingUi = default) {
       this.title = title;
-      this.minTimeBeforeShowingUi = minTimeBeforeShowingUI;
-      this.log = (log ?? Log.@default).withScope($"{s(title)}:");
+      this.minTimeBeforeShowingUi = minTimeBeforeShowingUi;
+      this.log = (log ?? Log.@default).withScope($"{s(title)}");
     }
 
     public void execute(string name, Action a) =>
