@@ -61,14 +61,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public JoinedAsyncOperation(IList<IAsyncOperation> operations) {
       this.operations = operations;
 
-      IEnumerator creatEnumerator() {
+      IEnumerator createEnumerator() {
         // ReSharper disable once ForCanBeConvertedToForeach
         for (var idx = 0; idx < operations.Count; idx++) {
           yield return operations[idx];
         }
       }
       
-      yieldInstruction = creatEnumerator();
+      yieldInstruction = createEnumerator();
     }
 
     public int priority {

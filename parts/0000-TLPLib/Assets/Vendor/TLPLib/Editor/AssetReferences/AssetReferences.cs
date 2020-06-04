@@ -8,11 +8,15 @@ using System.Threading.Tasks;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
+using pzd.lib.collection;
+using pzd.lib.data;
 using pzd.lib.exts;
+using pzd.lib.functional;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
-  public class AssetReferences {
+  public partial class AssetReferences {
     public readonly Dictionary<string, HashSet<string>> parents =
       new Dictionary<string, HashSet<string>>();
     public readonly Dictionary<string, HashSet<string>> children =
@@ -55,28 +59,59 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     /// Given an object GUID find all scenes where that particular GUID is being used.
     /// </summary>
     /// <returns>guids for scenes where given guid is used</returns>
-    public ImmutableList<string> findParentScenes(string guid) {
+    public ImmutableList<Chain> findParentScenes(string guid) => 
+      findParentX(guid, path => path.EndsWithFast(".unity"));
+    
+    /// <summary>
+    /// Given an object GUID find all resources where that particular GUID is being used.
+    /// </summary>
+    /// <returns>guids for resources where given guid is used</returns>
+    public ImmutableList<Chain> findParentResources(string guid) => 
+      findParentX(guid, path => path.ToLowerInvariant().Contains("/resources/"));
+
+    [Record] public sealed partial class Chain {
+      public readonly NonEmpty<ImmutableList<string>> guids;
+
+      public string mainGuid => guids.head();
+    }
+    
+    public ImmutableList<Chain> findParentX(string guid, Func<string, bool> pathPredicate) {
       // TODO: expensive operation. Need to cache results
       // Dijkstra
-      var visited = new HashSet<string>();
-      var q = new Queue<string>();
-      q.Enqueue(guid);
-      var res = ImmutableList.CreateBuilder<string>();
+      
+      // guid -> child guid
+      var visited = new Dictionary<string, Option<string>>();
+      var q = new Queue<(string current, Option<string> child)>();
+      q.Enqueue((guid, Option<string>.None));
+      var res = ImmutableList.CreateBuilder<Chain>();
       while (q.Count > 0) {
-        var cur = q.Dequeue();
-        if (visited.Contains(cur)) continue;
-        visited.Add(cur);
-        var path = AssetDatabase.GUIDToAssetPath(cur);
-        if (path.EndsWithFast(".unity")) {
-          res.Add(cur);
+        var (current, maybeChild) = q.Dequeue();
+        if (visited.ContainsKey(current)) continue;
+        visited.Add(current, maybeChild);
+        var path = AssetDatabase.GUIDToAssetPath(current);
+        if (pathPredicate(path)) {
+          res.Add(makeChain(current));
         }
-        if (parents.ContainsKey(cur)) {
-          foreach (var parent in parents[cur]) {
-            if (!visited.Contains(parent)) q.Enqueue(parent);
+        if (parents.TryGetValue(current, out var currentParents)) {
+          foreach (var parent in currentParents) {
+            if (!visited.ContainsKey(parent)) q.Enqueue((parent, Some.a(current)));
           }
         }
       }
       return res.ToImmutable();
+
+      Chain makeChain(string g) {
+        // head points to parent, last points to the object from which we started the search
+        var builder = ImmutableList.CreateBuilder<string>();
+        builder.Add(g);
+        var current = g;
+        while (visited.TryGetValue(current, out var maybeChild) && maybeChild.valueOut(out var child)) {
+          builder.Add(child);
+          current = child;
+        }
+
+        return new Chain(builder.ToImmutable().toNonEmpty().get);
+      }
     }
 
     static void process(

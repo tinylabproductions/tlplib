@@ -98,10 +98,10 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       }
     }
 
-    bool foldout1 = true, foldout2 = true, foldout3 = true;
+    bool foldout1 = true, foldout2 = true, foldout3 = true, foldout4 = true;
     Object hoverItem, previousHoverItem, lockedObj;
     readonly IRxRef<bool> locked = RxRef.a(false);
-    bool showActions;
+    bool showActions, showChains;
 
     public void OnGUI() {
       var isMouseMoveEvent = Event.current.type == EventType.MouseMove;
@@ -115,6 +115,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
         foreach (var _ in enabled.value.opt(F.unit)) {
           locked.value = EditorGUILayout.Toggle("Lock", locked.value);
           showActions = EditorGUILayout.Toggle("Show Actions", showActions);
+          showChains = EditorGUILayout.Toggle("Show Dependency Chains", showChains);
           var cur = locked.value ? lockedObj : Selection.activeObject;
           if (cur == null) break;
           var curPath = AssetDatabase.GetAssetPath(cur);
@@ -127,6 +128,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
             displayObjects(currentGUID, "Used by objects (parents)", refs.parents, ref foldout1);
             displayObjects(currentGUID, "Contains (children)", refs.children, ref foldout2);
             displayObjects("Placed in scenes", refs.findParentScenes(currentGUID), ref foldout3);
+            displayObjects("Placed in resources", refs.findParentResources(currentGUID), ref foldout4);
           }
           if (!isMouseMoveEvent && hoverItem) {
             GUI.Label(new Rect(Event.current.mousePosition, new Vector2(128, 128)), AssetPreview.GetAssetPreview(previousHoverItem));
@@ -144,31 +146,54 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       string curGuid, string name, Dictionary<string, HashSet<string>> dict, ref bool foldout
     ) {
       if (dict.ContainsKey(curGuid)) {
-        displayObjects(name, dict[curGuid], ref foldout);
+        displayObjects(name, dict[curGuid], _ => _, _ => ImmutableList<string>.Empty, ref foldout);
       }
       else {
         GUILayout.Label(name + " 0");
       }
     }
 
-    void displayObjects(string name, ICollection<string> guids, ref bool foldout) {
-      foldout = EditorGUILayout.Foldout(foldout, name + " " + guids.Count);
+    void displayObjects(
+      string name, IReadOnlyCollection<AssetReferences.Chain> chains, ref bool foldout
+    ) => displayObjects(name, chains, _ => _.mainGuid, _ => _.guids, ref foldout);
+    
+    void displayObjects<A>(
+      string name, IReadOnlyCollection<A> datas, Func<A, string> getMainGuid, Func<A, ImmutableList<string>> getChain,
+      ref bool foldout
+    ) {
+      foldout = EditorGUILayout.Foldout(foldout, name + " " + datas.Count);
       if (foldout) {
         if (showActions) {
+          IEnumerable<string> guids() => datas.Select(getMainGuid);
+          
           if (GUILayout.Button("select"))
-            Selection.objects = loadGuids(guids).ToArray();
+            Selection.objects = loadGuids(guids()).ToArray();
 
           if (GUILayout.Button("set dirty")) {
-            var objects = loadGuids(guids).ToArray();
+            var objects = loadGuids(guids()).ToArray();
             objects.recordEditorChanges("Set objects dirty");
             foreach (var o in objects) EditorUtility.SetDirty(o);
           }
         }
 
-        foreach (var guid in guids.OrderBySafe(AssetDatabase.GUIDToAssetPath)) {
+        foreach (var a in datas.OrderBySafe(d => AssetDatabase.GUIDToAssetPath(getMainGuid(d)))) {
+          var guid = getMainGuid(a);
           var asset = AssetDatabaseUtils.loadMainAssetByGuid(guid);
           if (asset != null) {
             objectDisplay(guid);
+            
+            if (showChains) {
+              var chain = getChain(a);
+              var first = true;
+              foreach (var chainGuid in chain) {
+                // skip first element in chain because we've already rendered it.
+                if (first) {
+                  first = false;
+                  continue;
+                }
+                objectDisplay(chainGuid, 1);
+              }
+            }
           }
           else {
             GUILayout.Label(AssetDatabase.GUIDToAssetPath(guid));
@@ -181,8 +206,9 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     static IEnumerable<Object> loadGuids(IEnumerable<string> guids) =>
       guids.ToArray().Select(AssetDatabaseUtils.loadMainAssetByGuid);
 
-    void objectDisplay(string guid) {
+    void objectDisplay(string guid, uint indent = 0) {
       EditorGUILayout.BeginHorizontal();
+      if (indent != 0) GUILayout.Space(indent * 20);
       var obj = AssetDatabaseUtils.loadMainAssetByGuid(guid);
       EditorGUILayout.ObjectField(obj, typeof(Object), false);
       var etype = Event.current.type;

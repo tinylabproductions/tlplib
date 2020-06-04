@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Threads;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public abstract class LogBase : ILog {
@@ -27,8 +28,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     protected abstract void logInner(Log.Level l, LogEntry entry);
 
-    static string line(string level, object o) => $"[{(DateTime.Now - initAt).TotalSeconds:F3}|{thread}|{level}]> {o}";
+    static string line(string level, object o) => 
+      $"[{(DateTime.Now - initAt).TotalSeconds:F3}|{thread}|{frame}|{level}]> {o}";
 
     static string thread => (OnMainThread.isMainThread ? "Tm" : "T") + Thread.CurrentThread.ManagedThreadId;
+    static string frame => (OnMainThread.isMainThread ? "f" + Time.frameCount : "f-");
   }
 }
