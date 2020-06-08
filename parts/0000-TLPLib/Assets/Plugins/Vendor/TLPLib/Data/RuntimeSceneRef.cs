@@ -28,6 +28,12 @@ namespace com.tinylabproductions.TLPLib.Data {
     // ReSharper disable once NotNullMemberIsNotInitialized
     protected RuntimeSceneRef() {}
 
+    public static implicit operator RuntimeSceneRef(Scene scene) =>
+      new RuntimeSceneRef {
+        _sceneName = scene.name,
+        _scenePath = scene.path
+      };
+
     public RuntimeSceneRef(Object scene) {
       this.scene = scene;
       prepareForRuntime();
