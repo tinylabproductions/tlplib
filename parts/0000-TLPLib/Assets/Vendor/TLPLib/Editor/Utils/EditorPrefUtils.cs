@@ -5,6 +5,14 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class EditorPrefUtils {
+    [MenuItem("TLP/Tools/Caching/Clear Cache")]
+    public static void clearCache() {
+      if (EditorUtility.DisplayDialog("Clear cache?", "Are you sure?", "Clear", "Cancel")) {
+        Caching.ClearCache();
+        Log.d.info("Cache cleared");
+      }
+    }
+    
     [MenuItem("TLP/Tools/Prefs/Clear PlayerPrefs")]
     public static void clearPlayerPrefs() {
       if (EditorUtility.DisplayDialog("Clear player prefs?", "Are you sure?", "Clear", "Cancel")) {
