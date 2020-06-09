@@ -8,38 +8,51 @@ using pzd.lib.exts;
 using pzd.lib.functional;
 
 namespace com.tinylabproductions.TLPLib.Retry {
-  public partial class RetryFuture<Error, Result> {
-    [Record, PublicAPI] public partial class ErrorResult {
+  public static class RetryFuture {
+    public static RetryFuture<Error, Result> a<Error, Result>(
+      uint retryCount,
+      Duration retryDelay,
+      Func<Future<Either<Error, Result>>> tryAction,
+      Func<Error, bool> shouldRetry,
+      ITimeContext timeContext = null
+    ) => new RetryFuture<Error, Result>(
+      retryCount: retryCount, retryDelay: retryDelay, tryAction: tryAction, shouldRetry: shouldRetry, 
+      timeContext: timeContext
+    );
+  }
+  
+  [PublicAPI] public partial class RetryFuture<Error, Result> {
+    [Record] public partial class ErrorResult {
       public readonly Option<Error> maybeError;
       public readonly bool canceledByUser;
     }
     
-    readonly int retryCount;
+    readonly uint retryCount;
     readonly Duration retryDelay;
     readonly Func<Future<Either<Error, Result>>> tryAction;
     readonly Func<Error, bool> shouldRetry;
-    readonly TimeScale timeScale;
+    readonly ITimeContext timeContext;
     readonly Promise<Either<ErrorResult, Result>> promise;
     
     public readonly Future<Either<ErrorResult, Result>> future;
     
-    int retries;
+    uint retries;
     IDisposable coroutine = F.emptyDisposable;
     Option<Error> lastError;
 
     public RetryFuture(
-      int retryCount,
+      uint retryCount,
       Duration retryDelay,
       Func<Future<Either<Error, Result>>> tryAction,
       Func<Error, bool> shouldRetry,
-      TimeScale timeScale = TimeScale.Realtime
+      ITimeContext timeContext = null
     ) {
       future = Future.async(out promise);
       this.retryCount = retryCount;
       this.retryDelay = retryDelay;
       this.tryAction = tryAction;
       this.shouldRetry = shouldRetry;
-      this.timeScale = timeScale;
+      this.timeContext = timeContext ?? TimeContext.realTime;
       newRequest();
     }
 
@@ -61,7 +74,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
       lastError = Some.a(error);
       if (retries < retryCount && shouldRetry(error)) {
         retries++;
-        coroutine = ASync.WithDelay(retryDelay, newRequest, timeScale: timeScale);
+        coroutine = timeContext.after(retryDelay, newRequest);
       }
       else {
         promise.tryComplete(new ErrorResult(lastError, canceledByUser: false));
