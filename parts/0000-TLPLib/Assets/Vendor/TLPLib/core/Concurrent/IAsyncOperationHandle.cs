@@ -22,6 +22,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI] public static class IASyncOperationHandle_ {
     public static IAsyncOperationHandle<Unit> delayFrames(uint durationInFrames) => 
       new DelayAsyncOperationHandle<Unit>(durationInFrames, Unit._);
+    
+    public static IAsyncOperationHandle<A> delayFrames<A>(uint durationInFrames, A a) => 
+      new DelayAsyncOperationHandle<A>(durationInFrames, a);
 
     public static IAsyncOperationHandle<Unit> done => DoneAsyncOperationHandle.instance;
   }
@@ -52,11 +55,18 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
   
 #region implementations
+  [Record] sealed partial class HandleStatusOnRelease {
+    public readonly AsyncOperationStatus status;
+    public readonly float percentComplete;
+
+    public bool isDone => status != AsyncOperationStatus.None;
+  }
+
   public sealed class WrappedAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
     readonly AsyncOperationHandle<A> handle;
     readonly Action<AsyncOperationHandle<A>> _release;
 
-    bool released;
+    Option<HandleStatusOnRelease> released = None._;
     
     public WrappedAsyncOperationHandle(
       AsyncOperationHandle<A> handle, Action<AsyncOperationHandle<A>> release
@@ -65,16 +75,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       _release = release;
     }
 
-    public AsyncOperationStatus Status => handle.Status;
-    public bool IsDone => handle.IsDone;
-    public float PercentComplete => handle.PercentComplete;
+    public AsyncOperationStatus Status => released.valueOut(out var r) ? r.status : handle.Status;
+    public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
+    public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
     public Try<A> toTry() => handle.toTry();
     [LazyProperty] public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
+      var data = new HandleStatusOnRelease(handle.Status, handle.PercentComplete);
       _release(handle);
-      released = true;
+      released = Some.a(data);
     }
   }
   
@@ -82,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     readonly AsyncOperationHandle handle;
     readonly Action<AsyncOperationHandle> _release;
 
-    bool released;
+    Option<HandleStatusOnRelease> released = None._;
     
     public WrappedAsyncOperationHandle(
       AsyncOperationHandle handle, Action<AsyncOperationHandle> release
@@ -91,16 +102,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       _release = release;
     }
 
-    public AsyncOperationStatus Status => handle.Status;
-    public bool IsDone => handle.IsDone;
-    public float PercentComplete => handle.PercentComplete;
+    public AsyncOperationStatus Status => released.valueOut(out var r) ? r.status : handle.Status;
+    public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
+    public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
     public Try<object> toTry() => handle.toTry();
     [LazyProperty] public Future<Try<object>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
+      var data = new HandleStatusOnRelease(handle.Status, handle.PercentComplete);
       _release(handle);
-      released = true;
+      released = Some.a(data);
     }
   }
 
@@ -181,7 +193,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public AsyncOperationStatus Status => IsDone ? AsyncOperationStatus.Succeeded : AsyncOperationStatus.None;
     public bool IsDone => Time.frameCount >= endAtFrame;
-    public float PercentComplete => framesPassed / (float) durationInFrames;
+    public float PercentComplete => Mathf.Clamp01(framesPassed / (float) durationInFrames);
 
     [LazyProperty] public Future<Try<A>> asFuture {
       get {
