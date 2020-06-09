@@ -741,5 +741,14 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       initial,
       setValue => o.subscribe(NoOpDisposableTracker.instance, a => setValue(mapper(a)))
     );
+
+    /// <summary>
+    /// Turns this observable into <see cref="CacheSubject{A}"/>.
+    /// </summary>
+    public static IRxObservable<A> toCachedObservable<A>(this IRxObservable<A> o, IDisposableTracker tracker) {
+      var subject = new CacheSubject<A>();
+      o.subscribe(tracker, subject.push);
+      return subject;
+    }
   }
 }
