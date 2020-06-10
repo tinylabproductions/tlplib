@@ -170,6 +170,14 @@
             "locale": "zh-Hant"
           }
         }
+      },
+      "JetBrains.Annotations/2020.1.0.0": {
+        "runtime": {
+          "JetBrains.Annotations.dll": {
+            "assemblyVersion": "2020.1.0.0",
+            "fileVersion": "2020.1.0.0"
+          }
+        }
       }
     }
   },
@@ -280,6 +288,11 @@
       "sha512": ""
     },
     "Microsoft.CodeAnalysis/42.42.42.42": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "JetBrains.Annotations/2020.1.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
