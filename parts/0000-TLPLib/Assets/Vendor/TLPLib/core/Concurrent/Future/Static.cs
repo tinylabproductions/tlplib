@@ -5,6 +5,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
+using pzd.lib.collection;
 using pzd.lib.concurrent;
 using pzd.lib.exts;
 using pzd.lib.functional;
@@ -61,8 +62,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A[]> sequence<A>(
       this IEnumerable<Future<A>> enumerable
     ) {
-      var completed = 0u;
       var sourceFutures = enumerable.ToList();
+      if (sourceFutures.isEmpty()) return successful(EmptyArray<A>._);
+      
+      var completed = 0u;
       var results = new A[sourceFutures.Count];
       return a<A[]>(p => {
         for (var idx = 0; idx < sourceFutures.Count; idx++) {
