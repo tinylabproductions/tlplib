@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.collection;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
@@ -50,8 +53,20 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) => new FlatMappedAsyncOperationHandle<A, B>(handle, a => mapper(a, handle), aHandleProgressPercentage);
 
     public static IAsyncOperationHandle<A> delayedFrames<A>(
-      this IAsyncOperationHandle<A> handle, uint durationInFrames
-    ) => handle.flatMap((a, h) => new DelayAsyncOperationHandle<A>(durationInFrames, a, h.release));
+      this IAsyncOperationHandle<A> handle, uint durationInFrames, 
+      float aHandleProgressPercentage=0.5f
+    ) => handle.flatMap(
+      (a, h) => new DelayAsyncOperationHandle<A>(durationInFrames, a, h.release),
+      aHandleProgressPercentage: aHandleProgressPercentage
+    );
+
+    public static IAsyncOperationHandle<ImmutableArrayC<A>> sequenceNonFailing<A>(
+      this IReadOnlyCollection<IAsyncOperationHandle<A>> collection
+    ) => new SequencedNonFailingAsyncOperationHandle<A>(collection);
+
+    public static IAsyncOperationHandle<ImmutableArrayC<Try<A>>> sequence<A>(
+      this IReadOnlyCollection<IAsyncOperationHandle<A>> collection
+    ) => new SequencedAsyncOperationHandle<A>(collection);
   }
   
 #region implementations
@@ -79,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
     public Try<A> toTry() => handle.toTry();
-    [LazyProperty] public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
+    public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
@@ -106,7 +121,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
     public Try<object> toTry() => handle.toTry();
-    [LazyProperty] public Future<Try<object>> asFuture => handle.toFuture().map(h => h.toTry());
+    public Future<Try<object>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
@@ -128,7 +143,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => handle.Status;
     public bool IsDone => handle.IsDone;
     public float PercentComplete => handle.PercentComplete;
-    [LazyProperty] public Future<Try<B>> asFuture => handle.asFuture.map(try_ => try_.map(mapper));
+    public Future<Try<B>> asFuture => handle.asFuture.map(try_ => try_.map(mapper));
     public Try<B> toTry() => handle.toTry().map(mapper);
     public void release() => handle.release();
   }
@@ -159,7 +174,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         ? aHandleProgressPercentage + b.fold(h => h.PercentComplete, e => 1) * bHandleProgressPercentage 
         : aHandle.PercentComplete * aHandleProgressPercentage;
 
-    [LazyProperty] public Future<Try<B>> asFuture => bHandleF.flatMapT(bHandle => bHandle.asFuture);
+    public Future<Try<B>> asFuture => bHandleF.flatMapT(bHandle => bHandle.asFuture);
 
     public Try<B> toTry() =>
       bHandleF.value.valueOut(out var b) 
@@ -195,7 +210,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool IsDone => Time.frameCount >= endAtFrame;
     public float PercentComplete => Mathf.Clamp01(framesPassed / (float) durationInFrames);
 
-    [LazyProperty] public Future<Try<A>> asFuture {
+    public Future<Try<A>> asFuture {
       get {
         var left = framesLeft;
         return left <= 0 
@@ -216,6 +231,62 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public Future<Try<Unit>> asFuture => Future.successful(toTry());
     public Try<Unit> toTry() => Try.value(Unit._);
     public void release() {}
+  }
+
+  public sealed class SequencedAsyncOperationHandle<A> : IAsyncOperationHandle<ImmutableArrayC<Try<A>>> {
+    public readonly IReadOnlyCollection<IAsyncOperationHandle<A>> handles;
+
+    public SequencedAsyncOperationHandle(IReadOnlyCollection<IAsyncOperationHandle<A>> handles) => 
+      this.handles = handles;
+
+    public AsyncOperationStatus Status {
+      get {
+        foreach (var handle in handles) {
+          switch (handle.Status) {
+            case AsyncOperationStatus.None: return AsyncOperationStatus.None;
+            case AsyncOperationStatus.Failed: return AsyncOperationStatus.Failed;
+            case AsyncOperationStatus.Succeeded: break;
+            default: throw new ArgumentOutOfRangeException();
+          }
+        }
+
+        return AsyncOperationStatus.Succeeded;
+      }
+    }
+    public bool IsDone => handles.All(_ => _.IsDone);
+    public float PercentComplete => handles.Average(_ => _.PercentComplete);
+    public Future<Try<ImmutableArrayC<Try<A>>>> asFuture =>
+      handles.Select(h => h.asFuture).sequence().map(arr => Try.value(ImmutableArrayC.move(arr)));
+    public Try<ImmutableArrayC<Try<A>>> toTry() => Try.value(handles.Select(h => h.toTry()).toImmutableArrayC());
+    public void release() { foreach (var handle in handles) handle.release(); }
+  }
+
+  public sealed class SequencedNonFailingAsyncOperationHandle<A> : IAsyncOperationHandle<ImmutableArrayC<A>> {
+    public readonly IReadOnlyCollection<IAsyncOperationHandle<A>> handles;
+
+    public SequencedNonFailingAsyncOperationHandle(IReadOnlyCollection<IAsyncOperationHandle<A>> handles) => 
+      this.handles = handles;
+
+    public AsyncOperationStatus Status {
+      get {
+        foreach (var handle in handles) {
+          switch (handle.Status) {
+            case AsyncOperationStatus.None: return AsyncOperationStatus.None;
+            case AsyncOperationStatus.Failed: return AsyncOperationStatus.Failed;
+            case AsyncOperationStatus.Succeeded: break;
+            default: throw new ArgumentOutOfRangeException();
+          }
+        }
+
+        return AsyncOperationStatus.Succeeded;
+      }
+    }
+    public bool IsDone => handles.All(_ => _.IsDone);
+    public float PercentComplete => handles.Average(_ => _.PercentComplete);
+    public Future<Try<ImmutableArrayC<A>>> asFuture =>
+      handles.Select(h => h.asFuture).sequence().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
+    public Try<ImmutableArrayC<A>> toTry() => handles.Select(h => h.toTry()).sequence().map(_ => _.toImmutableArrayC());
+    public void release() { foreach (var handle in handles) handle.release(); }
   }
 #endregion
 }
