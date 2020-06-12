@@ -253,8 +253,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return AsyncOperationStatus.Succeeded;
       }
     }
-    public bool IsDone => handles.All(_ => _.IsDone);
-    public float PercentComplete => handles.Average(_ => _.PercentComplete);
+    public bool IsDone => handles.Count == 0 || handles.All(_ => _.IsDone);
+    public float PercentComplete => handles.Count == 0 ? 1 : handles.Average(_ => _.PercentComplete);
     public Future<Try<ImmutableArrayC<Try<A>>>> asFuture =>
       handles.Select(h => h.asFuture).sequence().map(arr => Try.value(ImmutableArrayC.move(arr)));
     public Try<ImmutableArrayC<Try<A>>> toTry() => Try.value(handles.Select(h => h.toTry()).toImmutableArrayC());
@@ -281,8 +281,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         return AsyncOperationStatus.Succeeded;
       }
     }
-    public bool IsDone => handles.All(_ => _.IsDone);
-    public float PercentComplete => handles.Average(_ => _.PercentComplete);
+    public bool IsDone => handles.Count == 0 || handles.All(_ => _.IsDone);
+    public float PercentComplete => handles.Count == 0 ? 1 : handles.Average(_ => _.PercentComplete);
     public Future<Try<ImmutableArrayC<A>>> asFuture =>
       handles.Select(h => h.asFuture).sequence().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
     public Try<ImmutableArrayC<A>> toTry() => handles.Select(h => h.toTry()).sequence().map(_ => _.toImmutableArrayC());
