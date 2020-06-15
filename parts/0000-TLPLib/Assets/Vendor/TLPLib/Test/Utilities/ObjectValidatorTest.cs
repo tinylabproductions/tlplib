@@ -310,6 +310,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     [Test] public void WhenNotNullPublicField()
       => shouldFindErrors<NotNullPublicField>(ErrorType.NullReference);
+    
+    [Test] public void WhenNotNullPublicFieldDestroyedObject() {
+      var go = new GameObject();
+      Object.DestroyImmediate(go);
+      shouldFindErrors<NotNullPublicField>(ErrorType.NullReference, a => { a.field = go; });
+    }
 
     [Test] public void WhenNotNullPublicFieldSet() =>
       shouldNotFindErrors<NotNullPublicField>(a => {
@@ -355,6 +361,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         ErrorType.NullReference,
         a => { a.field = new[] {new GameObject(), null, new GameObject()}; }
       );
+    
+    [Test] public void WhenNotNullArrayDestroyedObject() {
+      var go = new GameObject();
+      Object.DestroyImmediate(go);
+      shouldFindErrors<NotNullArray>(
+        ErrorType.NullReference,
+        a => { a.field = new[] {go}; }
+      );
+    }
 
     [Test] public void WhenReferenceListEmpty() =>
       shouldFindErrors<ListNotEmpty>(

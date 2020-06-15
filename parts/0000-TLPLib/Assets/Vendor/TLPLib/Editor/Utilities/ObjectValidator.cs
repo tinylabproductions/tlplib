@@ -652,8 +652,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       var listItemType = structureCache.getListItemType(list);
 
       if (listItemType.isUnityObject) {
-        if (hasNotNull && list.Contains(null))
-          addError(() => createError.nullField(fieldHierarchy.asString()));
+        if (hasNotNull) {
+          jobController.enqueueMainThreadJob(() => {
+            int index = 0;
+            foreach (var listItem in list) {
+              if (listItem == null || listItem.Equals(null)) {
+                var hierarchy = fieldHierarchy.push($"[{index}]").asString();
+                addError(() => createError.nullField(hierarchy));
+              }
+              index++;
+            }
+          });
+        }
       }
       else if (listItemType.isSerializableAsValue) {
         var index = 0;
