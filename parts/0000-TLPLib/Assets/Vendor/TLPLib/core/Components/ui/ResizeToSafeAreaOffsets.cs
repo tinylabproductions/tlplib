@@ -10,7 +10,7 @@ namespace Vendor.TLPLib.Components.ui {
 #pragma warning disable 649
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField, NotNull] RectTransform _rt;
-    [SerializeField, NotNull] List<RectTransform> _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll;
+    [SerializeField, NotNull] List<RectTransform> _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll, _negativeOffsetBottom;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -18,7 +18,7 @@ namespace Vendor.TLPLib.Components.ui {
     Rect lastSafeArea = new Rect(0, 0, 0, 0);
     bool forceRefresh;
 
-    [ShowInInspector] float __editor_leftOffsetTest, __editor_rightOffsetTest;
+    [ShowInInspector] float __editor_leftOffsetTest, __editor_rightOffsetTest, __editor_bottomOffsetTest;
 
     protected override void Awake() {
       parent = (RectTransform) _rt.parent;
@@ -42,11 +42,17 @@ namespace Vendor.TLPLib.Components.ui {
       forceRefresh = true;
     }
 
+    public void addToNegativeOffsetBottom(RectTransform t) {
+      _negativeOffsetBottom.Add(t);
+      forceRefresh = true;
+    }
+
     void refresh() {
       var safeArea = Screen.safeArea;
       if (Application.isEditor) {
         safeArea.xMin += __editor_leftOffsetTest;
         safeArea.xMax -= __editor_rightOffsetTest;
+        safeArea.yMin += __editor_bottomOffsetTest;
       }
       if (forceRefresh || safeArea != lastSafeArea) {
         forceRefresh = false;
@@ -80,6 +86,12 @@ namespace Vendor.TLPLib.Components.ui {
       foreach (var item in _negativeOffsetAll) {
         item.offsetMin = -min;
         item.offsetMax = max;
+      }
+
+      foreach (var item in _negativeOffsetBottom) {
+        var offset = item.offsetMin;
+        offset.y = -min.y;
+        item.offsetMin = offset;
       }
     }
   }
