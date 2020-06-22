@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
       public readonly bool canceledByUser;
     }
     
-    readonly uint retryCount;
+    public readonly uint retryCount;
     readonly Duration retryDelay;
     readonly Func<Future<Either<Error, Result>>> tryAction;
     readonly Func<Error, bool> shouldRetry;
@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Retry {
     
     public readonly Future<Either<ErrorResult, Result>> future;
     
-    uint retries;
+    public uint retry { get; private set; }
     IDisposable coroutine = F.emptyDisposable;
     Option<Error> lastError;
 
@@ -72,8 +72,8 @@ namespace com.tinylabproductions.TLPLib.Retry {
 
     void failure(Error error) {
       lastError = Some.a(error);
-      if (retries < retryCount && shouldRetry(error)) {
-        retries++;
+      if (retry < retryCount && shouldRetry(error)) {
+        retry++;
         coroutine = timeContext.after(retryDelay, newRequest);
       }
       else {
