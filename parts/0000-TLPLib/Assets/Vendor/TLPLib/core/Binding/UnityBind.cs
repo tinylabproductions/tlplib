@@ -67,7 +67,8 @@ namespace com.tinylabproductions.TLPLib.binding {
     public static GameObjectPool<Template> bindEnumerable<Template, Data>(
       string gameObjectPoolName,
       Template template, IRxObservable<IEnumerable<Data>> rx,
-      IDisposableTracker tracker, Func<Template, Data, IDisposable> setup,
+      Func<Template, Data, IDisposable> setup,
+      [Implicit] IDisposableTracker tracker = default,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
       template.gameObject.SetActive(false);
@@ -76,7 +77,7 @@ namespace com.tinylabproductions.TLPLib.binding {
         create: () => template.clone(parent: template.transform.parent),
         dontDestroyOnLoad: false
       ));
-      bindEnumerable(pool, rx, tracker, setup, afterUpdate: afterUpdate);
+      bindEnumerable(pool, rx, setup, afterUpdate: afterUpdate);
       return pool;
     }
 
