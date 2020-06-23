@@ -9,6 +9,7 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
@@ -120,6 +121,24 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       callerLineNumber: callerLineNumber
       // ReSharper restore ExplicitCallerInfoArgument
     );
+    
+    public static ISubscription subscribe<A>(
+      this IRxObservable<A> observable,
+      Action<A> onEvent,
+      [Implicit] IDisposableTracker tracker = default,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) {
+      // ReSharper disable once AccessToModifiedClosure
+      observable.subscribe(
+        tracker: tracker, onEvent: onEvent, subscription: out var subscription,
+        // ReSharper disable ExplicitCallerInfoArgument
+        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
+        // ReSharper restore ExplicitCallerInfoArgument
+      );
+      return subscription;
+    }
 
     #endregion
 

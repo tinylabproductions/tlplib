@@ -33,7 +33,8 @@ namespace com.tinylabproductions.TLPLib.binding {
     public static void bindEnumerable<Template, Data>(
       GameObjectPool<Template> pool,
       IRxObservable<IEnumerable<Data>> rx,
-      IDisposableTracker tracker, Func<Template, Data, IDisposable> setup,
+      Func<Template, Data, IDisposable> setup,
+      [Implicit] IDisposableTracker tracker = default, 
       bool orderMatters = true,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
