@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.collection;
 using pzd.lib.reactive;
 using UnityEngine;
 using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
@@ -65,6 +66,38 @@ namespace com.tinylabproductions.TLPLib.binding {
         }
         current.Clear();
       }
+    }
+
+    public static IRxVal<ImmutableArrayC<Result>> bindEnumerableRx<Template, Data, Result>(
+      GameObjectPool<Template> pool,
+      IRxObservable<IEnumerable<Data>> rx,
+      Func<Template, Data, (IDisposable, Result)> setup,
+      [Implicit] IDisposableTracker tracker = default, 
+      bool orderMatters = true,
+      Action preUpdate = null,
+      Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
+    ) where Template : Component {
+      var resultRx = RxRef.a(ImmutableArrayC<Result>.empty);
+      var resultTempList = new List<Result>();
+      bindEnumerable(
+        pool, rx,
+        orderMatters: orderMatters,
+        preUpdate: () => {
+          resultTempList.Clear();
+          preUpdate?.Invoke();
+        },
+        afterUpdate: list => {
+          resultRx.value = resultTempList.toImmutableArrayC();
+          resultTempList.Clear();
+          afterUpdate?.Invoke(list);
+        },
+        setup: (template, data) => {
+          var (disposable, result) = setup(template, data);
+          resultTempList.Add(result);
+          return disposable;
+        }
+      );
+      return resultRx;
     }
     
     public static GameObjectPool<Template> bindEnumerable<Template, Data>(
