@@ -18,7 +18,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       this IRxObservable<A> observable, IDisposableTracker tracker, Func<A, Coroutine> f
     ) {
       var lastCoroutine = F.none<Coroutine>();
-      void stopOpt() { foreach (var c in lastCoroutine) { c.stop(); } };
+      void stopOpt() { foreach (var c in lastCoroutine) { c.stop(); } }
       var sub = observable.subscribe(
         NoOpDisposableTracker.instance,
         a => {
@@ -36,12 +36,14 @@ namespace com.tinylabproductions.TLPLib.binding {
       Func<Template, Data, IDisposable> setup,
       [Implicit] IDisposableTracker tracker = default, 
       bool orderMatters = true,
+      Action preUpdate = null,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
       var current = new List<BindEnumerableEntry<Template>>();
 
-      rx.subscribe(tracker,list => {
+      rx.subscribe(tracker, list => {
         cleanupCurrent();
+        preUpdate?.Invoke();
 
         var idx = 0;
         foreach (var element in list) {
@@ -53,6 +55,7 @@ namespace com.tinylabproductions.TLPLib.binding {
         }
         afterUpdate?.Invoke(current);
       });
+      // ReSharper disable once PossibleNullReferenceException
       tracker.track(new Subscription(cleanupCurrent));
       
       void cleanupCurrent() {
