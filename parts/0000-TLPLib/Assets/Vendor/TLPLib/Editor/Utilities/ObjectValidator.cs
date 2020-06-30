@@ -245,12 +245,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       // single thread of this runs faster than checkComponentMainThreadPart
       // checkComponentMainThreadPart completes in 16s
       var t = new Thread(() => {
-        foreach (var component in components) {
-          checkComponentThreadSafePart(
-            context: context, component: component, customObjectValidatorOpt: customValidatorOpt, addError: addError, 
-            structureCache: structureCache, jobController: jobController, unityTags: unityTags, 
-            uniqueCache: uniqueValuesCache
-          );
+        try {
+          foreach (var component in components) {
+            checkComponentThreadSafePart(
+              context: context, component: component, customObjectValidatorOpt: customValidatorOpt, addError: addError,
+              structureCache: structureCache, jobController: jobController, unityTags: unityTags,
+              uniqueCache: uniqueValuesCache
+            );
+          }
+        }
+        catch (Exception e) {
+          addError(() => new Error(Error.Type.ValidatorBug, e.Message, null));
         }
       });
       t.Start();
@@ -507,9 +512,13 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
           void run() {
             var customValidatorErrors =
-              customValidator.validate(containingComponent, objectBeingValidated)
-              .Select(_err => createError.custom(fieldHierarchy.asString(), _err, true));
-            foreach (var error in customValidatorErrors) addError(() => error);
+              customValidator.validate(containingComponent, objectBeingValidated).ToArray();
+            if (customValidatorErrors.Length > 0) {
+              var hierarchy = fieldHierarchy.asString();
+              foreach (var error in customValidatorErrors) {
+                addError(() => createError.custom(hierarchy, error, true));
+              }
+            }
           }
         }
       }

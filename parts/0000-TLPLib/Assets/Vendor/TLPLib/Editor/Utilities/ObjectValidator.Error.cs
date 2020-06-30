@@ -26,7 +26,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         TextFieldBadTag,
         CustomValidation,
         CustomValidationException,
-        DuplicateUniqueValue
+        DuplicateUniqueValue,
+        ValidatorBug
       }
 
       public struct UnknownLocation : IEquatable<UnknownLocation> {
