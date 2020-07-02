@@ -181,6 +181,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       findBestPage(targetPage - _page.value - elementsCount);
       findBestPage(targetPage - _page.value + elementsCount);
       movePagesByAnimated(currentOffset);
+      isMoving = true;
     }
 
     void movePagesByAnimated(int offset) {
@@ -199,6 +200,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           : Mathf.Clamp(page, 0, elements.Count - 1);
         _page.value = targetPageValue;
       }
+      isMoving = true;
     }
 
     public void Update() {
@@ -213,8 +215,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
       var withinMoveCompletedThreshold =
         Math.Abs(currentPosition - targetPageValue) < moveCompletedEventThreshold;
-      if (isMoving && withinMoveCompletedThreshold) _movementComplete.push(F.unit);
-      isMoving = !withinMoveCompletedThreshold;
+
+      if (isMoving && withinMoveCompletedThreshold) {
+        isMoving = false;
+        _movementComplete.push(F.unit);
+      }
 
       var prevPos = currentPosition;
       currentPosition = Carousel.Pages.a(Mathf.Lerp(currentPosition, targetPageValue, amount));
