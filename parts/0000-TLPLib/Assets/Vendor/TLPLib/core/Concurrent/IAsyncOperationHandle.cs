@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
@@ -30,6 +31,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       new DelayAsyncOperationHandle<A>(durationInFrames, a);
 
     public static IAsyncOperationHandle<Unit> done => DoneAsyncOperationHandle.instance;
+
+    public static IAsyncOperationHandle<A> withRetries<A>(
+      Func<IAsyncOperationHandle<A>> launch, uint retryCount, Duration retryInterval, ITimeContext timeContext
+    ) => new RetryingAsyncOperationHandle<A>(launch, retryCount, retryInterval, timeContext);
   }
   
   [PublicAPI] public static class IAsyncOperationHandleExts {
@@ -59,6 +64,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       (a, h) => new DelayAsyncOperationHandle<A>(durationInFrames, a, h.release),
       aHandleProgressPercentage: aHandleProgressPercentage
     );
+
+    public static IAsyncOperationHandle<A> fixPercentageComplete<A>(this IAsyncOperationHandle<A> handle) => 
+      new FixingPercentCompleteAsyncOperationHandle<A>(handle);
 
     public static IAsyncOperationHandle<ImmutableArrayC<A>> sequenceNonFailing<A>(
       this IReadOnlyCollection<IAsyncOperationHandle<A>> collection
@@ -287,6 +295,97 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       handles.Select(h => h.asFuture).sequence().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
     public Try<ImmutableArrayC<A>> toTry() => handles.Select(h => h.toTry()).sequence().map(_ => _.toImmutableArrayC());
     public void release() { foreach (var handle in handles) handle.release(); }
+  }
+
+  // I don't even... When you start a handle it doesn't start at 0. It starts at some random number. Like 0.5.
+  // At least in Addressables v1.10.0. Thus we need to fix this.
+  // https://unity.slack.com/archives/C9PUDG90S/p1591885127265100
+  public sealed class FixingPercentCompleteAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
+    readonly IAsyncOperationHandle<A> backing;
+    readonly float progressStartsAt;
+
+    public FixingPercentCompleteAsyncOperationHandle(IAsyncOperationHandle<A> backing) {
+      this.backing = backing;
+      progressStartsAt = backing.PercentComplete;
+    }
+
+    public AsyncOperationStatus Status => backing.Status;
+    public bool IsDone => backing.IsDone;
+    public float PercentComplete => (backing.PercentComplete - progressStartsAt) / (1f - progressStartsAt);
+    public Future<Try<A>> asFuture => backing.asFuture;
+    public Try<A> toTry() => backing.toTry();
+    public void release() => backing.release();
+  }
+
+  public sealed class RetryingAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
+    enum State : byte { Launched, WaitingToRetry, Finished, Released }
+    
+    readonly Func<IAsyncOperationHandle<A>> launchRaw;
+    readonly uint retryCount;
+    readonly Duration retryInterval;
+    readonly ITimeContext timeContext;
+    readonly Future<IAsyncOperationHandle<A>> finalHandleFuture;
+    readonly Promise<IAsyncOperationHandle<A>> finalHandlePromise;
+
+    uint retryNo = 1;
+    State state;
+    IAsyncOperationHandle<A> current;
+    IDisposable currentRetryWait = F.emptyDisposable;
+
+    public RetryingAsyncOperationHandle(
+      Func<IAsyncOperationHandle<A>> launch, uint retryCount, Duration retryInterval, ITimeContext timeContext
+    ) {
+      launchRaw = launch;
+      this.retryCount = retryCount;
+      this.retryInterval = retryInterval;
+      this.timeContext = timeContext;
+      finalHandleFuture = Future.async(out finalHandlePromise);
+
+      this.launch();
+    }
+
+    public AsyncOperationStatus Status => current.Status;
+    public bool IsDone => current.IsDone;
+    public float PercentComplete => current.PercentComplete;
+    public Future<Try<A>> asFuture => finalHandleFuture.flatMap(h => h.asFuture);
+    public Try<A> toTry() => current.toTry();
+
+    public void release() {
+      current.release();
+      state = State.Released;
+      currentRetryWait.Dispose();
+    }
+
+    void launch() {
+      var handle = current = launchRaw();
+      state = State.Launched;
+      handle.asFuture.onComplete(try_ => {
+        if (state == State.Released) return;
+        
+        try_.voidFold(
+          // Success!
+          a => {
+            state = State.Finished;
+            finalHandlePromise.complete(handle);
+          },
+          err => {
+            if (retryNo < retryCount) {
+              // Retry
+              retryNo++;
+              state = State.WaitingToRetry;
+              currentRetryWait = timeContext.after(
+                retryInterval, name: nameof(RetryingAsyncOperationHandle<A>), act: launch
+              );
+            }
+            else {
+              // We've run out of retries, complete with what we had last.
+              state = State.Finished;
+              finalHandlePromise.complete(handle);
+            }
+          }
+        );
+      });
+    }
   }
 #endregion
 }
