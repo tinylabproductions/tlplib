@@ -21,9 +21,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         return false;
       }
     }
-    
-    public static Option<T> get<T>(this IReadOnlyList<T> list, int index) =>
-      list.indexValid(index) ? F.some(list[index]) : F.none<T>();
 
     [PublicAPI]
     public static T getOrElse<T>(this IReadOnlyList<T> list, int index, T defaultValue) =>
