@@ -34,12 +34,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     /// <summary>Launches given async operation, retrying it if it fails.</summary>
     /// <param name="launch"></param>
-    /// <param name="retryCount">If None will retry forever.</param>
+    /// <param name="tryCount">
+    /// If None will retry forever. How many times we should try the operation? If lower than 1 will still try at least
+    /// 1 time.
+    /// </param>
     /// <param name="retryInterval"></param>
     /// <param name="timeContext"></param>
     public static IAsyncOperationHandle<A> withRetries<A>(
-      Func<IAsyncOperationHandle<A>> launch, Option<uint> retryCount, Duration retryInterval, ITimeContext timeContext
-    ) => new RetryingAsyncOperationHandle<A>(launch, retryCount, retryInterval, timeContext);
+      Func<IAsyncOperationHandle<A>> launch, Option<uint> tryCount, Duration retryInterval, ITimeContext timeContext
+    ) => new RetryingAsyncOperationHandle<A>(launch, tryCount, retryInterval, timeContext);
   }
   
   [PublicAPI] public static class IAsyncOperationHandleExts {
@@ -326,7 +329,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     enum State : byte { Launched, WaitingToRetry, Finished, Released }
     
     readonly Func<IAsyncOperationHandle<A>> launchRaw;
-    readonly Option<uint> retryCount;
+    readonly Option<uint> tryCount;
     readonly Duration retryInterval;
     readonly ITimeContext timeContext;
     readonly Future<IAsyncOperationHandle<A>> finalHandleFuture;
@@ -338,10 +341,10 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     IDisposable currentRetryWait = F.emptyDisposable;
 
     public RetryingAsyncOperationHandle(
-      Func<IAsyncOperationHandle<A>> launch, Option<uint> retryCount, Duration retryInterval, ITimeContext timeContext
+      Func<IAsyncOperationHandle<A>> launch, Option<uint> tryCount, Duration retryInterval, ITimeContext timeContext
     ) {
       launchRaw = launch;
-      this.retryCount = retryCount;
+      this.tryCount = tryCount;
       this.retryInterval = retryInterval;
       this.timeContext = timeContext;
       finalHandleFuture = Future.async(out finalHandlePromise);
@@ -374,7 +377,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
             finalHandlePromise.complete(handle);
           },
           err => {
-            if (!retryCount.valueOut(out var count) || retryNo < count) {
+            if (!tryCount.valueOut(out var count) || retryNo < count) {
               // Retry
               retryNo++;
               state = State.WaitingToRetry;
