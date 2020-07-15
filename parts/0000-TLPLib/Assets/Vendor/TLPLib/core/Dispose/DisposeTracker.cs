@@ -59,6 +59,23 @@ namespace com.tinylabproductions.TLPLib.dispose {
     public IEnumerable<TrackedDisposable> trackedDisposables => list;
 
     static readonly LazyVal<ILog> lazyLog = F.lazy(() => Log.d.withScope(nameof(DisposableTracker)));
+    
+    /// <summary>
+    /// Use this in methods with RuntimeInitializeOnLoadMethod instead of NoOpDisposableTracker to dispose properly
+    /// in editor
+    /// </summary>
+    public static IDisposableTracker disposeOnExitPlayMode = new DisposableTracker();
+    
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+    static void init() {
+      UnityEditor.EditorApplication.playModeStateChanged += change => {
+        if (change == UnityEditor.PlayModeStateChange.ExitingPlayMode) {
+          disposeOnExitPlayMode.Dispose();
+        }
+      };
+    }
+#endif
 
     public DisposableTracker(
       [CallerMemberName] string callerMemberName = "",
