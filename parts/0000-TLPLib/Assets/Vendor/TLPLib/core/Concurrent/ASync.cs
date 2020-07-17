@@ -17,8 +17,7 @@ using UnityEngine.Networking;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
     static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) =>
-      go.GetComponent<ASyncHelperBehaviourEmpty>()
-      ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
+      go.EnsureComponent<ASyncHelperBehaviourEmpty>();
 
     static ASyncHelperBehaviour _behaviour;
 

@@ -19,7 +19,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public static SceneValidator validateForComponent<A>() where A : Component =>
       scene => {
-        var aList = scene.GetRootGameObjects().collect(go => go.GetComponentSafe<A>()).ToImmutableList();
+        var aList = scene.GetRootGameObjects().collect(go => go.GetComponentOption<A>()).ToImmutableList();
         return (aList.Count != 1).opt(new ErrorMsg(
           $"Found {aList.Count} of {typeof(A)} in scene '{scene.path}' root game objects, expected 1."
         )).asEnumerable().ToImmutableList();
