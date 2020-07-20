@@ -242,7 +242,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             foreach (var elementWithView in data.asElementWithView) {
               var instance = elementWithView.createItem(backing._container);
               var rectTrans = instance.rectTransform;
-              rectTrans.anchorMin = rectTrans.anchorMax = isHorizontal ? Vector2.zero : Vector2.up;// ??
+              rectTrans.anchorMin = rectTrans.anchorMax = isHorizontal ? Vector2.zero : Vector2.up;
               rectTrans.localPosition = Vector3.zero;
               rectTrans.anchoredPosition = cellRect.center;
               instanceOpt = instance.some();

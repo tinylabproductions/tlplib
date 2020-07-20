@@ -134,6 +134,26 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     // public override string[] __editorSerializedProps => spVector2("m_AnchoredPosition");
   }
+  
+  [Serializable]
+  public sealed class AnchoredPositionX : SerializedTweenerFloat<RectTransform> {
+    protected override float get => _target.anchoredPosition.x;
+    protected override void set(float value) {
+      var pos = _target.anchoredPosition;
+      pos.x = value;
+      _target.anchoredPosition = pos;
+    }
+  }
+  
+  [Serializable]
+  public sealed class AnchoredPositionY : SerializedTweenerFloat<RectTransform> {
+    protected override float get => _target.anchoredPosition.y;
+    protected override void set(float value) {
+      var pos = _target.anchoredPosition;
+      pos.y = value;
+      _target.anchoredPosition = pos;
+    }
+  }
 
   [Serializable]
   public sealed class LocalScale : SerializedTweenerVector3<Transform> {
@@ -149,6 +169,36 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override void set(Vector3 value) => _target.localPosition = value;
     
     // public override string[] __editorSerializedProps => spVector3("m_LocalPosition");
+  }
+  
+  [Serializable]
+  public sealed class LocalPositionX : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localPosition.x;
+    protected override void set(float value) {
+      var pos = _target.localPosition;
+      pos.x = value;
+      _target.localPosition = pos;
+    }
+  }
+  
+  [Serializable]
+  public sealed class LocalPositionY : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localPosition.y;
+    protected override void set(float value) {
+      var pos = _target.localPosition;
+      pos.y = value;
+      _target.localPosition = pos;
+    }
+  }
+  
+  [Serializable]
+  public sealed class LocalPositionZ : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localPosition.z;
+    protected override void set(float value) {
+      var pos = _target.localPosition;
+      pos.z = value;
+      _target.localPosition = pos;
+    }
   }
   
   [Serializable]
