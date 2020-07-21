@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.log;
 using pzd.lib.serialization;
 using UnityEngine;
 
@@ -20,12 +21,12 @@ namespace com.tinylabproductions.TLPLib.Configuration {
       /// <summary>
       /// <see cref="LogEntry.tags"/> and <see cref="LogEntry.extras"/>
       /// </summary>
-      public readonly ImmutableArray<Tpl<string, string>> tags, extras;
+      public readonly ImmutableArray<KeyValuePair<string, string>> tags, extras;
 
       public UrlWithContext(
         Uri url,
-        ImmutableArray<Tpl<string, string>> tags,
-        ImmutableArray<Tpl<string, string>> extras
+        ImmutableArray<KeyValuePair<string, string>> tags,
+        ImmutableArray<KeyValuePair<string, string>> extras
       ) {
         this.url = url;
         this.tags = tags;

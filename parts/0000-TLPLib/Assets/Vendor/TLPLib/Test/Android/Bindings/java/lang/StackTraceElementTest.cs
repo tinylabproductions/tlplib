@@ -1,7 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Test;
-using NUnit.Framework;
-
-#if UNITY_ANDROID
+﻿#if UNITY_ANDROID
 namespace com.tinylabproductions.TLPLib.Android.Bindings.java.lang {
   public class StackTraceElementTest {
     [Test]

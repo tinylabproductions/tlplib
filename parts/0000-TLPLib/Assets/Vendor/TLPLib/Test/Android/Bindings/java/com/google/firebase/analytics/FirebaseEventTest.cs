@@ -3,6 +3,7 @@ using pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
 

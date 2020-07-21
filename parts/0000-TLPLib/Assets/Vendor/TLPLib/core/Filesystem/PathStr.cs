@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;

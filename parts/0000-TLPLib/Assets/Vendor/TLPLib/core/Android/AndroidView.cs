@@ -1,9 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Concurrent;
-using System;
-using com.tinylabproductions.TLPLib.Logger;
-using UnityEngine;
-
-namespace com.tinylabproductions.TLPLib.Android {
+﻿namespace com.tinylabproductions.TLPLib.Android {
 #if UNITY_ANDROID
   public static class AndroidView {
     const string

@@ -1,6 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
+﻿using com.tinylabproductions.TLPLib.Reactive;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {

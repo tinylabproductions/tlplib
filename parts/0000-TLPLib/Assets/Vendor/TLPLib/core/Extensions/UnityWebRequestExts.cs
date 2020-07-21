@@ -1,8 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;

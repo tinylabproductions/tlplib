@@ -1,5 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class Texture2DExts {

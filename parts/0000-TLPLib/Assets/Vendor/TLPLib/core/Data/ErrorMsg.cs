@@ -1,16 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.Data {
   [Record(GenerateConstructor = ConstructorFlags.None)]
-  public partial struct ErrorMsg {
+  public readonly partial struct ErrorMsg {
     [PublicAPI] public readonly string s;
     /// <see cref="LogEntry.reportToErrorTracking"/>
     [PublicAPI] public readonly bool reportToErrorTracking;
@@ -29,8 +29,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public LogEntry toLogEntry() => new LogEntry(
       s,
-      ImmutableArray<Tpl<string, string>>.Empty,
-      ImmutableArray<Tpl<string, string>>.Empty,
+      ImmutableArray<KeyValuePair<string, string>>.Empty,
+      ImmutableArray<KeyValuePair<string, string>>.Empty,
       context: context.getOrNull(),
       reportToErrorTracking: reportToErrorTracking
     );

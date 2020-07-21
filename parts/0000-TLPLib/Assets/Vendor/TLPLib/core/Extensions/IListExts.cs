@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
-using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class IListExts {

@@ -3,38 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Components.debug;
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Threads;
-using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.data;
+using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
-using pzd.lib.typeclasses;
 using UnityEngine;
 
+
 namespace com.tinylabproductions.TLPLib.dispose {
-  [Record] public partial struct TrackedDisposable : IStr {
-    public readonly IDisposable disposable;
-    public readonly CallerData caller;
-
-    public string asString() => caller.asString();
-  }
-
-  [PublicAPI] public interface IDisposableTracker : IDisposable {
-    void track(
-      IDisposable a,
-      [CallerMemberName] string callerMemberName = "",
-      [CallerFilePath] string callerFilePath = "",
-      [CallerLineNumber] int callerLineNumber = 0
-    );
-
-    int trackedCount { get; }
-    IEnumerable<TrackedDisposable> trackedDisposables { get; }
-  }
-
   public static class IDisposableTrackerExts {
     [PublicAPI] public static void track(
       this IDisposableTracker tracker,

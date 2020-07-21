@@ -1,10 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
-using pzd.lib.functional;
+﻿using pzd.lib.functional;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class RectUtils {

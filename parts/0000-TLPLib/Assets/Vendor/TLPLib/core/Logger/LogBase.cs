@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Threads;
+using pzd.lib.log;
+using pzd.lib.reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Logger {
@@ -11,10 +13,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
     // Can't use Unity time, because it is not thread safe
     static readonly DateTime initAt = DateTime.Now;
 
-    public Log.Level level { get; set; } = Log.defaultLogLevel;
-    public bool willLog(Log.Level l) => l >= level;
+    public LogLevel level { get; set; } = Log.defaultLogLevel;
+    public bool willLog(LogLevel l) => l >= level;
 
-    public void log(Log.Level l, LogEntry entry) {
+    public void log(LogLevel l, LogEntry entry) {
       logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
       var logEvent = new LogEvent(l, entry);
       if (OnMainThread.isMainThread) _messageLogged.push(logEvent);
@@ -26,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     void logOnMainThread(LogEvent logEvent) => OnMainThread.run(() => _messageLogged.push(logEvent));
 
-    protected abstract void logInner(Log.Level l, LogEntry entry);
+    protected abstract void logInner(LogLevel l, LogEntry entry);
 
     static string line(string level, object o) => 
       $"[{(DateTime.Now - initAt).TotalSeconds:F3}|{thread}|{frame}|{level}]> {o}";

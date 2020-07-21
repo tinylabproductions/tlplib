@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Smooth.Pools;
+﻿using Smooth.Pools;
 
 namespace UnityEngine.UI {
   public class SuperOutline : Shadow {

@@ -3,10 +3,12 @@ using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.serialization;
+
 
 namespace com.tinylabproductions.TLPLib.Filesystem {
   [PublicAPI] public class FileCachedBlob : ICachedBlob<byte[]> {
@@ -33,7 +35,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
     public static ICachedBlob<A> a<A>(
       ISerializedRW<A> rw, PathStr path, A defaultValue, 
-      ILog log = null, Log.Level onDeserializeFailureLogLevel = Log.Level.ERROR
+      ILog log = null, LogLevel onDeserializeFailureLogLevel = LogLevel.ERROR
     ) {
       log ??= Log.d;
       return new FileCachedBlob(path).bimap(BiMapper.a(

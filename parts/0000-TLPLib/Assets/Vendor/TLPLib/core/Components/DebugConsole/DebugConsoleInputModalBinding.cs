@@ -1,8 +1,8 @@
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 using UnityEngine;
 using UnityEngine.UI;
 

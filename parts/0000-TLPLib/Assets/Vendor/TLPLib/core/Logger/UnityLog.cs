@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.log;
+using pzd.lib.reactive;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -19,17 +22,17 @@ namespace com.tinylabproductions.TLPLib.Logger {
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
 
-    protected override void logInner(Log.Level l, LogEntry entry) {
+    protected override void logInner(LogLevel l, LogEntry entry) {
       switch (l) {
-        case Log.Level.VERBOSE:
-        case Log.Level.DEBUG:
-        case Log.Level.INFO:
+        case LogLevel.VERBOSE:
+        case LogLevel.DEBUG:
+        case LogLevel.INFO:
           Debug.Log(s(entry), entry.maybeContext as Object);
           break;
-        case Log.Level.WARN:
+        case LogLevel.WARN:
           Debug.LogWarning(s(entry), entry.maybeContext as Object);
           break;
-        case Log.Level.ERROR:
+        case LogLevel.ERROR:
           Debug.LogError(s(entry), entry.maybeContext as Object);
           break;
         default:
@@ -47,17 +50,17 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
         // We want to collect backtrace on the current thread
         var backtrace =
-          level >= Log.Level.WARN
+          level >= LogLevel.WARN
             ?
               // backtrace may be empty in release mode.
               string.IsNullOrEmpty(backtraceS)
                 ? Backtrace.generateFromHere(stackFramesToSkipWhenGenerating + 1 /*this stack frame*/)
-                : Backtrace.parseUnityBacktrace(backtraceS)
+                : Backtrace.parseStringBacktrace(backtraceS, BacktraceElemUnity.parseBacktraceLine)
             : None._;
         var logEvent = new LogEvent(level, new LogEntry(
           message,
-          ImmutableArray<Tpl<string, string>>.Empty,
-          ImmutableArray<Tpl<string, string>>.Empty,
+          ImmutableArray<KeyValuePair<string, string>>.Empty,
+          ImmutableArray<KeyValuePair<string, string>>.Empty,
           reportToErrorTracking: true,
           backtrace: backtrace.toNullable(), context: null
         ));
@@ -83,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
             var logEvent = logEventTry.isSuccess
               ? logEventTry.__unsafeGet
               : new LogEvent(
-                Log.Level.ERROR, 
+                LogLevel.ERROR, 
                 LogEntry.fromException(
                   $"Error while converting Unity log message (type: {type}): {message}, backtrace: [{backtrace}]", 
                   logEventTry.__unsafeException
@@ -100,16 +103,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
       )
     );
 
-    static Log.Level convertLevel(LogType type) {
+    static LogLevel convertLevel(LogType type) {
       switch (type) {
         case LogType.Error:
         case LogType.Exception:
         case LogType.Assert:
-          return Log.Level.ERROR;
+          return LogLevel.ERROR;
         case LogType.Warning:
-          return Log.Level.WARN;
+          return LogLevel.WARN;
         case LogType.Log:
-          return Log.Level.INFO;
+          return LogLevel.INFO;
         default:
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }

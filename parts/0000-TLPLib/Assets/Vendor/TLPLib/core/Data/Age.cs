@@ -1,6 +1,4 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
-using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.functional;
 using pzd.lib.typeclasses;
 

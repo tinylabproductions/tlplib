@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
-
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using pzdf = pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
 using pzd.lib.typeclasses;

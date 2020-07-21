@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.dispose;
-using Smooth.Dispose;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /* Execute asynchronous things one at a time. Useful for wrapping not

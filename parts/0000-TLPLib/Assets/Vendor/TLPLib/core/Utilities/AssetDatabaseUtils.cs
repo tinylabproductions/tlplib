@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -21,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       var components = new List<A>();
 
       foreach (var go in prefabs) {
-        go.GetComponentsInChildren<A>(includeInactive: true, results: components);
+        go.GetComponentsInChildren(includeInactive: true, results: components);
         foreach (var c in components) yield return c;
       }
     }

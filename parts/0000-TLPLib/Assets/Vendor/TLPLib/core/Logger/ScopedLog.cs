@@ -1,4 +1,5 @@
-﻿using com.tinylabproductions.TLPLib.Reactive;
+﻿using pzd.lib.log;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public class ScopedLog : ILog {
@@ -10,15 +11,15 @@ namespace com.tinylabproductions.TLPLib.Logger {
       this.backing = backing;
     }
 
-    public Log.Level level {
+    public LogLevel level {
       get { return backing.level; }
       set { backing.level = value; }
     }
 
     public IRxObservable<LogEvent> messageLogged => backing.messageLogged;
 
-    public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, LogEntry entry) =>
+    public bool willLog(LogLevel l) => backing.willLog(l);
+    public void log(LogLevel l, LogEntry entry) =>
       backing.log(l, entry.withMessage(wrap(entry.message)));
 
     string wrap(object o) => $"[{scope}] {o}";

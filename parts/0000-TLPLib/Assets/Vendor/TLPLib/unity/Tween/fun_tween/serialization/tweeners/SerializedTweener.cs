@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.validations;

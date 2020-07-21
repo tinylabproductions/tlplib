@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.Test {
   public class TestLogger : LogBase {
@@ -21,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Test {
 
     public TestLogger(bool errorsAsExceptions = false) {
       this.errorsAsExceptions = errorsAsExceptions;
-      level = Log.Level.VERBOSE;
+      level = LogLevel.VERBOSE;
     }
 
     public void clear() {
@@ -32,22 +33,22 @@ namespace com.tinylabproductions.TLPLib.Test {
       errorMsgs.Clear();
     }
 
-    protected override void logInner(Log.Level l, LogEntry entry) {
+    protected override void logInner(LogLevel l, LogEntry entry) {
       switch (l) {
-        case Log.Level.ERROR:
+        case LogLevel.ERROR:
           if (errorsAsExceptions) throw new Exception(entry.ToString());
           errorMsgs.Add(entry);
           break;
-        case Log.Level.WARN:
+        case LogLevel.WARN:
           warnMsgs.Add(entry);
           break;
-        case Log.Level.INFO:
+        case LogLevel.INFO:
           infoMsgs.Add(entry);
           break;
-        case Log.Level.DEBUG:
+        case LogLevel.DEBUG:
           debugMsgs.Add(entry);
           break;
-        case Log.Level.VERBOSE:
+        case LogLevel.VERBOSE:
           verboseMsgs.Add(entry);
           break;
         default:

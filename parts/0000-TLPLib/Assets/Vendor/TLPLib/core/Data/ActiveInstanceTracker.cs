@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.data.dispose;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>

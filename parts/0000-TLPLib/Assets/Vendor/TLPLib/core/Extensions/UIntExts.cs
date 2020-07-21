@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class UIntExts {
     [PublicAPI] public static int toIntOrLog(
       this uint a,
-      Log.Level level = Log.Level.ERROR,
+      LogLevel level = LogLevel.ERROR,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0

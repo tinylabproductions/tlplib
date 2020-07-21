@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.collection;
 using pzd.lib.functional;
+
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public static partial class F {
@@ -132,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
       new LazyValImpl<A>(func, afterInitialization);
 
     public static LazyVal<A> loggedLazy<A>(
-      string name, Func<A> func, ILog log = null, Log.Level level = Log.Level.DEBUG
+      string name, Func<A> func, ILog log = null, LogLevel level = LogLevel.DEBUG
     ) => lazy(() => {
       var _log = log ?? Log.d;
       if (_log.willLog(level)) _log.log(level, $"Initializing lazy value: {name}");

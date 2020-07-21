@@ -7,10 +7,12 @@ using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -216,11 +218,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         }
         else if (!acceptedResponseCodes.contains(responseCode)) {
           var url = new Url(req.url); // Capture URL before disposing
-          var extrasB = ImmutableArray.CreateBuilder<Tpl<string, string>>();
+          var extrasB = ImmutableArray.CreateBuilder<KeyValuePair<string, string>>();
           foreach (var header in req.GetResponseHeaders()) {
-            extrasB.Add(F.t(header.Key, header.Value));
+            extrasB.Add(F.kv(header.Key, header.Value));
           }
-          extrasB.Add(F.t("response-text", req.downloadHandler.text));
+          extrasB.Add(F.kv("response-text", req.downloadHandler.text));
           req.Dispose();
           promise.complete(new WebRequestError(url, LogEntry.extras_(
             $"Received response code {responseCode} was not in {acceptedResponseCodes}",

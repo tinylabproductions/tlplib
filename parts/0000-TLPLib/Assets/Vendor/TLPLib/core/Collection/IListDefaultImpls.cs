@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Smooth.Collections;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public static class IListDefaultImpls {

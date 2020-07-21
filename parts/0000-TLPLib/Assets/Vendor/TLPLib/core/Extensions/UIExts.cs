@@ -1,7 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Components;
-using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 using UnityEngine;
 using UnityEngine.EventSystems;
 

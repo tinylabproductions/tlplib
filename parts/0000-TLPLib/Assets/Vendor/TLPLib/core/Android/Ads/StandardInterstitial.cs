@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace com.tinylabproductions.TLPLib.Android.Ads {
+﻿namespace com.tinylabproductions.TLPLib.Android.Ads {
   public interface IStandardInterstitial {
     void load();
     bool ready { get; }

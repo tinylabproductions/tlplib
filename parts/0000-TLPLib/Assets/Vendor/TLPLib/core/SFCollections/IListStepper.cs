@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Functional;
 
 namespace Smooth.Collections {
 	/// <summary>

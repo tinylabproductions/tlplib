@@ -1,5 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.targets;
+﻿using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.targets;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

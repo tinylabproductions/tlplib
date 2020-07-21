@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
@@ -24,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.import {
       if (GUILayout.Button("Generate")) {
         if (!obj.texture) {
           EditorUtils.userInfo(
-            "Texture not set!", "Please set the texture before generating.", Log.Level.ERROR
+            "Texture not set!", "Please set the texture before generating.", LogLevel.ERROR
           );
           return;
         }
@@ -53,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.import {
           EditorUtils.userInfo(
             "Invalid pallete!",
             dictV.__unsafeGetLeft.mkString("\n"),
-            Log.Level.ERROR
+            LogLevel.ERROR
           );
           return;
         }
@@ -88,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.import {
 
         if (unknownColorsFound.nonEmptyAllocating()) {
           EditorUtils.userInfo(
-            "Found unknown colors!", level: Log.Level.ERROR,
+            "Found unknown colors!", level: LogLevel.ERROR,
             body:
               "These colors were not defined:\n" +
                 unknownColorsFound.Select(_ => $"#{_.toHex()}").OrderBySafe(_ => _).mkString("\n")

@@ -5,7 +5,6 @@ using pzd.lib.concurrent;
 using pzd.lib.exts;
 using pzd.lib.reactive;
 using pzdf = pzd.lib.functional;
-using None = pzd.lib.functional.None;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class IHeapFutureExts {
