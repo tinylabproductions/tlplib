@@ -230,7 +230,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       );
 
       var obs = mouseObs.joinAll(new [] {directionObs, keyboardShortcutObs});
-      obs.subscribe(tracker, _ => instance.show(unlockCode, binding));
+      obs.subscribe(tracker, _ => instance.show(unlockCode, tracker, binding));
       return obs;
     }
 
@@ -268,7 +268,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker, bool persistent) =>
       new DConsoleRegistrar(this, prefix, tracker, persistent);
     
-    public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {
+    public void show(Option<string> unlockCode, IDisposableTracker tracker, DebugConsoleBinding binding = null) {
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
 
       {
@@ -309,6 +309,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         logEntries
           .SelectMany(e => createEntries(e, logEntryPool, cache, view.lineWidth))
           .Select(_ => _.upcast(default(DynamicLayout.IElementData))),
+        tracker,
         renderLatestItemsFirst: true
       );
 
@@ -534,7 +535,6 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       foreach (var instance in current) {
         Debug.Log("Destroying DConsole.");
         Application.logMessageReceivedThreaded -= instance.logCallback;
-        instance.dynamicVerticalLayout.Dispose();
         instance.pool.dispose(Object.Destroy);
         Object.Destroy(instance.view.gameObject);
       }

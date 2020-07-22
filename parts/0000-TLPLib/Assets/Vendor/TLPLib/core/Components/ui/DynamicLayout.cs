@@ -87,26 +87,16 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       public float sizeInScrollableAxis { get; }
       public Percentage sizeInSecondaryAxis { get; }
       public Option<IElementWithViewData> asElementWithView => None._;
-
-      public static EmptyElement createVertical(float height, Percentage width) => new EmptyElement(
-        sizeInScrollableAxis: height,
-        sizeInSecondaryAxis: width
-      );
-      public static EmptyElement createHorizontal(float width, Percentage height) => new EmptyElement(
-        sizeInScrollableAxis: width,
-        sizeInSecondaryAxis: height
-      );
       
-      EmptyElement(float sizeInScrollableAxis, Percentage sizeInSecondaryAxis) {
+      public EmptyElement(float sizeInScrollableAxis, Percentage sizeInSecondaryAxis) {
         this.sizeInScrollableAxis = sizeInScrollableAxis;
         this.sizeInSecondaryAxis = sizeInSecondaryAxis;
       }
     }
     
-    public class Init : IDisposable {
+    public class Init {
       const float EPS = 1e-9f;
 
-      readonly DisposableTracker dt = new DisposableTracker();
       readonly DynamicLayout backing;
       readonly List<IElementData> layoutData;
       readonly IRxRef<float> containerSizeInScrollableAxis = RxRef.a(0f);
@@ -122,12 +112,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       public Init(
         DynamicLayout backing,
         IEnumerable<IElementData> layoutData,
+        IDisposableTracker dt,
         bool renderLatestItemsFirst = false
       ) {
         this.backing = backing;
         this.layoutData = layoutData.ToList();
         this.renderLatestItemsFirst = renderLatestItemsFirst;
         isHorizontal = backing._scrollRect.horizontal;
+        
+        dt.track(clearLayout);
 
         var mask = backing._maskRect;
 
@@ -258,11 +251,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           }
         }
         containerSizeInScrollableAxis.value = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
-      }
-
-      public void Dispose() {
-        clearLayout();
-        dt.Dispose();
       }
     }
   }
