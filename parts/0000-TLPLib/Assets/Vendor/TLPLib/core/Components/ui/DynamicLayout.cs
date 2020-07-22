@@ -259,33 +259,35 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     
     
     
-    public abstract class Data<Obj> : IElementWithViewData where Obj : MonoBehaviour {
+    public abstract class ElementWithViewData<Obj> : IElementWithViewData where Obj : MonoBehaviour {
       readonly GameObjectPool<Obj> pool;
+      public float sizeInScrollableAxis { get; }
+      public Percentage sizeInSecondaryAxis { get; }
       
-      protected abstract IDisposable setup(Obj obj);
+      public Option<IElementWithViewData> asElementWithView => F.some<IElementWithViewData>(this);
+      
+      protected abstract IDisposable setup(Obj view);
 
-      public Data(
-        GameObjectPool<Obj> pool, Percentage sizeInSecondaryAxis, float sizeInScrollableAxis
+      public ElementWithViewData(
+        GameObjectPool<Obj> pool, float sizeInScrollableAxis, Percentage sizeInSecondaryAxis
       ) {
         this.pool = pool;
         this.sizeInSecondaryAxis = sizeInSecondaryAxis;
         this.sizeInScrollableAxis = sizeInScrollableAxis;
       }
-      public float sizeInScrollableAxis { get; }
-      public Percentage sizeInSecondaryAxis { get; }
-      public Option<IElementWithViewData> asElementWithView => F.some<IElementWithViewData>(this);
 
       public IElementView createItem(Transform parent) {
         var view = pool.borrow();
-        return new View<Obj>(view, setup(view), pool);
+        return new ElementView<Obj>(view, setup(view), pool);
       }
     }
-    public class View<Obj> : IElementView where Obj : MonoBehaviour {
+    public class ElementView<Obj> : IElementView where Obj : MonoBehaviour {
       readonly Obj visual;
       readonly IDisposable disposable;
       readonly GameObjectPool<Obj> pool;
+      public RectTransform rectTransform { get; }
       
-      public View(Obj visual, IDisposable disposable, GameObjectPool<Obj> pool) {
+      public ElementView(Obj visual, IDisposable disposable, GameObjectPool<Obj> pool) {
         this.visual = visual;
         this.disposable = disposable;
         this.pool = pool;
@@ -295,8 +297,6 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         if (visual) pool.release(visual);
         disposable.Dispose();
       }
-
-      public RectTransform rectTransform { get; }
     }
     
   }
