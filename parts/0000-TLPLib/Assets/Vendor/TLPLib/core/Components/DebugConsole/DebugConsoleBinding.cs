@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     [NotNull] public Text commandGroupLabel;
     [NotNull] public ButtonBinding buttonPrefab;
     [NotNull] public Button closeButton, minimiseButton;
-    [NotNull] public DynamicVerticalLayout dynamicLayout;
+    [NotNull] public DynamicLayout dynamicLayout;
     [NotNull] public VerticalLayoutLogEntryPrefab logEntry;
     [NotNull] public GameObject logPanel;
     [NotNull, SerializeField, PublicAccessor] GameObject _modals;
