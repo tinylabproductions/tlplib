@@ -5,6 +5,8 @@ using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
@@ -253,5 +255,49 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         containerSizeInScrollableAxis.value = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
       }
     }
+    
+    
+    
+    
+    public abstract class Data<Obj> : IElementWithViewData where Obj : MonoBehaviour {
+      readonly GameObjectPool<Obj> pool;
+      
+      protected abstract IDisposable setup(Obj obj);
+
+      public Data(
+        GameObjectPool<Obj> pool, Percentage sizeInSecondaryAxis, float sizeInScrollableAxis
+      ) {
+        this.pool = pool;
+        this.sizeInSecondaryAxis = sizeInSecondaryAxis;
+        this.sizeInScrollableAxis = sizeInScrollableAxis;
+      }
+      public float sizeInScrollableAxis { get; }
+      public Percentage sizeInSecondaryAxis { get; }
+      public Option<IElementWithViewData> asElementWithView => F.some<IElementWithViewData>(this);
+
+      public IElementView createItem(Transform parent) {
+        var view = pool.borrow();
+        return new View<Obj>(view, setup(view), pool);
+      }
+    }
+    public class View<Obj> : IElementView where Obj : MonoBehaviour {
+      readonly Obj visual;
+      readonly IDisposable disposable;
+      readonly GameObjectPool<Obj> pool;
+      
+      public View(Obj visual, IDisposable disposable, GameObjectPool<Obj> pool) {
+        this.visual = visual;
+        this.disposable = disposable;
+        this.pool = pool;
+        rectTransform = (RectTransform) visual.transform;
+      }
+      public void Dispose() {
+        if (visual) pool.release(visual);
+        disposable.Dispose();
+      }
+
+      public RectTransform rectTransform { get; }
+    }
+    
   }
 }
