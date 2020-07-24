@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     public void Awake() {
       if (!target) target = transform;
-      animation = target.gameObject.GetComponentSafe<SinusoidScale>();
+      animation = target.gameObject.GetComponentOption<SinusoidScale>();
     }
 
     protected override void onPointerDown(PointerEventData eventData) {

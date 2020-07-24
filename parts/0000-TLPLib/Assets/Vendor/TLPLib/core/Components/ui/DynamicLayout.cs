@@ -5,21 +5,22 @@ using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
-using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
   /// <summary>
-  /// Scrollable vertical layout, which makes sure that only visible elements are created.
+  /// Scrollable vertical/horizontal layout, which makes sure that only visible elements are created.
   /// Element is considered visible if it intersects with <see cref="_maskRect"/> bounds.
   ///
-  /// Sample layout:
+  /// Sample vertical layout:
   /// 
   /// <code><![CDATA[
   ///  #  | height | width
@@ -40,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
   /// +-----------------+
   /// ]]></code>
   /// </summary>
-  public partial class DynamicVerticalLayout : MonoBehaviour {
+  public partial class DynamicLayout : MonoBehaviour {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -65,10 +66,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// Used to determine layout height and item positions
     /// </summary>
     public interface IElementData {
-      /// <summary>Height of an element in a layout.</summary>
-      float height { get; }
-      /// <summary>Item width portion of layout width.</summary>
-      Percentage width { get; }
+      /// <summary>Height of an element in a vertical layout OR width in horizontal layout</summary>
+      float sizeInScrollableAxis { get; }
+      /// <summary>Item width portion of vertical layout width OR height in horizontal layout.</summary>
+      Percentage sizeInSecondaryAxis { get; }
       Option<IElementWithViewData> asElementWithView { get; }
     }
     
@@ -85,24 +86,24 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     /// Empty spacer element
     /// </summary>
     public class EmptyElement : IElementData {
-      public float height { get; }
-      public Percentage width { get; }
+      public float sizeInScrollableAxis { get; }
+      public Percentage sizeInSecondaryAxis { get; }
       public Option<IElementWithViewData> asElementWithView => None._;
-
-      public EmptyElement(float height, Percentage width) {
-        this.height = height;
-        this.width = width;
+      
+      public EmptyElement(float sizeInScrollableAxis, Percentage sizeInSecondaryAxis) {
+        this.sizeInScrollableAxis = sizeInScrollableAxis;
+        this.sizeInSecondaryAxis = sizeInSecondaryAxis;
       }
     }
     
-    public class Init : IDisposable {
+    public class Init {
       const float EPS = 1e-9f;
 
-      readonly DisposableTracker dt = new DisposableTracker();
-      readonly DynamicVerticalLayout backing;
+      readonly DynamicLayout backing;
       readonly List<IElementData> layoutData;
-      readonly IRxRef<float> containerHeight = RxRef.a(0f);
+      readonly IRxRef<float> containerSizeInScrollableAxis = RxRef.a(0f);
       readonly bool renderLatestItemsFirst;
+      readonly bool isHorizontal;
 
       // If Option is None, that means there is no backing view, it is only a spacer.
       readonly IDictionary<IElementData, Option<IElementView>> _items = 
@@ -111,14 +112,18 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       public Option<Option<IElementView>> get(IElementData key) => _items.get(key);
 
       public Init(
-        DynamicVerticalLayout backing,
+        DynamicLayout backing,
         IEnumerable<IElementData> layoutData,
+        IDisposableTracker dt,
         bool renderLatestItemsFirst = false
       ) {
         this.backing = backing;
         this.layoutData = layoutData.ToList();
         this.renderLatestItemsFirst = renderLatestItemsFirst;
+        isHorizontal = backing._scrollRect.horizontal;
         
+        dt.track(clearLayout);
+
         var mask = backing._maskRect;
 
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive()
@@ -131,8 +136,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           .map(_ => mask.rect)
           .toRxVal(mask.rect);
 
-        maskSize.zip(containerHeight, (_, height) => height).subscribe(dt, height => {
-          backing._container.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        var rectTransformAxis = isHorizontal
+          ? RectTransform.Axis.Horizontal
+          : RectTransform.Axis.Vertical;
+        maskSize.zip(containerSizeInScrollableAxis, (_, size) => size).subscribe(dt, size => {
+          backing._container.SetSizeWithCurrentAnchors(rectTransformAxis, size);
           clearLayout();
           updateLayout();
         });
@@ -162,20 +170,22 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         }
         _items.Clear();
       }
+      
+      public Rect calculateVisibleRect => backing._maskRect.rect.convertCoordinateSystem(
+        ((Transform)backing._maskRect).some(), backing._container
+      );
 
       /// <summary>
-      /// You can call this after modifing the underlying data to update the layout so
+      /// You can call this after modifying the underlying data to update the layout so
       /// it would show everything correctly.
       /// </summary>
       [PublicAPI]
       public void updateLayout() {
-        var visibleRect = backing._maskRect.rect.convertCoordinateSystem(
-          ((Transform)backing._maskRect).some(), backing._container
-        );
+        var visibleRect = calculateVisibleRect;
 
-        var totalHeightUntilThisRow = 0f;
-        var currentRowHeight = 0f;
-        var currentWidthPerc = 0f;
+        var totalOffsetUntilThisRow = 0f;
+        var currentRowSizeInScrollableAxis = 0f;
+        var currentSizeInSecondaryAxisPerc = 0f;
 
         var direction = renderLatestItemsFirst ? -1 : 1;
         for (
@@ -184,27 +194,41 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           idx += direction
         ) {
           var data = layoutData[idx];
-          var itemWidthPerc = data.width.value;
+          var itemSizeInSecondaryAxisPerc = data.sizeInSecondaryAxis.value;
           var itemLeftPerc = 0f;
-          if (currentWidthPerc + itemWidthPerc > 1f + EPS) {
-            currentWidthPerc = itemWidthPerc;
-            totalHeightUntilThisRow += currentRowHeight;
-            currentRowHeight = data.height;
+          if (currentSizeInSecondaryAxisPerc + itemSizeInSecondaryAxisPerc > 1f + EPS) {
+            currentSizeInSecondaryAxisPerc = itemSizeInSecondaryAxisPerc;
+            totalOffsetUntilThisRow += currentRowSizeInScrollableAxis;
+            currentRowSizeInScrollableAxis = data.sizeInScrollableAxis;
           }
           else {
-            itemLeftPerc = currentWidthPerc;
-            currentWidthPerc += itemWidthPerc;
-            currentRowHeight = Mathf.Max(currentRowHeight, data.height);
+            itemLeftPerc = currentSizeInSecondaryAxisPerc;
+            currentSizeInSecondaryAxisPerc += itemSizeInSecondaryAxisPerc;
+            currentRowSizeInScrollableAxis = Mathf.Max(currentRowSizeInScrollableAxis, data.sizeInScrollableAxis);
           }
 
-          var width = backing._container.rect.width;
-          var x = itemLeftPerc * width;
-          var cellRect = new Rect(
-            x: x,
-            y: -totalHeightUntilThisRow - data.height,
-            width: width * itemWidthPerc,
-            height: data.height
-          );
+          Rect cellRect;
+          if (isHorizontal) {
+            var height = backing._container.rect.height;
+            var y = itemLeftPerc * height;
+            cellRect = new Rect(
+              x: totalOffsetUntilThisRow,
+              y: y,
+              width: data.sizeInScrollableAxis,
+              height: height * itemSizeInSecondaryAxisPerc
+            );
+          }
+          else {
+            var width = backing._container.rect.width;
+            var x = itemLeftPerc * width;
+            cellRect = new Rect(
+              x: x,
+              y: -totalOffsetUntilThisRow - data.sizeInScrollableAxis,
+              width: width * itemSizeInSecondaryAxisPerc,
+              height: data.sizeInScrollableAxis
+            );            
+          }
+
              
           var placementVisible = visibleRect.Overlaps(cellRect, true);
           
@@ -213,7 +237,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             foreach (var elementWithView in data.asElementWithView) {
               var instance = elementWithView.createItem(backing._container);
               var rectTrans = instance.rectTransform;
-              rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
+              rectTrans.anchorMin = rectTrans.anchorMax = isHorizontal ? Vector2.zero : Vector2.up;
               rectTrans.localPosition = Vector3.zero;
               rectTrans.anchoredPosition = cellRect.center;
               instanceOpt = instance.some();
@@ -228,13 +252,52 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             }
           }
         }
-        containerHeight.value = totalHeightUntilThisRow + currentRowHeight;
-      }
-
-      public void Dispose() {
-        clearLayout();
-        dt.Dispose();
+        containerSizeInScrollableAxis.value = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
       }
     }
+    
+    
+    
+    
+    public abstract class ElementWithViewData<Obj> : IElementWithViewData where Obj : MonoBehaviour {
+      readonly GameObjectPool<Obj> pool;
+      public float sizeInScrollableAxis { get; }
+      public Percentage sizeInSecondaryAxis { get; }
+      
+      public Option<IElementWithViewData> asElementWithView => F.some<IElementWithViewData>(this);
+      
+      protected abstract IDisposable setup(Obj view);
+
+      public ElementWithViewData(
+        GameObjectPool<Obj> pool, float sizeInScrollableAxis, Percentage sizeInSecondaryAxis
+      ) {
+        this.pool = pool;
+        this.sizeInSecondaryAxis = sizeInSecondaryAxis;
+        this.sizeInScrollableAxis = sizeInScrollableAxis;
+      }
+
+      public IElementView createItem(Transform parent) {
+        var view = pool.borrow();
+        return new ElementView<Obj>(view, setup(view), pool);
+      }
+    }
+    public class ElementView<Obj> : IElementView where Obj : MonoBehaviour {
+      readonly Obj visual;
+      readonly IDisposable disposable;
+      readonly GameObjectPool<Obj> pool;
+      public RectTransform rectTransform { get; }
+      
+      public ElementView(Obj visual, IDisposable disposable, GameObjectPool<Obj> pool) {
+        this.visual = visual;
+        this.disposable = disposable;
+        this.pool = pool;
+        rectTransform = (RectTransform) visual.transform;
+      }
+      public void Dispose() {
+        if (visual) pool.release(visual);
+        disposable.Dispose();
+      }
+    }
+    
   }
 }

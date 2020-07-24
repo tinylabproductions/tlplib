@@ -70,5 +70,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       return (result / collection.Count).some();
     }
+    
+    // overload that does not allocate
+    public static Option<double> average<A>(this List<A> collection, Func<A, double> mapper) {
+      if (collection.Count == 0) return F.none_;
+      double result = 0;
+      foreach (var item in collection) {
+        result += mapper(item);
+      }
+      return (result / collection.Count).some();
+    }
   }
 }

@@ -17,8 +17,7 @@ using UnityEngine.Networking;
 namespace com.tinylabproductions.TLPLib.Concurrent {
   public static class ASync {
     static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) =>
-      go.GetComponent<ASyncHelperBehaviourEmpty>()
-      ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
+      go.EnsureComponent<ASyncHelperBehaviourEmpty>();
 
     static ASyncHelperBehaviour _behaviour;
 
@@ -300,7 +299,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static IRxObservable<Unit> onAppQuit => behaviour.onQuit;
 
-    public static IRxObservable<Unit> onLateUpdate { get; } = behaviour.onLateUpdate;
+    public static IRxObservable<Unit> onLateUpdate => behaviour.onLateUpdate;
 
     /**
      * Takes a function that transforms an element into a future and
