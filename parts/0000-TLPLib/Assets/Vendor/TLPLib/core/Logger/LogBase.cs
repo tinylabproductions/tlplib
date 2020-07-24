@@ -7,16 +7,15 @@ using pzd.lib.reactive;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Logger {
-  public abstract class LogBase : ILog {
+  public abstract class LogBase : BaseLog {
     readonly ISubject<LogEvent> _messageLogged = new Subject<LogEvent>();
-    public IRxObservable<LogEvent> messageLogged => _messageLogged;
+    public override IRxObservable<LogEvent> messageLogged => _messageLogged;
     // Can't use Unity time, because it is not thread safe
     static readonly DateTime initAt = DateTime.Now;
 
-    public LogLevel level { get; set; } = Log.defaultLogLevel;
-    public bool willLog(LogLevel l) => l >= level;
+    protected LogBase() => level = Log.defaultLogLevel;
 
-    public void log(LogLevel l, LogEntry entry) {
+    public override void log(LogLevel l, LogEntry entry) {
       logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
       var logEvent = new LogEvent(l, entry);
       if (OnMainThread.isMainThread) _messageLogged.push(logEvent);
