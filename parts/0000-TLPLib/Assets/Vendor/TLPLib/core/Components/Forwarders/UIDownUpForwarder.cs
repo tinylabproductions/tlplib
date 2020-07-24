@@ -7,33 +7,36 @@ using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
   public class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
-    readonly Subject<Unit>
-      _onDown = new Subject<Unit>(),
-      _onUp = new Subject<Unit>();
-    public IRxObservable<Unit> onDown => _onDown;
-    public IRxObservable<Unit> onUp => _onUp;
+    readonly Subject<PointerEventData>
+      _onDown = new Subject<PointerEventData>(),
+      _onUp = new Subject<PointerEventData>();
+    public IRxObservable<PointerEventData> onDown => _onDown;
+    public IRxObservable<PointerEventData> onUp => _onUp;
     public bool isDown { get; private set; }
 
-    void up() {
-      _onUp.push(new Unit());
+    void up(PointerEventData eventData) {
+      _onUp.push(eventData);
       isDown = false;
     }
 
     protected override void onPointerDown(PointerEventData eventData) {
-      if (eventData.button == PointerEventData.InputButton.Left && isActiveAndEnabled) {
-        _onDown.push(new Unit());
+      if (isActiveAndEnabled) {
+        _onDown.push(eventData);
         isDown = true;
       }
     }
 
     protected override void onPointerUp(PointerEventData eventData) {
-      if (eventData.button == PointerEventData.InputButton.Left && isActiveAndEnabled)
-        up();
+      if (isActiveAndEnabled)
+        up(eventData);
     }
 
     public void OnDisable() {
-      if (isDown)
-        up();
+      if (isDown) {
+        foreach (var data in pointerData) {
+          up(data);
+        }
+      }
     }
   }
 }
