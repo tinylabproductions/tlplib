@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public sealed partial class DebugConsoleBinding : MonoBehaviour, IMB_Update {
+#pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
     [NotNull] public DebugConsoleListBinding commandGroups, commands;
     [NotNull] public Text commandGroupLabel;
@@ -21,6 +22,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     [NotNull, SerializeField, PublicAccessor] GameObject _modals;
     [NotNull, SerializeField, PublicAccessor] DebugConsoleInputModalBinding _inputModal;
     // ReSharper restore NotNullMemberIsNotInitialized
+#pragma warning restore 649
 
     public float lineWidth => dynamicLayout.maskRect.rect.width;
     

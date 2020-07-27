@@ -112,8 +112,6 @@ namespace Code.Utils {
         case TextureFormat.ASTC_RGBA_8x8: return true;
         case TextureFormat.ASTC_RGBA_10x10: return true;
         case TextureFormat.ASTC_RGBA_12x12: return true;
-        case TextureFormat.ETC_RGB4_3DS: return false;
-        case TextureFormat.ETC_RGBA8_3DS: return true;
         case TextureFormat.BC4: return false;
         case TextureFormat.BC5: return false;
         case TextureFormat.BC6H: return false;
@@ -180,8 +178,6 @@ namespace Code.Utils {
         case TextureFormat.ASTC_RGBA_8x8: return 2;
         case TextureFormat.ASTC_RGBA_10x10: return 1.28f;
         case TextureFormat.ASTC_RGBA_12x12: return 0.89f;
-        case TextureFormat.ETC_RGB4_3DS: return 4;
-        case TextureFormat.ETC_RGBA8_3DS: return 8;
         case TextureFormat.BC4: return 4;
         case TextureFormat.BC5: return 8;
         case TextureFormat.BC6H: return 8;

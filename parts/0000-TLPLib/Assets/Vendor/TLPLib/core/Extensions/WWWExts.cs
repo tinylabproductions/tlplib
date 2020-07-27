@@ -8,6 +8,8 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
+// obsolete WWW
+#pragma warning disable 618
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public static class WWWExts {

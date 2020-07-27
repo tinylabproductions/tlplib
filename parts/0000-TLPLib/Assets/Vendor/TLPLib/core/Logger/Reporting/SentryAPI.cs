@@ -234,8 +234,6 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         {"SI:GraphicsShaderLevel", new Tag(s(SystemInfo.graphicsShaderLevel))},
         {"SI:GraphicsMultiThreaded", new Tag(s(SystemInfo.graphicsMultiThreaded))},
         {"SI:SupportsShadows", new Tag(s(SystemInfo.supportsShadows))},
-        {"SI:SupportsRenderToCubemap", new Tag(s(SystemInfo.supportsRenderToCubemap))},
-        {"SI:SupportsImageEffects", new Tag(s(SystemInfo.supportsImageEffects))},
         {"SI:Supports3DTextures", new Tag(s(SystemInfo.supports3DTextures))},
         {"SI:SupportsComputeShaders", new Tag(s(SystemInfo.supportsComputeShaders))},
         {"SI:SupportsInstancing", new Tag(s(SystemInfo.supportsInstancing))},
@@ -336,6 +334,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
       public override string ToString() { return $"SentryMessage[\n{keys}\ntimestamp={timestamp}\njson={json}\n]"; }
 
+#pragma warning disable 618
       public WWW send(Uri reportingUrl) {
         const string userAgent = "raven-unity-tlplib/HEAD";
         var headers = new Dictionary<string, string> {
@@ -353,6 +352,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         return www;
       }
     }
+#pragma warning restore 618
 
     // ReSharper disable once UnusedMember.Global
     public static ErrorReporter.OnError createSendOnError(

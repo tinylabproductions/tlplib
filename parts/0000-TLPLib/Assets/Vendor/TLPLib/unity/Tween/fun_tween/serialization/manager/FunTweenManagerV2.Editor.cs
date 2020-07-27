@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     
     [ShowInInspector, PropertyRange(0, nameof(__editor_duration)), PropertyOrder(-2), LabelText("Set Progress"), LabelWidth(100)] 
     float __editor_progress {
-      get { try { return timeline.timePassed; } catch (Exception _) { return default; } }
+      get { try { return timeline.timePassed; } catch (Exception) { return default; } }
       set {
         timeline.timePassed = value;
         __editor_cachedTimePassed = value;
@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     }
     
     float __editor_duration {
-      get { try { return timeline.duration; } catch (Exception _) { return 0; } }
+      get { try { return timeline.duration; } catch (Exception) { return 0; } }
     }
     
     List<float> __editor_keyframes = new List<float>();

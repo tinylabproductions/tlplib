@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
@@ -99,6 +100,24 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
       : new [] { nameof(_value) };
 
     public override string ToString() => value.ToString();
+    
+    // Generated Equals and GetHashCode, because of compiler warning
+    protected bool Equals(UnityOption<A> other) {
+      return _isSome == other._isSome && EqualityComparer<A>.Default.Equals(_value, other._value);
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      if (ReferenceEquals(this, obj)) return true;
+      if (obj.GetType() != this.GetType()) return false;
+      return Equals((UnityOption<A>) obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked {
+        return (_isSome.GetHashCode() * 397) ^ EqualityComparer<A>.Default.GetHashCode(_value);
+      }
+    }
   }
 
   [Serializable, PublicAPI]

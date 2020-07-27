@@ -109,7 +109,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
         try {
           return timeline.timePassed;
         }
-        catch (Exception e) {
+        catch (Exception) {
           return 0;
         }
       }
@@ -121,7 +121,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences 
         try {
           return timeline.duration;
         }
-        catch (Exception e) {
+        catch (Exception) {
           return 0;
         }
       }

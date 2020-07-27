@@ -36,12 +36,16 @@ namespace com.tinylabproductions.TLPLib.Data {
   }
 
   [Serializable, PublicAPI] public sealed partial class GameObjectStates {
+#pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized
     [
       SerializeField, NotNull, PublicAccessor, 
       InlineButton(nameof(_editor_apply), "On"), 
       InlineButton(nameof(_editor_unapply), "Off"), 
       TableList
     ] GameObjectState[] _states;
+    // ReSharper restore NotNullMemberIsNotInitialized
+#pragma warning restore 649
     
     void _editor_apply(GameObjectState[] cv) => cv.apply();
     void _editor_unapply(GameObjectState[] cv) => cv.invertedApply();

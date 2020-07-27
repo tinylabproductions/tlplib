@@ -30,9 +30,8 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       var serializedProperty = serializedObject.FindProperty("m_LocalIdentfierInFile");
 			id = serializedProperty.longValue;
       if (id <= 0) {
-        var prefabType = PrefabUtility.GetPrefabType(unityObject);
-        id = prefabType != PrefabType.None
-          ? getFileID(PrefabUtility.GetPrefabObject(unityObject))
+        id = PrefabUtility.IsPartOfAnyPrefab(unityObject)
+          ? getFileID(PrefabUtility.GetPrefabInstanceHandle(unityObject))
           // this will work for the new objects in scene which weren't saved yet
           : unityObject.GetInstanceID();
       }

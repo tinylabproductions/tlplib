@@ -66,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(SHOW_CURRENT)] 
     TValue __current {
       get {
-        try { return get; } catch (Exception _) { return default; }
+        try { return get; } catch (Exception) { return default; }
       }
     }
 

@@ -31,8 +31,8 @@ namespace com.tinylabproductions.TLPLib.Data {
     public bool onObjectValidateIsThreadSafe => false;
     public IEnumerable<ErrorMsg> onObjectValidate(Object containingComponent) {
 #if UNITY_EDITOR
-      var type = UnityEditor.PrefabUtility.GetPrefabType(_prefab);
-      if (type != UnityEditor.PrefabType.Prefab)
+      var type = UnityEditor.PrefabUtility.GetPrefabAssetType(_prefab);
+      if (type != UnityEditor.PrefabAssetType.Regular && type != UnityEditor.PrefabAssetType.Variant)
         yield return new ErrorMsg($"Expected {_prefab} to be a prefab, but it was {type}!");
 #else
       return System.Linq.Enumerable.Empty<ErrorMsg>();

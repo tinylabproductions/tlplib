@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+// obsolete WWW
+#pragma warning disable 618
+
 namespace com.tinylabproductions.TLPLib {
   /** Error that has a www context. */
   public struct WWWError {

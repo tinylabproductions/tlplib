@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.path {
   [CustomEditor(typeof(Vector3PathBehaviour))]
-  public class Vector3PathEditor : OdinEditor, IMB_OnDisable, IMB_OnEnable {
+  public class Vector3PathEditor : OdinEditor {
     
     DisposableTracker dt = new DisposableTracker();
 
@@ -75,15 +75,15 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     bool xLocked => lockXAxisPressed || behaviour.lockXAxis;
     bool yLocked => lockYAxisPressed || behaviour.lockYAxis;
     bool zLocked => lockZAxisPressed || behaviour.lockZAxis;
-    
-    public void OnEnable() {
+
+    protected override void OnEnable() {
       behaviour = (Vector3PathBehaviour) target;
       behaviour.onValidate.subscribe(dt, _ => refreshPath());
       isRecalculatedToLocal = behaviour.relative;
       refreshPath();
     }
 
-    public void OnDisable() {
+    protected override void OnDisable() {
       dt.Dispose();
     }
     

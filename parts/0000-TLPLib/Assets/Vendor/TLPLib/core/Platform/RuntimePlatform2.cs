@@ -15,7 +15,6 @@ namespace com.tinylabproductions.TLPLib.Platform {
         RuntimePlatform.WSAPlayerX86,
         RuntimePlatform.WSAPlayerX64,
         RuntimePlatform.WSAPlayerARM,
-        RuntimePlatform.PSP2,
         RuntimePlatform.PS4,
         RuntimePlatform.XboxOne,
         RuntimePlatform.tvOS,
