@@ -51,6 +51,16 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Action<AsyncOperationHandle<A>> release
     ) => new WrappedAsyncOperationHandle<A>(handle, release);
     
+    public static IAsyncOperationHandle<A> wrap<A>(
+      this AsyncOperationHandle<A> handle,
+      Action<A> onSuccess,
+      Action<AsyncOperationHandle<A>> release
+    ) {
+      var result = new WrappedAsyncOperationHandle<A>(handle, release);
+      result.asFuture.onSuccess(onSuccess);
+      return result;
+    }
+
     public static IAsyncOperationHandle<object> wrap(
       this AsyncOperationHandle handle, 
       Action<AsyncOperationHandle> release
@@ -93,7 +103,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool isDone => status != AsyncOperationStatus.None;
   }
 
-  public sealed class WrappedAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
+  public sealed partial class WrappedAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
     readonly AsyncOperationHandle<A> handle;
     readonly Action<AsyncOperationHandle<A>> _release;
 
@@ -110,7 +120,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
     public Try<A> toTry() => handle.toTry();
-    public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
+    [LazyProperty] public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
