@@ -5,7 +5,9 @@ using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
+using GenerationAttributes;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using Sirenix.OdinInspector.Editor;
@@ -14,9 +16,9 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.path {
   [CustomEditor(typeof(Vector3PathBehaviour))]
-  public class Vector3PathEditor : OdinEditor {
+  public partial class Vector3PathEditor : OdinEditor {
     
-    DisposableTracker dt = new DisposableTracker();
+    [LazyProperty] IDisposableTracker tracker => new DisposableTracker();
 
     public const KeyCode
       xAxisLockKey = KeyCode.G,
@@ -78,13 +80,13 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
 
     protected override void OnEnable() {
       behaviour = (Vector3PathBehaviour) target;
-      behaviour.onValidate.subscribe(dt, _ => refreshPath());
+      behaviour.onValidate.subscribe(tracker, _ => refreshPath());
       isRecalculatedToLocal = behaviour.relative;
       refreshPath();
     }
 
     protected override void OnDisable() {
-      dt.Dispose();
+      tracker.Dispose();
     }
     
     Vector3 getWorldPos(Vector3 position) => 
