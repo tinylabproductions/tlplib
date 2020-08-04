@@ -9,7 +9,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class UIExts {
     public static IRxObservable<Unit> uiClick(this UIBehaviour elem) => elem.gameObject.uiClick();
     public static IRxObservable<Unit> uiClick(this GameObject go) => go.EnsureComponent<UIClickForwarder>().onClick;
-    public static IRxObservable<Unit> uiDown(this GameObject go) => go.EnsureComponent<UIDownUpForwarder>().onDown;
-    public static IRxObservable<Unit> uiUp(this GameObject go) => go.EnsureComponent<UIDownUpForwarder>().onUp;
+    public static IRxObservable<PointerEventData> uiDown(this GameObject go) => go.EnsureComponent<UIDownUpForwarder>().onDown;
+    public static IRxObservable<PointerEventData> uiUp(this GameObject go) => go.EnsureComponent<UIDownUpForwarder>().onUp;
   }
 }

@@ -16,6 +16,9 @@ namespace com.tinylabproductions.TLPLib.Threads {
   /// <summary>
   /// Helper class to queue things from other threads to be ran on the main thread.
   /// </summary>
+#if UNITY_EDITOR
+  [UnityEditor.InitializeOnLoad]
+#endif
   [PublicAPI] public static class OnMainThread {
     static readonly Queue<Action> actions = new Queue<Action>();
     static Thread mainThread;
@@ -35,10 +38,12 @@ namespace com.tinylabproductions.TLPLib.Threads {
 
     // mainThread variable may not be initialized in editor when MonoBehaviour constructor gets called
     public static bool isMainThreadIgnoreUnknown => Thread.CurrentThread == mainThread;
-
+    
 #if UNITY_EDITOR
-    [UnityEditor.InitializeOnLoadMethod]
+    // InitializeOnLoad runs before InitializeOnLoadMethod
+    static OnMainThread() => init();
 #endif
+
     [RuntimeInitializeOnLoadMethod]
     static void init() {
       // Can't use static constructor, because it may be called from a different thread

@@ -6,7 +6,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.dispose;
 using pzd.lib.log;
 using pzd.lib.functional;

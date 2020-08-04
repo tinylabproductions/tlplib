@@ -119,7 +119,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       Option<TweenPlaybackController> tweenPlaybackController;
       float timeClickOffset;
 
-      void OnPlaymodeStateChanged() { backing.OnEnable(); }
+      void OnPlaymodeStateChanged(PlayModeStateChange change) { backing.OnEnable(); }
 
       public void onLostFocus() {
         foreach (var controller in tweenPlaybackController) {
@@ -130,7 +130,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       public Init(
         TimelineEditor backing, Option<FunTweenManagerV2> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet
       ) {
-        EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
+        EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
         Undo.undoRedoPerformed += undoCallback;
         EditorSceneManager.sceneSaving += EditorSceneManagerOnSceneSaving;
 
@@ -188,7 +188,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       public void Dispose() { 
-        EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+        EditorApplication.playModeStateChanged -= OnPlaymodeStateChanged;
         Undo.undoRedoPerformed -= undoCallback;
         EditorSceneManager.sceneSaving -= EditorSceneManagerOnSceneSaving;
       }

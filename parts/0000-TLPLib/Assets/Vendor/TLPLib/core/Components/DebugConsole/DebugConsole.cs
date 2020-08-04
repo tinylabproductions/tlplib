@@ -20,7 +20,7 @@ using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 using UnityEngine;
@@ -46,9 +46,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     [Record]
     partial struct Instance {
       public readonly DebugConsoleBinding view;
-      public readonly DynamicVerticalLayout.Init dynamicVerticalLayout;
+      public readonly DynamicLayout.Init dynamicVerticalLayout;
       public readonly Application.LogCallback logCallback;
       public readonly GameObjectPool<VerticalLayoutLogEntry> pool;
+      public readonly IDisposableTracker tracker;
     }
 
     [Record]
@@ -272,6 +273,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       new DConsoleRegistrar(this, prefix, tracker, persistent);
     
     public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {
+      var tracker = new DisposableTracker();
       binding = binding ? binding : Resources.Load<DebugConsoleBinding>("Debug Console Prefab");
 
       {
@@ -306,12 +308,13 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       ));
 
       var cache = new List<string>();
-      var layout = new DynamicVerticalLayout.Init(
+      var layout = new DynamicLayout.Init(
         view.dynamicLayout,
         // ReSharper disable once InconsistentlySynchronizedField
         logEntries
           .SelectMany(e => createEntries(e, logEntryPool, cache, view.lineWidth))
-          .Select(_ => _.upcast(default(DynamicVerticalLayout.IElementData))),
+          .Select(_ => _.upcast(default(DynamicLayout.IElementData))),
+        tracker,
         renderLatestItemsFirst: true
       );
 
@@ -333,7 +336,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         }
       };
 
-      current = new Instance(view, layout, logCallback, logEntryPool).some();
+      current = new Instance(view, layout, logCallback, logEntryPool, tracker).some();
 
       BoundButtonList setupGroups(bool clearCommandsFilterText) {
         var groupButtons = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
@@ -400,16 +403,16 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     
     // DO NOT generate comparer and hashcode - we need reference equality for dynamic vertical layout!
     [Record(GenerateComparer = false, GenerateGetHashCode = false)]
-    partial class DynamicVerticalLayoutLogElementData : DynamicVerticalLayout.IElementWithViewData {
+    partial class DynamicVerticalLayoutLogElementData : DynamicLayout.IElementWithViewData {
       readonly GameObjectPool<VerticalLayoutLogEntry> pool;
       readonly VerticalLayoutLogEntry.Data data;
       
-      public float height => 20;
-      public Percentage width => new Percentage(1f);
-      public Option<DynamicVerticalLayout.IElementWithViewData> asElementWithView => 
-        this.some<DynamicVerticalLayout.IElementWithViewData>();
+      public float sizeInScrollableAxis => 20;
+      public Percentage sizeInSecondaryAxis => new Percentage(1f);
+      public Option<DynamicLayout.IElementWithViewData> asElementWithView => 
+        this.some<DynamicLayout.IElementWithViewData>();
 
-      public DynamicVerticalLayout.IElementView createItem(Transform parent) {
+      public DynamicLayout.IElementView createItem(Transform parent) {
         var logEntry = pool.BorrowDisposable();
         logEntry.value.transform.SetParent(parent, false);
         return new VerticalLayoutLogEntry.Init(logEntry, data);      
@@ -537,7 +540,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       foreach (var instance in current) {
         Debug.Log("Destroying DConsole.");
         Application.logMessageReceivedThreaded -= instance.logCallback;
-        instance.dynamicVerticalLayout.Dispose();
+        instance.tracker.Dispose();
         instance.pool.dispose(Object.Destroy);
         Object.Destroy(instance.view.gameObject);
       }

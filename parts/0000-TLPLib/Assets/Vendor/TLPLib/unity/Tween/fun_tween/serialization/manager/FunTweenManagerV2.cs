@@ -12,9 +12,15 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
-  public partial class FunTweenManagerV2 : MonoBehaviour, IMB_OnDestroy, IMB_Awake {
+  public partial class FunTweenManagerV2 : MonoBehaviour, IMB_OnDestroy, IMB_Awake, IMB_OnEnable, IMB_OnDisable {
+    enum AutoPlayMode {
+      None = 0,
+      OnEnable = 1
+    }
+    
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
+    [SerializeField] AutoPlayMode _autoPlayMode = AutoPlayMode.None;
     [
       SerializeField, 
       HideLabel, 
@@ -107,12 +113,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       }
     }
 
-    public void OnDestroy() {
-      _manager?.stop();
+    public void OnDestroy() => _manager?.stop();
+
+    public void Awake() => awakeCalled = true;
+
+    public void OnEnable() {
+      if (_autoPlayMode == AutoPlayMode.OnEnable) {
+        manager.play();
+      }
     }
 
-    public void Awake() {
-      awakeCalled = true;
+    public void OnDisable() {
+      if (_autoPlayMode == AutoPlayMode.OnEnable) {
+        manager.stop();
+      }
     }
   }
 

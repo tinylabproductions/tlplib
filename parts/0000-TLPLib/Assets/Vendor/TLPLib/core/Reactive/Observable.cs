@@ -11,7 +11,7 @@ using pzd.lib.log;
 using GenerationAttributes;
 using pzd.lib.collection;
 using pzd.lib.data;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;

@@ -1,7 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.reactive;
 using UnityEngine.Events;
 

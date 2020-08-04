@@ -13,7 +13,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     
     protected enum InvokeOn : byte { Forward = 0, Backward = 1, Both = 2 }
     
+#pragma warning disable 649
     [SerializeField, OnValueChanged(CHANGE)] InvokeOn _invokeOn;
+#pragma warning restore 649
     
     public TweenTimelineElement toTimelineElement() => this;
     public float duration => 0;
@@ -75,8 +77,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
   
   [Serializable]
   public sealed class ParticleSystemPlay : ParticleSystemBase {
+#pragma warning disable 649
     [InfoBox("Use false for better performance")]
     [SerializeField, OnValueChanged(CHANGE)] bool _withChildren;
+#pragma warning restore 649
 
     protected override void invoke(ParticleSystem ps) {
       ps.Play(withChildren: _withChildren);
@@ -85,10 +89,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
   
   [Serializable]
   public sealed class ParticleSystemStop : ParticleSystemBase {
+#pragma warning disable 649
     [InfoBox("Use false for better performance")]
     [SerializeField, OnValueChanged(CHANGE)] bool _withChildren;
     [SerializeField, OnValueChanged(CHANGE)] ParticleSystemStopBehavior _stopBehavior = ParticleSystemStopBehavior.StopEmitting;
-
+#pragma warning restore 649
+    
     protected override void invoke(ParticleSystem ps) {
       ps.Stop(withChildren: _withChildren, stopBehavior: _stopBehavior);
     }
@@ -96,9 +102,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
   
   [Serializable]
   public class TweenManagerCallback : CallbackBase {
+#pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized
     [SerializeField, NotNull, OnValueChanged(CHANGE)] FunTweenManagerV2 _manager;
     [SerializeField, OnValueChanged(CHANGE)] FunTweenManagerV2.Action _action = FunTweenManagerV2.Action.PlayForwards;
-
+    // ReSharper restore NotNullMemberIsNotInitialized
+#pragma warning restore 649
+    
     protected override void invoke() => _manager.run(_action);
 
     public override bool isValid => _manager;
@@ -108,8 +118,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
   
   [Serializable]
   public class EnableGameObjectCallback : CallbackBase {
+#pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized
     [SerializeField, NotNull, OnValueChanged(CHANGE)] GameObject _gameObject;
     [SerializeField, OnValueChanged(CHANGE)] bool _state;
+    // ReSharper restore NotNullMemberIsNotInitialized
+#pragma warning restore 649
 
     protected override void invoke() => _gameObject.SetActive(_state);
 

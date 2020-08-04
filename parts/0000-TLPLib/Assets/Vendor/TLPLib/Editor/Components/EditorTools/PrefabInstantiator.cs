@@ -14,11 +14,10 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
 
     public PrefabInstantiator(GameObject _source) {
       Object source = _source;
-      var prefabType = PrefabUtility.GetPrefabType(source);
+      var prefabType = PrefabUtility.GetPrefabInstanceStatus(source);
 
       var isPrefabInstance =
-        prefabType == PrefabType.PrefabInstance ||
-        prefabType == PrefabType.ModelPrefabInstance;
+        prefabType != PrefabInstanceStatus.NotAPrefab;
 
       if (isPrefabInstance) {
         source =
@@ -35,8 +34,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
 
       isPrefab =
         isPrefabInstance ||
-        prefabType == PrefabType.Prefab ||
-        prefabType == PrefabType.ModelPrefab;
+        PrefabUtility.GetPrefabAssetType(source) != PrefabAssetType.NotAPrefab;
 
       this.source = source;
     }

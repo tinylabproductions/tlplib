@@ -13,6 +13,9 @@ using pzd.lib.log;
 using pzd.lib.serialization;
 using UnityEngine;
 
+//obsolete WWW
+#pragma warning disable 618
+
 namespace com.tinylabproductions.TLPLib.Configuration {
   public static class ConfigFetcher {
     public struct UrlWithContext : IEquatable<UrlWithContext> {

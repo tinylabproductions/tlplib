@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using pzd.lib.data;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Reactive {

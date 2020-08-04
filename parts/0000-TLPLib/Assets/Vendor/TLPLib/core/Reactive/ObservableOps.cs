@@ -11,7 +11,7 @@ using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.data;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;

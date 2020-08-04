@@ -5,7 +5,7 @@ using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.test_framework;
 using pzd.lib.data;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 

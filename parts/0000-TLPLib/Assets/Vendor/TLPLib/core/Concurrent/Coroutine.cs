@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
   public sealed class UnityCoroutine : CustomYieldInstruction, ICoroutine {
     public event Action onFinish;
-    public bool finished { get; protected set; }
+    public bool finished { get; private set; }
     public override bool keepWaiting => !finished;
 
     bool shouldStop;

@@ -16,6 +16,9 @@ using Smooth.Dispose;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+// obsolete WWW
+#pragma warning disable 618
+
 namespace com.tinylabproductions.TLPLib.Net {
   public partial class ImageDownloader {
     [Record]

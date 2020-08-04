@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>

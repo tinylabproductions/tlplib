@@ -24,7 +24,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly Color color;
     }
 
-    public class Init : DynamicVerticalLayout.IElementView {
+    public class Init : DynamicLayout.IElementView {
       readonly Disposable<VerticalLayoutLogEntry> backing;
 
       public Init(Disposable<VerticalLayoutLogEntry> backing, Data data) {

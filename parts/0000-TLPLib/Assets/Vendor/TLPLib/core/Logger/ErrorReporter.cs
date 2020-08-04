@@ -1,7 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.log;
 using pzd.lib.reactive;

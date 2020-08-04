@@ -10,17 +10,19 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
   public sealed partial class DebugConsoleBinding : MonoBehaviour, IMB_Update {
+#pragma warning disable 649
     // ReSharper disable NotNullMemberIsNotInitialized
     [NotNull] public DebugConsoleListBinding commandGroups, commands;
     [NotNull] public Text commandGroupLabel;
     [NotNull] public ButtonBinding buttonPrefab;
     [NotNull] public Button closeButton, minimiseButton;
-    [NotNull] public DynamicVerticalLayout dynamicLayout;
+    [NotNull] public DynamicLayout dynamicLayout;
     [NotNull] public VerticalLayoutLogEntryPrefab logEntry;
     [NotNull] public GameObject logPanel;
     [NotNull, SerializeField, PublicAccessor] GameObject _modals;
     [NotNull, SerializeField, PublicAccessor] DebugConsoleInputModalBinding _inputModal;
     // ReSharper restore NotNullMemberIsNotInitialized
+#pragma warning restore 649
 
     public float lineWidth => dynamicLayout.maskRect.rect.width;
     

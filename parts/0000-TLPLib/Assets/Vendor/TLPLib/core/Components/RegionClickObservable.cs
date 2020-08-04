@@ -4,7 +4,7 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.InputUtils;
 using com.tinylabproductions.TLPLib.Reactive;
-using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 using UnityEngine;

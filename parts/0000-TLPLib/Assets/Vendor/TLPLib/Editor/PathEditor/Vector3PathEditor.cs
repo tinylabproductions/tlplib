@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
+using pzd.lib.dispose;
+using GenerationAttributes;
 using pzd.lib.dispose;
 using pzd.lib.functional;
 using Sirenix.OdinInspector.Editor;
@@ -14,9 +15,9 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Tween.path {
   [CustomEditor(typeof(Vector3PathBehaviour))]
-  public class Vector3PathEditor : OdinEditor, IMB_OnDisable, IMB_OnEnable {
+  public partial class Vector3PathEditor : OdinEditor {
     
-    DisposableTracker dt = new DisposableTracker();
+    [LazyProperty] IDisposableTracker tracker => new DisposableTracker();
 
     public const KeyCode
       xAxisLockKey = KeyCode.G,
@@ -75,16 +76,16 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     bool xLocked => lockXAxisPressed || behaviour.lockXAxis;
     bool yLocked => lockYAxisPressed || behaviour.lockYAxis;
     bool zLocked => lockZAxisPressed || behaviour.lockZAxis;
-    
-    public void OnEnable() {
+
+    protected override void OnEnable() {
       behaviour = (Vector3PathBehaviour) target;
-      behaviour.onValidate.subscribe(dt, _ => refreshPath());
+      behaviour.onValidate.subscribe(tracker, _ => refreshPath());
       isRecalculatedToLocal = behaviour.relative;
       refreshPath();
     }
 
-    public void OnDisable() {
-      dt.Dispose();
+    protected override void OnDisable() {
+      tracker.Dispose();
     }
     
     Vector3 getWorldPos(Vector3 position) => 

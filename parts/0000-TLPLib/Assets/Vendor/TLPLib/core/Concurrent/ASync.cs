@@ -18,10 +18,9 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public static class ASync {
+  public static partial class ASync {
     static ASyncHelperBehaviourEmpty coroutineHelper(GameObject go) =>
-      go.GetComponent<ASyncHelperBehaviourEmpty>()
-      ?? go.AddComponent<ASyncHelperBehaviourEmpty>();
+      go.EnsureComponent<ASyncHelperBehaviourEmpty>();
 
     static ASyncHelperBehaviour _behaviour;
 
@@ -87,7 +86,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Duration duration, Action action, ITimeContext timeContext,
       MonoBehaviour behaviour = null
     ) {
-      behaviour = behaviour ?? ASync.behaviour;
+      behaviour = behaviour ? behaviour : ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeContext);
       return new UnityCoroutine(behaviour, enumerator);
     }
@@ -174,23 +173,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    /* Do async cancellable WWW request. */
-    public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
-      Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
-      var f = Future.async(out promise);
-
-      var wwwCoroutine = StartCoroutine(WWWEnumerator(www, promise));
-
-      return Cancellable.a(f, () => {
-        if (www.isDone) return false;
-
-        wwwCoroutine.stop();
-        www.Dispose();
-        promise.complete(new Either<Cancelled, Either<WWWError, WWW>>(Cancelled.instance));
-        return true;
-      });
-    }
-
     /// <summary>Turn this request to future. Automatically cleans up the request.</summary>
     [PublicAPI]
     public static Future<Either<WebRequestError, A>> toFuture<A>(
@@ -244,18 +226,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       this UnityWebRequest req, AcceptedResponseCodes acceptedResponseCodes, Func<UnityWebRequest, A> onSuccess
     ) => req.toFuture(acceptedResponseCodes, onSuccess).map(_ => _.mapLeft(err => err.simplify));
 
-    [PublicAPI]
-    public static Cancellable<Future<Either<Cancelled, Either<WWWError, Texture2D>>>> asTexture(
-      this Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> cancellable
-    ) => cancellable.map(f => f.map(e => e.mapRight(_ => _.asTexture())));
-
-    public static IEnumerator WWWEnumerator(WWW www) { yield return www; }
-
-    public static IEnumerator WWWEnumerator(WWW www, Promise<Either<Cancelled, Either<WWWError, WWW>>> promise) =>
-      WWWEnumerator(www).afterThis(() => promise.complete(
-        Either<Cancelled, Either<WWWError, WWW>>.Right(www.toEither())
-      ));
-
     /* Wait until enumerator is completed and then do action */
     public static IEnumerator afterThis(this IEnumerator enumerator, Action action) {
       while (enumerator.MoveNext()) yield return enumerator.Current;
@@ -303,7 +273,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static IRxObservable<Unit> onAppQuit => behaviour.onQuit;
 
-    public static IRxObservable<Unit> onLateUpdate { get; } = behaviour.onLateUpdate;
+    public static IRxObservable<Unit> onLateUpdate => behaviour.onLateUpdate;
 
     /**
      * Takes a function that transforms an element into a future and

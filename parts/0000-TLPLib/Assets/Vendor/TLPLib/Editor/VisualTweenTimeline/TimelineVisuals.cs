@@ -539,7 +539,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     void drawElementSettings(FunTweenManagerV2 manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
       foreach (var rootSelectedObject in rootSelectedNodeOpt) {
-        if (maybeTree == null || maybeTree.WeakTargets[0] != manager) {
+        if (maybeTree == null || maybeTree.WeakTargets[0] is FunTweenManagerV2 treeManager && treeManager != manager) {
           maybeTree = new PropertyTree<FunTweenManagerV2>(new[] { manager }, new SerializedObject(manager));
         }
         if (maybeProperty == null || maybeProperty.ValueEntry.WeakSmartValue != rootSelectedObject.element) {

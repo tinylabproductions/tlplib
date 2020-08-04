@@ -18,7 +18,9 @@ namespace Vendor.TLPLib.Components.ui {
     Rect lastSafeArea = new Rect(0, 0, 0, 0);
     bool forceRefresh;
 
+#pragma warning disable 649
     [ShowInInspector] float __editor_leftOffsetTest, __editor_rightOffsetTest, __editor_bottomOffsetTest;
+#pragma warning restore 649
 
     protected override void Awake() {
       parent = (RectTransform) _rt.parent;
