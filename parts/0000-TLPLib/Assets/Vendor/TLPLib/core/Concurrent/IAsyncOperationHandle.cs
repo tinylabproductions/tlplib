@@ -19,7 +19,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     bool IsDone { get; }
     float PercentComplete { get; }
     Future<Try<A>> asFuture { get; }
-    Try<A> toTry();
     void release();
   }
 
@@ -93,6 +92,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static IAsyncOperationHandle<ImmutableArrayC<Try<A>>> sequence<A>(
       this IReadOnlyCollection<IAsyncOperationHandle<A>> collection
     ) => new SequencedAsyncOperationHandle<A>(collection);
+    
+    public static Try<A> toTry<A>(this IAsyncOperationHandle<A> handle) {
+      if (handle.asFuture.value.valueOut(out var val)) return val;
+      return Try<A>.failed(new Exception("Handle is not completed!"));
+    }
   }
   
 #region implementations
@@ -119,7 +123,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => released.valueOut(out var r) ? r.status : handle.Status;
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
-    public Try<A> toTry() => handle.toTry();
     [LazyProperty] public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
@@ -146,7 +149,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => released.valueOut(out var r) ? r.status : handle.Status;
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
-    public Try<object> toTry() => handle.toTry();
     public Future<Try<object>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
@@ -169,8 +171,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => handle.Status;
     public bool IsDone => handle.IsDone;
     public float PercentComplete => handle.PercentComplete;
-    public Future<Try<B>> asFuture => handle.asFuture.map(try_ => try_.map(mapper));
-    public Try<B> toTry() => handle.toTry().map(mapper);
+    [LazyProperty] public Future<Try<B>> asFuture => handle.asFuture.map(try_ => try_.map(mapper));
     public void release() => handle.release();
   }
 
@@ -201,11 +202,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         : aHandle.PercentComplete * aHandleProgressPercentage;
 
     public Future<Try<B>> asFuture => bHandleF.flatMapT(bHandle => bHandle.asFuture);
-
-    public Try<B> toTry() =>
-      bHandleF.value.valueOut(out var b) 
-        ? b.flatMap(h => h.toTry()) 
-        : Try<B>.failed(new Exception($"{aHandle} hasn't completed yet!"));
 
     public void release() {
       { if (bHandleF.value.valueOut(out var b) && b.valueOut(out var h)) h.release(); }
@@ -244,9 +240,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    public Try<A> toTry() => 
-      IsDone ? Try.value(value) : Try<A>.failed(new Exception($"{ToString()} isn't finished yet!"));
-
     public void release() { if (onRelease.valueOut(out var action)) action(); }
   }
 
@@ -254,8 +247,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => AsyncOperationStatus.Succeeded;
     public bool IsDone => true;
     public float PercentComplete => 1;
-    public Future<Try<Unit>> asFuture => Future.successful(toTry());
-    public Try<Unit> toTry() => Try.value(Unit._);
+    public Future<Try<Unit>> asFuture => Future.successful(Try.value(Unit._));
     public void release() {}
   }
 
@@ -283,7 +275,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public float PercentComplete => handles.Count == 0 ? 1 : handles.Average(_ => _.PercentComplete);
     public Future<Try<ImmutableArrayC<Try<A>>>> asFuture =>
       handles.Select(h => h.asFuture).sequence().map(arr => Try.value(ImmutableArrayC.move(arr)));
-    public Try<ImmutableArrayC<Try<A>>> toTry() => Try.value(handles.Select(h => h.toTry()).toImmutableArrayC());
     public void release() { foreach (var handle in handles) handle.release(); }
   }
 
@@ -311,7 +302,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public float PercentComplete => handles.Count == 0 ? 1 : handles.Average(_ => _.PercentComplete);
     public Future<Try<ImmutableArrayC<A>>> asFuture =>
       handles.Select(h => h.asFuture).sequence().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
-    public Try<ImmutableArrayC<A>> toTry() => handles.Select(h => h.toTry()).sequence().map(_ => _.toImmutableArrayC());
     public void release() { foreach (var handle in handles) handle.release(); }
   }
 
@@ -331,7 +321,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool IsDone => backing.IsDone;
     public float PercentComplete => (backing.PercentComplete - progressStartsAt) / (1f - progressStartsAt);
     public Future<Try<A>> asFuture => backing.asFuture;
-    public Try<A> toTry() => backing.toTry();
     public void release() => backing.release();
   }
 
@@ -366,7 +355,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public bool IsDone => current.IsDone;
     public float PercentComplete => current.PercentComplete;
     public Future<Try<A>> asFuture => finalHandleFuture.flatMap(h => h.asFuture);
-    public Try<A> toTry() => current.toTry();
 
     public void release() {
       current.release();
