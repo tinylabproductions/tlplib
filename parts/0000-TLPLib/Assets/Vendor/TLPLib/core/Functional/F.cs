@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.collection;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 
 
@@ -158,11 +159,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     public static T[] emptyArray<T>() => EmptyArray<T>._;
 
-    class EmptyDisposable : IDisposable {
-      public void Dispose() { }
-    }
-
-    [PublicAPI] public static readonly IDisposable emptyDisposable = new EmptyDisposable();
+    [PublicAPI] public static readonly IDisposable emptyDisposable = EmptyDisposable._;
 
     /// <summary>Representation of ! as a function.</summary>
     [PublicAPI] public static readonly Func<bool, bool> invert = a => !a;
