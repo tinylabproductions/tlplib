@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 

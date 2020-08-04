@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.concurrent;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;

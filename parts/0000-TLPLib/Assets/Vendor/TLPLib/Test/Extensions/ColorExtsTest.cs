@@ -1,6 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
+using pzd.lib.test_framework.spec;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Extensions {

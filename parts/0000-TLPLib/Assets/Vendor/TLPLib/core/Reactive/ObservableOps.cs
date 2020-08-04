@@ -5,18 +5,18 @@ using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.dispose;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 using UnityEngine;
-using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   [PublicAPI] public static class ObservableOps {
@@ -199,7 +199,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     );
 
     /// <summary>
-    /// Wait until future completes and start emmiting events from the created
+    /// Wait until future completes and start emitting events from the created
     /// observable then.
     /// </summary>
     public static IRxObservable<B> flatMap<A, B>(
@@ -207,7 +207,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     ) => future.map(mapper).extract();
 
     /// <summary>
-    /// Abstracts the future away and returns an observable that starts emmiting
+    /// Abstracts the future away and returns an observable that starts emitting
     /// events when the future completes with another observable.
     /// </summary>
     public static IRxObservable<A> extract<A>(
@@ -605,7 +605,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
           NoOpDisposableTracker.instance,
           value => {
             var now = timeContext.passedSinceStartup;
-            if (lastEmit + duration > now) return;
+            if ((lastEmit + duration).toTimeSpan > now) return;
             lastEmit = now;
             onEvent(value);
           }
@@ -624,7 +624,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
       timeContext = timeContext.orDefault();
 
       var lastA = default(A);
-      var maybeLastTimer = F.none<Coroutine>(); 
+      var maybeLastTimer = F.none<ICoroutine>(); 
       
       return new Observable<A>(onEvent => {
         void onTimeout() => onEvent(lastA);

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
 
@@ -78,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
       return true;
     }
 
-    public static Future<Either<TaskFailed, A>> toFuture<A>(this Task<A> task) {
+    public static Future<Either<TaskFailed, A>> toFuture<A>(this Task<A> task, [Implicit] ILog log=default) {
       var future = Future.async<Either<TaskFailed, A>>(out var promise);
       task.ContinueWith(t => {
         // exceptions thrown here get silenced

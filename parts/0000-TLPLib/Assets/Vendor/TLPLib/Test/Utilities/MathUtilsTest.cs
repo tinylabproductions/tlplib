@@ -1,9 +1,10 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using com.tinylabproductions.TLPLib.Utilities;
 using pzd.lib.exts;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Editor.Test.Utilities {
   public class MathUtilsTest : ImplicitSpecification {

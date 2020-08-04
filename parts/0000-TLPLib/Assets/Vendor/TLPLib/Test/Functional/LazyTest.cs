@@ -1,9 +1,9 @@
-﻿
-using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Test;
+﻿using pzd.lib.concurrent;
+using pzd.lib.test_framework;
 using NUnit.Framework;
+using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   public class NotReallyLazyTestAsFuture {

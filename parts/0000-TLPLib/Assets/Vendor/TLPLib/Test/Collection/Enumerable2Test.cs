@@ -1,5 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Test;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using pzd.lib.test_framework;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Collection {
   public class Enumerable2Test : ImplicitSpecification {

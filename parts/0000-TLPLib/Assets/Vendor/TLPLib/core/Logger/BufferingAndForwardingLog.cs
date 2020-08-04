@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.dispose;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.data;
 using pzd.lib.data.dispose;
+using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.log;
@@ -180,7 +181,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [Record] sealed partial class SinkRuntimeData {
       public readonly SinkData sinkData;
-      public readonly Coroutine coroutine;
+      public readonly ICoroutine coroutine;
 
       public Option<Future<bool>> currentRequest = None._;
 

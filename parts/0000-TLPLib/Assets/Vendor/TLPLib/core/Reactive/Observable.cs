@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
@@ -82,12 +83,10 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     }
 
     public static IRxObservable<Unit> everyFrame =>
-      everyFrameInstance ?? (
-        everyFrameInstance = new Observable<Unit>(observer => {
-          var cr = ASync.StartCoroutine(everyFrameCR(observer));
-          return new Subscription(cr.stop);
-        })
-      );
+      everyFrameInstance ??= new Observable<Unit>(observer => {
+        var cr = ASync.StartCoroutine(everyFrameCR(observer));
+        return new Subscription(cr.stop);
+      });
 
     #region touches
 

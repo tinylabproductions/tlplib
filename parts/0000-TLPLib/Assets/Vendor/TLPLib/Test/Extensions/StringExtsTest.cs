@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using pzd.lib.exts;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public class StringTest : ImplicitSpecification {

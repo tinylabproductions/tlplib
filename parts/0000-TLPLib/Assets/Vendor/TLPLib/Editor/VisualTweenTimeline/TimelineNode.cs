@@ -1,5 +1,5 @@
 ﻿#if UNITY_EDITOR
-using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;

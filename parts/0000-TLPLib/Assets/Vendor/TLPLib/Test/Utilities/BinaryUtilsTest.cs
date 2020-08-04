@@ -1,5 +1,6 @@
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
+using pzd.lib.test_framework.spec;
 using pzd.lib.utils;
 
 namespace com.tinylabproductions.Test.Utilities {

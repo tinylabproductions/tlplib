@@ -16,6 +16,7 @@
     "precompiledReferences": [
         "nunit.framework.dll",
         "pzd.lib.dll",
+        "pzd.lib.test_framework.dll",
         "System.Collections.Immutable.dll",
         "GenerationAttributes.dll",
         "0Harmony.dll",

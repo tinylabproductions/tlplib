@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.collection;
-using pzd.lib.exts;
+using pzd.lib.concurrent;
 using pzd.lib.functional;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -231,7 +232,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       get {
         var left = framesLeft;
         return left <= 0 
-          ? Future.successful(Try.value(value)) : Future.delayFrames(left.toIntClamped(), Try.value(value));
+          ? Future.successful(Try.value(value)) : FutureU.delayFrames(left.toIntClamped(), Try.value(value));
       }
     }
 

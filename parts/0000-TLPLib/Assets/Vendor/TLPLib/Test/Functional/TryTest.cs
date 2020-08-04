@@ -1,5 +1,5 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using pzd.lib.exts;
 using pzd.lib.functional;

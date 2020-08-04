@@ -8,9 +8,11 @@ using com.tinylabproductions.TLPLib.Collection;
 using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
@@ -20,7 +22,6 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.data.dispose;
 using pzd.lib.functional;
-using pzd.lib.exts;
 using pzd.lib.reactive;
 using UnityEngine;
 using static pzd.lib.typeclasses.Str;
@@ -159,12 +160,12 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public DebugSequenceDirectionData(
         string horizonalAxisName="Horizontal",
         string verticalAxisName="Vertical",
-        Duration timeframe=default(Duration),
+        TimeSpan timeframe=default,
         ImmutableList<Direction> sequence=null
       ) {
         this.horizonalAxisName = horizonalAxisName;
         this.verticalAxisName = verticalAxisName;
-        this.timeframe = timeframe == default(Duration) ? 5.seconds() : timeframe;
+        this.timeframe = timeframe == default ? 5.seconds() : timeframe;
         sequence ??= DEFAULT_DIRECTION_SEQUENCE;
         this.sequence = sequence;
 

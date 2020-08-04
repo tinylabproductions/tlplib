@@ -1,5 +1,5 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using pzd.lib.functional.higher_kinds;
 
 namespace com.tinylabproductions.TLPLib.Functional.higher_kinds {
