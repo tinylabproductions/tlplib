@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
     static OnMainThread() => init();
 #endif
 
-    [RuntimeInitializeOnLoadMethod]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void init() {
       // Can't use static constructor, because it may be called from a different thread
       // init will always be called fom a main thread
