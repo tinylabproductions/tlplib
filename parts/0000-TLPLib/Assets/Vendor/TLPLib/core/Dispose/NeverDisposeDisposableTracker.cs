@@ -8,7 +8,7 @@ using pzd.lib.dispose;
 using pzd.lib.exts;
 using UnityEngine;
 
-namespace com.tinylabproductions.TLPLib.dispose {
+namespace com.tinylabproductions.TLPLib.Dispose {
   /// <summary>
   /// Tracker that allows you to register a subscription to be kept forever.
   ///

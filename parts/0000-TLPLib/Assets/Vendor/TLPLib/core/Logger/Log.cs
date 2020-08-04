@@ -1,5 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Components.DebugConsole;
-using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Dispose;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using pzd.lib.data;

@@ -9,7 +9,7 @@ using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Concurrent;
 using pzd.lib.concurrent;
-using com.tinylabproductions.TLPLib.dispose;
+using com.tinylabproductions.TLPLib.Dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
