@@ -18,6 +18,11 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static IEnumerable<T> findObjectsOfTypeAll<T>(this Scene scene, bool includeInactive = true) where T : Object {
       return scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<T>(includeInactive));
     }
+    
+    [PublicAPI]
+    public static IEnumerable<T> findObjectsOfTypeAll<T>(this IEnumerable<Scene> scenes, bool includeInactive = true) where T : Object {
+      return scenes.SelectMany(scene => scene.GetRootGameObjects()).SelectMany(o => o.GetComponentsInChildren<T>(includeInactive));
+    }
 
     /// <summary>
     /// Retrieve first <see cref="A"/> attached to a root <see cref="GameObject"/> in the <see cref="Scene"/>.
