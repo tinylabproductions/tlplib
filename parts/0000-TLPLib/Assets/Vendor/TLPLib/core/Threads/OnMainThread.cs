@@ -49,6 +49,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
       // Can't use static constructor, because it may be called from a different thread
       // init will always be called fom a main thread
       mainThread = Thread.CurrentThread;
+      // https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Scripting/UnitySynchronizationContext.cs
       mainThreadScheduler = TaskScheduler.FromCurrentSynchronizationContext();
       if (Application.isPlaying) {
         // In players isPlaying is always true.

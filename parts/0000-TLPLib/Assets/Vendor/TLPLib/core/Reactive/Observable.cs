@@ -193,7 +193,6 @@ namespace com.tinylabproductions.TLPLib.Reactive {
   // different types of A
   [Record(GenerateComparer = false, GenerateToString = false, GenerateGetHashCode = false)]
   partial class ObservableSub {
-    
     // Real type Action<A>, optimized for il2cpp
     public readonly object onEvent;
     // When subscriptions happen whilst we are processing other event, they are
