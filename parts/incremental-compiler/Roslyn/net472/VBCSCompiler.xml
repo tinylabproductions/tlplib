@@ -24,6 +24,23 @@
             be running.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.CompilerServer.ClientConnectionHandler">
+            <summary>
+            This class is responsible for processing a request from a client of the compiler server.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.ClientConnectionHandler.ProcessAsync(System.Threading.Tasks.Task{Microsoft.CodeAnalysis.CompilerServer.IClientConnection},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Handles a client connection. The returned task here will never fail. Instead all exceptions will be wrapped
+            in a <see cref="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.RequestError"/>
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.ClientConnectionHandler.CheckForNewKeepAlive(Microsoft.CodeAnalysis.CommandLine.BuildRequest)">
+            <summary>
+            Check the request arguments for a new keep alive time. If one is present,
+            set the server timer to the new time.
+            </summary>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.CompilerServer.CompilerServerHost.AssemblyReferenceProvider">
             <summary>
             The caching metadata provider used by the C# and VB compilers
@@ -37,6 +54,21 @@
         <member name="P:Microsoft.CodeAnalysis.CompilerServer.CompilerServerHost.SdkDirectory">
             <summary>
             Directory that contains mscorlib.  Can be null when the host is executing in a CoreCLR context.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.RequestCompleted">
+            <summary>
+            The request completed and results were provided to the client. This value is used even for such
+            actions as a failed compilation because it was successfully executed and returned to the client.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.RequestError">
+            <summary>
+            The request contained an error that should cause the server to shutdown. This can happen for cases
+            like:
+               - server state is invalid because of a collision between analyzer assemblies
+               - client disconnected during build which is a treated as Ctrl-C event that should bring down 
+                 the server.
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CompilerServer.IDiagnosticListener.UpdateKeepAlive(System.TimeSpan)">
@@ -54,9 +86,9 @@
             Called when a connection to the server occurs.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IDiagnosticListener.ConnectionCompleted(Microsoft.CodeAnalysis.CompilerServer.CompletionReason)">
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IDiagnosticListener.ConnectionCompleted(Microsoft.CodeAnalysis.CompilerServer.CompletionData)">
             <summary>
-            Called when a connection has finished processing and notes the <paramref name="reason"/>
+            Called when a connection has finished processing.
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CompilerServer.IDiagnosticListener.KeepAliveReached">
@@ -76,14 +108,19 @@
             no guarantee of uniqueness.  
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnection.HandleConnectionAsync(System.Boolean,System.Threading.CancellationToken)">
+        <member name="P:Microsoft.CodeAnalysis.CompilerServer.IClientConnection.DisconnectTask">
             <summary>
-            Server the connection and return the result.
+            This task resolves if the client disconnects from the server.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnection.Close">
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnection.ReadBuildRequestAsync(System.Threading.CancellationToken)">
             <summary>
-            Close the underlying client connection.
+            Read a <see cref="T:Microsoft.CodeAnalysis.CommandLine.BuildRequest" /> from the client
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnection.WriteBuildResponseAsync(Microsoft.CodeAnalysis.CommandLine.BuildResponse,System.Threading.CancellationToken)">
+            <summary>
+            Write a <see cref="T:Microsoft.CodeAnalysis.CommandLine.BuildResponse" /> to the client
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.CompilerServer.MemoryHelper">
@@ -102,61 +139,7 @@
             Returns null if the file doesn't exist or otherwise can't be accessed.
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.CompilationNotStarted">
-            <summary>
-            There was an error creating the <see cref="T:Microsoft.CodeAnalysis.CommandLine.BuildRequest"/> object and a compilation was never
-            created.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.CompilationCompleted">
-            <summary>
-            The compilation completed and results were provided to the client.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.ClientDisconnect">
-            <summary>
-            The compilation process was initiated and the client disconnected before
-            the results could be provided to them.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.ClientException">
-            <summary>
-            There was an unhandled exception processing the result.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.ClientShutdownRequest">
-            <summary>
-            There was a request from the client to shutdown the server.
-            </summary>
-        </member>
-        <member name="T:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnection">
-            <summary>
-            Represents a single connection from a client process. Handles the named pipe
-            from when the client connects to it, until the request is finished or abandoned.
-            A new task is created to actually service the connection and do the operation.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnection.MonitorDisconnectAsync(System.Threading.CancellationToken)">
-             <summary>
-             The IsConnected property on named pipes does not detect when the client has disconnected
-             if we don't attempt any new I/O after the client disconnects. We start an async I/O here
-             which serves to check the pipe for disconnection. 
-            
-             This will return true if the pipe was disconnected.
-             </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnection.Close">
-            <summary>
-            Close the connection.  Can be called multiple times.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnection.CheckForNewKeepAlive(Microsoft.CodeAnalysis.CommandLine.BuildRequest)">
-            <summary>
-            Check the request arguments for a new keep alive time. If one is present,
-            set the server timer to the new time.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenCoreAsync(System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenAsync(System.Threading.CancellationToken)">
             <summary>
             Creates a Task that waits for a client connection to occur and returns the connected 
             <see cref="T:System.IO.Pipes.NamedPipeServerStream"/> object.  Throws on any connection error.
@@ -213,15 +196,8 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.CompilerServer.ServerDispatcher.HandleCompletedConnections">
             <summary>
-            Checks the completed connection objects.
-            </summary>
-            <returns>False if the server needs to begin shutting down</returns>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.ServerDispatcher.HandleClientConnectionAsync(System.Threading.Tasks.Task{Microsoft.CodeAnalysis.CompilerServer.IClientConnection},System.Boolean,System.Threading.CancellationToken)">
-            <summary>
-            Creates a Task representing the processing of the new connection.  This will return a task that
-            will never fail.  It will always produce a <see cref="T:Microsoft.CodeAnalysis.CompilerServer.ConnectionData"/> value.  Connection errors
-            will end up being represented as <see cref="F:Microsoft.CodeAnalysis.CompilerServer.CompletionReason.ClientDisconnect"/>
+            Checks the completed connection objects and updates the server state based on their 
+            results.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.RuntimeHostInfo">
@@ -562,6 +538,17 @@
             This task does not complete until we are completely done reading.
             </summary>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.ConsoleUtil.RunWithUtf8Output``1(System.Func{System.IO.TextWriter,``0})">
+            <summary>
+            This will update the <see cref="P:System.Console.Out"/> value to have UTF8 encoding for the duration of the 
+            provided call back.  The newly created <see cref="T:System.IO.TextWriter"/> will be passed down to the callback.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.CommandLine.NativeMethods">
+            <summary>
+            Interop methods.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger">
             <summary>
             Class for logging information about what happens in the server and client parts of the 
@@ -602,49 +589,6 @@
         <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.GetLoggingPrefix">
             <summary>
             Get the string that prefixes all log entries. Shows the process, thread, and time.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.ConsoleUtil.RunWithUtf8Output``1(System.Func{System.IO.TextWriter,``0})">
-            <summary>
-            This will update the <see cref="P:System.Console.Out"/> value to have UTF8 encoding for the duration of the 
-            provided call back.  The newly created <see cref="T:System.IO.TextWriter"/> will be passed down to the callback.
-            </summary>
-        </member>
-        <member name="T:Microsoft.CodeAnalysis.CommandLine.NativeMethods">
-            <summary>
-            Interop methods.
-            </summary>
-        </member>
-        <member name="T:Microsoft.CodeAnalysis.DesktopAnalyzerAssemblyLoader">
-            <summary>
-            Loads analyzer assemblies from their original locations in the file system.
-            Assemblies will only be loaded from the locations specified when the loader
-            is instantiated.
-            </summary>
-            <remarks>
-            This type is meant to be used in scenarios where it is OK for the analyzer
-            assemblies to be locked on disk for the lifetime of the host; for example,
-            csc.exe and vbc.exe. In scenarios where support for updating or deleting
-            the analyzer on disk is required a different loader should be used.
-            </remarks>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.ShadowCopyAnalyzerAssemblyLoader._baseDirectory">
-            <summary>
-            The base directory for shadow copies. Each instance of
-            <see cref="T:Microsoft.CodeAnalysis.ShadowCopyAnalyzerAssemblyLoader"/> gets its own
-            subdirectory under this directory. This is also the starting point
-            for scavenge operations.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.ShadowCopyAnalyzerAssemblyLoader._shadowCopyDirectoryAndMutex">
-            <summary>
-            The directory where this instance of <see cref="T:Microsoft.CodeAnalysis.ShadowCopyAnalyzerAssemblyLoader"/>
-            will shadow-copy assemblies, and the mutex created to mark that the owner of it is still active.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.ShadowCopyAnalyzerAssemblyLoader._assemblyDirectoryId">
-            <summary>
-            Used to generate unique names for per-assembly directories. Should be updated with <see cref="M:System.Threading.Interlocked.Increment(System.Int32@)"/>.
             </summary>
         </member>
     </members>

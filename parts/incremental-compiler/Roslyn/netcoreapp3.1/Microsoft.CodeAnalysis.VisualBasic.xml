@@ -650,7 +650,7 @@ Microsoft.CodeAnalysis.VisualBasic
  <summary>
  A region analysis walker that computes the set of variables whose values flow into (are used in)
  the region.
- An variable assigned outside is used inside if an analysis
+ A variable assigned outside is used inside if an analysis
  that leaves the variable unassigned on entry to the region would cause the
  generation of "unassigned" errors within the region.
  </summary>
@@ -3118,7 +3118,7 @@ Figure out the set of best candidates in the following preference order:
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Binder.FindFirstKeyword(Microsoft.CodeAnalysis.SyntaxTokenList,Microsoft.CodeAnalysis.VisualBasic.SyntaxKind[])">
  <summary>
- Given a list of keywords and an set of keywords kinds to search, return the first keyword
+ Given a list of keywords and a set of keywords kinds to search, return the first keyword
  in the list, if any, that matches one of the keyword kinds.
  </summary>
 </member>
@@ -3578,7 +3578,7 @@ Figure out the set of best candidates in the following preference order:
  <summary>
  Special binder for binding ObjectInitializers. 
  This binder stores a reference to the receiver of the initialization, because fields in an object initializer can be 
- referenced with an omitted left expression in an member access expression (e.g. .Fieldname = .OtherFieldname).
+ referenced with an omitted left expression in a member access expression (e.g. .Fieldname = .OtherFieldname).
  </summary>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.ObjectInitializerBinder.TryBindOmittedLeftForMemberAccess(Microsoft.CodeAnalysis.VisualBasic.Syntax.MemberAccessExpressionSyntax,Microsoft.CodeAnalysis.DiagnosticBag,Microsoft.CodeAnalysis.VisualBasic.Binder,System.Boolean@)">
@@ -4291,7 +4291,7 @@ For more explanation of Kind, Symbol, Error - see LookupResult.
  Occasionally, good or ambiguous results are referred to as "viable" results.
  
  Multiple symbols can be represented in a single LookupResult. Multiple symbols are ONLY USED for overloadable
- entities, such an methods or properties, and represent all the symbols that overload resolution needs to consider.
+ entities, such as methods or properties, and represent all the symbols that overload resolution needs to consider.
  When ambiguous symbols are encountered, a single representative symbols is returned, with an attached AmbiguousSymbolDiagnostic
  from which all the ambiguous symbols can be retrieved. This implies that Lookup operations that are restricted to namespaces
  and/or types always create a LookupResult with 0 or 1 symbol.
@@ -4655,7 +4655,7 @@ For more explanation of Kind, Symbol, Error - see LookupResult.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.MethodBodySemanticModel.Create(Microsoft.CodeAnalysis.VisualBasic.SyntaxTreeSemanticModel,Microsoft.CodeAnalysis.VisualBasic.SubOrFunctionBodyBinder,System.Boolean)">
  <summary>
- Creates an MethodBodySemanticModel that allows asking semantic questions about an attribute node.
+ Creates a MethodBodySemanticModel that allows asking semantic questions about an attribute node.
  </summary>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.MethodBodySemanticModel.CreateSpeculative(Microsoft.CodeAnalysis.VisualBasic.SyntaxTreeSemanticModel,Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxNode,Microsoft.CodeAnalysis.VisualBasic.Binder,System.Int32)">
@@ -7077,7 +7077,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  overridden property if such property exists.
  
  NOTE: It is not possible in VB, but possible in other languages (for example in C#) to
-       override read-write property an provide override only for setter, thus inheriting 
+       override read-write property and provide override only for setter, thus inheriting 
        getter's implementation. This method will find the Get method from the most-derived
        overridden property in this case
  </summary>
@@ -7094,7 +7094,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  overridden property if such property exists.
  
  NOTE: It is not possible in VB, but possible in other languages (for example in C#) to
-       override read-write property an provide override only for getter, thus inheriting 
+       override read-write property and provide override only for getter, thus inheriting 
        setter's implementation. This method will find the Set method from the most-derived
        overridden property in this case
  </summary>
@@ -11071,7 +11071,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.OverrideHidingHelper.RequiresExplicitOverride(Microsoft.CodeAnalysis.VisualBasic.Symbols.MethodSymbol)">
  <summary>
- If a method had an virtual inaccessible override, then an explicit override in metadata is needed
+ If a method had a virtual inaccessible override, then an explicit override in metadata is needed
  to make it really override what it intends to override, and "skip" the inaccessible virtual
  method.
  </summary>
@@ -16261,7 +16261,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VBSemanticModel.GetCrefReferenceSymbolInfo(Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefReferenceSyntax,Microsoft.CodeAnalysis.VisualBasic.VBSemanticModel.SymbolInfoOptions,System.Threading.CancellationToken)">
  <summary>
- Gets symbol information about an cref reference syntax node. This is the worker
+ Gets symbol information about a cref reference syntax node. This is the worker
  function that is overridden in various derived kinds of Semantic Models. 
  </summary>
 </member>
@@ -16840,7 +16840,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VBSemanticModel.GetDeclaredSymbol(Microsoft.CodeAnalysis.VisualBasic.Syntax.ModifiedIdentifierSyntax,System.Threading.CancellationToken)">
  <summary>
- Given an modified identifier that is part of a variable declaration, get the
+ Given a modified identifier that is part of a variable declaration, get the
  corresponding symbol.
  </summary>
  <param name="identifierSyntax">The modified identifier that declares a variable.</param>
@@ -16856,7 +16856,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VBSemanticModel.GetDeclaredSymbol(Microsoft.CodeAnalysis.VisualBasic.Syntax.FieldInitializerSyntax,System.Threading.CancellationToken)">
  <summary>
- Given an FieldInitializerSyntax, get the corresponding symbol of anonymous type property.
+ Given a FieldInitializerSyntax, get the corresponding symbol of anonymous type property.
  </summary>
  <param name="fieldInitializerSyntax">The anonymous object creation field initializer syntax.</param>
  <returns>The symbol that was declared, or Nothing if no such symbol exists or 
@@ -16878,7 +16878,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VBSemanticModel.GetDeclaredSymbol(Microsoft.CodeAnalysis.VisualBasic.Syntax.CollectionRangeVariableSyntax,System.Threading.CancellationToken)">
  <summary>
- Given an CollectionRangeVariableSyntax, get the corresponding symbol.
+ Given a CollectionRangeVariableSyntax, get the corresponding symbol.
  </summary>
  <param name="rangeVariableSyntax">The range variable syntax that declares a variable.</param>
  <returns>The symbol that was declared, or Nothing if no such symbol exists.</returns>
@@ -17351,7 +17351,7 @@ End Class
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxTreeSemanticModel.GetDeclaredSymbol(Microsoft.CodeAnalysis.VisualBasic.Syntax.FieldInitializerSyntax,System.Threading.CancellationToken)">
  <summary>
- Given an FieldInitializerSyntax, get the corresponding symbol of anonymous type creation.
+ Given a FieldInitializerSyntax, get the corresponding symbol of anonymous type creation.
  </summary>
  <param name="fieldInitializerSyntax">The anonymous object creation field initializer syntax.</param>
  <returns>The symbol that was declared, or Nothing if no such symbol exists.</returns>
@@ -17372,7 +17372,7 @@ End Class
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxTreeSemanticModel.GetDeclaredSymbol(Microsoft.CodeAnalysis.VisualBasic.Syntax.CollectionRangeVariableSyntax,System.Threading.CancellationToken)">
  <summary>
- Given an CollectionRangeVariableSyntax, get the corresponding symbol.
+ Given a CollectionRangeVariableSyntax, get the corresponding symbol.
  </summary>
  <param name="rangeVariableSyntax">The range variable syntax that declares a variable.</param>
  <returns>The symbol that was declared, or Nothing if no such symbol exists.</returns>
@@ -17691,6 +17691,11 @@ End Class
  <summary>
  Builds an array of public type symbols defined in netmodules included in the compilation
  And type forwarders defined in this compilation Or any included netmodule (in this order).
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Emit.PEModuleBuilder.GetForwardedTypes(Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceAssemblySymbol,Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder{Microsoft.Cci.ExportedType})">
+ <summary>
+ Returns a set of top-level forwarded types
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.Emit.PEModuleBuilder._addedEmbeddedSymbols">
@@ -19814,7 +19819,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ObjectCreationInitializerSyntax">
  <summary>
  An abstract node class that represents a "With" or "From" clause used to
- initializer an new object.
+ initialize a new object.
  </summary>
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ObjectMemberInitializerSyntax">
@@ -21312,7 +21317,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.CallStatementSyntax">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.CallStatementSyntax.CallKeyword">
@@ -23131,7 +23136,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.DateLiteralTokenSyntax">
  <summary>
- Represents an Date literal token.
+ Represents a Date literal token.
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.DateLiteralTokenSyntax.Value">
@@ -23141,7 +23146,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.StringLiteralTokenSyntax">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.StringLiteralTokenSyntax.Value">
@@ -23152,7 +23157,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.CharacterLiteralTokenSyntax">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.CharacterLiteralTokenSyntax.Value">
@@ -27220,7 +27225,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.SyntaxFactory.CallStatement(Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.KeywordSyntax,Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ExpressionSyntax)">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
  <param name="callKeyword">
  The "Call" keyword.
@@ -29425,7 +29430,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.SyntaxFactory.DateLiteralToken(System.String,System.DateTime,Microsoft.CodeAnalysis.GreenNode,Microsoft.CodeAnalysis.GreenNode)">
  <summary>
- Represents an Date literal token.
+ Represents a Date literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -29433,7 +29438,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.SyntaxFactory.StringLiteralToken(System.String,System.String,Microsoft.CodeAnalysis.GreenNode,Microsoft.CodeAnalysis.GreenNode)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -29441,7 +29446,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.SyntaxFactory.CharacterLiteralToken(System.String,System.Char,Microsoft.CodeAnalysis.GreenNode,Microsoft.CodeAnalysis.GreenNode)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -33606,7 +33611,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ContextAwareSyntaxFactory.CallStatement(Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.KeywordSyntax,Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ExpressionSyntax)">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
  <param name="callKeyword">
  The "Call" keyword.
@@ -35811,7 +35816,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ContextAwareSyntaxFactory.DateLiteralToken(System.String,System.DateTime,Microsoft.CodeAnalysis.GreenNode,Microsoft.CodeAnalysis.GreenNode)">
  <summary>
- Represents an Date literal token.
+ Represents a Date literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -35819,7 +35824,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ContextAwareSyntaxFactory.StringLiteralToken(System.String,System.String,Microsoft.CodeAnalysis.GreenNode,Microsoft.CodeAnalysis.GreenNode)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -35827,7 +35832,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ContextAwareSyntaxFactory.CharacterLiteralToken(System.String,System.Char,Microsoft.CodeAnalysis.GreenNode,Microsoft.CodeAnalysis.GreenNode)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -36912,7 +36917,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.FloatingLiteralTokenSyntax`1">
  <summary>
- Represents an floating literal token.
+ Represents a floating literal token.
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.FloatingLiteralTokenSyntax`1.Value">
@@ -36922,7 +36927,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.FloatingLiteralTokenSyntax">
  <summary>
- Represents an floating literal token.
+ Represents a floating literal token.
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.FloatingLiteralTokenSyntax.TypeSuffix">
@@ -41454,7 +41459,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.ObjectCreationInitializerSyntax">
  <summary>
  An abstract node class that represents a "With" or "From" clause used to
- initializer an new object.
+ initialize a new object.
  </summary>
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.ObjectMemberInitializerSyntax">
@@ -45326,7 +45331,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.CallStatementSyntax">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CallStatementSyntax.CallKeyword">
@@ -59596,7 +59601,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.CallStatement(Microsoft.CodeAnalysis.SyntaxToken,Microsoft.CodeAnalysis.VisualBasic.Syntax.ExpressionSyntax)">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
  <param name="callKeyword">
  The "Call" keyword.
@@ -59608,7 +59613,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.CallStatement(Microsoft.CodeAnalysis.VisualBasic.Syntax.ExpressionSyntax)">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
  <param name="invocation">
  The expression denoting the call. This could be an Invocation or a MemberAccess
@@ -63636,7 +63641,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.DateLiteralToken(Microsoft.CodeAnalysis.SyntaxTriviaList,System.String,System.DateTime,Microsoft.CodeAnalysis.SyntaxTriviaList)">
  <summary>
- Represents an Date literal token.
+ Represents a Date literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -63644,7 +63649,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.DateLiteralToken(System.String,System.DateTime)">
  <summary>
- Represents an Date literal token.
+ Represents a Date literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -63652,7 +63657,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.StringLiteralToken(Microsoft.CodeAnalysis.SyntaxTriviaList,System.String,System.String,Microsoft.CodeAnalysis.SyntaxTriviaList)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -63660,7 +63665,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.StringLiteralToken(System.String,System.String)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -63668,7 +63673,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.CharacterLiteralToken(Microsoft.CodeAnalysis.SyntaxTriviaList,System.String,System.Char,Microsoft.CodeAnalysis.SyntaxTriviaList)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -63676,7 +63681,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.CharacterLiteralToken(System.String,System.Char)">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
  <param name="text">
  The actual text of this token.
@@ -64640,13 +64645,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.XmlValueElement(Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNodeSyntax[])">
  <summary>
- Creates the the syntax representation of an xml value element (e.g. for xml documentation comments).
+ Creates the syntax representation of an xml value element (e.g. for xml documentation comments).
  </summary>
  <param name="content">A list of xml syntax nodes that represents the content of the value element.</param>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.XmlValueElement(Microsoft.CodeAnalysis.SyntaxList{Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNodeSyntax})">
  <summary>
- Creates the the syntax representation of an xml value element (e.g. for xml documentation comments).
+ Creates the syntax representation of an xml value element (e.g. for xml documentation comments).
  </summary>
  <param name="content">A list of xml syntax nodes that represents the content of the value element.</param>
 </member>
@@ -64922,7 +64927,7 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.IsPartOfLinqQueryNotFollowedByNewLine(Microsoft.CodeAnalysis.SyntaxToken,Microsoft.CodeAnalysis.SyntaxNode,Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
- Determines if a submission contains an LINQ query not followed by an empty line.
+ Determines if a submission contains a LINQ query not followed by an empty line.
 
  Examples:
  1. <c>Dim x = 1</c> returns false since the statement is not a LINQ query
@@ -65008,6 +65013,13 @@ Parse the input for leading trivia.
  <param name="text">The input string</param>
  <param name="offset">The starting offset in the string</param>
 </member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.ParseTypeName(System.String,System.Int32,Microsoft.CodeAnalysis.ParseOptions,System.Boolean)">
+ <summary>
+ Parse a type name.
+ </summary>
+ <param name="text">The input string</param>
+ <param name="offset">The starting offset in the string</param>
+</member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.ParseTypeName(System.String,System.Int32,System.Boolean)">
  <summary>
  Parse a type name.
@@ -65052,7 +65064,7 @@ Parse the input for leading trivia.
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.MakeSourceText(System.String,System.Int32)">
  <summary>
- Helper method for wrapping a string and offset in an SourceText.
+ Helper method for wrapping a string and offset in a SourceText.
  </summary>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory.ParseDocCommentAttributeAsStandAloneEntity(System.String,System.String)">
@@ -67494,7 +67506,7 @@ Parse the input for leading trivia.
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.AccessCheck.CheckSymbolAccessibility(Microsoft.CodeAnalysis.VisualBasic.Symbol,Microsoft.CodeAnalysis.VisualBasic.Symbols.NamedTypeSymbol,Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSymbol,System.Collections.Generic.HashSet{Microsoft.CodeAnalysis.DiagnosticInfo}@,Microsoft.CodeAnalysis.VisualBasic.BasesBeingResolved)">
  <summary>
  Checks if 'symbol' is accessible from within type 'within', with
- an qualifier of type "throughTypeOpt". Sets "failedThroughTypeCheck" to true
+ a qualifier of type "throughTypeOpt". Sets "failedThroughTypeCheck" to true
  if it failed the "through type" check.
  </summary>
 </member>
@@ -69590,7 +69602,7 @@ Parse the input for leading trivia.
  <summary>
  Represents part of a single line If statement, consisting of a beginning
  if-statement, followed by a body of statement controlled by that beginning
- statement. The Kind property returns if this is an SingleLineIf.
+ statement. The Kind property returns if this is a SingleLineIf.
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SingleLineElseClause">
@@ -69645,14 +69657,14 @@ Parse the input for leading trivia.
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CatchBlock">
  <summary>
- Represents a Catch part of an Try...Catch...Finally...End Try statement,
+ Represents a Catch part of a Try...Catch...Finally...End Try statement,
  consisting of a Catch statement, followed by a body of statements controlled by
  that Catch statement. The Kind property returns which kind of part this is.
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FinallyBlock">
  <summary>
- Represents the Finally part of an Try...Catch...Finally...End Try statement,
+ Represents the Finally part of a Try...Catch...Finally...End Try statement,
  consisting of a Finally statement, followed by a body of statements controlled
  by the Finally.
  </summary>
@@ -69943,7 +69955,7 @@ Parse the input for leading trivia.
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CallStatement">
  <summary>
- Represent an call statement (also known as a invocation statement).
+ Represent a call statement (also known as a invocation statement).
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddHandlerStatement">
@@ -72272,7 +72284,7 @@ Parse the input for leading trivia.
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FloatingLiteralToken">
  <summary>
- Represents an floating literal token.
+ Represents a floating literal token.
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DecimalLiteralToken">
@@ -72282,17 +72294,17 @@ Parse the input for leading trivia.
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DateLiteralToken">
  <summary>
- Represents an Date literal token.
+ Represents a Date literal token.
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.StringLiteralToken">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CharacterLiteralToken">
  <summary>
- Represents an string literal token.
+ Represents a string literal token.
  </summary>
 </member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SkippedTokensTrivia">
@@ -79113,8 +79125,14 @@ Parse the input for leading trivia.
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.ThereAreNoPointerTypesInVB">
  <summary>There are no pointer types in VB.</summary>
 </member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.ThereAreNoFunctionPointerTypesInVB">
+ <summary>There are no function pointer types in VB.</summary>
+</member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.ThereIsNoDynamicTypeInVB">
  <summary>There is no dynamic type in VB.</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.ThereAreNoNativeIntegerTypesInVB">
+ <summary>There are no native integer types in VB.</summary>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.VariableSyntaxNotWithinSyntaxTree">
  <summary>variableSyntax not within syntax tree</summary>
