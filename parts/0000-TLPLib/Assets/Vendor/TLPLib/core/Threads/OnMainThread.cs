@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
@@ -49,8 +50,6 @@ namespace com.tinylabproductions.TLPLib.Threads {
       // Can't use static constructor, because it may be called from a different thread
       // init will always be called fom a main thread
       mainThread = Thread.CurrentThread;
-      // https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Scripting/UnitySynchronizationContext.cs
-      mainThreadScheduler = TaskScheduler.FromCurrentSynchronizationContext();
       if (Application.isPlaying) {
         // In players isPlaying is always true.
         ASync.EveryFrame(onUpdate);
@@ -86,35 +85,7 @@ namespace com.tinylabproductions.TLPLib.Threads {
       return true;
     }
 
-    public static Future<Either<TaskFailed, A>> toFuture<A>(this Task<A> task, [Implicit] ILog log=default) {
-      var future = Future.async<Either<TaskFailed, A>>(out var promise);
-      task.ContinueWith(t => {
-        // exceptions thrown here get silenced
-        try {
-          // Task.IsCompleted documentation:
-          // true if the task has completed (that is, the task is in one of the three final states: RanToCompletion,
-          // Faulted, or Canceled); otherwise, false
-          if (t.Status == TaskStatus.RanToCompletion) { promise.completeOrLog(t.Result); }
-          else if (t.IsFaulted) { promise.completeOrLog(new TaskFailed(t.Exception)); }
-          else { promise.completeOrLog(new TaskFailed(null)); }
-        }
-        catch (Exception e) { promise.completeOrLog(new TaskFailed(new AggregateException(e))); }
-      }, mainThreadScheduler);
-      return future;
-    }
-  }
-
-  [Record(GenerateToString = false), PublicAPI] public readonly partial struct TaskFailed {
-    readonly AggregateException exception;
-
-    public bool cancelled => exception == null;
-    public bool failed => exception != null;
-
-    public bool getFailure(out AggregateException e) {
-      e = exception;
-      return exception != null;
-    }
-    
-    public override string ToString() => cancelled ? "TaskCancelled" : $"TaskFailed({exception})";
+    public static Future<Either<TaskFailed, A>> toFuture<A>(this Task<A> task, [Implicit] ILog log=default) => 
+      task.toFuture(action => run(action));
   }
 }
