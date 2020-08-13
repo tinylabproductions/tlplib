@@ -1,6 +1,7 @@
 ﻿#if UNITY_ANDROID
 using System;
 using com.tinylabproductions.TLPLib.Android.Bindings.java.lang;
+using pzd.lib.log;
 using UnityEngine;
 using ULog = com.tinylabproductions.TLPLib.Logger.Log;
 
@@ -18,13 +19,13 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.util {
 
     static readonly AndroidJavaClass klass = new AndroidJavaClass("android.util.Log");
 
-    public static Level fromLoggerLevel(ULog.Level level) {
+    public static Level fromLoggerLevel(LogLevel level) {
       switch (level) {
-        case ULog.Level.ERROR: return Level.ERROR;
-        case ULog.Level.WARN: return Level.WARN;
-        case ULog.Level.INFO: return Level.INFO;
-        case ULog.Level.DEBUG: return Level.DEBUG;
-        case ULog.Level.VERBOSE: return Level.VERBOSE;
+        case LogLevel.ERROR: return Level.ERROR;
+        case LogLevel.WARN: return Level.WARN;
+        case LogLevel.INFO: return Level.INFO;
+        case LogLevel.DEBUG: return Level.DEBUG;
+        case LogLevel.VERBOSE: return Level.VERBOSE;
         default:
           throw new ArgumentOutOfRangeException(nameof(level), level, null);
       }
