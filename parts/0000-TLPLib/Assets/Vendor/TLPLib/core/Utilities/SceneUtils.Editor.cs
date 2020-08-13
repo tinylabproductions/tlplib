@@ -5,8 +5,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
+using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
@@ -27,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         if (Log.d.isInfo()) Log.d.info($"{nameof(modifyAllScenesInProject)} completed successfully");
       }
       else {
-        EditorUtils.userInfo(nameof(modifyAllScenesInProject), "Operation canceled by user", Log.Level.WARN);
+        EditorUtils.userInfo(nameof(modifyAllScenesInProject), "Operation canceled by user", LogLevel.WARN);
       }
       return result;
     }
@@ -93,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         return true;
       }
       catch (Exception e) {
-        EditorUtils.userInfo($"Error in {nameof(openScenesAndDo)}", e.ToString(), Log.Level.ERROR);
+        EditorUtils.userInfo($"Error in {nameof(openScenesAndDo)}", e.ToString(), LogLevel.ERROR);
         throw;
       }
       finally {

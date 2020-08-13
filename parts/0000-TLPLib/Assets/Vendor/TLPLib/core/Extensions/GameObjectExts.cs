@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
 using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 using UnityEngine;
-using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
@@ -52,9 +53,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       rt.SetSiblingIndex(siblingIndex);
     }
 
-    public static Coroutine everyFrame(this GameObject go, Func<bool> f) => ASync.EveryFrame(go, f);
+    public static ICoroutine everyFrame(this GameObject go, Func<bool> f) => ASync.EveryFrame(go, f);
 
-    public static Coroutine everyFrame(this GameObject go, Action a) =>
+    public static ICoroutine everyFrame(this GameObject go, Action a) =>
       go.everyFrame(() => { a(); return true; });
 
     public static IRxObservable<Unit> onMouseDown(this GameObject go) =>

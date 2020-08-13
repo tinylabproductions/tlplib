@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +11,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       @"#if PART_UNITYADS
 #if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
@@ -26,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 #if UNITY_ANDROID
 #pragma warning disable
 using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
@@ -39,6 +41,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 #pragma warning disable
 #if UNITY_ANDROID
 using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {

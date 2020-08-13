@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.dispose;
-using Smooth.Dispose;
+using pzd.lib.concurrent;
+using pzd.lib.dispose;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /* Execute asynchronous things one at a time. Useful for wrapping not
@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class ASyncNAtATimeQueue<Params, Return> : IDisposable {
-    struct QueueEntry {
+    readonly struct QueueEntry {
       public readonly Params p;
       public readonly Promise<Return> promise;
 

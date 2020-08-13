@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.dispose;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Pools;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.collection;
+using pzd.lib.concurrent;
+using pzd.lib.dispose;
+using pzd.lib.dispose;
 using pzd.lib.reactive;
 using UnityEngine;
-using Coroutine = com.tinylabproductions.TLPLib.Concurrent.Coroutine;
 
 namespace com.tinylabproductions.TLPLib.binding {
   [PublicAPI] public static partial class UnityBind {
     public static ISubscription bind<A>(
-      this IRxObservable<A> observable, IDisposableTracker tracker, Func<A, Coroutine> f
+      this IRxObservable<A> observable, IDisposableTracker tracker, Func<A, ICoroutine> f
     ) {
-      var lastCoroutine = F.none<Coroutine>();
+      var lastCoroutine = F.none<ICoroutine>();
       void stopOpt() { foreach (var c in lastCoroutine) { c.stop(); } }
       var sub = observable.subscribe(
         NoOpDisposableTracker.instance,

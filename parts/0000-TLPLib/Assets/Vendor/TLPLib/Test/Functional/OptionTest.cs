@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using pzd.lib.exts;
 using pzd.lib.functional;

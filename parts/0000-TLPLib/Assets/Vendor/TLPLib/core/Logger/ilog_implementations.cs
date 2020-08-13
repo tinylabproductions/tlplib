@@ -1,8 +1,9 @@
 using System;
 using com.tinylabproductions.TLPLib.Concurrent;
-using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.log;
+using pzd.lib.reactive;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Logger {
@@ -16,13 +17,13 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public DeferToMainThreadLog(ILog backing) { this.backing = backing; }
 
-    public Log.Level level {
+    public LogLevel level {
       get => backing.level;
       set => backing.level = value;
     }
 
-    public bool willLog(Log.Level l) => backing.willLog(l);
-    public void log(Log.Level l, LogEntry entry) =>
+    public bool willLog(LogLevel l) => backing.willLog(l);
+    public void log(LogLevel l, LogEntry entry) =>
       defer(() => backing.log(l, entry));
 
     static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
@@ -34,10 +35,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
   /// Useful for batch mode to log to the log file without the stacktraces.
   /// </summary>
   [PublicAPI, Singleton] public partial class ConsoleLog : LogBase {
-    protected override void logInner(Log.Level l, LogEntry entry) => Console.WriteLine(Str.s(entry));
+    protected override void logInner(LogLevel l, LogEntry entry) => Console.WriteLine(Str.s(entry));
   }
 
   [PublicAPI, Singleton] public partial class NoOpLog : LogBase {
-    protected override void logInner(Log.Level l, LogEntry entry) {}
+    protected override void logInner(LogLevel l, LogEntry entry) {}
   }
 }

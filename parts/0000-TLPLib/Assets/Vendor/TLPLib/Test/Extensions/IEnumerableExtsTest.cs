@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   public class IEnumerableSpec : ImplicitSpecification {
@@ -18,16 +19,16 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         var empty = ImmutableList<int>.Empty;
         var result = empty.partitionCollect(collector);
 
-        it["should have nones empty"] = () => result._1.shouldBeEmpty();
-        it["should have somes empty"] = () => result._2.shouldBeEmpty();
+        it["should have nones empty"] = () => result.nones.shouldBeEmpty();
+        it["should have somes empty"] = () => result.somes.shouldBeEmpty();
       };
 
       when["with elements"] = () => {
         var source = ImmutableList.Create(1, 2, 3, 4, 5, 6);
         var result = source.partitionCollect(collector);
 
-        it["should collect nones"] = () => result._1.shouldEqualEnum(1, 3, 5);
-        it["should collect somes"] = () => result._2.shouldEqualEnum("2", "4", "6");
+        it["should collect nones"] = () => result.nones.shouldEqualEnum(1, 3, 5);
+        it["should collect somes"] = () => result.somes.shouldEqualEnum("2", "4", "6");
       };
     });
 
@@ -223,7 +224,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [Test]
     public void TestWhenEmpty() =>
       ImmutableList<int>.Empty.zip(ImmutableList<string>.Empty)
-      .shouldEqual(ImmutableList<Tpl<int, string>>.Empty);
+      .shouldEqual(ImmutableList<(int, string)>.Empty);
 
     [Test]
     public void TestWhenEqual() =>

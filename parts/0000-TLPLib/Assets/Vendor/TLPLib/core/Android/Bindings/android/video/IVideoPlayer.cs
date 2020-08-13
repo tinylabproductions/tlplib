@@ -1,6 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.video {
   public interface IVideoPlayer {

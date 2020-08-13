@@ -5,12 +5,15 @@ using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
-using pzd.lib.exts;
+using pzd.lib.concurrent;
 using pzd.lib.functional;
+using pzd.lib.reactive;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -66,24 +69,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       Func<Promise<A>, IEnumerator> coroutine
     ) => Future.async<A>(p => behaviour.StartCoroutine(coroutine(p)));
 
-    public static Coroutine StartCoroutine(IEnumerator coroutine) =>
+    public static ICoroutine StartCoroutine(IEnumerator coroutine) =>
       new UnityCoroutine(behaviour, coroutine);
 
-    public static Coroutine WithDelay(
+    public static ICoroutine WithDelay(
       float seconds, Action action,
       MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
     ) => WithDelay(Duration.fromSeconds(seconds), action, behaviour, timeScale);
 
-    public static Coroutine WithDelay(
+    public static ICoroutine WithDelay(
       Duration duration, Action action,
       MonoBehaviour behaviour = null, TimeScale timeScale = TimeScale.Unity
     ) => WithDelay(duration, action, timeScale.asContext(), behaviour);
 
-    public static Coroutine WithDelay(
+    public static ICoroutine WithDelay(
       Duration duration, Action action, ITimeContext timeContext,
       MonoBehaviour behaviour = null
     ) {
-      behaviour = behaviour ?? ASync.behaviour;
+      behaviour = behaviour ? behaviour : ASync.behaviour;
       var enumerator = WithDelayEnumerator(duration, action, timeContext);
       return new UnityCoroutine(behaviour, enumerator);
     }
@@ -91,21 +94,21 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static void OnMainThread(Action action, bool runNowIfOnMainThread = true) =>
       Threads.OnMainThread.run(action, runNowIfOnMainThread);
 
-    public static Coroutine NextFrame(Action action) => NextFrame(behaviour, action);
+    public static ICoroutine NextFrame(Action action) => NextFrame(behaviour, action);
 
-    public static Coroutine NextFrame(GameObject gameObject, Action action) =>
+    public static ICoroutine NextFrame(GameObject gameObject, Action action) =>
       NextFrame(coroutineHelper(gameObject), action);
 
-    public static Coroutine NextFrame(MonoBehaviour behaviour, Action action) {
+    public static ICoroutine NextFrame(MonoBehaviour behaviour, Action action) {
       var enumerator = NextFrameEnumerator(action);
       return new UnityCoroutine(behaviour, enumerator);
     }
 
-    public static Coroutine AfterXFrames(
+    public static ICoroutine AfterXFrames(
       int framesToSkip, Action action
     ) => AfterXFrames(behaviour, framesToSkip, action);
 
-    public static Coroutine AfterXFrames(
+    public static ICoroutine AfterXFrames(
       MonoBehaviour behaviour, int framesToSkip, Action action
     ) {
       return EveryFrame(behaviour, () => {
@@ -128,26 +131,26 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(Func<bool> f) => EveryFrame(behaviour, f);
+    public static ICoroutine EveryFrame(Func<bool> f) => EveryFrame(behaviour, f);
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(GameObject go, Func<bool> f) => EveryFrame(coroutineHelper(go), f);
+    public static ICoroutine EveryFrame(GameObject go, Func<bool> f) => EveryFrame(coroutineHelper(go), f);
 
     /* Do thing every frame until f returns false. */
-    public static Coroutine EveryFrame(MonoBehaviour behaviour, Func<bool> f) {
+    public static ICoroutine EveryFrame(MonoBehaviour behaviour, Func<bool> f) {
       var enumerator = EveryWaitEnumerator(null, f);
       return new UnityCoroutine(behaviour, enumerator);
     }
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, Func<bool> f) => EveryXSeconds(seconds, behaviour, f);
+    public static ICoroutine EveryXSeconds(float seconds, Func<bool> f) => EveryXSeconds(seconds, behaviour, f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, GameObject go, Func<bool> f) =>
+    public static ICoroutine EveryXSeconds(float seconds, GameObject go, Func<bool> f) =>
       EveryXSeconds(seconds, coroutineHelper(go), f);
 
     /* Do thing every X seconds until f returns false. */
-    public static Coroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Func<bool> f) {
+    public static ICoroutine EveryXSeconds(float seconds, MonoBehaviour behaviour, Func<bool> f) {
       var enumerator = EveryWaitEnumerator(new WaitForSecondsRealtimeReusable(seconds), f);
       return new UnityCoroutine(behaviour, enumerator);
     }
@@ -198,11 +201,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         }
         else if (!acceptedResponseCodes.contains(responseCode)) {
           var url = new Url(req.url); // Capture URL before disposing
-          var extrasB = ImmutableArray.CreateBuilder<Tpl<string, string>>();
+          var extrasB = ImmutableArray.CreateBuilder<KeyValuePair<string, string>>();
           foreach (var header in req.GetResponseHeaders()) {
-            extrasB.Add(F.t(header.Key, header.Value));
+            extrasB.Add(F.kv(header.Key, header.Value));
           }
-          extrasB.Add(F.t("response-text", req.downloadHandler.text));
+          extrasB.Add(F.kv("response-text", req.downloadHandler.text));
           req.Dispose();
           promise.complete(new WebRequestError(url, LogEntry.extras_(
             $"Received response code {responseCode} was not in {acceptedResponseCodes}",
@@ -240,7 +243,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
       else {
         var waiter = timeContext == TimeContext.fixedTime ? CoroutineUtils.waitFixed : null;
-        var waitTime = timeContext.passedSinceStartup + duration;
+        var waitTime = timeContext.passedSinceStartup + duration.toTimeSpan;
         while (waitTime > timeContext.passedSinceStartup) yield return waiter;
       }
       action();

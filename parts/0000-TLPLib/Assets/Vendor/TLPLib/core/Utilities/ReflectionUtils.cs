@@ -3,9 +3,8 @@
  using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using pzd.lib.exts;
 
-namespace com.tinylabproductions.TLPLib.Utilities {
+ namespace com.tinylabproductions.TLPLib.Utilities {
   public static class ReflectionUtils {
     static readonly ConcurrentDictionary<(MemberInfo, Type, bool), object[]> attributesCache =
       new ConcurrentDictionary<(MemberInfo, Type, bool), object[]>();

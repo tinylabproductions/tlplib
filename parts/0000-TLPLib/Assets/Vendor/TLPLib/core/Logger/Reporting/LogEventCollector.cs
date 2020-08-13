@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using com.tinylabproductions.Cryptography;
 using JetBrains.Annotations;
+using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.Logger.Reporting {
   [PublicAPI] public class LogEventCollector {

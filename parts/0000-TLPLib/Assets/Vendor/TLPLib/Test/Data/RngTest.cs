@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
+using pzd.lib.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Test;
+using pzd.lib.test_framework;
 using NUnit.Framework;
 using pzd.lib.data;
-using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Data {
   public class RngTest : ImplicitSpecification {

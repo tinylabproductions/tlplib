@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
-using com.tinylabproductions.TLPLib.Test;
 using NUnit.Framework;
-using pzd.lib.exts;
+using pzd.lib.concurrent;
 using pzd.lib.functional;
+using pzd.lib.test_framework;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   static class FT {
@@ -22,8 +23,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public class FutureTestEquality : TestBase {
     [Test]
     public void Equals() {
-      Promise<int> asyncP;
-      var asyncF = Future.async<int>(out asyncP);
+      var asyncF = Future.async<int>(out var asyncP);
       var unfullfilled = Future.unfulfilled<int>();
       var completed = Future.successful(3);
 
@@ -58,8 +58,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenASync() {
-      Promise<int> p;
-      var f = Future.async<int>(out p);
+      var f = Future.async<int>(out var p);
 
       var result = 0;
       f.onComplete(i => result = i);
@@ -88,8 +87,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenASync() {
-      Promise<int> p;
-      var f = Future.async<int>(out p);
+      var f = Future.async<int>(out var p);
 
       var result = 0;
       f.nowAndOnComplete(iOpt => result += iOpt.fold(-1, _ => _));
@@ -141,8 +139,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
     [Test]
     public void SuccessfulToASync() {
-      Promise<int> p2;
-      var f2 = Future.async<int>(out p2);
+      var f2 = Future.async<int>(out var p2);
       var f = successful.flatMap(_ => f2);
       f.type.shouldEqual(FutureType.ASync);
       f.value.shouldBeNone("it should be uncompleted if source future is incomplete");
@@ -174,8 +171,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void ASyncToSuccessful() {
-      Promise<int> p;
-      var f = Future.async<int>(out p);
+      var f = Future.async<int>(out var p);
       var called = false;
       var f2 = f.flatMap(i => {
         called = true;
@@ -191,8 +187,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void ASyncToUnfulfilled() {
-      Promise<int> p;
-      var f = Future.async<int>(out p);
+      var f = Future.async<int>(out var p);
       var called = false;
       var f2 = f.flatMap(_ => {
         called = true;
@@ -243,7 +238,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenBothSidesSuccessful() {
-      Future.successful(1).zip(Future.successful(2)).shouldBeOfSuccessfulType(F.t(1, 2));
+      Future.successful(1).zip(Future.successful(2)).shouldBeOfSuccessfulType((1, 2));
     }
 
     [Test]
@@ -262,7 +257,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       (completeFirst ? p1 : p2).complete(completeFirst ? 1 : 2);
       f.value.shouldBeNone("it should not complete just from one side");
       (completeFirst ? p2 : p1).complete(completeFirst ? 2 : 1);
-      f.value.shouldBeSome(F.t(1, 2), "it should complete from both sides");
+      f.value.shouldBeSome((1, 2), "it should complete from both sides");
     }
   }
 
@@ -447,39 +442,37 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void NotCompletedThenSignal() {
       var t = Future.unfulfilled<Unit>().delayUntilSignal();
-      t._1.shouldNotBeCompleted();
-      t._2();
-      t._1.shouldNotBeCompleted();
+      t.future.shouldNotBeCompleted();
+      t.sendSignal();
+      t.future.shouldNotBeCompleted();
     }
 
     [Test]
     public void NotCompletedThenCompletionThenSignal() {
-      Promise<Unit> p;
-      var t = Future.async<Unit>(out p).delayUntilSignal();
-      t._1.shouldNotBeCompleted();
+      var t = Future.async(out Promise<Unit> p).delayUntilSignal();
+      t.future.shouldNotBeCompleted();
       p.complete(F.unit);
-      t._1.shouldNotBeCompleted();
-      t._2();
-      t._1.shouldBeCompleted(F.unit);
+      t.future.shouldNotBeCompleted();
+      t.sendSignal();
+      t.future.shouldBeCompleted(F.unit);
     }
 
     [Test]
     public void NotCompletedThenSignalThenCompletion() {
-      Promise<Unit> p;
-      var t = Future.async<Unit>(out p).delayUntilSignal();
-      t._1.shouldNotBeCompleted();
-      t._2();
-      t._1.shouldNotBeCompleted();
+      var t = Future.async<Unit>(out var p).delayUntilSignal();
+      t.future.shouldNotBeCompleted();
+      t.sendSignal();
+      t.future.shouldNotBeCompleted();
       p.complete(F.unit);
-      t._1.shouldBeCompleted(F.unit);
+      t.future.shouldBeCompleted(F.unit);
     }
 
     [Test]
     public void CompletedThenSignal() {
       var t = Future.successful(F.unit).delayUntilSignal();
-      t._1.shouldNotBeCompleted();
-      t._2();
-      t._1.shouldBeCompleted(F.unit);
+      t.future.shouldNotBeCompleted();
+      t.sendSignal();
+      t.future.shouldBeCompleted(F.unit);
     }
   }
 
@@ -513,7 +506,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     Future<int> sourceFuture;
     TestTimeContext tc;
 
-    static readonly Duration d = new Duration(100);
+    static readonly TimeSpan t = TimeSpan.FromMilliseconds(100);
+    static readonly Duration d = t;
 
     [SetUp]
     public void setup() {
@@ -528,33 +522,33 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       tc.timePassed = d - new Duration(1);
       f.value.shouldBeNone();
       promise.complete(5);
-      f.value.shouldBeSome(Either<Duration, int>.Right(5));
+      f.value.shouldBeSome(Either<TimeSpan, int>.Right(5));
     }
 
     [Test]
     public void WhenSourceCompletesOnFailure() {
       var f = sourceFuture.timeout(d, tc);
-      var failureResult = new List<Duration>();
+      var failureResult = new List<TimeSpan>();
       f.onFailure(failureResult.Add);
       f.value.shouldBeNone();
       tc.timePassed = d - new Duration(1);
       f.value.shouldBeNone();
       promise.complete(5);
-      f.value.shouldBeSome(Either<Duration, int>.Right(5));
-      tc.timePassed += d;
+      f.value.shouldBeSome(Either<TimeSpan, int>.Right(5));
+      tc.timePassed += t;
       failureResult.shouldEqualEnum();
     }
 
     [Test]
     public void WhenSourceDelaysOnFailure() {
       var f = sourceFuture.timeout(d, tc);
-      var failureResult = new List<Duration>();
+      var failureResult = new List<TimeSpan>();
       f.onFailure(failureResult.Add);
       f.value.shouldBeNone();
       tc.timePassed = d;
-      f.value.shouldBeSome(F.left<Duration, int>(d));
-      tc.timePassed += d;
-      failureResult.shouldEqualEnum(d);
+      f.value.shouldBeSome(F.left<TimeSpan, int>(d));
+      tc.timePassed += t;
+      failureResult.shouldEqualEnum(t);
     }
   }
 

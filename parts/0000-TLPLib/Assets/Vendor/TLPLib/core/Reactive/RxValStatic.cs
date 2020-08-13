@@ -1,5 +1,5 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.dispose;
+using pzd.lib.dispose;
 using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Reactive {

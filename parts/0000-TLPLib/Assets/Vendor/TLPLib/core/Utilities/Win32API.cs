@@ -3,6 +3,7 @@ using System.Text;
 using System;
 using System.Runtime.InteropServices;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using static com.tinylabproductions.TLPLib.Utilities.Win32API;
 
 namespace com.tinylabproductions.TLPLib.Utilities {

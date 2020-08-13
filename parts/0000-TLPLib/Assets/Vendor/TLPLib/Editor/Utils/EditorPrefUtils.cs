@@ -1,5 +1,5 @@
-﻿using System;
-using com.tinylabproductions.TLPLib.Logger;
+﻿using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,7 +23,7 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
 
     [MenuItem("TLP/Tools/Prefs/Clear EditorPrefs")]
     public static void clearEditorPrefs() {
-      Func<string, bool> check = title =>
+      static bool check(string title) =>
         EditorUtility.DisplayDialog(
           "Clear editor prefs?",
           $"{title}\n\n" +

@@ -1,8 +1,10 @@
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
+
 
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI] public static class EitherExts {
@@ -41,7 +43,7 @@ if (!${varName}__either.rightValueOut(out var ${varName})) {
   return;
 }")]
     public static B rightOr_LOG_MSG_AND_RETURN<A, B>(
-      this Either<A, B> either, ILog log, string message, Log.Level level = Log.Level.ERROR
+      this Either<A, B> either, ILog log, string message, LogLevel level = LogLevel.ERROR
     ) => throw new MacroException();
     
     /// <summary>
@@ -62,7 +64,7 @@ if (!${varName}__either.rightValueOut(out var ${varName})) {
   return;
 }")]
     public static B rightOr_LOG_LEFT_AND_RETURN<A, B>(
-      this Either<A, B> either, ILog log, string message = null, Log.Level level = Log.Level.ERROR
+      this Either<A, B> either, ILog log, string message = null, LogLevel level = LogLevel.ERROR
     ) => throw new MacroException();
   }
 }

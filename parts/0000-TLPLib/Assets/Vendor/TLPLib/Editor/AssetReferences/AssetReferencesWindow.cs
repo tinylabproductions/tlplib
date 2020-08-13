@@ -4,19 +4,21 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
-using pzd.lib.exts;
+using pzd.lib.data;
+using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.reactive;
 using UnityEditor;
 using UnityEngine;
+
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
@@ -31,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
       var data = new AssetUpdate(
         importedAssets.ToImmutableList(),
         deletedAssets.ToImmutableList(),
-        movedFromAssetPaths.zip(movedAssets).Select(t => new AssetUpdate.Move(t._1, t._2)).ToImmutableList()
+        movedFromAssetPaths.zip(movedAssets, (i1, i2) => new AssetUpdate.Move(i1, i2)).ToImmutableList()
       );
 
       AssetReferencesWindow.processFiles(data);

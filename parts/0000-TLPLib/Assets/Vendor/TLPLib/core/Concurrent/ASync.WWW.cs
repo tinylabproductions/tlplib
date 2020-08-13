@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
+using pzd.lib.concurrent;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEngine;
+
 // obsolete WWW
 #pragma warning disable 618
 
@@ -11,8 +13,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   public static partial class ASync {
     /* Do async cancellable WWW request. */
     public static Cancellable<Future<Either<Cancelled, Either<WWWError, WWW>>>> toFuture(this WWW www) {
-      Promise<Either<Cancelled, Either<WWWError, WWW>>> promise;
-      var f = Future.async<Either<Cancelled, Either<WWWError, WWW>>>(out promise);
+      var f = Future.async<Either<Cancelled, Either<WWWError, WWW>>>(out var promise);
 
       var wwwCoroutine = StartCoroutine(WWWEnumerator(www, promise));
 

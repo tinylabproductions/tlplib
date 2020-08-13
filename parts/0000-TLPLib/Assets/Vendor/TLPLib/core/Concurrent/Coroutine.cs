@@ -4,29 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
+using pzd.lib.concurrent;
 using Smooth.Pools;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public interface Coroutine : IDisposable, IEnumerator {
-    /**
-     * We could use Future here, but future is a heap allocated object and
-     * we don't want each coroutine to allocate 2 extra heap objects.
-     *
-     * So instead we use event + property.
-     */
-    event Action onFinish;
-    /* false if coroutine is running, true if it completed or was stopped. */
-    bool finished { get; }
-  }
-
   [PublicAPI] public static class CoroutineExts {
-    public static void stop(this Coroutine c) => c.Dispose();
-    
-    public static AggregateCoroutine aggregate(this Coroutine[] coroutines) => 
+    public static AggregateCoroutine aggregate(this ICoroutine[] coroutines) => 
       new AggregateCoroutine(coroutines);
-    public static AggregateCoroutine aggregate(this IEnumerable<Coroutine> coroutines) => 
+    public static AggregateCoroutine aggregate(this IEnumerable<ICoroutine> coroutines) => 
       new AggregateCoroutine(coroutines.ToArray());
   }
 
@@ -34,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static readonly YieldInstruction waitFixed = new WaitForFixedUpdate();
   }
 
-  public sealed class UnityCoroutine : CustomYieldInstruction, Coroutine {
+  public sealed class UnityCoroutine : CustomYieldInstruction, ICoroutine {
     public event Action onFinish;
     public bool finished { get; private set; }
     public override bool keepWaiting => !finished;
@@ -131,15 +119,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public void Dispose() => stop();
   }
 
-  public sealed class AggregateCoroutine : CustomYieldInstruction, Coroutine {
-    readonly Coroutine[] coroutines;
+  public sealed class AggregateCoroutine : CustomYieldInstruction, ICoroutine {
+    readonly ICoroutine[] coroutines;
     int finishedCoroutines;
     
     public event Action onFinish;
     public bool finished { get; private set; }
     public override bool keepWaiting => !finished;
 
-    public AggregateCoroutine(Coroutine[] coroutines) { 
+    public AggregateCoroutine(ICoroutine[] coroutines) { 
       this.coroutines = coroutines;
       foreach (var c in coroutines) {
         if (c.finished) coroutineFinished();

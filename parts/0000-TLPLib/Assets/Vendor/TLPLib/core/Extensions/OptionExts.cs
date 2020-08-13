@@ -1,16 +1,18 @@
 using System;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
 
+
 namespace com.tinylabproductions.TLPLib.Extensions {
   [PublicAPI]
   public static class OptionExts {
     public static bool getOrLog<A>(
-      this Option<A> opt, out A a, LogEntry msg, ILog log = null, Log.Level level = Log.Level.ERROR
+      this Option<A> opt, out A a, LogEntry msg, ILog log = null, LogLevel level = LogLevel.ERROR
     ) {
       if (!opt.valueOut(out a)) {
         log ??= Log.d;
@@ -26,7 +28,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
   return;
 }")]
     public static A getOr_LOG_AND_RETURN<A>(
-      this Option<A> opt, LogEntry msg, ILog log, Log.Level level
+      this Option<A> opt, LogEntry msg, ILog log, LogLevel level
     ) => throw new MacroException();
     
     public static Option<B> flatMapUnity<A, B>(this Option<A> opt, Func<A, B> func) where B : class =>

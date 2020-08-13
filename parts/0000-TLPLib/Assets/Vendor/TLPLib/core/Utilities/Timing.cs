@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.exts;
+using pzd.lib.log;
 using pzd.lib.functional;
 using Smooth.Pools;
-using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   /// <summary>
@@ -106,7 +104,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return ret;
     }
 
-    public static ITiming ifLogLevel(this ITiming backing, Log.Level level, ILog log=null) =>
+    public static ITiming ifLogLevel(this ITiming backing, LogLevel level, ILog log=null) =>
       new TimingConditional(backing, (log ?? Log.@default).willLog(level));
   }
 

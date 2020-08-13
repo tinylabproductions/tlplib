@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.functional;
 using pzd.lib.serialization;

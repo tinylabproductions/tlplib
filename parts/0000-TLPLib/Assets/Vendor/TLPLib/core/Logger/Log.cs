@@ -1,12 +1,9 @@
 ﻿using com.tinylabproductions.TLPLib.Components.DebugConsole;
-using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Data;
+using com.tinylabproductions.TLPLib.Dispose;
 using com.tinylabproductions.TLPLib.Utilities;
-using GenerationAttributes;
 using JetBrains.Annotations;
-using pzd.lib.config;
-using pzd.lib.functional;
-using pzd.lib.serialization;
+using pzd.lib.data;
+using pzd.lib.log;
 using pzd.lib.utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -21,22 +18,6 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * need processing, you should use `if (Log.d.isDebug()) Log.d.debug("foo=" + foo);` style.
    **/
   [PublicAPI] public static class Log {
-    public enum Level : byte { VERBOSE = 10, DEBUG = 20, INFO = 30, WARN = 40, ERROR = 50 }
-    public static class Level_ {
-      public static readonly ISerializedRW<Level> rw = 
-        SerializedRW.byte_.map<byte, Level>(b => (Level) b, l => (byte) l);
-
-      public static readonly Config.Parser<object, Level> parser =
-        Config.stringParser.flatMap((_, str) => str switch {
-          "verbose" => Level.VERBOSE,
-          "debug" => Level.DEBUG,
-          "info" => Level.INFO,
-          "warn" => Level.WARN,
-          "error" => Level.ERROR,
-          _ => Either<ConfigLookupError, Level>.Left(ConfigLookupError.fromString($"Unknown level '{str}'"))
-        });
-    }
-
     // InitializeOnLoad is needed to set static variables on main thread.
     // FKRs work without it, but on Gummy Bear repo tests fail
 #if UNITY_EDITOR
@@ -45,9 +26,9 @@ namespace com.tinylabproductions.TLPLib.Logger {
     [RuntimeInitializeOnLoadMethod]
     static void init() {}
 
-    public static readonly Level defaultLogLevel =
+    public static readonly LogLevel defaultLogLevel =
       Application.isEditor || Debug.isDebugBuild
-      ? Level.DEBUG : Level.INFO;
+      ? LogLevel.DEBUG : LogLevel.INFO;
 
     static readonly bool useConsoleLog = EditorUtils.inBatchMode;
 
@@ -58,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
           r.registerEnum(
             "level",
             Ref.a(() => @default.level, v => @default.level = v),
-            EnumUtils.GetValues<Level>()
+            EnumUtils.GetValues<LogLevel>()
           );
         }
       );
@@ -76,10 +57,5 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// ]]></code> syntax.
     /// </summary>
     public static ILog d => @default;
-  }
-
-  [Record] public readonly partial struct LogEvent {
-    public readonly Log.Level level;
-    public readonly LogEntry entry;
   }
 }

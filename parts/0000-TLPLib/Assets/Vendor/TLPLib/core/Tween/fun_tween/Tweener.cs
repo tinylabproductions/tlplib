@@ -1,8 +1,4 @@
-﻿using System;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <summary>

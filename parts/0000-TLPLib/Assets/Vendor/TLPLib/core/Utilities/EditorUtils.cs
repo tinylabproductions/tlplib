@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.exts;
-using pzd.lib.functional;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -42,7 +42,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
 
     [PublicAPI]
     public static void userInfo(
-      string title, string body, Log.Level level = Log.Level.INFO, object context = null
+      string title, string body, LogLevel level = LogLevel.INFO, object context = null
     ) {
       var log = Log.@default;
       if (log.willLog(level)) log.log(
@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     }
 
     [PublicAPI] public static Exception userException(string title, string body, object context = null) {
-      userInfo(title, body, Log.Level.ERROR, context);
+      userInfo(title, body, LogLevel.ERROR, context);
       return new Exception("Aborting.");
     }
 

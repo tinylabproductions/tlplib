@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [AddComponentMenu("")]

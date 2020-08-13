@@ -1,5 +1,5 @@
 ﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.functional;

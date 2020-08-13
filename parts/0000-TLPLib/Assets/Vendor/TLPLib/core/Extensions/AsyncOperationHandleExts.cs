@@ -1,5 +1,5 @@
 using System;
-using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using JetBrains.Annotations;
 using pzd.lib.functional;
 using UnityEngine.ResourceManagement.AsyncOperations;

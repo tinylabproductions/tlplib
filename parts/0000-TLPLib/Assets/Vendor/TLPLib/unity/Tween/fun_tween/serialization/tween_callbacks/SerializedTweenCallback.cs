@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using JetBrains.Annotations;
 

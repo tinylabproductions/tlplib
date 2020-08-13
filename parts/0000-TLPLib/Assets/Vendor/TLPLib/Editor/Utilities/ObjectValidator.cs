@@ -13,16 +13,17 @@ using System.Diagnostics;
 using System.Threading;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using UnityEngine.Events;
 using JetBrains.Annotations;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.log;
 using GenerationAttributes;
 using pzd.lib.collection;
-using pzd.lib.exts;
-using pzd.lib.functional;
-using pzd.lib.utils;
+ using pzd.lib.functional;
+ using pzd.lib.utils;
 using UnityEngine.Playables;
 using Object = UnityEngine.Object;
 
@@ -92,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     #endregion
     
     [PublicAPI]
-    public static void showErrors(IEnumerable<Error> errors, Log.Level level = Log.Level.ERROR) {
+    public static void showErrors(IEnumerable<Error> errors, LogLevel level = LogLevel.ERROR) {
       var log = Log.d;
       if (log.willLog(level))
         foreach (var error in errors) {

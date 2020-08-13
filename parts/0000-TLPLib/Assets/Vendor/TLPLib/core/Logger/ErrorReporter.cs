@@ -1,9 +1,9 @@
-﻿using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Functional;
+﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.dispose;
 using pzd.lib.functional;
+using pzd.lib.log;
 using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Logger {
@@ -29,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// </summary>
     [PublicAPI] 
     public static ISubscription registerDefault(
-      this OnError onError, IDisposableTracker tracker, Log.Level logFrom
+      this OnError onError, IDisposableTracker tracker, LogLevel logFrom
     ) =>
       defaultStream.strict
       .filter(e => e.entry.reportToErrorTracking && e.level >= logFrom)

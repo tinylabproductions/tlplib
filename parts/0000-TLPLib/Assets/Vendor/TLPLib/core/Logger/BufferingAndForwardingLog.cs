@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Concurrent;
+using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.data;
+using pzd.lib.dispose;
+using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.log;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   /// <summary>
@@ -24,16 +27,16 @@ namespace com.tinylabproductions.TLPLib.Logger {
     readonly ILog backing, debugLog;
     readonly List<BufferEntry> buffer = new List<BufferEntry>();
     readonly IDisposableTracker tracker = new DisposableTracker();
-    readonly Option<Log.Level> generateBacktraceIfMissingFor;
+    readonly Option<LogLevel> generateBacktraceIfMissingFor;
 
-    public Log.Level bufferingLevel;
+    public LogLevel bufferingLevel;
     public bool disabled { get; private set; }
     
     Option<SinkRuntimeData> _sinkData = None._;
     uint sequenceNo;
 
     public BufferingAndForwardingLog(
-      ILog backing, Log.Level bufferingLevel, Option<Log.Level> generateBacktraceIfMissingFor
+      ILog backing, LogLevel bufferingLevel, Option<LogLevel> generateBacktraceIfMissingFor
     ) {
       this.backing = backing;
       debugLog = backing.withScope(nameof(BufferingAndForwardingLog));
@@ -52,10 +55,10 @@ namespace com.tinylabproductions.TLPLib.Logger {
       tracker.Dispose();
     }
 
-    public Log.Level level { get => backing.level; set => backing.level = value; }
-    public bool willLog(Log.Level l) => l >= bufferingLevel || backing.willLog(l);
+    public LogLevel level { get => backing.level; set => backing.level = value; }
+    public bool willLog(LogLevel l) => l >= bufferingLevel || backing.willLog(l);
 
-    public void log(Log.Level l, LogEntry o) {
+    public void log(LogLevel l, LogEntry o) {
       bufferLog(l, o);
       if (backing.willLog(l)) backing.log(l, o);
     }
@@ -63,7 +66,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     /// <summary>
     /// Removes all messages from buffer which do not satisfy at least given level. 
     /// </summary>
-    public void removeEntriesFromBuffer(Log.Level requiredLevel) {
+    public void removeEntriesFromBuffer(LogLevel requiredLevel) {
       lock (buffer) {
         buffer.removeWhere(tpl => tpl.level < requiredLevel, replaceRemovedElementWithLast: true);
       }
@@ -142,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       }
     }
     
-    void bufferLog(Log.Level l, LogEntry o) {
+    void bufferLog(LogLevel l, LogEntry o) {
       if (l < bufferingLevel) return;
 
       {
@@ -178,7 +181,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [Record] sealed partial class SinkRuntimeData {
       public readonly SinkData sinkData;
-      public readonly Coroutine coroutine;
+      public readonly ICoroutine coroutine;
 
       public Option<Future<bool>> currentRequest = None._;
 
@@ -187,7 +190,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     [Record] public readonly partial struct BufferEntry {
       public readonly DateTime timestamp;
-      public readonly Log.Level level;
+      public readonly LogLevel level;
       public readonly LogEntry entry;
       public readonly uint sequenceNo;
     }

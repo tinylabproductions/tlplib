@@ -4,12 +4,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
-using com.tinylabproductions.TLPLib.Data.typeclasses;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.exts;
+using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.functional;
 using pzd.lib.json;
+using pzd.lib.log;
 using pzd.lib.typeclasses;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -264,16 +264,16 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
 
     public static Dictionary<string, string> staticExtras = new Dictionary<string, string>();
 
-    public static LogLevel asSentry(this Log.Level type) {
+    public static LogLevel asSentry(this pzd.lib.log.LogLevel type) {
       switch (type) {
-        case Log.Level.ERROR:
+        case pzd.lib.log.LogLevel.ERROR:
           return LogLevel.ERROR;
-        case Log.Level.WARN:
+        case pzd.lib.log.LogLevel.WARN:
           return LogLevel.WARNING;
-        case Log.Level.INFO:
+        case pzd.lib.log.LogLevel.INFO:
           return LogLevel.INFO;
-        case Log.Level.DEBUG:
-        case Log.Level.VERBOSE:
+        case pzd.lib.log.LogLevel.DEBUG:
+        case pzd.lib.log.LogLevel.VERBOSE:
           return LogLevel.INFO;
         default:
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -293,16 +293,16 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     };
 
     public static IEnumerable<KeyValuePair<string, Tag>> convertTags(
-      ImmutableArray<Tpl<string, string>> source
+      ImmutableArray<KeyValuePair<string, string>> source
     ) =>
       // Sentry does not support empty tags.
-      source.Select(t => F.kv(t._1, new Tag(t._2.isEmpty() ? "-" : t._2)));
+      source.Select(t => F.kv(t.Key, new Tag(t.Value.isEmpty() ? "-" : t.Value)));
 
     public static IEnumerable<KeyValuePair<string, string>> convertExtras(
-      ImmutableArray<Tpl<string, string>> source
+      ImmutableArray<KeyValuePair<string, string>> source
     ) =>
       // Sentry does not support empty extras.
-      source.Select(t => F.kv(t._1, t._2.isEmpty() ? "-" : t._2));
+      source.Select(t => F.kv(t.Key, t.Value.isEmpty() ? "-" : t.Value));
   }
 
   public static class SentryRESTAPI {
@@ -433,7 +433,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     static Dictionary<string, object> backtraceElemToJson(this BacktraceElem bt) {
       var json = new Dictionary<string, object> {
         {"function", bt.method},
-        {"in_app", bt.inApp}
+        {"in_app", bt.inApp()}
       };
       if (bt.fileInfo.isSome) {
         var fi = bt.fileInfo.get;

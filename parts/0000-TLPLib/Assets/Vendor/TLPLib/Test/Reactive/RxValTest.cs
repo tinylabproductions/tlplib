@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.dispose;
-using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Test;
-using NUnit.Framework;
 using pzd.lib.exts;
+using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.test_framework;
+using NUnit.Framework;
+using pzd.lib.dispose;
 using pzd.lib.functional;
+using pzd.lib.reactive;
+using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Reactive {
   public class RxValTest : ImplicitSpecification {

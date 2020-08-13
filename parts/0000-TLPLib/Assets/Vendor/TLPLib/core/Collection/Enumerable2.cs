@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Extensions;
+using pzd.lib.exts;
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Collection {

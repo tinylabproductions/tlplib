@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.reflection;
-using pzd.lib.functional;
-using UnityEngine;
-
-namespace com.tinylabproductions.TLPLib.Android {
+﻿namespace com.tinylabproductions.TLPLib.Android {
 #if UNITY_ANDROID
   /* DSL for nicer android object instantiation. */
   public static class Droid {

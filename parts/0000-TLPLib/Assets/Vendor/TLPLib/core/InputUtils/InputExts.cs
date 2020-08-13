@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
