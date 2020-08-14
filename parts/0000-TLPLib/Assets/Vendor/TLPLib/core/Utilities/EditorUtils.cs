@@ -10,10 +10,22 @@ using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditorInternal;
+using UnityEngine;
+
 #endif
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class EditorUtils {
+    [Conditional("UNITY_EDITOR")]
+    public static void recordEditorChangesEditorMode(this Object o, string name) {
+#if UNITY_EDITOR
+      if (!Application.isPlaying) {
+        Undo.RecordObject(o, name);
+        EditorUtility.SetDirty(o);
+      }
+#endif
+    }
+    
     [Conditional("UNITY_EDITOR")]
     public static void recordEditorChanges(this Object o, string name) {
 #if UNITY_EDITOR
