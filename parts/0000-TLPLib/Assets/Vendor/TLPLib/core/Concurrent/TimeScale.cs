@@ -1,4 +1,5 @@
 ﻿using System;
+using pzd.lib.concurrent;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -33,15 +34,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       }
     }
 
-    public static TimeContext asContext(this TimeScale ts) {
-      switch (ts) {
-        case TimeScale.Realtime: return TimeContext.realTime;
-        case TimeScale.Unity: return TimeContext.playMode;
-        case TimeScale.FixedTime: return TimeContext.fixedTime;
-        case TimeScale.UnscaledTime: return TimeContext.unscaledTime;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(ts), ts, null);
-      }
-    }
+    public static ITimeContext asContext(this TimeScale ts) =>
+      ts switch {
+        TimeScale.Realtime => TimeContext.realTime,
+        TimeScale.Unity => TimeContext.playMode,
+        TimeScale.FixedTime => TimeContext.fixedTime,
+        TimeScale.UnscaledTime => TimeContext.unscaledTime,
+        _ => throw new ArgumentOutOfRangeException(nameof(ts), ts, null)
+      };
   }
 }

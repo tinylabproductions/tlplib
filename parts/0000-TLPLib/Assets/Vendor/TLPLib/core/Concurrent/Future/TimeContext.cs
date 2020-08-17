@@ -61,28 +61,36 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       ASync.WithDelay(duration, act, timeContext: this);
   }
 
-  public class TimeContext : ITimeContext {
-    public static readonly TimeContext
-      playMode = new TimeContext(() => Duration.fromSeconds(Time.time)),
-      unscaledTime = new TimeContext(() => Duration.fromSeconds(Time.unscaledTime)),
-      fixedTime = new TimeContext(() => Duration.fromSeconds(Time.fixedTime)),
-      realTime = new TimeContext(() => Duration.fromSeconds(Time.realtimeSinceStartup));
-
+  public static class TimeContext {
+    public static readonly MonoBehaviourTimeContext
+      playMode = new MonoBehaviourTimeContext(() => Duration.fromSeconds(Time.time)),
+      unscaledTime = new MonoBehaviourTimeContext(() => Duration.fromSeconds(Time.unscaledTime)),
+      fixedTime = new MonoBehaviourTimeContext(() => Duration.fromSeconds(Time.fixedTime)),
+      realTime = new MonoBehaviourTimeContext(() => Duration.fromSeconds(Time.realtimeSinceStartup));
+    
     public static readonly ITimeContext
+      DEFAULT = playMode,
       realTimeButPauseWhenAdIsShowing = RealTimeButPauseWhenAdIsShowing.instance;
+    
+#if UNITY_EDITOR
+    public static ITimeContext editor => EditorTimeContext.instance;
+#endif
+  }
 
-    public static ITimeContext DEFAULT => playMode;
-
+  /// <summary>
+  /// Time context that depends on a <see cref="MonoBehaviour"/> to measure time.
+  /// </summary>
+  public class MonoBehaviourTimeContext : ITimeContext {
     readonly Func<Duration> _passedSinceStartup;
     readonly MonoBehaviour maybeBehaviour;
 
-    public TimeContext(Func<Duration> passedSinceStartup, MonoBehaviour behaviour = null) {
+    public MonoBehaviourTimeContext(Func<Duration> passedSinceStartup, MonoBehaviour behaviour = null) {
       _passedSinceStartup = passedSinceStartup;
       maybeBehaviour = behaviour;
     }
 
-    public TimeContext withBehaviour(MonoBehaviour behaviour) =>
-      new TimeContext(_passedSinceStartup, behaviour);
+    public MonoBehaviourTimeContext withBehaviour(MonoBehaviour behaviour) =>
+      new MonoBehaviourTimeContext(_passedSinceStartup, behaviour);
 
     public TimeSpan passedSinceStartup => _passedSinceStartup();
 
