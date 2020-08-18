@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     readonly bool alwaysFinish;
 
     public CoroutineInterval(Duration duration, TimeScale timeScale = TimeScale.Unity, bool alwaysFinish = true)
-      : this(duration, timeScale.asContext()) {}
+      : this(duration, timeScale.asContext(), alwaysFinish) {}
 
     public CoroutineInterval(Duration duration, ITimeContext timeContext, bool alwaysFinish = true) {
       this.timeContext = timeContext;
