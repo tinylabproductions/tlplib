@@ -44,13 +44,17 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
           log.mDebug($"Running '{name}' at {now.echo()}, {scheduledAt.echo()}, {startedAt.echo()}");
           action();
           onFinish?.Invoke();
-          Dispose();
+          dispose(doLog: false);
         }
       }
 
       public void Dispose() {
         if (finished) return;
-        log.mDebug($"Disposing '{name}' scheduled at {scheduledAt}, {startedAt.echo()}");
+        dispose(doLog: true);
+      }
+
+      void dispose(bool doLog) {
+        if (doLog && log.isDebug()) log.debug($"Disposing '{name}' scheduled at {scheduledAt}, {startedAt.echo()}");
         EditorApplication.update -= onUpdate;
         finished = true;
       }
