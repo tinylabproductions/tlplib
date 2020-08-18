@@ -1,31 +1,22 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
-using JetBrains.Annotations;
 using pzd.lib.concurrent;
 using Smooth.Pools;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  [PublicAPI] public static class CoroutineExts {
-    public static AggregateCoroutine aggregate(this ICoroutine[] coroutines) => 
-      new AggregateCoroutine(coroutines);
-    public static AggregateCoroutine aggregate(this IEnumerable<ICoroutine> coroutines) => 
-      new AggregateCoroutine(coroutines.ToArray());
-  }
-
   public static class CoroutineUtils {
     public static readonly YieldInstruction waitFixed = new WaitForFixedUpdate();
   }
 
   public sealed class UnityCoroutine : CustomYieldInstruction, ICoroutine {
-    public event Action onFinish;
-    public bool finished { get; private set; }
-    public override bool keepWaiting => !finished;
+    public event CoroutineFinishedOrStopped onFinish;
+    public CoroutineState state { get; private set; } = CoroutineState.Running;
+
+    public override bool keepWaiting => state.isRunning();
 
     bool shouldStop;
 
@@ -77,76 +68,40 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
      * 2. Unity API has no way to check whether Coroutine has been completed.
      **/
     IEnumerator fixUnityBugs(IEnumerator startingEnumerator) {
-      using (var stackDisposable = stackPool.BorrowDisposable()) {
-        var stack = stackDisposable.value;
-        stack.Push(startingEnumerator);
+      using var stackDisposable = stackPool.BorrowDisposable();
+      var stack = stackDisposable.value;
+      stack.Push(startingEnumerator);
         
-        while (stack.Count > 0 && !shouldStop) {
-          var enumerator = stack.Peek();
-          if (enumerator.MoveNext()) {
-            var current = enumerator.Current;
-            switch (current) {
-              case IEnumerator innerEnumerator:
-                stack.Push(innerEnumerator);
-                break;
-              default:
-                switch (current) {
-                  case null:
-                  case YieldInstruction _:
-                    break;
-                  default:
-                    if (Log.d.isDebug()) Log.d.warn(
-                      $"{stack.Count}: {enumerator} yielding unknown {current.GetType()}"
-                    );
-                    break;
-                }
-                yield return current;
-                break;
-            }
-          }
-          else {
-            stack.Pop();
+      while (stack.Count > 0 && !shouldStop) {
+        var enumerator = stack.Peek();
+        if (enumerator.MoveNext()) {
+          var current = enumerator.Current;
+          switch (current) {
+            case IEnumerator innerEnumerator:
+              stack.Push(innerEnumerator);
+              break;
+            default:
+              var isKnown = current == null || current is YieldInstruction;
+              if (!isKnown) {
+                Log.d.mWarn($"{stack.Count}: {enumerator} yielding unknown {current.GetType()}");
+              }
+
+              yield return current;
+              break;
           }
         }
-
-        finished = true;
-        onFinish?.Invoke();
+        else {
+          stack.Pop();
+        }
       }
+
+      state = shouldStop ? CoroutineState.Stopped : CoroutineState.Finished;
+      onFinish?.Invoke(finished: !shouldStop);
+      onFinish = null;
     }
 
     public void stop() => shouldStop = true;
 
     public void Dispose() => stop();
   }
-
-  public sealed class AggregateCoroutine : CustomYieldInstruction, ICoroutine {
-    readonly ICoroutine[] coroutines;
-    int finishedCoroutines;
-    
-    public event Action onFinish;
-    public bool finished { get; private set; }
-    public override bool keepWaiting => !finished;
-
-    public AggregateCoroutine(ICoroutine[] coroutines) { 
-      this.coroutines = coroutines;
-      foreach (var c in coroutines) {
-        if (c.finished) coroutineFinished();
-        else c.onFinish += coroutineFinished;
-      }
-
-      void coroutineFinished() {
-        finishedCoroutines++;
-        if (finishedCoroutines == coroutines.Length) {
-          onFinish?.Invoke();
-          finished = true;
-        }
-      }
-    }
-
-    public void Dispose() {
-      foreach (var coroutine in coroutines) {
-        coroutine.Dispose();
-      }
-    }
-  } 
 }

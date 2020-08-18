@@ -18,8 +18,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       new EditorCoroutine(duration, act, name ?? "unnamed");
 
     class EditorCoroutine : ICoroutine {
-      public event Action onFinish;
-      public bool finished { get; private set; }
+      public event CoroutineFinishedOrStopped onFinish;
+      public CoroutineState state { get; private set; } = CoroutineState.Running;
       
       readonly TimeSpan duration;
       readonly Action action;
@@ -41,27 +41,31 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       void onUpdate() {
         var now = EditorApplication.timeSinceStartup;
         if (now >= scheduledAt) {
+          state = CoroutineState.Finished;
           log.mDebug($"Running '{name}' at {now.echo()}, {scheduledAt.echo()}, {startedAt.echo()}");
           action();
-          onFinish?.Invoke();
+          onFinish?.Invoke(finished: true);
+          onFinish = null;
           dispose(doLog: false);
         }
       }
 
       public void Dispose() {
-        if (finished) return;
+        if (!state.isRunning()) return;
         dispose(doLog: true);
       }
 
       void dispose(bool doLog) {
         if (doLog && log.isDebug()) log.debug($"Disposing '{name}' scheduled at {scheduledAt}, {startedAt.echo()}");
         EditorApplication.update -= onUpdate;
-        finished = true;
+        state = CoroutineState.Stopped;
+        onFinish?.Invoke(finished: false);
+        onFinish = null;
       }
 
       public void Reset() {}
       public object Current => null;
-      public bool MoveNext() => !finished;
+      public bool MoveNext() => state.isRunning();
     }
   }
 }

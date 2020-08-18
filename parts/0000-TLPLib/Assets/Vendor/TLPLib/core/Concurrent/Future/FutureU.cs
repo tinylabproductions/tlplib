@@ -15,7 +15,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public static Future<A> delayFrames<A>(int framesToSkip, A value) =>
       Future.a<A>(p => ASync.AfterXFrames(framesToSkip, () => p.complete(value)));
       
-    public static Future<Unit> fromCoroutine(IEnumerator enumerator) =>
+    public static Future<bool> fromCoroutine(IEnumerator enumerator) =>
       Future.fromCoroutine(ASync.StartCoroutine(enumerator));
 
     public static Future<A> fromBusyLoop<A>(
