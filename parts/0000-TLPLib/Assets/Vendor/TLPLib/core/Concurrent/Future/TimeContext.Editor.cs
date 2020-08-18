@@ -1,16 +1,21 @@
 #if UNITY_EDITOR
 using System;
+using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
+using pzd.lib.exts;
+using pzd.lib.log;
 using UnityEditor;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   [Singleton, PublicAPI] public sealed partial class EditorTimeContext : ITimeContext {
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(EditorTimeContext));
+    
     public TimeSpan passedSinceStartup => TimeSpan.FromSeconds(EditorApplication.timeSinceStartup);
     
     public ICoroutine after(TimeSpan duration, Action act, string name = null) => 
-      new EditorCoroutine(duration, act);
+      new EditorCoroutine(duration, act, name ?? "unnamed");
 
     class EditorCoroutine : ICoroutine {
       public event Action onFinish;
@@ -19,16 +24,24 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       readonly TimeSpan duration;
       readonly Action action;
       readonly double startedAt;
+      readonly string name;
+
+      double scheduledAt => startedAt + duration.TotalSeconds;
       
-      public EditorCoroutine(TimeSpan duration, Action action) {
+      public EditorCoroutine(TimeSpan duration, Action action, string name) {
         this.duration = duration;
         this.action = action;
+        this.name = name;
         startedAt = EditorApplication.timeSinceStartup;
+        log.mDebug($"Scheduling '{name}' at {scheduledAt}, {startedAt.echo()}");
+        
         EditorApplication.update += onUpdate;
       }
 
       void onUpdate() {
-        if (EditorApplication.timeSinceStartup >= startedAt + duration.TotalSeconds) {
+        var now = EditorApplication.timeSinceStartup;
+        if (now >= scheduledAt) {
+          log.mDebug($"Running '{name}' at {now.echo()}, {scheduledAt.echo()}, {startedAt.echo()}");
           action();
           onFinish?.Invoke();
           Dispose();
@@ -37,6 +50,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       public void Dispose() {
         if (finished) return;
+        log.mDebug($"Disposing '{name}' scheduled at {scheduledAt}, {startedAt.echo()}");
         EditorApplication.update -= onUpdate;
         finished = true;
       }
