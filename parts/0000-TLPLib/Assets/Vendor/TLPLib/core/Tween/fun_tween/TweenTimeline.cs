@@ -289,7 +289,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     }
   }
 
-  public static class TweenSequenceExts {
+  public static class TweenTimeLineExts {
     // ReSharper disable CompareOfFloatsByEqualityOperator
     public static bool isAtZero(this ITweenTimeline ts) => ts.timePassed == 0;
     public static bool isAtDuration(this ITweenTimeline ts) => ts.timePassed == ts.duration;
@@ -315,6 +315,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       element.timePassed += deltaTime;
     }
+    
+    public static void applyAtStart(this ITweenTimeline tt) => tt.applyStateAt(0);
+    public static void applyAtEnd(this ITweenTimeline tt) => tt.applyStateAt(tt.duration);
 
     [PublicAPI] 
     public static TweenTimeline single(this TweenTimelineElement element) =>
