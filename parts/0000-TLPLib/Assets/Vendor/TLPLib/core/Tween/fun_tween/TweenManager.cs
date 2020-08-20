@@ -74,6 +74,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public bool forwards = true;
     [PublicAPI] public Loop looping;
     [PublicAPI] public uint currentIteration;
+    [PublicAPI] public bool isPlaying { get; private set; }
     public readonly string context;
     public readonly Option<Component> maybeParentComponent;
     
@@ -190,6 +191,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     /// <summary>Resumes playback from the last position.</summary>
     [PublicAPI]
     public TweenManager resume() {
+      isPlaying = true;
       TweenManagerRunner.instance.add(this);
       return this;
     }
@@ -197,6 +199,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     /// <summary>Stops playback of the tween</summary>
     [PublicAPI]
     public TweenManager stop() {
+      isPlaying = false;
       if (TweenManagerRunner.hasActiveInstance) {
         // TweenManagerRunner.instance gets destroyed when we exit play mode
         // We don't want to create a new instance once that happens

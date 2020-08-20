@@ -318,6 +318,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     
     public static void applyAtStart(this ITweenTimeline tt) => tt.applyStateAt(0);
     public static void applyAtEnd(this ITweenTimeline tt) => tt.applyStateAt(tt.duration);
+    
+    /// <summary>
+    /// If we have timeline element that starts moving position at 1 second,
+    /// we will get a stutter if the object is placed at other position
+    ///
+    /// Call this method to set all tween targets at start position.
+    /// </summary>
+    public static void resetAllElementsToStart(this ITweenTimeline tt) {
+      tt.setRelativeTimePassed(
+        previousTimePassed: tt.duration, 
+        timePassed: 0,
+        playingForwards: false,
+        applyEffectsForRelativeTweens: false
+      );
+    }
 
     [PublicAPI] 
     public static TweenTimeline single(this TweenTimelineElement element) =>
