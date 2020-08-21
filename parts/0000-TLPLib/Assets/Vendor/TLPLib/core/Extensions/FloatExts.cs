@@ -11,12 +11,6 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return (int) number;
     }
 
-    [PublicAPI] public static byte toByteClamped(this float number) {
-      if (number > byte.MaxValue) return byte.MaxValue;
-      if (number < byte.MinValue) return byte.MinValue;
-      return (byte) number;
-    }
-
     [PublicAPI] public static byte roundToByteClamped(this float number) {
       if (number > byte.MaxValue) return byte.MaxValue;
       if (number < byte.MinValue) return byte.MinValue;
