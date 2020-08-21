@@ -37,6 +37,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
       ILog log = null, LogLevel onDeserializeFailureLogLevel = LogLevel.ERROR
     ) {
       log ??= Log.d;
+      var stream = new MemoryStream();
       return new FileCachedBlob(path).bimap(BiMapper.a(
         (byte[] bytes) => {
           var deserializedEither = rw.deserialize(bytes, 0);
@@ -51,7 +52,7 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
           }
           return deserializedEither.__unsafeGetRight.value;
         },
-        a => rw.serialize(a).toArray()
+        a => rw.serializeToArray(a, stream)
       ));
     }
   }

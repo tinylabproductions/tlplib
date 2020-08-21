@@ -68,7 +68,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var to = n - 1;
       while (n > 1) {
         n--;
-        var k = rng.nextIntInRange(0, to, out rng);
+        var k = GenRanged.Int.next(ref rng, 0, to);
         var value = list[k];
         list[k] = list[n];
         list[n] = value;

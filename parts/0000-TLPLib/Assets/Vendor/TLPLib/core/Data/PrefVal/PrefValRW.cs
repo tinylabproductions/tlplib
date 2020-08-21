@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.Serialization;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
@@ -38,20 +39,23 @@ namespace com.tinylabproductions.TLPLib.Data {
       ISerializedRW<A> aRW,
       PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
-    ) => custom(
-      a => Convert.ToBase64String(aRW.serialize(a).toArray()),
-      s => {
-        try {
-          var bytes = Convert.FromBase64String(s);
-          return aRW.deserialize(bytes, 0).mapRight(_ => _.value);
-        }
-        catch (FormatException e) {
-          return $"converting from base64 threw {e}";
-        }
-      },
-      onDeserializeFailure,
-      log
-    );
+    ) {
+      var stream = new MemoryStream();
+      return custom(
+        a => Convert.ToBase64String(aRW.serializeToArray(a, stream)),
+        s => {
+          try {
+            var bytes = Convert.FromBase64String(s);
+            return aRW.deserialize(bytes, 0).mapRight(_ => _.value);
+          }
+          catch (FormatException e) {
+            return $"converting from base64 threw {e}";
+          }
+        },
+        onDeserializeFailure,
+        log
+      );
+    }
 
     public static IPrefValueRW<Option<A>> opt<A>(
       ISerializedRW<A> baRW,

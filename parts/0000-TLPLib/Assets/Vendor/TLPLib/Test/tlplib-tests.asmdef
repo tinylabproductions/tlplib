@@ -17,6 +17,7 @@
         "nunit.framework.dll",
         "pzd.lib.dll",
         "pzd.lib.test_framework.dll",
+        "pzd.lib.test.dll",
         "System.Collections.Immutable.dll",
         "GenerationAttributes.dll",
         "0Harmony.dll",

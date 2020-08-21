@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public string asString() => $"[{_from}..{_to}]";
 
     public Duration random(ref Rng rng) => 
-      new Duration(rng.nextIntInRange(_from.millis, _to.millis, out rng));
+      new Duration(GenRanged.Int.next(ref rng, _from.millis, _to.millis));
 
     public static readonly Config.Parser<object, DurationRange> parser =
       Config.immutableArrayParser(Duration.configParser).flatMap((_, cfg) => {

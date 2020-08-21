@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using pzdf = pzd.lib.functional;
 using pzd.lib.test_framework;
 using NUnit.Framework;
-using pzd.lib.collection;
 using pzd.lib.exts;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;
@@ -140,14 +139,14 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     [Test]
     public void Normal() {
-      Func<PrefVal<string>> create = () => storage.custom(key, "", SerializedRW.str);
+      PrefVal<string> create() => storage.custom(key, "", SerializedRW.str);
       var pv = create();
       pv.value.shouldEqual("");
       pv.value = "foobar";
       const string key2 = key + "2";
       storage.custom(
         key2, "",
-        s => Convert.ToBase64String(SerializedRW.str.serialize(s).toArray()),
+        s => Convert.ToBase64String(SerializedRW.str.serializeToArray(s)),
         _ => pzdf.Either<string, string>.Left("failed")
       ).value = pv.value;
       backend.storage[key].shouldEqual(backend.storage[key2]);
@@ -181,7 +180,6 @@ namespace com.tinylabproductions.TLPLib.Data {
   class PrefValTestCollection : PrefValTestBase {
     const string key = nameof(PrefValTestCollection);
 
-    static Rope<byte> serialize(int i) => Rope.a(BitConverter.GetBytes(i));
     static pzdf.Either<string, DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
       SerializedRW.integer.deserialize(data, startIndex).rightValue.filter(i => i.value % 2 != 0)
         .toRight("failed");
@@ -195,7 +193,10 @@ namespace com.tinylabproductions.TLPLib.Data {
     ) =>
       storage.collection(
         key,
-        SerializedRW.lambda(serialize, deserializeFn ?? ((serialized, startIndex) => SerializedRW.integer.deserialize(serialized, startIndex))),
+        SerializedRW.lambda(
+          SerializedRW.integer.serialize, 
+          deserializeFn ?? ((serialized, startIndex) => SerializedRW.integer.deserialize(serialized, startIndex))
+        ),
         CollectionBuilderKnownSizeFactory<int>.immutableList, defaultVal,
         onDeserializeFailure: onDeserializeFailure,
         log: log

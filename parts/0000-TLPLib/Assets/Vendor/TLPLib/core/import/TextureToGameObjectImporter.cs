@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.import {
     public Data[] pallete;
     public Color32[] ignoredColors;
     public string holderGameObjectName = "Generated from Texture";
-    public ulong randomSeed = Rng.now.nextUIntInRangeT(1, uint.MaxValue).Item2;
+    public ulong randomSeed = GenRanged.UInt.nextT(Rng.now, 1u, uint.MaxValue).Item2;
 #pragma warning restore 649
 
     #endregion
