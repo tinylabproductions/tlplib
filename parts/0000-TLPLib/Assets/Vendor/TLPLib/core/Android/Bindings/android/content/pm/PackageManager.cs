@@ -1,15 +1,11 @@
 ﻿#if UNITY_ANDROID
 using pzd.lib.functional;
-using System;
 using System.Collections.Immutable;
 using System.Linq;
-using com.tinylabproductions.TLPLib.Android.Bindings.android.app;
 using com.tinylabproductions.TLPLib.Android.Bindings.java.util;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
-using pzd.lib.exts;
 using UnityEngine;
 using Application = UnityEngine.Application;
 
