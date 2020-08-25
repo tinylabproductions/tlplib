@@ -19,9 +19,28 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI] public interface IAsyncOperationHandle<A> {
     AsyncOperationStatus Status { get; }
     bool IsDone { get; }
+    /// <summary>
+    /// Combined progress of downloading from internet and loading from disk
+    /// </summary>
     float PercentComplete { get; }
+    /// <summary>
+    /// Status about bytes that are downloaded from the internet
+    /// </summary>
+    DownloadStatus downloadStatus { get; }
     Future<Try<A>> asFuture { get; }
     void release();
+  }
+
+  public static class DownloadStatusExts {
+    public static DownloadStatus join(this DownloadStatus a, DownloadStatus b) =>
+      new DownloadStatus {
+        DownloadedBytes = a.DownloadedBytes + b.DownloadedBytes,
+        TotalBytes = a.TotalBytes + b.TotalBytes,
+        IsDone = a.IsDone && b.IsDone
+      };
+
+    public static string debugStr(this DownloadStatus ds) =>
+      $"{ds.DownloadedBytes}/{ds.TotalBytes} bytes ({ds.Percent * 100} %), isDone = {ds.IsDone}";
   }
 
   [PublicAPI] public static class IASyncOperationHandle_ {
@@ -84,9 +103,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       aHandleProgressPercentage: aHandleProgressPercentage
     );
 
-    public static IAsyncOperationHandle<A> fixPercentageComplete<A>(this IAsyncOperationHandle<A> handle) => 
-      new FixingPercentCompleteAsyncOperationHandle<A>(handle);
-
     public static IAsyncOperationHandle<ImmutableArrayC<A>> sequenceNonFailing<A>(
       this IReadOnlyCollection<IAsyncOperationHandle<A>> collection
     ) => new SequencedNonFailingAsyncOperationHandle<A>(collection);
@@ -105,6 +121,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   [Record] sealed partial class HandleStatusOnRelease {
     public readonly AsyncOperationStatus status;
     public readonly float percentComplete;
+    public readonly DownloadStatus downloadStatus;
 
     public bool isDone => status != AsyncOperationStatus.None;
   }
@@ -125,11 +142,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => released.valueOut(out var r) ? r.status : handle.Status;
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
+    public DownloadStatus downloadStatus => released.valueOut(out var r) ? r.downloadStatus : handle.GetDownloadStatus();
     [LazyProperty] public Future<Try<A>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
-      var data = new HandleStatusOnRelease(handle.Status, handle.PercentComplete);
+      var data = new HandleStatusOnRelease(handle.Status, handle.PercentComplete, handle.GetDownloadStatus());
       _release(handle);
       released = Some.a(data);
     }
@@ -151,11 +169,12 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => released.valueOut(out var r) ? r.status : handle.Status;
     public bool IsDone => released.valueOut(out var r) ? r.isDone : handle.IsDone;
     public float PercentComplete => released.valueOut(out var r) ? r.percentComplete : handle.PercentComplete;
+    public DownloadStatus downloadStatus => released.valueOut(out var r) ? r.downloadStatus : handle.GetDownloadStatus();
     public Future<Try<object>> asFuture => handle.toFuture().map(h => h.toTry());
 
     public void release() {
       if (released) return;
-      var data = new HandleStatusOnRelease(handle.Status, handle.PercentComplete);
+      var data = new HandleStatusOnRelease(handle.Status, handle.PercentComplete, handle.GetDownloadStatus());
       _release(handle);
       released = Some.a(data);
     }
@@ -173,6 +192,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => handle.Status;
     public bool IsDone => handle.IsDone;
     public float PercentComplete => handle.PercentComplete;
+    public DownloadStatus downloadStatus => handle.downloadStatus;
     [LazyProperty] public Future<Try<B>> asFuture => handle.asFuture.map(try_ => try_.map(mapper));
     public void release() => handle.release();
   }
@@ -202,6 +222,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
       bHandleF.value.valueOut(out var b) 
         ? aHandleProgressPercentage + b.fold(h => h.PercentComplete, e => 1) * bHandleProgressPercentage 
         : aHandle.PercentComplete * aHandleProgressPercentage;
+
+    public DownloadStatus downloadStatus {
+      get {
+        if (bHandleF.value.valueOut(out var b)) {
+          return b.fold(h => h.downloadStatus, e => aHandle.downloadStatus);
+        }
+        return aHandle.downloadStatus;
+      }
+    }
 
     public Future<Try<B>> asFuture => bHandleF.flatMapT(bHandle => bHandle.asFuture);
 
@@ -233,6 +262,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => IsDone ? AsyncOperationStatus.Succeeded : AsyncOperationStatus.None;
     public bool IsDone => Time.frameCount >= endAtFrame;
     public float PercentComplete => Mathf.Clamp01(framesPassed / (float) durationInFrames);
+    public DownloadStatus downloadStatus => new DownloadStatus { IsDone = IsDone };
 
     public Future<Try<A>> asFuture {
       get {
@@ -249,6 +279,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => AsyncOperationStatus.Succeeded;
     public bool IsDone => true;
     public float PercentComplete => 1;
+    public DownloadStatus downloadStatus => new DownloadStatus { IsDone = IsDone };
     public Future<Try<Unit>> asFuture => Future.successful(Try.value(Unit._));
     public void release() {}
   }
@@ -275,6 +306,11 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
     public bool IsDone => handles.Count == 0 || handles.All(_ => _.IsDone);
     public float PercentComplete => handles.Count == 0 ? 1 : handles.Average(_ => _.PercentComplete);
+    public DownloadStatus downloadStatus => handles.Aggregate(
+      new DownloadStatus { IsDone = true }, 
+      (a, b) => a.join(b.downloadStatus)
+    ); 
+
     public Future<Try<ImmutableArrayC<Try<A>>>> asFuture =>
       handles.Select(h => h.asFuture).sequence().map(arr => Try.value(ImmutableArrayC.move(arr)));
     public void release() { foreach (var handle in handles) handle.release(); }
@@ -302,28 +338,14 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     }
     public bool IsDone => handles.Count == 0 || handles.All(_ => _.IsDone);
     public float PercentComplete => handles.Count == 0 ? 1 : handles.Average(_ => _.PercentComplete);
+    public DownloadStatus downloadStatus => handles.Aggregate(
+      new DownloadStatus { IsDone = true }, 
+      (a, b) => a.join(b.downloadStatus)
+    ); 
+
     public Future<Try<ImmutableArrayC<A>>> asFuture =>
       handles.Select(h => h.asFuture).sequence().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
     public void release() { foreach (var handle in handles) handle.release(); }
-  }
-
-  // I don't even... When you start a handle it doesn't start at 0. It starts at some random number. Like 0.5.
-  // At least in Addressables v1.10.0. Thus we need to fix this.
-  // https://unity.slack.com/archives/C9PUDG90S/p1591885127265100
-  public sealed class FixingPercentCompleteAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
-    readonly IAsyncOperationHandle<A> backing;
-    readonly float progressStartsAt;
-
-    public FixingPercentCompleteAsyncOperationHandle(IAsyncOperationHandle<A> backing) {
-      this.backing = backing;
-      progressStartsAt = backing.PercentComplete;
-    }
-
-    public AsyncOperationStatus Status => backing.Status;
-    public bool IsDone => backing.IsDone;
-    public float PercentComplete => (backing.PercentComplete - progressStartsAt) / (1f - progressStartsAt);
-    public Future<Try<A>> asFuture => backing.asFuture;
-    public void release() => backing.release();
   }
 
   public sealed class RetryingAsyncOperationHandle<A> : IAsyncOperationHandle<A> {
@@ -356,6 +378,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     public AsyncOperationStatus Status => current.Status;
     public bool IsDone => current.IsDone;
     public float PercentComplete => current.PercentComplete;
+    public DownloadStatus downloadStatus => current.downloadStatus;
     public Future<Try<A>> asFuture => finalHandleFuture.flatMap(h => h.asFuture);
 
     public void release() {
