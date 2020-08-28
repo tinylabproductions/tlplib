@@ -93,6 +93,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(SHOW_DELTA)] 
     void __setDelta() => _delta = get;
 
+    [Button] void swapEndAndStart() {
+      var copy = _start;
+      _start = _end;
+      _end = copy;
+    }
+
     [OnValueChanged(CHANGE), HideLabel, HorizontalGroup(DELTA), ShowIf(SHOW_DELTA), ShowInInspector]
     TValue _delta {
       get => subtract(_end, _start);

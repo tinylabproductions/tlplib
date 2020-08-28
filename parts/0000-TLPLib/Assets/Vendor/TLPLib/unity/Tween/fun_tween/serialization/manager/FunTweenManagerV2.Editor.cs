@@ -22,7 +22,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         if (_element == null) return "NULL";
         var target = _element.getTarget();
         if (target is Component c && c) target = c.gameObject;
-        return _element.GetType().Name + " : " + (target ? target.name : "NULL");
+        return $"{(target ? target.name : "NULL")} : {_element.GetType().Name}";
       }
 
       public int timelineChannelIdx {
