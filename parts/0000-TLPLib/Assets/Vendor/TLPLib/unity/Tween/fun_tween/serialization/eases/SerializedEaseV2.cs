@@ -76,9 +76,28 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
   [Serializable] public class ComplexEase_AnimationCurve : SerializedEaseV2.IComplexSerializedEase {
     [SerializeField, NotNull] AnimationCurve _curve = AnimationCurve.Linear(0, 0, 1, 1);
     
-    protected Ease createEase() => _curve.Evaluate;
     public string easeName => nameof(AnimationCurve);
     public void invalidate() { }
     public Ease ease => _curve.Evaluate;
+  }
+  
+  [Serializable] public class ComplexEase_Punch : SerializedEaseV2.IComplexSerializedEase {
+    [
+      SerializeField, 
+      Tooltip("Indicates how much will the punch vibrate")
+    ] int _vibrato = 10;
+
+    [
+      SerializeField, Range(0, 1),
+      Tooltip(
+        @"Represents how much the vector will go beyond the starting position when bouncing backwards.
+1 creates a full oscillation between the direction and the opposite decaying direction,
+while 0 oscillates only between the starting position and the decaying direction"
+      )
+    ] float _elasticity = 1;
+    
+    public string easeName => $"Punch(v: {_vibrato}, e: {_elasticity})";
+    public void invalidate() { }
+    public Ease ease => Eases.punch(vibrato: _vibrato, elasticity: _elasticity);
   }
 }
