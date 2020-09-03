@@ -1,6 +1,5 @@
 ﻿#if UNITY_ANDROID
 using System.Text.RegularExpressions;
-using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using pzd.lib.exts;
 using UnityEngine;

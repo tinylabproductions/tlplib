@@ -5,7 +5,6 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Android;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm;
 using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Functional;
 
 namespace com.tinylabproductions.TLPLib.Platform {
   class AndroidPlatformPackageManager : IPlatformPackageManager {

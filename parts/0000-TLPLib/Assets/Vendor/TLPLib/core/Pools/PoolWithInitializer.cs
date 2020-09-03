@@ -1,6 +1,5 @@
 using System;
 using pzd.lib.dispose;
-using Smooth.Dispose;
 
 namespace Smooth.Pools {
 	/// <summary>

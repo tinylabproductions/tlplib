@@ -2,13 +2,13 @@
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
-using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
+
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
 using pzd.lib.dispose;
 using pzd.lib.exts;
 using pzd.lib.functional;
-using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   [PublicAPI] public static class FutureExts {

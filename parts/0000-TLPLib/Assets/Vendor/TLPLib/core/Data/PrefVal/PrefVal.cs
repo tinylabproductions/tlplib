@@ -1,7 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.caching;
-using com.tinylabproductions.TLPLib.Reactive;
 using JetBrains.Annotations;
+using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary><see cref="PrefVal{A}"/> that can be inspected in editor.</summary>

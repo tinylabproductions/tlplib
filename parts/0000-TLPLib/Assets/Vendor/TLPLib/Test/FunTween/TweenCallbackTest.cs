@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
+
 using pzd.lib.test_framework;
 using com.tinylabproductions.TLPLib.Tween.fun_tween;
 using NUnit.Framework;

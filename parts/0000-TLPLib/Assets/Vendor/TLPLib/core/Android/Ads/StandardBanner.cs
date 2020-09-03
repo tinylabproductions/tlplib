@@ -1,4 +1,4 @@
-﻿using com.tinylabproductions.TLPLib.Reactive;
+﻿using pzd.lib.reactive;
 
 #if UNITY_ANDROID
 using System.Collections.Immutable;

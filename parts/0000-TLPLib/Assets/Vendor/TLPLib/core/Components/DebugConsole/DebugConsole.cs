@@ -17,12 +17,12 @@ using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Pools;
-using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.Reactive;using pzd.lib.reactive;
+
 using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.dispose;
 using pzd.lib.functional;
-using pzd.lib.reactive;
 using UnityEngine;
 using static pzd.lib.typeclasses.Str;
 using Debug = UnityEngine.Debug;
@@ -184,6 +184,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public static IRxObservable<Unit> registerDebugSequence(
       IDisposableTracker tracker, Option<string> unlockCode,
+      ITimeContext timeContext=null,
       DebugSequenceMouseData mouseData=null, Option<DebugSequenceDirectionData> directionDataOpt=default,
       DebugConsoleBinding binding=null, Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
       [CallerMemberName] string callerMemberName = "",
@@ -194,6 +195,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       Option.ensureValue(ref keyboardShortcutOpt);
 
       mouseData ??= DEFAULT_MOUSE_DATA;
+      timeContext ??= TimeContext.DEFAULT;
 
       var mouseObs =
         new RegionClickObservable(mouseData.width, mouseData.height)
@@ -209,7 +211,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       var directionObs = directionDataOpt.fold(
         Observable<Unit>.empty,
         directionData => {
-          var directions = Observable.everyFrame.collect(_ => {
+          var directions = ObservableU.everyFrame.collect(_ => {
             var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
             var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
             // Both are equal, can't decide.
@@ -222,15 +224,15 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
           return
             directions
-            .withinTimeframe(directionData.sequence.Count, directionData.timeframe)
-            .filter(l => l.Select(t => t._1).SequenceEqual(directionData.sequence))
+            .withinTimeframe(directionData.sequence.Count, directionData.timeframe, timeContext)
+            .filter(l => l.Select(t => t.Item1).SequenceEqual(directionData.sequence))
             .discardValue();
         }
       );
 
       var keyboardShortcutObs = keyboardShortcutOpt.fold(
         Observable<Unit>.empty,
-        kc => Observable.everyFrame.filter(_ => kc.getKeyDown)
+        kc => ObservableU.everyFrame.filter(_ => kc.getKeyDown)
       );
 
       var obs = mouseObs.joinAll(new [] {directionObs, keyboardShortcutObs});

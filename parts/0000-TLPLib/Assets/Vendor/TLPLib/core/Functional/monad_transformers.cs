@@ -1,9 +1,9 @@
 ﻿using System;
-using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
+
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
-using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Functional {
   /// <summary>

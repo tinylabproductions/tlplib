@@ -1,8 +1,8 @@
 ﻿using System;
 using pzd.lib.typeclasses;
-using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
 using pzd.lib.config;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.serialization;
 using UnityEngine;

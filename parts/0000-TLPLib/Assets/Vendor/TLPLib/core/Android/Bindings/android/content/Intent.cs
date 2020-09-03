@@ -1,7 +1,6 @@
 ﻿#if UNITY_ANDROID
 using pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Android.Bindings.android.net;
-using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;

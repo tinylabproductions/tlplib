@@ -9,11 +9,11 @@ using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
-using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
+
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
 using pzd.lib.functional;
-using pzd.lib.reactive;
 using UnityEngine;
 using UnityEngine.Networking;
 

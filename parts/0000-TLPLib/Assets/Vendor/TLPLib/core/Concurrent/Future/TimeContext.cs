@@ -2,7 +2,8 @@
 using com.tinylabproductions.TLPLib.Dispose;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
+
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
 using UnityEngine;

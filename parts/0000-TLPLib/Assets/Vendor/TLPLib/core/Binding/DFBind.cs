@@ -8,7 +8,8 @@ using System.Text.RegularExpressions;
 ﻿using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 ﻿using com.tinylabproductions.TLPLib.Functional;
-﻿using com.tinylabproductions.TLPLib.Reactive;
+﻿using com.tinylabproductions.TLPLib.Reactive;using pzd.lib.reactive;
+
 ﻿using com.tinylabproductions.TLPLib.Tween;
 
 namespace com.tinylabproductions.TLPLib.Binding {

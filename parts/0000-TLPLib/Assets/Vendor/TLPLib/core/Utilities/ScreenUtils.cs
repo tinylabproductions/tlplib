@@ -1,6 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;
+using com.tinylabproductions.TLPLib.Reactive;using pzd.lib.reactive;
+
 using pzd.lib.functional;
 using UnityEngine;
 
@@ -9,12 +10,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static Size screenSize => new Size(Screen.width, Screen.height);
 
     static readonly LazyVal<IRxVal<Size>> _screenSizeVal =
-      F.lazy(() => Observable.everyFrame.map(_ => screenSize).toRxVal(screenSize));
+      F.lazy(() => ObservableU.everyFrame.map(_ => screenSize).toRxVal(screenSize));
 
     public static IRxVal<Size> screenSizeVal => _screenSizeVal.strict;
 
     static readonly LazyVal<IRxVal<Rect>> _screenSafeArea =
-      F.lazy(() => Observable.everyFrame.map(_ => Screen.safeArea).toRxVal(Screen.safeArea));
+      F.lazy(() => ObservableU.everyFrame.map(_ => Screen.safeArea).toRxVal(Screen.safeArea));
 
     public static IRxVal<Rect> screenSafeArea => _screenSafeArea.strict;
 

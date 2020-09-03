@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
-using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
+
 using JetBrains.Annotations;
 using pzd.lib.dispose;
 

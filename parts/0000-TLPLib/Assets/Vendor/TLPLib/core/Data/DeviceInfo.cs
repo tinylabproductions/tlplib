@@ -1,5 +1,4 @@
 ﻿#if UNITY_ANDROID
-using com.tinylabproductions.TLPLib.Android.Bindings.android.os;
 #endif
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
