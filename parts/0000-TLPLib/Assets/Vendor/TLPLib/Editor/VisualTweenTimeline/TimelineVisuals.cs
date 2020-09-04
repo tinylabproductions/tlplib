@@ -296,7 +296,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           var rect1 = new Rect(labelPosX,
             boxRect.y + boxRect.height * 0.5f - size.y * 0.5f, Mathf.Clamp(size.x, 0, boxRect.width + (boxRect.x - labelPosX)), size.y);
   
-          GUI.Label(rect1, $"{currNode.name}", style);
+          GUI.Label(rect1, $"{currNode.name} {(int)(currentTime.remapClamped(currNode.startTime, currNode.getEnd(), 0, 100))}%", style);
         }
   
         if (snapIndicatorOpt.valueOut(out var snapIndicator)) {
@@ -386,43 +386,43 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       GUI.enabled = !EditorApplication.isCompiling && guiEnabled;
       GUI.backgroundColor = isLocked.value ? Color.gray : Color.white;
       
-      if (GUILayout.Button(isLocked.value ? lockOnTexture : lockTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(isLocked.value ? new GUIContent(lockOnTexture, "Lock selected timeline") : new GUIContent(lockTexture, "Unlock selected timeline"), EditorStyles.toolbarButton)) {
         onLockButton();
       }
       
       GUI.backgroundColor = Color.white;
       GUILayout.Space(10f);
 
-      if (GUILayout.Button(toStartButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(toStartButtonTexture, "Go to start"), new GUIStyle(EditorStyles.toolbarButton))) {
         onPlaybackControllerButton(AnimationPlaybackEvent.GoToStart);
       }
 
       GUI.backgroundColor = new Color(0, 0.8f, 1, 0.5f);
-      if (GUILayout.Button(startButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(startButtonTexture, "Play from start"), EditorStyles.toolbarButton)) {
         onPlaybackControllerButton(AnimationPlaybackEvent.PlayFromStart);
       }
       GUI.backgroundColor = Color.white;
 
-      if (GUILayout.Button(playButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(playButtonTexture, "Play from current time"), EditorStyles.toolbarButton)) {
         onPlaybackControllerButton(AnimationPlaybackEvent.PlayFromCurrentTime);
       }
 
-      if (GUILayout.Button(pauseButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(pauseButtonTexture, "Pause"), EditorStyles.toolbarButton)) {
         onPlaybackControllerButton(AnimationPlaybackEvent.Pause);
       }
 
       GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
-      if (GUILayout.Button(playFromEndButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(playFromEndButtonTexture, "Play from end"), EditorStyles.toolbarButton)) {
         onPlaybackControllerButton(AnimationPlaybackEvent.PlayFromEnd);
       }
 
       GUI.backgroundColor = Color.white;
 
-      if (GUILayout.Button(toEndButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(toEndButtonTexture, "Go to end"), EditorStyles.toolbarButton)) {
         onPlaybackControllerButton(AnimationPlaybackEvent.GoToEnd);
       }
 
-      if (GUILayout.Button(reverseButtonTexture, EditorStyles.toolbarButton)) {
+      if (GUILayout.Button(new GUIContent(reverseButtonTexture, "Reverse"), EditorStyles.toolbarButton)) {
         onPlaybackControllerButton(AnimationPlaybackEvent.Reverse);
       }
 
@@ -430,7 +430,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       if (!Application.isPlaying) {
         GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
-        if (GUILayout.Button(exitButtonTexture, EditorStyles.toolbarButton)) {
+        if (GUILayout.Button(new GUIContent(exitButtonTexture, "Exit"), EditorStyles.toolbarButton)) {
           onPlaybackControllerButton(AnimationPlaybackEvent.Exit);
           return;
         }

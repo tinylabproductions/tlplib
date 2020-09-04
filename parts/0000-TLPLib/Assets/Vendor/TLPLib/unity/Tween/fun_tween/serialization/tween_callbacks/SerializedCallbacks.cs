@@ -17,7 +17,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     [SerializeField, OnValueChanged(CHANGE)] InvokeOn _invokeOn;
 #pragma warning restore 649
     
-    public TweenTimelineElement toTimelineElement() => this;
+    public TweenTimelineElement toTimelineElement() {
+#if UNITY_EDITOR
+      __editorDirty = false;
+#endif
+      return this;
+    }
     public float duration => 0;
     public void trySetDuration(float _) { }
     

@@ -92,7 +92,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       Rewind = 7, 
       RewindWithEffectsForRelative = 8,
       ApplyZeroState = 9,
-      ApplyMaxDurationState = 10
+      ApplyMaxDurationState = 10,
+      StopAndRewind = 11
     }
 
     public void run(Action action) {
@@ -109,6 +110,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         case Action.RewindWithEffectsForRelative: manager.rewind(applyEffectsForRelativeTweens: true);      break;
         case Action.ApplyZeroState:               manager.timeline.applyStateAt(0);                         break;
         case Action.ApplyMaxDurationState:        manager.timeline.applyStateAt(manager.timeline.duration); break;
+        case Action.StopAndRewind:                manager.stop(); manager.rewind(); break;
         default: throw new ArgumentOutOfRangeException(nameof(action), action, null);
       }
     }

@@ -4,6 +4,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using JetBrains.Annotations;
+using pzd.lib.functional;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -93,6 +94,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(SHOW_DELTA)] 
     void __setDelta() => _delta = get;
 
+    [Button] void swapEndAndStart() {
+      var copy = _start;
+      _start = _end;
+      _end = copy;
+    }
+
     [OnValueChanged(CHANGE), HideLabel, HorizontalGroup(DELTA), ShowIf(SHOW_DELTA), ShowInInspector]
     TValue _delta {
       get => subtract(_end, _start);
@@ -161,6 +168,19 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override void set(Vector3 value) => _target.localScale = value;
     
     // public override string[] __editorSerializedProps => spVector3("m_LocalScale");
+  }
+
+  [Serializable] public sealed class LocalScaleX : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localScale.x;
+    protected override void set(float value) => _target.localScale = _target.localScale.withX(value);
+  }
+  [Serializable] public sealed class LocalScaleY : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localScale.y;
+    protected override void set(float value) => _target.localScale = _target.localScale.withY(value);
+  }
+  [Serializable] public sealed class LocalScaleZ : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localScale.z;
+    protected override void set(float value) => _target.localScale = _target.localScale.withZ(value);
   }
   
   [Serializable]
@@ -243,6 +263,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class RectTransformSimpleAnchors : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.anchorMin;
     protected override void set(Vector2 value) => _target.anchorMin = _target.anchorMax = value;
+  }
+  
+  [Serializable]
+  public sealed class RectTransformSimpleAnchorsX : SerializedTweenerFloat<RectTransform> {
+    protected override float get => _target.anchorMin.x;
+    protected override void set(float value) {
+      _target.anchorMin = _target.anchorMin.withX(value);
+      _target.anchorMax = _target.anchorMax.withX(value);
+    }
+  }
+  
+  [Serializable]
+  public sealed class RectTransformSimpleAnchorsY : SerializedTweenerFloat<RectTransform> {
+    protected override float get => _target.anchorMin.y;
+    protected override void set(float value) {
+      _target.anchorMin = _target.anchorMin.withY(value);
+      _target.anchorMax = _target.anchorMax.withY(value);
+    }
   }
   
   [Serializable]
