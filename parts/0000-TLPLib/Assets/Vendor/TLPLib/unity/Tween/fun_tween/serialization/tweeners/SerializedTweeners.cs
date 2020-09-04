@@ -4,7 +4,6 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using JetBrains.Annotations;
-using pzd.lib.functional;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -124,6 +123,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override float lerp(float percentage) => Mathf.LerpUnclamped(_start, _end, percentage);
     protected override float add(float a, float b) => a + b;
     protected override float subtract(float a, float b) => a - b;
+  }
+  
+  public abstract class SerializedTweenerInt<T> : SerializedTweenerV2<T, int> {
+    protected override int lerp(float percentage) => (int) Mathf.LerpUnclamped(_start, _end, percentage);
+    protected override int add(int a, int b) => a + b;
+    protected override int subtract(int a, int b) => a - b;
   }
   
   public abstract class SerializedTweenerColor<T> : SerializedTweenerV2<T, Color> {
