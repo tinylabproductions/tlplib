@@ -138,15 +138,24 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public partial class Element {
       // Don't use nameof, because those fields exist only in UNITY_EDITOR
       const string CHANGE = "editorSetDirty";
+      const string TIME = "Time";
       
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized
-      [SerializeField, PublicAccessor] float _startsAt;
+      [SerializeField, PublicAccessor, HorizontalGroup(TIME)] float _startsAt;
       [SerializeField, HideInInspector] int _timelineChannelIdx;
-      [SerializeField, NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] 
-      ISerializedTweenTimelineElementBase _element;
+      [NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] ISerializedTweenTimelineElementBase _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
+      
+      [ShowInInspector, HorizontalGroup(TIME)] float _endTime {
+        get => _startsAt + _element?.duration ?? 0f;
+        set {
+          if (_element != null) {
+            _element.trySetDuration(value - startsAt);
+          }
+        }
+      }
 
       public bool isValid => _element?.isValid ?? false;
     }

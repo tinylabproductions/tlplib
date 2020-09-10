@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Extensions;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 
 namespace com.tinylabproductions.TLPLib.Components.gradient {
   [AddComponentMenu("UI/Effects/Gradient")]
@@ -11,6 +12,12 @@ namespace com.tinylabproductions.TLPLib.Components.gradient {
 
     public override void ModifyVertices(List<UIVertex> vertexList) {
       GradientHelper.modifyVertices(vertexList, (c, t) => Color32.Lerp(bottomColor, topColor, t), type);
+    }
+
+    [Button] void swapColors() {
+      var temp = topColor;
+      topColor = bottomColor;
+      bottomColor = temp;
     }
 
     [PublicAPI]
