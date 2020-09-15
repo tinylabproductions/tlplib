@@ -25,7 +25,8 @@ using pzd.lib.collection;
  using pzd.lib.functional;
  using pzd.lib.utils;
 using UnityEngine.Playables;
-using Object = UnityEngine.Object;
+ using Debug = UnityEngine.Debug;
+ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
@@ -256,6 +257,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
         }
         catch (Exception e) {
+          Debug.LogError("Exception in object validator");
+          Debug.LogException(e);
           addError(() => new Error(Error.Type.ValidatorBug, e.Message, null));
         }
       });
