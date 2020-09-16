@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Option<double> average<A>(this ICollection<A> collection, Func<A, double> mapper) {
-      if (collection.Count == 0) return F.none_;
+      if (collection.Count == 0) return None._;
       double result = 0;
       foreach (var item in collection) {
         result += mapper(item);
@@ -73,7 +73,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     
     // overload that does not allocate
     public static Option<double> average<A>(this List<A> collection, Func<A, double> mapper) {
-      if (collection.Count == 0) return F.none_;
+      if (collection.Count == 0) return None._;
       double result = 0;
       foreach (var item in collection) {
         result += mapper(item);

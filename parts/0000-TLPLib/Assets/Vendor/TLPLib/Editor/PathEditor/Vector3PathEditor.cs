@@ -204,7 +204,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
     }
 
     Option<int> nodeAtPos(Vector3 pos) {
-      if (behaviour.nodes.isEmpty()) return F.none_;
+      if (behaviour.nodes.isEmpty()) return None._;
       
       var minDist = HandleUtility.GetHandleSize(behaviour.nodes[0]) * behaviour.nodeHandleSize;
       var closestNodeIDX = Option<int>.None; 

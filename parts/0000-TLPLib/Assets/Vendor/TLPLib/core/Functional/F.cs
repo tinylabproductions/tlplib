@@ -18,14 +18,13 @@ namespace com.tinylabproductions.TLPLib.Functional {
       value == null || value.Equals(null);
 
     public static Option<A> opt<A>(A value) where A : class =>
-      isNull(value) ? none_ : new Option<A>(value);
+      isNull(value) ? None._ : new Option<A>(value);
 
     public static Option<A> opt<A>(A? value) where A : struct =>
-      value == null ? none_ : some((A) value);
+      value == null ? None._ : some((A) value);
 
     [PublicAPI] public static Option<A> some<A>(A value) => new Option<A>(value);
-    [PublicAPI] public static Option<A> none<A>() => none_;
-    [PublicAPI] public static None none_ => new None();
+    [PublicAPI] public static Option<A> none<A>() => None._;
 
     public static Either<A, B> left<A, B>(A value) { return new Either<A, B>(value); }
     public static Either<A, B> right<A, B>(B value) { return new Either<A, B>(value); }

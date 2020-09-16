@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Functional;
+using pzd.lib.functional;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -23,6 +24,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     public void invalidate() => _path = null;
 
     public Vector3Path path => 
-      _path ??= new Vector3Path(_method, _closed, _nodes.ToImmutableArray(), _relative ? F.some(transform) : F.none_, pathResolution);
+      _path ??= new Vector3Path(_method, _closed, _nodes.ToImmutableArray(), _relative ? F.some(transform) : None._, pathResolution);
   }
 }

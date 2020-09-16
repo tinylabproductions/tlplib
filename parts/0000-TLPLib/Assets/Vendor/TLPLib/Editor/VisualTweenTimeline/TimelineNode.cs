@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     public void unlink() {
-      linkedNode = F.none_;
+      linkedNode = None._;
     }
 
     public void refreshColor() =>

@@ -51,7 +51,7 @@ namespace com.tinylabproductions.TLPLib.Components.debug {
       public Option<ForRepresentation> repr => 
         reference.TryGetTarget(out var _ref)
         ? F.some(new ForRepresentation(_ref, name, get(_ref)))
-        : F.none_;
+        : None._;
     }
 
     readonly List<IData> data = new List<IData>();

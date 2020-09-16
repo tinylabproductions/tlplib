@@ -186,7 +186,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       
       if (barStyle == null) barStyle = "flow node 0"; // "TL LogicBar 0"
   
-      Option<Rect> snapIndicatorOpt = F.none_;
+      Option<Rect> snapIndicatorOpt = None._;
       callbackVisualsList.Clear();
       var indicatorColor = Color.green;
   
@@ -476,7 +476,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
             if (GUILayout.Button("Remove Selected")) {
               onNodeEvent(
-                TimelineEditor.NodeEvents.RemoveSelected, F.none_, GUIToSeconds(Event.current.mousePosition.x)
+                TimelineEditor.NodeEvents.RemoveSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
               );
             }
 
@@ -640,12 +640,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       switch (ev.keyCode) {
         case KeyCode.A when ev.control && ev.type == EventType.KeyUp:
           onNodeEvent(
-            TimelineEditor.NodeEvents.SelectAll, F.none_, GUIToSeconds(Event.current.mousePosition.x)
+            TimelineEditor.NodeEvents.SelectAll, None._, GUIToSeconds(Event.current.mousePosition.x)
           );
           break;
         case KeyCode.Delete when ev.type == EventType.KeyDown:
           onNodeEvent(
-            TimelineEditor.NodeEvents.RemoveSelected, F.none_, GUIToSeconds(Event.current.mousePosition.x)
+            TimelineEditor.NodeEvents.RemoveSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
           );
           break;
         case KeyCode.L when ev.type == EventType.KeyDown:
@@ -704,15 +704,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         
           // Deselect by clicking away
           if (!ev.control && timelineRect.Contains(Event.current.mousePosition)) {
-            onNodeEvent(TimelineEditor.NodeEvents.DeselectAll, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+            onNodeEvent(TimelineEditor.NodeEvents.DeselectAll, None._, GUIToSeconds(Event.current.mousePosition.x));
             return;
           }
           break;
         case EventType.MouseDrag:
-          onNodeEvent(TimelineEditor.NodeEvents.Drag, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+          onNodeEvent(TimelineEditor.NodeEvents.Drag, None._, GUIToSeconds(Event.current.mousePosition.x));
           return;
         case EventType.MouseUp:
-          onNodeEvent(TimelineEditor.NodeEvents.Refresh, F.none_, GUIToSeconds(Event.current.mousePosition.x));
+          onNodeEvent(TimelineEditor.NodeEvents.Refresh, None._, GUIToSeconds(Event.current.mousePosition.x));
           return;
         default: break;
       }

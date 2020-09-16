@@ -114,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       KeyCodeWithModifiers? shortcut=null, Func<bool> canShow = null
     ) {
       register($"{name}?", () => r.value, canShow: canShow);
-      register($"Clear {name}", () => r.value = F.none_, canShow: canShow);
+      register($"Clear {name}", () => r.value = None._, canShow: canShow);
       register($"Toggle {name}", shortcut: shortcut, canShow: canShow, run: () => {
         var current = r.value.getOrElse(false);
         r.value = F.some(!current);

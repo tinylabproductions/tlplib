@@ -63,7 +63,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     public void OnEnable() {
       FunTweenManagerV2.timelineEditorIsOpen = true;
-      refreshInit(F.none_, F.none_);
+      refreshInit(None._, None._);
     }
 
     void refreshInit(Option<FunTweenManagerV2> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet) {
@@ -81,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     void OnSelectionChange() {
       init?.saveCurrentVisualSettings();
-      refreshInit(F.none_, F.none_);
+      refreshInit(None._, None._);
     } 
     
     void OnLostFocus() => init?.onLostFocus();
@@ -444,7 +444,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             dragNode = false;
             resizeNodeStart = false;
             resizeNodeEnd = false;
-            nodeSnappedToOpt = F.none_;
+            nodeSnappedToOpt = None._;
             break;
         }
       }
@@ -493,7 +493,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               linkedNode == initialNode
               && selectedNodesList.find(x => x == rightNode).isNone
                 ? rightNode.some()
-                : F.none_
+                : None._
             )
         );
 
@@ -552,7 +552,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           if (isInRangeOfSnap(nodeEnd, dragNodeStart)) return SnapType.StartWithEnd.some();
           if (isInRangeOfSnap(nodeStart, dragNodeEnd)) return SnapType.EndWithStart.some();
           if (isInRangeOfSnap(nodeEnd, dragNodeEnd)) return SnapType.EndWithEnd.some();
-          return F.none_;
+          return None._;
         }
       }
 
@@ -592,7 +592,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               }
               else {
                 isEndSnapped = false;
-                nodeSnappedToOpt = F.none_;
+                nodeSnappedToOpt = None._;
               }
             }
           }
@@ -625,7 +625,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               }
               else if (isStartSnapped) {
                 selectedNode.setDuration(initialEnd - selectedNode.startTime);
-                nodeSnappedToOpt = F.none_;
+                nodeSnappedToOpt = None._;
                 isStartSnapped = false;
               }
             }
@@ -798,7 +798,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
         exportTimelineToTweenManager();
         importTimeline();
-        rootSelectedNodeOpt = F.none_;
+        rootSelectedNodeOpt = None._;
       }
 
       void removeoAllSelectedNodes() {
@@ -812,7 +812,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         exportTimelineToTweenManager();
         importTimeline();
         selectedNodesList.Clear();
-        rootSelectedNodeOpt = F.none_;
+        rootSelectedNodeOpt = None._;
       }
 
       void removeNodeIfHasNoElement(TimelineNode node) {
@@ -820,7 +820,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           funNodes.Remove(node);
           exportTimelineToTweenManager();
           importTimeline();
-          rootSelectedNodeOpt = F.none_;
+          rootSelectedNodeOpt = None._;
         }
       }
 
@@ -853,13 +853,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           backing.refreshInit(selectedFunTweenManager, rootSelectedNodeOpt);
         }
         else {
-          backing.refreshInit(F.none_, F.none_);
+          backing.refreshInit(None._, None._);
         }
       }
 
       void selectNewFunTweenManager(int index) {
         saveCurrentVisualSettings();
-        backing.refreshInit(ftms.get(index), F.none_);
+        backing.refreshInit(ftms.get(index), None._);
         backing.Repaint();
       }
 

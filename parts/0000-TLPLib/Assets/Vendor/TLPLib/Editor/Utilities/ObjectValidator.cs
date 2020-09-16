@@ -116,11 +116,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           }
 
           static Option<GameObject> getGameObject(Object obj) {
-            if (!obj) return F.none_;
+            if (!obj) return None._;
             return obj switch {
               GameObject go => go.some(),
               Component c => F.opt(c.gameObject),
-              _ => F.none_
+              _ => None._
             };
           }
         }

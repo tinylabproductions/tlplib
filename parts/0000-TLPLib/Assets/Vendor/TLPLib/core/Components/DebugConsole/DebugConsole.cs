@@ -294,7 +294,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       view.hideModals();
       
       var commandsList = setupList(
-        F.none_, view.commands, clearFilterText: true,
+        None._, view.commands, clearFilterText: true,
         () => selectedGroup.fold(ImmutableList<ButtonBinding>.Empty, _ => _.commandButtons)
       );
       

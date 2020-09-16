@@ -89,7 +89,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (visualizationMode.value) {
         stopTimeUpdate();
         Undo.PerformUndo();
-        savedTargetDataOpt = F.none_;
+        savedTargetDataOpt = None._;
         visualizationMode.value = false;
       }
     }
@@ -154,7 +154,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (!visualizationMode.value && beforeCursorDataIsSaved && !Application.isPlaying) {
         Undo.RevertAllInCurrentGroup();
         // AnimationMode.StopAnimationMode();
-        savedTargetDataOpt = F.none_;
+        savedTargetDataOpt = None._;
         beforeCursorDataIsSaved = false;
       }
     }

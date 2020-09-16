@@ -55,7 +55,7 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
     }
 
 
-    Option<SortingLayerReference> sortingLayerOverride = F.none_;
+    Option<SortingLayerReference> sortingLayerOverride = None._;
     public void setSortingLayerOverride(SortingLayerReference sortingLayer) {
       sortingLayerOverride = sortingLayer.some();
       apply(sortingLayer);
