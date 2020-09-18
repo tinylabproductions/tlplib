@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using pzd.lib.reactive;
 
 using pzd.lib.exts;
@@ -21,6 +22,8 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     public static readonly UnityLog instance = new UnityLog();
     UnityLog() {}
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(UnityLog));
 
     protected override void logInner(LogLevel l, LogEntry entry) {
       switch (l) {
@@ -93,9 +96,17 @@ namespace com.tinylabproductions.TLPLib.Logger {
                 ));
 
             ASync.OnMainThread(
-              () => onEvent(logEvent),
-              // Do not run code that might throw an exception itself in logMessageReceived.
-              runNowIfOnMainThread: false
+              () => {
+                try {
+                  onEvent(logEvent);
+                }
+                catch (Exception e) {
+                  // subscriber may throw an exception
+                  // log that exception to TLPLib logger to prevent endless loop
+                  log.error(e);
+                }
+              },
+              runNowIfOnMainThread: true
             );
           }
         },
