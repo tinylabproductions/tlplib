@@ -179,4 +179,5 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
   [Serializable, PublicAPI] public class UnityOptionParticleSystem : UnityOption<ParticleSystem> {}
   [Serializable, PublicAPI] public class UnityOptionTrailRenderer : UnityOption<TrailRenderer> {}
   [Serializable, PublicAPI] public class UnityOptionLayerMask : UnityOption<LayerMask> {}
+  [Serializable, PublicAPI] public class UnityOptionCanvas : UnityOption<Canvas> {}
 }
