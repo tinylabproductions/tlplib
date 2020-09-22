@@ -166,6 +166,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       _target.anchoredPosition = pos;
     }
   }
+  
+  [Serializable]
+  public sealed class RectTransformOffsetMin : SerializedTweenerVector2<RectTransform> {
+    protected override Vector2 get => _target.offsetMin;
+    protected override void set(Vector2 value) => _target.offsetMin = value;
+  }
+  
+  [Serializable]
+  public sealed class RectTransformOffsetMax : SerializedTweenerVector2<RectTransform> {
+    protected override Vector2 get => _target.offsetMax;
+    protected override void set(Vector2 value) => _target.offsetMax = value;
+  }
 
   [Serializable]
   public sealed class LocalScale : SerializedTweenerVector3<Transform> {
