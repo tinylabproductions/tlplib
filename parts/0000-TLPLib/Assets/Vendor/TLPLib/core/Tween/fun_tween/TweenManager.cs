@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using pzd.lib.reactive;
@@ -250,5 +252,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this TweenTimelineElement timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
       float delay = 0
     ) => new TweenManager(TweenTimeline.single(timeline, delay), time, looping);
+
+    [PublicAPI]
+    public static IEnumerator onEndEnumerator(
+      this TweenManager manager, [Implicit] IDisposableTracker tracker = default
+    ) => manager.onEnd.toFuture(tracker).toEnumerator();
   }
 }
