@@ -101,7 +101,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     public class Init {
       const float EPS = 1e-9f;
 
-      readonly DynamicLayout backing;
+      readonly RectTransform _container, _maskRect;
       readonly List<IElementData> layoutData;
       readonly IRxRef<float> containerSizeInScrollableAxis = RxRef.a(0f);
       readonly bool renderLatestItemsFirst;
@@ -118,15 +118,29 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         IEnumerable<IElementData> layoutData,
         IDisposableTracker dt,
         bool renderLatestItemsFirst = false
+      ) : this(
+        backing._container, backing._maskRect, layoutData, backing._scrollRect.horizontal,
+        dt, renderLatestItemsFirst
       ) {
-        this.backing = backing;
+        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
+      }
+
+      public Init(
+        RectTransform _container, RectTransform _maskRect,
+        IEnumerable<IElementData> layoutData,
+        bool isHorizontal,
+        IDisposableTracker dt,
+        bool renderLatestItemsFirst = false
+      ) {
+        this._container = _container;
+        this._maskRect = _maskRect;
         this.layoutData = layoutData.ToList();
+        this.isHorizontal = isHorizontal;
         this.renderLatestItemsFirst = renderLatestItemsFirst;
-        isHorizontal = backing._scrollRect.horizontal;
-        
+
         dt.track(clearLayout);
 
-        var mask = backing._maskRect;
+        var mask = _maskRect;
 
         // We need oncePerFrame() because Unity doesn't allow doing operations like gameObject.SetActive()
         // from OnRectTransformDimensionsChange()
@@ -142,12 +156,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           ? RectTransform.Axis.Horizontal
           : RectTransform.Axis.Vertical;
         maskSize.zip(containerSizeInScrollableAxis, (_, size) => size).subscribe(dt, size => {
-          backing._container.SetSizeWithCurrentAnchors(rectTransformAxis, size);
+          _container.SetSizeWithCurrentAnchors(rectTransformAxis, size);
           clearLayout();
           updateLayout();
         });
 
-        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
       }
 
       /// <param name="element"></param>
@@ -173,8 +186,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         _items.Clear();
       }
       
-      public Rect calculateVisibleRect => backing._maskRect.rect.convertCoordinateSystem(
-        ((Transform)backing._maskRect).some(), backing._container
+      public Rect calculateVisibleRect => _maskRect.rect.convertCoordinateSystem(
+        ((Transform) _maskRect).some(), _container
       );
 
       /// <summary>
@@ -211,7 +224,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
           Rect cellRect;
           if (isHorizontal) {
-            var height = backing._container.rect.height;
+            var height = _container.rect.height;
             var y = itemLeftPerc * height;
             cellRect = new Rect(
               x: totalOffsetUntilThisRow,
@@ -221,7 +234,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             );
           }
           else {
-            var width = backing._container.rect.width;
+            var width = _container.rect.width;
             var x = itemLeftPerc * width;
             cellRect = new Rect(
               x: x,
@@ -237,7 +250,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           if (placementVisible && !_items.ContainsKey(data)) {
             var instanceOpt = Option<IElementView>.None;
             foreach (var elementWithView in data.asElementWithView) {
-              var instance = elementWithView.createItem(backing._container);
+              var instance = elementWithView.createItem(_container);
               var rectTrans = instance.rectTransform;
               rectTrans.anchorMin = rectTrans.anchorMax = isHorizontal ? Vector2.zero : Vector2.up;
               rectTrans.localPosition = Vector3.zero;
