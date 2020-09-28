@@ -77,8 +77,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
       public void remove(TweenManager tm) {
         if (running) {
-          if (!toAdd.Remove(tm))
-            toRemove.Add(tm);
+          if (!toAdd.Remove(tm)) {
+            // This check (current.Contains) is needed to solve this issue:
+            // We have tweens A and B. Tween A is running, tween B is stopped.
+            // Tween A callback calls stop on tween B and then calls start on tween B.
+            // Without this check tween B would not start, because the state would become invalid
+            // (toRemove contains tween B, but current doesn't).
+            if (current.Contains(tm)) toRemove.Add(tm);
+          }
         }
         else {
           current.Remove(tm);
