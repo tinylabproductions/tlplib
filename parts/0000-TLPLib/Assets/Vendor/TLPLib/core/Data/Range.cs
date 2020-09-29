@@ -107,6 +107,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     // https://stackoverflow.com/a/3269471/935259
     public bool overlaps(URange o) => _from <= o._to && o._from <= _to;
+    public readonly bool contains(uint value) => value >= _from && value <= _to; 
     
     public uint random => (uint) Random.Range(from, to + 1);
     public uint this[Percentage p] => from + (uint) ((to - from) * p.value);
