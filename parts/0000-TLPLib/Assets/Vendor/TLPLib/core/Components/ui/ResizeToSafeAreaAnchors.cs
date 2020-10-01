@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Vendor.TLPLib.Components.ui {
+namespace com.tinylabproductions.TLPLib.Components.ui {
   // https://connect.unity.com/p/updating-your-gui-for-the-iphone-x-and-other-notched-devices
   public class ResizeToSafeAreaAnchors : UIBehaviour, IMB_Update {
 
