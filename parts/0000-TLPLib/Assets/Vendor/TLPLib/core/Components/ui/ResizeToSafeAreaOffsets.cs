@@ -5,7 +5,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Vendor.TLPLib.Components.ui {
+namespace com.tinylabproductions.TLPLib.Components.ui {
   public class ResizeToSafeAreaOffsets : UIBehaviour, IMB_Update {
 #pragma warning disable 649
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
