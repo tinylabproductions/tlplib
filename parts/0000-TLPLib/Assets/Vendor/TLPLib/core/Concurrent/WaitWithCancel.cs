@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public class WaitWithCancel : CustomYieldInstruction {
+  public sealed class WaitWithCancel : CustomYieldInstruction {
     readonly Func<bool> continueWaiting;
     readonly bool unscaledTime;
     readonly float waitUntil;
