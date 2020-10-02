@@ -5,6 +5,7 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using pzd.lib.concurrent;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   public static class CoroutineHelpers {
@@ -47,7 +48,8 @@ namespace com.tinylabproductions.TLPLib.Utilities {
           : withDelayNormal(_, calcDelay(i), continuePlaying)
       )).aggregate();
 
-      float calcDelay(int index) => delayBetween.GetValueOrDefault(Duration.zero).seconds * index
+      float calcDelay(int index) => 
+        delayBetween.GetValueOrDefault(Duration.zero).seconds * index
         + delayBeforeAll.GetValueOrDefault(Duration.zero).seconds;
     }
 
@@ -60,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       IEnumerable<IEnumerator> enums, Duration? delayBetween = null, Action onUpdate = null, bool unscaledTime = false,
       Func<bool> continuePlaying = null
     ) {
-      continuePlaying = continuePlaying ?? (() => true);
+      continuePlaying ??= (() => true);
       foreach (var e in enums) {
         while (e.MoveNext()) {
           onUpdate?.Invoke();
@@ -71,5 +73,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         }
       }
     }
+
+    public static readonly YieldInstruction waitFixed = new WaitForFixedUpdate();
   }
 }

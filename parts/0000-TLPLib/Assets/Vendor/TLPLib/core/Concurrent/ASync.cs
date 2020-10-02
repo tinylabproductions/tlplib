@@ -8,6 +8,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Utilities;
 using pzd.lib.log;
 using pzd.lib.reactive;
 
@@ -242,7 +243,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         yield return new WaitForSeconds(duration.seconds);
       }
       else {
-        var waiter = timeContext == TimeContext.fixedTime ? CoroutineUtils.waitFixed : null;
+        var waiter = timeContext == TimeContext.fixedTime ? CoroutineHelpers.waitFixed : null;
         var waitTime = timeContext.passedSinceStartup + duration.toTimeSpan;
         while (waitTime > timeContext.passedSinceStartup) yield return waiter;
       }

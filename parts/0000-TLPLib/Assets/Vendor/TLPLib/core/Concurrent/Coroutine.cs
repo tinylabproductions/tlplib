@@ -8,10 +8,6 @@ using Smooth.Pools;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
-  public static class CoroutineUtils {
-    public static readonly YieldInstruction waitFixed = new WaitForFixedUpdate();
-  }
-
   public sealed class UnityCoroutine : CustomYieldInstruction, ICoroutine {
     public event CoroutineFinishedOrStopped onFinish;
     public CoroutineState state { get; private set; } = CoroutineState.Running;
