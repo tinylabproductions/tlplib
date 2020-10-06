@@ -405,7 +405,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               && !sp.objectReferenceValue
               && sp.objectReferenceInstanceIDValue != 0
             ) {
-              addError(() => Error.missingReference(o: component, property: sp.propertyPath, context: context));
+              var propertyPathClosure = sp.propertyPath;
+              addError(() => Error.missingReference(o: component, property: propertyPathClosure, context: context));
             }
           }
         }
