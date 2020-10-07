@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.test_framework;
 using NUnit.Framework;
+using pzd.lib.functional;
 using pzd.lib.test_framework.spec;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
@@ -43,9 +44,9 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
       when["future is already completed"] = () => {
         const int VALUE = 10;
-        var f1 = F.lazyLift(VALUE);
+        var f1 = Lazy.value(VALUE);
 
-        it["should immediatelly call the given action every time it is called"] = () => {
+        it["should immediately call the given action every time it is called"] = () => {
           var result = 0;
           registry[f1] = x => result = x;
           result.shouldEqual(VALUE, "1st time");

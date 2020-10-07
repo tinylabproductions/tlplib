@@ -5,9 +5,11 @@ using pzd.lib.concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Functional;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.log;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -40,9 +42,9 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     [PublicAPI]
     public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
-      PathStr loadPath, bool logOnError = true
+      PathStr loadPath, [Implicit] ILog log=default, LogLevel logLevel=LogLevel.ERROR
     ) where A : Object =>
-      loadAsync<A>(loadPath).map2(future => future.dropError(logOnError));
+      loadAsync<A>(loadPath).map2(future => future.dropErrorAndLog(log, logLevel));
 
     static IEnumerator waitForLoadCoroutine<A>(
       IResourceRequest request, Action<Either<ErrorMsg, A>> whenDone, string path

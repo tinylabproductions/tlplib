@@ -139,9 +139,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
       return func();
     });
 
-    /// <summary>Lift a value into lazy type.</summary>
-    public static LazyVal<A> lazyLift<A>(A a) => new NotReallyLazyVal<A>(a);
-
     public static Func<Unit> actToFn(Action action) =>
       () => { action(); return unit; };
 

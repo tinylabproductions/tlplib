@@ -7,6 +7,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using pzd.lib.functional;
+using pzd.lib.log;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -70,9 +71,9 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
 
     [PublicAPI]
     public static Tpl<IAsyncOperation, Future<A>> loadAsyncIgnoreErrors<A>(
-      PathStr loadPath, bool logOnError = true
+      PathStr loadPath, [Implicit] ILog log=default, LogLevel logLevel=LogLevel.ERROR
     ) where A : Object =>
-      ResourceLoader.loadAsyncIgnoreErrors<ResourceReference<A>>(loadPath, logOnError)
+      ResourceLoader.loadAsyncIgnoreErrors<ResourceReference<A>>(loadPath, log, logLevel)
         .map2(future => future.map(getReferenceFromResource));
   }
 }
