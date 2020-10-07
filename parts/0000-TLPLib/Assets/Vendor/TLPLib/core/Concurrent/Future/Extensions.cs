@@ -23,6 +23,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         p.complete
       )));
 
+    public static Future<Unit> discardValue<A>(this Future<A> future) => future.map(_ => Unit._);
+
     public static IRxVal<Option<A>> toRxVal<A>(this Future<A> future) {
       var rx = RxRef.a(F.none<A>());
       future.onComplete(a => rx.value = F.some(a));
