@@ -1,23 +1,21 @@
 ﻿using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
-using com.tinylabproductions.TLPLib.Reactive;using pzd.lib.reactive;
+using com.tinylabproductions.TLPLib.Reactive;
+using GenerationAttributes;
+using pzd.lib.reactive;
 
 using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  public static class ScreenUtils {
+  public static partial class ScreenUtils {
     public static Size screenSize => new Size(Screen.width, Screen.height);
 
-    static readonly LazyVal<IRxVal<Size>> _screenSizeVal =
-      F.lazy(() => ObservableU.everyFrame.map(_ => screenSize).toRxVal(screenSize));
+    [LazyProperty] public static IRxVal<Size> screenSizeVal => 
+      ObservableU.everyFrame.map(_ => screenSize).toRxVal(screenSize);
 
-    public static IRxVal<Size> screenSizeVal => _screenSizeVal.strict;
-
-    static readonly LazyVal<IRxVal<Rect>> _screenSafeArea =
-      F.lazy(() => ObservableU.everyFrame.map(_ => Screen.safeArea).toRxVal(Screen.safeArea));
-
-    public static IRxVal<Rect> screenSafeArea => _screenSafeArea.strict;
+    [LazyProperty] public static IRxVal<Rect> screenSafeArea => 
+      ObservableU.everyFrame.map(_ => Screen.safeArea).toRxVal(Screen.safeArea);
 
     /** Convert screen width percentage to absolute value. **/
     public static float pWidthToAbs(this float percentWidth) => Screen.width * percentWidth;

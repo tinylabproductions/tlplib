@@ -10,12 +10,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 #pragma warning disable 649
 // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
     [SerializeField, NotNull] RectTransform _rt;
-    [SerializeField, NotNull] List<RectTransform> _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll, _negativeOffsetBottom;
+    [SerializeField, NotNull] List<RectTransform> 
+      _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll, _negativeOffsetBottom, 
+      _negativeOffsetSidesWithoutNotches;
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
     RectTransform parent;
-    Rect lastSafeArea = new Rect(0, 0, 0, 0);
+    [ShowInInspector] Rect lastSafeArea = new Rect(0, 0, 0, 0);
+    [ShowInInspector] ScreenOrientation lastScreenOrientation;
     bool forceRefresh;
 
 #pragma warning disable 649
@@ -24,6 +27,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
     protected override void Awake() {
       parent = (RectTransform) _rt.parent;
+      forceRefresh = true;
       refresh();
     }
 
@@ -56,14 +60,27 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         safeArea.xMax -= __editor_rightOffsetTest;
         safeArea.yMin += __editor_bottomOffsetTest;
       }
-      if (forceRefresh || safeArea != lastSafeArea) {
+      var orientation = Screen.orientation;
+      if (forceRefresh || safeArea != lastSafeArea || orientation != lastScreenOrientation) {
         forceRefresh = false;
         lastSafeArea = safeArea;
-        applySafeArea(safeArea, new Vector2(Screen.width, Screen.height));
+        lastScreenOrientation = orientation;
+
+        var notchLeft = false;
+        var notchRight = false;
+        {
+          // this works only for landscape
+          var halfX = Screen.width / 2;
+          foreach (var cutout in Screen.cutouts) {
+            if (cutout.center.x < halfX) notchLeft = true;
+            else notchRight = true;
+          }
+        }
+        applySafeArea(safeArea, new Vector2(Screen.width, Screen.height), notchLeft, notchRight);
       }
     }
 
-    void applySafeArea(Rect safeArea, Vector2 screenSize) {
+    void applySafeArea(Rect safeArea, Vector2 screenSize, bool notchLeft, bool notchRight) {
       var scale = parent.sizeDelta / screenSize;
 
       var min = safeArea.min * scale;
@@ -72,17 +89,23 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       _rt.offsetMin = min;
       // offsetMax is inverted in unity
       _rt.offsetMax = -max;
+      
+      foreach (var item in _negativeOffsetSidesWithoutNotches) {
+        // reset old values, otherwise all sides will get negative offsets after we rotate the screen 
+        item.offsetMin = Vector2.zero;
+        item.offsetMax = Vector2.zero;
+        if (!notchLeft) negativeLeft(item);
+        if (!notchRight) negativeRight(item);
+        negativeTop(item);
+        negativeBottom(item);
+      }
 
       foreach (var item in _negativeOffsetLeft) {
-        var offset = item.offsetMin;
-        offset.x = -min.x;
-        item.offsetMin = offset;
+        negativeLeft(item);
       }
 
       foreach (var item in _negativeOffsetRight) {
-        var offset = item.offsetMax;
-        offset.x = max.x;
-        item.offsetMax = offset;
+        negativeRight(item);
       }
 
       foreach (var item in _negativeOffsetAll) {
@@ -94,6 +117,30 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         var offset = item.offsetMin;
         offset.y = -min.y;
         item.offsetMin = offset;
+      }
+
+      void negativeLeft(RectTransform item) {
+        var offset = item.offsetMin;
+        offset.x = -min.x;
+        item.offsetMin = offset;
+      }
+      
+      void negativeRight(RectTransform item) {
+        var offset = item.offsetMax;
+        offset.x = max.x;
+        item.offsetMax = offset;
+      }
+      
+      void negativeTop(RectTransform item) {
+        var offset = item.offsetMin;
+        offset.y = -min.y;
+        item.offsetMin = offset;
+      }
+      
+      void negativeBottom(RectTransform item) {
+        var offset = item.offsetMax;
+        offset.y = max.y;
+        item.offsetMax = offset;
       }
     }
   }
