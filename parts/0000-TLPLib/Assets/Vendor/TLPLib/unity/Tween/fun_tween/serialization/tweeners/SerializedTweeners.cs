@@ -292,6 +292,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
   
   [Serializable]
+  public sealed class RectTransformAnchorsX : SerializedTweenerVector2<RectTransform> {
+    protected override Vector2 get => new Vector2(_target.anchorMin.x, _target.anchorMax.x);
+    protected override void set(Vector2 value) {
+      _target.anchorMin = _target.anchorMin.withX(value.x);
+      _target.anchorMax = _target.anchorMax.withX(value.y);
+    }
+  }
+  
+  [Serializable]
   public sealed class RectTransformSimpleAnchorsY : SerializedTweenerFloat<RectTransform> {
     protected override float get => _target.anchorMin.y;
     protected override void set(float value) {
