@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
 using pzd.lib.exts;
@@ -255,6 +256,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public static Builder sequential(params TweenTimelineElement[] elements) =>
       sequentialEnumerable(elements);
+
+
+    [PublicAPI]
+    public static Builder withGrowingDelay(IEnumerable<TweenTimeline> tweens, Duration delayBetweenEach) {
+      var builder = Builder.create();
+      var index = 0;
+      foreach (var tween in tweens) {
+        builder.insert(
+          delayBetweenEach.seconds * index++, tween
+        );
+        tween.applyStateAt(0);
+      }
+      return builder;
+    }
     
     [PublicAPI] public static Builder builder() => Builder.create();
   }
