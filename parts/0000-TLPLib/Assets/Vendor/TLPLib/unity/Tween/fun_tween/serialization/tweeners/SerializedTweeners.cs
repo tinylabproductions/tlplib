@@ -323,6 +323,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
   }
+  
+  [Serializable]
+  public sealed class ImageFillAmount : SerializedTweenerFloat<Image> {
+    protected override float get => _target.fillAmount;
+    protected override void set(float value) => _target.fillAmount = value;
+  }
 
   // ReSharper restore NotNullMemberIsNotInitialized
 }
