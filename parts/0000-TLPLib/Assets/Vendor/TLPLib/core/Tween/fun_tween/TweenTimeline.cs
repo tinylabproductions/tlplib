@@ -257,16 +257,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static Builder sequential(params TweenTimelineElement[] elements) =>
       sequentialEnumerable(elements);
 
-
     [PublicAPI]
     public static Builder withGrowingDelay(IEnumerable<TweenTimeline> tweens, Duration delayBetweenEach) {
       var builder = Builder.create();
       var index = 0;
       foreach (var tween in tweens) {
-        builder.insert(
-          delayBetweenEach.seconds * index++, tween
-        );
-        tween.applyStateAt(0);
+        builder.insert(delayBetweenEach.seconds * index++, tween);
       }
       return builder;
     }
