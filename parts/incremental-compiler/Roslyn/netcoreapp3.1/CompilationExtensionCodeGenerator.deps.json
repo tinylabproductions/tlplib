@@ -155,7 +155,7 @@
         "runtime": {
           "System.Collections.Immutable.dll": {
             "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.37114"
+            "fileVersion": "5.0.20.40711"
           }
         }
       },
