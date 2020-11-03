@@ -15540,6 +15540,11 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  Returns a new compilation with the given compilation set as the previous submission. 
  </summary>
 </member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicCompilation.WithSemanticModelProvider(Microsoft.CodeAnalysis.SemanticModelProvider)">
+ <summary>
+ Returns a new compilation with the given semantic model provider.
+ </summary>
+</member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicCompilation.WithEventQueue(Microsoft.CodeAnalysis.Diagnostics.AsyncQueue{Microsoft.CodeAnalysis.Diagnostics.CompilationEvent})">
  <summary>
  Returns a new compilation with a given event queue.
@@ -17571,7 +17576,7 @@ End Class
  Applies Visual Basic-specific modification and filtering of <see cref="T:Microsoft.CodeAnalysis.Diagnostic"/>s.
  </summary>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicDiagnosticFilter.Filter(Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.ReportDiagnostic,System.Collections.Generic.IDictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic})">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicDiagnosticFilter.Filter(Microsoft.CodeAnalysis.Diagnostic,Microsoft.CodeAnalysis.ReportDiagnostic,System.Collections.Generic.IDictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic},Microsoft.CodeAnalysis.SyntaxTreeOptionsProvider,System.Threading.CancellationToken)">
  <summary>
  Modifies an input <see cref="T:Microsoft.CodeAnalysis.Diagnostic"/> per the given options. For example, the
  severity may be escalated, or the <see cref="T:Microsoft.CodeAnalysis.Diagnostic"/> may be filtered out entirely
@@ -17582,14 +17587,16 @@ End Class
  <param name="specificDiagnosticOptions">How specific diagnostics should be reported</param>
  <returns>A diagnostic updated to reflect the options, or null if it has been filtered out</returns>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicDiagnosticFilter.GetDiagnosticReport(Microsoft.CodeAnalysis.DiagnosticSeverity,System.Boolean,System.String,Microsoft.CodeAnalysis.Location,System.String,Microsoft.CodeAnalysis.ReportDiagnostic,System.Collections.Generic.IDictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic},System.Boolean@)">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicDiagnosticFilter.GetDiagnosticReport(Microsoft.CodeAnalysis.DiagnosticSeverity,System.Boolean,System.String,Microsoft.CodeAnalysis.Location,System.String,Microsoft.CodeAnalysis.ReportDiagnostic,System.Collections.Generic.IDictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic},Microsoft.CodeAnalysis.SyntaxTreeOptionsProvider,System.Threading.CancellationToken,System.Boolean@)">
  <summary>
  Take a warning And return the final disposition of the given warning,
  based on both command line options And pragmas. The diagnostic options
  have precedence in the following order:
-     1. Global warning options
-     2. Syntax tree options
-     3. Compilation options
+     1. Warning level
+     2. Command line options (/nowarn, /warnaserror)
+     3. Editor config options (syntax tree level)
+     4. Global analyzer config options (compilation level)
+     5. Global warning level
 
  Global overrides are complicated. Global options never override suppression.
  Even if you have generalDiagnosticOption = ReportDiagnostic.Error, a
@@ -36383,11 +36390,6 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Consumes current node and gets next one. 
  </summary>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.Parser.AssertLanguageFeature(Microsoft.CodeAnalysis.VisualBasic.ERRID)">
- <summary>
- returns true if feature is available
- </summary>
-</member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.Parser.CheckFeatureAvailability``1(Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.Feature,``0)">
  <summary>
  Check to see if the given <paramref name="feature"/> is available with the <see cref="T:Microsoft.CodeAnalysis.VisualBasic.LanguageVersion"/>
@@ -37067,6 +37069,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  A class to represent an empty statement. This can occur when a colon is on a
  line without anything else.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EmptyStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EmptyStatementSyntax.Empty">
  <summary>
@@ -37092,6 +37100,34 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an "End XXX" statement, where XXX is a single keyword.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndIfStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndUsingStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndWithStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndSelectStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndStructureStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndEnumStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndInterfaceStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndClassStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndModuleStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndNamespaceStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndSubStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndFunctionStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndGetStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndSetStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndPropertyStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndOperatorStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndEventStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndAddHandlerStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndRemoveHandlerStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndRaiseEventStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndWhileStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndTryStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndSyncLockStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EndBlockStatementSyntax.EndKeyword">
  <summary>
@@ -37139,6 +37175,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an entire source file of VB code.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CompilationUnit"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CompilationUnitSyntax.Options">
  <summary>
@@ -37246,6 +37288,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an Option statement, such as "Option Strict On".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OptionStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OptionStatementSyntax.OptionKeyword">
  <summary>
@@ -37307,6 +37355,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an Imports statement, which has one or more imports clauses.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ImportsStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ImportsStatementSyntax.ImportsKeyword">
  <summary>
@@ -37358,6 +37412,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the clause of an Imports statement that imports all members of a
  type or namespace or aliases a type or namespace.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleImportsClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SimpleImportsClauseSyntax.Alias">
  <summary>
@@ -37401,6 +37461,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an alias identifier followed by an "=" token in an Imports clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ImportAliasClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ImportAliasClauseSyntax.Identifier">
  <summary>
@@ -37442,6 +37508,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Defines a XML namespace for XML expressions.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlNamespaceImportsClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNamespaceImportsClauseSyntax.WithLessThanToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -37488,6 +37560,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a Namespace statement, its contents and the End Namespace statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NamespaceBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NamespaceBlockSyntax.NamespaceStatement">
  <summary>
@@ -37548,6 +37626,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning statement of a namespace declaration. This node always
  appears as the Begin of a BlockStatement with Kind=NamespaceBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NamespaceStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NamespaceStatementSyntax.NamespaceKeyword">
  <summary>
@@ -37662,6 +37746,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a declaration of Module, its contents and the End statement that
  ends it.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ModuleBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ModuleBlockSyntax.ModuleStatement">
  <summary>
@@ -37758,6 +37848,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a declaration of a Structure, its contents and the End statement
  that ends it.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.StructureBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.StructureBlockSyntax.StructureStatement">
  <summary>
@@ -37854,6 +37950,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a declaration of a Interface, its contents and the End statement
  that ends it.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InterfaceBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterfaceBlockSyntax.InterfaceStatement">
  <summary>
@@ -37950,6 +38052,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a declaration of a Class its contents and the End statement that
  ends it.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ClassBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ClassBlockSyntax.ClassStatement">
  <summary>
@@ -38046,6 +38154,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a declaration of an Enum, its contents and the End Enum statement
  that ends it.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EnumBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EnumBlockSyntax.EnumStatement">
  <summary>
@@ -38111,6 +38225,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an Inherits statement in a Class, Structure or Interface.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InheritsStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InheritsStatementSyntax.InheritsKeyword">
  <summary>
@@ -38151,6 +38271,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an Implements statement in a Class or Structure.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ImplementsStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ImplementsStatementSyntax.ImplementsKeyword">
  <summary>
@@ -38271,6 +38397,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning statement of a Module declaration. This node always
  appears as the Begin of a TypeBlock with Kind=ModuleDeclarationBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ModuleStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ModuleStatementSyntax.AttributeLists">
  <summary>
@@ -38370,6 +38502,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning statement of a Structure declaration. This node always
  appears as the Begin of a TypeBlock with Kind=StructureDeclarationBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.StructureStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.StructureStatementSyntax.AttributeLists">
  <summary>
@@ -38469,6 +38607,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning statement of a Interface declaration. This node always
  appears as the Begin of a TypeBlock with Kind=InterfaceDeclarationBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InterfaceStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterfaceStatementSyntax.AttributeLists">
  <summary>
@@ -38568,6 +38712,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning statement of a Class declaration. This node always
  appears as the Begin of a TypeBlock with Kind=ClassDeclarationBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ClassStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ClassStatementSyntax.AttributeLists">
  <summary>
@@ -38667,6 +38817,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning statement of an Enum declaration. This node always
  appears as the Begin of an EnumBlock with Kind=EnumDeclarationBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EnumStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EnumStatementSyntax.AttributeLists">
  <summary>
@@ -38765,6 +38921,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the type parameter list in a declaration.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeParameterList"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeParameterListSyntax.OpenParenToken">
  <summary>
@@ -38837,6 +38999,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a type parameter on a generic type declaration.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeParameter"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeParameterSyntax.VarianceKeyword">
  <summary>
@@ -38908,6 +39076,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  One of the type parameter constraints clauses. This represents a constraint
  clause in the form of "As Constraint".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeParameterSingleConstraintClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeParameterSingleConstraintClauseSyntax.AsKeyword">
  <summary>
@@ -38952,6 +39126,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  One of the type parameter constraints clauses. This represents a constraint
  clause in the form of "As { Constraints }".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeParameterMultipleConstraintClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeParameterMultipleConstraintClauseSyntax.AsKeyword">
  <summary>
@@ -39032,6 +39212,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  kind of special constraint it is can be obtained from the Kind property and is
  one of: NewConstraint, ReferenceConstraint or ValueConstraint.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NewConstraint"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ClassConstraint"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.StructureConstraint"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SpecialConstraintSyntax.ConstraintKeyword">
  <summary>
@@ -39062,6 +39250,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a type parameter constraint that is a type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeConstraint"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeConstraintSyntax.Type">
  <summary>
@@ -39087,6 +39281,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a name and value in an EnumDeclarationBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EnumMemberDeclaration"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EnumMemberDeclarationSyntax.AttributeLists">
  <remarks>
@@ -39187,6 +39387,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a Function or Sub block declaration: A declaration that has a
  beginning declaration, a body of executable statements and an end statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SubBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FunctionBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MethodBlockSyntax.SubOrFunctionStatement">
  <summary>
@@ -39250,6 +39457,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a constructor block declaration: A declaration that has a beginning
  declaration, a body of executable statements and an end statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ConstructorBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ConstructorBlockSyntax.SubNewStatement">
  <summary>
@@ -39310,6 +39523,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an Operator block member declaration: A declaration that has a
  beginning declaration, a body of executable statements and an end statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OperatorBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OperatorBlockSyntax.OperatorStatement">
  <summary>
@@ -39371,6 +39590,16 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  beginning declaration, a body of executable statements and an end statement.
  Examples include property accessors and custom event accessors.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GetAccessorBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SetAccessorBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddHandlerAccessorBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RemoveHandlerAccessorBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RaiseEventAccessorBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AccessorBlockSyntax.AccessorStatement">
  <summary>
@@ -39436,6 +39665,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a block property declaration: A declaration that has a beginning
  declaration, some get or set accessor blocks and an end statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.PropertyBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PropertyBlockSyntax.PropertyStatement">
  <summary>
@@ -39494,6 +39729,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a custom event declaration: A declaration that has a beginning event
  declaration, some accessor blocks and an end statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EventBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EventBlockSyntax.EventStatement">
  <summary>
@@ -39620,6 +39861,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the parameter list in a method declaration.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ParameterList"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ParameterListSyntax.OpenParenToken">
  <summary>
@@ -39684,6 +39931,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Kind=MethodDeclarationBlock, and the body of the method will be the Body of
  that BlockStatement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SubStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FunctionStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MethodStatementSyntax.AttributeLists">
  <summary>
@@ -39864,6 +40118,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  BlockStatement with Kind=MethodDeclarationBlock, and the body of the method
  will be the Body of that BlockStatement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SubNewStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SubNewStatementSyntax.AttributeLists">
  <summary>
@@ -39964,6 +40224,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  A Declare statement that declares an external DLL method.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DeclareSubStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DeclareFunctionStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DeclareStatementSyntax.AttributeLists">
  <summary>
@@ -40186,6 +40453,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  A statement that declares a delegate type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DelegateSubStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DelegateFunctionStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DelegateStatementSyntax.AttributeLists">
  <summary>
@@ -40344,6 +40618,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  event, this statement will be the Begin of a PropertyOrEventBlock, and the
  accessors will be part of the Accessors of that node.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EventStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EventStatementSyntax.AttributeLists">
  <summary>
@@ -40503,6 +40783,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Kind=MethodDeclarationBlock, and the body of the method will be the Body of
  that BlockStatement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OperatorStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OperatorStatementSyntax.AttributeLists">
  <summary>
@@ -40625,6 +40911,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Body of that node. Auto properties are property declarations without a
  PropertyBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.PropertyStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PropertyStatementSyntax.AttributeLists">
  <summary>
@@ -40785,6 +41077,16 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  the node determines what kind of accessor this is. This statement is always the
  Begin of a BlockNode, and the body of the accessor is the Body of that node.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GetAccessorStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SetAccessorStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddHandlerAccessorStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RemoveHandlerAccessorStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RaiseEventAccessorStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AccessorStatementSyntax.AttributeLists">
  <summary>
@@ -40875,6 +41177,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the "Implements ..." clause on a type member, which describes which
  interface members this member implements.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ImplementsClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ImplementsClauseSyntax.ImplementsKeyword">
  <summary>
@@ -40917,6 +41225,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the "Handles ..." clause on a method declaration that describes
  which events this method handles.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.HandlesClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.HandlesClauseSyntax.HandlesKeyword">
  <summary>
@@ -40963,6 +41277,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents event container specified through special keywords "Me", "MyBase" or
  "MyClass"..
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.KeywordEventContainer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.KeywordEventContainerSyntax.Keyword">
  <summary>
@@ -40990,6 +41310,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents event container that refers to a WithEvents member.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WithEventsEventContainer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WithEventsEventContainerSyntax.Identifier">
  <summary>
@@ -41017,6 +41343,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents event container that refers to a WithEvents member's property.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WithEventsPropertyEventContainer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WithEventsPropertyEventContainerSyntax.WithEventsContainer">
  <summary>
@@ -41074,6 +41406,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single handled event in a "Handles ..." clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.HandlesClauseItem"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.HandlesClauseItemSyntax.EventContainer">
  <summary>
@@ -41134,6 +41472,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  detected to classify this as a field, method, property or event. This is node
  always represents a syntax error.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IncompleteMember"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.IncompleteMemberSyntax.AttributeLists">
  <summary>
@@ -41205,6 +41549,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  represented by having "Const" in the Modifiers (although technically "Const" is
  not a modifier, it is represented as one in the parse trees.)
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FieldDeclaration"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.FieldDeclarationSyntax.AttributeLists">
  <summary>
@@ -41271,6 +41621,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the part of a variable or constant declaration statement that
  associated one or more variable names with a type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.VariableDeclarator"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.VariableDeclaratorSyntax.Names">
  <summary>
@@ -41357,6 +41713,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  "New". The type has optional attributes associated with it, although attributes
  are not permitted in all possible places where this node occurs.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleAsClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SimpleAsClauseSyntax.AsKeyword">
  <summary>
@@ -41419,6 +41781,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  attributes are not permitted in many places where this node occurs (they are
  permitted, for example, on automatically implemented properties.)
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AsNewClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AsNewClauseSyntax.AsKeyword">
  <summary>
@@ -41466,6 +41834,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "With {...} clause used to initialize a new object's members.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ObjectMemberInitializer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ObjectMemberInitializerSyntax.WithKeyword">
  <summary>
@@ -41538,6 +41912,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a "From {...} clause used to initialize a new collection object's
  elements.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ObjectCollectionInitializer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ObjectCollectionInitializerSyntax.FromKeyword">
  <summary>
@@ -41601,6 +41981,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represent a field initializer in a With {...} initializer where the field name
  is inferred from the initializer expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InferredFieldInitializer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InferredFieldInitializerSyntax.KeyKeyword">
  <summary>
@@ -41646,6 +42032,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represent a named field initializer in a With {...} initializer, such as ".x =
  expr".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NamedFieldInitializer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NamedFieldInitializerSyntax.KeyKeyword">
  <summary>
@@ -41735,6 +42127,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an "= initializer" clause in a declaration for a variable, parameter
  or automatic property.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EqualsValue"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EqualsValueSyntax.EqualsToken">
  <summary>
@@ -41775,6 +42173,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represent a parameter to a method, property, constructor, etc.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.Parameter"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ParameterSyntax.AttributeLists">
  <summary>
@@ -41878,6 +42282,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an identifier with optional "?" or "()" or "(,,,)" modifiers, as
  used in parameter declarations and variable declarations.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ModifiedIdentifier"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ModifiedIdentifierSyntax.Identifier">
  <summary>
@@ -41960,6 +42370,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a modifier that describes an array type, without bounds, such as
  "()" or "(,)".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ArrayRankSpecifier"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ArrayRankSpecifierSyntax.OpenParenToken">
  <summary>
@@ -42024,6 +42440,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a group of attributes within "&lt;" and "&gt;" brackets.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AttributeList"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AttributeListSyntax.LessThanToken">
  <summary>
@@ -42083,6 +42505,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single attribute declaration within an attribute list.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.Attribute"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AttributeSyntax.Target">
  <summary>
@@ -42144,6 +42572,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single attribute declaration within an attribute list.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AttributeTarget"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AttributeTargetSyntax.AttributeModifier">
  <summary>
@@ -42188,6 +42622,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a file-level attribute, in which the attributes have no other
  syntactic element they are attached to.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AttributesStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AttributesStatementSyntax.AttributeLists">
  <summary>
@@ -42219,6 +42659,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  or await expression in standard code but may be any expression in VB
  Interactive code.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExpressionStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ExpressionStatementSyntax.Expression">
  <summary>
@@ -42245,6 +42691,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represent a "? expression" "Print" statement in VB Interactive code.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.PrintStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PrintStatementSyntax.QuestionToken">
  <summary>
@@ -42287,6 +42739,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a While...End While statement, including the While, body and End
  While.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WhileBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WhileBlockSyntax.WhileStatement">
  <summary>
@@ -42347,6 +42805,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an entire Using...End Using statement, including the Using, body and
  End Using statements.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.UsingBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.UsingBlockSyntax.UsingStatement">
  <summary>
@@ -42408,6 +42872,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a entire SyncLock...End SyncLock block, including the SyncLock
  statement, the enclosed statements, and the End SyncLock statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SyncLockBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SyncLockBlockSyntax.SyncLockStatement">
  <summary>
@@ -42469,6 +42939,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a With...End With block, include the With statement, the body of the
  block and the End With statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WithBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WithBlockSyntax.WithStatement">
  <summary>
@@ -42529,6 +43005,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the declaration of one or more local variables or constants.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LocalDeclarationStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LocalDeclarationStatementSyntax.Modifiers">
  <summary>
@@ -42572,6 +43054,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a label statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LabelStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LabelStatementSyntax.LabelToken">
  <summary>
@@ -42614,6 +43102,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "GoTo" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GoToStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GoToStatementSyntax.GoToKeyword">
  <summary>
@@ -42656,6 +43150,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  A label for a GoTo, Resume, or On Error statement. An identifier, line number,
  or next keyword.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IdentifierLabel"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NumericLabel"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NextLabel"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LabelSyntax.LabelToken">
  <summary>
@@ -42687,6 +43189,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a "Stop" or "End" statement. The Kind can be used to determine which
  kind of statement this is.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.StopStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.StopOrEndStatementSyntax.StopOrEndKeyword">
  <summary>
@@ -42717,6 +43226,20 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  An exit statement. The kind of block being exited can be found by examining the
  Kind.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitDoStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitForStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitSubStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitFunctionStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitOperatorStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitPropertyStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitTryStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitSelectStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExitWhileStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ExitStatementSyntax.ExitKeyword">
  <summary>
@@ -42762,6 +43285,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a "Continue (block)" statement. THe kind of block referenced can be
  determined by examining the Kind.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ContinueWhileStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ContinueDoStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ContinueForStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ContinueStatementSyntax.ContinueKeyword">
  <summary>
@@ -42807,6 +43338,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Return" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ReturnStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ReturnStatementSyntax.ReturnKeyword">
  <summary>
@@ -42851,6 +43388,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single-line "If ... Then ... Else ..." statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SingleLineIfStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SingleLineIfStatementSyntax.IfKeyword">
  <summary>
@@ -42944,6 +43487,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Else ..." clause of a single-line "If" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SingleLineElseClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SingleLineElseClauseSyntax.ElseKeyword">
  <summary>
@@ -42990,6 +43539,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a multi-line "If ... Then ... ElseIf ... Then ... Else ... End If"
  block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MultiLineIfBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MultiLineIfBlockSyntax.IfStatement">
  <summary>
@@ -43088,6 +43643,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "If ... Then" statement that begins a multi-line "If" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IfStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.IfStatementSyntax.IfKeyword">
  <summary>
@@ -43147,6 +43708,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an "ElseIf ... Then ..." block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseIfBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ElseIfBlockSyntax.ElseIfStatement">
  <summary>
@@ -43192,6 +43759,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "ElseIf ... Then" statement that begins an "ElseIf" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseIfStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ElseIfStatementSyntax.ElseIfKeyword">
  <summary>
@@ -43251,6 +43824,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an "Else ..." block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ElseBlockSyntax.ElseStatement">
  <summary>
@@ -43295,6 +43874,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Else" statement that begins an "Else" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ElseStatementSyntax.ElseKeyword">
  <summary>
@@ -43321,6 +43906,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Try ... Catch ... Finally ... End Try" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TryBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TryBlockSyntax.TryStatement">
  <summary>
@@ -43417,6 +44008,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Try" statement that begins a "Try" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TryStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TryStatementSyntax.TryKeyword">
  <summary>
@@ -43443,6 +44040,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Catch ..." block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CatchBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CatchBlockSyntax.CatchStatement">
  <summary>
@@ -43488,6 +44091,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Catch ... When ..." statement that begins a "Catch" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CatchStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CatchStatementSyntax.CatchKeyword">
  <summary>
@@ -43569,6 +44178,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "When ..." clause of a "Catch" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CatchFilterClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CatchFilterClauseSyntax.WhenKeyword">
  <summary>
@@ -43609,6 +44224,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Finally ..." block of a "Try" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FinallyBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.FinallyBlockSyntax.FinallyStatement">
  <summary>
@@ -43653,6 +44274,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Finally" statement that begins a "Finally" block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FinallyStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.FinallyStatementSyntax.FinallyKeyword">
  <summary>
@@ -43679,6 +44306,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Error" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ErrorStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ErrorStatementSyntax.ErrorKeyword">
  <summary>
@@ -43720,6 +44353,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an OnError Goto statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OnErrorGoToZeroStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OnErrorGoToMinusOneStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OnErrorGoToLabelStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OnErrorGoToStatementSyntax.OnKeyword">
  <summary>
@@ -43811,6 +44452,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an OnError Resume Next statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OnErrorResumeNextStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OnErrorResumeNextStatementSyntax.OnKeyword">
  <summary>
@@ -43883,6 +44530,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a "Resume" statement. The Kind property can be used to determine if
  this is a "Resume", "Resume Next" or "Resume label" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ResumeStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ResumeLabelStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ResumeNextStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ResumeStatementSyntax.ResumeKeyword">
  <summary>
@@ -43932,6 +44587,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a Select Case block, including the Select Case that begins it, the
  contains Case blocks and the End Select.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SelectBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SelectBlockSyntax.SelectStatement">
  <summary>
@@ -43992,6 +44653,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a Select Case statement. This statement always occurs as the Begin
  of a SelectBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SelectStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SelectStatementSyntax.SelectKeyword">
  <summary>
@@ -44051,6 +44718,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a case statement and its subsequent block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseElseBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CaseBlockSyntax.CaseStatement">
  <summary>
@@ -44100,6 +44774,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  a CaseBlock. If this is a Case Else statement, the Kind=CaseElse, otherwise the
  Kind=Case.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseElseStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CaseStatementSyntax.CaseKeyword">
  <summary>
@@ -44150,6 +44831,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  The "Else" part in a Case Else statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseCaseClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ElseCaseClauseSyntax.ElseKeyword">
  <summary>
@@ -44176,6 +44863,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single value in a Case.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleCaseClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SimpleCaseClauseSyntax.Value">
  <summary>
@@ -44201,6 +44894,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a range "expression To expression" in a Case.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RangeCaseClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.RangeCaseClauseSyntax.LowerBound">
  <summary>
@@ -44257,6 +44956,17 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a relation clause in a Case statement, such as "Is &gt; expression".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseEqualsClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseNotEqualsClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseLessThanClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseLessThanOrEqualClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseGreaterThanOrEqualClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CaseGreaterThanClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.RelationalCaseClauseSyntax.IsKeyword">
  <summary>
@@ -44320,6 +45030,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the "SyncLock" statement. This statement always occurs as the Begin
  of a SyncLockBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SyncLockStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SyncLockStatementSyntax.SyncLockKeyword">
  <summary>
@@ -44362,6 +45078,16 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a Do-Loop block. The Kind property can be used to determine if this
  is a Do While, Do Until, Do Loop While, Do Loop Until, or infinite Do Loop.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleDoLoopBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DoWhileLoopBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DoUntilLoopBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DoLoopWhileBlock"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DoLoopUntilBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DoLoopBlockSyntax.DoStatement">
  <summary>
@@ -44424,6 +45150,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  The Do statement that begins a Do-Loop block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleDoStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DoWhileStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DoUntilStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DoStatementSyntax.DoKeyword">
  <summary>
@@ -44472,6 +45206,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  The Loop statement that begins a Do-Loop block.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleLoopStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LoopWhileStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LoopUntilStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LoopStatementSyntax.LoopKeyword">
  <summary>
@@ -44522,6 +45264,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  statement. The Kind of the clause can be "WhileClause" or "UntilClause" to
  indicate which kind of clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WhileClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.UntilClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WhileOrUntilClauseSyntax.WhileOrUntilKeyword">
  <summary>
@@ -44567,6 +45316,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  The While statement that begins a While...End While block. This statement
  always occurs as the Begin of a WhileBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WhileStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WhileStatementSyntax.WhileKeyword">
  <summary>
@@ -44652,6 +45407,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  "Next" (which can be omitted if a containing For has a Next with multiple
  variables).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ForBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ForBlockSyntax.ForStatement">
  <summary>
@@ -44718,6 +45479,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  the "Next" (which can be omitted if a containing For has a Next with multiple
  variables).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ForEachBlock"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ForEachBlockSyntax.ForEachStatement">
  <summary>
@@ -44819,6 +45586,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  statements will have End set to Nothing, and the Next statement is the End of
  the outermost For statement that is being ended.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ForStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ForStatementSyntax.ForKeyword">
  <summary>
@@ -44941,6 +45714,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  The Step clause in a For Statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ForStepClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ForStepClauseSyntax.StepKeyword">
  <summary>
@@ -44988,6 +45767,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  statements will have End set to Nothing, and the Next statement is the End of
  the outermost For statement that is being ended.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ForEachStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ForEachStatementSyntax.ForKeyword">
  <summary>
@@ -45080,6 +45865,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  and the body of the For-Next is the Body of that ForBlock. The Begin of that
  ForBlock has the corresponding For or For Each statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NextStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NextStatementSyntax.NextKeyword">
  <summary>
@@ -45126,6 +45917,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  the Begin of a UsingBlock, and the body of the Using is the Body of that
  UsingBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.UsingStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.UsingStatementSyntax.UsingKeyword">
  <summary>
@@ -45190,6 +45987,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a Throw statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ThrowStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ThrowStatementSyntax.ThrowKeyword">
  <summary>
@@ -45235,6 +46038,22 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a simple, compound, or Mid assignment statement. Which one can be
  determined by checking the Kind.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MidAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SubtractAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MultiplyAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DivideAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IntegerDivideAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExponentiateAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LeftShiftAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RightShiftAssignmentStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ConcatenateAssignmentStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AssignmentStatementSyntax.Left">
  <summary>
@@ -45293,6 +46112,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a left-hand side of a MidAssignment statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MidExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MidExpressionSyntax.Mid">
  <summary>
@@ -45333,6 +46158,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represent a call statement (also known as a invocation statement).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CallStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CallStatementSyntax.CallKeyword">
  <summary>
@@ -45376,6 +46207,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an AddHandler or RemoveHandler statement. The Kind property
  determines which one.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddHandlerStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RemoveHandlerStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AddRemoveHandlerStatementSyntax.AddHandlerOrRemoveHandlerKeyword">
  <summary>
@@ -45450,6 +46288,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represent a RaiseEvent statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RaiseEventStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.RaiseEventStatementSyntax.RaiseEventKeyword">
  <summary>
@@ -45510,6 +46354,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  BeginStatement of a WithBlock, and the body of the With is the Body of that
  WithBlock.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WithStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WithStatementSyntax.WithKeyword">
  <summary>
@@ -45551,6 +46401,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a ReDim statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ReDimStatement"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ReDimPreserveStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ReDimStatementSyntax.ReDimKeyword">
  <summary>
@@ -45614,6 +46471,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a ReDim statement clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RedimClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.RedimClauseSyntax.Expression">
  <summary>
@@ -45655,6 +46518,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an "Erase" statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EraseStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EraseStatementSyntax.EraseKeyword">
  <summary>
@@ -45705,6 +46574,18 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  determined by casting the associated Token to the correct type and getting the
  value from the token.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CharacterLiteralExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TrueLiteralExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FalseLiteralExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NumericLiteralExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DateLiteralExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.StringLiteralExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NothingLiteralExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LiteralExpressionSyntax.Token">
  <summary>
@@ -45741,6 +46622,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a parenthesized expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ParenthesizedExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ParenthesizedExpressionSyntax.OpenParenToken">
  <summary>
@@ -45797,6 +46684,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a tuple literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TupleExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TupleExpressionSyntax.OpenParenToken">
  <summary>
@@ -45853,6 +46746,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a tuple type expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TupleType"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TupleTypeSyntax.OpenParenToken">
  <summary>
@@ -45914,6 +46813,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single declaration of a tuple element supplying only the type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypedTupleElement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypedTupleElementSyntax.Type">
  <summary>
@@ -45940,6 +46845,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a single declaration of a tuple element supplying element name and
  optionally a type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NamedTupleElement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NamedTupleElementSyntax.Identifier">
  <summary>
@@ -46002,6 +46913,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Identifies the special instance "Me"
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MeExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MeExpressionSyntax.Keyword">
  <summary>
@@ -46028,6 +46945,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Identifies the special instance "MyBase"
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MyBaseExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MyBaseExpressionSyntax.Keyword">
  <summary>
@@ -46054,6 +46977,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Identifies the special instance "MyClass"
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MyClassExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MyClassExpressionSyntax.Keyword">
  <summary>
@@ -46080,6 +47009,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a GetType expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GetTypeExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GetTypeExpressionSyntax.GetTypeKeyword">
  <summary>
@@ -46150,6 +47085,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a TypeOf...Is or IsNot expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeOfIsExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeOfIsNotExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeOfExpressionSyntax.TypeOfKeyword">
  <summary>
@@ -46223,6 +47165,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a GetXmlNamespace expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GetXmlNamespaceExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GetXmlNamespaceExpressionSyntax.GetXmlNamespaceKeyword">
  <summary>
@@ -46297,6 +47245,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents member access (.name) or dictionary access (!name). The Kind
  property determines which kind of access.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleMemberAccessExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DictionaryAccessExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MemberAccessExpressionSyntax.Expression">
  <summary>
@@ -46360,6 +47315,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  access (node.@Attribute) or descendants access (node...&lt;Descendant&gt;). The
  Kind property determines which kind of access.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlElementAccessExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlDescendantAccessExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlAttributeAccessExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlMemberAccessExpressionSyntax.Base">
  <summary>
@@ -46455,6 +47418,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  optional argument list or an array, parameterized property or object default
  property index.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InvocationExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InvocationExpressionSyntax.Expression">
  <summary>
@@ -46536,6 +47505,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a New expression that creates a new non-array object, possibly with
  a "With" or "From" clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ObjectCreationExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ObjectCreationExpressionSyntax.NewKeyword">
  <summary>
@@ -46632,6 +47607,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a New expression that create an object of anonymous type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AnonymousObjectCreationExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AnonymousObjectCreationExpressionSyntax.NewKeyword">
  <summary>
@@ -46692,6 +47673,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an expression that creates a new array.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ArrayCreationExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ArrayCreationExpressionSyntax.NewKeyword">
  <summary>
@@ -46804,6 +47791,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an expression that creates a new array without naming the element
  type.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CollectionInitializer"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CollectionInitializerSyntax.OpenBraceToken">
  <summary>
@@ -46936,6 +47929,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  the current value.
  </summary>
 </member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.CTypeExpressionSyntax">
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CTypeExpression"/></description></item>
+ </list>
+ </remarks>
+</member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CTypeExpressionSyntax.Keyword">
  <summary>
  The "CType", "DirectCast" or "TryCast" keyword.
@@ -47031,6 +48032,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  The value for the CloseParenToken property.
  </param>
 </member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.DirectCastExpressionSyntax">
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DirectCastExpression"/></description></item>
+ </list>
+ </remarks>
+</member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DirectCastExpressionSyntax.Keyword">
  <summary>
  The "CType", "DirectCast" or "TryCast" keyword.
@@ -47125,6 +48134,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <param name="closeParenToken">
  The value for the CloseParenToken property.
  </param>
+</member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.TryCastExpressionSyntax">
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TryCastExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TryCastExpressionSyntax.Keyword">
  <summary>
@@ -47226,6 +48243,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a cast to a pre-defined type using a pre-defined cast expression,
  such as CInt or CLng.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.PredefinedCastExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PredefinedCastExpressionSyntax.Keyword">
  <summary>
@@ -47299,6 +48322,35 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  similar kind of operators (arithmetic, relational, logical or string); the
  exact operation being performed is determined by the Operator property.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SubtractExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MultiplyExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DivideExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IntegerDivideExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExponentiateExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LeftShiftExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RightShiftExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ConcatenateExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ModuloExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EqualsExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NotEqualsExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LessThanExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LessThanOrEqualExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GreaterThanOrEqualExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GreaterThanExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IsExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IsNotExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LikeExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OrExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExclusiveOrExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AndExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OrElseExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AndAlsoExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.BinaryExpressionSyntax.Left">
  <summary>
@@ -47351,6 +48403,15 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Describes a unary operator: Plus, Negate, Not or AddressOf.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.UnaryPlusExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.UnaryMinusExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NotExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AddressOfExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.UnaryExpressionSyntax.OperatorToken">
  <summary>
@@ -47396,6 +48457,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a conditional expression, If(condition, true-expr, false-expr) or
  If(expr, nothing-expr).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.BinaryConditionalExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.BinaryConditionalExpressionSyntax.IfKeyword">
  <summary>
@@ -47498,6 +48565,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a conditional expression, If(condition, true-expr, false-expr) or
  If(expr, nothing-expr).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TernaryConditionalExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TernaryConditionalExpressionSyntax.IfKeyword">
  <summary>
@@ -47647,6 +48720,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a single line lambda expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SingleLineFunctionLambdaExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SingleLineSubLambdaExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SingleLineLambdaExpressionSyntax.SubOrFunctionHeader">
  <summary>
@@ -47700,6 +48780,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a multi-line lambda expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MultiLineFunctionLambdaExpression"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.MultiLineSubLambdaExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.MultiLineLambdaExpressionSyntax.SubOrFunctionHeader">
  <summary>
@@ -47766,6 +48853,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the header part of a lambda expression
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SubLambdaHeader"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FunctionLambdaHeader"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LambdaHeaderSyntax.AttributeLists">
  <summary>
@@ -47873,6 +48967,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a parenthesized argument list.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ArgumentList"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ArgumentListSyntax.OpenParenToken">
  <summary>
@@ -47958,6 +49058,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an omitted argument in an argument list. An omitted argument is not
  considered a syntax error but a valid case when no argument is required.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OmittedArgument"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OmittedArgumentSyntax.Empty">
  <summary>
@@ -47984,6 +49090,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an argument that is just an optional argument name and an
  expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleArgument"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SimpleArgumentSyntax.NameColonEquals">
  <summary>
@@ -48028,6 +49140,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an identifier name followed by a ":=" token in a named argument.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NameColonEquals"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NameColonEqualsSyntax.Name">
  <summary>
@@ -48069,6 +49187,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a range argument, such as "0 to 5", used in array bounds. The
  "Value" property represents the upper bound of the range.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RangeArgument"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.RangeArgumentSyntax.LowerBound">
  <summary>
@@ -48127,6 +49251,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  or more query operators in a row. The first query operator must be a From or
  Aggregate.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.QueryExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.QueryExpressionSyntax.Clauses">
  <summary>
@@ -48160,6 +49290,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Describes a single variable of the form "x [As Type] In expression" for use in
  query expressions.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CollectionRangeVariable"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CollectionRangeVariableSyntax.Identifier">
  <summary>
@@ -48235,6 +49371,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Describes a single variable of the form "[x [As Type] =] expression" for use in
  query expressions.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExpressionRangeVariable"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ExpressionRangeVariableSyntax.NameEquals">
  <summary>
@@ -48282,6 +49424,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  for use in the Into clause of Aggregate or Group By or Group Join query
  operators.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AggregationRangeVariable"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AggregationRangeVariableSyntax.NameEquals">
  <summary>
@@ -48329,6 +49477,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the name and optional type of an expression range variable.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.VariableNameEquals"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.VariableNameEqualsSyntax.Identifier">
  <summary>
@@ -48395,6 +49549,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an invocation of an Aggregation function in the aggregation range
  variable declaration of a Group By, Group Join or Aggregate query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FunctionAggregation"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.FunctionAggregationSyntax.FunctionName">
  <summary>
@@ -48477,6 +49637,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  aggregation range variable declaration of a Group By or Group Join query
  operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GroupAggregation"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GroupAggregationSyntax.GroupKeyword">
  <summary>
@@ -48505,6 +49671,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Source will be Nothing. Otherwise, the Source will be the part of the query to
  the left of the From.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.FromClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.FromClauseSyntax.FromKeyword">
  <summary>
@@ -48546,6 +49718,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Let" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.LetClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.LetClauseSyntax.LetKeyword">
  <summary>
@@ -48587,6 +49765,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an Aggregate query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AggregateClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AggregateClauseSyntax.AggregateKeyword">
  <summary>
@@ -48676,6 +49860,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Distinct" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DistinctClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DistinctClauseSyntax.DistinctKeyword">
  <summary>
@@ -48702,6 +49892,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Where" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.WhereClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.WhereClauseSyntax.WhereKeyword">
  <summary>
@@ -48744,6 +49940,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a "Skip While" or "Take While" query operator. The Kind property
  tells which.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SkipWhileClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TakeWhileClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PartitionWhileClauseSyntax.SkipOrTakeKeyword">
  <summary>
@@ -48803,6 +50006,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a "Skip" or "Take" query operator. The Kind property tells which.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SkipClause"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TakeClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PartitionClauseSyntax.SkipOrTakeKeyword">
  <summary>
@@ -48846,6 +50056,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Group By" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GroupByClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GroupByClauseSyntax.GroupKeyword">
  <summary>
@@ -49013,6 +50229,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "expression Equals expression" condition in a Join.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.JoinCondition"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.JoinConditionSyntax.Left">
  <summary>
@@ -49067,6 +50289,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a Join query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SimpleJoinClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SimpleJoinClauseSyntax.JoinKeyword">
  <summary>
@@ -49157,6 +50385,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Group Join" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GroupJoinClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GroupJoinClauseSyntax.GroupKeyword">
  <summary>
@@ -49292,6 +50526,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Order By" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.OrderByClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OrderByClauseSyntax.OrderKeyword">
  <summary>
@@ -49349,6 +50589,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  An expression to order by, plus an optional ordering. The Kind indicates
  whether to order in ascending or descending order.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AscendingOrdering"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DescendingOrdering"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.OrderingSyntax.Expression">
  <summary>
@@ -49397,6 +50644,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the "Select" query operator.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SelectClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SelectClauseSyntax.SelectKeyword">
  <summary>
@@ -49445,6 +50698,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an XML Document literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlDocument"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlDocumentSyntax.WithDeclaration(Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlDeclarationSyntax)">
  <summary>
@@ -49505,6 +50764,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the XML declaration prologue in an XML literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlDeclaration"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlDeclarationSyntax.WithLessThanQuestionToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49587,6 +50852,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an XML document prologue option - version, encoding, standalone or
  whitespace in an XML literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlDeclarationOption"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlDeclarationOptionSyntax.WithName(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49625,6 +50896,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an XML element with content in an XML literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlElement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlElementSyntax.WithStartTag(Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlElementStartTagSyntax)">
  <summary>
@@ -49670,6 +50947,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents Xml text.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlText"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlTextSyntax.TextTokens">
  <summary>
@@ -49697,6 +50980,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the start tag of an XML element of the form &lt;element&gt;.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlElementStartTag"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlElementStartTagSyntax.WithLessThanToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49752,6 +51041,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the end tag of an XML element of the form &lt;/element&gt;.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlElementEndTag"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlElementEndTagSyntax.WithLessThanSlashToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49797,6 +51092,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an empty XML element of the form &lt;element /&gt;
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlEmptyElement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlEmptyElementSyntax.WithLessThanToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49852,6 +51153,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an XML attribute in an XML literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlAttribute"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlAttributeSyntax.WithName(Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNodeSyntax)">
  <summary>
@@ -49897,6 +51204,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a string of XML characters embedded as the content of an XML
  element.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlString"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlStringSyntax.WithStartQuoteToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49943,6 +51256,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an XML name of the form 'name' appearing in GetXmlNamespace().
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlPrefixName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlPrefixNameSyntax.WithName(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -49965,6 +51284,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  source as part of an XML literal or member access expression or an XML
  namespace import clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNameSyntax.Prefix">
  <remarks>
@@ -50002,6 +51327,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  of an XML literal or member access expression or an XML namespace import
  clause.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlBracketedName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlBracketedNameSyntax.WithLessThanToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50042,6 +51373,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an XML namespace prefix of the form 'prefix:' as in xml:ns="".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlPrefix"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlPrefixSyntax.WithName(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50073,6 +51410,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an XML comment of the form &lt;!-- Comment --&gt; appearing in an
  XML literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlComment"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlCommentSyntax.WithLessThanExclamationMinusMinusToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50115,6 +51458,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an XML processing instruction of the form '&lt;? XMLProcessingTarget
  XMLProcessingValue ?&gt;'.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlProcessingInstruction"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlProcessingInstructionSyntax.WithLessThanQuestionToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50165,6 +51514,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an XML CDATA section in an XML literal expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlCDataSection"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlCDataSectionSyntax.WithBeginCDataToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50207,6 +51562,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an embedded expression in an XML literal e.g. '&lt;name&gt;&lt;%=
  obj.Name =%&gt;&lt;/name&gt;'.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlEmbeddedExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlEmbeddedExpressionSyntax.WithLessThanPercentEqualsToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50256,6 +51617,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an array type, such as "A() or "A(,)", without bounds specified for
  the array.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ArrayType"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ArrayTypeSyntax.ElementType">
  <summary>
@@ -50297,6 +51664,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  A type name that represents a nullable type, such as "Integer?".
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NullableType"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NullableTypeSyntax.ElementType">
  <summary>
@@ -50340,6 +51713,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an occurrence of a Visual Basic built-in type such as Integer or
  String in source code.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.PredefinedType"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.PredefinedTypeSyntax.Keyword">
  <summary>
@@ -50390,6 +51769,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a type name consisting of a single identifier (which might include
  brackets or a type character).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IdentifierName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.IdentifierNameSyntax.Identifier">
  <summary>
@@ -50417,6 +51802,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a simple type name with one or more generic arguments, such as "X(Of
  Y, Z).
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GenericName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GenericNameSyntax.Identifier">
  <summary>
@@ -50458,6 +51849,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a qualified type name, for example X.Y or X(Of Z).Y.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.QualifiedName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.QualifiedNameSyntax.Left">
  <summary>
@@ -50514,6 +51911,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a name in the global namespace.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.GlobalName"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.GlobalNameSyntax.GlobalKeyword">
  <summary>
@@ -50540,6 +51943,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a parenthesized list of generic type arguments.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.TypeArgumentList"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeArgumentListSyntax.OpenParenToken">
  <summary>
@@ -50612,6 +52021,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Syntax node class that represents a value of 'cref' attribute inside
  documentation comment trivia.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CrefReference"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefReferenceSyntax.WithName(Microsoft.CodeAnalysis.VisualBasic.Syntax.TypeSyntax)">
  <summary>
@@ -50663,6 +52078,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a parenthesized list of argument types for a signature inside
  CrefReferenceSyntax syntax.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CrefSignature"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefSignatureSyntax.WithOpenParenToken(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
@@ -50700,6 +52121,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  The value for the CloseParenToken property.
  </param>
 </member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefSignaturePartSyntax">
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CrefSignaturePart"/></description></item>
+ </list>
+ </remarks>
+</member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefSignaturePartSyntax.Modifier">
  <remarks>
  This child is optional. If it is not present, then Nothing is returned.
@@ -50735,6 +52164,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  The value for the Type property.
  </param>
 </member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefOperatorReferenceSyntax">
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.CrefOperatorReference"/></description></item>
+ </list>
+ </remarks>
+</member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.CrefOperatorReferenceSyntax.WithOperatorKeyword(Microsoft.CodeAnalysis.SyntaxToken)">
  <summary>
  Returns a copy of this with the OperatorKeyword property changed to the
@@ -50760,6 +52197,14 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <param name="operatorToken">
  The value for the OperatorToken property.
  </param>
+</member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Syntax.QualifiedCrefOperatorReferenceSyntax">
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.QualifiedCrefOperatorReference"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.QualifiedCrefOperatorReferenceSyntax.WithLeft(Microsoft.CodeAnalysis.VisualBasic.Syntax.NameSyntax)">
  <summary>
@@ -50799,6 +52244,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represent a Yield statement.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.YieldStatement"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.YieldStatementSyntax.YieldKeyword">
  <summary>
@@ -50840,6 +52291,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an Await expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.AwaitExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.AwaitExpressionSyntax.AwaitKeyword">
  <summary>
@@ -50887,6 +52344,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents tokens that were skipped by the parser as part of error recovery,
  and thus are not part of any syntactic structure.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.SkippedTokensTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.SkippedTokensTriviaSyntax.Tokens">
  <summary>
@@ -50916,6 +52379,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a documentation comment e.g. ''' &lt;Summary&gt; appearing in
  source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DocumentationCommentTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DocumentationCommentTriviaSyntax.Content">
  <remarks>
@@ -50944,6 +52413,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  &lt;seealso&gt; documentation comment tag). For example, the M in &lt;see
  cref="M" /&gt;.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlCrefAttribute"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlCrefAttributeSyntax.WithName(Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNameSyntax)">
  <summary>
@@ -51006,6 +52481,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  &lt;param&gt; or &lt;typeparam&gt; documentation comment tag). For example, the
  M in &lt;param name="M" /&gt;.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.XmlNameAttribute"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNameAttributeSyntax.WithName(Microsoft.CodeAnalysis.VisualBasic.Syntax.XmlNameSyntax)">
  <summary>
@@ -51066,6 +52547,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  ExpressionSyntax node representing the object conditionally accessed.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ConditionalAccessExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ConditionalAccessExpressionSyntax.Expression">
  <summary>
@@ -51126,6 +52613,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a NameOf expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.NameOfExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.NameOfExpressionSyntax.NameOfKeyword">
  <summary>
@@ -51197,6 +52690,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an interpolated string expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InterpolatedStringExpression"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterpolatedStringExpressionSyntax.DollarSignDoubleQuoteToken">
  <summary>
@@ -51258,6 +52757,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents literal text content in an interpolated string.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InterpolatedStringText"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterpolatedStringTextSyntax.TextToken">
  <summary>
@@ -51285,6 +52790,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an interpolation of an expression in an interpolated string
  expression e.g. '{expression[,alignment][:formatString]}'.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.Interpolation"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterpolationSyntax.OpenBraceToken">
  <summary>
@@ -51379,6 +52890,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents an alignment clause ',alignment' of an interpolated string embedded
  expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InterpolationAlignmentClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterpolationAlignmentClauseSyntax.CommaToken">
  <summary>
@@ -51420,6 +52937,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents a format string clause ':formatString' of an interpolated string
  embedded expression.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.InterpolationFormatClause"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.InterpolationFormatClauseSyntax.ColonToken">
  <summary>
@@ -51479,6 +53002,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents a #Const pre-processing constant declaration appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ConstDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ConstDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51565,6 +53094,13 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning of an #If pre-processing directive appearing in
  source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.IfDirectiveTrivia"/></description></item>
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseIfDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.IfDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51644,6 +53180,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an #Else pre-processing directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ElseDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ElseDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51680,6 +53222,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an #End If pre-processing directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndIfDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EndIfDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51726,6 +53274,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents the beginning of a #Region directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.RegionDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.RegionDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51781,6 +53335,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an #End Region directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndRegionDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EndRegionDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51838,6 +53398,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  Represents the beginning of a #ExternalSource pre-processing directive
  appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExternalSourceDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ExternalSourceDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51924,6 +53490,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an #End ExternalSource pre-processing directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EndExternalSourceDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EndExternalSourceDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -51970,6 +53542,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an #ExternalChecksum pre-processing directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ExternalChecksumDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ExternalChecksumDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -52075,6 +53653,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents #Enable Warning pre-processing directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.EnableWarningDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.EnableWarningDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -52131,6 +53715,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents #Disable Warning pre-processing directive appearing in source.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.DisableWarningDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.DisableWarningDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -52187,6 +53777,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  <summary>
  Represents an #r directive appearing in scripts.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.ReferenceDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.ReferenceDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -52235,6 +53831,12 @@ Creates a string representing the unformatted LocalizableErrorArgument instance.
  recognize the text that follows as a valid Visual Basic pre-processing
  directive.
  </summary>
+ <remarks>
+ <para>This node is associated with the following syntax kinds:</para>
+ <list type="bullet">
+ <item><description><see cref="F:Microsoft.CodeAnalysis.VisualBasic.SyntaxKind.BadDirectiveTrivia"/></description></item>
+ </list>
+ </remarks>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Syntax.BadDirectiveTriviaSyntax.HashToken">
  <summary>
@@ -68551,7 +70153,7 @@ Parse the input for leading trivia.
  <summary>
  Displays a value in the VisualBasic style.
  </summary>
- <seealso cref="T:Microsoft.CodeAnalysis.CSharp.Symbols.ObjectDisplay"/>
+ <seealso cref="T:Microsoft.CodeAnalysis.CSharp.ObjectDisplay"/>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.ObjectDisplay.ObjectDisplay.FormatPrimitive(System.Object,Microsoft.CodeAnalysis.ObjectDisplayOptions)">
  <summary>
@@ -72869,6 +74471,7 @@ Parse the input for leading trivia.
  <summary>
  Creates a new syntax tree from a syntax node.
  </summary>
+ <param name="diagnosticOptions">An obsolete parameter. Diagnostic options should now be passed with <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.SyntaxTreeOptionsProvider"/></param>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxTree.CreateWithoutClone(Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxNode)">
  <summary>
@@ -72879,6 +74482,9 @@ Parse the input for leading trivia.
  <para>NOTE: This method is only intended to be used from <see cref="P:Microsoft.CodeAnalysis.SyntaxNode.SyntaxTree"/> property.</para>
  <para>NOTE: Do not use this method elsewhere, instead use <see cref="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxTree.Create(Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxNode,Microsoft.CodeAnalysis.VisualBasic.VisualBasicParseOptions,System.String,System.Text.Encoding)"/> method for creating a syntax tree.</para>
  </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxTree.ParseText(System.String,Microsoft.CodeAnalysis.VisualBasic.VisualBasicParseOptions,System.String,System.Text.Encoding,System.Collections.Immutable.ImmutableDictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic},System.Threading.CancellationToken)">
+ <param name="diagnosticOptions">An obsolete parameter. Diagnostic options should now be passed with <see cref="P:Microsoft.CodeAnalysis.CompilationOptions.SyntaxTreeOptionsProvider"/></param>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxTree.ParseText(Microsoft.CodeAnalysis.Text.SourceText,Microsoft.CodeAnalysis.VisualBasic.VisualBasicParseOptions,System.String,System.Collections.Immutable.ImmutableDictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic},System.Threading.CancellationToken)">
  <summary>

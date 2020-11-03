@@ -76,11 +76,6 @@
             Called when the server updates the keep alive value.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IDiagnosticListener.ConnectionListening">
-            <summary>
-            Called each time the server listens for new connections.
-            </summary>
-        </member>
         <member name="M:Microsoft.CodeAnalysis.CompilerServer.IDiagnosticListener.ConnectionReceived">
             <summary>
             Called when a connection to the server occurs.
@@ -123,6 +118,31 @@
             Write a <see cref="T:Microsoft.CodeAnalysis.CommandLine.BuildResponse" /> to the client
             </summary>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.IsListening">
+            <summary>
+            True when the host is listening for new connections (after <see cref="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.BeginListening"/> is
+            called but before <see cref="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.EndListening"/> is called).
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.BeginListening">
+            <summary>
+            Start listening for new connections
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.GetNextClientConnectionAsync">
+            <summary>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that completes when a new <see cref="T:Microsoft.CodeAnalysis.CompilerServer.IClientConnection"/> is 
+            received. If this is called after <see cref="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.EndListening"/> is called then an exception
+            will be thrown.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.EndListening">
+            <summary>
+            Stop accepting new connections. It will also ensure that the last return from 
+            <see cref="M:Microsoft.CodeAnalysis.CompilerServer.IClientConnectionHost.GetNextClientConnectionAsync"/> is either already in a completed state, or has scheduled an
+            operation which will transition the task to a completed state.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.CompilerServer.MemoryHelper">
             <summary>
             Uses p/invoke to gain access to information about how much memory this process is using
@@ -139,7 +159,7 @@
             Returns null if the file doesn't exist or otherwise can't be accessed.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenAsync(System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenCoreAsync(System.String,Microsoft.CodeAnalysis.Diagnostics.AsyncQueue{Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenResult},System.Func{System.String},System.Threading.CancellationToken)">
             <summary>
             Creates a Task that waits for a client connection to occur and returns the connected 
             <see cref="T:System.IO.Pipes.NamedPipeServerStream"/> object.  Throws on any connection error.
@@ -159,8 +179,7 @@
         </member>
         <member name="F:Microsoft.CodeAnalysis.CompilerServer.ServerDispatcher.State.ShuttingDown">
             <summary>
-            Server processing existing requests, responding to shutdown commands but is not accepting
-            new build requests.
+            Server is in the process of shutting down. New connections will not be accepted.
             </summary>
         </member>
         <member name="F:Microsoft.CodeAnalysis.CompilerServer.ServerDispatcher.State.Completed">
@@ -359,7 +378,7 @@
             An open <see cref="T:System.IO.Pipes.NamedPipeClientStream"/> to the server process or null on failure.
             </returns>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.GetPipeNameForPathOpt(System.String)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.GetPipeNameForPath(System.String)">
             <returns>
             Null if not enough information was found to create a valid pipe name.
             </returns>

@@ -163,7 +163,7 @@
             An open <see cref="T:System.IO.Pipes.NamedPipeClientStream"/> to the server process or null on failure.
             </returns>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.GetPipeNameForPathOpt(System.String)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.GetPipeNameForPath(System.String)">
             <returns>
             Null if not enough information was found to create a valid pipe name.
             </returns>

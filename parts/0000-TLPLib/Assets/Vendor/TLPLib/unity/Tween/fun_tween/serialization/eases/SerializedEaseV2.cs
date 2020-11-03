@@ -62,7 +62,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
     
 #if UNITY_EDITOR
     Texture2D _preview;
-    [HideLabel, HorizontalGroup(Width = 50), ShowIf("displayPreview", animate: false), ShowInInspector, PreviewField]
+    [HideLabel, HorizontalGroup(Width = 80), ShowIf("displayPreview", animate: false), ShowInInspector, PreviewField(Height = 80)]
     Texture2D preview => _preview ? _preview : _preview = (
       isSimple 
         ? SerializedEasePreview.editorPreview(_simple) 
@@ -100,4 +100,17 @@ while 0 oscillates only between the starting position and the decaying direction
     public void invalidate() { }
     public Ease ease => Eases.punch(vibrato: _vibrato, elasticity: _elasticity);
   }
+  
+  [Serializable] public class ComplexEase_Shake : SerializedEaseV2.IComplexSerializedEase {
+    [SerializeField, NotNull] AnimationCurve 
+      _intensityOverTime = AnimationCurve.Linear(0, 0, 1, 1),
+      _amplitudeOverTime = AnimationCurve.Linear(0, 0, 1, 1);
+    [SerializeField] float _intensityMulti = 20;
+    
+    public string easeName => $"Shake(s: {_intensityMulti})";
+    public void invalidate() {}
+    public Ease ease => p => Mathf.Sin(p * _intensityOverTime.Evaluate(p) * _intensityMulti) * _amplitudeOverTime.Evaluate(p);
+  }
+  
+  
 }
