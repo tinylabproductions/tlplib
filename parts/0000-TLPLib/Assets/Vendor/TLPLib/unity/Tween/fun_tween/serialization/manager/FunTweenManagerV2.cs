@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     SerializedTweenTimelineV2 _timeline = new SerializedTweenTimelineV2();
 
     public SerializedTweenTimelineV2 serializedTimeline => _timeline;
-    public TweenTimeline timeline => _timeline.timeline;
+    public TweenTimeline timeline => _timeline.timeline(this);
     public string title => getGameObjectPath(transform);
     
     public static bool timelineEditorIsOpen;
@@ -58,7 +58,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
           var maybeParentComponent = (Application.isPlaying && !awakeCalled) ? Some.a<Component>(this) : None._;
           
           var tm = new TweenManager(
-            _timeline.timeline, _time, _looping, context: gameObject, 
+            _timeline.timeline(this), _time, _looping, context: gameObject,
             maybeParentComponent: maybeParentComponent
           );
           
@@ -170,60 +170,61 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
     TweenTimeline _timeline;
     [PublicAPI]
-    public TweenTimeline timeline {
-      get {
+    public TweenTimeline timeline(Object parent = null) {
 #if UNITY_EDITOR
-        if (!Application.isPlaying && _timeline != null) {
-          foreach (var element in _elements) {
-            if (element.__editorDirty) {
-              element.invalidate();
-              _timeline = null;
-            }
+      if (!Application.isPlaying && _timeline != null) {
+        foreach (var element in _elements) {
+          if (element.__editorDirty) {
+            element.invalidate();
+            _timeline = null;
           }
         }
-#endif
-        if (_timeline == null) {
-          var builder = new TweenTimeline.Builder();
-          foreach (var element in _elements) {
-            if (element.isValid) {
-              var timelineElement = element.element.toTimelineElement();
-              builder.insert(element.startsAt, timelineElement);
-            }
-            else if (Application.isPlaying) {
-              // TODO: add context
-              Log.d.error("Element in animation is invalid. Skipping broken element.", this);
-            }
-          }
-          _timeline = builder.build();
-#if UNITY_EDITOR
-          if (!Application.isPlaying) {
-            // restore cached position
-            _timeline.timePassed = __editor_cachedTimePassed;
-            {
-              // find all key frames
-              var keyframes = new List<float>();
-              keyframes.Add(_timeline.duration);
-              foreach (var e in _timeline.effects) {
-                keyframes.Add(e.startsAt);
-                keyframes.Add(e.endsAt);
-              }
-
-              keyframes.Sort();
-              var filtered = __editor_keyframes;
-              filtered.Clear();
-              filtered.Add(0);
-              foreach (var keyframe in keyframes) {
-                if (!Mathf.Approximately(filtered[filtered.Count - 1], keyframe)) {
-                  filtered.Add(keyframe);
-                }
-              }
-            }
-          }
-#endif
-        }
-
-        return _timeline;
       }
+#endif
+      if (_timeline == null) {
+        var builder = new TweenTimeline.Builder();
+        foreach (var element in _elements) {
+          if (element.isValid) {
+            var timelineElement = element.element.toTimelineElement();
+            builder.insert(element.startsAt, timelineElement);
+          }
+          else if (Application.isPlaying) {
+            Log.d.error(
+              $"Element in animation is invalid. Skipping broken element. " +
+              $"Parent={(parent != null ? parent.name : "none")}",
+              context: (object) parent ?? this
+            );
+          }
+        }
+        _timeline = builder.build();
+#if UNITY_EDITOR
+        if (!Application.isPlaying) {
+          // restore cached position
+          _timeline.timePassed = __editor_cachedTimePassed;
+          {
+            // find all key frames
+            var keyframes = new List<float>();
+            keyframes.Add(_timeline.duration);
+            foreach (var e in _timeline.effects) {
+              keyframes.Add(e.startsAt);
+              keyframes.Add(e.endsAt);
+            }
+
+            keyframes.Sort();
+            var filtered = __editor_keyframes;
+            filtered.Clear();
+            filtered.Add(0);
+            foreach (var keyframe in keyframes) {
+              if (!Mathf.Approximately(filtered[filtered.Count - 1], keyframe)) {
+                filtered.Add(keyframe);
+              }
+            }
+          }
+        }
+#endif
+      }
+
+      return _timeline;
     }
 
     public void invalidate() => _timeline = null;
