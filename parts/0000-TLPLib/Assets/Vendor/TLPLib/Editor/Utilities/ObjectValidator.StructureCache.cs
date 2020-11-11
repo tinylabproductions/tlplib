@@ -106,7 +106,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
 
         [LazyProperty] public bool hasNonEmptyAttribute => fieldInfo.hasAttribute<NonEmptyAttribute>();
-        [LazyProperty] public bool hasNotNullAttribute => fieldInfo.hasAttribute<NotNullAttribute>();
+        [LazyProperty] public bool hasNotNullAttribute =>
+          fieldInfo.hasAttribute<NotNullAttribute>() 
+          // SerializeReference implies notnull
+          || fieldInfo.hasAttribute<SerializeReference>();
+        
+        [LazyProperty] public bool hasSerializeReferenceAttribute => fieldInfo.hasAttribute<SerializeReference>();
 
         [LazyProperty] public ImmutableArrayC<UniqueValue> uniqueValueAttributes => 
           fieldInfo.getAttributes<UniqueValue>().toImmutableArrayC();

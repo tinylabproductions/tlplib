@@ -629,7 +629,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
               }
               else {
                 validateListElementsFields(
-                  containingComponent, list, field.hasNotNullAttribute,
+                  containingComponent, list, hasNotNull: field.hasNotNullAttribute,
+                  hasSerializeReference: field.hasSerializeReferenceAttribute,
                   fieldHierarchy, createError, addError, structureCache, jobController, 
                   unityTags, customObjectValidatorOpt, uniqueValuesCache
                 );
@@ -654,7 +655,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     static void validateListElementsFields(
       Object containingComponent, IList list,
-      bool hasNotNull, FieldHierarchy fieldHierarchy,
+      bool hasNotNull, bool hasSerializeReference, FieldHierarchy fieldHierarchy,
       IErrorFactory createError, AddError addError, StructureCache structureCache,
       JobController jobController, ImmutableHashSet<string> unityTags,
       Option<CustomObjectValidator> customObjectValidatorOpt,
@@ -665,7 +666,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 #endif
       var listItemType = structureCache.getListItemType(list);
 
-      if (listItemType.isUnityObject) {
+      if (listItemType.isUnityObject || hasSerializeReference) {
         if (hasNotNull) {
           jobController.enqueueMainThreadJob(() => {
             int index = 0;
