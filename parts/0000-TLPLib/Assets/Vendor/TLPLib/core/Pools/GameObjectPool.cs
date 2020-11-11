@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using pzd.lib.log;
 using JetBrains.Annotations;
 using pzd.lib.dispose;
@@ -93,6 +94,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
     readonly Func<T> create;
     readonly Option<Action<T>> wakeUp, sleep;
     readonly bool dontDestroyOnLoad;
+    
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(GameObjectPool));
 
     public GameObjectPool(GameObjectPool.Init<T> init, Func<T, GameObject> toGameObject, int initialSize = 0) {
       rootOpt = init.parent.map(parent => {
@@ -134,13 +137,18 @@ namespace com.tinylabproductions.TLPLib.Pools {
     }
 
     public void release(T value) {
-      if (sleep.isSome) sleep.get(value);
-      var go = toGameObject(value);
-      foreach (var root in rootOpt) {
-        go.transform.SetParent(root, false);
+      try {
+        if (sleep.isSome) sleep.get(value);
+        var go = toGameObject(value);
+        foreach (var root in rootOpt) {
+          go.transform.SetParent(root, false);
+        }
+        go.SetActive(false);
+        values.Push(value);
       }
-      go.SetActive(false);
-      values.Push(value);
+      catch (Exception e) {
+        log.error("Could not release object to the pool. You probably unloaded the scene.", e);
+      }
     }
 
     public void dispose(Action<T> disposeFn) {
