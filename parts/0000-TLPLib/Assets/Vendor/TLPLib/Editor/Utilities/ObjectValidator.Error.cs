@@ -27,9 +27,12 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         CustomValidation,
         CustomValidationException,
         DuplicateUniqueValue,
-        ValidatorBug
+        ValidatorBug,
+        /// <summary>Unity failed to import the file.</summary>
+        AssetCorrupted
       }
 
+      /// <summary>Location could not be determined.</summary>
       public struct UnknownLocation : IEquatable<UnknownLocation> {
         public bool Equals(UnknownLocation other) => true;
       }
@@ -37,6 +40,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public readonly Type type;
       public readonly string message;
       public readonly Object obj;
+      /// <summary>Path of the Unity GameObject tree.</summary>
+      ///
+      /// <example>
+      /// Player/Particles/Spawn
+      /// </example>
       public readonly string objFullPath;
       public readonly OneOf<AssetPath, ScenePath, UnknownLocation> location;
 
@@ -54,12 +62,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       #region Constructors
 
-      public Error(Type type, string message, Object obj) {
+      public Error(Type type, string message, Object obj) : this(
+        type, message, obj, fullPath(obj), findLocation(obj)
+      ) {}
+
+      public Error(
+        Type type, string message, Object obj, string objFullPath, OneOf<AssetPath, ScenePath, UnknownLocation> location
+      ) {
         this.type = type;
         this.message = message;
         this.obj = obj;
-        objFullPath = fullPath(obj);
-        location = findLocation(obj);
+        this.objFullPath = objFullPath;
+        this.location = location;
       }
 
       static OneOf<AssetPath, ScenePath, UnknownLocation> findLocation(Object obj) {

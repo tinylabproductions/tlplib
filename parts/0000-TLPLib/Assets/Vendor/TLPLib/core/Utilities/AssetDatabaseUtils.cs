@@ -5,13 +5,14 @@ using System.IO;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
 using pzd.lib.log;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
-  public static class AssetDatabaseUtils {
+  [PublicAPI] public static class AssetDatabaseUtils {
     public static IEnumerable<A> getPrefabsOfType<A>() {
       var prefabGuids = AssetDatabase.FindAssets("t:prefab");
 

@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace com.tinylabproductions.TLPLib.Data {
+  /// <summary>Path to an asset path.</summary>
   public struct AssetPath : IEquatable<AssetPath> {
     public readonly string path;
     public AssetPath(string path) { this.path = path; }
