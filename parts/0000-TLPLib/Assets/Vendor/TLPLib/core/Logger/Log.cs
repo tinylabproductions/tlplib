@@ -32,16 +32,18 @@ namespace com.tinylabproductions.TLPLib.Logger {
 
     static readonly bool useConsoleLog = EditorUtils.inBatchMode;
 
-    static Log() {
+    public static void registerToDConsole(string group) {
       DConsole.instance.registrarOnShow(
-        NeverDisposeDisposableTracker.instance, "Default Logger",
-        (dc, r) => {
-          r.registerEnum(
-            "level",
-            Ref.a(() => @default.level, v => @default.level = v),
-            EnumUtils.GetValues<LogLevel>()
-          );
-        }
+        NeverDisposeDisposableTracker.instance, group,
+        (dc, r) => registerToDConsole(r)
+      );
+    }
+
+    public static void registerToDConsole(DConsoleRegistrar r) {
+      r.registerEnum(
+        "level",
+        Ref.a(() => @default.level, v => @default.level = v),
+        EnumUtils.GetValues<LogLevel>()
       );
     }
 
