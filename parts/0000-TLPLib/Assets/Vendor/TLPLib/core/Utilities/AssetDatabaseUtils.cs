@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Filesystem;
 using com.tinylabproductions.TLPLib.Logger;
 using JetBrains.Annotations;
+using pzd.lib.dispose;
 using pzd.lib.log;
 using UnityEditor;
 using UnityEngine;
@@ -59,6 +61,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return newPath;
     }
 
+    public static IEnumerable<AssetPath> allScenes =>
+      Directory.EnumerateFiles("Assets", "*.unity", SearchOption.AllDirectories).Select(s => new AssetPath(s));
+
+    public static IEnumerable<AssetPath> allPrefabs =>
+      Directory.EnumerateFiles("Assets", "*.prefab", SearchOption.AllDirectories).Select(s => new AssetPath(s));
+
     // Calling stopAssetEditing without starting or stopping multiple times causes exceptions.
     // These are used to track how many start calls there been to properly stop editing at the last stop call.
     static int _assetsAreBeingEditedCount;
@@ -70,6 +78,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       if (Log.d.isVerbose()) 
         Log.d.verbose($"{nameof(AssetDatabaseUtils)}#{nameof(startAssetEditing)}: count: {_assetsAreBeingEditedCount}");
     }
+    
     public static void stopAssetEditing() {
       _assetsAreBeingEditedCount--;
       if (Log.d.isVerbose()) 
@@ -78,6 +87,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         AssetDatabase.StopAssetEditing();
       else if (_assetsAreBeingEditedCount < 0)
         throw new Exception($"{nameof(stopAssetEditing)} was called more times than {nameof(startAssetEditing)}!");
+    }
+
+    /// <summary>
+    /// Allows calling <see cref="startAssetEditing"/> and <see cref="stopAssetEditing"/> in a "using" like fashion.
+    /// </summary>
+    public static ActionOnDispose doAssetEditing() {
+      startAssetEditing();
+      return new ActionOnDispose(stopAssetEditing);
     }
   }
 }

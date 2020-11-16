@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Editor.Utils;
@@ -25,14 +24,8 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       bool validateScenes, bool validatePrefabs, bool showProgress
     ) =>
       validate(
-        scenePaths:
-          validateScenes
-            ? Directory.EnumerateFiles("Assets", "*.unity", SearchOption.AllDirectories).ToArray()
-            : EmptyArray<string>._,
-        prefabPaths:
-          validatePrefabs
-            ? Directory.EnumerateFiles("Assets", "*.prefab", SearchOption.AllDirectories).ToArray()
-            : EmptyArray<string>._,
+        scenePaths: validateScenes ? AssetDatabaseUtils.allScenes.ToArray() : EmptyArray<AssetPath>._,
+        prefabPaths: validatePrefabs ? AssetDatabaseUtils.allPrefabs.ToArray() : EmptyArray<AssetPath>._,
         showProgress: showProgress
       );
 
@@ -43,9 +36,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     /// <param name="prefabPaths">Paths to the prefab files (ending in .prefab)</param>
     /// <param name="showProgress">Should editor progress be shown?</param>
     public static IEnumerable<ObjectValidator.Error> validate(
-      ICollection<string> scenePaths, ICollection<string> prefabPaths, bool showProgress
+      ICollection<AssetPath> scenePaths, ICollection<AssetPath> prefabPaths, bool showProgress
     ) {
-      (string path, Object obj)[] badScenes, badPrefabs;
+      (AssetPath path, Object obj)[] badScenes, badPrefabs;
       {
         var maybeProgress = showProgress ? new EditorProgress("Asset files validator") : null;
         try {
@@ -71,7 +64,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       foreach (var error in createErrors(badPrefabs, "prefab")) yield return error;
 
       IEnumerable<ObjectValidator.Error> createErrors(
-        IEnumerable<(string path, Object obj)> src, string name
+        IEnumerable<(AssetPath path, Object obj)> src, string name
       ) {
         foreach (var (path, obj) in src) {
           var objStr = obj ? obj.GetType().FullName : "null";

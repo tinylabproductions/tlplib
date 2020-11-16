@@ -92,12 +92,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       var result = EditorUtility.DisplayDialogComplex(
         title: title, message: message, ok: ok, cancel: alt, alt: cancel
       );
-      switch (result) {
-        case 0: return DisplayDialogResult.OK;
-        case 1: return DisplayDialogResult.Alt;
-        case 2: return DisplayDialogResult.Cancel;
-        default: throw new ArgumentOutOfRangeException($"Unknown return value from unity: {result}");
-      }
+      return result switch {
+        0 => DisplayDialogResult.OK,
+        1 => DisplayDialogResult.Alt,
+        2 => DisplayDialogResult.Cancel,
+        _ => throw new ArgumentOutOfRangeException($"Unknown return value from unity: {result}")
+      };
     }
 #endif
   }

@@ -3,17 +3,18 @@ using System.Diagnostics;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using JetBrains.Annotations;
+using pzd.lib.dispose;
 using pzd.lib.log;
 using pzd.lib.exts;
 using UnityEditor;
 using static pzd.lib.typeclasses.Str;
 
-
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   /// <summary>
   /// Better version of EditorUtility progress bars that does not lag and also logs to log.
   /// </summary>
-  public class EditorProgress : IDisposable {
+  [PublicAPI] public sealed class EditorProgress : IDisposable {
     const string NONE = "none";
 
     public readonly string title;
@@ -28,6 +29,8 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       lastProgressUIUpdate = DateTime.MinValue,
       lastProgressLogUpdate = DateTime.MinValue;
 
+    /// <param name="title"></param>
+    /// <param name="log"></param>
     /// <param name="minTimeBeforeShowingUi">
     /// Duration to wait before allowing to show the progressbar dialog.
     /// Use case: When tasks using <see cref="EditorProgress"/> are called frequently (ex. every time you save project)
@@ -49,6 +52,24 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       var ret = f();
       done();
       return ret;
+    }
+
+    /// <summary>
+    /// Allows using the "using" syntax.
+    /// </summary>
+    /// <example><![CDATA[
+    /// using (editorProgress.executeDisposable("Reimport prefab")) {
+    ///   using var _ = AssetDatabaseUtils.doAssetEditing();
+    ///   for (var idx = 0; idx <= prefabs.Length; idx++) {
+    ///     editorProgress.progress(idx, prefabs.Length);
+    ///     var prefab = prefabs[idx];
+    ///     AssetDatabase.ImportAsset(prefab, ImportAssetOptions.ForceUpdate);
+    ///   }
+    /// }
+    /// ]]></example>
+    public ActionOnDispose executeDisposable(string name) {
+      start(name);
+      return new ActionOnDispose(done);
     }
 
     public void start(string name) {
@@ -102,8 +123,8 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     /** A simple method to measure execution times between calls **/
     public void done() {
       var duration = new Duration(sw.ElapsedMilliseconds.toIntClamped());
-      if (log.isInfo()) log.info($"{s(current)} done in {s(duration)}");
-      _showProgressBar($"{s(current)} done in {s(duration)}.", 1);
+      if (log.isInfo()) log.info($"{s(current)} done in {s(duration.toTimeSpan.toHumanString())}");
+      _showProgressBar($"{s(current)} done in {s(duration.toTimeSpan.toHumanString())}.", 1);
       current = NONE;
     }
 

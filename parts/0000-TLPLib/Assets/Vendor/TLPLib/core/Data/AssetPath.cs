@@ -2,7 +2,7 @@
 
 namespace com.tinylabproductions.TLPLib.Data {
   /// <summary>Path to an asset path.</summary>
-  public struct AssetPath : IEquatable<AssetPath> {
+  public readonly struct AssetPath : IEquatable<AssetPath> {
     public readonly string path;
     public AssetPath(string path) { this.path = path; }
 
@@ -27,5 +27,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     #endregion
 
     public override string ToString() => $"{nameof(AssetPath)}({path})";
+    public static implicit operator string(AssetPath path) => path.path;
   }
 }
