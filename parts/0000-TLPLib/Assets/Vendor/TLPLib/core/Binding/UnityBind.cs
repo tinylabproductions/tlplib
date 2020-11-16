@@ -15,6 +15,9 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.binding {
   [PublicAPI] public static partial class UnityBind {
+    public delegate IDisposable ItemSetupDelegate<Template, Data>(Template template, Data data, int index) 
+      where Template : Component;
+    
     public static ISubscription bind<A>(
       this IRxObservable<A> observable, IDisposableTracker tracker, Func<A, ICoroutine> f
     ) {
@@ -34,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.binding {
     public static void bindEnumerable<Template, Data>(
       GameObjectPool<Template> pool,
       IRxObservable<IEnumerable<Data>> rx,
-      Func<Template, Data, IDisposable> setup,
+      ItemSetupDelegate<Template, Data> setup,
       [Implicit] IDisposableTracker tracker = default, 
       bool orderMatters = true,
       Action preUpdate = null,
@@ -50,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.binding {
         foreach (var element in list) {
           var instance = pool.borrow();
           if (orderMatters) instance.transform.SetSiblingIndex(idx);
-          var sub = setup(instance, element);
+          var sub = setup(instance, element, idx);
           current.Add(new BindEnumerableEntry<Template>(instance, sub));
           idx++;
         }
@@ -91,7 +94,7 @@ namespace com.tinylabproductions.TLPLib.binding {
           resultTempList.Clear();
           afterUpdate?.Invoke(list);
         },
-        setup: (template, data) => {
+        setup: (template, data, index) => {
           var (disposable, result) = setup(template, data);
           resultTempList.Add(result);
           return disposable;
@@ -103,7 +106,7 @@ namespace com.tinylabproductions.TLPLib.binding {
     public static GameObjectPool<Template> bindEnumerable<Template, Data>(
       string gameObjectPoolName,
       Template template, IRxObservable<IEnumerable<Data>> rx,
-      Func<Template, Data, IDisposable> setup,
+      ItemSetupDelegate<Template, Data> setup,
       [Implicit] IDisposableTracker tracker = default,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
