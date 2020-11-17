@@ -8,6 +8,7 @@ using GenerationAttributes;
 using pzd.lib.concurrent;
 using pzd.lib.dispose;
 using pzd.lib.functional;
+using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.ResourceReference {
   public enum LoadPriority : byte { Low, High }
@@ -19,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
   /// Exposes <see cref="itemState"/>, which indicates the state of current load. 
   /// </summary>
   public partial class SingleItemLoader<A> : IDisposable {
-    readonly DisposableTracker tracker = new DisposableTracker();
+    readonly DisposableTracker tracker;
     readonly IRxRef<Option<IAsyncOperation>> request = RxRef.a(F.none<IAsyncOperation>());
 
     // At this moment we could use Func<Tpl<ResourceRequest, Future<A>>> instead of ILoader<A>,
@@ -40,7 +41,8 @@ namespace com.tinylabproductions.TLPLib.ResourceReference {
       public readonly bool value;
     }
 
-    public SingleItemLoader() {
+    public SingleItemLoader(ILog log) {
+      tracker = new DisposableTracker(log);
       itemState = currentLoader.flatMap(opt => {
         discardPreviousRequest();
         foreach (var bindingLoader in opt) {

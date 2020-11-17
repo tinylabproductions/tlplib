@@ -6,6 +6,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using pzd.lib.dispose;
 using pzd.lib.log;
 using pzd.lib.functional;
@@ -13,12 +14,15 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Components.dispose {
   public class GameObjectDisposeTracker : MonoBehaviour, IMB_OnDestroy, IDisposableTracker {
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(GameObjectDisposeTracker));
+
     readonly LazyVal<DisposableTracker> tracker;
     public int trackedCount => tracker.strict.trackedCount;
     public IEnumerable<TrackedDisposable> trackedDisposables => tracker.strict.trackedDisposables;
 
     public GameObjectDisposeTracker() {
       tracker = F.lazy(() => new DisposableTracker(
+        log,
         // ReSharper disable ExplicitCallerInfoArgument
         callerFilePath: Log.d.isDebug() ? gameObject.transform.debugPath() : gameObject.name,
         callerMemberName: nameof(GameObjectDisposeTracker),

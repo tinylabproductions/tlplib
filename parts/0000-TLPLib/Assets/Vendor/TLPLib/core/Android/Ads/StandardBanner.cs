@@ -1,4 +1,6 @@
-﻿using pzd.lib.reactive;
+﻿using GenerationAttributes;
+using pzd.lib.log;
+using pzd.lib.reactive;
 
 #if UNITY_ANDROID
 using System.Collections.Immutable;
@@ -8,6 +10,8 @@ using UnityEngine;
 using pzd.lib.dispose;
 using pzd.lib.functional;
 using com.tinylabproductions.TLPLib.Concurrent;
+using com.tinylabproductions.TLPLib.Logger;
+
 #endif
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
@@ -26,6 +30,8 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
 #if UNITY_ANDROID
   // Banners that extend com.tinylabproductions.tlplib.ads.BannerBase in Java.
   public class StandardBanner : IStandardBanner {
+    [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(StandardBanner));
+
     protected readonly AndroidJavaObject java;
     readonly DisposableTracker dt = new DisposableTracker();
 

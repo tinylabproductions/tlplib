@@ -11,6 +11,7 @@ using pzd.lib.log;
 using pzd.lib.reactive;
 
 using com.tinylabproductions.TLPLib.Utilities;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.data;
 using pzd.lib.dispose;
@@ -41,6 +42,8 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
   // Ugly code ahead 🚧
   public class AssetReferencesWindow : EditorWindow, IMB_OnGUI, IMB_Update, IMB_OnEnable, IMB_OnDisable {
+    [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(AssetReferencesWindow));
+
     Vector2 scrollPos;
     // disables automatically on code refresh
     // code refresh happens on code change and when entering play mode
@@ -73,7 +76,6 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
 
     public static void processFiles(AssetUpdate data) {
       if (!enabled.value) return;
-      var log = Log.@default;
       worker.EnqueueItem(() => {
         try {
           process(data, log);
@@ -240,15 +242,15 @@ namespace com.tinylabproductions.TLPLib.Editor.AssetReferences {
     [UsedImplicitly]
     void OnSelectionChange() => Repaint();
 
-    readonly LazyVal<DisposableTracker> tracker = F.lazy(() => new DisposableTracker());
+    [LazyProperty] DisposableTracker tracker => new DisposableTracker();
 
     public void OnEnable() {
       wantsMouseMove = true;
-      locked.subscribe(tracker.strict, v => {
+      locked.subscribe(tracker, v => {
         if (v) lockedObj = Selection.activeObject;
       });
     }
 
-    public void OnDisable() => tracker.strict.Dispose();
+    public void OnDisable() => tracker.Dispose();
   }
 }

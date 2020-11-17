@@ -79,7 +79,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public readonly string context;
     public readonly Option<Component> maybeParentComponent;
     
-    [LazyProperty] static ILog log => Log.d.withScope(nameof(TweenManager));
+    [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(TweenManager));
 
     public TweenManager(
       ITweenTimeline timeline, TweenTime time, Loop looping, GameObject context = null,

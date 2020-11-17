@@ -62,6 +62,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     static readonly LazyVal<DConsole> _instance = F.lazy(() => new DConsole());
     public static DConsole instance => _instance.strict;
     static bool dConsoleUnlocked;
+    
+    [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(DConsole));
 
     [RuntimeInitializeOnLoadMethod]
     static void registerLogMessages() {
@@ -366,7 +368,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
       void rerender() {
         var maybeSelectedGroupName = selectedGroup.map(_ => _.groupButton.text.text);
-        Log.d.info($"Re-rendering DConsole, currently selected group = {maybeSelectedGroupName}.");
+        log.info($"Re-rendering DConsole, currently selected group = {maybeSelectedGroupName}.");
 
         // Update command lists.
         foreach (var (_, groupCommands) in commands) {

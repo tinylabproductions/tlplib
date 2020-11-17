@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using com.tinylabproductions.TLPLib.Logger;
+using GenerationAttributes;
 using pzd.lib.concurrent;
 using pzd.lib.dispose;
+using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.Concurrent {
   /* Execute asynchronous things one at a time. Useful for wrapping not
@@ -29,6 +32,8 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         this.promise = promise;
       }
     }
+    
+    [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(ASyncNAtATimeQueue));
 
     readonly DisposableTracker tracker = new DisposableTracker();
     readonly Queue<QueueEntry> queue = new Queue<QueueEntry>();

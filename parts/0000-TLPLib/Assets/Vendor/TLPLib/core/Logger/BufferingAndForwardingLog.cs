@@ -25,7 +25,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
   [PublicAPI] public partial class BufferingAndForwardingLog : ILog {
     readonly ILog backing, debugLog;
     readonly List<BufferEntry> buffer = new List<BufferEntry>();
-    readonly IDisposableTracker tracker = new DisposableTracker();
+    readonly IDisposableTracker tracker;
     readonly Option<LogLevel> generateBacktraceIfMissingFor;
 
     public LogLevel bufferingLevel;
@@ -38,6 +38,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       ILog backing, LogLevel bufferingLevel, Option<LogLevel> generateBacktraceIfMissingFor
     ) {
       this.backing = backing;
+      tracker = new DisposableTracker(backing);
       debugLog = backing.withScope(nameof(BufferingAndForwardingLog));
       this.bufferingLevel = bufferingLevel;
       this.generateBacktraceIfMissingFor = generateBacktraceIfMissingFor;

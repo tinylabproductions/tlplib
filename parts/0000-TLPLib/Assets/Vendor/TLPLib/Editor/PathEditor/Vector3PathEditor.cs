@@ -3,10 +3,12 @@ using System.Linq;
 using com.tinylabproductions.TLPLib.Editor.Utils;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Functional;
+using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.path;
 using pzd.lib.dispose;
 using GenerationAttributes;
 using pzd.lib.functional;
+using pzd.lib.log;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +17,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
   [CustomEditor(typeof(Vector3PathBehaviour))]
   public partial class Vector3PathEditor : OdinEditor {
     
+    [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(Vector3PathEditor));
     [LazyProperty] IDisposableTracker tracker => new DisposableTracker();
 
     public const KeyCode
