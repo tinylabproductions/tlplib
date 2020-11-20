@@ -65,11 +65,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     // These are null intentionally. We try not to create objects if they are not needed.
     ISubject<TweenCallback.Event> __onStartSubject, __onEndSubject;
+    IRxRef<bool> __isPlayingRx;
 
     [PublicAPI] public IRxObservable<TweenCallback.Event> onStart => 
       __onStartSubject ??= new Subject<TweenCallback.Event>();
     [PublicAPI] public IRxObservable<TweenCallback.Event> onEnd =>
       __onEndSubject ??= new Subject<TweenCallback.Event>();
+    
+    [PublicAPI] public IRxVal<bool> isPlayingRx => __isPlayingRx ??= RxRef.a(isPlaying);
 
     [PublicAPI] public float timescale = 1;
     [PublicAPI] public bool forwards = true;
@@ -193,6 +196,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public TweenManager resume() {
       isPlaying = true;
+      if (__isPlayingRx != null) __isPlayingRx.value = true;
       TweenManagerRunner.instance.add(this);
       return this;
     }
@@ -201,6 +205,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI]
     public TweenManager stop() {
       isPlaying = false;
+      if (__isPlayingRx != null) __isPlayingRx.value = false;
       if (TweenManagerRunner.hasActiveInstance) {
         // TweenManagerRunner.instance gets destroyed when we exit play mode
         // We don't want to create a new instance once that happens
