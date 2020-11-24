@@ -197,6 +197,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       [PublicAPI]
       public void updateLayout() {
         var visibleRect = calculateVisibleRect;
+        var containerHeight = _container.rect.height;
+        var containerWidth = _container.rect.width;
 
         var totalOffsetUntilThisRow = 0f;
         var currentRowSizeInScrollableAxis = 0f;
@@ -224,26 +226,37 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
           Rect cellRect;
           if (isHorizontal) {
-            var height = _container.rect.height;
-            var y = itemLeftPerc * height;
+            var yPos = itemLeftPerc * containerHeight;
+            var itemHeight = containerHeight * itemSizeInSecondaryAxisPerc;
+            
+            // NOTE: y axis goes up, but we want to place the items from top to bottom
+            // Y = 0                  ------------------------------
+            //                        |                            |
+            // Y = -yPos              | ---------                  |
+            //                        | |       |                  |
+            //                        | | item  |     Container    |
+            //                        | |       |                  |
+            // Y = -yPos - itemHeight | ---------                  |
+            //                        |                            |
+            // Y = -containerHeight   |-----------------------------
+            
+            // cellRect pivot point (x,y) is at bottom left of the item
             cellRect = new Rect(
               x: totalOffsetUntilThisRow,
-              y: y,
+              y: -yPos - itemHeight,
               width: data.sizeInScrollableAxis,
-              height: height * itemSizeInSecondaryAxisPerc
+              height: itemHeight
             );
           }
           else {
-            var width = _container.rect.width;
-            var x = itemLeftPerc * width;
+            var x = itemLeftPerc * containerWidth;
             cellRect = new Rect(
               x: x,
               y: -totalOffsetUntilThisRow - data.sizeInScrollableAxis,
-              width: width * itemSizeInSecondaryAxisPerc,
+              width: containerWidth * itemSizeInSecondaryAxisPerc,
               height: data.sizeInScrollableAxis
             );            
           }
-
              
           var placementVisible = visibleRect.Overlaps(cellRect, true);
           
@@ -252,7 +265,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
             foreach (var elementWithView in data.asElementWithView) {
               var instance = elementWithView.createItem(_container);
               var rectTrans = instance.rectTransform;
-              rectTrans.anchorMin = rectTrans.anchorMax = isHorizontal ? Vector2.zero : Vector2.up;
+              rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
               rectTrans.localPosition = Vector3.zero;
               rectTrans.anchoredPosition = cellRect.center;
               instanceOpt = instance.some();
