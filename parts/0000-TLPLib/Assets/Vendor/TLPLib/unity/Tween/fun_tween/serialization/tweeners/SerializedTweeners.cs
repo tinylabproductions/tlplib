@@ -265,6 +265,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
   
   [Serializable]
+  public sealed class SpriteRendererColor : SerializedTweenerColor<SpriteRenderer> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
+  }
+  
+  [Serializable]
   public sealed class TextMeshColor : SerializedTweenerColor<TextMeshProUGUI> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
