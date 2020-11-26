@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Data;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -12,7 +13,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     [SerializeField, NotNull] RectTransform _rt;
     [SerializeField, NotNull] List<RectTransform> 
       _negativeOffsetLeft, _negativeOffsetRight, _negativeOffsetAll, _negativeOffsetBottom, 
-      _negativeOffsetSidesWithoutNotches;
+      _negativeOffsetSidesWithoutNotches, _customNegativeOffsetOnSidesWithoutNotches;
+    [SerializeField, NotNull] Percentage _customNegativeOffset = new Percentage(.5f);
 // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local
 #pragma warning restore 649
 
@@ -99,6 +101,16 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         negativeTop(item);
         negativeBottom(item);
       }
+      
+      foreach (var item in _customNegativeOffsetOnSidesWithoutNotches) {
+        // reset old values, otherwise all sides will get negative offsets after we rotate the screen 
+        item.offsetMin = Vector2.zero;
+        item.offsetMax = Vector2.zero;
+        if (!notchLeft) negativeLeft(item, custom: true);
+        if (!notchRight) negativeRight(item, custom: true);
+        negativeTop(item);
+        negativeBottom(item);
+      }
 
       foreach (var item in _negativeOffsetLeft) {
         negativeLeft(item);
@@ -119,15 +131,15 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         item.offsetMin = offset;
       }
 
-      void negativeLeft(RectTransform item) {
+      void negativeLeft(RectTransform item, bool custom = false) {
         var offset = item.offsetMin;
-        offset.x = -min.x;
+        offset.x = (custom ? _customNegativeOffset.value : 1) * -min.x;
         item.offsetMin = offset;
       }
       
-      void negativeRight(RectTransform item) {
+      void negativeRight(RectTransform item, bool custom = false) {
         var offset = item.offsetMax;
-        offset.x = max.x;
+        offset.x = (custom ? _customNegativeOffset.value : 1) * max.x;
         item.offsetMax = offset;
       }
       
