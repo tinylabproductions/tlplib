@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Components.dispose;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Utilities;
+using pzd.lib.reactive;
 using UnityEngine;
 
 [AddComponentMenu("Utilities/HUDFPS")]

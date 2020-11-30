@@ -7,10 +7,10 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.data;
 using pzd.lib.dispose;
+using pzd.lib.reactive;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.log;
-using pzd.lib.reactive;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   /// <summary>

@@ -70,7 +70,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       this RxList<A> list, int max, string maxName,
       Func<int, IRxObservable<Option<A>>, ISubscription> bindObservable
     ) {
-      var subscription = list.rxSize.subscribe(size => {
+      var subscription = list.rxSize.subscribe(tracker, size => {
         if (size > max) throw new Exception(String.Format(
           "Max {0} {1} are supported in view, " +
           "but list size was exceeded.", max, maxName
@@ -93,7 +93,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     ) where Control : dfControl {
       return list.bind(max, maxName, (i, observable) => {
         var control = getControl(i);
-        return observable.subscribe(opt => {
+        return observable.subscribe(tracker, opt => {
           control.SetIsActive(opt.isSome);
           opt.each(v => onChange(control, v));
         });
@@ -103,7 +103,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     public static ISubscription bind(
       this IRxObservable<ValueWithStorage> subject, dfProgressBar control
     ) {
-      return withTween(set => subject.subscribe(value => {
+      return withTween(set => subject.subscribe(tracker, value => {
         control.MinValue = 0;
         // 0 out of 0 yields full progress bar which is not what we want.
         control.MaxValue = value.value == 0 && value.storage == 0
@@ -118,7 +118,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     public static ISubscription bind(
       this IRxObservable<ValueWithStorage> subject, dfLabel control
     ) {
-      return withTween(set => subject.subscribe(value => set(Go.to(
+      return withTween(set => subject.subscribe(tracker, value => set(Go.to(
         TF.a(
           () => ValueWithStorage.parse(control.Text).AsVector2(),
           v => control.Text = new ValueWithStorage(v).AsString()
@@ -129,7 +129,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
     public static ISubscription bind(
       this IRxObservable<uint> subject, dfLabel control
     ) {
-      return withTween(set => subject.subscribe(value => {
+      return withTween(set => subject.subscribe(tracker, value => {
         set(Go.to(
           TF.a(
             () => (int) uintComapper(control.Text),
@@ -147,10 +147,10 @@ namespace com.tinylabproductions.TLPLib.Binding {
       Func<T, string> mapper, Func<string, T> comapper
     ) {
       var optSubject = RxRef.a(F.some(subject.value));
-      var optSubjectSourceSubscription = subject.subscribe(v =>
+      var optSubjectSourceSubscription = subject.subscribe(tracker, v =>
         optSubject.value = F.some(v)
       );
-      var optSubjectTargetSubscription = optSubject.subscribe(opt =>
+      var optSubjectTargetSubscription = optSubject.subscribe(tracker, opt =>
         opt.each(v => subject.value = v)
       );
 
@@ -183,7 +183,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       uncheckAll();
       subject.value.map(mapper).each(name => check(subject.value, name));
 
-      var subscription = subject.subscribe(v =>
+      var subscription = subject.subscribe(tracker, v =>
         v.map(mapper).voidFold(uncheckAll, name => check(v, name))
       );
       PropertyChangedEventHandler<bool> handler = (control, selected) => {

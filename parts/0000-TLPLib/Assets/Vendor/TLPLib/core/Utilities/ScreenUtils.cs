@@ -1,10 +1,7 @@
 ﻿using com.tinylabproductions.TLPLib.Data;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Reactive;
 using GenerationAttributes;
 using pzd.lib.reactive;
-
-using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {

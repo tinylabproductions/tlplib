@@ -70,18 +70,6 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region IRxRef
 
     public int subscribers => rxRef.subscribers;
-    public ISubscription subscribe(
-      IDisposableTracker tracker, Action<A> onEvent,
-      [CallerMemberName] string callerMemberName = "",
-      [CallerFilePath] string callerFilePath = "",
-      [CallerLineNumber] int callerLineNumber = 0
-    ) =>
-      rxRef.subscribe(
-        tracker: tracker, onEvent: onEvent,
-        // ReSharper disable ExplicitCallerInfoArgument
-        callerMemberName: callerMemberName, callerFilePath: callerFilePath, callerLineNumber: callerLineNumber
-        // ReSharper restore ExplicitCallerInfoArgument
-      );
 
     public void subscribe(
       IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,

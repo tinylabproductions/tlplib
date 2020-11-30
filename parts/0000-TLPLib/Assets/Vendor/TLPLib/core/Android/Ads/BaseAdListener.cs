@@ -1,6 +1,5 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Concurrent;
-using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
   /**
