@@ -1,16 +1,16 @@
 ﻿using pzd.lib.reactive;
 
 #if UNITY_ANDROID
+using GenerationAttributes;
 using System.Collections.Immutable;
 using System.Linq;
 using pzd.lib.exts;
 using UnityEngine;
 using pzd.lib.dispose;
-using pzd.lib.reactive;
 using pzd.lib.functional;
+using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Logger;
-
 #endif
 
 namespace com.tinylabproductions.TLPLib.Android.Ads {
@@ -32,7 +32,7 @@ namespace com.tinylabproductions.TLPLib.Android.Ads {
     [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(StandardBanner));
 
     protected readonly AndroidJavaObject java;
-    readonly DisposableTracker dt = new DisposableTracker();
+    readonly DisposableTracker dt = new DisposableTracker(log);
 
     protected StandardBanner(AndroidJavaObject java) {
       this.java = java;
