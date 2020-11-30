@@ -1,5 +1,12 @@
-﻿namespace com.tinylabproductions.TLPLib.Android {
-#if UNITY_ANDROID
+﻿#if UNITY_ANDROID
+
+using System;
+using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.concurrent;
+using pzd.lib.log;
+using UnityEngine;
+
+namespace com.tinylabproductions.TLPLib.Android {
   public static class AndroidView {
     const string
       FLAG_HIDE_NAVIGATION = "SYSTEM_UI_FLAG_HIDE_NAVIGATION",
@@ -49,5 +56,5 @@
       });
     }
   }
-#endif
 }
+#endif

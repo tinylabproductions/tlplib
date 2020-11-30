@@ -1,6 +1,10 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Concurrent;
 
+#if UNITY_ANDROID
+using UnityEngine;
+#endif
+
 namespace com.tinylabproductions.TLPLib.Android.Ads {
   /**
    * Callbacks are usually not fired on a main thread, thus we need to reschedule them.
