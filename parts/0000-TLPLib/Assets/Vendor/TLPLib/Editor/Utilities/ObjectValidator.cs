@@ -67,10 +67,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       }
 
       var scene = SceneManager.GetActiveScene();
-      var t = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, DEFAULT_ON_FINISH);
-      showErrors(t._1);
+      var (errors, timeSpan) = checkSceneWithTime(scene, None._, DEFAULT_ON_PROGRESS, DEFAULT_ON_FINISH);
+      showErrors(Log.d, errors);
       if (Log.d.isInfo()) Log.d.info(
-        $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {t._2}"
+        $"{scene.name} {nameof(checkCurrentSceneMenuItem)} finished in {timeSpan}"
       );
     }
 
@@ -88,42 +88,44 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         onFinish: EditorUtility.ClearProgressBar, 
         uniqueValuesCache: UniqueValuesCache.create.some()
       );
-      showErrors(errors);
+      showErrors(Log.d, errors);
     }
     
     #endregion
     
     [PublicAPI]
-    public static void showErrors(IEnumerable<Error> errors, LogLevel level = LogLevel.ERROR) {
-      var log = Log.d;
-      if (log.willLog(level))
-        foreach (var error in errors) {
-          // If context is a MonoBehaviour,
-          // then unity does not ping the object (only a folder) when clicked on the log message.
-          // But it works fine for GameObjects
-          var maybeGo = getGameObject(error.obj);
-          var context = maybeGo.valueOut(out var go) && go.scene.name == null 
-            ? getRootGO(go) // get root GameObject on prefabs
-            : error.obj;
-          log.log(level, LogEntry.simple(error.ToString(), context: context));
-          
-          static GameObject getRootGO(GameObject go) {
-            var t = go.transform;
-            while (true) {
-              if (t.parent == null) return t.gameObject;
-              t = t.parent;
-            }
-          }
+    public static void showErrors(
+      ILog log, IEnumerable<Error> errors, LogLevel level = LogLevel.ERROR
+    ) {
+      if (!log.willLog(level)) return;
+      
+      foreach (var error in errors) {
+        // If context is a MonoBehaviour,
+        // then unity does not ping the object (only a folder) when clicked on the log message.
+        // But it works fine for GameObjects
+        var maybeGo = getGameObject(error.obj);
+        var context = maybeGo.valueOut(out var go) && go.scene.name == null
+          ? getRootGO(go) // get root GameObject on prefabs
+          : error.obj;
+        log.log(level, LogEntry.simple(error.ToString(), context: context));
 
-          static Option<GameObject> getGameObject(Object obj) {
-            if (!obj) return None._;
-            return obj switch {
-              GameObject go => go.some(),
-              Component c => F.opt(c.gameObject),
-              _ => None._
-            };
+        static GameObject getRootGO(GameObject go) {
+          var t = go.transform;
+          while (true) {
+            if (t.parent == null) return t.gameObject;
+            t = t.parent;
           }
         }
+
+        static Option<GameObject> getGameObject(Object obj) {
+          if (!obj) return None._;
+          return obj switch {
+            GameObject go => go.some(),
+            Component c => F.opt(c.gameObject),
+            _ => None._
+          };
+        }
+      }
     }
     
     /// <summary>
