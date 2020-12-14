@@ -260,7 +260,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI]
     public static IEnumerator onEndEnumerator(
-      this TweenManager manager, [Implicit] IDisposableTracker tracker = default
+      this TweenManager manager, IDisposableTracker tracker = default
     ) => manager.onEnd.toFuture(tracker).toEnumerator();
   }
 }
