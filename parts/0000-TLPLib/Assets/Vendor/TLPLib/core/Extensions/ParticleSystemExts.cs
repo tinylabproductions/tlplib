@@ -14,5 +14,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var emmission = particleSystem.emission;
       emmission.enabled = enabled;
     }
+
+    [PublicAPI]
+    public static void playWithoutChildren(this ParticleSystem[] array) {
+      foreach (var ps in array) {
+        ps.Play(withChildren: false);
+      }
+    }
   }
 }
