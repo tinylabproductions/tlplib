@@ -12,27 +12,13 @@ using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [Serializable]
-  public abstract class SerializedTweenerV2<TObject, TValue>
+  public abstract class SerializedTweenerV2Base<TObject>
     : ISerializedTweenTimelineElement, TweenTimelineElement, IApplyStateAt
-  where TValue : struct
   {
-    const string START = "start";
-    const string END = "end";
-    const string DELTA = "delta";
-    const string DURATION = "duration";
-    const int LABEL_WIDTH = 50;
-    
     // Don't use nameof, because those fields exist only in UNITY_EDITOR
-    const string CHANGE = "editorSetDirty";
-    const string SHOW_CURRENT = "showCurrent";
-    const string SHOW_DELTA = "displayAsDelta";
+    protected const string CHANGE = "editorSetDirty";
 
     [SerializeField, OnValueChanged(CHANGE), PropertyOrder(-1), NotNull] protected TObject _target;
-    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)] protected TValue _start;
-    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(END), HideIf(SHOW_DELTA)] protected TValue _end;
-    [SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, Width = 90), LabelWidth(55)] float _duration = 1;
-    [SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, MarginLeft = 20, Width = 210), HideLabel] 
-    SerializedEaseV2 _ease;
 
     public TweenTimelineElement toTimelineElement() {
 #if UNITY_EDITOR
@@ -43,13 +29,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     public Object getTarget() => _target as Object;
 
-    public float duration => _duration;
-
-    protected abstract TValue lerp(float percentage);
-    protected abstract TValue add(TValue a, TValue b);
-    protected abstract TValue subtract(TValue a, TValue b);
-    protected abstract TValue get { get; }
-    protected abstract void set(TValue value);
+    public abstract float duration { get; }
 
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
@@ -60,8 +40,52 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       return true;
     }
 
+    // Equals(null) checks if unity object is alive
+    protected bool hasTarget => _target != null && !_target.Equals(null);
+
+    public abstract void trySetDuration(float duration);
+    public bool isValid => hasTarget;
+    
+#if UNITY_EDITOR
+    public bool __editorDirty { get; protected set; } = true;
+    [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
+#endif
+    public abstract void applyStateAt(float time);
+  }
+  
+  
+  
+  [Serializable]
+  public abstract class SerializedTweenerV2<TObject, TValue> : SerializedTweenerV2Base<TObject>
+    where TValue : struct
+  {
+    const string START = "start";
+    const string END = "end";
+    const string DELTA = "delta";
+    const string DURATION = "duration";
+    const int LABEL_WIDTH = 50;
+    
+    // Don't use nameof, because those fields exist only in UNITY_EDITOR
+    const string SHOW_CURRENT = "showCurrent";
+    const string SHOW_DELTA = "displayAsDelta";
+
+    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)] protected TValue _start;
+    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(END), HideIf(SHOW_DELTA)] protected TValue _end;
+    [SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, Width = 90), LabelWidth(55)] float _duration = 1;
+    [
+      SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, MarginLeft = 20, Width = 210), HideLabel
+    ] SerializedEaseV2 _ease;
+
+    public override float duration => _duration;
+
+    protected abstract TValue lerp(float percentage);
+    protected abstract TValue add(TValue a, TValue b);
+    protected abstract TValue subtract(TValue a, TValue b);
+    protected abstract TValue get { get; }
+    protected abstract void set(TValue value);
+
     // TODO: cache ease function
-    public void applyStateAt(float time) => set(lerp(_ease.ease.Invoke(time / duration)));
+    public override void applyStateAt(float time) => set(lerp(_ease.ease.Invoke(time / duration)));
 
     [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(SHOW_CURRENT)] 
     TValue __current {
@@ -70,19 +94,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       }
     }
 
-    // Equals(null) checks if unity object is alive
-    bool hasTarget => _target != null && !_target.Equals(null);
-    
-    public void trySetDuration(float duration) => _duration = duration;
-    public bool isValid => hasTarget;
+    public override void trySetDuration(float duration) => _duration = duration;
 
     // protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
     // protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
     // protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
     
 #if UNITY_EDITOR
-    public bool __editorDirty { get; private set; } = true;
-    [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
     [UsedImplicitly] bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
     [UsedImplicitly] bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
     
@@ -107,6 +125,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 #endif
   }
 
+  
+  
   public abstract class SerializedTweenerVector3<T> : SerializedTweenerV2<T, Vector3> {
     protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start, _end, percentage);
     protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
@@ -135,6 +155,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Color lerp(float percentage) => Color.LerpUnclamped(_start, _end, percentage);
     protected override Color add(Color a, Color b) => a + b;
     protected override Color subtract(Color a, Color b) => a - b;
+  }
+  
+  [Serializable]
+  public abstract class SerializedTweenerUnit<TObject> : SerializedTweenerV2Base<TObject> {
+    [SerializeField] float _duration = 1;
+
+    public override float duration => _duration;
+
+    public override void trySetDuration(float d) => _duration = d;
   }
 
   // ReSharper disable NotNullMemberIsNotInitialized
@@ -199,6 +228,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override float get => _target.localScale.z;
     protected override void set(float value) => _target.localScale = _target.localScale.withZ(value);
   }
+  
   
   [Serializable]
   public sealed class LocalPosition : SerializedTweenerVector3<Transform> {
@@ -286,6 +316,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class RectTransformSize : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.sizeDelta;
     protected override void set(Vector2 value) => _target.sizeDelta = value;
+  }
+  
+  [Serializable]
+  public sealed class RectTransformSizeX : SerializedTweenerFloat<RectTransform> {
+    protected override float get => _target.sizeDelta.x;
+    protected override void set(float value) => _target.sizeDelta = _target.sizeDelta.withX(value);
+  }
+  
+  [Serializable]
+  public sealed class RectTransformSizeY : SerializedTweenerFloat<RectTransform> {
+    protected override float get => _target.sizeDelta.y;
+    protected override void set(float value) => _target.sizeDelta = _target.sizeDelta.withY(value);
+  }
+  
+  [Serializable]
+  public sealed class UpdateLayout : SerializedTweenerUnit<RectTransform> {
+    public override void applyStateAt(float time) => LayoutRebuilder.MarkLayoutForRebuild(_target);
   }
   
   [Serializable]
