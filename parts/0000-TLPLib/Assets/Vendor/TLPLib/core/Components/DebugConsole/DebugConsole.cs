@@ -112,6 +112,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     readonly IDictionary<string, List<Command>> commands = new Dictionary<string, List<Command>>();
     event OnShow onShow;
 
+    public bool isActiveAndMaximized => current.valueOut(out var instance) && !instance.view.minimised;
+
     public ISubscription registrarOnShow(
       IDisposableTracker tracker, string prefix, Action<DConsole, DConsoleRegistrar> action
     ) {
