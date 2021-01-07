@@ -3740,6 +3740,13 @@ Figure out the set of best candidates in the following preference order:
  and inherits BlockBaseBinder since there are no Exit/Continue for catch blocks. 
  </summary>
 </member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress">
+ <summary>
+ This is used while computing the values of constant fields.  Since they can depend on each
+ other, we need to keep track of which ones we are currently computing in order to avoid (and
+ report) cycles.
+ </summary>
+</member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgressBinder">
  <summary>
  This binder keeps track of the set of constant fields that are currently being evaluated
@@ -4823,11 +4830,6 @@ For more explanation of Kind, Symbol, Error - see LookupResult.
  Given anonymous delegate descriptor provided, construct an anonymous delegate symbol
  </summary>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.AnonymousTypeManager.IsSameType(Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSymbol,Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSymbol,Microsoft.CodeAnalysis.TypeCompareKind)">
- <summary>
- Compares anonymous types
- </summary>
-</member>
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.Symbols.AnonymousTypeManager._concurrentTypesCache">
  <summary> Cache of created anonymous types </summary>
 </member>
@@ -5507,19 +5509,19 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  If IsConst return false, then returns Nothing.
  </summary>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol.GetConstantValue(Microsoft.CodeAnalysis.VisualBasic.SymbolsInProgress{Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol})">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol.GetConstantValue(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)">
  <summary>
  Gets the constant value.
  </summary>
- <param name="inProgress">The previously visited const fields; used to detect cycles.</param>
+ <param name="inProgress">Used to detect dependencies between constant field values.</param>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol.GetInferredType(Microsoft.CodeAnalysis.VisualBasic.SymbolsInProgress{Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol})">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol.GetInferredType(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)">
  <summary>
  Const fields do not (always) have to be declared with a given type. To get the inferred type determined from
  the initialization this method should be called instead of "Type". For non const field this method returns the
  declared type.
  </summary>
- <param name="inProgress">The previously visited const fields; used to detect cycles.</param><returns></returns>
+ <param name="inProgress">Used to detect dependencies between constant field values.</param><returns></returns>
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol.HasSpecialName">
  <summary>
@@ -11302,11 +11304,72 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  <c>true</c> if this instance has declared type; otherwise, <c>false</c>.
  </value>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValue(Microsoft.CodeAnalysis.VisualBasic.SymbolsInProgress{Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol})">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValue(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)">
  <summary>
  Gets the constant value.
  </summary>
- <param name="inProgress">The previously visited const fields; used to detect cycles.</param>
+ <param name="inProgress">Used to detect dependencies between constant field values.</param>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValueImpl(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)">
+ <summary>
+ Helper to get a constant value of the field with cycle detection.
+ Also avoids deep recursion due to references to other constant fields in the value.
+ Derived types utilizing this helper should provide storage for the lazily calculated
+ <see cref="T:Microsoft.CodeAnalysis.VisualBasic.Symbols.EvaluatedConstant"/> value and should implement the following APIs:
+ <see cref="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetLazyConstantTuple"/>,
+ <see cref="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.SetLazyConstantTuple(Microsoft.CodeAnalysis.VisualBasic.Symbols.EvaluatedConstant,Microsoft.CodeAnalysis.DiagnosticBag)"/>,
+ <see cref="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.MakeConstantTuple(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress.Dependencies,Microsoft.CodeAnalysis.DiagnosticBag)"/>.
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.OrderAllDependencies(Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder{Microsoft.CodeAnalysis.VisualBasic.Symbols.ConstantValueUtils.FieldInfo})">
+ <summary>
+ Generate a list containing the field and all dependencies
+ of that field that require evaluation. The list is ordered by
+ dependencies, with fields with no dependencies first. Cycles are
+ broken at the first field lexically in the cycle. If multiple threads
+ call this method with the same field, the order of the fields
+ returned should be the same, although some fields may be missing
+ from the lists in some threads as other threads evaluate fields.
+ </summary>
+</member>
+<member name="F:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.DependencyInfo.Dependencies">
+ <summary>
+ The set of fields on which the field depends.
+ </summary>
+</member>
+<member name="F:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.DependencyInfo.DependedOnBy">
+ <summary>
+ The set of fields that depend on the field.
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.CreateGraph(System.Collections.Generic.Dictionary{Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol,Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.DependencyInfo})">
+ <summary>
+ Build a dependency graph (a map from
+ field to dependencies).
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValueDependencies">
+ <summary>
+ Return the constant value dependencies. Compute the dependencies
+ if necessary by evaluating the constant value but only persist the
+ constant value if there were no dependencies. (If there are dependencies,
+ the constant value will be re-evaluated after evaluating dependencies.)
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetLazyConstantTuple">
+ <summary>
+ Should be overridden by types utilizing <see cref="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValueImpl(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)"/> helper.
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.SetLazyConstantTuple(Microsoft.CodeAnalysis.VisualBasic.Symbols.EvaluatedConstant,Microsoft.CodeAnalysis.DiagnosticBag)">
+ <summary>
+ Should be overridden by types utilizing <see cref="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValueImpl(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)"/> helper.
+ </summary>
+</member>
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.MakeConstantTuple(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress.Dependencies,Microsoft.CodeAnalysis.DiagnosticBag)">
+ <summary>
+ Should be overridden by types utilizing <see cref="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetConstantValueImpl(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)"/> helper.
+ </summary>
 </member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceFieldSymbol.GetAttributes">
  <summary>
@@ -11664,17 +11727,22 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  Interface1 and Interface2 match except for their tuple names. Report the error in the correct location.
  </summary>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceMemberFieldSymbol.GetInferredType(Microsoft.CodeAnalysis.VisualBasic.SymbolsInProgress{Microsoft.CodeAnalysis.VisualBasic.Symbols.FieldSymbol})">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceMemberFieldSymbol.GetInferredType(Microsoft.CodeAnalysis.VisualBasic.ConstantFieldsInProgress)">
  <summary>
  Gets the inferred type of this const field from the initialization value.
  </summary>
- <param name="inProgress">The previously visited const fields; used to detect cycles.</param><returns></returns>
+ <param name="inProgress">Used to detect dependencies between constant field values.</param><returns></returns>
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceMemberFieldSymbol.SourceFieldSymbolWithInitializer">
  <summary>
  A source field with an explicit initializer. In a declaration declaring multiple fields,
  such as "Dim a, b, c = d", this class is used for the first field only. (Other fields in
  the declaration are instances of SourceFieldSymbolSiblingInitializer.)
+ </summary>
+</member>
+<member name="F:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceMemberFieldSymbol.SourceConstFieldSymbolWithInitializer._constantTuple">
+ <summary>
+ A tuple consisting of the evaluated constant value and type
  </summary>
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Symbols.SourceMemberFieldSymbol.SourceFieldSymbolSiblingInitializer">
@@ -12318,6 +12386,15 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  Represents a Lambda parameter for an UnboundLambda.
  </summary>
 </member>
+<member name="T:Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutableTypeParameterSymbol">
+ <summary>
+ A SubstitutableTypeParameterSymbol represents a definition that is subject to alpha-renaming, 
+ which results in <see cref="T:Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutedTypeParameterSymbol"/>.
+ 
+ The main purpose of this type is to share equality implementation that ensures symmetry
+ across both of these types.
+ </summary>
+</member>
 <member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutedErrorType.InternalSubstituteTypeParameters(Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSubstitution)">
  <summary>
  Substitute the given type substitution within this type, returning a new type. If the
@@ -12426,11 +12503,6 @@ we see that namespaces A and B and C are declared.  This declaration is represen
 <member name="F:Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutedNamedType._substitution">
  <summary>
  Type substitution for this symbol, it targets OriginalDefinition of the symbol.
- </summary>
-</member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutedNamedType.EqualsWithNoRegardToTypeArguments``1(``0)">
- <summary>
- Compare SubstitutedNamedTypes with no regard to type arguments.
  </summary>
 </member>
 <member name="T:Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutedNamedType.SpecializedType">
@@ -13742,7 +13814,7 @@ we see that namespaces A and B and C are declared.  This declaration is represen
  targetGenericDefinition and parent.TargetGenericDefinition.
  </summary>
 </member>
-<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSubstitution.CreateForAlphaRename(Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSubstitution,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeParameterSymbol})">
+<member name="M:Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSubstitution.CreateForAlphaRename(Microsoft.CodeAnalysis.VisualBasic.Symbols.TypeSubstitution,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.VisualBasic.Symbols.SubstitutedTypeParameterSymbol})">
  <summary>
  Create substitution to handle alpha-renaming of type parameters. 
  It maps type parameter definition to corresponding alpha-renamed type parameter.
@@ -81173,6 +81245,32 @@ Parse the input for leading trivia.
 </member>
 <member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_AttributeNotSupportedInVB_Title">
  <summary>Attribute is not supported in VB</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_GeneratorFailedDuringGeneration">
+ <summary>Generator '{0}' failed to generate source. It will not contribute to the output and compilation errors may occur as a result. Exception was of type '{1}' with message '{2}'</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_GeneratorFailedDuringGeneration_Description">
+ <summary>Generator threw the following exception:
+ '{0}'.</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_GeneratorFailedDuringGeneration_Title">
+ <summary>Generator failed to generate source.</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_GeneratorFailedDuringInitialization">
+ <summary>Generator '{0}' failed to initialize. It will not contribute to the output and compilation errors may occur as a result. Exception was of type '{1}' with message '{2}'</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_GeneratorFailedDuringInitialization_Description">
+ <summary>Generator threw the following exception:
+ '{0}'.</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_GeneratorFailedDuringInitialization_Title">
+ <summary>Generator failed to initialize.</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_AnalyzerReferencesFramework">
+ <summary>The assembly '{0}' containing type '{1}' references .NET Framework, which is not supported.</summary>
+</member>
+<member name="P:Microsoft.CodeAnalysis.VisualBasic.VBResources.WRN_AnalyzerReferencesFramework_Title">
+ <summary>The loaded assembly references .NET Framework, which is not supported.</summary>
 </member>
 <member name="T:Microsoft.CodeAnalysis.Diagnostics.VisualBasic.VisualBasicCompilerDiagnosticAnalyzer">
  <summary>

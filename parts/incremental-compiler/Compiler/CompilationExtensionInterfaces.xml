@@ -6,7 +6,7 @@
     <members>
         <member name="T:CompilationExtensionInterfaces.IProcessCompilation">
             <summary>
-            Implement this and put the resulting dll in the compiler directory to hook into the compilation process.
+            Implement this and put the resulting dll in the compiler directory with a name "CompilationExtensionYOUR_NAME.dll" to hook into the compilation process.
             </summary>
         </member>
         <member name="M:CompilationExtensionInterfaces.IProcessCompilation.process(System.Object@,System.String)">

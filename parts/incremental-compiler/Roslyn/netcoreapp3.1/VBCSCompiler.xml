@@ -159,7 +159,7 @@
             Returns null if the file doesn't exist or otherwise can't be accessed.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenCoreAsync(System.String,Microsoft.CodeAnalysis.Diagnostics.AsyncQueue{Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenResult},System.Func{System.String},System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenCoreAsync(System.String,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,Microsoft.CodeAnalysis.Diagnostics.AsyncQueue{Microsoft.CodeAnalysis.CompilerServer.NamedPipeClientConnectionHost.ListenResult},System.Func{System.String},System.Threading.CancellationToken)">
             <summary>
             Creates a Task that waits for a client connection to occur and returns the connected 
             <see cref="T:System.IO.Pipes.NamedPipeServerStream"/> object.  Throws on any connection error.
@@ -273,7 +273,7 @@
             Client class that handles communication to the server.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildClient.#ctor(Microsoft.CodeAnalysis.CommandLine.RequestLanguage,Microsoft.CodeAnalysis.CommandLine.CompileFunc,Microsoft.CodeAnalysis.CommandLine.CreateServerFunc,System.Nullable{System.Int32})">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildClient.#ctor(Microsoft.CodeAnalysis.CommandLine.RequestLanguage,Microsoft.CodeAnalysis.CommandLine.CompileFunc,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,Microsoft.CodeAnalysis.CommandLine.CreateServerFunc,System.Nullable{System.Int32})">
             <summary>
             When set it overrides all timeout values in milliseconds when communicating with the server.
             </summary>
@@ -353,20 +353,20 @@
             Determines if the compiler server is supported in this environment.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.TryCompileAsync(System.IO.Pipes.NamedPipeClientStream,Microsoft.CodeAnalysis.CommandLine.BuildRequest,System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.TryCompileAsync(System.IO.Pipes.NamedPipeClientStream,Microsoft.CodeAnalysis.CommandLine.BuildRequest,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,System.Threading.CancellationToken)">
             <summary>
             Try to compile using the server. Returns a null-containing Task if a response
             from the server cannot be retrieved.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.MonitorDisconnectAsync(System.IO.Pipes.PipeStream,System.String,System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.MonitorDisconnectAsync(System.IO.Pipes.PipeStream,System.String,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,System.Threading.CancellationToken)">
             <summary>
             The IsConnected property on named pipes does not detect when the client has disconnected
             if we don't attempt any new I/O after the client disconnects. We start an async I/O here
             which serves to check the pipe for disconnection.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.TryConnectToServerAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.TryConnectToServerAsync(System.String,System.Int32,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,System.Threading.CancellationToken)">
             <summary>
             Connect to the pipe for a given directory and return it.
             Throws on cancellation.
@@ -568,6 +568,20 @@
             Interop methods.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger">
+            <summary>
+            Used to log information from within the compiler server
+            </summary>
+            <remarks>
+            Implementations of this interface must assume they are used on multilpe threads without any form
+            of synchronization.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLoggerExtensions.LogException(Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,System.Exception,System.String)">
+            <summary>
+            Log an exception. Also logs information about inner exceptions.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger">
             <summary>
             Class for logging information about what happens in the server and client parts of the 
@@ -578,36 +592,9 @@
             of a file to log to. This file is logged to by both client and server components.
             </remarks>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.#cctor">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.#ctor">
             <summary>
             Static class initializer that initializes logging.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.Initialize(System.String)">
-            <summary>
-            Set the logging prefix that describes our role.
-            Typically a 3-letter abbreviation. If logging happens before this, it's logged with "---".
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.LogException(System.Exception,System.String)">
-            <summary>
-            Log an exception. Also logs information about inner exceptions.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.Log(System.String,System.Object[])">
-            <summary>
-            Log a line of text to the logging file, with string.Format arguments.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.Log(System.String)">
-            <summary>
-            Log a line of text to the logging file.
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.GetLoggingPrefix">
-            <summary>
-            Get the string that prefixes all log entries. Shows the process, thread, and time.
             </summary>
         </member>
     </members>
