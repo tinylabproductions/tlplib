@@ -96,7 +96,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       this.maybeParentComponent = maybeParentComponent;
       this.context = context ? fullName(context.transform) : "no context";
 
-      string fullName(Transform t) {
+      static string fullName(Transform t) {
         if (t == null) return "null context";
         if (t.parent == null) {
           return t.gameObject.scene.name + "/" + t.name;
