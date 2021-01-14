@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.unity_serialization;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
@@ -55,11 +56,19 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       OptionDrawer.drawPropertyLayout("_isSome", "_value", Property, ValueEntry, label);
   }
 
+  static class UnityOptionAttributeProcessor {
+    public static readonly Dictionary<Type, bool> cache = new();
+  }
+
   [UsedImplicitly]
   public class UnityOptionAttributeProcessor<TOpt, A> : OdinAttributeProcessor<TOpt> where TOpt : UnityOption<A> {
+    
     // move attributes from whole option field to option value
     public override void ProcessSelfAttributes(InspectorProperty property, List<Attribute> attributes) {
-      attributes.RemoveAll(a => !a.GetType().IsDefined(typeof(DontApplyToListElementsAttribute), true));
+      attributes.RemoveAll(a => !UnityOptionAttributeProcessor.cache.getOrUpdate(
+        a.GetType(), 
+        t => t.IsDefined(typeof(DontApplyToListElementsAttribute), true)
+      ));
     }
 
     public override void ProcessChildMemberAttributes(
