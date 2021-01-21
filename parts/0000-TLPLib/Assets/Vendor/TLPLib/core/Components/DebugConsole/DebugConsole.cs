@@ -145,7 +145,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       );
 
     public static readonly DebugSequenceMouseData DEFAULT_MOUSE_DATA = new DebugSequenceMouseData();
-    public class DebugSequenceMouseData {
+    public sealed class DebugSequenceMouseData {
       public readonly int width, height;
       public readonly ImmutableList<int> sequence;
 
@@ -158,17 +158,17 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
 
     public static readonly DebugSequenceDirectionData DEFAULT_DIRECTION_DATA = new DebugSequenceDirectionData();
     public class DebugSequenceDirectionData {
-      public readonly string horizonalAxisName, verticalAxisName;
+      public readonly string horizontalAxisName, verticalAxisName;
       public readonly Duration timeframe;
       public readonly ImmutableList<Direction> sequence;
 
       public DebugSequenceDirectionData(
-        string horizonalAxisName="Horizontal",
+        string horizontalAxisName="Horizontal",
         string verticalAxisName="Vertical",
         TimeSpan timeframe=default,
         ImmutableList<Direction> sequence=null
       ) {
-        this.horizonalAxisName = horizonalAxisName;
+        this.horizontalAxisName = horizontalAxisName;
         this.verticalAxisName = verticalAxisName;
         this.timeframe = timeframe == default ? 5.seconds() : timeframe;
         sequence ??= DEFAULT_DIRECTION_SEQUENCE;
@@ -186,62 +186,83 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public static IRxObservable<Unit> registerDebugSequence(
-      IDisposableTracker tracker, Option<string> unlockCode,
-      ITimeContext timeContext=null,
-      DebugSequenceMouseData mouseData=null, Option<DebugSequenceDirectionData> directionDataOpt=default,
-      DebugConsoleBinding binding=null, Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
+    public enum DebugSequenceInvocationMethod : byte {
+      /// <summary>Invoked by clicking down in regions with the mouse.</summary>
+      Mouse,
+      /// <summary>Invoked by providing a specified sequence via Unity Input axis API.</summary>
+      UnityInputAxisDirections,
+      /// <summary>Invoked by pressing a specified <see cref="KeyCodeWithModifiers"/>.</summary>
+      Keyboard,
+    }
+    public static IRxObservable<DebugSequenceInvocationMethod> createDebugSequenceObservable(
+      IDisposableTracker tracker,
+      ITimeContext timeContext = null,
+      DebugSequenceMouseData mouseData = null,
+      Option<DebugSequenceDirectionData> directionDataOpt = default, 
+      Option<KeyCodeWithModifiers> keyboardShortcutOpt = default,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
     ) {
-      Option.ensureValue(ref directionDataOpt);
-      Option.ensureValue(ref keyboardShortcutOpt);
-
       mouseData ??= DEFAULT_MOUSE_DATA;
       timeContext ??= TimeContext.DEFAULT;
 
       var mouseObs =
         new RegionClickObservable(mouseData.width, mouseData.height)
-        .sequenceWithinTimeframe(
-          tracker, mouseData.sequence, 3,
-          // ReSharper disable ExplicitCallerInfoArgument
-          callerMemberName: callerMemberName,
-          callerFilePath: callerFilePath,
-          callerLineNumber: callerLineNumber
-          // ReSharper restore ExplicitCallerInfoArgument
-        );
+          .sequenceWithinTimeframe(
+            tracker, mouseData.sequence, 3,
+            // ReSharper disable ExplicitCallerInfoArgument
+            callerMemberName: callerMemberName,
+            callerFilePath: callerFilePath,
+            callerLineNumber: callerLineNumber
+            // ReSharper restore ExplicitCallerInfoArgument
+          )
+          .map(_ => DebugSequenceInvocationMethod.Mouse);
 
       var directionObs = directionDataOpt.fold(
-        Observable<Unit>.empty,
+        Observable<DebugSequenceInvocationMethod>.empty,
         directionData => {
           var directions = ObservableU.everyFrame.collect(_ => {
-            var horizontal = Input.GetAxisRaw(directionData.horizonalAxisName);
+            var horizontal = Input.GetAxisRaw(directionData.horizontalAxisName);
             var vertical = Input.GetAxisRaw(directionData.verticalAxisName);
             // Both are equal, can't decide.
             if (Math.Abs(horizontal - vertical) < 0.001f) return None._;
             return
               Math.Abs(horizontal) > Math.Abs(vertical)
-              ? F.some(horizontal > 0 ? Direction.Right : Direction.Left)
-              : F.some(vertical > 0 ? Direction.Up : Direction.Down);
+                ? F.some(horizontal > 0 ? Direction.Right : Direction.Left)
+                : F.some(vertical > 0 ? Direction.Up : Direction.Down);
           }).changedValues();
 
           return
             directions
-            .withinTimeframe(directionData.sequence.Count, directionData.timeframe, timeContext)
-            .filter(l => l.Select(t => t.Item1).SequenceEqual(directionData.sequence))
-            .discardValue();
+              .withinTimeframe(directionData.sequence.Count, directionData.timeframe, timeContext)
+              .filter(l => l.Select(t => t.Item1).SequenceEqual(directionData.sequence))
+              .map(_ => DebugSequenceInvocationMethod.UnityInputAxisDirections);
         }
       );
 
       var keyboardShortcutObs = keyboardShortcutOpt.fold(
-        Observable<Unit>.empty,
-        kc => ObservableU.everyFrame.filter(_ => kc.getKeyDown)
+        Observable<DebugSequenceInvocationMethod>.empty,
+        kc => ObservableU.everyFrame.filter(_ => kc.getKeyDown).map(_ => DebugSequenceInvocationMethod.Keyboard)
       );
 
-      var obs = mouseObs.joinAll(new [] {directionObs, keyboardShortcutObs});
-      obs.subscribe(tracker, _ => instance.show(unlockCode, binding));
+      var obs = new [] {mouseObs, directionObs, keyboardShortcutObs}.joinAll();
       return obs;
+    }
+    
+    /// <summary>
+    /// Show <see cref="DConsole"/> <see cref="instance"/> when <see cref="showObservable"/> emits an event.
+    /// </summary>
+    /// <param name="tracker"></param>
+    /// <param name="showObservable">Obtain it via <see cref="createDebugSequenceObservable"/>.</param>
+    /// <param name="unlockCode"></param>
+    /// <param name="binding"></param>
+    public static void registerDebugSequence(
+      IDisposableTracker tracker, 
+      IRxObservable<DebugSequenceInvocationMethod> showObservable, Option<string> unlockCode, 
+      DebugConsoleBinding binding = null
+    ) {
+      showObservable.subscribe(tracker, _ => instance.show(unlockCode, binding));
     }
 
     public ISubscription register(IDisposableTracker tracker, Command command) {
@@ -348,9 +369,6 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
         var groupButtons = commands.OrderBySafe(_ => _.Key).Select(commandGroup => {
           var validGroupCommands = commandGroup.Value.Where(cmd => cmd.canShow()).ToArray();
           var button = addButton(view.buttonPrefab, view.commandGroups.holder.transform);
-          Action show = null;
-          // ReSharper disable once PossibleNullReferenceException, AccessToModifiedClosure
-          show = showThisGroup;
           button.text.text = commandGroup.Key;
           button.button.onClick.AddListener(showThisGroup);
           return button;
