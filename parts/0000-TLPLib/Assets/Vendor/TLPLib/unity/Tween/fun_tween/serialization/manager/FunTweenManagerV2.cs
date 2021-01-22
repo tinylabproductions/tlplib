@@ -58,7 +58,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
           var maybeParentComponent = Application.isPlaying && !awakeCalled ? Some.a<Component>(this) : None._;
           
           var tm = new TweenManager(
-            _timeline.timeline(this), _time, _looping, context: gameObject,
+            _timeline.timeline(this),
+            // We manage the lifetime manually.
+            TweenManagerLifetime.unbounded, 
+            _time, _looping, context: gameObject,
             maybeParentComponent: maybeParentComponent
           );
           

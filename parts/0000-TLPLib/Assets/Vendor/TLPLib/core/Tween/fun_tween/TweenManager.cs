@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using pzd.lib.reactive;
-
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.dispose;
 using pzd.lib.functional;
 using Sirenix.OdinInspector;
@@ -81,38 +82,47 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public bool isPlaying { get; private set; }
     public readonly string context;
     public readonly Option<Component> maybeParentComponent;
+    public readonly TweenManagerLifetime lifetime;
     
     [LazyProperty, Implicit] static ILog log => Log.d.withScope(nameof(TweenManager));
 
     public TweenManager(
-      ITweenTimeline timeline, TweenTime time, Loop looping, GameObject context = null,
+      ITweenTimeline timeline, TweenManagerLifetime lifetime, 
+      TweenTime time, Loop looping, GameObject context = null,
       // stops playing the tween when parent component gets destroyed
       // this is a workaround, for missing OnDestroy callback
-      Option<Component> maybeParentComponent = default
+      Option<Component> maybeParentComponent = default,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
     ) {
+      this.lifetime = lifetime;
       this.timeline = timeline;
       this.time = time;
       this.looping = looping;
       this.maybeParentComponent = maybeParentComponent;
-      this.context = context ? fullName(context.transform) : "no context";
+      var callerData = 
+        new CallerData(memberName: callerMemberName, filePath: callerFilePath, lineNumber: callerLineNumber);
+      this.context = 
+        context 
+        ? $"game object='{fullName(context.transform)}', manager created at {callerData}" 
+        : callerData.ToString();
 
       static string fullName(Transform t) {
         if (t == null) return "null context";
-        if (t.parent == null) {
-          return t.gameObject.scene.name + "/" + t.name;
-        }
+        if (t.parent == null) return t.gameObject.scene.name + "/" + t.name;
         return fullName(t.parent) + "/" + t.name;
       }
     }
 
-    public bool update(float deltaTime) {
+    public Option<Exception> update(float deltaTime, bool doLog=true) {
       try {
         updateWithScaledTime(deltaTime * timescale);
-        return true;
+        return None._;
       }
       catch (Exception e) {
-        log.error(e);
-        return false;
+        if (doLog) log.error(e, context);
+        return Some.a(e);
       }
     }
 
@@ -239,24 +249,59 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   public static class TweenManagerExts {
     [PublicAPI]
     public static TweenManager managed(
-      this ITweenTimeline timeline, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(timeline, time, TweenManager.Loop.single);
+      this ITweenTimeline timeline, TweenManagerLifetime lifetime, TweenTime time = TweenTime.OnUpdate,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => new TweenManager(
+      timeline, lifetime, time, TweenManager.Loop.single,
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerFilePath: callerFilePath, callerLineNumber: callerLineNumber, callerMemberName: callerMemberName
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
 
     [PublicAPI]
     public static TweenManager managed(
-      this ITweenTimeline timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate
-    ) => new TweenManager(timeline, time, looping);
+      this ITweenTimeline timeline, TweenManagerLifetime lifetime, 
+      TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => new TweenManager(
+      timeline, lifetime, time, looping,
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerFilePath: callerFilePath, callerLineNumber: callerLineNumber, callerMemberName: callerMemberName
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
 
     [PublicAPI]
     public static TweenManager managed(
-      this TweenTimelineElement timeline, TweenTime time = TweenTime.OnUpdate, float delay = 0
-    ) => timeline.managed(TweenManager.Loop.single, time, delay);
+      this TweenTimelineElement timeline, TweenManagerLifetime lifetime, 
+      TweenTime time = TweenTime.OnUpdate, float delay = 0,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => timeline.managed(
+      lifetime, TweenManager.Loop.single, time, delay,
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerFilePath: callerFilePath, callerLineNumber: callerLineNumber, callerMemberName: callerMemberName
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
 
     [PublicAPI]
     public static TweenManager managed(
-      this TweenTimelineElement timeline, TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
-      float delay = 0
-    ) => new TweenManager(TweenTimeline.single(timeline, delay), time, looping);
+      this TweenTimelineElement timeline, TweenManagerLifetime lifetime, 
+      TweenManager.Loop looping, TweenTime time = TweenTime.OnUpdate,
+      float delay = 0,
+      [CallerMemberName] string callerMemberName = "",
+      [CallerFilePath] string callerFilePath = "",
+      [CallerLineNumber] int callerLineNumber = 0
+    ) => new TweenManager(
+      TweenTimeline.single(timeline, delay), lifetime, time, looping,
+      // ReSharper disable ExplicitCallerInfoArgument
+      callerFilePath: callerFilePath, callerLineNumber: callerLineNumber, callerMemberName: callerMemberName
+      // ReSharper restore ExplicitCallerInfoArgument
+    );
 
     [PublicAPI]
     public static IEnumerator onEndEnumerator(
