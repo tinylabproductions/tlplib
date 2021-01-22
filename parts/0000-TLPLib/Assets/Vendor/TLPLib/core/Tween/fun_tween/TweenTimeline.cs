@@ -345,6 +345,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       );
     }
 
+    /// <summary>
+    /// Call this method to set all tween targets at end position.
+    /// </summary>
+    public static void resetAllElementsToEnd(this ITweenTimeline tt) {
+      tt.setRelativeTimePassed(
+        previousTimePassed: 0,
+        timePassed: tt.duration,
+        playingForwards: true,
+        applyEffectsForRelativeTweens: false
+      );
+    }
+
     [PublicAPI] 
     public static TweenTimeline single(this TweenTimelineElement element) =>
       TweenTimeline.single(element);
