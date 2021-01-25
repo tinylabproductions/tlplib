@@ -52,8 +52,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       public readonly IDisposableTracker tracker;
     }
 
-    [Record]
-    public partial struct LogEntry {
+    [Record] public readonly partial struct LogEntry {
       public readonly string message;
       public readonly LogType type;
     }
