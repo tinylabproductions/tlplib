@@ -308,7 +308,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI]
     public static ITweenTimeline reversed(this ITweenTimeline ts) {
-      foreach (var r in F.opt(ts as TweenTimelineReversed))
+      if (ts is TweenTimelineReversed r)
         return r.original;
       return new TweenTimelineReversed(ts);
     }
