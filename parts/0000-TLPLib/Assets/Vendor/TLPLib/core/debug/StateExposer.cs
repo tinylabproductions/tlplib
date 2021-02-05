@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Logger;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.concurrent;
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.log;
@@ -88,6 +89,8 @@ namespace com.tinylabproductions.TLPLib.debug {
       public void exposeStatic(string name, Func<bool> get) => exposeStatic(name, () => new BoolValue(get()));
       public void exposeStatic(string name, Func<UnityEngine.Object> get) => exposeStatic(name, () => new ObjectValue(get()));
       public void exposeStatic(string name, Func<Action> onClick) => exposeStatic(name, () => new ActionValue(onClick()));
+      /// <summary>Helper for exposing <see cref="Future{A}"/>.</summary>
+      public void exposeStatic<A>(string name, Func<Future<A>> get) => exposeStatic(name, () => get().ToString());
       
       /// <summary>Exposes a named value that is available via an object instance.</summary>
       public void expose<A>(A reference, string name, Func<A, IRenderableValue> get) where A : class => 
@@ -102,6 +105,14 @@ namespace com.tinylabproductions.TLPLib.debug {
         expose(reference, name, a => new ObjectValue(get(a)));
       public void expose<A>(A reference, string name, Func<A, Action> onClick) where A : class => 
         expose(reference, name, a => new ActionValue(onClick(a)));
+      
+      /// <summary>
+      /// Helper for exposing <see cref="Future{A}"/>. Does not do anything if the future is not async (because it's a
+      /// struct then).
+      /// </summary>
+      public void expose<A>(Future<A> future, string name) {
+        if (future.asHeapFuture.valueOut(out var heapFuture)) expose(heapFuture, name, _ => _.ToString());
+      }
     }
 
     public interface IData {
