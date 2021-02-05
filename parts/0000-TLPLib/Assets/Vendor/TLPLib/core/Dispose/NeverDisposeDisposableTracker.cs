@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using com.tinylabproductions.TLPLib.Components.debug;
+using com.tinylabproductions.TLPLib.debug;
 using pzd.lib.data;
 using pzd.lib.dispose;
 using pzd.lib.exts;
