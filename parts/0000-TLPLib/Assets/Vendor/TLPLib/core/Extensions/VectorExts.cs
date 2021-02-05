@@ -93,5 +93,15 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       var dy = a.y - b.y;
       return dx * dx + dy * dy;
     }
+
+    /// <returns>Vector angle in radians</returns>
+    public static float atan2(this Vector2 v) => Mathf.Atan2(v.y, v.x);
+
+    public static Quaternion directionTo2dRotation(this Vector2 v) {
+#pragma warning disable 618
+      // Quaternion.EulerAngles uses radians
+      return Quaternion.EulerAngles(0, 0, v.atan2());
+#pragma warning restore 618
+    }
   }
 }
