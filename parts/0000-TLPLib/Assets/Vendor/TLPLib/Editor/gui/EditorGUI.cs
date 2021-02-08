@@ -1,4 +1,6 @@
-﻿using pzd.lib.exts;
+﻿using System;
+using pzd.lib.dispose;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
@@ -13,6 +15,18 @@ namespace com.tinylabproductions.TLPLib.Editor.gui {
       return
         EditorGUI.Popup(position, selectedIdx.getOrElse(NOT_SELECTED), displayedOptions)
         .mapVal(value => (value != NOT_SELECTED).opt(value));
+    }
+
+    /// <example>
+    /// <code><![CDATA[
+    /// using (EditorGUI_.indented()) {
+    ///   ... your code ...
+    /// }
+    /// ]]></code>
+    /// </example>
+    public static ActionOnDispose indented(ushort by = 1) {
+      EditorGUI.indentLevel += by;
+      return new ActionOnDispose(() => EditorGUI.indentLevel -= by);
     }
   }
 }
