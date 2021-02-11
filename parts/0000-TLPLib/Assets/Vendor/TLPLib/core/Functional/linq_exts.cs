@@ -2,13 +2,6 @@
 using JetBrains.Annotations;
 
 namespace com.tinylabproductions.TLPLib.Functional {
-  public static class IOLinqExts {
-    [PublicAPI] public static IO<B> Select<A, B>(this IO<A> t, Func<A, B> f) => t.map(f);
-    [PublicAPI] public static IO<B> SelectMany<A, B>(this IO<A> t, Func<A, IO<B>> f) => t.flatMap(f);
-    [PublicAPI] public static IO<B1> SelectMany<A, B, B1>(this IO<A> t, Func<A, IO<B>> f, Func<A, B, B1> g) =>
-      t.flatMap(f, g);
-  }
-
   public static class StateLinqExts {
     // map
     [PublicAPI] public static Func<S, Tpl<S, B>> Select<S, A, B>(
