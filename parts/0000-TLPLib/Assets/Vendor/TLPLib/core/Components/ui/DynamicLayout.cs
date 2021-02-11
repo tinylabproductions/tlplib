@@ -105,6 +105,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
     
     public class Init {
+      readonly DynamicLayout backing;
       const float EPS = 1e-9f;
 
       readonly RectTransform _container, _maskRect;
@@ -118,36 +119,28 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         new Dictionary<IElementData, Option<IElementView>>();
 
       public Option<Option<IElementView>> get(IElementData key) => _items.get(key);
+      
+      // When we add elements to layout and enable it on the same frame,
+      // layout does not work correctly due to rect sizes == 0.
+      // Unable to solve this properly. NextFrame is a workaround. 
+      void onEnable() => ASync.NextFrame(backing.gameObject, updateLayout);
 
       public Init(
         DynamicLayout backing,
         IEnumerable<IElementData> layoutData,
         IDisposableTracker dt,
         bool renderLatestItemsFirst = false
-      ) : this(
-        backing._container, backing._maskRect, layoutData, backing._scrollRect.horizontal,
-        dt, renderLatestItemsFirst
       ) {
-        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
-        // When we add elements to layout and enable it on the same frame,
-        // layout does not work correctly due to rect sizes == 0.
-        // Unable to solve this properly. NextFrame is a workaround. 
-        backing.onEnable += () => ASync.NextFrame(backing.gameObject, updateLayout);
-      }
-
-      public Init(
-        RectTransform _container, RectTransform _maskRect,
-        IEnumerable<IElementData> layoutData,
-        bool isHorizontal,
-        IDisposableTracker dt,
-        bool renderLatestItemsFirst = false
-      ) {
-        this._container = _container;
-        this._maskRect = _maskRect;
+        this.backing = backing;
+        _container = backing._container;
+        _maskRect = backing._maskRect;
         this.layoutData = layoutData.ToList();
-        this.isHorizontal = isHorizontal;
+        isHorizontal = backing._scrollRect.horizontal;
         this.renderLatestItemsFirst = renderLatestItemsFirst;
 
+        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
+        backing.onEnable += onEnable;
+        dt.track(() => backing.onEnable -= onEnable);
         dt.track(clearLayout);
 
         var mask = _maskRect;
