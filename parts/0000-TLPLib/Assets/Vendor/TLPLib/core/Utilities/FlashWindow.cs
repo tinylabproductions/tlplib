@@ -12,13 +12,18 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   }
 
   [PublicAPI] public static class FlashWindow {
+    /// <summary>
+    /// Check the runtime platform, not the build target, to prevent Unity running on Mac but targeting Windows from
+    /// trying to use Win32 APIs. However because <see cref="FlashWindowWin32"/> is only defined in
+    /// UNITY_STANDALONE_WIN, we also need to check the build target.
+    /// </summary>
     public static readonly IFlashWindow instance =
-      // Check the runtime platform, not the build target, to prevent Unity running on Mac but targeting Windows from
-      // trying to use Win32 APIs.
       Application.platform switch {
+#if UNITY_STANDALONE_WIN
         RuntimePlatform.WindowsPlayer => new FlashWindowWin32(),
         // When running in batch mode we don not have a windows to flash on.
         RuntimePlatform.WindowsEditor when !Application.isBatchMode => new FlashWindowWin32(),
+#endif
         _ => new FlashWindowNoOp()
       };
   }
