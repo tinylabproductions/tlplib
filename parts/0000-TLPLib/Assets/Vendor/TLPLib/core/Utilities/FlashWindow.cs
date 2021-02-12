@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
   [PublicAPI] public interface IFlashWindow {
@@ -11,12 +12,15 @@ namespace com.tinylabproductions.TLPLib.Utilities {
   }
 
   [PublicAPI] public static class FlashWindow {
-    public static readonly IFlashWindow instance = 
-#if UNITY_STANDALONE_WIN
-      new FlashWindowWin32();
-#else
-      new FlashWindowNoOp();
-#endif
+    public static readonly IFlashWindow instance =
+      // Check the runtime platform, not the build target, to prevent Unity running on Mac but targeting Windows from
+      // trying to use Win32 APIs.
+      Application.platform switch {
+        RuntimePlatform.WindowsPlayer => new FlashWindowWin32(),
+        // When running in batch mode we don not have a windows to flash on.
+        RuntimePlatform.WindowsEditor when !Application.isBatchMode => new FlashWindowWin32(),
+        _ => new FlashWindowNoOp()
+      };
   }
 
   class FlashWindowNoOp : IFlashWindow {
