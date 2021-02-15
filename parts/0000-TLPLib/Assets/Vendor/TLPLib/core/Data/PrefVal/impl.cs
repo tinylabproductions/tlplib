@@ -69,7 +69,8 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     #region IRxRef
 
-    public int subscribers => rxRef.subscribers;
+    public int subscriberCount => rxRef.subscriberCount;
+    public void copySubscriptionsTo(IList<IRxObservableSub> subs) => rxRef.copySubscriptionsTo(subs);
 
     public void subscribe(
       IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,

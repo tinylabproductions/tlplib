@@ -1391,6 +1391,145 @@
             <param name="added">An out param indicating whether the slot was successfully updated.</param>
             <returns>true if the value in the slot either now contains, or already contained <paramref name="i"/>. false otherwise.</returns>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.Collections.Internal.SegmentedArrayHelper.CalculateSegmentSize(System.Int32)">
+            <summary>
+            Calculates the maximum number of elements of size <paramref name="elementSize"/> which can fit into an array
+            which has the following characteristics:
+            <list type="bullet">
+            <item><description>The array can be allocated in the small object heap.</description></item>
+            <item><description>The array length is a power of 2.</description></item>
+            </list>
+            </summary>
+            <param name="elementSize">The size of the elements in the array.</param>
+            <returns>The segment size to use for small object heap segmented arrays.</returns>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Collections.Internal.SegmentedArrayHelper.CalculateSegmentShift(System.Int32)">
+            <summary>
+            Calculates a shift which can be applied to an absolute index to get the page index within a segmented array.
+            </summary>
+            <param name="segmentSize">The number of elements in each page of the segmented array. Must be a power of 2.</param>
+            <returns>The shift to apply to the absolute index to get the page index within a segmented array.</returns>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Collections.Internal.SegmentedArrayHelper.CalculateOffsetMask(System.Int32)">
+            <summary>
+            Calculates a mask, which can be applied to an absolute index to get the index within a page of a segmented
+            array.
+            </summary>
+            <param name="segmentSize">The number of elements in each page of the segmented array. Must be a power of 2.</param>
+            <returns>The bit mask to obtain the index within a page from an absolute index within a segmented array.</returns>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_ArrayPlusOffTooSmall">
+            <summary>Destination array is not long enough to copy all the items in the collection. Check array index and length.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_HTCapacityOverflow">
+            <summary>Hashtable's capacity overflowed and went negative. Check load factor, capacity and the current size of the table.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_KeyNotFoundWithKey">
+            <summary>The given key '{0}' was not present in the dictionary.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_LongerThanDestArray">
+            <summary>Destination array was not long enough. Check the destination index, length, and the array's lower bounds.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_LongerThanSrcArray">
+            <summary>Source array was not long enough. Check the source index, length, and the array's lower bounds.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_NonZeroLowerBound">
+            <summary>The lower bound of target array must be zero.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_RankMultiDimNotSupported">
+            <summary>Only single dimensional arrays are supported for the requested action.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Arg_WrongType">
+            <summary>The value "{0}" is not of type "{1}" and cannot be used in this generic collection.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Argument_AddingDuplicateWithKey">
+            <summary>An item with the same key has already been added. Key: {0}</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Argument_InvalidArrayType">
+            <summary>Target array type is not compatible with the type of items in the collection.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Argument_InvalidOffLen">
+            <summary>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_ArrayLB">
+            <summary>Number was less than the array's lower bound in the first dimension.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_BiggerThanCollection">
+            <summary>Larger than collection size.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_Count">
+            <summary>Count must be positive and count must refer to a location within the string/array/collection.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_Index">
+            <summary>Index was out of range. Must be non-negative and less than the size of the collection.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_ListInsert">
+            <summary>Index must be within the bounds of the List.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_NeedNonNegNum">
+            <summary>Non-negative number required.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentOutOfRange_SmallCapacity">
+            <summary>capacity was less than the current size.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.InvalidOperation_ConcurrentOperationsNotSupported">
+            <summary>Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.InvalidOperation_EnumFailedVersion">
+            <summary>Collection was modified; enumeration operation may not execute.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.InvalidOperation_EnumOpCantHappen">
+            <summary>Enumeration has either not started or has already finished.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.InvalidOperation_IComparerFailed">
+            <summary>Failed to compare two elements in the array.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.NotSupported_KeyCollectionSet">
+            <summary>Mutating a key collection derived from a dictionary is not allowed.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.NotSupported_ValueCollectionSet">
+            <summary>Mutating a value collection derived from a dictionary is not allowed.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.Rank_MustMatch">
+            <summary>The specified arrays must have the same number of dimensions.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.NotSupported_FixedSizeCollection">
+            <summary>Collection was of a fixed size.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Collections.Internal.SR.ArgumentException_OtherNotArrayOfCorrectLength">
+            <summary>Object is not a array with the same number of elements as the array to compare it to.</summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Collections.SegmentedArray`1">
+            <summary>
+            Defines a fixed-size collection with the same API surface and behavior as an "SZArray", which is a
+            single-dimensional zero-based array commonly represented in C# as <c>T[]</c>. The implementation of this
+            collection uses segmented arrays to avoid placing objects on the Large Object Heap.
+            </summary>
+            <typeparam name="T">The type of elements stored in the array.</typeparam>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Collections.SegmentedArray`1.s_segmentSize">
+             <summary>
+             The number of elements in each page of the segmented array of type <typeparamref name="T"/>.
+             </summary>
+             <remarks>
+             <para>The segment size is calculated according to <see cref="M:System.Runtime.CompilerServices.Unsafe.SizeOf``1"/>, performs the IL operation
+             defined by <see cref="F:System.Reflection.Emit.OpCodes.Sizeof"/>. ECMA-335 defines this operation with the following note:</para>
+            
+             <para><c>sizeof</c> returns the total size that would be occupied by each element in an array of this type –
+             including any padding the implementation chooses to add. Specifically, array elements lie <c>sizeof</c>
+             bytes apart.</para>
+             </remarks>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Collections.SegmentedArray`1.s_segmentShift">
+            <summary>
+            The bit shift to apply to an array index to get the page index within <see cref="F:Microsoft.CodeAnalysis.Collections.SegmentedArray`1._items"/>.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Collections.SegmentedArray`1.s_offsetMask">
+            <summary>
+            The bit mask to apply to an array index to get the index within a page of <see cref="F:Microsoft.CodeAnalysis.Collections.SegmentedArray`1._items"/>.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.ConsListExtensions">
             <summary>
             Extension methods associated with ConsList.
@@ -1669,6 +1808,16 @@
             Key that indicates if this config is a global config
             </summary>
         </member>
+        <member name="F:Microsoft.CodeAnalysis.AnalyzerConfig.GlobalLevelKey">
+            <summary>
+            Key that indicates the precedence of this config when <see cref="P:Microsoft.CodeAnalysis.AnalyzerConfig.IsGlobal"/> is true
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.AnalyzerConfig.UserGlobalConfigName">
+            <summary>
+            Filename that indicates this file is a user provided global config
+            </summary>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.AnalyzerConfig.ReservedKeys">
             <summary>
             A set of keys that are reserved for special interpretation for the editorconfig specification.
@@ -1712,6 +1861,25 @@
             <summary>
             Gets whether this editorconfig is a global editorconfig.
             </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.AnalyzerConfig.GlobalLevel">
+            <summary>
+            Get the global level of this config, used to resolve conflicting keys
+            </summary>
+            <remarks>
+            A user can explicitly set the global level via the <see cref="F:Microsoft.CodeAnalysis.AnalyzerConfig.GlobalLevelKey"/>.
+            When no global level is explicitly set, we use a heuristic:
+             <list type="bullet">
+                <item><description>
+                Any file matching the <see cref="F:Microsoft.CodeAnalysis.AnalyzerConfig.UserGlobalConfigName"/> is determined to be a user supplied global config and gets a level of 100
+                </description></item>
+                <item><description>
+                Any other file gets a default level of 0
+                </description></item>
+             </list>
+             
+            This value is unused when <see cref="P:Microsoft.CodeAnalysis.AnalyzerConfig.IsGlobal"/> is <c>false</c>.
+            </remarks>
         </member>
         <member name="M:Microsoft.CodeAnalysis.AnalyzerConfig.Parse(System.String,System.String)">
             <summary>
@@ -2360,6 +2528,13 @@
             <param name="result">The result if parsing was successful.</param>
             <returns>true if parsing was successful, otherwise false.</returns>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.CommandLineParser.SortPathMap(System.Collections.Immutable.ImmutableArray{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Sort so that more specific keys precede less specific.
+            When mapping a path we find the first key in the array that is a prefix of the path.
+            If multiple keys are prefixes of the path we want to use the longest (more specific) one for the mapping.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.CommandLineReference">
             <summary>
             Describes a command line metadata reference (assembly or netmodule) specification.
@@ -2488,13 +2663,13 @@
             Read a UTF-8 encoded file and return the text as a string.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.ReportDiagnostics(System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.Diagnostic},System.IO.TextWriter,Microsoft.CodeAnalysis.ErrorLogger)">
+        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.ReportDiagnostics(System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.Diagnostic},System.IO.TextWriter,Microsoft.CodeAnalysis.ErrorLogger,Microsoft.CodeAnalysis.Compilation)">
             <summary>Returns true if there were any errors, false otherwise.</summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.ReportDiagnostics(Microsoft.CodeAnalysis.DiagnosticBag,System.IO.TextWriter,Microsoft.CodeAnalysis.ErrorLogger)">
+        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.ReportDiagnostics(Microsoft.CodeAnalysis.DiagnosticBag,System.IO.TextWriter,Microsoft.CodeAnalysis.ErrorLogger,Microsoft.CodeAnalysis.Compilation)">
             <summary>Returns true if there were any errors, false otherwise.</summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.ReportDiagnostics(System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.DiagnosticInfo},System.IO.TextWriter,Microsoft.CodeAnalysis.ErrorLogger)">
+        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.ReportDiagnostics(System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.DiagnosticInfo},System.IO.TextWriter,Microsoft.CodeAnalysis.ErrorLogger,Microsoft.CodeAnalysis.Compilation)">
             <summary>Returns true if there were any errors, false otherwise.</summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CommonCompiler.HasUnsuppressableErrors(Microsoft.CodeAnalysis.DiagnosticBag)">
@@ -2867,6 +3042,12 @@
             This method will be called once during Emit at the time the Compilation needs 
             to create a stream for writing. It will not be called in the case of
             user errors in code. Shall not be called when <see cref="P:Microsoft.CodeAnalysis.Compilation.EmitStreamProvider.Stream"/> returns non-null.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Compilation.EmitStreamProvider.GetOrCreateStream(Microsoft.CodeAnalysis.DiagnosticBag)">
+            <summary>
+            Returns a <see cref="P:Microsoft.CodeAnalysis.Compilation.EmitStreamProvider.Stream"/>. If one cannot be gotten or created then a diagnostic will 
+            be added to <paramref name="diagnostics"/>
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Compilation.IsCaseSensitive">
@@ -5233,7 +5414,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IWhileLoopOperation.Condition">
             <summary>
-            Condition of the loop.
+            Condition of the loop. This can only be null in error scenarios.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IWhileLoopOperation.ConditionIsTop">
@@ -5507,6 +5688,9 @@
             <summary>
             Body of the local function.
             </summary>
+            <remarks>
+            This can be null in error scenarios, or when the method is an extern method.
+            </remarks>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.ILocalFunctionOperation.IgnoredBody">
             <summary>
@@ -6719,7 +6903,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IDynamicMemberReferenceOperation.Instance">
             <summary>
-            Instance receiver. In VB, this can be null.
+            Instance receiver, if it exists.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IDynamicMemberReferenceOperation.MemberName">
@@ -7341,7 +7525,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IArgumentOperation.Parameter">
             <summary>
-            Parameter the argument matches.
+            Parameter the argument matches. This can be null for __arglist parameters.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IArgumentOperation.Value">
@@ -7493,7 +7677,6 @@
         <member name="P:Microsoft.CodeAnalysis.Operations.IPatternCaseClauseOperation.Label">
             <summary>
             Label associated with the case clause.
-            https://github.com/dotnet/roslyn/issues/27602: Similar property was added to the base interface, consider if we can remove this one.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IPatternCaseClauseOperation.Pattern">
@@ -8357,7 +8540,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IWithOperation.CloneMethod">
             <summary>
-            Clone method to be invoked on the value.
+            Clone method to be invoked on the value. This can be null in error scenarios.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Operations.IWithOperation.Initializer">
@@ -8365,16 +8548,15 @@
             With collection initializer.
             </summary>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.Operations.BaseSwitchCaseOperation.Condition">
+        <member name="M:Microsoft.CodeAnalysis.Operations.BlockOperation.CreateTemporaryBlock(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.IOperation},Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.SyntaxNode)">
             <summary>
-            Optional combined logical condition that accounts for all <see cref="P:Microsoft.CodeAnalysis.Operations.BaseSwitchCaseOperation.Clauses"/>.
-            An instance of <see cref="T:Microsoft.CodeAnalysis.Operations.IPlaceholderOperation"/> with kind <see cref="F:Microsoft.CodeAnalysis.Operations.PlaceholderKind.SwitchOperationExpression"/>
-            is used to refer to the <see cref="P:Microsoft.CodeAnalysis.Operations.ISwitchOperation.Value"/> in context of this expression.
-            It is not part of <see cref="P:Microsoft.CodeAnalysis.Operations.BaseSwitchCaseOperation.Children"/> list and likely contains duplicate nodes for
-            nodes exposed by <see cref="P:Microsoft.CodeAnalysis.Operations.BaseSwitchCaseOperation.Clauses"/>, like <see cref="P:Microsoft.CodeAnalysis.Operations.ISingleValueCaseClauseOperation.Value"/>,
-            etc.
-            Never set for C# at the moment.
+            This creates a block that can be used for temporary, internal applications that require a block composed of
+            statements from another block. Blocks created by this API violate IOperation tree constraints and should
+            never be exposed from a public API.
             </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Operations.OperationCloner.CloneOperation``1(``0)">
+            <summary>Deep clone given IOperation</summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.OperationVisitor">
             <summary>
@@ -8733,11 +8915,6 @@
             Indicates an <see cref="T:Microsoft.CodeAnalysis.Operations.IForEachLoopOperation"/> in C# or VB.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.Operations.OperationCloner.CloneOperation``1(``0)">
-            <summary>
-            Deep clone given IOperation
-            </summary>
-        </member>
         <member name="M:Microsoft.CodeAnalysis.Operations.OperationExtensions.HasErrors(Microsoft.CodeAnalysis.IOperation,Microsoft.CodeAnalysis.Compilation,System.Threading.CancellationToken)">
             <summary>
             This will check whether context around the operation has any error such as syntax or semantic error
@@ -8844,7 +9021,7 @@
             <exception cref="T:System.ArgumentNullException"><paramref name="operation"/> is null</exception>
             <exception cref="T:System.InvalidOperationException">The operation is a part of Control Flow Graph</exception>
         </member>
-        <member name="T:Microsoft.CodeAnalysis.Operations.BaseNoneOperation">
+        <member name="T:Microsoft.CodeAnalysis.Operations.NoneOperation">
             <summary>
             Use this to create IOperation when we don't have proper specific IOperation yet for given language construct
             </summary>
@@ -8853,6 +9030,12 @@
             <summary>
             Represents a <see cref="T:Microsoft.CodeAnalysis.Operations.OperationVisitor"/> that descends an entire <see cref="T:Microsoft.CodeAnalysis.IOperation"/> tree
             visiting each IOperation and its child IOperation nodes in depth-first order.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operations.OperationWalker`1">
+            <summary>
+            Represents a <see cref="T:Microsoft.CodeAnalysis.Operations.OperationVisitor`2"/> that descends an entire <see cref="T:Microsoft.CodeAnalysis.IOperation"/> tree
+            visiting each IOperation and its child IOperation nodes in depth-first order. Returns null.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Operations.UnaryOperatorKind">
@@ -11951,7 +12134,7 @@
             Adds the <see cref="T:System.Collections.Immutable.ImmutableArray`1"/> of <see cref="T:Microsoft.CodeAnalysis.ISourceGenerator"/> defined in this assembly reference of given <paramref name="language"/>.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerFileReference.GetAnalyzerTypeNameMap(System.String,Microsoft.CodeAnalysis.Diagnostics.AnalyzerFileReference.AttributePredicate,Microsoft.CodeAnalysis.Diagnostics.AnalyzerFileReference.AttributeLanguagesFunc)">
+        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerFileReference.GetAnalyzerTypeNameMap(System.String,System.Type,Microsoft.CodeAnalysis.Diagnostics.AnalyzerFileReference.AttributeLanguagesFunc)">
             <summary>
             Opens the analyzer dll with the metadata reader and builds a map of language -> analyzer type names.
             </summary>
@@ -12163,10 +12346,16 @@
             </summary>
             <param name="language">Language name.</param>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference.GetGenerators">
+        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference.GetGeneratorsForAllLanguages">
             <summary>
             Gets all the source generators defined in this assembly reference.
             </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference.GetGenerators(System.String)">
+            <summary>
+            Gets all the diagnostic generators defined in this assembly reference for the given <paramref name="language"/>.
+            </summary>
+            <param name="language">Language name.</param>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Diagnostics.AsyncQueue`1">
             <summary>
@@ -15549,28 +15738,6 @@
             <param name="stream">The FileStream with encoded text.</param>
             <param name="bytes">A byte array filled with the contents of the file.</param>
             <returns>True if a byte array could be created.</returns>
-        </member>
-        <member name="T:Microsoft.CodeAnalysis.Text.ChangedText.UnadjustedNewChange">
-            <summary>
-            Represents a new change being processed by <see cref="M:Microsoft.CodeAnalysis.Text.ChangedText.Merge(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange})"/>.
-            Such a new change must be adjusted before being added to the result list.
-            </summary>
-            <remarks>
-            A value of this type may represent the intermediate state of merging of an old change into an unadjusted new change,
-            resulting in a temporary unadjusted new change whose <see cref="P:Microsoft.CodeAnalysis.Text.ChangedText.UnadjustedNewChange.SpanStart"/> is negative (not valid) until it is adjusted.
-            This tends to happen when we need to merge an old change deletion into a new change near the beginning of the text. (see TextChangeTests.Fuzz_4)
-            </remarks>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.Text.ChangedText.Merge(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange})">
-             <summary>
-             Merges the new change ranges into the old change ranges, adjusting the new ranges to be with respect to the original text
-             (with neither old or new changes applied) instead of with respect to the original text after "old changes" are applied.
-            
-             This may require splitting, concatenation, etc. of individual change ranges.
-             </summary>
-             <remarks>
-             Both `oldChanges` and `newChanges` must contain non-overlapping spans in ascending order.
-             </remarks>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Text.ChangedText.GetLinesCore">
             <summary>
@@ -20057,7 +20224,7 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.IOperation.Parent">
             <summary>
-            IOperation that has this operation as a child
+            IOperation that has this operation as a child. Null for the root.
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.IOperation.Kind">
@@ -20143,12 +20310,45 @@
             If the operation is an expression that evaluates to a constant value, <see cref="P:Microsoft.CodeAnalysis.Optional`1.HasValue"/> is true and <see cref="P:Microsoft.CodeAnalysis.Optional`1.Value"/> is the value of the expression. Otherwise, <see cref="P:Microsoft.CodeAnalysis.Optional`1.HasValue"/> is false.
             </summary>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.Operation.Microsoft#CodeAnalysis#IOperation#Children">
+            <summary>
+            In the compiler layer, always prefer <see cref="P:Microsoft.CodeAnalysis.Operation.ChildOperations"/>.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Operation.ChildOperations">
+            <remarks>
+            Always prefer this over <see cref="P:Microsoft.CodeAnalysis.IOperation.Children"/> in the compiler layer, as this does not introduce allocations.
+            </remarks>
+        </member>
         <member name="P:Microsoft.CodeAnalysis.Operation.OwningSemanticModel">
             <summary>
             Gets the owning semantic model for this operation node.
             Note that this may be different than <see cref="P:Microsoft.CodeAnalysis.IOperation.SemanticModel"/>, which
             is the semantic model on which <see cref="M:Microsoft.CodeAnalysis.SemanticModel.GetOperation(Microsoft.CodeAnalysis.SyntaxNode,System.Threading.CancellationToken)"/> was invoked
             to create this node.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operation.Enumerable">
+            <summary>
+            Implements a struct-based enumerable for <see cref="T:Microsoft.CodeAnalysis.Operation"/> nodes, using a slot-based system that tracks
+            the current slot, and the current index in the slot if the current slot is an immutable array. This type is not hardened
+            to <code>default(Enumerable)</code>, and will null reference in these cases.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.Operation.Enumerator">
+            <summary>
+            Implements a struct-based enumerator for <see cref="T:Microsoft.CodeAnalysis.Operation"/> nodes, using a slot-based system that tracks
+            the current slot, and the current index in the slot if the current slot is an immutable array. This type is not hardened
+            to <code>default(Enumerator)</code>, and will null reference in these cases. Implementation of the <see cref="M:Microsoft.CodeAnalysis.Operation.Enumerator.MoveNext"/>
+            and <see cref="P:Microsoft.CodeAnalysis.Operation.Enumerator.Current"/> members are delegated to the virtual <see cref="M:Microsoft.CodeAnalysis.Operation.MoveNext(System.Int32,System.Int32)"/> and
+            <see cref="M:Microsoft.CodeAnalysis.Operation.GetCurrent(System.Int32,System.Int32)"/> methods, respectively. Calling <see cref="P:Microsoft.CodeAnalysis.Operation.Enumerator.Current"/> after
+            <see cref="M:Microsoft.CodeAnalysis.Operation.Enumerator.MoveNext"/> has returned false will throw an <see cref="T:System.InvalidOperationException"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.OperationMapBuilder.AddToMap(Microsoft.CodeAnalysis.IOperation,System.Collections.Generic.Dictionary{Microsoft.CodeAnalysis.SyntaxNode,Microsoft.CodeAnalysis.IOperation})">
+            <summary>
+            Populates a empty dictionary of SyntaxNode->IOperation, where every key corresponds to an explicit IOperation node.
+            If there is a SyntaxNode with more than one explicit IOperation, this will throw.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Optional`1">
@@ -21336,6 +21536,23 @@
             <summary>
             Place this attribute onto a type to cause it to be considered a source generator
             </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.GeneratorAttribute.Languages">
+            <summary>
+            The source languages to which this generator applies. See <see cref="T:Microsoft.CodeAnalysis.LanguageNames"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.GeneratorAttribute.#ctor">
+            <summary>
+            Attribute constructor used to specify the attached class is a source generator that provides CSharp sources.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.GeneratorAttribute.#ctor(System.String,System.String[])">
+            <summary>
+            Attribute constructor used to specify the attached class is a source generator and indicate which language(s) it supports.
+            </summary>
+            <param name="firstLanguage">One language to which the generator applies.</param>
+            <param name="additionalLanguages">Additional languages to which the generator applies. See <see cref="T:Microsoft.CodeAnalysis.LanguageNames"/>.</param>
         </member>
         <member name="T:Microsoft.CodeAnalysis.GeneratorExecutionContext">
             <summary>
@@ -23187,6 +23404,30 @@
         <member name="F:Microsoft.CodeAnalysis.Accessibility.NotApplicable">
             <summary>
             No accessibility specified.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal">
+            <summary>
+            Only accessible where both protected and internal members are accessible
+            (more restrictive than <see cref="F:Microsoft.CodeAnalysis.Accessibility.Protected"/>, <see cref="F:Microsoft.CodeAnalysis.Accessibility.Internal"/> and <see cref="F:Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal"/>).
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Accessibility.ProtectedAndFriend">
+            <summary>
+            Only accessible where both protected and friend members are accessible
+            (more restrictive than <see cref="F:Microsoft.CodeAnalysis.Accessibility.Protected"/>, <see cref="F:Microsoft.CodeAnalysis.Accessibility.Friend"/> and <see cref="F:Microsoft.CodeAnalysis.Accessibility.ProtectedOrFriend"/>).
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal">
+            <summary>
+            Accessible wherever either protected or internal members are accessible
+            (less restrictive than <see cref="F:Microsoft.CodeAnalysis.Accessibility.Protected"/>, <see cref="F:Microsoft.CodeAnalysis.Accessibility.Internal"/> and <see cref="F:Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal"/>).
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Accessibility.ProtectedOrFriend">
+            <summary>
+            Accessible wherever either protected or friend members are accessible
+            (less restrictive than <see cref="F:Microsoft.CodeAnalysis.Accessibility.Protected"/>, <see cref="F:Microsoft.CodeAnalysis.Accessibility.Friend"/> and <see cref="F:Microsoft.CodeAnalysis.Accessibility.ProtectedAndFriend"/>).
             </summary>
         </member>
         <member name="F:Microsoft.CodeAnalysis.Symbols.CommonAnonymousTypeManager._templatesSealed">
@@ -35330,6 +35571,28 @@
             strings, string sub ranges, character array ranges or string-builder.
             </summary>
         </member>
+        <member name="M:Roslyn.Utilities.TextChangeRangeExtensions.Merge(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange})">
+             <summary>
+             Merges the new change ranges into the old change ranges, adjusting the new ranges to be with respect to the original text
+             (with neither old or new changes applied) instead of with respect to the original text after "old changes" are applied.
+            
+             This may require splitting, concatenation, etc. of individual change ranges.
+             </summary>
+             <remarks>
+             Both `oldChanges` and `newChanges` must contain non-overlapping spans in ascending order.
+             </remarks>
+        </member>
+        <member name="T:Roslyn.Utilities.TextChangeRangeExtensions.UnadjustedNewChange">
+            <summary>
+            Represents a new change being processed by <see cref="M:Roslyn.Utilities.TextChangeRangeExtensions.Merge(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Text.TextChangeRange})"/>.
+            Such a new change must be adjusted before being added to the result list.
+            </summary>
+            <remarks>
+            A value of this type may represent the intermediate state of merging of an old change into an unadjusted new change,
+            resulting in a temporary unadjusted new change whose <see cref="P:Roslyn.Utilities.TextChangeRangeExtensions.UnadjustedNewChange.SpanStart"/> is negative (not valid) until it is adjusted.
+            This tends to happen when we need to merge an old change deletion into a new change near the beginning of the text. (see TextChangeTests.Fuzz_4)
+            </remarks>
+        </member>
         <member name="T:Roslyn.Utilities.UnicodeCharacterUtilities">
             <summary>
             Defines a set of helper methods to classify Unicode characters.
@@ -35947,6 +36210,12 @@
             <summary>
             This is a marker attribute that can be put on an interface to denote that only internal implementations
             of that interface should exist.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.IsExternalInit">
+            <summary>
+            Reserved to be used by the compiler for tracking metadata.
+            This class should not be used by developers in source code.
             </summary>
         </member>
         <member name="T:System.Runtime.Versioning.OSPlatformAttribute">

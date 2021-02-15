@@ -1,27 +1,25 @@
 using System;
 using System.Threading;
-using pzd.lib.reactive;
-
 using com.tinylabproductions.TLPLib.Threads;
 using pzd.lib.log;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Logger {
   public abstract class LogBase : BaseLog {
-    readonly ISubject<LogEvent> _messageLogged = new Subject<LogEvent>();
-    public override IRxObservable<LogEvent> messageLogged => _messageLogged;
     // Can't use Unity time, because it is not thread safe
     static readonly DateTime initAt = DateTime.Now;
 
     protected LogBase() => level = Log.defaultLogLevel;
 
-    public override void log(LogLevel l, LogEntry entry) {
+    protected override void logInternal(LogLevel l, LogEntry entry) {
       logInner(l, entry.withMessage(line(l.ToString(), entry.message)));
-      var logEvent = new LogEvent(l, entry);
-      if (OnMainThread.isMainThread) _messageLogged.push(logEvent);
+    }
+
+    protected override void pushToMessageLogged(LogEvent e) {
+      if (OnMainThread.isMainThread) _messageLogged.push(e);
       else {
         // extracted method to avoid closure allocation when running on main thread
-        logOnMainThread(logEvent);
+        logOnMainThread(e);
       }
     }
 

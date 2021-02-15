@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
    * log calls are silently ignored from inside the handlers. Just make sure not to
    * get into an endless loop.
    **/
-  [PublicAPI] public class DeferToMainThreadLog : ILog {
+  [PublicAPI] public sealed class DeferToMainThreadLog : ILog {
     readonly ILog backing;
 
     public DeferToMainThreadLog(ILog backing) { this.backing = backing; }
@@ -23,9 +23,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
     }
 
     public bool willLog(LogLevel l) => backing.willLog(l);
-    public void log(LogLevel l, LogEntry entry) =>
-      defer(() => backing.log(l, entry));
-
+    public void log(LogLevel l, LogEntry entry) => defer(() => backing.log(l, entry));
     static void defer(Action a) => ASync.OnMainThread(a, runNowIfOnMainThread: false);
 
     public IRxObservable<LogEvent> messageLogged => backing.messageLogged;

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Forwarders;
+using com.tinylabproductions.TLPLib.Components.Interfaces;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
@@ -15,6 +17,7 @@ using JetBrains.Annotations;
 using pzd.lib.dispose;
 using pzd.lib.functional;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
@@ -43,7 +46,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
   /// +-----------------+
   /// ]]></code>
   /// </summary>
-  public partial class DynamicLayout : MonoBehaviour {
+  public partial class DynamicLayout : UIBehaviour, IMB_OnEnable {
     #region Unity Serialized Fields
 
 #pragma warning disable 649
@@ -55,6 +58,9 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 #pragma warning restore 649
 
     #endregion
+
+    event Action onEnable;
+    public void OnEnable() => onEnable?.Invoke();
 
     /// <summary>
     /// Visual part of layout item.
@@ -99,6 +105,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     }
     
     public class Init {
+      readonly DynamicLayout backing;
       const float EPS = 1e-9f;
 
       readonly RectTransform _container, _maskRect;
@@ -112,32 +119,28 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         new Dictionary<IElementData, Option<IElementView>>();
 
       public Option<Option<IElementView>> get(IElementData key) => _items.get(key);
+      
+      // When we add elements to layout and enable it on the same frame,
+      // layout does not work correctly due to rect sizes == 0.
+      // Unable to solve this properly. NextFrame is a workaround. 
+      void onEnable() => ASync.NextFrame(backing.gameObject, updateLayout);
 
       public Init(
         DynamicLayout backing,
         IEnumerable<IElementData> layoutData,
         IDisposableTracker dt,
         bool renderLatestItemsFirst = false
-      ) : this(
-        backing._container, backing._maskRect, layoutData, backing._scrollRect.horizontal,
-        dt, renderLatestItemsFirst
       ) {
-        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
-      }
-
-      public Init(
-        RectTransform _container, RectTransform _maskRect,
-        IEnumerable<IElementData> layoutData,
-        bool isHorizontal,
-        IDisposableTracker dt,
-        bool renderLatestItemsFirst = false
-      ) {
-        this._container = _container;
-        this._maskRect = _maskRect;
+        this.backing = backing;
+        _container = backing._container;
+        _maskRect = backing._maskRect;
         this.layoutData = layoutData.ToList();
-        this.isHorizontal = isHorizontal;
+        isHorizontal = backing._scrollRect.horizontal;
         this.renderLatestItemsFirst = renderLatestItemsFirst;
 
+        backing._scrollRect.onValueChanged.subscribe(dt, _ => updateLayout());
+        backing.onEnable += onEnable;
+        dt.track(() => backing.onEnable -= onEnable);
         dt.track(clearLayout);
 
         var mask = _maskRect;
@@ -197,9 +200,10 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       [PublicAPI]
       public void updateLayout() {
         var visibleRect = calculateVisibleRect;
-        var containerHeight = _container.rect.height;
-        var containerWidth = _container.rect.width;
-
+        var containerRect = _container.rect;
+        var containerHeight = containerRect.height;
+        var containerWidth = containerRect.width;
+        
         var totalOffsetUntilThisRow = 0f;
         var currentRowSizeInScrollableAxis = 0f;
         var currentSizeInSecondaryAxisPerc = 0f;
@@ -283,10 +287,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         containerSizeInScrollableAxis.value = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
       }
     }
-    
-    
-    
-    
+
     public abstract class ElementWithViewData<Obj> : IElementWithViewData where Obj : MonoBehaviour {
       readonly GameObjectPool<Obj> pool;
       public float sizeInScrollableAxis { get; }
@@ -309,6 +310,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         return new ElementView<Obj>(view, setup(view), pool);
       }
     }
+    
     public class ElementView<Obj> : IElementView where Obj : MonoBehaviour {
       readonly Obj visual;
       readonly IDisposable disposable;
@@ -326,6 +328,5 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
         disposable.Dispose();
       }
     }
-    
   }
 }

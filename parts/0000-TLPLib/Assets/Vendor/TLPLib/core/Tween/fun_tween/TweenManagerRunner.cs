@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using UnityEngine;
 
 
@@ -15,11 +16,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
   /// <see cref="MonoBehaviour"/> that runs our <see cref="TweenManager"/>s.
   /// </summary>
   [AddComponentMenu("")]
-  public class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
+  public partial class TweenManagerRunner : MonoBehaviour, IMB_Update, IMB_FixedUpdate, IMB_LateUpdate {
     static TweenManagerRunner _instance;
     [PublicAPI] public static TweenManagerRunner instance {
       get {
-        TweenManagerRunner create() {
+        return _instance ? _instance : _instance = create();
+        
+        static TweenManagerRunner create() {
           var go = new GameObject(nameof(TweenManagerRunner));
           if (Application.isPlaying) {
             DontDestroyOnLoad(go);
@@ -29,8 +32,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
           }
           return go.AddComponent<TweenManagerRunner>();
         }
-
-        return _instance ? _instance : (_instance = create());
       }
     }
 
@@ -39,12 +40,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public UnityPhase phase { get; private set; }
     
     [LazyProperty] static ILog log => Log.d.withScope(nameof(TweenManagerRunner));
-
+    
     class Tweens {
-      readonly HashSet<TweenManager>
-        current = new HashSet<TweenManager>(),
-        toAdd = new HashSet<TweenManager>(),
-        toRemove = new HashSet<TweenManager>();
+      readonly HashSet<TweenManager> current = new(), toAdd = new(), toRemove = new();
 
       bool running;
 
@@ -58,14 +56,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             timeline.applyStateAt(timeline.timePassed);
           }
           catch (Exception e) {
-            log.error("Error trying to apply state at " + tm.context + ": " + e.Message);
-            log.error(e);
+            log.error($"Error trying to apply state at {tm.context}", e);
             return;
           }
         }
 
         if (running) {
-          // If we just stopped, but immediatelly restarted, just delete the pending removal.
+          // If we just stopped, but immediately restarted, just delete the pending removal.
           if (!toRemove.Remove(tm))
             // Otherwise schedule for addition.
             toAdd.Add(tm);
@@ -96,12 +93,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
           running = true;
           foreach (var t in current) {
             // hot loop
-            if (t.maybeParentComponent.isSome && !t.maybeParentComponent.__unsafeGet) {
-              // Parent component was destroyed. Stop playing this tween
+            if (
+              // Lifetime ended.
+              !t.lifetime.keepRunning()
+              // Parent component was destroyed.
+              || t.maybeParentComponent.isSome && !t.maybeParentComponent.__unsafeGet
+            ) {
+              // Stop playing this tween
               toRemove.Add(t);
             }
-            else if (!t.update(deltaTime)) {
-              log.error($"Tween stopped, because it threw an exception. Context: {t.context}");
+            else if (t.update(deltaTime, doLog: false).valueOut(out var e)) {
+              log.error($"Tween stopped, because it threw an exception. Context: {t.context}", e);
               toRemove.Add(t);
             }
           }

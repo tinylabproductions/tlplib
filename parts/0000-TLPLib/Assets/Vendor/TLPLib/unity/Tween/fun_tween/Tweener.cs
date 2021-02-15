@@ -106,6 +106,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     public static Tweener<Color, Shadow> tweenColor(
       this Shadow s, Color from, Color to, Ease ease, float duration
     ) => a(TweenOps.color.tween(from, to, false, ease, duration), s, TweenMutatorsU.shadowEffectColor);
+
+    [PublicAPI]
+    public static Tweener<Color, SpriteRenderer> tweenColor(
+      this SpriteRenderer s, Color from, Color to, Ease ease, float duration
+    ) => a(TweenOps.color.tween(from, to, false, ease, duration), s, TweenMutatorsU.spriteRendererColor);
     #endregion
 
     #region Image

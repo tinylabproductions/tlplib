@@ -308,7 +308,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     [PublicAPI]
     public static ITweenTimeline reversed(this ITweenTimeline ts) {
-      foreach (var r in F.opt(ts as TweenTimelineReversed))
+      if (ts is TweenTimelineReversed r)
         return r.original;
       return new TweenTimelineReversed(ts);
     }
@@ -341,6 +341,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         previousTimePassed: tt.duration, 
         timePassed: 0,
         playingForwards: false,
+        applyEffectsForRelativeTweens: false
+      );
+    }
+
+    /// <summary>
+    /// Call this method to set all tween targets at end position.
+    /// </summary>
+    public static void resetAllElementsToEnd(this ITweenTimeline tt) {
+      tt.setRelativeTimePassed(
+        previousTimePassed: 0,
+        timePassed: tt.duration,
+        playingForwards: true,
         applyEffectsForRelativeTweens: false
       );
     }

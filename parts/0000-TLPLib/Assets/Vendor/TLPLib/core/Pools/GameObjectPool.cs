@@ -77,8 +77,10 @@ namespace com.tinylabproductions.TLPLib.Pools {
       Init<GameObject> init
     ) => new GameObjectPool<GameObject>(init, _ => _);
 
-    public static GameObjectPool<A> a<A>(Init<A> init, int initialSize = 0) where A : Component =>
-      new GameObjectPool<A>(init, initialSize: initialSize, toGameObject: a => {
+    public static GameObjectPool<A> a<A>(
+      Init<A> init, int initialSize = 0, Option<int> maxSize = default
+    ) where A : Component =>
+      new GameObjectPool<A>(init, initialSize: initialSize, maxSize: maxSize, toGameObject: a => {
         if (!a) Log.d.error(
           $"Component {typeof(A)} is destroyed in {nameof(GameObjectPool)} '{init.name}'!"
         ); 
@@ -94,10 +96,14 @@ namespace com.tinylabproductions.TLPLib.Pools {
     readonly Func<T> create;
     readonly Option<Action<T>> wakeUp, sleep;
     readonly bool dontDestroyOnLoad;
+    readonly Option<int> maybeMaxSize;
     
     [LazyProperty] static ILog log => Log.d.withScope(nameof(GameObjectPool));
 
-    public GameObjectPool(GameObjectPool.Init<T> init, Func<T, GameObject> toGameObject, int initialSize = 0) {
+    public GameObjectPool(
+      GameObjectPool.Init<T> init, Func<T, GameObject> toGameObject, int initialSize = 0,
+      Option<int> maxSize = default
+    ) {
       rootOpt = init.parent.map(parent => {
         var rootParent = new GameObject($"{nameof(GameObjectPool)}: {init.name}").transform;
         rootParent.parent = parent;
@@ -109,10 +115,12 @@ namespace com.tinylabproductions.TLPLib.Pools {
       create = init.create;
       wakeUp = init.wakeUp;
       sleep = init.sleep;
+      maybeMaxSize = maxSize;
       dontDestroyOnLoad = init.dontDestroyOnLoad;
-      values = initialSize == 0 ? new Stack<T>() : new Stack<T>(initialSize);
+      var limitedInitialSize = maxSize.fold(initialSize, maxSizeVal => Math.Min(maxSizeVal, initialSize));
+      values = limitedInitialSize == 0 ? new Stack<T>() : new Stack<T>(limitedInitialSize);
 
-      for (var i = 0; i < initialSize; i++) {
+      for (var i = 0; i < limitedInitialSize; i++) {
         release(createAndInit());
       }
     }
@@ -140,11 +148,16 @@ namespace com.tinylabproductions.TLPLib.Pools {
       try {
         if (sleep.isSome) sleep.get(value);
         var go = toGameObject(value);
-        foreach (var root in rootOpt) {
-          go.transform.SetParent(root, false);
+        if (maybeMaxSize.valueOut(out var maxSize) && values.Count >= maxSize) {
+          Object.Destroy(go);
         }
-        go.SetActive(false);
-        values.Push(value);
+        else {
+          foreach (var root in rootOpt) {
+            go.transform.SetParent(root, false);
+          }
+          go.SetActive(false);
+          values.Push(value);
+        }
       }
       catch (Exception e) {
         log.error("Could not release object to the pool. You probably unloaded the scene.", e);

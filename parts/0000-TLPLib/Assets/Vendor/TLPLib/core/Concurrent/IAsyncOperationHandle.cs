@@ -312,7 +312,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ); 
 
     public Future<Try<ImmutableArrayC<Try<A>>>> asFuture =>
-      handles.Select(h => h.asFuture).sequence().map(arr => Try.value(ImmutableArrayC.move(arr)));
+      handles.Select(h => h.asFuture).parallel().map(arr => Try.value(ImmutableArrayC.move(arr)));
     public void release() { foreach (var handle in handles) handle.release(); }
   }
 
@@ -344,7 +344,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ); 
 
     public Future<Try<ImmutableArrayC<A>>> asFuture =>
-      handles.Select(h => h.asFuture).sequence().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
+      handles.Select(h => h.asFuture).parallel().map(arr => arr.sequence().map(_ => _.toImmutableArrayC()));
     public void release() { foreach (var handle in handles) handle.release(); }
   }
 

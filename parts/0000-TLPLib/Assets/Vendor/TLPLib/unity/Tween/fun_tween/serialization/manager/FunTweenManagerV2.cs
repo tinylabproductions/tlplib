@@ -54,20 +54,26 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
-          // if gameobject was never enabled, then OnDestroy will not be called :(
-          var maybeParentComponent = (Application.isPlaying && !awakeCalled) ? Some.a<Component>(this) : None._;
+          // if game object was never enabled, then OnDestroy will not be called :(
+          var maybeParentComponent = Application.isPlaying && !awakeCalled ? Some.a<Component>(this) : None._;
           
           var tm = new TweenManager(
-            _timeline.timeline(this), _time, _looping, context: gameObject,
+            _timeline.timeline(this),
+            // We manage the lifetime manually.
+            TweenManagerLifetime.unbounded, 
+            _time, _looping, context: gameObject,
             maybeParentComponent: maybeParentComponent
           );
           
-          if (maybeParentComponent.isSome) {
-            log.mWarn(
-              $"Trying to create tween manager while tween gameobject was not enabled. " +
-              $"Using a workaround. Context: {tm.context}"
-            );
-          }
+          // Disabling this because it seems that nobody cares about this warning anyway and it runs just fine with
+          // the workaround. -- Artūras Šlajus (2021-01-09)
+          //
+          // if (maybeParentComponent.isSome) {
+          //   log.mWarn(
+          //     $"Trying to create tween manager while tween game object was not enabled. " +
+          //     $"Using a workaround. Context: {tm.context}"
+          //   );
+          // }
           
           return tm;
         }
