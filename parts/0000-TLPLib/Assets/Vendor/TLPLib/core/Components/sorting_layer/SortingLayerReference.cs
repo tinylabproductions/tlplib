@@ -70,5 +70,11 @@ namespace com.tinylabproductions.TLPLib.Components.sorting_layer {
       soringGroup.sortingLayerID = sortingLayer;
       soringGroup.sortingOrder = orderInLayer;
     }
+
+    public void applyTo(ParticleSystem[] particleSystems) {
+      foreach (var system in particleSystems) {
+        applyTo(system.GetComponent<Renderer>());
+      }
+    }
   }
 }

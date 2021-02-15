@@ -21,5 +21,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         ps.Play(withChildren: false);
       }
     }
+
+    [PublicAPI]
+    public static void stopWithoutChildren(this ParticleSystem[] array, ParticleSystemStopBehavior stopBehavior) {
+      foreach (var ps in array) {
+        ps.Stop(withChildren: false, stopBehavior);
+      }
+    }
   }
 }
