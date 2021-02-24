@@ -11,6 +11,9 @@ using UnityEngine.U2D;
 
 namespace com.tinylabproductions.TLPLib.Editor.extensions {
   [PublicAPI] public static class SpriteAtlasExts {
+    /// <summary>Removes everything from the atlas.</summary>
+    public static void clear(this SpriteAtlas atlas) => atlas.Remove(atlas.GetPackables());
+
     public static ImmutableHashSet<Sprite> getPackedSprites(this SpriteAtlas atlas) {
       // https://docs.unity3d.com/ScriptReference/U2D.SpriteAtlasExtensions.Add.html
       //

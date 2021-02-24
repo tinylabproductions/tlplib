@@ -64,6 +64,9 @@ namespace com.tinylabproductions.TLPLib.Filesystem {
 
     public static readonly ISerializedRW<PathStr> serializedRW =
       SerializedRW.str.mapNoFail(s => new PathStr(s), path => path.path);
+
+    public bool startsWith(PathStr path, bool ignoreCase=false) => _path.StartsWithFast(path._path, ignoreCase);
+    public bool endsWith(PathStr path, bool ignoreCase=false) => _path.EndsWithFast(path._path, ignoreCase);
   }
 
   public static class PathStrExts {
