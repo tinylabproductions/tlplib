@@ -70,8 +70,8 @@ namespace com.tinylabproductions.TLPLib.Pools {
     }
 
     public static GameObjectPool<T> a<T>(
-      Init<T> init, Func<T, GameObject> toGameObject
-    ) => new GameObjectPool<T>(init, toGameObject);
+      Init<T> init, Func<T, GameObject> toGameObject, int initialSize = 0 
+    ) => new GameObjectPool<T>(init, toGameObject, initialSize: initialSize);
     
     public static GameObjectPool<GameObject> a(
       Init<GameObject> init

@@ -7,6 +7,8 @@ using com.tinylabproductions.TLPLib.Data.scenes;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Logger;
+using pzd.lib.collection;
+using pzd.lib.functional;
 using pzd.lib.log;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -33,20 +35,25 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       return result;
     }
 
-    public static bool openScenesAndDo(IEnumerable<ScenePath> scenes, Action<Scene> doWithLoadedScene, bool askToSave = true, bool allAtOnce = false) {
+    /// <returns>Some(results) if the operation completed successfully, None if it was cancelled.</returns>
+    public static Option<ImmutableDictionary<ScenePath, A>> openScenesAndDo<A>(
+      IEnumerable<ScenePath> scenes, Func<Scene, A> doWithLoadedScene, bool askToSave = true, bool allAtOnce = false,
+      string progressWindowTitle = nameof(openScenesAndDo)
+    ) {
       try {
         if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
-          return false;
+          return None._;
         }
-        var scenesToUse = scenes.ToImmutableArray();
-        var sceneCount = scenesToUse.Count();
+        var builder = ImmutableDictionary.CreateBuilder<ScenePath, A>();
+        var scenesToUse = scenes.toImmutableArrayC();
+        var sceneCount = scenesToUse.Count;
         var initialScene = SceneManager.GetActiveScene().scenePath();
         try {
           var loadedScenes = new List<Scene>(sceneCount);
           for (var i = 0; i < sceneCount; i++) {
             var currentPath = scenesToUse[i];
             if (progress(i, currentPath, secondLoop: false)) {
-              return false;
+              return None._;
             }
             var mode = (!allAtOnce || i == 0) ? OpenSceneMode.Single : OpenSceneMode.Additive;
             var loadedScene = EditorSceneManager.OpenScene(currentPath, mode);
@@ -54,17 +61,18 @@ namespace com.tinylabproductions.TLPLib.Utilities {
               loadedScenes.Add(loadedScene);
             }
             else {
-              doWithLoadedScene(loadedScene);
+              builder[currentPath] = doWithLoadedScene(loadedScene);
             }
           }
 
           if (allAtOnce) {
             for (var i = 0; i < loadedScenes.Count; i++) {
               var scene = loadedScenes[i];
-              if (progress(i, scene.scenePath(), secondLoop: true)) {
-                return false;
+              var scenePath = scene.scenePath();
+              if (progress(i, scenePath, secondLoop: true)) {
+                return None._;
               }
-              doWithLoadedScene(scene);
+              builder[scenePath] = doWithLoadedScene(scene);
             }
           }
         }
@@ -86,12 +94,12 @@ namespace com.tinylabproductions.TLPLib.Utilities {
             if (secondLoop) progressValue += .5f;
           }
           return EditorUtility.DisplayCancelableProgressBar(
-            nameof(openScenesAndDo),
+            progressWindowTitle,
             $"({sceneNumber}/{sceneCount}) ...{path.path.trimToRight(40)}",
             progressValue
           );
         }
-        return true;
+        return Some.a(builder.ToImmutable());
       }
       catch (Exception e) {
         EditorUtils.userInfo($"Error in {nameof(openScenesAndDo)}", e.ToString(), LogLevel.ERROR);
@@ -101,6 +109,15 @@ namespace com.tinylabproductions.TLPLib.Utilities {
         EditorUtility.ClearProgressBar();
       }
     }
+
+    /// <returns>true if the operation completed successfully, false if it was cancelled</returns>
+    public static bool openScenesAndDo(
+      IEnumerable<ScenePath> scenes, Action<Scene> doWithLoadedScene, bool askToSave = true, bool allAtOnce = false,
+      string progressWindowTitle = nameof(openScenesAndDo)
+    ) => openScenesAndDo(scenes, scene => {
+      doWithLoadedScene(scene);
+      return Unit._;
+    }, askToSave: askToSave, allAtOnce: allAtOnce, progressWindowTitle: progressWindowTitle).isSome;
   }
 }
 #endif
