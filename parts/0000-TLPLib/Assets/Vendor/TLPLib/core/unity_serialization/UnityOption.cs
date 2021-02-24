@@ -127,7 +127,10 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     public UnityOptionInt() { }
     public UnityOptionInt(Option<int> value) : base(value) { }
   }
-  [Serializable, PublicAPI] public class UnityOptionFloat : UnityOption<float> {}
+  [Serializable, PublicAPI] public class UnityOptionFloat : UnityOption<float> {
+    public UnityOptionFloat() { }
+    public UnityOptionFloat(Option<float> value) : base(value) { }
+  }
   [Serializable, PublicAPI] public class UnityOptionBool : UnityOption<bool> {}
   [Serializable, PublicAPI]
   public class UnityOptionString : UnityOption<string> {
