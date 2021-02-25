@@ -115,7 +115,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
         else return None._;
       }
       while (true) {
-        var component = current.GetComponent<A>();
+        var component = current.TryGetComponent<A>(out var comp) ? comp : null;
         if (component && (predicate == null || predicate(component))) return F.some(component);
         else if (current.transform.parent) current = current.transform.parent.gameObject;
         else return F.none<A>();
