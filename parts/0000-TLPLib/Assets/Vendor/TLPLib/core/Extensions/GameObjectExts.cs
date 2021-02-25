@@ -107,17 +107,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static Option<A> getComponentInParents<A>(
       this GameObject go, bool includeSelf = true, [CanBeNull] Func<A, bool> predicate = null
     ) where A : Component {
-      GameObject current;
+      Transform current;
       if (includeSelf) {
-        current = go;
+        current = go.transform;
       } else {
-        if (go.transform.parent) current = go.transform.parent.gameObject;
+        var parent = go.transform.parent;
+        if (parent) current = parent;
         else return None._;
       }
       while (true) {
         var component = current.TryGetComponent<A>(out var comp) ? comp : null;
         if (component && (predicate == null || predicate(component))) return F.some(component);
-        else if (current.transform.parent) current = current.transform.parent.gameObject;
+        var parent = current.parent;
+        if (parent) current = parent;
         else return F.none<A>();
       }
     }
