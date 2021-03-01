@@ -91,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (includeInactive || go.activeInHierarchy) {
         var component = go.GetComponent<T>();
         if (component != null)
-          return F.some(component);
+          return Some.a(component);
       }
       var transform = go.transform;
       if (transform != null) {
@@ -117,7 +117,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
       while (true) {
         var component = current.TryGetComponent<A>(out var comp) ? comp : null;
-        if (component && (predicate == null || predicate(component))) return F.some(component);
+        if (component && (predicate == null || predicate(component))) return Some.a(component);
         var parent = current.parent;
         if (parent) current = parent;
         else return F.none<A>();

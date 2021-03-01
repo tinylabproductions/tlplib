@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
       var tween = F.none<GoTween>();
       return body(newT => {
         tween.each(t => t.destroy());
-        tween = F.some(newT);
+        tween = Some.a(newT);
       }).andThen(() => tween.each(t => t.destroy()));
     }
 
@@ -146,9 +146,9 @@ namespace com.tinylabproductions.TLPLib.Binding {
       this IRxRef<T> subject, IEnumerable<dfCheckbox> checkboxes,
       Func<T, string> mapper, Func<string, T> comapper
     ) {
-      var optSubject = RxRef.a(F.some(subject.value));
+      var optSubject = RxRef.a(Some.a(subject.value));
       var optSubjectSourceSubscription = subject.subscribe(tracker, v =>
-        optSubject.value = F.some(v)
+        optSubject.value = Some.a(v)
       );
       var optSubjectTargetSubscription = optSubject.subscribe(tracker, opt =>
         opt.each(v => subject.value = v)
@@ -187,7 +187,7 @@ namespace com.tinylabproductions.TLPLib.Binding {
         v.map(mapper).voidFold(uncheckAll, name => check(v, name))
       );
       PropertyChangedEventHandler<bool> handler = (control, selected) => {
-        if (selected) subject.value = F.some(comapper(control.name));
+        if (selected) subject.value = Some.a(comapper(control.name));
       };
 
       foreach (var cb in checkboxes) cb.CheckChanged += handler;

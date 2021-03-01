@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content {
     
     public Option<Uri> getData() {
       var jUri = java.cjo("getData");
-      return jUri == null ? None._ : F.some(new Uri(jUri));
+      return jUri == null ? None._ : Some.a(new Uri(jUri));
     }
 
     public Option<string> getDataString() => java.Call<string>("getDataString").opt();

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using com.tinylabproductions.TLPLib.Extensions;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.InputUtils {

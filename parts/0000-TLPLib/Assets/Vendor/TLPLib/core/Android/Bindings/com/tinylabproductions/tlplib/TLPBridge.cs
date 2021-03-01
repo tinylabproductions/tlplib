@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.com.tinylabproductions.
     public static bool isTablet { get {
       if (_isTablet.isNone) {
         // cache result
-        _isTablet = F.some(klass.CallStatic<bool>("isTablet"));
+        _isTablet = Some.a(klass.CallStatic<bool>("isTablet"));
       }
       return _isTablet.get;
     } }

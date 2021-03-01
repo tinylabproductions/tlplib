@@ -47,7 +47,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Color32 with32Alpha(this Color32 color, byte alpha) =>
-      color.with32(a: F.some(alpha));
+      color.with32(a: Some.a(alpha));
 
     public static Color modifyBrightness(this Color rgb, Func<float, float> f) {
       var hsv = rgb.RGBToHSV();

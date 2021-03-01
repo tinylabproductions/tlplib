@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public static Option<DeviceInfo> create() {
 #if UNITY_ANDROID && !UNITY_EDITOR
-      return F.some(new DeviceInfo(manufacturer: Build.MANUFACTURER, modelCode: Build.DEVICE));
+      return Some.a(new DeviceInfo(manufacturer: Build.MANUFACTURER, modelCode: Build.DEVICE));
 #endif
       return F.none<DeviceInfo>();
     }

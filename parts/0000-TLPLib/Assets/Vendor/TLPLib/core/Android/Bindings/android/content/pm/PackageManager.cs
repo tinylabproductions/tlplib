@@ -76,10 +76,10 @@ namespace com.tinylabproductions.TLPLib.Android.Bindings.android.content.pm {
     /// </summary>
     public Option<ErrorMsg> openApp(string bundleIdentifier, Context context = null) =>
       getLaunchIntentForPackage(bundleIdentifier).fold(
-        () => F.some(new ErrorMsg($"Unknown bundle identifier '{bundleIdentifier}'")),
+        () => Some.a(new ErrorMsg($"Unknown bundle identifier '{bundleIdentifier}'")),
         intent => (context ?? AndroidActivity.current).startActivity(intent).fold(
           None._,
-          ex => F.some(new ErrorMsg($"Error while launching app '{bundleIdentifier}': {ex}"))
+          ex => Some.a(new ErrorMsg($"Error while launching app '{bundleIdentifier}': {ex}"))
         )
       );
   }

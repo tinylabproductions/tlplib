@@ -410,13 +410,13 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void CompleteToComplete() {
-      Future.successful(3).collect(i => F.some(i * 2)).shouldBeCompleted(6);
+      Future.successful(3).collect(i => Some.a(i * 2)).shouldBeCompleted(6);
     }
 
     [Test]
     public void NotCompleteToNotComplete() {
       Future.unfulfilled<int>().collect(i => F.none<int>()).shouldNotBeCompleted();
-      Future.unfulfilled<int>().collect(F.some).shouldNotBeCompleted();
+      Future.unfulfilled<int>().collect(Some.a).shouldNotBeCompleted();
     }
   }
 
@@ -559,7 +559,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     [Test]
     public void WhenSome() {
       var f = Future.successful(3);
-      F.some(f).extract().shouldEqual(f);
+      Some.a(f).extract().shouldEqual(f);
     }
   }
 
@@ -570,6 +570,6 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     [Test]
     public void WhenSome() =>
-      F.some(Future.successful(3)).extractOpt().shouldEqual(Future.successful(F.some(3)));
+      Some.a(Future.successful(3)).extractOpt().shouldEqual(Future.successful(Some.a(3)));
   }
 }

@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Utilities {
       if (delta == 0) return F.none<Vector2>();
 
       // now return the Vector2 intersection point
-      return F.some(new Vector2(
+      return Some.a(new Vector2(
         (B2 * C1 - B1 * C2) / delta,
         (A1 * C2 - A2 * C1) / delta
       ));

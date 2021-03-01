@@ -8,7 +8,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     [PublicAPI]
     public static Option<A> headOption<A>(this HashSet<A> enumerable) {
       foreach (var a in enumerable)
-        return F.some(a);
+        return Some.a(a);
       return F.none<A>();
     }
   }

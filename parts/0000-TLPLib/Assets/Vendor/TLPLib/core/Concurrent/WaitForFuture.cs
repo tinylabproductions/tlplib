@@ -12,7 +12,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
 
     public static WaitForFuture<A> coroutineWait<A>(
       this Future<A> f, Duration maxWait, TimeScale timeScale = TimeScale.Realtime
-    ) => new WaitForFuture<A>(f, F.some(new MaxWait(
+    ) => new WaitForFuture<A>(f, Some.a(new MaxWait(
       timeScale.now() + maxWait.seconds, timeScale
     )));
 

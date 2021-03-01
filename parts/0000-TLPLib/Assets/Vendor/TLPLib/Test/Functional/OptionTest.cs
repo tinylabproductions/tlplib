@@ -15,20 +15,20 @@ namespace com.tinylabproductions.TLPLib.Functional {
 
     [Test]
     public void WhenEqualSome() {
-      F.some(3).shouldEqual(F.some(3));
-      F.some(5).shouldEqual(F.some(5));
-      F.some("foo").shouldEqual(F.some("foo"));
+      Some.a(3).shouldEqual(Some.a(3));
+      Some.a(5).shouldEqual(Some.a(5));
+      Some.a("foo").shouldEqual(Some.a("foo"));
     }
 
     [Test]
     public void WhenNotEqual() {
       ImmutableList.Create(
         F.none<int>(),
-        F.some(0),
-        F.some(1)
+        Some.a(0),
+        Some.a(1)
       ).shouldTestInequalityAgainst(ImmutableList.Create(
-        F.some(10),
-        F.some(11)
+        Some.a(10),
+        Some.a(11)
       ));
     }
   }
@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
   public class OptionTestAsEnum {
     [Test]
     public void WhenSome() {
-      F.some(3).asEnumerable().shouldEqual(3.yield());
+      Some.a(3).asEnumerable().shouldEqual(3.yield());
     }
 
     [Test]
@@ -191,7 +191,7 @@ namespace com.tinylabproductions.TLPLib.Functional {
     [Test]
     public void WhenTrue() {
       var wasTrue = false;
-      if (F.some(3)) wasTrue = true;
+      if (Some.a(3)) wasTrue = true;
       wasTrue.shouldBeTrue();
     }
 

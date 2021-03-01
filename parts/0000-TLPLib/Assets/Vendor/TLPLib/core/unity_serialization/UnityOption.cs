@@ -81,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.unity_serialization {
     // protected virtual Description description { get; } = new Description("Value");
 
     public static implicit operator Option<A>(UnityOption<A> o) => o.value;
-    public Option<A> value => isSome ? F.some(_value) : None._;
+    public Option<A> value => isSome ? Some.a(_value) : None._;
     Option<A> Ref<Option<A>>.value {
       get { return value; }
       set {
