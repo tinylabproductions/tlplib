@@ -44,10 +44,13 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public static void destroyComponent(this Component c) => Object.Destroy(c);
 
     /// <summary>
-    /// this is made so that you could di
+    /// This is made so that you could do:
+    ///
+    /// <code><![CDATA[
     /// if (c.setActiveGO(boolean)) {
     ///   // do stuff with c
     /// }
+    /// ]]></code>
     /// </summary>
     /// <returns>the value you passed</returns>
     public static bool setActiveGO(this Component c, bool active) {
