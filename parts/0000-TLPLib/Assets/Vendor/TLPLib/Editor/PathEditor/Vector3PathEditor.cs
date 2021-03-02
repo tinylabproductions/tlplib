@@ -219,7 +219,7 @@ namespace com.tinylabproductions.TLPLib.Tween.path {
         var radius = HandleUtility.GetHandleSize(node);
         if (dist < minDist && dist < radius) {
           minDist = dist;
-          closestNodeIDX = F.some(i);
+          closestNodeIDX = Some.a(i);
         }
       }
 

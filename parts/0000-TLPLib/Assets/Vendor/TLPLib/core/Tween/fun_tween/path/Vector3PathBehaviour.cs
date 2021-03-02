@@ -24,6 +24,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.path {
     public void invalidate() => _path = null;
 
     public Vector3Path path => 
-      _path ??= new Vector3Path(_method, _closed, _nodes.ToImmutableArray(), _relative ? F.some(transform) : None._, pathResolution);
+      _path ??= new Vector3Path(_method, _closed, _nodes.ToImmutableArray(), _relative ? Some.a(transform) : None._, pathResolution);
   }
 }

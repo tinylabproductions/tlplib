@@ -2,6 +2,7 @@
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.test_framework;
 using NUnit.Framework;
+using pzd.lib.functional;
 using pzd.lib.log;
 
 namespace com.tinylabproductions.TLPLib.Logger {
@@ -20,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       ).shouldEqual(
         new BacktraceElem(
           "com.tinylabproductions.TLPLib.Logger.Log:error(Object)",
-          F.some(new BacktraceElem.FileInfo("Assets/Vendor/TLPLib/Logger/Log.cs", 14))
+          Some.a(new BacktraceElem.FileInfo("Assets/Vendor/TLPLib/Logger/Log.cs", 14))
         )
       );
       BacktraceElemUnity.parseBacktraceLine(
@@ -28,7 +29,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       ).shouldEqual(
         new BacktraceElem(
           "Assets.Code.Main:<Awake>m__32()",
-          F.some(new BacktraceElem.FileInfo("Assets/Code/Main.cs", 60))
+          Some.a(new BacktraceElem.FileInfo("Assets/Code/Main.cs", 60))
         )
       );
       BacktraceElemUnity.parseBacktraceLine(
@@ -36,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
       ).shouldEqual(
         new BacktraceElem(
           "com.tinylabproductions.TLPLib.Concurrent.<NextFrameEnumerator>c__IteratorF:MoveNext()",
-          F.some(new BacktraceElem.FileInfo("Assets/Vendor/TLPLib/Concurrent/ASync.cs", 175))
+          Some.a(new BacktraceElem.FileInfo("Assets/Vendor/TLPLib/Concurrent/ASync.cs", 175))
         )
       );
     }

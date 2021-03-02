@@ -31,7 +31,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       this.persistent = persistent;
     }
 
-    static readonly HasObjFunc<Unit> unitSomeFn = () => F.some(F.unit);
+    static readonly HasObjFunc<Unit> unitSomeFn = () => Some.a(F.unit);
 
     public ISubscription register(
       string name, Action run, KeyCodeWithModifiers? shortcut = null, Func<bool> canShow = null
@@ -117,7 +117,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       register($"Clear {name}", () => r.value = None._, canShow: canShow);
       register($"Toggle {name}", shortcut: shortcut, canShow: canShow, run: () => {
         var current = r.value.getOrElse(false);
-        r.value = F.some(!current);
+        r.value = Some.a(!current);
         return comment == null ? r.value.ToString() : $"{comment}: value={r.value}";
       });
     }
@@ -233,7 +233,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     }
 
     public static readonly ImmutableArray<bool> BOOLS = ImmutableArray.Create(true, false);
-    static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), F.some(false), F.some(true)};
+    static readonly Option<bool>[] OPT_BOOLS = {F.none<bool>(), Some.a(false), Some.a(true)};
     
     public void registerBools(
       string name, Ref<bool> reference, string comment = null, Func<bool> canShow = null

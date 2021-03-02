@@ -293,7 +293,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       public float sizeInScrollableAxis { get; }
       public Percentage sizeInSecondaryAxis { get; }
       
-      public Option<IElementWithViewData> asElementWithView => F.some<IElementWithViewData>(this);
+      public Option<IElementWithViewData> asElementWithView => Some.a<IElementWithViewData>(this);
       
       protected abstract IDisposable setup(Obj view);
 

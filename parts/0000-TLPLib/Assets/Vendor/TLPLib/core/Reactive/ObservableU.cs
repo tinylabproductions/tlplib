@@ -91,7 +91,7 @@ namespace com.tinylabproductions.TLPLib.Reactive {
     #endregion
 
     public static IRxObservable<DateTime> interval(Duration interval, Duration delay) =>
-      ObservableU.interval(interval, F.some(delay));
+      ObservableU.interval(interval, Some.a(delay));
 
     public static IRxObservable<DateTime> interval(
       Duration interval, Option<Duration> delay=default

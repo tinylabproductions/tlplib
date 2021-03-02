@@ -45,7 +45,7 @@
 //       opt.isSome ? opt.__unsafeGet : F.none<A>();
 //
 //     public static Option<Base> cast<Child, Base>(this Option<Child> o) where Child : Base
-//       { return o.isSome ? F.some((Base) o.get) : F.none<Base>(); }
+//       { return o.isSome ? Some.a((Base) o.get) : F.none<Base>(); }
 //   }
 //   
 //   [PublicAPI] public
@@ -85,7 +85,7 @@
 //     }
 //
 //     public Option<B> map<B>(Func<A, B> func) =>
-//       isSome ? F.some(func(__unsafeGet)) : F.none<B>();
+//       isSome ? Some.a(func(__unsafeGet)) : F.none<B>();
 //
 //     public Option<B> flatMap<B>(Func<A, Option<B>> func) =>
 //       isSome ? func(__unsafeGet) : F.none<B>();
@@ -93,7 +93,7 @@
 //     public Option<C> flatMap<B, C>(Func<A, Option<B>> func, Func<A, B, C> mapper) {
 //       if (isNone) return None._;
 //       var bOpt = func(__unsafeGet);
-//       return bOpt.isNone ? None._ : F.some(mapper(__unsafeGet, bOpt.__unsafeGet));
+//       return bOpt.isNone ? None._ : Some.a(mapper(__unsafeGet, bOpt.__unsafeGet));
 //     }
 //
 //     public B fold<B>(Func<B> ifEmpty, Func<A, B> ifNonEmpty) =>
@@ -123,8 +123,8 @@
 //     /**
 //      * If Some() returns None. If None returns b.
 //      **/
-//     public Option<B> swap<B>(B b) => isSome ? F.none<B>() : F.some(b);
-//     public Option<B> swap<B>(Func<B> b) => isSome ? F.none<B>() : F.some(b());
+//     public Option<B> swap<B>(B b) => isSome ? F.none<B>() : Some.a(b);
+//     public Option<B> swap<B>(Func<B> b) => isSome ? F.none<B>() : Some.a(b());
 //
 //     public static implicit operator pzd.lib.functional.Option<A>(Option<A> o) => 
 //       o.isSome ? new pzd.lib.functional.Option<A>(o.__unsafeGet) : pzd.lib.functional.None._;

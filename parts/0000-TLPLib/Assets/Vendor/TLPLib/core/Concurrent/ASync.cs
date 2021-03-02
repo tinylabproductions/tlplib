@@ -301,7 +301,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
     ) {
       if (! e.MoveNext()) return;
       asyncAction(e.Current).onComplete(b => {
-        rxRef.value = F.some(b);
+        rxRef.value = Some.a(b);
         inAsyncSeq(e, rxRef, asyncAction);
       });
     }

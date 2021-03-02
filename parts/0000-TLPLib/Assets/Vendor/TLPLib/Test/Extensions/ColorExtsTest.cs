@@ -1,6 +1,6 @@
-﻿using com.tinylabproductions.TLPLib.Functional;
-using pzd.lib.test_framework;
+﻿using pzd.lib.test_framework;
 using NUnit.Framework;
+using pzd.lib.functional;
 using pzd.lib.test_framework.spec;
 using UnityEngine;
 
@@ -22,25 +22,25 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       }
 
       when["changing r"] = () => {
-        var newColor = color.with32(r: F.some(value));
+        var newColor = color.with32(r: Some.a(value));
         it["should change r"] = () => newColor.r.shouldEqual(value);
         notChange(newColor, r: false);
       };
 
       when["changing g"] = () => {
-        var newColor = color.with32(g: F.some(value));
+        var newColor = color.with32(g: Some.a(value));
         it["should change g"] = () => newColor.g.shouldEqual(value);
         notChange(newColor, g: false);
       };
 
       when["changing b"] = () => {
-        var newColor = color.with32(b: F.some(value));
+        var newColor = color.with32(b: Some.a(value));
         it["should change b"] = () => newColor.b.shouldEqual(value);
         notChange(newColor, b: false);
       };
 
       when["changing a"] = () => {
-        var newColor = color.with32(a: F.some(value));
+        var newColor = color.with32(a: Some.a(value));
         it["should change a"] = () => newColor.a.shouldEqual(value);
         notChange(newColor, a: false);
       };

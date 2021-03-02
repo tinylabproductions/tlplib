@@ -20,7 +20,7 @@ namespace com.tinylabproductions.TLPLib.Editor.extensions {
         }
         else {
           var arrayIndex = fieldNameOrArrayIndex.__unsafeGetRight;
-          return F.some(source.cast().to<Array>().GetValue(arrayIndex));
+          return Some.a(source.cast().to<Array>().GetValue(arrayIndex));
         }
       }
     }

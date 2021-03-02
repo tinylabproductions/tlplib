@@ -53,7 +53,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     #region ICachedBlob
 
     public bool cached => true;
-    Option<Try<A>> ICachedBlob<A>.read() => F.some(F.scs(value));
+    Option<Try<A>> ICachedBlob<A>.read() => Some.a(F.scs(value));
 
     public Try<Unit> store(A data) {
       value = data;

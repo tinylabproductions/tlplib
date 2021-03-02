@@ -57,7 +57,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
               obj.transform.parent = _target.transform;
               obj.transform.rotation = data.sourceTransform.rotation;
               obj.transform.localScale = data.sourceTransform.localScale;
-              objectToMoveAroundOpt = F.some(obj);
+              objectToMoveAroundOpt = Some.a(obj);
             }
           }
 
@@ -123,7 +123,7 @@ namespace com.tinylabproductions.TLPLib.Components.EditorTools {
       plane.Raycast(ray, out distance);
 
       return distance > 0
-        ? F.some(ray.GetPoint(distance))
+        ? Some.a(ray.GetPoint(distance))
         : None._;
     }
 

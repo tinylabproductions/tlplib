@@ -54,7 +54,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     public void collect() => describe(() => {
       when["with indexes"] = () => {
         it["should emit correct indexes"] = () => {
-          new[] {"foo", "bar", "baz"}.collect((a, idx) => F.some(idx)).shouldEqualEnum(0, 1, 2);
+          new[] {"foo", "bar", "baz"}.collect((a, idx) => Some.a(idx)).shouldEqualEnum(0, 1, 2);
         };
 
         it["should only keep somes"] = () => {

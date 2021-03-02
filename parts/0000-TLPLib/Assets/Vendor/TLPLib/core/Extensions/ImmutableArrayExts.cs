@@ -17,7 +17,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
 
     public static Option<T> get<T>(this ImmutableArray<T> list, int index) =>
-      index >= 0 && index < list.Length ? F.some(list[index]) : F.none<T>();
+      index >= 0 && index < list.Length ? Some.a(list[index]) : F.none<T>();
 
     public static bool isEmpty<A>(this ImmutableArray<A> list) => list.Length == 0;
     public static bool nonEmpty<A>(this ImmutableArray<A> list) => list.Length != 0;
@@ -60,19 +60,19 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     
     public static Option<int> indexWhere<A>(this ImmutableArray<A> list, Func<A, bool> predicate) {
       for (var idx = 0; idx < list.Length; idx++)
-        if (predicate(list[idx])) return F.some(idx);
+        if (predicate(list[idx])) return Some.a(idx);
       return F.none<int>();
     }
     
     public static Option<int> indexWhere<A, B>(this ImmutableArray<A> list, B data, Func<A, B, bool> predicate) {
       for (var idx = 0; idx < list.Length; idx++)
-        if (predicate(list[idx], data)) return F.some(idx);
+        if (predicate(list[idx], data)) return Some.a(idx);
       return F.none<int>();
     }
 
     public static Option<int> indexWhereReverse<A>(this ImmutableArray<A> list, Func<A, bool> predicate) {
       for (var idx = list.Length - 1; idx >= 0; idx--)
-        if (predicate(list[idx])) return F.some(idx);
+        if (predicate(list[idx])) return Some.a(idx);
       return F.none<int>();
     }
 
@@ -80,7 +80,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       this ImmutableArray<A> list, B data, Func<A, B, bool> predicate
     ) {
       for (var idx = list.Length - 1; idx >= 0; idx--)
-        if (predicate(list[idx], data)) return F.some(idx);
+        if (predicate(list[idx], data)) return Some.a(idx);
       return F.none<int>();
     }
   }

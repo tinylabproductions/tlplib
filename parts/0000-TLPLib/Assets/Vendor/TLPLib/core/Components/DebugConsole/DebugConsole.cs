@@ -228,8 +228,8 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
             if (Math.Abs(horizontal - vertical) < 0.001f) return None._;
             return
               Math.Abs(horizontal) > Math.Abs(vertical)
-                ? F.some(horizontal > 0 ? Direction.Right : Direction.Left)
-                : F.some(vertical > 0 ? Direction.Up : Direction.Down);
+                ? Some.a(horizontal > 0 ? Direction.Right : Direction.Left)
+                : Some.a(vertical > 0 ? Direction.Up : Direction.Down);
           }).changedValues();
 
           return
