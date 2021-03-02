@@ -16,6 +16,11 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
     static readonly TMP_Dropdown.OptionData noPlaceholderOption =
       new TMP_Dropdown.OptionData("ERROR: None, but placeholder missing");
 
+    public interface IDropdownSetToNoneBehaviour<in A> {
+      void onNone(TMP_Dropdown dropdown, ILog log);
+      void onValue(TMP_Dropdown dropdown, A value, ILog log);
+    }
+    
     public enum DropdownSetToNoneBehaviour {
       /// <summary>If None is selected the dropdown will be set to placeholder.</summary>
       UsePlaceholder,
@@ -36,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
     public static IRxObservable<A> bind<A>(
       this TMP_Dropdown dropdown, IDisposableTracker tracker, 
       ImmutableArrayC<(A, TMP_Dropdown.OptionData)> values, IRxVal<Option<A>> selected,
-      DropdownSetToNoneBehaviour setToNoneBehaviour, [Implicit] ILog log=default
+      Either<DropdownSetToNoneBehaviour, IDropdownSetToNoneBehaviour<A>> setToNoneBehaviour, [Implicit] ILog log=default
     ) {
       var subject = new Subject<A>();
       dropdown.setDropdownOptions(values._unsafeArray.map(_ => _.Item2));
@@ -64,17 +69,8 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
 
       void setDropdownSelectedIndex(Option<A> maybeA) {
         if (maybeA.valueOut(out var a)) {
-          switch (setToNoneBehaviour) {
-            case DropdownSetToNoneBehaviour.UsePlaceholder:
-              break;
-            case DropdownSetToNoneBehaviour.Disable:
-              dropdown.setActiveGO(true);
-              break;
-            default:
-              throw new ArgumentOutOfRangeException(nameof(setToNoneBehaviour), setToNoneBehaviour, null);
-          }
-          
           if (items.indexOfOutC(a, out var idx)) {
+            {if (setToNoneBehaviour.valueOut(out var l, out var r)) r.onValue(dropdown, a, log); else onValue(l);}
             dropdown.SetValueWithoutNotify(idx);
           }
           else {
@@ -82,24 +78,35 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
           }
         }
         else {
-          switch (setToNoneBehaviour) {
-            case DropdownSetToNoneBehaviour.UsePlaceholder:
-              if (dropdown.placeholder) dropdown.SetValueWithoutNotify(-1);
-              else {
-                log.error("Wanted to set None on dropdown, but it does not have placeholder set! Adding a placeholder!");
-                if (!dropdown.options.last().exists(noPlaceholderOption)) {
-                  dropdown.options.Add(new TMP_Dropdown.OptionData("ERROR: None, but placeholder missing"));
-                }
+          {if (setToNoneBehaviour.valueOut(out var l, out var r)) r.onNone(dropdown, log); else onNone(l);}
+        }
+      }
+      
+      void onNone(DropdownSetToNoneBehaviour behaviour) {
+        switch (behaviour) {
+          case DropdownSetToNoneBehaviour.UsePlaceholder: onPlaceholder(); break;
+          case DropdownSetToNoneBehaviour.Disable: dropdown.setActiveGO(false); break;
+          default: throw new ArgumentOutOfRangeException(nameof(behaviour), behaviour, null);
+        }
 
-                dropdown.SetValueWithoutNotify(dropdown.options.Count - 1);
-              }
-              break;
-            case DropdownSetToNoneBehaviour.Disable:
-              dropdown.setActiveGO(false);
-              break;
-            default:
-              throw new ArgumentOutOfRangeException(nameof(setToNoneBehaviour), setToNoneBehaviour, null);
+        void onPlaceholder() {
+          if (dropdown.placeholder) dropdown.SetValueWithoutNotify(-1);
+          else {
+            log.error("Wanted to set None on dropdown, but it does not have placeholder set! Adding a placeholder!");
+            if (!dropdown.options.last().exists(noPlaceholderOption)) {
+              dropdown.options.Add(new TMP_Dropdown.OptionData("ERROR: None, but placeholder missing"));
+            }
+
+            dropdown.SetValueWithoutNotify(dropdown.options.Count - 1);
           }
+        }
+      }
+
+      void onValue(DropdownSetToNoneBehaviour behaviour) {
+        switch (behaviour) {
+          case DropdownSetToNoneBehaviour.UsePlaceholder: break;
+          case DropdownSetToNoneBehaviour.Disable: dropdown.setActiveGO(true); break;
+          default: throw new ArgumentOutOfRangeException(nameof(behaviour), behaviour, null);
         }
       }
     }
