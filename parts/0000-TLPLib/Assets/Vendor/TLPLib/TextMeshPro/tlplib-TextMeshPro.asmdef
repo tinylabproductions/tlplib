@@ -1,0 +1,22 @@
+{
+    "name": "tlplib-TextMeshPro",
+    "references": [
+        "GUID:ca6f2d5f283438e4bb296bf7e4aa57fb",
+        "GUID:3a8072f1f9ca72944a288441fb9c98a6",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Collections.Immutable.dll",
+        "pzd.lib.dll",
+        "Macros.dll",
+        "GenerationAttributes.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
