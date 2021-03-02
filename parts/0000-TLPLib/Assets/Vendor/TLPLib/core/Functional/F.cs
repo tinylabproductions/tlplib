@@ -21,9 +21,8 @@ namespace com.tinylabproductions.TLPLib.Functional {
       isNull(value) ? None._ : new Option<A>(value);
 
     public static Option<A> opt<A>(A? value) where A : struct =>
-      value == null ? None._ : some((A) value);
+      value == null ? None._ : Some.a((A) value);
 
-    [PublicAPI] public static Option<A> some<A>(A value) => new Option<A>(value);
     [PublicAPI] public static Option<A> none<A>() => None._;
 
     public static Either<A, B> left<A, B>(A value) { return new Either<A, B>(value); }
