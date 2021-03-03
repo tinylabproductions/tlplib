@@ -275,6 +275,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     
     // public override string[] __editorSerializedProps => spQuaternion("m_LocalRotation");
   }
+
+  [Serializable]
+  public sealed class LocalRotationX : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localEulerAngles.x;
+    protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withX(value);
+  }
+
+  [Serializable]
+  public sealed class LocalRotationY : SerializedTweenerFloat<Transform> {
+    protected override float get => _target.localEulerAngles.y;
+    protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withY(value);
+  }
   
   [Serializable]
   public sealed class ImageColor : SerializedTweenerColor<Image> {
