@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
@@ -177,8 +178,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
     }
     
+    [PublicAPI]
     public class Builder {
-      [PublicAPI] public float totalDuration { get; private set; }
+      public float totalDuration { get; private set; }
       readonly List<Effect> effects = new List<Effect>();
 
       public TweenTimeline build() => new TweenTimeline(
@@ -189,7 +191,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       public static Builder create() => new Builder();
 
       /// <summary>Inserts element into the sequence at specific time.</summary>
-      [PublicAPI]
       public Builder insert(float at, TweenTimelineElement element) {
         var endsAt = at + element.duration;
         totalDuration = Mathf.Max(totalDuration, endsAt);
@@ -197,9 +198,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         return this;
       }
 
+      public Builder insert(float at, Action<TweenCallback.Event> callback) =>
+        insert(at, new TweenCallback(callback));
+
       /// <see cref="insert(float,TweenTimelineElement)"/>
       /// <returns>Time when the given element will end.</returns>
-      [PublicAPI]
       public float insert2(float at, TweenTimelineElement element) {
         insert(at, element);
         return at + element.duration;
@@ -209,28 +212,41 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       /// <param name="at"></param>
       /// <param name="element"></param>
       /// <param name="elementEndsAt">Time when the given element will end.</param>
-      [PublicAPI]
       public Builder insert(float at, TweenTimelineElement element, out float elementEndsAt) {
         insert(at, element);
         elementEndsAt = at + element.duration;
         return this;
       }
 
-      [PublicAPI]
       public Builder append(TweenTimelineElement element) =>
         insert(totalDuration, element);
+      
+      public Builder append(Action<TweenCallback.Event> callback) =>
+        append(new TweenCallback(callback));
 
-      [PublicAPI]
       public Builder append(Option<TweenTimelineElement> element) =>
         element.isSome ? append(element.__unsafeGet) : this;
 
-      [PublicAPI]
       public float append2(TweenTimelineElement element) =>
         insert2(totalDuration, element);
 
-      [PublicAPI]
       public Builder append(TweenTimelineElement element, out float elementEndsAt) =>
         insert(totalDuration, element, out elementEndsAt);
+
+      /// <summary>
+      /// Use this to append delay between append operations.
+      /// Or if you want to append delay at the end of the whole tween.
+      /// </summary>
+      public Builder appendDelay(float delaySeconds) {
+        totalDuration += delaySeconds;
+        return this;
+      }
+
+      /// <summary>
+      /// Use this to append delay between append operations.
+      /// Or if you want to append delay at the end of the whole tween.
+      /// </summary>
+      public Builder appendDelay(Duration delay) => appendDelay(delay.seconds);
     }
 
     [PublicAPI] 
