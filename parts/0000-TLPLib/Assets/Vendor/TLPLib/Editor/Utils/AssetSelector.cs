@@ -2,7 +2,6 @@
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Utilities;
@@ -59,12 +58,10 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
           .Select(AssetDatabase.GUIDToAssetPath)
           .Select(path => AssetDatabase.LoadAssetAtPath(path, type))
           .Where(c => c && (includeDerived || c.GetType() == type))
-          .Select(
-            c => {
-              foreach (var _ in F.opt(c as Component)) return _.gameObject;
-              foreach (var _ in F.opt(c as MonoBehaviour)) return _.gameObject;
-              throw new Exception($"Unrecognized type {c.GetType()} on component {c}");
-            })
+          .Select(o => o switch {
+            Component c => c.gameObject,
+            _ => throw new Exception($"Unrecognized type {o.GetType()} on component {o}")
+          })
           .ToArray();
 
         progress.execute("Printing found objects to log.", () => {
