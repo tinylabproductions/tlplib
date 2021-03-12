@@ -11,7 +11,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       
       /// <param name="containingObject">Unity object </param>
       /// <param name="obj">Object that is being validated.</param>
-      IEnumerable<ErrorMsg> validate(Object containingObject, object obj);
+      IEnumerable<ErrorMsg> validateField(Object containingObject, object obj);
+      
+      IEnumerable<ErrorMsg> validateComponent(Object component);
     }
 
     [Record] public partial struct Progress {

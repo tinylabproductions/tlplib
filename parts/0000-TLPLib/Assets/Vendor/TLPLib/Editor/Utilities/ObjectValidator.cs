@@ -339,14 +339,35 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option<UniqueValuesCache> uniqueCache = default
     ) {
       Option.ensureValue(ref uniqueCache);
+      var createError = new ErrorFactory(component, context);
       validateFields(
         containingComponent: component,
         objectBeingValidated: component,
-        createError: new ErrorFactory(component, context),
+        createError: createError,
         addError, structureCache, jobController, unityTags,
         customObjectValidatorOpt: customObjectValidatorOpt,
         uniqueValuesCache: uniqueCache
       );
+      
+      foreach (var customValidator in customObjectValidatorOpt) {
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(customValidator)))
+#endif
+        {
+          if (customValidator.isThreadSafe) run();
+          else jobController.enqueueMainThreadJob(run);
+
+          void run() {
+            var customValidatorErrors =
+              customValidator.validateComponent(component).ToArray();
+            if (customValidatorErrors.Length > 0) {
+              foreach (var error in customValidatorErrors) {
+                addError(() => createError.custom(new FieldHierarchyStr(), error, true));
+              }
+            }
+          }
+        }
+      }
     }
 
     static void checkComponentMainThreadPart(
@@ -519,7 +540,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
           void run() {
             var customValidatorErrors =
-              customValidator.validate(containingComponent, objectBeingValidated).ToArray();
+              customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
             if (customValidatorErrors.Length > 0) {
               var hierarchy = fieldHierarchy.asString();
               foreach (var error in customValidatorErrors) {
@@ -725,8 +746,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     }
 
     public bool isThreadSafe => a.isThreadSafe && b.isThreadSafe;
+
+    public IEnumerable<ErrorMsg> validateField(Object containingObject, object obj) => 
+      a.validateField(containingObject, obj).Concat(b.validateField(containingObject, obj));
     
-    public IEnumerable<ErrorMsg> validate(Object containingObject, object obj) => 
-      a.validate(containingObject, obj).Concat(b.validate(containingObject, obj));
+    public IEnumerable<ErrorMsg> validateComponent(Object component) =>
+      a.validateComponent(component).Concat(b.validateComponent(component));
   }
 }
