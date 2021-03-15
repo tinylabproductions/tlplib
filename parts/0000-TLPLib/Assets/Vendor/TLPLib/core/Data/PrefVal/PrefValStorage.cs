@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using pzd.lib.log;
 using JetBrains.Annotations;
+using pzd.lib.collection;
 using pzd.lib.functional;
 using pzd.lib.serialization;
 using pzd.lib.typeclasses;
 
 namespace com.tinylabproductions.TLPLib.Data {
-  public class PrefValStorage {
+  [PublicAPI] public class PrefValStorage {
     public readonly IPrefValueBackend backend;
 
     public PrefValStorage(IPrefValueBackend backend) { this.backend = backend; }
@@ -44,25 +45,31 @@ namespace com.tinylabproductions.TLPLib.Data {
       create(key, defaultVal, PrefValRW.dateTime);
 
     #region Collections
-
-    [PublicAPI]
+    
     public PrefVal<ImmutableArray<A>> array<A>(
       string key, ISerializedRW<A> rw,
       ImmutableArray<A> defaultVal,
-      PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
       key, rw, CollectionBuilderKnownSizeFactory<A>.immutableArray, defaultVal,
       onDeserializeFailure, log
     );
+    
+    public PrefVal<ImmutableArrayC<A>> arrayC<A>(
+      string key, ISerializedRW<A> rw,
+      ImmutableArrayC<A> defaultVal,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
+      ILog log = null
+    ) => collection(
+      key, rw, CollectionBuilderKnownSizeFactory<A>.immutableArrayC, defaultVal,
+      onDeserializeFailure, log
+    );
 
-    [PublicAPI]
     public PrefVal<ImmutableList<A>> list<A>(
       string key, ISerializedRW<A> rw,
       ImmutableList<A> defaultVal = null,
-      PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
       key, rw, CollectionBuilderKnownSizeFactory<A>.immutableList, 
@@ -70,12 +77,10 @@ namespace com.tinylabproductions.TLPLib.Data {
       onDeserializeFailure, log
     );
 
-    [PublicAPI]
     public PrefVal<ImmutableHashSet<A>> hashSet<A>(
       string key, ISerializedRW<A> rw,
       ImmutableHashSet<A> defaultVal = null,
-      PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => collection(
       key, rw, CollectionBuilderKnownSizeFactory<A>.immutableHashSet, 
@@ -83,11 +88,9 @@ namespace com.tinylabproductions.TLPLib.Data {
       onDeserializeFailure, log
     );
     
-    [PublicAPI]
     public PrefValDictionary<K, V> dictionary<K, V>(
       string key, Func<K, string> keyToString, ISerializedRW<V> vRw, V defaultValue,
-      PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) => new PrefValDictImpl<K, V>(key, keyToString, vRw, this, defaultValue, onDeserializeFailure, log);
 
@@ -128,23 +131,19 @@ namespace com.tinylabproductions.TLPLib.Data {
       string key,
       ISerializedRW<A> rw, CollectionBuilderKnownSizeFactory<A, C> factory,
       C defaultVal,
-      PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) where C : IReadOnlyCollection<A> {
       var collectionRw = SerializedRW.a(
         SerializedRW.collectionSerializer<A, C>(rw),
         SerializedRW.collectionDeserializer(rw, factory)
       );
-      return collection<A, C>(
-        key, collectionRw, defaultVal, onDeserializeFailure, log
-      );
+      return collection<A, C>(key, collectionRw, defaultVal, onDeserializeFailure, log);
     }
 
     public PrefVal<C> collection<A, C>(
       string key, ISerializedRW<C> rw, C defaultVal,
-      PrefVal.OnDeserializeFailure onDeserializeFailure =
-        PrefVal.OnDeserializeFailure.ReturnDefault,
+      PrefVal.OnDeserializeFailure onDeserializeFailure = PrefVal.OnDeserializeFailure.ReturnDefault,
       ILog log = null
     ) where C : IReadOnlyCollection<A> =>
       custom(key, defaultVal, rw, onDeserializeFailure, log);
