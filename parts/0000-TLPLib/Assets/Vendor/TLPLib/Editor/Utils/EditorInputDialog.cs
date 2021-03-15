@@ -1,6 +1,7 @@
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
+using pzd.lib.exts;
 using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
@@ -11,12 +12,16 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
   /// </summary>
   public class EditorInputDialog : EditorWindow, IMB_OnGUI {
     string dialogTitle, submitText, cancelText, currentValue = "";
+    Option<string> helpText;
     Promise<Option<string>> promise;
+
+    Vector2 helpTextScrollPos, inputTextScrollPos;
 
     /// <summary>
     /// Show the dialog and return the future with the value.
     /// </summary>
     /// <param name="title">Title text</param>
+    /// <param name="helpText">Help text to show</param>
     /// <param name="submitText">Text for button that returns Some</param>
     /// <param name="cancelText">Text for button that returns None</param>
     /// <param name="windowCenterXPosition">Position in screen percentage (0-1) of the window center along X axis.</param>
@@ -27,12 +32,13 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     /// None if user pressed <see cref="cancelText"/> and Some if user pressed <see cref="submitText"/>.
     /// </returns>
     [PublicAPI] public static Future<Option<string>> show(
-      string title, string submitText = "Submit", string cancelText = "Cancel",
+      string title, Option<string> helpText = default, string submitText = "Submit", string cancelText = "Cancel",
       float windowCenterXPosition = 0.5f, float windowCenterYPosition = 0.5f, float width = 0.8f, float height = 0.8f
     ) {
       var window = CreateInstance<EditorInputDialog>();
       var future = Future.async(out window.promise);
       window.dialogTitle = title;
+      window.helpText = helpText;
       window.submitText = submitText;
       window.cancelText = cancelText;
       var resolution = Screen.currentResolution;
@@ -50,7 +56,19 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     public void OnGUI() {
       EditorGUILayout.LabelField(dialogTitle, EditorStyles.boldLabel);
       GUILayout.Space(10);
-      currentValue = EditorGUILayout.TextArea(currentValue, GUILayout.ExpandHeight(true));
+      var helpStyle = new GUIStyle(EditorStyles.textArea) {wordWrap = true, fixedHeight = 250};
+      var style = new GUIStyle(EditorStyles.textArea) {wordWrap = true};
+      {if (helpText.valueOut(out var text)) {
+        EditorGUILayout.LabelField("Help:");
+        helpTextScrollPos = EditorGUILayout.BeginScrollView(helpTextScrollPos, GUILayout.MaxHeight(250));
+        EditorGUILayout.TextArea(text, style, GUILayout.ExpandHeight(true));
+        EditorGUILayout.EndScrollView();
+        GUILayout.Space(10);
+        EditorGUILayout.LabelField("Input:");
+      }}
+      inputTextScrollPos = EditorGUILayout.BeginScrollView(inputTextScrollPos, GUILayout.ExpandHeight(true));
+      currentValue = EditorGUILayout.TextArea(currentValue, style);
+      EditorGUILayout.EndScrollView();
       GUILayout.Space(10);
       GUILayout.BeginHorizontal();
       // Promise will become null after project recompilation and then clicking that button would be no good
