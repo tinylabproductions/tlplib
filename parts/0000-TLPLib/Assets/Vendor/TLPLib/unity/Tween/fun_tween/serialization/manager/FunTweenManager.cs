@@ -5,6 +5,7 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.sequences;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.exts;
 using Sirenix.OdinInspector;
@@ -15,6 +16,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   /// Serialized <see cref="TweenManager"/>.
   /// </summary>
   public class FunTweenManager : MonoBehaviour, IMB_Start, IMB_OnEnable, IMB_OnDisable, IMB_OnDestroy, Invalidatable {
+    [LazyProperty] static ILog log => Log.d.withScope(nameof(FunTweenManager));
+    
     const string TAB_FIELDS = "Fields", TAB_ACTIONS = "Actions";
     // ReSharper disable once UnusedMember.Local
     enum RunMode : byte { Local, Global }
@@ -72,7 +75,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     public TweenManager manager {
       get {
         TweenManager create() {
-          if (Log.d.isDebug()) Log.d.debug($"Creating {nameof(TweenManager)} for {this}", this);
+          log.mDebug($"Creating {nameof(TweenManager)}", this);
           var tm = new TweenManager(
             _timeline.timeline,
             // We manage the lifetime manually.
