@@ -14,7 +14,7 @@ using Application = UnityEngine.Application;
 
 namespace com.tinylabproductions.TLPLib.Android {
   public static class AndroidActivity {
-    public struct DPI {
+    public readonly struct DPI {
       public readonly float xDpi, yDpi;
 
       public DPI(float xDpi, float yDpi) {
@@ -35,12 +35,11 @@ namespace com.tinylabproductions.TLPLib.Android {
     static AndroidActivity() {
       if (Application.isEditor) return;
 
-      using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
-        current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));
-        appContext = current.applicationContext;
-        packageManager = appContext.packageManager;
-        packageName = activity.packageName;
-      }
+      using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+      current = new Activity(unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"));
+      appContext = current.applicationContext;
+      packageManager = appContext.packageManager;
+      packageName = activity.packageName;
     }
 
     /* Get version code for the application package name. */

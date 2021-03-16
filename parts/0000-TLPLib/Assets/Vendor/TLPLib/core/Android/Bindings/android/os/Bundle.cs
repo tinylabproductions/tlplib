@@ -3,7 +3,6 @@ using GenerationAttributes;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Android.Bindings.android.os {
-
   [JavaBinding(JAVA_CLASS)]
   public class Bundle : BaseBundle {
     const string JAVA_CLASS = "android.os.Bundle";
