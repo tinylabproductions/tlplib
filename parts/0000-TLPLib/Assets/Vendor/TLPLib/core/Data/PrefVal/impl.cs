@@ -5,7 +5,6 @@ using com.tinylabproductions.TLPLib.caching;
 using com.tinylabproductions.TLPLib.Functional;
 using pzd.lib.log;
 using pzd.lib.reactive;
-
 using pzd.lib.dispose;
 using pzd.lib.functional;
 using pzd.lib.serialization;
@@ -73,7 +72,7 @@ namespace com.tinylabproductions.TLPLib.Data {
     public void copySubscriptionsTo(IList<IRxObservableSub> subs) => rxRef.copySubscriptionsTo(subs);
 
     public void subscribe(
-      IDisposableTracker tracker, Action<A> onEvent, out ISubscription subscription,
+      ITracker tracker, Action<A> onEvent, out ISubscription subscription,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
