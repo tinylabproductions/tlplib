@@ -1,0 +1,22 @@
+{
+    "name": "tlplib-ios",
+    "references": [
+        "GUID:ca6f2d5f283438e4bb296bf7e4aa57fb",
+        "GUID:3a8072f1f9ca72944a288441fb9c98a6"
+    ],
+    "includePlatforms": [
+        "iOS"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "pzd.lib.dll",
+        "Macros.dll",
+        "GenerationAttributes.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
