@@ -1,3 +1,4 @@
+#if UNITY_IOS
 using System.Runtime.InteropServices;
 using GenerationAttributes;
 using pzd.lib.collection;
@@ -60,3 +61,4 @@ namespace com.tinylabproductions.TLPLib.iOS {
     [DllImport("__Internal")] static extern string tlplibGetCliArgument(ulong index);
   }
 }
+#endif
