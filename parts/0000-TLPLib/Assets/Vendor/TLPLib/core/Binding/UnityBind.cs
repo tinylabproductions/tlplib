@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       GameObjectPool<Template> pool,
       IRxObservable<IEnumerable<Data>> rx,
       ItemSetupDelegate<Template, Data> setup,
-      [Implicit] IDisposableTracker tracker = default, 
+      [Implicit] ITracker tracker = default, 
       bool orderMatters = true,
       Action preUpdate = null,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
@@ -76,7 +76,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       GameObjectPool<Template> pool,
       IRxObservable<IEnumerable<Data>> rx,
       Func<Template, Data, (IDisposable, Result)> setup,
-      [Implicit] IDisposableTracker tracker = default, 
+      [Implicit] ITracker tracker = default, 
       bool orderMatters = true,
       Action preUpdate = null,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
@@ -108,7 +108,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       string gameObjectPoolName,
       Template template, IRxObservable<IEnumerable<Data>> rx,
       ItemSetupDelegate<Template, Data> setup,
-      [Implicit] IDisposableTracker tracker = default,
+      [Implicit] ITracker tracker = default,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
       template.gameObject.SetActive(false);

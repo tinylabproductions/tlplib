@@ -13,7 +13,7 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return new Subscription(() => evt.RemoveListener(act));
     }
     
-    public static ISubscription subscribe<A>(this UnityEvent<A> evt, IDisposableTracker tracker, UnityAction<A> act) {
+    public static ISubscription subscribe<A>(this UnityEvent<A> evt, ITracker tracker, UnityAction<A> act) {
       evt.AddListener(act);
       var sub = new Subscription(() => evt.RemoveListener(act));
       tracker.track(sub);

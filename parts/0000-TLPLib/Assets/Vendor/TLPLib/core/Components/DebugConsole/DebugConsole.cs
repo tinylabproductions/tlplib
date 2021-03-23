@@ -114,7 +114,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public bool isActiveAndMaximized => current.valueOut(out var instance) && !instance.view.minimised;
 
     public ISubscription registrarOnShow(
-      IDisposableTracker tracker, string prefix, Action<DConsole, DConsoleRegistrar> action
+      ITracker tracker, string prefix, Action<DConsole, DConsoleRegistrar> action
     ) {
       if (!Application.isPlaying) {
         return Subscription.empty;
@@ -264,7 +264,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       showObservable.subscribe(tracker, _ => instance.show(unlockCode, binding));
     }
 
-    public ISubscription register(IDisposableTracker tracker, Command command) {
+    public ISubscription register(ITracker tracker, Command command) {
       foreach (var shortcut in command.shortcut) {
         if (checkShortcutForDuplication(shortcut)) {
           command = command.withShortcut(None._);
@@ -295,7 +295,7 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
       }
     }
 
-    public DConsoleRegistrar registrarFor(string prefix, IDisposableTracker tracker, bool persistent) =>
+    public DConsoleRegistrar registrarFor(string prefix, ITracker tracker, bool persistent) =>
       new DConsoleRegistrar(this, prefix, tracker, persistent);
     
     public void show(Option<string> unlockCode, DebugConsoleBinding binding = null) {

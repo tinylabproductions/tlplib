@@ -39,7 +39,7 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
     /// <param name="log"></param>
     /// <returns>Event stream which fires an event when a value is changed by user.</returns>
     public static IRxObservable<A> bind<A>(
-      this TMP_Dropdown dropdown, IDisposableTracker tracker, 
+      this TMP_Dropdown dropdown, ITracker tracker, 
       ImmutableArrayC<(A, TMP_Dropdown.OptionData)> values, IRxVal<Option<A>> selected,
       Either<DropdownSetToNoneBehaviour, IDropdownSetToNoneBehaviour<A>> setToNoneBehaviour, [Implicit] ILog log=default
     ) {
@@ -115,7 +115,7 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
     /// Like <see cref="bind{A}"/> but inserts <see cref="emptyItem"/> which represents the None case. 
     /// </summary>
     public static IRxObservable<Option<A>> bindWithEmpty<A>(
-      this TMP_Dropdown dropdown, IDisposableTracker tracker, TMP_Dropdown.OptionData emptyItem, 
+      this TMP_Dropdown dropdown, ITracker tracker, TMP_Dropdown.OptionData emptyItem, 
       ImmutableArrayC<(A, TMP_Dropdown.OptionData)> values, IRxVal<Option<A>> selected, [Implicit] ILog log=default
     ) {
       // Index 0 is None.

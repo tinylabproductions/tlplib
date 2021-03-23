@@ -7,10 +7,9 @@ using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
-using com.tinylabproductions.TLPLib.Functional;
 using com.tinylabproductions.TLPLib.Pools;
-using com.tinylabproductions.TLPLib.Reactive;using pzd.lib.reactive;
-
+using com.tinylabproductions.TLPLib.Reactive;
+using pzd.lib.reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -60,7 +59,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
     #endregion
 
     event Action onEnable;
-    public void OnEnable() => onEnable?.Invoke();
+    public new void OnEnable() => onEnable?.Invoke();
 
     /// <summary>
     /// Visual part of layout item.
@@ -128,7 +127,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       public Init(
         DynamicLayout backing,
         IEnumerable<IElementData> layoutData,
-        IDisposableTracker dt,
+        ITracker dt,
         bool renderLatestItemsFirst = false
       ) {
         this.backing = backing;

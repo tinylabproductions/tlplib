@@ -20,10 +20,10 @@ namespace com.tinylabproductions.TLPLib.Components.DebugConsole {
     public readonly DConsole console;
     public readonly string commandGroup;
     public readonly bool persistent;
-    readonly IDisposableTracker tracker;
+    readonly ITracker tracker;
 
     public DConsoleRegistrar(
-      DConsole console, string commandGroup, IDisposableTracker tracker, bool persistent
+      DConsole console, string commandGroup, ITracker tracker, bool persistent
     ) {
       this.console = console;
       this.commandGroup = commandGroup;

@@ -85,7 +85,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       );
 
     public ISubscription subscribeWithoutEmit(
-      IDisposableTracker tracker, Action<A> onEvent,
+      ITracker tracker, Action<A> onEvent,
       [CallerMemberName] string callerMemberName = "",
       [CallerFilePath] string callerFilePath = "",
       [CallerLineNumber] int callerLineNumber = 0
