@@ -208,8 +208,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
   [Serializable]
   public sealed class PositionBetweenTargets : SerializedTweenerV2<Transform, Vector3, Transform> {
+#if UNITY_EDITOR
     protected override void __setStart() => showItIsUselessMessage();
     protected override void __setEnd() => showItIsUselessMessage();
+#endif
 
     protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start.position, _end.position, percentage);
     protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
