@@ -56,21 +56,39 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   
   
   [Serializable]
-  public abstract class SerializedTweenerV2<TObject, TValue> : SerializedTweenerV2Base<TObject>
+  public abstract class SerializedTweenerV2<TObject, TValue> : SerializedTweenerV2WithTarget<TObject, TValue, TValue>
+    where TValue : struct
+  {
+
+    #if UNITY_EDITOR
+    protected override void __setStart() => _start = get;
+    protected override void __setEnd() => _end = get;
+    protected override void __setDelta() => _delta = get;
+
+    [OnValueChanged(CHANGE), HideLabel, HorizontalGroup(DELTA), ShowIf(SHOW_DELTA), ShowInInspector]
+    TValue _delta {
+      get => subtract(_end, _start);
+      set => _end = add(_start, value);
+    }
+    #endif
+  }
+
+  [Serializable]
+  public abstract class SerializedTweenerV2WithTarget<TObject, TValue, TTarget> : SerializedTweenerV2Base<TObject>
     where TValue : struct
   {
     const string START = "start";
     const string END = "end";
-    const string DELTA = "delta";
+    protected const string DELTA = "delta";
     const string DURATION = "duration";
     const int LABEL_WIDTH = 50;
     
     // Don't use nameof, because those fields exist only in UNITY_EDITOR
     const string SHOW_CURRENT = "showCurrent";
-    const string SHOW_DELTA = "displayAsDelta";
+    protected const string SHOW_DELTA = "displayAsDelta";
 
-    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)] protected TValue _start;
-    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(END), HideIf(SHOW_DELTA)] protected TValue _end;
+    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)] protected TTarget _start;
+    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(END), HideIf(SHOW_DELTA)] protected TTarget _end;
     [SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, Width = 90), LabelWidth(55)] float _duration = 1;
     [
       SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, MarginLeft = 20, Width = 210), HideLabel
@@ -103,24 +121,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 #if UNITY_EDITOR
     [UsedImplicitly] bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
     [UsedImplicitly] bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
-    
+
     [Button("Start"), PropertyOrder(-1), HorizontalGroup(START, Width = LABEL_WIDTH)]
-    void __setStart() => _start = get;
-    [Button("End"), PropertyOrder(-1), HorizontalGroup(END, Width = LABEL_WIDTH), HideIf(SHOW_DELTA)] 
-    void __setEnd() => _end = get;
-    [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(SHOW_DELTA)] 
-    void __setDelta() => _delta = get;
+    protected virtual void __setStart() { }
+    [Button("End"), PropertyOrder(-1), HorizontalGroup(END, Width = LABEL_WIDTH), HideIf(SHOW_DELTA)]
+    protected virtual void __setEnd() { }
+    [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(SHOW_DELTA)]
+    protected virtual void __setDelta() { }
 
     [Button] void swapEndAndStart() {
       var copy = _start;
       _start = _end;
       _end = copy;
-    }
-
-    [OnValueChanged(CHANGE), HideLabel, HorizontalGroup(DELTA), ShowIf(SHOW_DELTA), ShowInInspector]
-    TValue _delta {
-      get => subtract(_end, _start);
-      set => _end = add(_start, value);
     }
 #endif
   }
@@ -167,6 +179,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
 
   // ReSharper disable NotNullMemberIsNotInitialized
+
+  [Serializable]
+  public sealed class PositionBetweenTargets : SerializedTweenerV2WithTarget<Transform, Vector2, Transform> {
+    protected override Vector2 lerp(float percentage) => Vector2.LerpUnclamped(_start.position, _end.position, percentage);
+    protected override Vector2 add(Vector2 a, Vector2 b) => a + b;
+    protected override Vector2 subtract(Vector2 a, Vector2 b) => a - b;
+    protected override Vector2 get => _target.position;
+    protected override void set(Vector2 value) => _target.position = value;
+  }
 
   [Serializable]
   public sealed class AnchoredPosition : SerializedTweenerVector2<RectTransform> {
