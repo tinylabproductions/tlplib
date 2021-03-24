@@ -3,6 +3,7 @@ using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Utilities;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using TMPro;
@@ -54,18 +55,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
   
   
-  
+  /// <summary>
+  /// <see cref="SerializedTweenerV2{TObject,TValue,TValueSource}"/> where the value source is fixed to a value.
+  /// </summary>
   [Serializable]
-  public abstract class SerializedTweenerV2<TObject, TValue> : SerializedTweenerV2WithTarget<TObject, TValue, TValue>
+  public abstract class SerializedTweenerV2<TObject, TValue> : SerializedTweenerV2<TObject, TValue, TValue>
     where TValue : struct
   {
 
     #if UNITY_EDITOR
     protected override void __setStart() => _start = get;
     protected override void __setEnd() => _end = get;
-    protected override void __setDelta() => _delta = get;
+    [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(METHOD_SHOW_DELTA)]
+    protected void __setDelta() => _delta = get;
 
-    [OnValueChanged(CHANGE), HideLabel, HorizontalGroup(DELTA), ShowIf(SHOW_DELTA), ShowInInspector]
+    [OnValueChanged(CHANGE), HideLabel, HorizontalGroup(DELTA), ShowIf(METHOD_SHOW_DELTA), ShowInInspector]
     TValue _delta {
       get => subtract(_end, _start);
       set => _end = add(_start, value);
@@ -73,22 +77,34 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     #endif
   }
 
+  /// <summary>
+  /// Serialized tweener with separate <see cref="TValue"/> and <see cref="TValueSource"/> parameters.
+  /// </summary>
+  /// <typeparam name="TObject">The type of object we want to tween, like <see cref="Transform"/>.</typeparam>
+  /// <typeparam name="TValue">
+  /// The type of value we are tweening, like <see cref="Vector3"/> in case of <see cref="Transform.position"/>.
+  /// </typeparam>
+  /// <typeparam name="TValueSource">
+  /// The type of the source from which we get our <see cref="_start"/> and <see cref="_end"/> <see cref="TValue"/>s
+  /// from. In our example it could be another <see cref="Transform"/> or maybe some other type that would provide the
+  /// needed <see cref="Vector3"/>.
+  /// </typeparam>
   [Serializable]
-  public abstract class SerializedTweenerV2WithTarget<TObject, TValue, TTarget> : SerializedTweenerV2Base<TObject>
+  public abstract class SerializedTweenerV2<TObject, TValue, TValueSource> : SerializedTweenerV2Base<TObject>
     where TValue : struct
   {
     const string START = "start";
     const string END = "end";
     protected const string DELTA = "delta";
     const string DURATION = "duration";
-    const int LABEL_WIDTH = 50;
-    
-    // Don't use nameof, because those fields exist only in UNITY_EDITOR
-    const string SHOW_CURRENT = "showCurrent";
-    protected const string SHOW_DELTA = "displayAsDelta";
+    protected const int LABEL_WIDTH = 50;
 
-    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)] protected TTarget _start;
-    [SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(END), HideIf(SHOW_DELTA)] protected TTarget _end;
+    [
+      SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(START)
+    ] protected TValueSource _start;
+    [
+      SerializeField, OnValueChanged(CHANGE), HideLabel, HorizontalGroup(END), HideIf(METHOD_SHOW_DELTA)
+    ] protected TValueSource _end;
     [SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, Width = 90), LabelWidth(55)] float _duration = 1;
     [
       SerializeField, OnValueChanged(CHANGE), HorizontalGroup(DURATION, MarginLeft = 20, Width = 210), HideLabel
@@ -105,7 +121,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     // TODO: cache ease function
     public override void applyStateAt(float time) => set(lerp(_ease.ease.Invoke(time / duration)));
 
-    [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(SHOW_CURRENT)] 
+    [ShowInInspector, PropertyOrder(-1), LabelText("Current"), LabelWidth(LABEL_WIDTH), ShowIf(METHOD_SHOW_CURRENT)]
     TValue __current {
       get {
         try { return get; } catch (Exception) { return default; }
@@ -117,17 +133,29 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     // protected static string[] spQuaternion(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z", $"{sp}.w" };
     // protected static string[] spVector3(string sp) => new[] { $"{sp}.x", $"{sp}.y", $"{sp}.z" };
     // protected static string[] spVector2(string sp) => new[] { $"{sp}.x", $"{sp}.y" };
-    
+
+    // Don't use nameof, because those fields exist only in UNITY_EDITOR
+    protected const string
+      METHOD_SHOW_CURRENT = "showCurrent",
+      METHOD_SHOW_DELTA = "displayAsDelta";
 #if UNITY_EDITOR
     [UsedImplicitly] bool showCurrent => SerializedTweenTimelineV2.editorDisplayCurrent && hasTarget;
     [UsedImplicitly] bool displayAsDelta => SerializedTweenTimelineV2.editorDisplayEndAsDelta;
 
+    /// <summary>Sets <see cref="_start"/> to <see cref="get"/> if that is possible.</summary>
     [Button("Start"), PropertyOrder(-1), HorizontalGroup(START, Width = LABEL_WIDTH)]
-    protected virtual void __setStart() { }
-    [Button("End"), PropertyOrder(-1), HorizontalGroup(END, Width = LABEL_WIDTH), HideIf(SHOW_DELTA)]
-    protected virtual void __setEnd() { }
-    [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(SHOW_DELTA)]
-    protected virtual void __setDelta() { }
+    protected abstract void __setStart();
+    /// <summary>Sets <see cref="_end"/> to <see cref="get"/> if that is possible.</summary>
+    [Button("End"), PropertyOrder(-1), HorizontalGroup(END, Width = LABEL_WIDTH), HideIf(METHOD_SHOW_DELTA)]
+    protected abstract void __setEnd();
+
+    protected void showItIsUselessMessage() => EditorUtils.userInfo(
+      "This is just a label",
+      "This button does not do anything when you click on it and thus only acts as a label and a monument to " +
+      "programmer laziness. Weird, I know, right?\n\n" +
+      "But it does on other types of tweens, that's why it's a button. So don't despair!",
+      context: this
+    );
 
     [Button] void swapEndAndStart() {
       var copy = _start;
@@ -137,8 +165,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 #endif
   }
 
-  
-  
   public abstract class SerializedTweenerVector3<T> : SerializedTweenerV2<T, Vector3> {
     protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start, _end, percentage);
     protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
@@ -181,12 +207,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   // ReSharper disable NotNullMemberIsNotInitialized
 
   [Serializable]
-  public sealed class PositionBetweenTargets : SerializedTweenerV2WithTarget<Transform, Vector2, Transform> {
-    protected override Vector2 lerp(float percentage) => Vector2.LerpUnclamped(_start.position, _end.position, percentage);
-    protected override Vector2 add(Vector2 a, Vector2 b) => a + b;
-    protected override Vector2 subtract(Vector2 a, Vector2 b) => a - b;
-    protected override Vector2 get => _target.position;
-    protected override void set(Vector2 value) => _target.position = value;
+  public sealed class PositionBetweenTargets : SerializedTweenerV2<Transform, Vector3, Transform> {
+    protected override void __setStart() => showItIsUselessMessage();
+    protected override void __setEnd() => showItIsUselessMessage();
+
+    protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start.position, _end.position, percentage);
+    protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
+    protected override Vector3 subtract(Vector3 a, Vector3 b) => a - b;
+    protected override Vector3 get => _target.position;
+    protected override void set(Vector3 value) => _target.position = value;
   }
 
   [Serializable]
