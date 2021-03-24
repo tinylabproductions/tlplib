@@ -64,8 +64,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   {
 
     #if UNITY_EDITOR
-    protected override void __setStart() => _start = get;
-    protected override void __setEnd() => _end = get;
+    protected override void editor__setStart() => _start = get;
+    protected override void editor__setEnd() => _end = get;
     [Button("Delta"), PropertyOrder(-1), HorizontalGroup(DELTA, Width = LABEL_WIDTH), ShowIf(METHOD_SHOW_DELTA)]
     protected void __setDelta() => _delta = get;
 
@@ -144,10 +144,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     /// <summary>Sets <see cref="_start"/> to <see cref="get"/> if that is possible.</summary>
     [Button("Start"), PropertyOrder(-1), HorizontalGroup(START, Width = LABEL_WIDTH)]
-    protected abstract void __setStart();
+    protected abstract void editor__setStart();
     /// <summary>Sets <see cref="_end"/> to <see cref="get"/> if that is possible.</summary>
     [Button("End"), PropertyOrder(-1), HorizontalGroup(END, Width = LABEL_WIDTH), HideIf(METHOD_SHOW_DELTA)]
-    protected abstract void __setEnd();
+    protected abstract void editor__setEnd();
 
     protected void showItIsUselessMessage() => EditorUtils.userInfo(
       "This is just a label",
@@ -208,8 +208,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
   [Serializable]
   public sealed class PositionBetweenTargets : SerializedTweenerV2<Transform, Vector3, Transform> {
-    protected override void __setStart() => showItIsUselessMessage();
-    protected override void __setEnd() => showItIsUselessMessage();
+    #if UNITY_EDITOR
+    protected override void editor__setStart() => showItIsUselessMessage();
+    protected override void editor__setEnd() => showItIsUselessMessage();
+    #endif
 
     protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start.position, _end.position, percentage);
     protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
