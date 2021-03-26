@@ -347,6 +347,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
   
   [Serializable]
+  public sealed class GraphicColor : SerializedTweenerColor<Graphic> {
+    protected override Color get => _target.color;
+    protected override void set(Color value) => _target.color = value;
+  }
+  
+  [Serializable]
   public sealed class ImageAlpha : SerializedTweenerFloat<Image> {
     protected override float get => _target.color.a;
     protected override void set(float value) => _target.color = _target.color.withAlpha(value);
