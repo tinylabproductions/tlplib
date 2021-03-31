@@ -703,7 +703,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           });
         }
       }
-      else if (listItemType.isSerializableAsValue) {
+      if (listItemType.isSerializableAsValue || hasSerializeReference) {
         var index = 0;
         foreach (var listItem in list) {
           validateFields(
