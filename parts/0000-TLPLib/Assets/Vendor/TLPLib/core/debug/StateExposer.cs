@@ -188,28 +188,6 @@ namespace com.tinylabproductions.TLPLib.debug {
       (StateExposer.instance / go).expose(reference, name, get);
     }
 
-    public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Func<A, string> get
-    ) where A : class => go.exposeToInspector(reference, name, a => new StateExposer.StringValue(get(a)));
-
-    public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Func<A, float> get
-    ) where A : class => go.exposeToInspector(reference, name, a => new StateExposer.FloatValue(get(a)));
-
-    public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Func<A, bool> get
-    ) where A : class => go.exposeToInspector(reference, name, a => get(a) ? "true" : "false");
-
-    public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Func<A, UnityEngine.Object> get
-    ) where A : class => go.exposeToInspector(reference, name, x => new StateExposer.ObjectValue(get(x)));
-
-    public static void exposeToInspector<A>(
-      this GameObject go, A reference, string name, Action<A> onClick
-    ) where A : class => go.exposeToInspector(
-      reference, name, x => new StateExposer.ActionValue(() => onClick(x))
-    );
-
     public static void exposeAllToInspector<A>(
       this GameObject go, A reference
     ) where A : class {
