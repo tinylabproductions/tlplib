@@ -95,16 +95,6 @@ namespace com.tinylabproductions.TLPLib.debug {
       /// <summary>Exposes a named value that is available via an object instance.</summary>
       public void expose<A>(A reference, string name, Func<A, IRenderableValue> get) where A : class => 
         add(new InstanceData<A>(reference.weakRef(), name, get));
-      public void expose<A>(A reference, string name, Func<A, string> get) where A : class => 
-        expose(reference, name, a => new StringValue(get(a)));
-      public void expose<A>(A reference, string name, Func<A, float> get) where A : class => 
-        expose(reference, name, a => new FloatValue(get(a)));
-      public void expose<A>(A reference, string name, Func<A, bool> get) where A : class => 
-        expose(reference, name, a => new BoolValue(get(a)));
-      public void expose<A>(A reference, string name, Func<A, UnityEngine.Object> get) where A : class => 
-        expose(reference, name, a => new ObjectValue(get(a)));
-      public void expose<A>(A reference, string name, Func<A, Action> onClick) where A : class => 
-        expose(reference, name, a => new ActionValue(onClick(a)));
       
       /// <summary>
       /// Helper for exposing <see cref="Future{A}"/>. Does not do anything if the future is not async (because it's a
@@ -151,14 +141,44 @@ namespace com.tinylabproductions.TLPLib.debug {
       public readonly string name;
       public readonly IRenderableValue value;
     }
-    
+
     /// <summary>Represents a value that we can render.</summary>
-    [Matcher] public abstract class IRenderableValue {}
+    [Matcher] public abstract class IRenderableValue {
+      public static implicit operator IRenderableValue(string v) => new StringValue(v);
+      public static implicit operator IRenderableValue(float v) => new FloatValue(v);
+      public static implicit operator IRenderableValue(double v) => new FloatValue((float) v);
+      public static implicit operator IRenderableValue(bool v) => new BoolValue(v);
+      public static implicit operator IRenderableValue(UnityEngine.Object v) => new ObjectValue(v);
+      public static implicit operator IRenderableValue(Action v) => new ActionValue(v);
+      public static implicit operator IRenderableValue(IRenderableValue[] v) => new EnumerableValue(v);
+    }
     [Record] public sealed partial class StringValue : IRenderableValue { public readonly string value; }
     [Record] public sealed partial class FloatValue : IRenderableValue { public readonly float value; }
     [Record] public sealed partial class BoolValue : IRenderableValue { public readonly bool value; }
     [Record] public sealed partial class ObjectValue : IRenderableValue { public readonly UnityEngine.Object value; }
-    [Record] public sealed partial class ActionValue : IRenderableValue { public readonly Action value; }
+    [Record] public sealed partial class ActionValue : IRenderableValue {
+      public readonly string label;
+      public readonly Action value;
+
+      public ActionValue(Action value) : this("Run", value) {}
+    }
+    /// <summary>Renders the key in column 1 and value in column 2.</summary>
+    [Record] public sealed partial class KVValue : IRenderableValue { public readonly IRenderableValue key, value; }
+    /// <summary>Renders a header and then the value, but indents the value by the specified indent.</summary>
+    [Record] public sealed partial class HeaderValue : IRenderableValue {
+      public readonly IRenderableValue header, value;
+      public readonly byte indentBy;
+
+      public HeaderValue(IRenderableValue header, IRenderableValue value) : this(header, value, 1) {}
+    }
+    /// <summary>Renders given values with header stating the count and separator between values.</summary>
+    [Record] public sealed partial class EnumerableValue : IRenderableValue {
+      /// <summary>Should we render the element count?</summary>
+      public readonly bool showCount;
+      public readonly IReadOnlyCollection<IRenderableValue> values;
+
+      public EnumerableValue(IReadOnlyCollection<IRenderableValue> values) : this(showCount: true, values) {}
+    }
   }
 
   [PublicAPI] public static class StateExposerExts {
