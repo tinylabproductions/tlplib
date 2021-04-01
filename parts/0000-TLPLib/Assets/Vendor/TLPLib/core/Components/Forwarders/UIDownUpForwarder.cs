@@ -5,14 +5,25 @@ using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
   public class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
-    readonly Subject<PointerEventData>
-      _onDown = new Subject<PointerEventData>(),
-      _onUp = new Subject<PointerEventData>();
+    public readonly struct OnUpData {
+      public enum UpType: byte { onPointerUp, OnDisable }
+
+      public readonly PointerEventData eventData;
+      public readonly UpType type;
+
+      public OnUpData(PointerEventData eventData, UpType type) {
+        this.eventData = eventData;
+        this.type = type;
+      }
+    }
+
+    readonly Subject<PointerEventData> _onDown = new();
+    readonly Subject<OnUpData> _onUp = new();
     public IRxObservable<PointerEventData> onDown => _onDown;
-    public IRxObservable<PointerEventData> onUp => _onUp;
+    public IRxObservable<OnUpData> onUp => _onUp;
     public bool isDown { get; private set; }
 
-    void up(PointerEventData eventData) {
+    void up(OnUpData eventData) {
       _onUp.push(eventData);
       isDown = false;
     }
@@ -26,13 +37,13 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected override void onPointerUp(PointerEventData eventData) {
       if (isActiveAndEnabled)
-        up(eventData);
+        up(new OnUpData(eventData, OnUpData.UpType.onPointerUp));
     }
 
     public void OnDisable() {
       if (isDown) {
         foreach (var data in pointerData) {
-          up(data);
+          up(new OnUpData(data, OnUpData.UpType.OnDisable));
         }
       }
     }
