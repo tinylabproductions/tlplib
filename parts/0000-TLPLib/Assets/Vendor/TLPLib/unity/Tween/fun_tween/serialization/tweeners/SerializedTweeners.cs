@@ -219,6 +219,28 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector3 get => _target.position;
     protected override void set(Vector3 value) => _target.position = value;
   }
+  
+  // TODO: refactor common stuff
+  [Serializable]
+  public sealed class ScaleBetweenTargets : SerializedTweenerV2<Transform, Vector3, Transform> {
+#if UNITY_EDITOR
+    protected override void editor__setStart() => showItIsUselessMessage();
+    protected override void editor__setEnd() => showItIsUselessMessage();
+#endif
+
+    protected override Vector3 lerp(float percentage) => Vector3.LerpUnclamped(_start.lossyScale, _end.lossyScale, percentage);
+    protected override Vector3 add(Vector3 a, Vector3 b) => a + b;
+    protected override Vector3 subtract(Vector3 a, Vector3 b) => a - b;
+    protected override Vector3 get => _target.lossyScale;
+    protected override void set(Vector3 value) {
+      var parentScale = _target.parent.lossyScale;
+      _target.localScale = new Vector3(
+        value.x / parentScale.x,
+        value.y / parentScale.y,
+        value.z / parentScale.z
+      );
+    }
+  }
 
   [Serializable]
   public sealed class AnchoredPosition : SerializedTweenerVector2<RectTransform> {
