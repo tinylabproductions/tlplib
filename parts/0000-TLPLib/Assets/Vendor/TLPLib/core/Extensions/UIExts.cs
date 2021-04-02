@@ -19,10 +19,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// event and up event.
     /// </summary>
     public static IRxObservable<UIDownUpResult> uiDownUp(this GameObject go, ITimeContext timeContext) {
-      var downMapper = new Func<PointerEventData, TimeSpan>(_ => timeContext.passedSinceStartup);
-      var upMapper = new Func<UIDownUpForwarder.OnUpData, (TimeSpan at, UIDownUpForwarder.OnUpData data)>(data =>
-        (timeContext.passedSinceStartup, data)
-      );
+      TimeSpan downMapper(PointerEventData pointerEventData) => timeContext.passedSinceStartup;
+      (TimeSpan at, UIDownUpForwarder.OnUpData data) upMapper(UIDownUpForwarder.OnUpData pointerEventData)
+        => (timeContext.passedSinceStartup, pointerEventData);
 
       var downAt = go.uiDown().map(downMapper);
       var upAt = go.uiUp().map(upMapper);

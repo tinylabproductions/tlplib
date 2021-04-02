@@ -1,20 +1,16 @@
 ﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.ui;
+using GenerationAttributes;
 using pzd.lib.reactive;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  public class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
-    public readonly struct OnUpData {
-      public enum UpType: byte { onPointerUp, OnDisable }
+  public partial class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
+    [Record] public readonly partial struct OnUpData {
+      public enum UpType : byte { OnPointerUp, OnDisable }
 
       public readonly PointerEventData eventData;
       public readonly UpType type;
-
-      public OnUpData(PointerEventData eventData, UpType type) {
-        this.eventData = eventData;
-        this.type = type;
-      }
     }
 
     readonly Subject<PointerEventData> _onDown = new();
@@ -37,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected override void onPointerUp(PointerEventData eventData) {
       if (isActiveAndEnabled)
-        up(new OnUpData(eventData, OnUpData.UpType.onPointerUp));
+        up(new OnUpData(eventData, OnUpData.UpType.OnPointerUp));
     }
 
     public void OnDisable() {
