@@ -1,18 +1,25 @@
 ﻿using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Components.ui;
+using GenerationAttributes;
 using pzd.lib.reactive;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Components {
-  public class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
-    readonly Subject<PointerEventData>
-      _onDown = new Subject<PointerEventData>(),
-      _onUp = new Subject<PointerEventData>();
+  public partial class UIDownUpForwarder : PointerDownUp, IMB_OnDisable {
+    [Record] public readonly partial struct OnUpData {
+      public enum UpType : byte { OnPointerUp, OnDisable }
+
+      public readonly PointerEventData eventData;
+      public readonly UpType type;
+    }
+
+    readonly Subject<PointerEventData> _onDown = new();
+    readonly Subject<OnUpData> _onUp = new();
     public IRxObservable<PointerEventData> onDown => _onDown;
-    public IRxObservable<PointerEventData> onUp => _onUp;
+    public IRxObservable<OnUpData> onUp => _onUp;
     public bool isDown { get; private set; }
 
-    void up(PointerEventData eventData) {
+    void up(OnUpData eventData) {
       _onUp.push(eventData);
       isDown = false;
     }
@@ -26,13 +33,13 @@ namespace com.tinylabproductions.TLPLib.Components {
 
     protected override void onPointerUp(PointerEventData eventData) {
       if (isActiveAndEnabled)
-        up(eventData);
+        up(new OnUpData(eventData, OnUpData.UpType.OnPointerUp));
     }
 
     public void OnDisable() {
       if (isDown) {
         foreach (var data in pointerData) {
-          up(data);
+          up(new OnUpData(data, OnUpData.UpType.OnDisable));
         }
       }
     }
