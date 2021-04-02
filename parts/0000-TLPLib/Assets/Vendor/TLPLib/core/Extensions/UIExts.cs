@@ -1,5 +1,6 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Components;
+using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.concurrent;
 using pzd.lib.functional;
@@ -8,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace com.tinylabproductions.TLPLib.Extensions {
-  [PublicAPI] public static class UIExts {
+  [PublicAPI] public static partial class UIExts {
     public static IRxObservable<Unit> uiClick(this UIBehaviour elem) => elem.gameObject.uiClick();
     public static IRxObservable<Unit> uiClick(this GameObject go) => go.EnsureComponent<UIClickForwarder>().onClick;
     public static IRxObservable<PointerEventData> uiDown(this GameObject go) => go.EnsureComponent<UIDownUpForwarder>().onDown;
@@ -20,8 +21,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     /// </summary>
     public static IRxObservable<UIDownUpResult> uiDownUp(this GameObject go, ITimeContext timeContext) {
       TimeSpan downMapper(PointerEventData pointerEventData) => timeContext.passedSinceStartup;
-      (TimeSpan at, UIDownUpForwarder.OnUpData data) upMapper(UIDownUpForwarder.OnUpData pointerEventData)
-        => (timeContext.passedSinceStartup, pointerEventData);
+      (TimeSpan at, UIDownUpForwarder.OnUpData data) upMapper(UIDownUpForwarder.OnUpData pointerEventData) =>
+        (timeContext.passedSinceStartup, pointerEventData);
 
       var downAt = go.uiDown().map(downMapper);
       var upAt = go.uiUp().map(upMapper);
@@ -34,13 +35,8 @@ namespace com.tinylabproductions.TLPLib.Extensions {
     }
   }
 
-  public readonly struct UIDownUpResult {
+  [Record] public readonly partial struct UIDownUpResult {
     public readonly TimeSpan pressedDuration;
     public readonly UIDownUpForwarder.OnUpData upData;
-
-    public UIDownUpResult(TimeSpan pressedDuration, UIDownUpForwarder.OnUpData upData) {
-      this.pressedDuration = pressedDuration;
-      this.upData = upData;
-    }
   }
 }
