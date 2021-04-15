@@ -32,7 +32,14 @@ namespace com.tinylabproductions.TLPLib.Editor.unity_serialization {
       if (!oneLine) SirenixEditorGUI.EndHorizontalPropertyLayout();
       if ((bool) isSet.ValueEntry.WeakSmartValue) {
         if (oneLine) {
-          value.Draw(GUIContent.none);
+          SirenixEditorGUI.BeginVerticalPropertyLayout(null);
+          if (value.Children.Count == 1) {
+            value.Children[0].Draw(GUIContent.none);
+          }
+          else {
+            value.Draw(GUIContent.none);
+          }
+          SirenixEditorGUI.EndVerticalPropertyLayout();
         }
         else {
           GUIHelper.PushIndentLevel(EditorGUI.indentLevel + 1);
