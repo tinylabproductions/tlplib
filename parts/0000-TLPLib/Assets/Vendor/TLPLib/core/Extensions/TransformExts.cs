@@ -46,6 +46,18 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       t.localScale = t.localScale.with3(x, y, z);
     }
 
+    public static void setLocalScaleX(this Transform t, float x) => t.localScale = t.localScale.withX(x);
+    public static void setLocalScaleY(this Transform t, float y) => t.localScale = t.localScale.withY(y);
+    public static void setLocalScaleZ(this Transform t, float z) => t.localScale = t.localScale.withZ(z);
+    
+    public static void setLocalPositionX(this Transform t, float x) => t.localPosition = t.localPosition.withX(x);
+    public static void setLocalPositionY(this Transform t, float y) => t.localPosition = t.localPosition.withY(y);
+    public static void setLocalPositionZ(this Transform t, float z) => t.localPosition = t.localPosition.withZ(z);
+    
+    public static void setPositionX(this Transform t, float x) => t.position = t.position.withX(x);
+    public static void setPositionY(this Transform t, float y) => t.position = t.position.withY(y);
+    public static void setPositionZ(this Transform t, float z) => t.position = t.position.withZ(z);
+
     public static IEnumerable<Transform> children(this Transform parent) {
       for (var idx = 0; idx < parent.childCount; idx++)
         yield return parent.GetChild(idx);
