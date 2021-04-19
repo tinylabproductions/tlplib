@@ -60,6 +60,13 @@ namespace com.tinylabproductions.TLPLib.Data {
       return mapper(instance);
     }
 
+    public static B instantiate<A, B>(
+      this TagPrefab<A> prefab, Vector3 position, Func<A, B> mapper
+    ) where A : Object {
+      var instance = Object.Instantiate(prefab.prefab, position, Quaternion.identity);
+      return mapper(instance);
+    }
+
     public static LazyVal<B> lazyMap<A, B>(
       this TagPrefab<A> prefab, Transform parent, Func<A, B> mapper
     ) where A : Object => F.lazy(() => instantiate(prefab, parent, mapper));
