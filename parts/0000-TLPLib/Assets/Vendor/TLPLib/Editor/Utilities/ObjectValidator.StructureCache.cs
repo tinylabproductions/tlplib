@@ -9,6 +9,7 @@ using GenerationAttributes;
 using JetBrains.Annotations;
 using pzd.lib.collection;
 using pzd.lib.functional;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
@@ -118,6 +119,9 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
         [LazyProperty] public ImmutableArrayC<UnityTagAttribute> unityTagAttributes => 
           fieldInfo.getAttributes<UnityTagAttribute>().toImmutableArrayC();
+
+        [LazyProperty] public ImmutableArrayC<ValidateInputAttribute> validateInputAttributes =>
+          fieldInfo.getAttributes<ValidateInputAttribute>().toImmutableArrayC();
 
         [LazyProperty] public bool isSerializable => fieldInfo.isSerializable();
         [LazyProperty] public bool isSerializableAsReference =>

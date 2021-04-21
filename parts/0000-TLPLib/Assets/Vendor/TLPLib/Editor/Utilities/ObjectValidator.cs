@@ -10,7 +10,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
+ using System.Reflection;
+ using System.Threading;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
@@ -24,7 +25,8 @@ using GenerationAttributes;
 using pzd.lib.collection;
  using pzd.lib.functional;
  using pzd.lib.utils;
-using UnityEngine.Playables;
+ using Sirenix.OdinInspector.Editor.ValueResolvers;
+ using UnityEngine.Playables;
  using Debug = UnityEngine.Debug;
  using Object = UnityEngine.Object;
 
@@ -630,6 +632,49 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 #endif
         {
           void addNotNullError() => addError(() => createError.nullField(fieldHierarchy.asString()));
+
+          {
+            var validateInputAttributes = field.validateInputAttributes;
+            foreach (var attribute in validateInputAttributes) {
+              var method = objectBeingValidated.GetType().GetMethod(
+                attribute.Condition,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic
+                | BindingFlags.Static
+              );
+
+              if (method == null) {
+                addFailedError($"Validator method not found.");
+              }
+              else {
+                var paramCount = method.GetParameters().Length;
+                if (paramCount == 1) {
+                  var succeeded = (bool) method.Invoke(objectBeingValidated, new [] {fieldValue});
+                  if (!succeeded) {
+                    addFailedError($"Custom validation failed with message: {attribute.DefaultMessage}");
+                  }
+                }
+                else if (paramCount == 2) {
+                  var arguments = new object[] {fieldValue, null};
+                  var succeeded = (bool) method.Invoke(objectBeingValidated, arguments);
+                  if (!succeeded) {
+                    var errorMessage = (string) arguments[1];
+                    addFailedError($"Custom validation failed with message: {errorMessage}");
+                  }
+                }
+                else {
+                  addFailedError($"Validation with {paramCount} parameters is not implemented.");
+                }
+              }
+
+              void addFailedError(string errorMsg) {
+                addError(() => createError.custom(
+                  fieldHierarchy.asString(),
+                  new ErrorMsg(errorMsg),
+                  useErrorMessageContext: false
+                ));
+              }
+            }
+          }
 
           switch (fieldValue) {
             case null:
