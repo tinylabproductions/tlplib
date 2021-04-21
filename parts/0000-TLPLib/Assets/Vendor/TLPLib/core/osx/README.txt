@@ -1,0 +1,1 @@
+﻿tlplib_osx.bundle is built from source folder tlplib_repo/osx_plugin
