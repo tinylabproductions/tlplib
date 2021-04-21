@@ -23,6 +23,11 @@ namespace com.tinylabproductions.TLPLib.core.Utilities {
         // and Unity restores the window title when exiting play mode
         RuntimePlatform.WindowsEditor when !Application.isBatchMode => new win32_api.SetWindowTitle(),
 #endif
+#if UNITY_EDITOR_OSX || (UNITY_STANDALONE_OSX && !UNITY_EDITOR)
+        RuntimePlatform.OSXPlayer => new osx.SetWindowTitle(),
+        // This works the same way as windows editor
+        RuntimePlatform.OSXEditor when !Application.isBatchMode => new osx.SetWindowTitle(),
+#endif
         _ => new NoOpSetWindowTitle()
       };
   }
