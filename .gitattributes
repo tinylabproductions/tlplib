@@ -1,2 +1,5 @@
+* text=auto eol=lf
+# this line is eqivalent to   git config core.autocrlf
+
 *.cs text eol=lf
 *.sh text eol=lf
