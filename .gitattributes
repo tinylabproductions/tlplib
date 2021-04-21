@@ -1,5 +1,5 @@
-* text=auto eol=lf
-# this line is eqivalent to   git config core.autocrlf
+# This line disables automatic eol conversion by git.
+* -text
 
 *.cs text eol=lf
 *.sh text eol=lf
