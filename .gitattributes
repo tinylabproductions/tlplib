@@ -1,2 +1,5 @@
+# This line disables automatic eol conversion by git.
+* -text
+
 *.cs text eol=lf
 *.sh text eol=lf
