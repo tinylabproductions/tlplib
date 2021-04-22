@@ -636,33 +636,40 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           {
             var validateInputAttributes = field.validateInputAttributes;
             foreach (var attribute in validateInputAttributes) {
-              var method = objectBeingValidated.GetType().GetMethod(
-                attribute.Condition,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic
-                | BindingFlags.Static
-              );
 
-              if (method == null) {
-                addFailedError($"Validator method not found.");
+              var maybeMethod = objectBeingValidated.GetType().GetMethodInHierarchy(attribute.Condition);
+
+              if (!maybeMethod.valueOut(out var method) ) {
+                addFailedError(
+                  $"Validator method not found. Lokkedt for method {attribute.Condition} " +
+                  $"on type {objectBeingValidated.GetType().FullName}"
+                );
               }
               else {
                 var paramCount = method.GetParameters().Length;
-                if (paramCount == 1) {
-                  var succeeded = (bool) method.Invoke(objectBeingValidated, new [] {fieldValue});
-                  if (!succeeded) {
-                    addFailedError($"Custom validation failed with message: {attribute.DefaultMessage}");
+                switch (paramCount) {
+                  case 1:
+                    jobController.enqueueMainThreadJob(() => {
+                      var succeeded = (bool) method.Invoke(objectBeingValidated, new [] {fieldValue});
+                      if (!succeeded) {
+                        addFailedError($"Custom validation failed with message: {attribute.DefaultMessage}");
+                      }
+                    });
+                    break;
+                  case 2: {
+                    var arguments = new object[] {fieldValue, null};
+                    jobController.enqueueMainThreadJob(() => {
+                      var succeeded = (bool) method.Invoke(objectBeingValidated, arguments);
+                      if (!succeeded) {
+                        var errorMessage = (string) arguments[1];
+                        addFailedError($"Custom validation failed with message: {errorMessage}");
+                      }
+                    });
+                    break;
                   }
-                }
-                else if (paramCount == 2) {
-                  var arguments = new object[] {fieldValue, null};
-                  var succeeded = (bool) method.Invoke(objectBeingValidated, arguments);
-                  if (!succeeded) {
-                    var errorMessage = (string) arguments[1];
-                    addFailedError($"Custom validation failed with message: {errorMessage}");
-                  }
-                }
-                else {
-                  addFailedError($"Validation with {paramCount} parameters is not implemented.");
+                  default:
+                    addFailedError($"Validation with {paramCount} parameters is not implemented.");
+                    break;
                 }
               }
 
