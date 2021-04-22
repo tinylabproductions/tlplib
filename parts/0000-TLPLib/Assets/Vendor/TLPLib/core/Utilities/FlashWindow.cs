@@ -1,3 +1,8 @@
+// See Utilities.SetWindowTitle.cs for explanation
+#if UNITY_EDITOR_WIN || (UNITY_STANDALONE_WIN && !UNITY_EDITOR)
+#define WINDOWS_RUNTIME
+#endif
+
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -15,11 +20,11 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     /// <summary>
     /// Check the runtime platform, not the build target, to prevent Unity running on Mac but targeting Windows from
     /// trying to use Win32 APIs. However because <see cref="win32_api.FlashWindowWin32"/> is only defined in
-    /// UNITY_STANDALONE_WIN, we also need to check the build target.
+    /// WINDOWS_RUNTIME, we also need to check the build target.
     /// </summary>
     public static readonly IFlashWindow instance =
       Application.platform switch {
-#if UNITY_STANDALONE_WIN
+#if WINDOWS_RUNTIME
         RuntimePlatform.WindowsPlayer => new win32_api.FlashWindowWin32(),
         // When running in batch mode we don not have a windows to flash on.
         RuntimePlatform.WindowsEditor when !Application.isBatchMode => new win32_api.FlashWindowWin32(),

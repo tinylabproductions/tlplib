@@ -1,4 +1,5 @@
-﻿#if UNITY_EDITOR_OSX || (UNITY_STANDALONE_OSX && !UNITY_EDITOR)
+﻿// See Utilities.SetWindowTitle.cs for explanation.
+#if UNITY_EDITOR_OSX || (UNITY_STANDALONE_OSX && !UNITY_EDITOR)
 using System;
 using System.Runtime.InteropServices;
 using com.tinylabproductions.TLPLib.core.Utilities;

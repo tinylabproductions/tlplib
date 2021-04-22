@@ -1,4 +1,5 @@
-#if UNITY_STANDALONE_WIN
+// See Utilities.SetWindowTitle.cs for explanation
+#if UNITY_EDITOR_WIN || (UNITY_STANDALONE_WIN && !UNITY_EDITOR)
 using System;
 using System.Runtime.InteropServices;
 using com.tinylabproductions.TLPLib.Logger;
