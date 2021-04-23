@@ -114,7 +114,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
     
-    protected override void invoke() => _manager.run(_action);
+    protected override void invoke() {
+      // Playing tweens is not supported in edit mode.
+      if (Application.isPlaying) _manager.run(_action);
+    }
 
     public override bool isValid => _manager;
 

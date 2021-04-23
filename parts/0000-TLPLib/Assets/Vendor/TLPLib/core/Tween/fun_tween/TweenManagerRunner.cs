@@ -21,16 +21,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     [PublicAPI] public static TweenManagerRunner instance {
       get {
         return _instance ? _instance : _instance = create();
-        
+
         static TweenManagerRunner create() {
-          var go = new GameObject(nameof(TweenManagerRunner));
           if (Application.isPlaying) {
+            var go = new GameObject(nameof(TweenManagerRunner));
             DontDestroyOnLoad(go);
+            return go.AddComponent<TweenManagerRunner>();
           }
           else {
-            go.hideFlags = HideFlags.HideAndDontSave;
+            throw new Exception("Running tweens in edit mode is not supported.");
           }
-          return go.AddComponent<TweenManagerRunner>();
         }
       }
     }

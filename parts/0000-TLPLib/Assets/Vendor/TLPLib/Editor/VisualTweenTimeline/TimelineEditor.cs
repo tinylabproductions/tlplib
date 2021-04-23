@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using pzd.lib.data;
 using pzd.lib.functional;
@@ -55,8 +56,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     Init init;
 
-    readonly Dictionary<FunTweenManagerV2, TimelineVisuals.TimelineVisualsSettings>
-      mappedSettings = new Dictionary<FunTweenManagerV2, TimelineVisuals.TimelineVisualsSettings>();
+    readonly Dictionary<FunTweenManagerV2, TimelineVisuals.TimelineVisualsSettings> mappedSettings = new();
 
     public void OnGUI() => init?.onGUI(Event.current);
 
@@ -67,7 +67,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     void refreshInit(Option<FunTweenManagerV2> ftmToSetOpt, Option<TimelineNode> rootSelectedNodeToSet) {
       if (init == null) init = new Init(this, ftmToSetOpt, rootSelectedNodeToSet);
-      else if (!init.isLocked.value) init = new Init(this, ftmToSetOpt, rootSelectedNodeToSet);
+      else if (!init.isLocked.value) {
+        init.Dispose();
+        init = new Init(this, ftmToSetOpt, rootSelectedNodeToSet);
+      }
     }
    
     public void OnDisable() {
@@ -105,20 +108,23 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       readonly TimelineEditor backing;
       readonly TimelineVisuals timelineVisuals;
       readonly Option<GameObject> selectedGameObjectOpt;
-      readonly List<float> diffList = new List<float>();
-      readonly List<TimelineNode> selectedNodesList = new List<TimelineNode>();
+      readonly List<float> diffList = new();
+      readonly List<TimelineNode> selectedNodesList = new();
       readonly Ref<bool> visualizationMode = new SimpleRef<bool>(false);
 
       Option<FunTweenManagerV2> selectedFunTweenManager { get; set; }
       Option<TimelineNode> rootSelectedNodeOpt { get; set; }
       
-      List<TimelineNode> funNodes = new List<TimelineNode>();
+      List<TimelineNode> funNodes = new();
       bool isStartSnapped, isEndSnapped, resizeNodeStart, resizeNodeEnd, dragNode, snapping = true;
       Option<NodeSnappedTo> nodeSnappedToOpt;
       Option<TweenPlaybackController> tweenPlaybackController;
       float timeClickOffset;
 
-      void OnPlaymodeStateChanged(PlayModeStateChange change) { backing.OnEnable(); }
+      void OnPlaymodeStateChanged(PlayModeStateChange change) {
+        using var _ = new ProfiledScope(Macros.classAndMethodName);
+        backing.OnEnable();
+      }
 
       public void onLostFocus() {
         foreach (var controller in tweenPlaybackController) {
