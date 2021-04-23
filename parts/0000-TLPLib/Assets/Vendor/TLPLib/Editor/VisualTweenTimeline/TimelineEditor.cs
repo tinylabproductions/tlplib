@@ -199,7 +199,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void EditorSceneManagerOnSceneSaving(Scene scene, string path) {
-        funNodes.Clear();
+        // Why was this even here? It breaks the UI on save.
+        // funNodes.Clear();
         foreach (var controller in tweenPlaybackController) {
           controller.stopVisualization();
         }
