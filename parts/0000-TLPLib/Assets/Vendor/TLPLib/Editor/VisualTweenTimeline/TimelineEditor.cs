@@ -237,7 +237,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void undoCallback() {
-        selectedNodesList.Clear();
         importTimeline();
       }
 
@@ -769,48 +768,48 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void doNewSettings(SettingsEvents settingsEvent) {
-          switch (settingsEvent) {
-            case SettingsEvents.AddTween:
-              var newNode = new TimelineNode(new Element());
-              moveCurrentNodeDownIfOverlapping(newNode);
-              
-              funNodes.Add(newNode);
+        switch (settingsEvent) {
+          case SettingsEvents.AddTween:
+            var newNode = new TimelineNode(new Element());
+            moveCurrentNodeDownIfOverlapping(newNode);
+            
+            funNodes.Add(newNode);
 
-              selectedNodesList.Clear();
-              selectedNodesList.Add(newNode);
-              rootSelectedNodeOpt = newNode.some();
+            selectedNodesList.Clear();
+            selectedNodesList.Add(newNode);
+            rootSelectedNodeOpt = newNode.some();
 
-              exportTimelineToTweenManager();
-              importTimeline();
-              break;
-            case SettingsEvents.ToggleSnapping:
-              snapping = !snapping;
-              break;
-            case SettingsEvents.Link:
-              foreach (var selectedNode in rootSelectedNodeOpt)
-                if (selectedFunTweenManager.valueOut(out var ftm)) {
-                  Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
-                  if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
-                    selectedNode.linkTo(leftNode);
-                  }
-                }
-              break;
-            case SettingsEvents.Unlink:
-              foreach (var selectedNode in rootSelectedNodeOpt) {
-                if (selectedFunTweenManager.valueOut(out var ftm)) {
-                  Undo.RegisterFullObjectHierarchyUndo(ftm, "Unlinked Nodes");
-                  selectedNode.unlink();
+            exportTimelineToTweenManager();
+            importTimeline();
+            break;
+          case SettingsEvents.ToggleSnapping:
+            snapping = !snapping;
+            break;
+          case SettingsEvents.Link:
+            foreach (var selectedNode in rootSelectedNodeOpt)
+              if (selectedFunTweenManager.valueOut(out var ftm)) {
+                Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
+                if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
+                  selectedNode.linkTo(leftNode);
                 }
               }
-              break;
-            case SettingsEvents.AddManager:
-              addFunTweenManagerComponent(Selection.activeGameObject);
-              EditorGUIUtility.ExitGUI();
-              break;
-            case SettingsEvents.UpdateExternalWindow:
-              break;
-            default:
-              throw new ArgumentOutOfRangeException(nameof(settingsEvent), settingsEvent, null);
+            break;
+          case SettingsEvents.Unlink:
+            foreach (var selectedNode in rootSelectedNodeOpt) {
+              if (selectedFunTweenManager.valueOut(out var ftm)) {
+                Undo.RegisterFullObjectHierarchyUndo(ftm, "Unlinked Nodes");
+                selectedNode.unlink();
+              }
+            }
+            break;
+          case SettingsEvents.AddManager:
+            addFunTweenManagerComponent(Selection.activeGameObject);
+            EditorGUIUtility.ExitGUI();
+            break;
+          case SettingsEvents.UpdateExternalWindow:
+            break;
+          default:
+            throw new ArgumentOutOfRangeException(nameof(settingsEvent), settingsEvent, null);
         }
       }
 
