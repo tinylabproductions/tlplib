@@ -772,7 +772,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           switch (settingsEvent) {
             case SettingsEvents.AddTween:
               var newNode = new TimelineNode(new Element());
-
+              moveCurrentNodeDownIfOverlapping(newNode);
+              
               funNodes.Add(newNode);
 
               selectedNodesList.Clear();
