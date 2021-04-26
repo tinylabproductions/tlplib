@@ -150,7 +150,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       // ReSharper disable NotNullMemberIsNotInitialized
       [SerializeField, PublicAccessor, HorizontalGroup(TIME)] float _startsAt;
       [SerializeField, HideInInspector] int _timelineChannelIdx;
-      [NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] ISerializedTweenTimelineElementBase _element;
+      [NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] 
+      ISerializedTweenTimelineElementBase _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
       
@@ -164,6 +165,12 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       }
 
       public bool isValid => _element?.isValid ?? false;
+
+      public Element deepClone() {
+        // Element is Unity serializable object. JsonUtility serialization should always work here.
+        var json = JsonUtility.ToJson(this);
+        return JsonUtility.FromJson<Element>(json);
+      }
     }
     
     #region Unity Serialized Fields
