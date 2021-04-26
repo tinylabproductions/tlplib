@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Logger;
@@ -93,9 +94,30 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    static Object[] getValidTimelineTargets(FunTweenManagerV2 ftm) =>
-      ftm.serializedTimeline.elements.Where(_ => _.isValid).Select(elem => elem.element.getTarget()).ToArray();
-    
+    static Object[] getValidTimelineTargets(FunTweenManagerV2 rootManager) {
+      // Use BFS to visit all managers once.
+      var managersFound = new HashSet<FunTweenManagerV2>();
+      var managersToCheck = new Queue<FunTweenManagerV2>();
+      var objects = new List<Object>();
+      managersFound.Add(rootManager);
+      managersToCheck.Enqueue(rootManager);
+      while (managersToCheck.Count > 0) {
+        var current = managersToCheck.Dequeue();
+        foreach (var serElement in current.serializedTimeline.elements) {
+          if (serElement.isValid) {
+            var target = serElement.element.getTarget();
+            objects.Add(target);
+            {if (target is FunTweenManagerV2 childManager) {
+              if (managersFound.Add(childManager)) {
+                managersToCheck.Enqueue(childManager);
+              }
+            }}
+          }
+        }
+      }
+      return objects.Distinct().ToArray();
+    }
+
     static string getPath(Transform transform) {
       var path = transform.gameObject.name;
       while (transform.parent != null) {

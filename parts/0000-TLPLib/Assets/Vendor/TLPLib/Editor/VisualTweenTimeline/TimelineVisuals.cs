@@ -126,7 +126,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     float currentTime {
       get => GUIToSeconds(timePosition - _visualsSettings.timelineOffset);
-      set => timePosition = secondsToGUI (value) + _visualsSettings.timelineOffset;
+      set => timePosition = secondsToGUI(value) + _visualsSettings.timelineOffset;
     }
 
  
@@ -642,6 +642,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             TimelineEditor.NodeEvents.SelectAll, None._, GUIToSeconds(Event.current.mousePosition.x)
           );
           break;
+        case KeyCode.D when ev.control && ev.type == EventType.KeyUp:
+          onNodeEvent(
+            TimelineEditor.NodeEvents.DuplicateSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
+          );
+          break;
         case KeyCode.Delete when ev.type == EventType.KeyDown:
           onNodeEvent(
             TimelineEditor.NodeEvents.RemoveSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
@@ -755,6 +760,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           }
           changeTime = false;
           changeOffset = false;
+          timePosition = 0;
     
           break;
         

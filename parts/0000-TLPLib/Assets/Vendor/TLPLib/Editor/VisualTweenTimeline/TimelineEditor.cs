@@ -38,7 +38,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       DeselectAll,
       RemoveSelected,
       SelectAll,
-      Refresh
+      Refresh,
+      DuplicateSelected
     }
     
     public enum SnapType : byte {
@@ -201,6 +202,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       void EditorSceneManagerOnSceneSaving(Scene scene, string path) {
         // Why was this even here? It breaks the UI on save.
         // funNodes.Clear();
+        
         foreach (var controller in tweenPlaybackController) {
           controller.stopVisualization();
         }
@@ -235,7 +237,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void undoCallback() {
-        selectedNodesList.Clear();
         importTimeline();
       }
 
@@ -270,9 +271,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         
         switch (nodeEvent) {
           case NodeEvents.RemoveSelected:
-            removeoAllSelectedNodes();
+            removeAllSelectedNodes();
             selectedNodesList.Clear();
             importTimeline();
+            break;
+          
+          case NodeEvents.DuplicateSelected:
+            duplicateAllSelectedNodes();
             break;
           
           case NodeEvents.SelectAll:
@@ -319,9 +324,20 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               rootSelectedNodeOpt = timelineNodeOpt;
               manageSelectedNode(timelineNode, Event.current);
               var genericMenu = new GenericMenu();
-              genericMenu.AddItem(new GUIContent("Remove"), false, removeSelectedNode, timelineNode);
-              genericMenu.AddItem(new GUIContent("Unselect"), false, deselect, timelineNode);
+              addMenuItem("Unselect", () => deselect(timelineNode));
+              addMenuItem("Duplicate This", () => duplicate(timelineNode));
+              if (selectedNodesList.Count > 0) {
+                addMenuItem("Duplicate Selected", duplicateAllSelectedNodes);
+              }
+              addMenuItem("Delete This", () => removeSelectedNode(timelineNode));
+              if (selectedNodesList.Count > 0) {
+                addMenuItem("Delete Selected", removeAllSelectedNodes);
+              }
               genericMenu.ShowAsContext();
+
+              void addMenuItem(string label, Action act) {
+                genericMenu.AddItem(new GUIContent(label), false, _ => act(), null);
+              }
             }
             break;
           
@@ -439,6 +455,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           case NodeEvents.Refresh:
             if (dragNode || resizeNodeEnd || resizeNodeStart) {
+              moveOtherNodesDownIfOverlapping(selectedNodesList);
               exportTimelineToTweenManager();
               importTimeline();
               timelineVisuals.recalculateTimelineWidth(funNodes);
@@ -455,16 +472,20 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         }
       }
       
-      void moveDownIfOverlaping(TimelineNode timelineNode) {
-        foreach (var overlapingNode in getOverlapingNodes(timelineNode)) {
-          selectedNodesList.find(foundNode => foundNode == overlapingNode).voidFold(
-            () => moveAndRecurse(timelineNode),
-            moveAndRecurse
-          );
+      bool moveCurrentNodeDownIfOverlapping(TimelineNode timelineNode) {
+        var moved = false;
+        while (getOverlappingNode(timelineNode).isSome) {
+          timelineNode.increaseChannel();
+          moved = true;
         }
-        void moveAndRecurse(TimelineNode node) {
-          node.increaseChannel();
-          moveDownIfOverlaping(node);
+        return moved;
+      }
+      
+      void moveOtherNodesDownIfOverlapping(List<TimelineNode> timelineNodes) {
+        foreach (var node in timelineNodes) {
+          while (getOverlappingNode(node).valueOut(out var overlappingNode)) {
+            moveCurrentNodeDownIfOverlapping(overlappingNode);
+          }
         }
       }
 
@@ -644,23 +665,23 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           var elements = manager.serializedTimeline.elements;
 
           if (elements != null) {
-            funNodes = manager.serializedTimeline.elements.Select(
-              (element, idx) => {
-                var newNode = new TimelineNode(element, elements[idx].startsAt);
+            funNodes = elements.Select(element => new TimelineNode(element)).ToList();
+            
+            var newSelectedNodes = selectedNodesList.collect(oldNode => funNodes.find(
+              mapper: newNode => newNode.element,
+              toFind: oldNode.element
+            )).ToArray();
+            selectedNodesList.Clear();
+            selectedNodesList.AddRange(newSelectedNodes);
 
-                return selectedNodesList
-                  .find(selectedNode => selectedNode.element == element)
-                  .fold(
-                    () => newNode,
-                    foundNode => {
-                      selectedNodesList.Remove(foundNode);
-                      selectedNodesList.Add(newNode);
-                      return newNode;
-                    }
-                  );
+            {
+              var movedAnyNode = false;
+              // Iterate in reverse order to move down newer elements
+              for (var idx = funNodes.Count - 1; idx >= 0; idx--) {
+                movedAnyNode |= moveCurrentNodeDownIfOverlapping(funNodes[idx]);
               }
-            ).ToList();
-            foreach (var n in funNodes) moveDownIfOverlaping(n);
+              if (movedAnyNode) exportTimelineToTweenManager();
+            }
           }
           else {
             funNodes.Clear();
@@ -694,7 +715,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         );
 
       const float EPS = 15f;
-      Option<TimelineNode> getOverlapingNodes(TimelineNode node) {
+      Option<TimelineNode> getOverlappingNode(TimelineNode node) {
         var channelNodes = funNodes.Where(funNode => funNode.channel == node.channel && funNode != node);
 
         bool isOverlaping(TimelineNode channelNode, float nodePoint) =>
@@ -747,70 +768,84 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       void doNewSettings(SettingsEvents settingsEvent) {
-          switch (settingsEvent) {
-            case SettingsEvents.AddTween:
-              var newNode = new TimelineNode(new Element(), 0);
+        switch (settingsEvent) {
+          case SettingsEvents.AddTween:
+            var newNode = new TimelineNode(new Element());
+            moveCurrentNodeDownIfOverlapping(newNode);
+            
+            funNodes.Add(newNode);
 
-              funNodes.Add(newNode);
+            selectedNodesList.Clear();
+            selectedNodesList.Add(newNode);
+            rootSelectedNodeOpt = newNode.some();
 
-              selectedNodesList.Clear();
-              selectedNodesList.Add(newNode);
-              rootSelectedNodeOpt = newNode.some();
-
-              exportTimelineToTweenManager();
-              importTimeline();
-              break;
-            case SettingsEvents.ToggleSnapping:
-              snapping = !snapping;
-              break;
-            case SettingsEvents.Link:
-              foreach (var selectedNode in rootSelectedNodeOpt)
-                if (selectedFunTweenManager.valueOut(out var ftm)) {
-                  Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
-                  if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
-                    selectedNode.linkTo(leftNode);
-                  }
-                }
-              break;
-            case SettingsEvents.Unlink:
-              foreach (var selectedNode in rootSelectedNodeOpt) {
-                if (selectedFunTweenManager.valueOut(out var ftm)) {
-                  Undo.RegisterFullObjectHierarchyUndo(ftm, "Unlinked Nodes");
-                  selectedNode.unlink();
+            exportTimelineToTweenManager();
+            importTimeline();
+            break;
+          case SettingsEvents.ToggleSnapping:
+            snapping = !snapping;
+            break;
+          case SettingsEvents.Link:
+            foreach (var selectedNode in rootSelectedNodeOpt)
+              if (selectedFunTweenManager.valueOut(out var ftm)) {
+                Undo.RegisterFullObjectHierarchyUndo(ftm, "Linked Nodes");
+                if (getLeftNode(selectedNode).valueOut(out var leftNode)) {
+                  selectedNode.linkTo(leftNode);
                 }
               }
-              break;
-            case SettingsEvents.AddManager:
-              addFunTweenManagerComponent(Selection.activeGameObject);
-              EditorGUIUtility.ExitGUI();
-              break;
-            case SettingsEvents.UpdateExternalWindow:
-              break;
-            default:
-              throw new ArgumentOutOfRangeException(nameof(settingsEvent), settingsEvent, null);
+            break;
+          case SettingsEvents.Unlink:
+            foreach (var selectedNode in rootSelectedNodeOpt) {
+              if (selectedFunTweenManager.valueOut(out var ftm)) {
+                Undo.RegisterFullObjectHierarchyUndo(ftm, "Unlinked Nodes");
+                selectedNode.unlink();
+              }
+            }
+            break;
+          case SettingsEvents.AddManager:
+            addFunTweenManagerComponent(Selection.activeGameObject);
+            EditorGUIUtility.ExitGUI();
+            break;
+          case SettingsEvents.UpdateExternalWindow:
+            break;
+          default:
+            throw new ArgumentOutOfRangeException(nameof(settingsEvent), settingsEvent, null);
         }
       }
 
-      void deselect(object obj) {
-        var node = obj as TimelineNode;
+      void deselect(TimelineNode node) {
         selectedNodesList.Remove(node);
         backing.Repaint();
       }
 
-      void removeSelectedNode(object obj) {
-        var nawd = obj as TimelineNode;
-        funNodes.Remove(nawd);
-        foreach (var linkedNode in getLinkedRightNode(nawd, nawd)) linkedNode.unlink();
+      void removeSelectedNode(TimelineNode node) {
+        funNodes.Remove(node);
+        foreach (var linkedNode in getLinkedRightNode(node, node)) linkedNode.unlink();
 
         exportTimelineToTweenManager();
         importTimeline();
         rootSelectedNodeOpt = None._;
       }
+      
+      void duplicate(TimelineNode node) {
+        {if (selectedFunTweenManager.valueOut(out var manager)) {
+          manager.serializedTimeline.elements = 
+            manager.serializedTimeline.elements.concat(new []{node.element.deepClone()});
+          importTimeline();
+        }}
+      }
+      
+      void duplicateAllSelectedNodes() {
+        {if (selectedFunTweenManager.valueOut(out var manager)) {
+          manager.serializedTimeline.elements = 
+            manager.serializedTimeline.elements.concat(selectedNodesList.Select(_ => _.element.deepClone()).ToArray());
+          importTimeline();
+        }}
+      }
 
-      void removeoAllSelectedNodes() {
-        funNodes = funNodes.Where(node =>
-          selectedNodesList.find(selectedNode => node == selectedNode).isNone).ToList();
-
+      void removeAllSelectedNodes() {
+        funNodes = funNodes.Except(selectedNodesList).ToList();
+        
         foreach (var selectedNode in selectedNodesList) {
           foreach (var linkedNode in getLinkedRightNode(selectedNode, selectedNode)) linkedNode.unlink();
         }
