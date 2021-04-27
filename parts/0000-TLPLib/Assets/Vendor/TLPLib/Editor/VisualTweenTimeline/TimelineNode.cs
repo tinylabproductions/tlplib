@@ -45,7 +45,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     public void setTimeOffset(float time) => element.setStartsAt(time);
 
-    public TimelineNode(Element element, float startTime) {
+    public TimelineNode(Element element) {
       // display invalid elements of length 1
       duration = element.element?.duration ?? 1;
       if (element.element is ISerializedTweenTimelineCallback) {
@@ -56,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
       this.element = element;
       channel = element.timelineChannelIdx;
-      this.startTime = startTime;
+      startTime = element.startsAt;
       nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
     }
 

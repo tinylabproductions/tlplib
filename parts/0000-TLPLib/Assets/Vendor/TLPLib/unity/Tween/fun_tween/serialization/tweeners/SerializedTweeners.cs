@@ -496,6 +496,28 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override float get => _target.fillAmount;
     protected override void set(float value) => _target.fillAmount = value;
   }
+  
+  [Serializable]
+  public class TweenManager : SerializedTweenerV2Base<FunTweenManagerV2> {
+    
+#pragma warning disable 649
+    [SerializeField] bool _customDuration;
+    [SerializeField] bool _reversed;
+    [SerializeField, ShowIf(nameof(hasDuration))] float _duration = 1;
+    [SerializeField, HideIf(nameof(hasDuration))] float _timeScale = 1;
+#pragma warning restore 649
+
+    bool hasDuration => _customDuration;
+    
+    public override float duration => _customDuration ? _duration : _target.timeline.duration * _timeScale;
+    public override void trySetDuration(float duration) {
+      if (_customDuration) _duration = duration;
+    }
+
+    public override void applyStateAt(float time) {
+      _target.timeline.timePassed = _reversed ? 1f - time : time;
+    }
+  }
 
   // ReSharper restore NotNullMemberIsNotInitialized
 }
