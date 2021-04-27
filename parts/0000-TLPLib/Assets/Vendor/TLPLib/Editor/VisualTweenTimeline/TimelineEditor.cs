@@ -737,31 +737,31 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           Undo.RegisterFullObjectHierarchyUndo(manager.gameObject, "something changed");
           
           var arr = new List<TimelineNode>();
-          for (var i = 0; i <= funNodes.Max(funNode => funNode.channel); i++) {
-            arr.AddRange(
-              funNodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
-            );
-          }
+          arr.AddRange(funNodes);
+          // Do not reorder elements. Odin inspector starts throwing exceptions if we do it.
+          // If we reorder elements, we should at least dispose clear maybeProperty field.
+          // for (var i = 0; i <= funNodes.Max(funNode => funNode.channel); i++) {
+          //   arr.AddRange(
+          //     funNodes.FindAll(node => node.channel == i).OrderBy(node => node.startTime)
+          //   );
+          // }
           
           manager.serializedTimeline.elements = arr.Select(elem => {
-            elem.element.timelineChannelIdx = elem.channel;
-            return elem.element;
+            var resElement = elem.element;
+            resElement.timelineChannelIdx = elem.channel;
+            
+            resElement.element?.trySetDuration(elem.duration);
+            if (elem.linkedNode.valueOut(out _)) {
+              throw new NotImplementedException("node linking is not implemented");
+            }
+            else {
+              resElement.setStartsAt(elem.startTime);
+            }
+            
+            return resElement;
           }).ToArray();
           
           EditorUtility.SetDirty(manager);
-
-          foreach (var element in manager.serializedTimeline.elements) {
-            foreach (var found in funNodes.find(funNode => funNode.element == element)) {
-              element.timelineChannelIdx = found.channel;
-              element.element?.trySetDuration(found.duration);
-              if (found.linkedNode.valueOut(out _)) {
-                throw new NotImplementedException("node linking is not implemented");
-              }
-              else {
-                element.setStartsAt(found.startTime);
-              }
-            }
-          }
         }
 
         if (funNodes.isEmpty()) manager.serializedTimeline.elements = new Element[0];

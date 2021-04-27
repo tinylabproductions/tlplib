@@ -539,11 +539,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     void drawElementSettings(FunTweenManagerV2 manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
       foreach (var rootSelectedObject in rootSelectedNodeOpt) {
         if (maybeTree == null || maybeTree.WeakTargets[0] is FunTweenManagerV2 treeManager && treeManager != manager) {
+          maybeTree?.Dispose();
           maybeTree = new PropertyTree<FunTweenManagerV2>(new[] { manager }, new SerializedObject(manager));
         }
         if (maybeProperty == null || maybeProperty.ValueEntry.WeakSmartValue != rootSelectedObject.element) {
+          maybeProperty?.Dispose();
+          maybeProperty = null;
           var idx = Array.IndexOf(manager.serializedTimeline.elements, rootSelectedObject.element);
           if (idx >= 0) {
+            // Need to update tree, otherwise we may not find new elements after duplicating them.
+            maybeTree.UpdateTree();
             maybeProperty = maybeTree.GetPropertyAtPath($"_timeline._elements.${idx}");
           }
         }
