@@ -46,12 +46,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     public abstract void trySetDuration(float duration);
     public bool isValid => hasTarget;
-    
+    public virtual Color editorColor => Color.white;
+
 #if UNITY_EDITOR
     public bool __editorDirty { get; protected set; } = true;
     [UsedImplicitly] void editorSetDirty() => __editorDirty = true;
 #endif
     public abstract void applyStateAt(float time);
+    
+    // Great reference for color ideas https://sashamaps.net/docs/resources/20-colors/
+    protected static Color cRotation = Color.green;
+    protected static Color cColor = new Color(1f, 0.5f, 0f);
+    protected static Color cAlpha = new Color(0.25f, 0.75f, 1f);
+    protected static Color cPosition = Color.yellow;
+    protected static Color cScale = new Color(0.75f, 0.25f, 1);
+    protected static Color cAnchors = new Color32(128, 0, 0, 255);
+    protected static Color cNested = new Color32(254, 130, 48, 255);
   }
   
   
@@ -218,6 +228,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override Vector3 subtract(Vector3 a, Vector3 b) => a - b;
     protected override Vector3 get => _target.position;
     protected override void set(Vector3 value) => _target.position = value;
+    public override Color editorColor => cPosition;
   }
   
   // TODO: refactor common stuff
@@ -240,12 +251,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
         value.z / parentScale.z
       );
     }
+    public override Color editorColor => cScale;
   }
 
   [Serializable]
   public sealed class AnchoredPosition : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.anchoredPosition;
     protected override void set(Vector2 value) => _target.anchoredPosition = value;
+    public override Color editorColor => cPosition;
 
     // public override string[] __editorSerializedProps => spVector2("m_AnchoredPosition");
   }
@@ -258,6 +271,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       pos.x = value;
       _target.anchoredPosition = pos;
     }
+    public override Color editorColor => cPosition;
   }
   
   [Serializable]
@@ -268,24 +282,28 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       pos.y = value;
       _target.anchoredPosition = pos;
     }
+    public override Color editorColor => cPosition;
   }
   
   [Serializable]
   public sealed class RectTransformOffsetMin : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.offsetMin;
     protected override void set(Vector2 value) => _target.offsetMin = value;
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
   public sealed class RectTransformOffsetMax : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.offsetMax;
     protected override void set(Vector2 value) => _target.offsetMax = value;
+    public override Color editorColor => cAnchors;
   }
 
   [Serializable]
   public sealed class LocalScale : SerializedTweenerVector3<Transform> {
     protected override Vector3 get => _target.localScale;
     protected override void set(Vector3 value) => _target.localScale = value;
+    public override Color editorColor => cScale;
     
     // public override string[] __editorSerializedProps => spVector3("m_LocalScale");
   }
@@ -293,14 +311,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [Serializable] public sealed class LocalScaleX : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localScale.x;
     protected override void set(float value) => _target.localScale = _target.localScale.withX(value);
+    public override Color editorColor => cScale;
   }
   [Serializable] public sealed class LocalScaleY : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localScale.y;
     protected override void set(float value) => _target.localScale = _target.localScale.withY(value);
+    public override Color editorColor => cScale;
   }
   [Serializable] public sealed class LocalScaleZ : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localScale.z;
     protected override void set(float value) => _target.localScale = _target.localScale.withZ(value);
+    public override Color editorColor => cScale;
   }
   
   
@@ -308,6 +329,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class LocalPosition : SerializedTweenerVector3<Transform> {
     protected override Vector3 get => _target.localPosition;
     protected override void set(Vector3 value) => _target.localPosition = value;
+    public override Color editorColor => cPosition;
     
     // public override string[] __editorSerializedProps => spVector3("m_LocalPosition");
   }
@@ -320,6 +342,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       pos.x = value;
       _target.localPosition = pos;
     }
+    public override Color editorColor => cPosition;
   }
   
   [Serializable]
@@ -330,6 +353,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       pos.y = value;
       _target.localPosition = pos;
     }
+    public override Color editorColor => cPosition;
   }
   
   [Serializable]
@@ -340,12 +364,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       pos.z = value;
       _target.localPosition = pos;
     }
+    public override Color editorColor => cPosition;
   }
   
   [Serializable]
   public sealed class LocalRotation2D : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localEulerAngles.z;
     protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withZ(value);
+    public override Color editorColor => cRotation;
     
     // public override string[] __editorSerializedProps => spQuaternion("m_LocalRotation");
   }
@@ -354,72 +380,85 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class LocalRotationX : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localEulerAngles.x;
     protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withX(value);
+    public override Color editorColor => cRotation;
   }
 
   [Serializable]
   public sealed class LocalRotationY : SerializedTweenerFloat<Transform> {
     protected override float get => _target.localEulerAngles.y;
     protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withY(value);
+    public override Color editorColor => cRotation;
   }
+  
   
   [Serializable]
   public sealed class ImageColor : SerializedTweenerColor<Image> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
+    public override Color editorColor => cColor;
   }
   
   [Serializable]
   public sealed class GraphicColor : SerializedTweenerColor<Graphic> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
+    public override Color editorColor => cColor;
   }
   
   [Serializable]
   public sealed class ImageAlpha : SerializedTweenerFloat<Image> {
     protected override float get => _target.color.a;
     protected override void set(float value) => _target.color = _target.color.withAlpha(value);
+    public override Color editorColor => cAlpha;
   }
   
   [Serializable]
   public sealed class CustomImageColor : SerializedTweenerColor<CustomImage> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
+    public override Color editorColor => cColor;
   }
   
   [Serializable]
   public sealed class SpriteRendererColor : SerializedTweenerColor<SpriteRenderer> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
+    public override Color editorColor => cColor;
   }
   
   [Serializable]
   public sealed class TextMeshColor : SerializedTweenerColor<TextMeshProUGUI> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
+    public override Color editorColor => cColor;
   }
   
   [Serializable]
   public sealed class CanvasGroupAlpha : SerializedTweenerFloat<CanvasGroup> {
     protected override float get => _target.alpha;
     protected override void set(float value) => _target.alpha = value;
+    public override Color editorColor => cAlpha;
   }
   
   [Serializable]
   public sealed class RectTransformSize : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.sizeDelta;
     protected override void set(Vector2 value) => _target.sizeDelta = value;
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
   public sealed class RectTransformSizeX : SerializedTweenerFloat<RectTransform> {
     protected override float get => _target.sizeDelta.x;
     protected override void set(float value) => _target.sizeDelta = _target.sizeDelta.withX(value);
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
   public sealed class RectTransformSizeY : SerializedTweenerFloat<RectTransform> {
     protected override float get => _target.sizeDelta.y;
     protected override void set(float value) => _target.sizeDelta = _target.sizeDelta.withY(value);
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
@@ -431,6 +470,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class RectTransformSimpleAnchors : SerializedTweenerVector2<RectTransform> {
     protected override Vector2 get => _target.anchorMin;
     protected override void set(Vector2 value) => _target.anchorMin = _target.anchorMax = value;
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
@@ -440,6 +480,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       _target.anchorMin = _target.anchorMin.withX(value);
       _target.anchorMax = _target.anchorMax.withX(value);
     }
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
@@ -449,6 +490,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       _target.anchorMin = _target.anchorMin.withX(value.x);
       _target.anchorMax = _target.anchorMax.withX(value.y);
     }
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
@@ -458,6 +500,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       _target.anchorMin = _target.anchorMin.withY(value.x);
       _target.anchorMax = _target.anchorMax.withY(value.y);
     }
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
@@ -467,12 +510,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       _target.anchorMin = _target.anchorMin.withY(value);
       _target.anchorMax = _target.anchorMax.withY(value);
     }
+    public override Color editorColor => cAnchors;
   }
   
   [Serializable]
   public sealed class MaterialColor : SerializedTweenerColor<Material> {
     protected override Color get => _target.color;
     protected override void set(Color value) => _target.color = value;
+    public override Color editorColor => cColor;
   }
   
   [Serializable]
@@ -491,9 +536,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     [SerializeField, HideIf(nameof(hasDuration))] float _timeScale = 1;
 #pragma warning restore 649
 
+    public override Color editorColor => cNested;
+
     bool hasDuration => _customDuration;
     
-    public override float duration => _customDuration ? _duration : _target.timeline.duration * _timeScale;
+    public override float duration => _customDuration 
+      ? _duration 
+      : (_target ? _target.timeline.duration * _timeScale : 1f);
     public override void trySetDuration(float duration) {
       if (_customDuration) _duration = duration;
     }

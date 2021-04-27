@@ -249,6 +249,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     void trySetDuration(float duration);
     Object getTarget();
     bool isValid { get; }
+    Color editorColor { get; }
 
 #if UNITY_EDITOR
     bool __editorDirty { get; }
