@@ -233,7 +233,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
               nodeSnappedTo.snapType == SnapType.StartWithEnd
               || nodeSnappedTo.snapType == SnapType.StartWithStart;
             
-            if ( root.valueOut(out var rootNode) && rootNode == currNode ) {
+            if (root.valueOut(out var rootNode) && rootNode == currNode) {
               if (nodeSnappedToOpt.valueOut(out var nodeSnappedTo)) {
                 var selectedIsHigher = selectedNode.channel < nodeSnappedTo.node.channel;
                 var distance = (Mathf.Abs(selectedNode.channel - nodeSnappedTo.node.channel) + 2) * 20;
@@ -287,15 +287,25 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           var style = new GUIStyle("Label");
           style.fontSize = selectedCurrentNode.isSome ? 12 : style.fontSize;
           style.fontStyle = FontStyle.Bold;
-          var color = selectedCurrentNode.isSome ? Color.magenta : currNode.nodeTextColor;
-          color.a = selectedCurrentNode.isSome ? 1.0f : 0.7f;
+          var color = currNode.nodeTextColor;
+          // color.a = selectedCurrentNode.isSome ? 1.0f : 0.7f;
           style.normal.textColor = color;
-          Vector3 size = style.CalcSize(new GUIContent($"content: {currNode.name}"));
-          var labelPosX = Mathf.Clamp(boxRect.x + boxRect.width / 2 - size.x / 3 , boxRect.x, boxRect.x + boxRect.width);
-          var rect1 = new Rect(labelPosX,
-            boxRect.y + boxRect.height * 0.5f - size.y * 0.5f, Mathf.Clamp(size.x, 0, boxRect.width + (boxRect.x - labelPosX)), size.y);
-  
-          GUI.Label(rect1, $"{currNode.name} {(int)(currentTime.remapClamped(currNode.startTime, currNode.getEnd(), 0, 100))}%", style);
+          var content = currNode.name;
+          if (changeTime) {
+            content += $" {(int) (currentTime.remapClamped(currNode.startTime, currNode.getEnd(), 0, 100))}%";
+          } 
+          using (new GUILayout.AreaScope(boxRect)) {
+            // FlexibleSpace centers vertically
+            GUILayout.FlexibleSpace();
+            using (new GUILayout.HorizontalScope()) {
+              // FlexibleSpace centers horizontally
+              GUILayout.FlexibleSpace();
+              // Draw label in a middle of the cell
+              GUILayout.Label(content, style);
+              GUILayout.FlexibleSpace();
+            }
+            GUILayout.FlexibleSpace();
+          }
         }
   
         if (snapIndicatorOpt.valueOut(out var snapIndicator)) {
@@ -316,7 +326,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
   
-    public void doLines(){
+    public void doLines() {
       Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
       for (var y = 0; y < (int)timelineRect.height + _visualsSettings.scroll.y; y += 20) {
         Handles.DrawLine(new Vector3(0, y, 0), new Vector3(timelineRect.width+_visualsSettings.scroll.x, y, 0));	
@@ -324,7 +334,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       Handles.color = Color.white;
     }
     
-    public void doTimelineGUI(){
+    public void doTimelineGUI() {
       if ((changeTime || Application.isPlaying || visualizationMode.value)
         && timePosition - _visualsSettings.scroll.x >= _visualsSettings.timelineOffset && timePosition - _visualsSettings.scroll.x < timelineRect.width - 15) {
         var color = Color.red;
@@ -346,17 +356,19 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
     
-    void doCursor(List<TimelineNode> funNodes){
-      if (funNodes.find(node =>
+    void doCursor(List<TimelineNode> funNodes) {
+      if (!funNodes.Exists(node =>
         new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(Event.current.mousePosition)
-        && node.startTime < 1f).isNone
-      ) {
-        EditorGUIUtility.AddCursorRect(new Rect(_visualsSettings.timelineOffset - 5, 37, 10, timelineRect.height),
-          MouseCursor.ResizeHorizontal);
+        && node.startTime < 1f
+      )) {
+        EditorGUIUtility.AddCursorRect(
+          new Rect(_visualsSettings.timelineOffset - 5, 37, 10, timelineRect.height),
+          MouseCursor.ResizeHorizontal
+        );
       }
     }
     
-    public void doBlackBar(){
+    public void doBlackBar() {
       if (Event.current.type == EventType.Repaint) {
         ((GUIStyle)"AnimationEventBackground").Draw(blackBarRect, GUIContent.none, 0);
       }
@@ -364,9 +376,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     public void doToolbarGUI(Rect position, Option<FunTweenManagerV2> funTweenManager,
       List<TimelineNode> funNodes, List<TimelineNode> selectedNodes, bool snapping, Option<TimelineNode> rootNode
-      ){
+    ){
       
-      GUILayout.BeginArea (new Rect (position.x, position.y, _visualsSettings.timelineOffset, position.height), GUIContent.none);
+      GUILayout.BeginArea(
+        new Rect(position.x, position.y, _visualsSettings.timelineOffset, position.height), 
+        GUIContent.none
+      );
 
       GUILayout.BeginHorizontal (EditorStyles.toolbar);
       var guiEnabled = GUI.enabled;
@@ -539,11 +554,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     void drawElementSettings(FunTweenManagerV2 manager, float width, Option<TimelineNode> rootSelectedNodeOpt) {
       foreach (var rootSelectedObject in rootSelectedNodeOpt) {
         if (maybeTree == null || maybeTree.WeakTargets[0] is FunTweenManagerV2 treeManager && treeManager != manager) {
+          maybeTree?.Dispose();
           maybeTree = new PropertyTree<FunTweenManagerV2>(new[] { manager }, new SerializedObject(manager));
         }
         if (maybeProperty == null || maybeProperty.ValueEntry.WeakSmartValue != rootSelectedObject.element) {
+          maybeProperty?.Dispose();
+          maybeProperty = null;
           var idx = Array.IndexOf(manager.serializedTimeline.elements, rootSelectedObject.element);
           if (idx >= 0) {
+            // Need to update tree, otherwise we may not find new elements after duplicating them.
+            maybeTree.UpdateTree();
             maybeProperty = maybeTree.GetPropertyAtPath($"_timeline._elements.${idx}");
           }
         }
@@ -638,87 +658,79 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       
       switch (ev.keyCode) {
         case KeyCode.A when ev.control && ev.type == EventType.KeyUp:
-          onNodeEvent(
-            TimelineEditor.NodeEvents.SelectAll, None._, GUIToSeconds(Event.current.mousePosition.x)
-          );
+          nodeEvent(TimelineEditor.NodeEvents.SelectAll);
           break;
         case KeyCode.D when ev.control && ev.type == EventType.KeyUp:
-          onNodeEvent(
-            TimelineEditor.NodeEvents.DuplicateSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
-          );
+          nodeEvent(TimelineEditor.NodeEvents.DuplicateSelected);
           break;
         case KeyCode.Delete when ev.type == EventType.KeyDown:
-          onNodeEvent(
-            TimelineEditor.NodeEvents.RemoveSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
-          );
+          nodeEvent(TimelineEditor.NodeEvents.RemoveSelected);
           break;
         case KeyCode.L when ev.type == EventType.KeyDown:
           onLockButton();
           break;
       }
-
+      
+      // rawType works better that type when we release mouse button outside window.
       switch (ev.rawType) {
         case EventType.MouseDown:
           foreach (var node in funNodes) {
-            
             if (nodeStartRect(node).Contains(Event.current.mousePosition) && !node.isCallback && !ev.alt) {
-              onNodeEvent(
+              nodeEvent(
                 ev.alt
-                  ? TimelineEditor.NodeEvents.NodeClicked_MB1
-                  : TimelineEditor.NodeEvents.ResizeStart,
-                node.some(), GUIToSeconds(Event.current.mousePosition.x)
+                ? TimelineEditor.NodeEvents.NodeClicked_MB1
+                : TimelineEditor.NodeEvents.ResizeStart,
+                node
               );
                 
               EditorGUI.FocusTextInControl("");
-              ev.Use();
               return;
             }
 
             if (nodeEndRect(node).Contains(Event.current.mousePosition) && !node.isCallback && !ev.alt) {
-              onNodeEvent(
+              nodeEvent(
                 ev.alt
-                  ? TimelineEditor.NodeEvents.NodeClicked_MB1
-                  : TimelineEditor.NodeEvents.ResizeEnd,
-                node.some(), GUIToSeconds(Event.current.mousePosition.x)
+                ? TimelineEditor.NodeEvents.NodeClicked_MB1
+                : TimelineEditor.NodeEvents.ResizeEnd, 
+                node
               );
                 
               EditorGUI.FocusTextInControl("");
-              ev.Use();
               return;
             }
             
             if (nodeBodyRect(node).Contains(Event.current.mousePosition)) {
               switch (ev.button) {
                 case 0:
-                  onNodeEvent(
-                    TimelineEditor.NodeEvents.NodeClicked_MB1, node.some(), GUIToSeconds(Event.current.mousePosition.x)
-                  );
+                  nodeEvent(TimelineEditor.NodeEvents.NodeClicked_MB1, node);
                   EditorGUI.FocusTextInControl("");
                   break;
                 case 1:
-                  onNodeEvent(
-                    TimelineEditor.NodeEvents.NodeClicked_MB2, node.some(), GUIToSeconds(Event.current.mousePosition.x)
-                  );
+                  nodeEvent(TimelineEditor.NodeEvents.NodeClicked_MB2, node);
                   break;
               }
-              ev.Use();
               return;
             }
           }
         
           // Deselect by clicking away
           if (!ev.control && timelineRect.Contains(Event.current.mousePosition)) {
-            onNodeEvent(TimelineEditor.NodeEvents.DeselectAll, None._, GUIToSeconds(Event.current.mousePosition.x));
+            nodeEvent(TimelineEditor.NodeEvents.DeselectAll);
             return;
           }
           break;
         case EventType.MouseDrag:
-          onNodeEvent(TimelineEditor.NodeEvents.Drag, None._, GUIToSeconds(Event.current.mousePosition.x));
+          nodeEvent(TimelineEditor.NodeEvents.Drag);
           return;
         case EventType.MouseUp:
-          onNodeEvent(TimelineEditor.NodeEvents.Refresh, None._, GUIToSeconds(Event.current.mousePosition.x));
+          nodeEvent(TimelineEditor.NodeEvents.Refresh);
           return;
         default: break;
+      }
+
+      void nodeEvent(TimelineEditor.NodeEvents nodeEvent, TimelineNode maybeNode = null) {
+        ev.Use();
+        onNodeEvent(nodeEvent, Option.a(maybeNode), GUIToSeconds(Event.current.mousePosition.x));
       }
     }
 
@@ -739,6 +751,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           ) {
             changeOffset = true;
             clickOffset = timePosition - _visualsSettings.timelineOffset;
+            ev.Use();
           }
           
           if (new Rect (_visualsSettings.timelineOffset, 0, timelineRect.width, 37).Contains(Event.current.mousePosition)
@@ -757,11 +770,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         case EventType.MouseUp:
           if (changeTime) {
             onTimelineCursorLine(false);
+            
+            // If we do not call use, we get this error after releasing mouse on time bar:
+            //   ArgumentException: Getting control 0's position in a group with only 0 controls when doing mouseUp Aborting
+            ev.Use();
           }
           changeTime = false;
           changeOffset = false;
           timePosition = 0;
-    
           break;
         
         case EventType.MouseDrag:
@@ -813,7 +829,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           recalculateTimelineWidth(funNodes);
           _visualsSettings.timeZoomFactor = f;
 
-          ev.Use ();
+          ev.Use();
           break;
         default: break;
       }

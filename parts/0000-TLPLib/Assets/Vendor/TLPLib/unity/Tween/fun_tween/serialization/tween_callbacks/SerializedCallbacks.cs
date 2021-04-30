@@ -46,6 +46,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     protected abstract void invoke();
     public abstract Object getTarget();
     public abstract bool isValid { get; }
+    public Color editorColor => Color.white;
 
 #if UNITY_EDITOR
     public bool __editorDirty { get; private set; } = true;

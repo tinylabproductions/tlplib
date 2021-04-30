@@ -6,7 +6,7 @@ using UnityEngine;
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
   public static class SerializedEasePreview {
 #if UNITY_EDITOR
-    static Dictionary<SimpleSerializedEase, Texture2D> _imagesCache = new Dictionary<SimpleSerializedEase, Texture2D>();
+    static Dictionary<SimpleSerializedEase, Texture2D> _imagesCache = new();
 
     public static Texture2D editorPreview(SimpleSerializedEase simple) => 
       // ReSharper disable once ConvertClosureToMethodGroup
@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
 
     public static Texture2D generateTexture(Ease ease) {
       const float VERTICAL_OFFSET = 0.25f;
-      const int SIZE = 46 * 2;
+      const int SIZE = 80;
       var texture = new Texture2D(SIZE, SIZE);
       texture.fill(Color.black);
       for (var _x = 0; _x < texture.width; _x++) {
@@ -31,7 +31,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases {
         // 2x2 pixel
         for (var x = _x; x < _x + 2 && x < texture.width; x++) {
           for (var y = _y; y < _y + 2 && y < texture.height; y++) {
-            texture.SetPixel(x, y, Color.green);
+            if (x >= 0 && x < SIZE && y > 0 && y < SIZE) {
+              texture.SetPixel(x, y, Color.green);
+            }
           }
         }
       }
