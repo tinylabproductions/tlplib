@@ -26,7 +26,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       public readonly GUIContent labelContent;
   
       public CallbackVisuals (Rect boxRect, GUIContent labelContent) {
-        iconRect = new Rect(boxRect.x - 10, boxRect.y, 20, boxRect.height);
+        iconRect = new Rect(boxRect.x - CHANNEL_HEIGHT * .5f, boxRect.y, CHANNEL_HEIGHT, boxRect.height);
         labelRect = new Rect(boxRect.x - 30, boxRect.y, 60, boxRect.height);
         this.labelContent = labelContent;
       }
@@ -49,6 +49,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     const float ZOOM = 100;
+    public const float CHANNEL_HEIGHT = 20;
+    
     const int OUTLINE_WIDTH = 3;
     static readonly int[] timeFactor = {1,2,3,4,5,10,30,60,300,600,1800,3600,7200};
     public delegate void TimelineCursorLineCallback(bool isStart, float time = 0f);
@@ -79,7 +81,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     readonly GUIStyle toolbarStyle;
     readonly string[] ftmsLabels;
-    readonly List<CallbackVisuals> callbackVisualsList = new List<CallbackVisuals>();
+    readonly List<CallbackVisuals> callbackVisualsList = new();
     readonly Val<bool> visualizationMode, isLocked;
     
     [PublicAccessor] TimelineVisualsSettings _visualsSettings;
@@ -220,12 +222,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           EditorGUIUtility.AddCursorRect(nodeBodyRect(currNode), MouseCursor.Pan);
   
-          var boxRect = new Rect(secondsToGUI(currNode.startTime), currNode.channel * 20,
-            Mathf.Clamp(secondsToGUI(currNode.duration), 6f, float.MaxValue), 20);
+          var boxRect = new Rect(
+            secondsToGUI(currNode.startTime), 
+            currNode.channel * CHANNEL_HEIGHT,
+            Mathf.Clamp(secondsToGUI(currNode.duration), 6f, float.MaxValue), 
+            CHANNEL_HEIGHT
+          );
           
           var selectedCurrentNode = selectedNodes.find(selected => selected == currNode);
   
-          var iconRect = new Rect(boxRect.x - 10, boxRect.y, 20, boxRect.height);
+          var iconRect = new Rect(boxRect.x - CHANNEL_HEIGHT * .5f, boxRect.y, CHANNEL_HEIGHT, boxRect.height);
+          // Transparent texture with a tooltip text.
           var tooltip = new GUIContent(EditorGUIUtility.FindTexture("tranp"), currNode.name);
   
           void drawOutline(Rect aroundRect, Color outlineColor) {
@@ -255,7 +262,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             if (root.valueOut(out var rootNode) && rootNode == currNode) {
               if (nodeSnappedToOpt.valueOut(out var nodeSnappedTo)) {
                 var selectedIsHigher = selectedNode.channel < nodeSnappedTo.node.channel;
-                var distance = (Mathf.Abs(selectedNode.channel - nodeSnappedTo.node.channel) + 2) * 20;
+                var distance = (Mathf.Abs(selectedNode.channel - nodeSnappedTo.node.channel) + 2) * CHANNEL_HEIGHT;
                 snapIndicatorOpt =
                   selectedIsHigher
                     ? getIndicatorRect(selectedNode, isSnappedToRootStart(nodeSnappedTo), distance).some()
@@ -270,7 +277,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                       isSnappedToStart
                         ? nawd.startTime
                         : nawd.getEnd()),
-                    nawd.channel * 20 - 10, 2, dist
+                    nawd.channel * CHANNEL_HEIGHT - 10, 2, dist
                   );
               }
   
@@ -289,12 +296,12 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             drawOutline(boxRect, Color.green);
             EditorGUI.DrawRect(
               new Rect(secondsToGUI(linkedNode.getEnd()),
-                currNode.channel * 20 + 10, secondsToGUI(currNode.startTime - linkedNode.getEnd()), 2),
+                currNode.channel * CHANNEL_HEIGHT + 10, secondsToGUI(currNode.startTime - linkedNode.getEnd()), 2),
               Color.green
             );
             EditorGUI.DrawRect(
               new Rect(secondsToGUI(linkedNode.getEnd()),
-                currNode.channel * 20, 3, 20),
+                currNode.channel * CHANNEL_HEIGHT, 3, CHANNEL_HEIGHT),
               Color.green
             );
           }
@@ -337,8 +344,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         
         void drawCallbackIcon(CallbackVisuals visuals) {
           GUI.color = Color.yellow;
-          GUI.DrawTexture(visuals.iconRect,
-            EditorGUIUtility.FindTexture("d_animationkeyframe"));
+          GUI.DrawTexture(visuals.iconRect, EditorGUIUtility.FindTexture("d_animationkeyframe"));
           GUI.Label(visuals.labelRect, visuals.labelContent);
           GUI.color = Color.white;
         }
@@ -347,7 +353,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
     public void doLines() {
       Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
-      for (var y = 0; y < (int)timelineRect.height + _visualsSettings.scroll.y; y += 20) {
+      for (var y = 0f; y < (int) timelineRect.height + _visualsSettings.scroll.y; y += CHANNEL_HEIGHT) {
         Handles.DrawLine(new Vector3(0, y, 0), new Vector3(timelineRect.width+_visualsSettings.scroll.x, y, 0));	
       }
       Handles.color = Color.white;
@@ -377,7 +383,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     
     void doCursor(List<TimelineNode> funNodes) {
       if (!funNodes.Exists(node =>
-        new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(Event.current.mousePosition)
+        new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * CHANNEL_HEIGHT, 20, CHANNEL_HEIGHT).Contains(Event.current.mousePosition)
         && node.startTime < 1f
       )) {
         EditorGUIUtility.AddCursorRect(
@@ -666,17 +672,22 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
     
     Rect nodeStartRect(TimelineNode node) => 
-      new Rect(secondsToGUI(node.startTime) - 5, node.channel * 20, 10, 20);
+      new Rect(secondsToGUI(node.startTime) - 5, node.channel * CHANNEL_HEIGHT, 10, CHANNEL_HEIGHT);
 
     Rect nodeEndRect(TimelineNode node) =>
-      new Rect(secondsToGUI(node.startTime + node.duration) - 5, node.channel * 20, 10, 20);
+      new Rect(secondsToGUI(node.startTime + node.duration) - 5, node.channel * CHANNEL_HEIGHT, 10, CHANNEL_HEIGHT);
 
-    Rect nodeBodyRect(TimelineNode node) =>
-      new Rect(
-        secondsToGUI(node.startTime - (node.isCallback || secondsToGUI(node.duration) < 7 ? 0.5f : 0)),
-        node.channel * 20,
-        secondsToGUI(node.isCallback || secondsToGUI(node.duration) < 7 ? 1f : node.duration), 20
+    Rect nodeBodyRect(TimelineNode node) {
+      var additionalWidth = node.isCallback 
+        ? CHANNEL_HEIGHT 
+        : (secondsToGUI(node.duration) < 7 ? 14 : 0);
+      return new Rect(
+        secondsToGUI(node.startTime) - additionalWidth / 2,
+        node.channel * CHANNEL_HEIGHT,
+        secondsToGUI(node.duration) + additionalWidth,
+        CHANNEL_HEIGHT
       );
+    }
 
     public void doNodeEvents(List<TimelineNode> funNodes, bool hasManager) {
       if (!GUI.enabled || visualizationMode.value || Application.isPlaying) {
@@ -749,7 +760,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           }
           break;
         case EventType.MouseDrag:
-          nodeEvent(TimelineEditor.NodeEvents.Drag);
+          nodeEvent(TimelineEditor.NodeEvents.MouseDrag);
           return;
         case EventType.MouseUp:
           nodeEvent(TimelineEditor.NodeEvents.Refresh);
@@ -792,8 +803,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         case EventType.MouseDown:
           if (new Rect(_visualsSettings.timelineOffset - 5, 37, 10, timelineRect.height).Contains(ev.mousePosition)
             && funNodes.find(node => 
-              new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * 20, 20, 20).Contains(ev.mousePosition)
-              && node.startTime < 1f ).isNone
+              new Rect(_visualsSettings.timelineOffset - 5, (node.channel + 2) * CHANNEL_HEIGHT, 20, CHANNEL_HEIGHT)
+                .Contains(ev.mousePosition)
+              && node.startTime < 1f).isNone
           ) {
             changeOffset = true;
             clickOffset = timePosition - _visualsSettings.timelineOffset;
@@ -834,6 +846,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           switch (ev.button) {
             case 0:
+              // Left button drag
               if (changeOffset) {
                 _visualsSettings.timelineOffset = ev.mousePosition.x;
                 _visualsSettings.timelineOffset = Mathf.Clamp(_visualsSettings.timelineOffset, 170, timelineRect.width - 170);
@@ -845,6 +858,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             case 1:
               break;
             case 2:
+              // Middle button drag
               _visualsSettings.scroll -= ev.delta;
               _visualsSettings.scroll.x = Mathf.Clamp(_visualsSettings.scroll.x, 0f, Mathf.Infinity);
               _visualsSettings.scroll.y = Mathf.Clamp(_visualsSettings.scroll.y, 0f, Mathf.Infinity);

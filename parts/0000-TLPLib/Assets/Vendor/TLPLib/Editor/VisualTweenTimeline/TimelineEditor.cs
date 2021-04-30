@@ -37,7 +37,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       ResizeEnd,
       NodeClicked_MB1,
       NodeClicked_MB2,
-      Drag,
+      MouseDrag,
       DeselectAll,
       RemoveSelected,
       SelectAll,
@@ -358,7 +358,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
             break;
           
-          case NodeEvents.Drag:
+          case NodeEvents.MouseDrag:
             if (rootSelectedNodeOpt.valueOut(out var rootSelected)) {
               
               if (resizeNodeStart) {
@@ -433,7 +433,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
                 diffList.Clear();
   
-                while (Event.current.mousePosition.y > rootSelected.channel * 20 + 25) {
+                while (
+                  Event.current.mousePosition.y > (rootSelected.channel + 1) * TimelineVisuals.CHANNEL_HEIGHT + 5) {
                   foreach (var node in selectedNodesList) {
                     updateLinkedNodeChannels(node, _ => _.increaseChannel());
                     if (node == rootSelected) {
@@ -442,7 +443,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   }
                 }
   
-                while (Event.current.mousePosition.y < rootSelected.channel * 20 - 5
+                while (Event.current.mousePosition.y < rootSelected.channel * TimelineVisuals.CHANNEL_HEIGHT - 5
                        && selectedNodesList.find(node => node.channel == 0).isNone) {
                   foreach (var node in selectedNodesList) {
                     updateLinkedNodeChannels(node, _ => _.decreaseChannel());
