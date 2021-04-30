@@ -7,6 +7,7 @@ using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using pzd.lib.data;
@@ -39,7 +40,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       RemoveSelected,
       SelectAll,
       Refresh,
-      DuplicateSelected
+      DuplicateSelected,
+      AcceptDrag
     }
     
     public enum SnapType : byte {
@@ -277,6 +279,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           case NodeEvents.DuplicateSelected:
             duplicateAllSelectedNodes();
+            break;
+          
+          case NodeEvents.AcceptDrag:
+            var dragTarget = DragAndDrop.objectReferences[0];
+            DragAndDrop.AcceptDrag();
+            if (dragTarget is GameObject go) {
+              addElement(new Element(0, 0, new EnableGameObjectCallback(go, true)));
+            }
             break;
           
           case NodeEvents.SelectAll:
@@ -713,20 +723,34 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           channelNodes => channelNodes.a.OrderBy(channelNode => channelNode.startTime).First()
         );
 
-      const float EPS = 15f;
       Option<TimelineNode> getOverlappingNode(TimelineNode node) {
         var channelNodes = funNodes.Where(funNode => funNode.channel == node.channel && funNode != node);
 
-        bool isOverlaping(TimelineNode channelNode, float nodePoint) =>
-          channelNode.startTime < nodePoint && channelNode.getEnd() > nodePoint;
+        const float EPS = 1e-6f;
 
-        return channelNodes.find(channelNode =>
-          isOverlaping(channelNode, node.startTime)
-          || isOverlaping(channelNode, node.getEnd())
-          || isOverlaping(channelNode, (node.startTime + node.getEnd()) / 2)
-          || node.isCallback && channelNode.isCallback
-             && Math.Abs(node.startTime - channelNode.startTime) < timelineVisuals.GUIToSeconds(EPS)
-        );
+        var nodeStart = node.startTime;
+        var nodeEnd = node.getEnd();
+        var nodeCanTouch = !node.isCallback;
+
+        return channelNodes.find(channelNode => {
+          var channelNodeStart = channelNode.startTime;
+          var channelNodeEnd = channelNode.getEnd();
+          var channelNodeCanTouch = !channelNode.isCallback;
+
+          var canTouch = nodeCanTouch && channelNodeCanTouch;
+          
+          var epsCanTouch = canTouch ? EPS : 0f;
+          var epsStrict = canTouch ? 0f : EPS;
+
+          var onLeft = channelNodeEnd + epsStrict < nodeStart + epsCanTouch;
+          var onRight = channelNodeStart + epsCanTouch > nodeEnd + epsStrict;
+          
+          var overlapsRange = !onLeft && !onRight;
+          var overlapsCallbacksVisually = node.isCallback && channelNode.isCallback
+            && Math.Abs(node.startTime - channelNode.startTime) < timelineVisuals.GUIToSeconds(15f);
+          
+          return overlapsRange || overlapsCallbacksVisually;
+        });
 
       }
       
@@ -827,9 +851,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
       
       void duplicate(TimelineNode node) {
+        addElement(node.element.deepClone());
+      }
+
+      void addElement(Element newElement) {
         {if (selectedFunTweenManager.valueOut(out var manager)) {
           manager.serializedTimeline.elements = 
-            manager.serializedTimeline.elements.concat(new []{node.element.deepClone()});
+            manager.serializedTimeline.elements.concat(new []{newElement});
           importTimeline();
         }}
       }

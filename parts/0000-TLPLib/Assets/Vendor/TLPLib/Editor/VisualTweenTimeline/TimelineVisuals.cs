@@ -745,6 +745,17 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         case EventType.MouseUp:
           nodeEvent(TimelineEditor.NodeEvents.Refresh);
           return;
+        case EventType.DragUpdated: 
+          if (canAcceptDrag()) {
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+          }
+          break;
+        case EventType.DragPerform:
+          if (canAcceptDrag()) {
+            nodeEvent(TimelineEditor.NodeEvents.AcceptDrag);
+          }
+          break;
+          
         default: break;
       }
 
@@ -752,6 +763,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         ev.Use();
         onNodeEvent(nodeEvent, Option.a(maybeNode), GUIToSeconds(Event.current.mousePosition.x));
       }
+    }
+
+    static bool canAcceptDrag() {
+      var refs = DragAndDrop.objectReferences;
+      return refs != null && refs.Length == 1;
     }
 
     public void doTimelineEvents(List<TimelineNode> funNodes){
