@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
@@ -12,6 +13,7 @@ using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using pzd.lib.data;
 using pzd.lib.functional;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -284,9 +286,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           case NodeEvents.AcceptDrag:
             var dragTarget = DragAndDrop.objectReferences[0];
             DragAndDrop.AcceptDrag();
-            if (dragTarget is GameObject go) {
-              addElement(new Element(0, 0, new EnableGameObjectCallback(go, true)));
-            }
+
+            var selector = new ElementSelector(dragTarget);
+            selector.SelectionConfirmed += selection => {
+              if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
+                var element = selectedValue.createElement();
+                addElement(new Element(0, 0, element));
+              }
+            };
+            selector.ShowInPopup();
             break;
           
           case NodeEvents.SelectAll:
@@ -751,7 +759,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           return overlapsRange || overlapsCallbacksVisually;
         });
-
       }
       
       void exportTimelineToTweenManager() {

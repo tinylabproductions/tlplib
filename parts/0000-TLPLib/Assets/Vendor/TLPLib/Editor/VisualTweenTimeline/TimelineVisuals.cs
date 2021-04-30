@@ -165,7 +165,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       doLines();
       drawNodes(funNodes, selectedNodesList, rootNode, nodeSnappedToOpt);
 
-      doNodeEvents(funNodes);
+      doNodeEvents(funNodes, hasManager: funTweenManager.isSome);
 
       endScrollView();
       doBlackBar();
@@ -566,6 +566,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         if (funTweenManager.valueOut(out var ftm) && oneNodeSelected && !visualizationMode.value) {
           drawElementSettings(ftm, _visualsSettings.timelineOffset - 1.5f, rootSelectedNodeOpt);
         }
+        else {
+          if (funTweenManager.isSome) {
+            using (new GUILayout.HorizontalScope()) {
+              GUILayout.FlexibleSpace();
+              GUILayout.Label("Drag and drop a game object to this screen to open tween selection popup.");
+              GUILayout.FlexibleSpace();
+            }
+          }
+        }
 
         GUILayout.EndScrollView();
       }
@@ -669,8 +678,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         secondsToGUI(node.isCallback || secondsToGUI(node.duration) < 7 ? 1f : node.duration), 20
       );
 
-    public void doNodeEvents(List<TimelineNode> funNodes) {
-      if (!GUI.enabled && visualizationMode.value && Application.isPlaying) {
+    public void doNodeEvents(List<TimelineNode> funNodes, bool hasManager) {
+      if (!GUI.enabled || visualizationMode.value || Application.isPlaying) {
         return;
       }
 
@@ -746,12 +755,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           nodeEvent(TimelineEditor.NodeEvents.Refresh);
           return;
         case EventType.DragUpdated: 
-          if (canAcceptDrag()) {
+          if (hasManager && canAcceptDrag()) {
             DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+            ev.Use();
           }
           break;
         case EventType.DragPerform:
-          if (canAcceptDrag()) {
+          if (hasManager && canAcceptDrag()) {
             nodeEvent(TimelineEditor.NodeEvents.AcceptDrag);
           }
           break;
