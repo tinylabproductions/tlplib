@@ -178,7 +178,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   return settings;
               })
           ).getOrElse(new TimelineVisuals.TimelineVisualsSettings(idx));
-
         } 
         
         selectedFunTweenManager.voidFold(
@@ -240,7 +239,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         importTimeline();
       }
 
-      //Selects or deselects node
+      // Selects or deselects node
       void manageSelectedNode(TimelineNode nodeToAdd, Event currentEvent) {
         if (!selectedNodesList.isEmpty()) {
           selectedNodesList.find(selectedNode => selectedNode == nodeToAdd).voidFold(
@@ -385,7 +384,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 timelineVisuals.recalculateTimelineWidth(funNodes);
               }
     
-              //Draging the node
+              // Dragging the node
               if (dragNode && !resizeNodeStart && !resizeNodeEnd || resizeNodeEnd && resizeNodeStart) {
                 foreach (var selected in selectedNodesList) {
                   diffList.Add(selected.startTime - rootSelected.startTime);
