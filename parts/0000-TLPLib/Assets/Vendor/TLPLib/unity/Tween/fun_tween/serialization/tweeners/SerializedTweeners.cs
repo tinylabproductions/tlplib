@@ -253,6 +253,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     }
     public override Color editorColor => cScale;
   }
+  [Serializable]
+  public sealed class RectSizeBetweenTargets : SerializedTweenerV2<RectTransform, Vector2, RectTransform> {
+#if UNITY_EDITOR
+    protected override void editor__setStart() => showItIsUselessMessage();
+    protected override void editor__setEnd() => showItIsUselessMessage();
+#endif
+
+    protected override Vector2 lerp(float percentage) => Vector2.LerpUnclamped(_start.rect.size, _end.rect.size, percentage);
+    protected override Vector2 add(Vector2 a, Vector2 b) => a + b;
+    protected override Vector2 subtract(Vector2 a, Vector2 b) => a - b;
+    protected override Vector2 get => _target.rect.size;
+    protected override void set(Vector2 value) {
+      _target.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.x);
+      _target.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.y);
+    }
+  }
 
   [Serializable]
   public sealed class AnchoredPosition : SerializedTweenerVector2<RectTransform> {
