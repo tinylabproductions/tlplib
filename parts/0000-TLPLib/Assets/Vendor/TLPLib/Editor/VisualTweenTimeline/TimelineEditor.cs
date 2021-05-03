@@ -5,12 +5,15 @@ using System.Collections.Immutable;
 using System.Linq;
 using com.tinylabproductions.TLPLib.Components.Interfaces;
 using com.tinylabproductions.TLPLib.Extensions;
+using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
+using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_callbacks;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using pzd.lib.data;
 using pzd.lib.functional;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -34,12 +37,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       ResizeEnd,
       NodeClicked_MB1,
       NodeClicked_MB2,
-      Drag,
+      MouseDrag,
       DeselectAll,
       RemoveSelected,
       SelectAll,
       Refresh,
-      DuplicateSelected
+      DuplicateSelected,
+      AcceptDrag
     }
     
     public enum SnapType : byte {
@@ -178,7 +182,6 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   return settings;
               })
           ).getOrElse(new TimelineVisuals.TimelineVisualsSettings(idx));
-
         } 
         
         selectedFunTweenManager.voidFold(
@@ -240,7 +243,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         importTimeline();
       }
 
-      //Selects or deselects node
+      // Selects or deselects node
       void manageSelectedNode(TimelineNode nodeToAdd, Event currentEvent) {
         if (!selectedNodesList.isEmpty()) {
           selectedNodesList.find(selectedNode => selectedNode == nodeToAdd).voidFold(
@@ -278,6 +281,20 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           
           case NodeEvents.DuplicateSelected:
             duplicateAllSelectedNodes();
+            break;
+          
+          case NodeEvents.AcceptDrag:
+            var dragTarget = DragAndDrop.objectReferences[0];
+            DragAndDrop.AcceptDrag();
+
+            var selector = new ElementSelector(dragTarget);
+            selector.SelectionConfirmed += selection => {
+              if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
+                var element = selectedValue.createElement();
+                addElement(new Element(0, 0, element));
+              }
+            };
+            selector.ShowInPopup();
             break;
           
           case NodeEvents.SelectAll:
@@ -341,7 +358,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             }
             break;
           
-          case NodeEvents.Drag:
+          case NodeEvents.MouseDrag:
             if (rootSelectedNodeOpt.valueOut(out var rootSelected)) {
               
               if (resizeNodeStart) {
@@ -385,7 +402,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                 timelineVisuals.recalculateTimelineWidth(funNodes);
               }
     
-              //Draging the node
+              // Dragging the node
               if (dragNode && !resizeNodeStart && !resizeNodeEnd || resizeNodeEnd && resizeNodeStart) {
                 foreach (var selected in selectedNodesList) {
                   diffList.Add(selected.startTime - rootSelected.startTime);
@@ -416,7 +433,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   
                 diffList.Clear();
   
-                while (Event.current.mousePosition.y > rootSelected.channel * 20 + 25) {
+                while (
+                  Event.current.mousePosition.y > (rootSelected.channel + 1) * TimelineVisuals.CHANNEL_HEIGHT + 5) {
                   foreach (var node in selectedNodesList) {
                     updateLinkedNodeChannels(node, _ => _.increaseChannel());
                     if (node == rootSelected) {
@@ -425,7 +443,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
                   }
                 }
   
-                while (Event.current.mousePosition.y < rootSelected.channel * 20 - 5
+                while (Event.current.mousePosition.y < rootSelected.channel * TimelineVisuals.CHANNEL_HEIGHT - 5
                        && selectedNodesList.find(node => node.channel == 0).isNone) {
                   foreach (var node in selectedNodesList) {
                     updateLinkedNodeChannels(node, _ => _.decreaseChannel());
@@ -714,21 +732,34 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           channelNodes => channelNodes.a.OrderBy(channelNode => channelNode.startTime).First()
         );
 
-      const float EPS = 15f;
       Option<TimelineNode> getOverlappingNode(TimelineNode node) {
         var channelNodes = funNodes.Where(funNode => funNode.channel == node.channel && funNode != node);
 
-        bool isOverlaping(TimelineNode channelNode, float nodePoint) =>
-          channelNode.startTime < nodePoint && channelNode.getEnd() > nodePoint;
+        const float EPS = 1e-6f;
 
-        return channelNodes.find(channelNode =>
-          isOverlaping(channelNode, node.startTime)
-          || isOverlaping(channelNode, node.getEnd())
-          || isOverlaping(channelNode, (node.startTime + node.getEnd()) / 2)
-          || node.isCallback && channelNode.isCallback
-             && Math.Abs(node.startTime - channelNode.startTime) < timelineVisuals.GUIToSeconds(EPS)
-        );
+        var nodeStart = node.startTime;
+        var nodeEnd = node.getEnd();
+        var nodeCanTouch = !node.isCallback;
 
+        return channelNodes.find(channelNode => {
+          var channelNodeStart = channelNode.startTime;
+          var channelNodeEnd = channelNode.getEnd();
+          var channelNodeCanTouch = !channelNode.isCallback;
+
+          var canTouch = nodeCanTouch && channelNodeCanTouch;
+          
+          var epsCanTouch = canTouch ? EPS : 0f;
+          var epsStrict = canTouch ? 0f : EPS;
+
+          var onLeft = channelNodeEnd + epsStrict < nodeStart + epsCanTouch;
+          var onRight = channelNodeStart + epsCanTouch > nodeEnd + epsStrict;
+          
+          var overlapsRange = !onLeft && !onRight;
+          var overlapsCallbacksVisually = node.isCallback && channelNode.isCallback
+            && Math.Abs(node.startTime - channelNode.startTime) < timelineVisuals.GUIToSeconds(15f);
+          
+          return overlapsRange || overlapsCallbacksVisually;
+        });
       }
       
       void exportTimelineToTweenManager() {
@@ -828,9 +859,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
       
       void duplicate(TimelineNode node) {
+        addElement(node.element.deepClone());
+      }
+
+      void addElement(Element newElement) {
         {if (selectedFunTweenManager.valueOut(out var manager)) {
           manager.serializedTimeline.elements = 
-            manager.serializedTimeline.elements.concat(new []{node.element.deepClone()});
+            manager.serializedTimeline.elements.concat(new []{newElement});
           importTimeline();
         }}
       }

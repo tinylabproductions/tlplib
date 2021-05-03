@@ -155,6 +155,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
       
+      public Element() {}
+      
+      public Element(float startsAt, int timelineChannelIdx, ISerializedTweenTimelineElementBase element) {
+        _startsAt = startsAt;
+        _timelineChannelIdx = timelineChannelIdx;
+        _element = element;
+      }
+      
       [ShowInInspector, HorizontalGroup(TIME)] float _endTime {
         get => _startsAt + _element?.duration ?? 0f;
         set {

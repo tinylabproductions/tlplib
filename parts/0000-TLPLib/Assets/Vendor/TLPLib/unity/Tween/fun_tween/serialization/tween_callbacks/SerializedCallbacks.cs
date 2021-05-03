@@ -134,6 +134,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
 
+    public EnableGameObjectCallback() { }
+
+    public EnableGameObjectCallback(GameObject gameObject, bool state) {
+      _gameObject = gameObject;
+      _state = state;
+    }
+
     protected override void invoke() => _gameObject.SetActive(_state);
 
     public override bool isValid => _gameObject;
