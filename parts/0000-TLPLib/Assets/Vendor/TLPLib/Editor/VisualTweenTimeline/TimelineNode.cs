@@ -41,7 +41,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     }
 
     public void refreshColor() =>
-      nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
+      nodeTextColor = element.element?.editorColor ?? Color.white;
 
     public void setTimeOffset(float time) => element.setStartsAt(time);
 
@@ -57,27 +57,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       this.element = element;
       channel = element.timelineChannelIdx;
       startTime = element.startsAt;
-      nodeTextColor = element.element != null ? elementToColor(element.element) : Color.white;
-    }
-
-    static Color elementToColor(ISerializedTweenTimelineElementBase element) {
-      return element switch {
-        LocalScale _ => new Color(0.75f, 0.25f, 1),
-        AnchoredPosition _ => Color.yellow,
-        _ => Color.white
-      };
-      // switch (element) {
-      //   case Transform_Position _:         return Color.yellow;
-      //   case Path_Transfrom_Position _:    return Color.cyan;
-      //   case Transform_LocalEulerAngles _: return new Color(1f, 0.75f, 1f);
-      //   case Transform_Rotation _:         return Color.green;
-      //   case Transform_LocalScale _:       return new Color(0.75f, 0.25f, 1);
-      //   case Light_Color _:                return new Color(0.75f, 1, 1);
-      //   case Light_Intensity _:            return new Color(1, 1, 0.75f);
-      //   case Graphic_ColorAlpha _:         return new Color(0.25f, 0.75f, 1f);
-      //   case Graphic_Color _:              return new Color(1f, 0.5f, 0f);
-      //   default:                           return Color.white;
-      // }
+      nodeTextColor = element.element?.editorColor ?? Color.white;
     }
   }
 }
