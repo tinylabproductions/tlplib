@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using pzd.lib.exts;
 using Sirenix.OdinInspector;
+using UnityEditor;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -15,14 +17,17 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       public float setStartsAt(float value) => _startsAt = value;
       
       string _title;
-      public string title => _title ??= generateTitle();
+      public string title { get {
+        if (_title.isNullOrEmpty()) _title = generateTitle();
+        return _title;
+      } }
 
       string generateTitle() {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (_element == null) return "NULL";
         var target = _element.getTarget();
         if (target is Component c && c) target = c.gameObject;
-        return $"{(target ? target.name : "NULL")} : {_element.GetType().Name}";
+        return $"{(target ? target.name : "NULL")} : {ObjectNames.NicifyVariableName(_element.GetType().Name)}";
       }
 
       public int timelineChannelIdx {

@@ -11,6 +11,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       if (FunTweenManagerV2.timelineEditorIsOpen) {
         EditorGUILayout.HelpBox("Timeline is hidden while Timeline Editor is open", MessageType.Info);
       }
+      GUI.color = Color.green;
       if (GUILayout.Button("Open Timeline Editor")) {
         TimelineEditor.showWindow();
       }

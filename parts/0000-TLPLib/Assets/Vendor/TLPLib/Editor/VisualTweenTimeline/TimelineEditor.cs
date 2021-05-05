@@ -289,10 +289,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
             var selector = new ElementSelector(dragTarget);
             selector.SelectionConfirmed += selection => {
-              if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
+              {if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
                 var element = selectedValue.createElement();
                 addElement(new Element(0, 0, element));
-              }
+              }}
             };
             selector.ShowInPopup();
             break;

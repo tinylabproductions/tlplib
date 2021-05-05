@@ -88,7 +88,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     Rect timeRect, timelineRect, blackBarRect;
     Vector2 expandView, settingsScroll;
-    bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
+    
+    /// <summary>
+    /// Currently time bar has active position. User sees current time.
+    /// </summary>
+    bool changeTime;
+    
+    bool changeOffset;
+    bool applicationPlaying;
+    bool playingBackwards;
+    bool isDifferentFTMselected;
     float timePosition, clickOffset;
     
     PropertyTree maybeTree;
@@ -225,33 +234,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           var boxRect = new Rect(
             secondsToGUI(currNode.startTime), 
             currNode.channel * CHANNEL_HEIGHT,
-            Mathf.Clamp(secondsToGUI(currNode.duration), 6f, float.MaxValue), 
+            Math.Max(secondsToGUI(currNode.duration), 6f), 
             CHANNEL_HEIGHT
           );
           
           var selectedCurrentNode = selectedNodes.find(selected => selected == currNode);
   
-          var iconRect = new Rect(boxRect.x - CHANNEL_HEIGHT * .5f, boxRect.y, CHANNEL_HEIGHT, boxRect.height);
           // Transparent texture with a tooltip text.
           var tooltip = new GUIContent(EditorGUIUtility.FindTexture("tranp"), currNode.name);
-  
-          void drawOutline(Rect aroundRect, Color outlineColor) {
-              
-            if (!currNode.isCallback) {
-              EditorGUI.DrawRect(aroundRect, outlineColor);
-              GUI.Box(new Rect(
-                aroundRect.x + OUTLINE_WIDTH,
-                aroundRect.y + OUTLINE_WIDTH,
-                aroundRect.width - OUTLINE_WIDTH * 2,
-                aroundRect.height - OUTLINE_WIDTH * 2
-              ), "", barStyle);
-            }
-            else {
-              EditorGUI.DrawRect(iconRect, outlineColor);
-              drawCallbackIcon(new CallbackVisuals(boxRect, tooltip));
-            }
-          }
-  
+
           if (selectedCurrentNode.valueOut(out var selectedNode)) {
             drawOutline(boxRect, Color.magenta);
 
@@ -320,17 +311,39 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           if (changeTime) {
             content += $" {(int) (currentTime.remapClamped(currNode.startTime, currNode.getEnd(), 0, 100))}%";
           } 
-          using (new GUILayout.AreaScope(boxRect)) {
+          var labelRect = boxRect;
+          if (currNode.isCallback) {
+            labelRect.xMin = labelRect.xMax + 5;
+            labelRect.width = 400;
+          }
+          using (new GUILayout.AreaScope(labelRect)) {
             // FlexibleSpace centers vertically
             GUILayout.FlexibleSpace();
             using (new GUILayout.HorizontalScope()) {
               // FlexibleSpace centers horizontally
-              GUILayout.FlexibleSpace();
+              if (!currNode.isCallback) GUILayout.FlexibleSpace();
               // Draw label in a middle of the cell
               GUILayout.Label(content, style);
-              GUILayout.FlexibleSpace();
+              if (!currNode.isCallback) GUILayout.FlexibleSpace();
             }
             GUILayout.FlexibleSpace();
+          }
+          
+          void drawOutline(Rect aroundRect, Color outlineColor) {
+            if (!currNode.isCallback) {
+              EditorGUI.DrawRect(aroundRect, outlineColor);
+              GUI.Box(new Rect(
+                aroundRect.x + OUTLINE_WIDTH,
+                aroundRect.y + OUTLINE_WIDTH,
+                aroundRect.width - OUTLINE_WIDTH * 2,
+                aroundRect.height - OUTLINE_WIDTH * 2
+              ), "", barStyle);
+            }
+            else {
+              var visuals = new CallbackVisuals(boxRect, tooltip);
+              EditorGUI.DrawRect(visuals.iconRect, outlineColor);
+              drawCallbackIcon(new CallbackVisuals(boxRect, tooltip));
+            }
           }
         }
   
@@ -498,7 +511,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
         funNodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
 
-        if (GUILayout.Button("Add Tween")) {
+        if (GUILayout.Button("Add Tween (USE DRAG & DROP INSTEAD !!!)")) {
           onNewSettings(TimelineEditor.SettingsEvents.AddTween);
         }
 

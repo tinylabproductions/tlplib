@@ -28,6 +28,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       return this;
     }
 
+    public TObject target => _target;
+
     public Object getTarget() => _target as Object;
 
     public abstract float duration { get; }
