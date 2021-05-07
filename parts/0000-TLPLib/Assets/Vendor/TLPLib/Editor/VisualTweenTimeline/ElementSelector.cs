@@ -39,12 +39,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     readonly bool multipleTargets;
 
     public ElementSelector(Object targetObject) {
-      var withElement = allElementTypes.collect(type => 
-        type.getAllFields()
-        .Where(field => field.isSerializable() && typeof(Object).IsAssignableFrom(field.FieldType))
-        .headOption()
-        .map(_ => (type, field: _))
-      ).ToArray();
+      var typesWithTargetFields = allElementTypes.collect(type => {
+        var allAssignableFields = type.getAllFields()
+          .Where(field => field.isSerializable() && typeof(Object).IsAssignableFrom(field.FieldType))
+          .ToArray();
+
+        // TODO: we can make a more typesafe way to select a required field
+        var selectedField = allAssignableFields.find(_ => _.Name == "_target") || allAssignableFields.headOption();
+
+        return selectedField.map(_ => (type, field: _));
+      }).ToArray();
 
       var possibleTargetObjects = new List<Object> { targetObject };
       {if (targetObject is GameObject go) {
@@ -52,7 +56,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }}
 
       source = possibleTargetObjects.SelectMany(targetObject =>
-        withElement.collect(tpl => {
+        typesWithTargetFields.collect(tpl => {
           if (tpl.field.FieldType.IsInstanceOfType(targetObject)) {
             return Some.a(new ElementSelectorResult(tpl.type, tpl.field, targetObject));
           }

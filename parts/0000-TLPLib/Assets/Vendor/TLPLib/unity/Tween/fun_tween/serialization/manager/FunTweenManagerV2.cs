@@ -21,19 +21,23 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
     [SerializeField] TweenTime _time = TweenTime.OnUpdate;
     [SerializeField] TweenManager.Loop _looping = TweenManager.Loop.single;
     [SerializeField] AutoPlayMode _autoPlayMode = AutoPlayMode.None;
+
+    [ShowInInspector, HideIf(nameof(timelineEditorIsOpen))] static bool showDeveloperSettings;
     [
       SerializeField, 
       HideLabel, 
       InlineProperty, 
       // timeline editor fails to update if we edit it from multiple places
-      HideIf(nameof(timelineEditorIsOpen), animate: false)
+      ShowIf(nameof(showTimeline), animate: false)
+      // FoldoutGroup("Developer settings")
     ] 
     SerializedTweenTimelineV2 _timeline = new();
 
     public SerializedTweenTimelineV2 serializedTimeline => _timeline;
     public TweenTimeline timeline => _timeline.timeline(this);
     public string title => getGameObjectPath(transform);
-    
+
+    bool showTimeline => !timelineEditorIsOpen && showDeveloperSettings;
     public static bool timelineEditorIsOpen;
     
     bool awakeCalled;
@@ -127,6 +131,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
     public void OnEnable() {
       if (_autoPlayMode == AutoPlayMode.OnEnable) {
+        manager.timeline.resetAllElementsToStart();
         manager.play();
       }
     }
