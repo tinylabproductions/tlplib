@@ -620,7 +620,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             using (new GUILayout.HorizontalScope()) {
               GUILayout.FlexibleSpace();
               GUILayout.Label(
-                "Drag and drop a game object to this screen to open tween selection popup.",
+                "Drag and drop a game object or a component to this screen to open tween selection popup.",
                 EditorStyles.wordWrappedLabel
               );
               GUILayout.FlexibleSpace();
