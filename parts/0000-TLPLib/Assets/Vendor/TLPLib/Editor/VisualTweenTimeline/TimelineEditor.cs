@@ -212,6 +212,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       public void onGUI(Event currentEvent) {
+        {if (selectedFunTweenManager.valueOut(out var ftm)) {
+          // ftm may become invalid if we locked it previously, but then switched the scene.
+          if (!ftm) {
+            selectedFunTweenManager = None._;
+            rootSelectedNodeOpt = None._;
+            isLocked.value = false;
+            funNodes.Clear();
+          }
+        }}
         
         if (currentEvent.isKey && visualizationMode.value) {
           foreach (var controller in tweenPlaybackController) {
