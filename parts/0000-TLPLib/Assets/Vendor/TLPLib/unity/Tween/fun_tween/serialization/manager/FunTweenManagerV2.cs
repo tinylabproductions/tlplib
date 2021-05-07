@@ -150,7 +150,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       // ReSharper disable NotNullMemberIsNotInitialized
       [SerializeField, PublicAccessor, HorizontalGroup(TIME)] float _startsAt;
       [SerializeField, HideInInspector] int _timelineChannelIdx;
-      [NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE)] 
+      [
+        NotNull, PublicAccessor, HideLabel, SerializeReference, InlineProperty, OnValueChanged(CHANGE),
+        HideReferenceObjectPicker, OnInspectorGUI(nameof(drawType), append: false)
+      ] 
       ISerializedTweenTimelineElementBase _element;
       // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
@@ -162,7 +165,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         _timelineChannelIdx = timelineChannelIdx;
         _element = element;
       }
-      
+
+      partial void drawType();
+
       [ShowInInspector, HorizontalGroup(TIME)] float _endTime {
         get => _startsAt + _element?.duration ?? 0f;
         set {
@@ -298,7 +303,6 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
   }
   
   public interface ISerializedTweenTimelineCallback : ISerializedTweenTimelineElementBase {
-    
   }
 
   public interface ISerializedTweenTimelineElement : ISerializedTweenTimelineElementBase {

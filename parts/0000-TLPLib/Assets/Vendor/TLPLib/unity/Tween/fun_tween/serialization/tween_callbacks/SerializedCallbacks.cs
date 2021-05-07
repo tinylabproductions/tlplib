@@ -27,7 +27,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public void trySetDuration(float _) { }
     
     public void setRelativeTimePassed(
-      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
+      bool exitTween
     ) {
       var shouldInvoke = _invokeOn switch {
         InvokeOn.Forward => playingForwards,

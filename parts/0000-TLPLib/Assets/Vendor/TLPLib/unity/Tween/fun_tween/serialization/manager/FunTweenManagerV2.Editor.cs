@@ -14,6 +14,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
 
   public partial class SerializedTweenTimelineV2 {
     public partial class Element {
+      partial void drawType() {
+        if (_element != null) {
+          GUILayout.Label(ObjectNames.NicifyVariableName(_element.GetType().Name), EditorStyles.boldLabel);
+          EditorGUILayout.Separator();
+        }
+      }
+      
       public float setStartsAt(float value) => _startsAt = value;
       
       string _title;

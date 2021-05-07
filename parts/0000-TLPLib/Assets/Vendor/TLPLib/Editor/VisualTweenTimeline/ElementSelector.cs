@@ -30,15 +30,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
   /// Used in Drag & Drop action in Timeline editor.
   /// </summary>
   public class ElementSelector : OdinSelector<ElementSelectorResult> {
+    [LazyProperty] public static Type[] allElementTypes => 
+      TypeCache.GetTypesDerivedFrom<ISerializedTweenTimelineElementBase>()
+      .Where(_ => !_.IsAbstract)
+      .ToArray();
+    
     readonly ElementSelectorResult[] source;
     readonly bool multipleTargets;
 
     public ElementSelector(Object targetObject) {
-      var types = TypeCache.GetTypesDerivedFrom<ISerializedTweenTimelineElementBase>()
-        .Where(_ => !_.IsAbstract)
-        .ToArray();
-      
-      var withElement = types.collect(type => 
+      var withElement = allElementTypes.collect(type => 
         type.getAllFields()
         .Where(field => field.isSerializable() && typeof(Object).IsAssignableFrom(field.FieldType))
         .headOption()
@@ -75,11 +76,13 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       if (multipleTargets) {
         foreach (var component in source.Select(_ => _.candidate).Distinct()) {
-          var img = EditorGUIUtility.ObjectContent(component, component.GetType()).image;
-          tree.Add(nicify(component.GetType().Name), null, img);
+          tree.Add(nicify(component.GetType().Name), null, componentIcon(component));
         }
       }
     }
+
+    public static Texture componentIcon(Object component) => 
+      EditorGUIUtility.ObjectContent(component, component.GetType()).image;
 
     static string nicify(string str) => ObjectNames.NicifyVariableName(str);
   }

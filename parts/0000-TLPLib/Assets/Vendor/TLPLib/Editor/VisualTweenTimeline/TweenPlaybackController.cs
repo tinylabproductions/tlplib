@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Logger;
+using com.tinylabproductions.TLPLib.Tween.fun_tween;
 using pzd.lib.log;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
 using pzd.lib.data;
@@ -80,6 +81,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         var data = getValidTimelineTargets(manager);
         manager.recreate();
         Undo.RegisterCompleteObjectUndo(data, "Animating targets");
+        manager.timeline.resetAllElementsToStart();
         savedTargetDataOpt = data.some();
         visualizationMode.value = true;
       }
@@ -140,6 +142,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             manager.recreate();
             beforeCursorDataIsSaved = true;
             Undo.RegisterCompleteObjectUndo(data, "targets saved");
+            manager.timeline.resetAllElementsToStart();
             savedTargetDataOpt = data.some();
             
             // TODO: implement this properly later
