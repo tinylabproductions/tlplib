@@ -28,6 +28,14 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       F.opt(t.GetField(fieldName, FLAGS_ANY_FIELD_TYPE))
       || t.BaseTypeSafe().flatMap(baseType => GetFieldInHierarchy(baseType, fieldName));
 
+
+    /// <summary>
+    /// Like <see cref="Type.GetMethod(string,System.Reflection.BindingFlags)"/>
+    /// </summary>
+    public static Option<MethodInfo> GetMethodInHierarchy(this Type t, string fieldName) =>
+      F.opt(t.GetMethod(fieldName, FLAGS_ANY_FIELD_TYPE | BindingFlags.Static))
+      || t.BaseTypeSafe().flatMap(baseType => GetMethodInHierarchy(baseType, fieldName));
+
     public static Option<Type> BaseTypeSafe(this Type t) => F.opt(t.BaseType);
 
     // checks if type can be used in GetComponent and friends

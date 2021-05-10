@@ -22,11 +22,11 @@ using com.tinylabproductions.TLPLib.Logger;
 using pzd.lib.log;
 using GenerationAttributes;
 using pzd.lib.collection;
- using pzd.lib.functional;
- using pzd.lib.utils;
+using pzd.lib.functional;
+using pzd.lib.utils;
 using UnityEngine.Playables;
- using Debug = UnityEngine.Debug;
- using Object = UnityEngine.Object;
+using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
@@ -630,6 +630,56 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 #endif
         {
           void addNotNullError() => addError(() => createError.nullField(fieldHierarchy.asString()));
+
+          {
+            var validateInputAttributes = field.validateInputAttributes;
+            foreach (var attribute in validateInputAttributes) {
+
+              var maybeMethod = objectBeingValidated.GetType().GetMethodInHierarchy(attribute.Condition);
+
+              if (!maybeMethod.valueOut(out var method) ) {
+                addFailedError(
+                  $"Validator method not found. Lokkedt for method {attribute.Condition} " +
+                  $"on type {objectBeingValidated.GetType().FullName}"
+                );
+              }
+              else {
+                var paramCount = method.GetParameters().Length;
+                switch (paramCount) {
+                  case 1:
+                    jobController.enqueueMainThreadJob(() => {
+                      var succeeded = (bool) method.Invoke(objectBeingValidated, new [] {fieldValue});
+                      if (!succeeded) {
+                        addFailedError($"Custom validation failed with message: {attribute.DefaultMessage}");
+                      }
+                    });
+                    break;
+                  case 2: {
+                    var arguments = new object[] {fieldValue, null};
+                    jobController.enqueueMainThreadJob(() => {
+                      var succeeded = (bool) method.Invoke(objectBeingValidated, arguments);
+                      if (!succeeded) {
+                        var errorMessage = (string) arguments[1];
+                        addFailedError($"Custom validation failed with message: {errorMessage}");
+                      }
+                    });
+                    break;
+                  }
+                  default:
+                    addFailedError($"Validation with {paramCount} parameters is not implemented.");
+                    break;
+                }
+              }
+
+              void addFailedError(string errorMsg) {
+                addError(() => createError.custom(
+                  fieldHierarchy.asString(),
+                  new ErrorMsg(errorMsg),
+                  useErrorMessageContext: false
+                ));
+              }
+            }
+          }
 
           switch (fieldValue) {
             case null:
