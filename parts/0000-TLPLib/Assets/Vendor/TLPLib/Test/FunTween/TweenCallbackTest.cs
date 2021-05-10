@@ -40,7 +40,7 @@ namespace com.tinylabproductions.TLPLib.FunTween {
         // as we are using playingforwards as the state variable
         var (setTimeTo, playingForwards, testResult) = action;
         Action execute = () => {
-          ts.setRelativeTimePassed(lastInvocation, setTimeTo, playingForwards, true);
+          ts.setRelativeTimePassed(lastInvocation, setTimeTo, playingForwards, true, exitTween: true);
           lastInvocation = setTimeTo;
         };
         execute.shouldPushTo(stateSubject).resultIn(testResult);

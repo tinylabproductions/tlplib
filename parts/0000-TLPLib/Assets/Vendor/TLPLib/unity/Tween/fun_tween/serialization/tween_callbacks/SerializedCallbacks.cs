@@ -27,7 +27,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public void trySetDuration(float _) { }
     
     public void setRelativeTimePassed(
-      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
+      bool exitTween
     ) {
       var shouldInvoke = _invokeOn switch {
         InvokeOn.Forward => playingForwards,
@@ -46,6 +47,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     protected abstract void invoke();
     public abstract Object getTarget();
     public abstract bool isValid { get; }
+    public Color editorColor => Color.white;
 
 #if UNITY_EDITOR
     public bool __editorDirty { get; private set; } = true;
@@ -132,6 +134,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     [SerializeField, OnValueChanged(CHANGE)] bool _state;
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
+
+    public EnableGameObjectCallback() { }
+
+    public EnableGameObjectCallback(GameObject gameObject, bool state) {
+      _gameObject = gameObject;
+      _state = state;
+    }
 
     protected override void invoke() => _gameObject.SetActive(_state);
 

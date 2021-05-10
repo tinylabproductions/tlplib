@@ -13,7 +13,9 @@
         "GenerationAttributes.dll",
         "Macros.dll",
         "Sirenix.OdinInspector.Attributes.dll",
-        "System.Collections.Immutable.dll"
+        "System.Collections.Immutable.dll",
+        "Sirenix.OdinInspector.Editor.dll",
+        "Sirenix.Utilities.Editor.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
