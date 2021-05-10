@@ -212,6 +212,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
 
       public void onGUI(Event currentEvent) {
+        {if (selectedFunTweenManager.valueOut(out var ftm)) {
+          // ftm may become invalid if we locked it previously, but then switched the scene.
+          if (!ftm) {
+            selectedFunTweenManager = None._;
+            rootSelectedNodeOpt = None._;
+            isLocked.value = false;
+            funNodes.Clear();
+          }
+        }}
         
         if (currentEvent.isKey && visualizationMode.value) {
           foreach (var controller in tweenPlaybackController) {
@@ -269,7 +278,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         }
       }
 
-      void doNodeEvents(NodeEvents nodeEvent, Option<TimelineNode> timelineNodeOpt, float mousePositionSeconds) {
+      void doNodeEvents(
+        NodeEvents nodeEvent, Option<TimelineNode> timelineNodeOpt, float mousePositionSeconds,
+        int mousePositionChannel
+      ) {
         var snappingEnabled = !Event.current.shift && snapping;
         
         switch (nodeEvent) {
@@ -289,10 +301,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
             var selector = new ElementSelector(dragTarget);
             selector.SelectionConfirmed += selection => {
-              if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
+              {if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
                 var element = selectedValue.createElement();
-                addElement(new Element(0, 0, element));
-              }
+                addElement(new Element(Math.Max(mousePositionSeconds, 0), mousePositionChannel, element));
+              }}
             };
             selector.ShowInPopup();
             break;
@@ -801,17 +813,14 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       void doNewSettings(SettingsEvents settingsEvent) {
         switch (settingsEvent) {
           case SettingsEvents.AddTween:
-            var newNode = new TimelineNode(new Element());
-            moveCurrentNodeDownIfOverlapping(newNode);
-            
-            funNodes.Add(newNode);
-
-            selectedNodesList.Clear();
-            selectedNodesList.Add(newNode);
-            rootSelectedNodeOpt = newNode.some();
-
-            exportTimelineToTweenManager();
-            importTimeline();
+            var selector = new TypeSelector(ElementSelector.allElementTypes, false);
+            selector.SelectionConfirmed += selection => {
+              {if (selection != null && selection.headOption().valueOut(out var selectedValue)) {
+                var element = (ISerializedTweenTimelineElementBase) Activator.CreateInstance(selectedValue);
+                addElement(new Element(0, 0, element));
+              }}
+            };
+            selector.ShowInPopup();
             break;
           case SettingsEvents.ToggleSnapping:
             snapping = !snapping;

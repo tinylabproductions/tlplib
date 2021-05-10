@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager;
-using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners;
 using pzd.lib.functional;
 using UnityEngine;
 using Element = com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager.SerializedTweenTimelineV2.Element;
@@ -48,12 +47,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public TimelineNode(Element element) {
       // display invalid elements of length 1
       duration = element.element?.duration ?? 1;
-      if (element.element is ISerializedTweenTimelineCallback) {
-        isCallback = true;
-      }
-      else {
-        isCallback = false;
-      }
+      isCallback = element.element is ISerializedTweenTimelineCallback;
       this.element = element;
       channel = element.timelineChannelIdx;
       startTime = element.startsAt;

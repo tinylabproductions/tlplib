@@ -59,7 +59,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
     public delegate void FTMSelectedCallback(int index);
     public delegate void LockButtonCallback();
     public delegate void NodeEventsCallback(
-      TimelineEditor.NodeEvents nodeEvent, Option<TimelineNode> node, float guiToSeconds
+      TimelineEditor.NodeEvents nodeEvent, Option<TimelineNode> node, float guiToSeconds,
+      int mousePositionChannel
     );
 
     readonly PlaybackControllerCallback onPlaybackControllerButton;
@@ -88,7 +89,16 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
     Rect timeRect, timelineRect, blackBarRect;
     Vector2 expandView, settingsScroll;
-    bool changeTime, changeOffset, applicationPlaying, playingBackwards, isDifferentFTMselected;
+    
+    /// <summary>
+    /// Currently time bar has active position. User sees current time.
+    /// </summary>
+    bool changeTime;
+    
+    bool changeOffset;
+    bool applicationPlaying;
+    bool playingBackwards;
+    bool isDifferentFTMselected;
     float timePosition, clickOffset;
     
     PropertyTree maybeTree;
@@ -145,6 +155,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootNode,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt
     ) {
+      var duration = funTweenManager.map(_ => _.timeline.duration).nullable();
       applicationPlaying = Application.isPlaying;
       timelineRect = position;
       if (_visualsSettings.timeZoomFactor == 0) {
@@ -164,11 +175,11 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       doTimelineEvents(funNodes);
 
       startScrollView();
-      doLines();
-      drawNodes(funNodes, selectedNodesList, rootNode, nodeSnappedToOpt);
-
-      doNodeEvents(funNodes, hasManager: funTweenManager.isSome);
-
+      {
+        doLines(duration);
+        drawNodes(funNodes, selectedNodesList, rootNode, nodeSnappedToOpt);
+        doNodeEvents(funNodes, hasManager: funTweenManager.isSome);
+      }
       endScrollView();
       doBlackBar();
       doTimelineGUI();
@@ -225,33 +236,15 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           var boxRect = new Rect(
             secondsToGUI(currNode.startTime), 
             currNode.channel * CHANNEL_HEIGHT,
-            Mathf.Clamp(secondsToGUI(currNode.duration), 6f, float.MaxValue), 
+            Math.Max(secondsToGUI(currNode.duration), 6f), 
             CHANNEL_HEIGHT
           );
           
           var selectedCurrentNode = selectedNodes.find(selected => selected == currNode);
   
-          var iconRect = new Rect(boxRect.x - CHANNEL_HEIGHT * .5f, boxRect.y, CHANNEL_HEIGHT, boxRect.height);
           // Transparent texture with a tooltip text.
           var tooltip = new GUIContent(EditorGUIUtility.FindTexture("tranp"), currNode.name);
-  
-          void drawOutline(Rect aroundRect, Color outlineColor) {
-              
-            if (!currNode.isCallback) {
-              EditorGUI.DrawRect(aroundRect, outlineColor);
-              GUI.Box(new Rect(
-                aroundRect.x + OUTLINE_WIDTH,
-                aroundRect.y + OUTLINE_WIDTH,
-                aroundRect.width - OUTLINE_WIDTH * 2,
-                aroundRect.height - OUTLINE_WIDTH * 2
-              ), "", barStyle);
-            }
-            else {
-              EditorGUI.DrawRect(iconRect, outlineColor);
-              drawCallbackIcon(new CallbackVisuals(boxRect, tooltip));
-            }
-          }
-  
+
           if (selectedCurrentNode.valueOut(out var selectedNode)) {
             drawOutline(boxRect, Color.magenta);
 
@@ -312,7 +305,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
           var style = new GUIStyle("Label");
           style.fontSize = selectedCurrentNode.isSome ? 12 : style.fontSize;
-          style.fontStyle = FontStyle.Bold;
+          if (!currNode.isCallback) {
+            style.fontStyle = FontStyle.Bold;
+          }
           var color = currNode.nodeTextColor;
           // color.a = selectedCurrentNode.isSome ? 1.0f : 0.7f;
           style.normal.textColor = color;
@@ -320,17 +315,52 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           if (changeTime) {
             content += $" {(int) (currentTime.remapClamped(currNode.startTime, currNode.getEnd(), 0, 100))}%";
           } 
-          using (new GUILayout.AreaScope(boxRect)) {
+          var labelRect = boxRect;
+          if (currNode.isCallback) {
+            // Put label to the right of the callback
+            labelRect.xMin = labelRect.xMax + 5;
+            // TODO: limit width until the next element starts on the same line
+            labelRect.width = 400;
+          }
+          using (new GUILayout.AreaScope(labelRect)) {
             // FlexibleSpace centers vertically
             GUILayout.FlexibleSpace();
             using (new GUILayout.HorizontalScope()) {
+              {
+                var target = currNode.element?.element?.getTarget();
+                if (target) {
+                  var icon = ElementSelector.componentIcon(target);
+                  GUILayout.Label(
+                    icon, 
+                    GUILayout.MaxHeight(CHANNEL_HEIGHT - 4),
+                    GUILayout.MaxWidth(CHANNEL_HEIGHT)
+                  );
+                }
+              }
               // FlexibleSpace centers horizontally
-              GUILayout.FlexibleSpace();
+              // if (!currNode.isCallback) GUILayout.FlexibleSpace();
               // Draw label in a middle of the cell
               GUILayout.Label(content, style);
-              GUILayout.FlexibleSpace();
+              // if (!currNode.isCallback) GUILayout.FlexibleSpace();
             }
             GUILayout.FlexibleSpace();
+          }
+          
+          void drawOutline(Rect aroundRect, Color outlineColor) {
+            if (!currNode.isCallback) {
+              EditorGUI.DrawRect(aroundRect, outlineColor);
+              GUI.Box(new Rect(
+                aroundRect.x + OUTLINE_WIDTH,
+                aroundRect.y + OUTLINE_WIDTH,
+                aroundRect.width - OUTLINE_WIDTH * 2,
+                aroundRect.height - OUTLINE_WIDTH * 2
+              ), "", barStyle);
+            }
+            else {
+              var visuals = new CallbackVisuals(boxRect, tooltip);
+              EditorGUI.DrawRect(visuals.iconRect, outlineColor);
+              drawCallbackIcon(new CallbackVisuals(boxRect, tooltip));
+            }
           }
         }
   
@@ -351,17 +381,28 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       }
     }
   
-    public void doLines() {
+    public void doLines(float? duration) {
       Handles.color = new Color(0.5f, 0.5f, 0.5f, 0.2f);
+      // Horizontal lines
       for (var y = 0f; y < (int) timelineRect.height + _visualsSettings.scroll.y; y += CHANNEL_HEIGHT) {
-        Handles.DrawLine(new Vector3(0, y, 0), new Vector3(timelineRect.width+_visualsSettings.scroll.x, y, 0));	
+        Handles.DrawLine(new Vector3(0, y, 0), new Vector3(timelineRect.width + _visualsSettings.scroll.x, y, 0));	
       }
+      // Vertical line - end of timeline
+      if (duration.HasValue) {
+        Handles.DrawLine(
+          new Vector3(secondsToGUI(duration.Value), 0),
+          new Vector3(secondsToGUI(duration.Value), timelineRect.height)
+        );
+      }
+
       Handles.color = Color.white;
     }
     
     public void doTimelineGUI() {
       if ((changeTime || Application.isPlaying || visualizationMode.value)
-        && timePosition - _visualsSettings.scroll.x >= _visualsSettings.timelineOffset && timePosition - _visualsSettings.scroll.x < timelineRect.width - 15) {
+        && timePosition - _visualsSettings.scroll.x >= _visualsSettings.timelineOffset 
+        && timePosition - _visualsSettings.scroll.x < timelineRect.width - 15
+      ) {
         var color = Color.red;
         color.a = Application.isPlaying ? 0.6f : 1.0f;
         Handles.color = color;
@@ -374,8 +415,9 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
         Vector3 size = style.CalcSize(new GUIContent($"content: {currentTime:F2}s"));
         var rect1 = new Rect(timePosition - _visualsSettings.scroll.x, 19, size.x, size.y);
         GUI.Label(rect1, $"{currentTime:F2}s", style);
-        Handles.DrawLine(new Vector3(timePosition - _visualsSettings.scroll.x, 0, 0),
-          new Vector3(timePosition - _visualsSettings.scroll.x, timelineRect.height - 15, 0)
+        Handles.DrawLine(
+          new Vector3(timePosition - _visualsSettings.scroll.x, 0),
+          new Vector3(timePosition - _visualsSettings.scroll.x, timelineRect.height - 15)
         );
         Handles.color = Color.white;
       }
@@ -498,7 +540,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
         funNodes.find(elem => elem.element.element == null).map(_ => GUI.enabled = false);
 
-        if (GUILayout.Button("Add Tween")) {
+        if (GUILayout.Button("Add Tween (USE DRAG & DROP INSTEAD !!!)")) {
           onNewSettings(TimelineEditor.SettingsEvents.AddTween);
         }
 
@@ -515,7 +557,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
             GUI.backgroundColor = new Color(1, 0, 0, 0.5f);
             if (GUILayout.Button("Remove Selected")) {
               onNodeEvent(
-                TimelineEditor.NodeEvents.RemoveSelected, None._, GUIToSeconds(Event.current.mousePosition.x)
+                TimelineEditor.NodeEvents.RemoveSelected, None._, GUIToSeconds(Event.current.mousePosition.x),
+                GUIToChannel(Event.current.mousePosition.y)
               );
             }
 
@@ -576,7 +619,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
           if (funTweenManager.isSome) {
             using (new GUILayout.HorizontalScope()) {
               GUILayout.FlexibleSpace();
-              GUILayout.Label("Drag and drop a game object to this screen to open tween selection popup.");
+              GUILayout.Label(
+                "Drag and drop a game object or a component to this screen to open tween selection popup.",
+                EditorStyles.wordWrappedLabel
+              );
               GUILayout.FlexibleSpace();
             }
           }
@@ -782,7 +828,10 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
 
       void nodeEvent(TimelineEditor.NodeEvents nodeEvent, TimelineNode maybeNode = null) {
         ev.Use();
-        onNodeEvent(nodeEvent, Option.a(maybeNode), GUIToSeconds(Event.current.mousePosition.x));
+        onNodeEvent(
+          nodeEvent, Option.a(maybeNode), 
+          GUIToSeconds(Event.current.mousePosition.x), GUIToChannel(Event.current.mousePosition.y)
+        );
       }
     }
 
@@ -902,6 +951,8 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       var guiSecond = ZOOM * _visualsSettings.timeZoomFactor / timeFactor[_visualsSettings.timeIndexFactor];
       return xCoord / guiSecond;
     }
+    
+    public int GUIToChannel(float yCoord) => ((int) (yCoord / CHANNEL_HEIGHT)).atLeast(0);
 
     public void recalculateTimelineWidth(List<TimelineNode> funNodes) {
       foreach (var timelineNode in funNodes.maxBy(Comparable.float_, node => node.getEnd())) {

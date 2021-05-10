@@ -1,4 +1,5 @@
-﻿using pzd.lib.exts;
+﻿using System;
+using pzd.lib.exts;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Functional;
 using JetBrains.Annotations;
@@ -198,9 +199,14 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     
     public static float remap01(this float value, FRange fromTo) => value.remap01(fromTo.from, fromTo.to);
 
-    // a % b gives non positive result on negative numbers
-    // this always gives positive
-    // http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
+    /// <summary>
+    /// a % b gives non positive result on negative numbers
+    /// this always gives positive
+    /// http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
+    /// </summary>
     public static int modPositive(this int value, int mod) => (value % mod + mod) % mod;
+    
+    [Obsolete("Use modPositive instead. This method is here to just redirect you.")]
+    public static int repeat(this int value, int mod) => modPositive(value, mod);
   }
 }

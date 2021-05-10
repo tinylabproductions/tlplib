@@ -28,12 +28,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       return this;
     }
 
+    public TObject target => _target;
+
     public Object getTarget() => _target as Object;
 
     public abstract float duration { get; }
 
-    public void setRelativeTimePassed(
-      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+    public virtual void setRelativeTimePassed(
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
+      bool exitTween
     ) => applyStateAt(timePassed);
 
     public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
@@ -566,6 +569,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     public override void applyStateAt(float time) {
       _target.timeline.timePassed = _reversed ? 1f - time : time;
     }
+    
+    public override void setRelativeTimePassed(
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
+      bool exitTween
+    ) => _target.timeline.setRelativeTimePassed(
+      previousTimePassed, timePassed, playingForwards, applyEffectsForRelativeTweens, exitTween
+    );
   }
 
   // ReSharper restore NotNullMemberIsNotInitialized

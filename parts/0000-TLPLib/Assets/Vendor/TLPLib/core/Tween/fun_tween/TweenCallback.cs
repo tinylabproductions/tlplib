@@ -15,7 +15,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public float duration => 0;
     public void setRelativeTimePassed(
-      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens
+      float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
+      bool exitTween
     ) => 
       callback(new Event(playingForwards));
 
