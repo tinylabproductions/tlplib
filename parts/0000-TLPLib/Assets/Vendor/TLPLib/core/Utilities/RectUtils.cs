@@ -1,4 +1,5 @@
-﻿using pzd.lib.functional;
+﻿using System;
+using pzd.lib.functional;
 using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Utilities {
@@ -78,5 +79,28 @@ namespace com.tinylabproductions.TLPLib.Utilities {
     public static float aspectRatio(this Rect rect) => rect.width / rect.height;
     public static Vector2 topLeft(this Rect rect) => new Vector2(rect.min.x, rect.max.y);
     public static Vector2 bottomRight(this Rect rect) => new Vector2(rect.max.x, rect.min.y);
+
+    /// <summary>
+    /// Slices the rect and returns right side of it.
+    /// </summary>
+    public static Rect sliceRight(this Rect rect, float width) {
+      rect.xMin = Math.Max(rect.xMin, rect.xMax - width);
+      return rect;
+    }
+    
+    public static Rect sliceLeft(this Rect rect, float width) {
+      rect.xMax = Math.Min(rect.xMax, rect.xMin + width);
+      return rect;
+    }
+    
+    public static Rect sliceTop(this Rect rect, float height) {
+      rect.yMax = Math.Min(rect.yMax, rect.yMin + height);
+      return rect;
+    }
+    
+    public static Rect sliceBottom(this Rect rect, float height) {
+      rect.yMin = Math.Max(rect.yMin, rect.yMax - height);
+      return rect;
+    }
   }
 }
