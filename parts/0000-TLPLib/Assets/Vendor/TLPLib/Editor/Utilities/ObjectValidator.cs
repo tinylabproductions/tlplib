@@ -490,6 +490,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       Option.ensureValue(ref uniqueValuesCache);
       fieldHierarchy ??= new FieldHierarchy(ImmutableStack<string>.Empty);
 
+      if (objectBeingValidated == null) {
+        addError(() => createError.nullField(fieldHierarchy.asString()));
+        return;
+      }
+
       if (objectBeingValidated is OnObjectValidate onObjectValidatable) {
 #if DO_PROFILE
         using (new ProfiledScope(nameof(OnObjectValidate)))
