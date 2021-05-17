@@ -1,5 +1,7 @@
 ﻿using System;
 using com.tinylabproductions.TLPLib.Filesystem;
+using pzd.lib.functional;
+using UnityEngine;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -26,5 +28,12 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       if (!obj) throw new IllegalStateException($"{name} is not set to an object!");
       return obj;
     }
+    
+    public static Option<GameObject> getGameObject(this Object obj) =>
+      obj switch {
+        GameObject go => Some.a(go),
+        Component c => Some.a(c.gameObject),
+        _ => None._
+      };
   }
 }
