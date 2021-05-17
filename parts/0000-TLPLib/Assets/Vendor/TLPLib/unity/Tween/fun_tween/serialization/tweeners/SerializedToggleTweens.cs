@@ -38,7 +38,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
       var prevInRange = timeInRange(previousTimePassed);
       var nextInRange = !exitTween;
       
-      if (prevInRange != nextInRange) invoke(nextInRange);
+      if (prevInRange != nextInRange || exitTween) invoke(nextInRange);
     }
 
     bool timeInRange(float time) {
