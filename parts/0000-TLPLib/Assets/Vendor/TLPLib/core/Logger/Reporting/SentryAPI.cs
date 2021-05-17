@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
@@ -293,13 +292,13 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     };
 
     public static IEnumerable<KeyValuePair<string, Tag>> convertTags(
-      ImmutableArray<KeyValuePair<string, string>> source
+      IEnumerable<KeyValuePair<string, string>> source
     ) =>
       // Sentry does not support empty tags.
       source.Select(t => F.kv(t.Key, new Tag(t.Value.isEmpty() ? "-" : t.Value)));
 
     public static IEnumerable<KeyValuePair<string, string>> convertExtras(
-      ImmutableArray<KeyValuePair<string, string>> source
+      IEnumerable<KeyValuePair<string, string>> source
     ) =>
       // Sentry does not support empty extras.
       source.Select(t => F.kv(t.Key, t.Value.isEmpty() ? "-" : t.Value));

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using pzd.lib.typeclasses;
 using JetBrains.Annotations;
 using pzd.lib.config;
@@ -88,12 +89,12 @@ namespace com.tinylabproductions.TLPLib.Data {
       public Duration div(Duration a1, Duration a2) => a1 / a2.millis;
       public Duration fromInt(int i) => new Duration(i);
       public bool eql(Duration a1, Duration a2) => a1.Equals(a2);
-      public CompareResult compare(Duration a1, Duration a2) => comparable.compare(a1, a2);
+      public CompareResult compare(Duration a1, Duration a2) => comparable.Compare(a1, a2).asCmpRes();
       public int Compare(Duration x, Duration y) => compare(x, y).asInt();
     }
 
     [NonSerialized]
-    public static readonly Comparable<Duration> comparable =
+    public static readonly IComparer<Duration> comparable =
       Comparable.long_.comap((Duration d) => d.millis);
 
     [NonSerialized]

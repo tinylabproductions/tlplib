@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Functional;
 using GenerationAttributes;
 using pzd.lib.reactive;
-
 using pzd.lib.exts;
 using pzd.lib.functional;
 using pzd.lib.log;
@@ -61,11 +58,7 @@ namespace com.tinylabproductions.TLPLib.Logger {
                 : Backtrace.parseStringBacktrace(backtraceS, BacktraceElemUnity.parseBacktraceLine)
             : None._;
         var logEvent = new LogEvent(level, new LogEntry(
-          message,
-          ImmutableArray<KeyValuePair<string, string>>.Empty,
-          ImmutableArray<KeyValuePair<string, string>>.Empty,
-          reportToErrorTracking: true,
-          backtrace: backtrace.toNullable(), context: null
+          message, reportToErrorTracking: true, backtrace: backtrace.toNullable()
         ));
         return F.scs(logEvent);
       }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using pzd.lib.exts;
 using GenerationAttributes;
 using JetBrains.Annotations;
@@ -28,8 +26,6 @@ namespace com.tinylabproductions.TLPLib.Data {
 
     public LogEntry toLogEntry() => new LogEntry(
       s,
-      ImmutableArray<KeyValuePair<string, string>>.Empty,
-      ImmutableArray<KeyValuePair<string, string>>.Empty,
       context: context.getOrNull(),
       reportToErrorTracking: reportToErrorTracking
     );
