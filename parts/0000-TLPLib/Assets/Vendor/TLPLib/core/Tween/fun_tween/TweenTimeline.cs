@@ -82,6 +82,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
     }
 
+    /// <summary>Duration in seconds</summary>
     public float duration { get; }
     public readonly Effect[] effects;
 
