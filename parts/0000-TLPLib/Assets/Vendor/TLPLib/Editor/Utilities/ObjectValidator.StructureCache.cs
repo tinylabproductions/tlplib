@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Reflection;
 using com.tinylabproductions.TLPLib.Extensions;
 using pzd.lib.exts;
@@ -25,14 +26,17 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       //
       // [LazyProperty] should also be safe, because the worst that can happen is that two threads will calculate
       // the same value because our properties are pure functions.
+      
+      public static StructureCache defaultInstance = new StructureCache(
+        getFieldsForType: (type, cache) => 
+          type.type.getAllFields().Select(fi => new Field(fi, cache)).toImmutableArrayC()
+      );
 
       public delegate ImmutableArrayC<Field> GetFieldsForType(Type type, StructureCache cache);
       
       readonly GetFieldsForType _getFieldsForType;
-      readonly ConcurrentDictionary<System.Type, Type> typeForSystemType = 
-        new ConcurrentDictionary<System.Type, Type>();
-      readonly ConcurrentDictionary<Type, ImmutableArrayC<Field>> fieldsForType = 
-        new ConcurrentDictionary<Type, ImmutableArrayC<Field>>();
+      readonly ConcurrentDictionary<System.Type, Type> typeForSystemType = new();
+      readonly ConcurrentDictionary<Type, ImmutableArrayC<Field>> fieldsForType = new();
 
       public StructureCache(GetFieldsForType getFieldsForType) => _getFieldsForType = getFieldsForType;
 

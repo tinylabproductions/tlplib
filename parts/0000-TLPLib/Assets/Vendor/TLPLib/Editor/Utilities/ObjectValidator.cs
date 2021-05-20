@@ -134,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableArray<Object> collectDependencies(Object[] roots) => 
       EditorUtility.CollectDependencies(roots)
-        .Where(o => o is GameObject || o is ScriptableObject)
+        .Where(o => o is GameObject or ScriptableObject)
         .Distinct()
         .ToImmutableArray();
 
@@ -217,10 +217,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       // Creating errors might involve Unity API thus we defer it to main thread.
       void addError(Func<Error> e) => jobController.enqueueMainThreadJob(() => errors.Add(e()));
       
-      var structureCache = new StructureCache(
-        getFieldsForType: (type, cache) => 
-          type.type.getAllFields().Select(fi => new StructureCache.Field(fi, cache)).toImmutableArrayC()
-      );
+      var structureCache = StructureCache.defaultInstance;
       var unityTags = UnityEditorInternal.InternalEditorUtility.tags.ToImmutableHashSet();
       var scanned = 0;
 
@@ -644,7 +641,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
               if (!maybeMethod.valueOut(out var method) ) {
                 addFailedError(
-                  $"Validator method not found. Lokkedt for method {attribute.Condition} " +
+                  $"Validator method not found. Looked for method {attribute.Condition} " +
                   $"on type {objectBeingValidated.GetType().FullName}"
                 );
               }
