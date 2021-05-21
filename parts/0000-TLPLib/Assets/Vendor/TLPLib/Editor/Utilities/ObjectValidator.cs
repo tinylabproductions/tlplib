@@ -461,8 +461,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public override string ToString() => $"{nameof(FieldHierarchy)}({s})";
     }
 
-    [Record] sealed partial class FieldHierarchy {
+    [Record] public sealed partial class FieldHierarchy {
       readonly ImmutableStack<string> stack;
+      
+      public FieldHierarchy() : this(ImmutableStack<string>.Empty) { }
       
       public FieldHierarchy push(string s) => new FieldHierarchy(stack.Push(s));
 
