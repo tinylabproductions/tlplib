@@ -27,7 +27,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       // [LazyProperty] should also be safe, because the worst that can happen is that two threads will calculate
       // the same value because our properties are pure functions.
       
-      public static StructureCache defaultInstance = new StructureCache(
+      public static readonly StructureCache defaultInstance = new StructureCache(
         getFieldsForType: (type, cache) => 
           type.type.getAllFields().Select(fi => new Field(fi, cache)).toImmutableArrayC()
       );
