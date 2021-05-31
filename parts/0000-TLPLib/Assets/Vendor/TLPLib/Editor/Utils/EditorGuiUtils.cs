@@ -1,5 +1,6 @@
 ﻿using pzd.lib.functional;
 using UnityEditor;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class EditorGuiUtils {
@@ -15,6 +16,10 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
       EditorGUI.BeginChangeCheck();
       var newValue = EditorGUILayout.Toggle(label, value);
       return EditorGUI.EndChangeCheck() ? Some.a(newValue) : None._;
+    }
+    
+    public static void objectField<A>(string label, ref A value, bool allowSceneObjects = false) where A : Object {
+      value = (A) EditorGUILayout.ObjectField(label, value, typeof(A), allowSceneObjects);
     }
   }
 }
