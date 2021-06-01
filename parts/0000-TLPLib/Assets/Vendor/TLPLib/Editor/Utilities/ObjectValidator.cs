@@ -543,13 +543,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           else jobController.enqueueMainThreadJob(run);
 
           void run() {
-            var customValidatorErrors =
-              customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
-            if (customValidatorErrors.Length > 0) {
-              var hierarchy = fieldHierarchy.asString();
-              foreach (var error in customValidatorErrors) {
-                addError(() => createError.custom(hierarchy, error, true));
+            try {
+              var customValidatorErrors =
+                customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
+              if (customValidatorErrors.Length > 0) {
+                var hierarchy = fieldHierarchy.asString();
+                foreach (var error in customValidatorErrors) {
+                  addError(() => createError.custom(hierarchy, error, true));
+                }
               }
+            }
+            catch (Exception e) {
+              addError(() => createError.exceptionInCustomValidator(fieldHierarchy.asString(), e));
             }
           }
         }

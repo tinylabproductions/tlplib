@@ -332,7 +332,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
 
-    public abstract class ElementWithViewData<Obj> : IElementWithViewData where Obj : MonoBehaviour {
+    public abstract class ElementWithViewData<Obj> : IElementWithViewData where Obj : Component {
       readonly GameObjectPool<Obj> pool;
       public float sizeInScrollableAxis { get; }
       public Percentage sizeInSecondaryAxis { get; }
@@ -355,7 +355,7 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       }
     }
     
-    public class ElementView<Obj> : IElementView where Obj : MonoBehaviour {
+    public class ElementView<Obj> : IElementView where Obj : Component {
       readonly Obj visual;
       readonly IDisposable disposable;
       readonly GameObjectPool<Obj> pool;
