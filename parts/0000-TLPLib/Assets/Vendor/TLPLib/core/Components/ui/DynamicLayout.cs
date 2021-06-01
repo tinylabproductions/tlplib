@@ -225,50 +225,53 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
               }
             }
           }, 
-          out var totalOffsetUntilThisRow, 
-          out var currentRowSizeInScrollableAxis
+          out var containerSizeInScrollableAxis_
         );
         
-        containerSizeInScrollableAxis.value = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
+        containerSizeInScrollableAxis.value = containerSizeInScrollableAxis_;
       }
 
       /// <summary>
-      /// Find normalized position of an item for scrolling to.
+      /// Find normalized position of an item for scrolling to. If you use this position to scroll ScrollRect, the
+      /// item will be in the center of viewport (until you reach the content ends, then the scroll is clamped)
       /// </summary>
       /// <param name="predicate"></param>
       /// <returns></returns>
       public Option<float> findItemsNormalizedScrollPositionForItem(Func<IElementData, bool> predicate) {
-        var result = Ref.a(Option<Rect>.None);
+        var result = Option<Rect>.None;
         updateForEachElement(
-          (predicate: predicate, result), static (data, isVisible, cellRect, tpl) => {
-            if (tpl.predicate(data)) {
-              tpl.result.value = Some.a(cellRect);
+          predicate, (data, isVisible, cellRect, predicate_) => {
+            if (predicate_(data)) {
+              result = Some.a(cellRect);
             }
-          }, out var totalOffsetUntilThisRow, out var currentRowSizeInScrollableAxis
+          }, out var containerSizeInScrollableAxis_
         );
-        var containerSizeInScrollableAxis_ = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
-        {if (result.value.valueOut(out var cellRect)) {
+        {if (result.valueOut(out var cellRect)) {
+          var viewportSize = backing._maskRect.rect;
           var scrollPosition = isHorizontal
-            ? cellRect.center.x / containerSizeInScrollableAxis_
-            : 1f - Mathf.Abs(cellRect.center.y) / containerSizeInScrollableAxis_;
+            ? (cellRect.center.x - viewportSize.width / 2f) / (containerSizeInScrollableAxis_ - viewportSize.width)
+            : 1f - (Mathf.Abs(cellRect.center.y) - viewportSize.height / 2f) / (containerSizeInScrollableAxis_ - backing._maskRect.rect.height);
           
-          return Some.a(scrollPosition * 2f - 0.5f);
+          return Some.a(scrollPosition);
         } else {
           return None._;
         }}
       }
+
+      public delegate void UpdateForEachElementAction<in Data>(
+        IElementData elementData, bool placementVisible, Rect cellRect, Data data
+      );
       
       void updateForEachElement<Data>(
-        Data dataA, Action<IElementData, bool, Rect, Data> updateElement, out float totalOffsetUntilThisRow,
-        out float currentRowSizeInScrollableAxis
+        Data dataA, UpdateForEachElementAction<Data> updateElement, out float containerSizeInScrollableAxis_
       ) {
         var visibleRect = calculateVisibleRect;
         var containerRect = _container.rect;
         var containerHeight = containerRect.height;
         var containerWidth = containerRect.width;
         
-        totalOffsetUntilThisRow = 0f;
-        currentRowSizeInScrollableAxis = 0f;
+        var totalOffsetUntilThisRow = 0f;
+        var currentRowSizeInScrollableAxis = 0f;
         var currentSizeInSecondaryAxisPerc = 0f;
 
         var direction = renderLatestItemsFirst ? -1 : 1;
@@ -329,6 +332,8 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
 
           updateElement(data, placementVisible, cellRect, dataA);
         }
+        
+        containerSizeInScrollableAxis_ = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
       }
     }
 
