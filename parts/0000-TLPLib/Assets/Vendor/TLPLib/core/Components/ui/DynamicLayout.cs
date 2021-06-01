@@ -13,6 +13,7 @@ using pzd.lib.reactive;
 using com.tinylabproductions.TLPLib.Utilities;
 using GenerationAttributes;
 using JetBrains.Annotations;
+using pzd.lib.data;
 using pzd.lib.dispose;
 using pzd.lib.functional;
 using UnityEngine;
@@ -198,6 +199,72 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
       /// </summary>
       [PublicAPI]
       public void updateLayout() {
+        updateForEachElement(
+          this, static (data, placementVisible, cellRect, dis) => {
+            switch (placementVisible) {
+              case true when !dis._items.ContainsKey(data): {
+                var instanceOpt = Option<IElementView>.None;
+                foreach (var elementWithView in data.asElementWithView) {
+                  var instance = elementWithView.createItem(dis._container);
+                  var rectTrans = instance.rectTransform;
+                  rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
+                  rectTrans.localPosition = Vector3.zero;
+                  rectTrans.anchoredPosition = cellRect.center;
+                  instanceOpt = instance.some();
+                }
+                dis._items.Add(data, instanceOpt);
+                break;
+              }
+              case false when dis._items.ContainsKey(data): {
+                var itemOpt = dis._items[data];
+                dis._items.Remove(data);
+                foreach (var item in itemOpt) {
+                  item.Dispose();
+                }
+                break;
+              }
+            }
+          }, 
+          out var containerSizeInScrollableAxis_
+        );
+        
+        containerSizeInScrollableAxis.value = containerSizeInScrollableAxis_;
+      }
+
+      /// <summary>
+      /// Find normalized position of an item for scrolling to. If you use this position to scroll ScrollRect, the
+      /// item will be in the center of viewport (until you reach the content ends, then the scroll is clamped)
+      /// </summary>
+      /// <param name="predicate"></param>
+      /// <returns></returns>
+      public Option<float> findItemsNormalizedScrollPositionForItem(Func<IElementData, bool> predicate) {
+        var result = Option<Rect>.None;
+        updateForEachElement(
+          predicate, (data, isVisible, cellRect, predicate_) => {
+            if (predicate_(data)) {
+              result = Some.a(cellRect);
+            }
+          }, out var containerSizeInScrollableAxis_
+        );
+        {if (result.valueOut(out var cellRect)) {
+          var viewportSize = backing._maskRect.rect;
+          var scrollPosition = isHorizontal
+            ? (cellRect.center.x - viewportSize.width / 2f) / (containerSizeInScrollableAxis_ - viewportSize.width)
+            : 1f - (Mathf.Abs(cellRect.center.y) - viewportSize.height / 2f) / (containerSizeInScrollableAxis_ - backing._maskRect.rect.height);
+          
+          return Some.a(scrollPosition);
+        } else {
+          return None._;
+        }}
+      }
+
+      public delegate void UpdateForEachElementAction<in Data>(
+        IElementData elementData, bool placementVisible, Rect cellRect, Data data
+      );
+      
+      void updateForEachElement<Data>(
+        Data dataA, UpdateForEachElementAction<Data> updateElement, out float containerSizeInScrollableAxis_
+      ) {
         var visibleRect = calculateVisibleRect;
         var containerRect = _container.rect;
         var containerHeight = containerRect.height;
@@ -262,28 +329,11 @@ namespace com.tinylabproductions.TLPLib.Components.ui {
           }
              
           var placementVisible = visibleRect.Overlaps(cellRect, true);
-          
-          if (placementVisible && !_items.ContainsKey(data)) {
-            var instanceOpt = Option<IElementView>.None;
-            foreach (var elementWithView in data.asElementWithView) {
-              var instance = elementWithView.createItem(_container);
-              var rectTrans = instance.rectTransform;
-              rectTrans.anchorMin = rectTrans.anchorMax = Vector2.up;
-              rectTrans.localPosition = Vector3.zero;
-              rectTrans.anchoredPosition = cellRect.center;
-              instanceOpt = instance.some();
-            }
-            _items.Add(data, instanceOpt);
-          }
-          else if (!placementVisible && _items.ContainsKey(data)) {
-            var itemOpt = _items[data];
-            _items.Remove(data);
-            foreach (var item in itemOpt) {
-              item.Dispose();
-            }
-          }
+
+          updateElement(data, placementVisible, cellRect, dataA);
         }
-        containerSizeInScrollableAxis.value = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
+        
+        containerSizeInScrollableAxis_ = totalOffsetUntilThisRow + currentRowSizeInScrollableAxis;
       }
     }
 
