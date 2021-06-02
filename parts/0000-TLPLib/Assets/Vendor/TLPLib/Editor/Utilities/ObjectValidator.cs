@@ -461,7 +461,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public override string ToString() => $"{nameof(FieldHierarchy)}({s})";
     }
 
-    [Record] public sealed partial class FieldHierarchy {
+    [Record(GenerateComparer = false)] public sealed partial class FieldHierarchy {
       readonly ImmutableStack<string> stack;
       
       public FieldHierarchy() : this(ImmutableStack<string>.Empty) { }
@@ -469,6 +469,15 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public FieldHierarchy push(string s) => new FieldHierarchy(stack.Push(s));
 
       public FieldHierarchyStr asString() => new FieldHierarchyStr(stack.Reverse().mkString('.'));
+
+      public static bool operator ==(FieldHierarchy left, FieldHierarchy right) {
+        if (ReferenceEquals(left, right)) return true;
+        if (ReferenceEquals(null, right)) return false;
+        if (ReferenceEquals(null, left)) return false;
+        return left.stack.structuralEquals() == right.stack.structuralEquals();
+      }
+
+      public static bool operator !=(FieldHierarchy left, FieldHierarchy right) => !(left == right);
     }
 
     static void validateFields(
@@ -543,13 +552,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           else jobController.enqueueMainThreadJob(run);
 
           void run() {
-            var customValidatorErrors =
-              customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
-            if (customValidatorErrors.Length > 0) {
-              var hierarchy = fieldHierarchy.asString();
-              foreach (var error in customValidatorErrors) {
-                addError(() => createError.custom(hierarchy, error, true));
+            try {
+              var customValidatorErrors =
+                customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
+              if (customValidatorErrors.Length > 0) {
+                var hierarchy = fieldHierarchy.asString();
+                foreach (var error in customValidatorErrors) {
+                  addError(() => createError.custom(hierarchy, error, true));
+                }
               }
+            }
+            catch (Exception e) {
+              addError(() => createError.exceptionInCustomValidator(fieldHierarchy.asString(), e));
             }
           }
         }
