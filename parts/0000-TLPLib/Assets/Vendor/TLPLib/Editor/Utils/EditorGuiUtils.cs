@@ -1,6 +1,8 @@
-﻿using pzd.lib.functional;
+﻿using System;
+using pzd.lib.functional;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace com.tinylabproductions.TLPLib.Editor.Utils {
   public static class EditorGuiUtils {
@@ -20,6 +22,18 @@ namespace com.tinylabproductions.TLPLib.Editor.Utils {
     
     public static void objectField<A>(string label, ref A value, bool allowSceneObjects = false) where A : Object {
       value = (A) EditorGUILayout.ObjectField(label, value, typeof(A), allowSceneObjects);
+    }
+    
+    public static void foldoutBox(string label, ref bool state, Action drawContents) {
+      using var _ = new GUILayout.VerticalScope(EditorStyles.helpBox);
+      state = EditorGUILayout.Foldout(state, label);
+      if (state) drawContents();
+    }
+    
+    public static void box(string label, Action drawContents) {
+      using var _ = new GUILayout.VerticalScope(EditorStyles.helpBox);
+      GUILayout.Label(label, EditorStyles.largeLabel);
+      drawContents();
     }
   }
 }
