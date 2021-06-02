@@ -87,7 +87,8 @@ namespace com.tinylabproductions.TLPLib.Data {
       public Duration mult(Duration a1, Duration a2) => a1 * a2.millis;
       public Duration div(Duration a1, Duration a2) => a1 / a2.millis;
       public Duration fromInt(int i) => new Duration(i);
-      public bool eql(Duration a1, Duration a2) => a1.Equals(a2);
+      public bool Equals(Duration a1, Duration a2) => a1.Equals(a2);
+      public int GetHashCode(Duration obj) => obj.GetHashCode();
       public CompareResult compare(Duration a1, Duration a2) => comparable.compare(a1, a2);
       public int Compare(Duration x, Duration y) => compare(x, y).asInt();
     }
