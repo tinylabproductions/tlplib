@@ -9,7 +9,7 @@ wname() { echo $@ | sed -e "s|/|\\\\|g"; }
 
 # Windows Directory Junction.
 junction() {
-  "$md/junction.exe" "$@"
+  "$md/junction.exe" -accepteula "$@"
 }
 
 notif() {
