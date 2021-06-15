@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Components.ui {
   public class ArcUIMesh : BaseMeshEffect {
-    [InfoBox("You should use this component together wit Subdivide UI Mesh component for best results.")]
+    [InfoBox("You should use this component together with Subdivide UI Mesh component for best results.")]
     public float widthToAngleRatio = 1;
     public float radius = 1;
 
