@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) {
       var prevInRange = timeInRange(previousTimePassed);
       var nextInRange = !exitTween;

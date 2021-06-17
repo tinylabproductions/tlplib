@@ -26,11 +26,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public float duration => 0;
     public void trySetDuration(float _) { }
     
+    /// <summary> <see cref="TweenTimelineElement.setRelativeTimePassed"/> </summary>
+    protected abstract bool shouldInvokeOnReset { get; }
+    
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) {
-      var shouldInvoke = _invokeOn switch {
+      var shouldInvoke = 
+        (!isReset || shouldInvokeOnReset) 
+        && _invokeOn switch {
         InvokeOn.Forward => playingForwards,
         InvokeOn.Backward => !playingForwards,
         InvokeOn.Both => true,
@@ -92,6 +97,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     protected override void invoke(ParticleSystem ps) {
       ps.Play(withChildren: _withChildren);
     }
+
+    protected override bool shouldInvokeOnReset => true;
   }
   
   [Serializable]
@@ -105,6 +112,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     protected override void invoke(ParticleSystem ps) {
       ps.Stop(withChildren: _withChildren, stopBehavior: _stopBehavior);
     }
+    
+    protected override bool shouldInvokeOnReset => true;
   }
   
   [Serializable]
@@ -124,6 +133,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public override bool isValid => _manager;
 
     public override Object getTarget() => _manager;
+    
+    protected override bool shouldInvokeOnReset => true;
   }
   
   [Serializable]
@@ -147,6 +158,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tween_call
     public override bool isValid => _gameObject;
 
     public override Object getTarget() => _gameObject;
+    
+    protected override bool shouldInvokeOnReset => true;
   }
   
   // ReSharper restore NotNullMemberIsNotInitialized
