@@ -37,10 +37,10 @@ namespace com.tinylabproductions.TLPLib.FunTween {
       
       foreach (var action in actions) {
         // Expected result correlates to playingForwards
-        // as we are using playingforwards as the state variable
+        // as we are using playing forwards as the state variable
         var (setTimeTo, playingForwards, testResult) = action;
         Action execute = () => {
-          ts.setRelativeTimePassed(lastInvocation, setTimeTo, playingForwards, true, exitTween: true);
+          ts.setRelativeTimePassed(lastInvocation, setTimeTo, playingForwards, true, exitTween: true, isReset: false);
           lastInvocation = setTimeTo;
         };
         execute.shouldPushTo(stateSubject).resultIn(testResult);
