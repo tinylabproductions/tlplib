@@ -110,6 +110,10 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       );
     }
 
+    public void setTimePassedToStart() => timePassed = 0;
+    public void setTimePassedToEnd() => timePassed = duration;
+    public void setTimePassedPercentage(float percentage) => timePassed = duration * percentage;
+
     TweenTimeline(float duration, Effect[] effects) {
       this.duration = duration;
       this.effects = effects;
