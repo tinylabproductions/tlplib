@@ -181,16 +181,21 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     /// <summary>Plays a tween from the start/end.</summary>
     [PublicAPI]
     public TweenManager play(bool forwards = true) {
-      resume(forwards);
-      return rewind();
+      this.forwards = forwards;
+      // Rewind should go before resume.
+      // Note that rewind uses forwards value.
+      rewind();
+      return resume();
     }
 
     /// <summary>Plays a tween from the start at a given position.</summary>
     // TODO: add an option to play backwards (and test it)
     [PublicAPI]
     public TweenManager play(float startTime) {
+      forwards = true;
+      // Note that rewind uses forwards value.
       rewind();
-      resume(true);
+      resume();
       timeline.timePassed = startTime;
       return this;
     }
