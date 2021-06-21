@@ -94,6 +94,9 @@ namespace com.tinylabproductions.TLPLib.Extensions {
       return dx * dx + dy * dy;
     }
 
+    public static bool approximately(this Vector3 a, Vector3 b) => 
+      Mathf.Approximately(a.x, b.x) && Mathf.Approximately(a.y, b.y) && Mathf.Approximately(a.z, b.z);
+
     /// <returns>Vector angle in radians</returns>
     public static float atan2(this Vector2 v) => Mathf.Atan2(v.y, v.x);
 
