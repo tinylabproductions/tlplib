@@ -93,6 +93,11 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     bool lastDirectionWasForwards;
 
     float _timePassed;
+    
+    /// <summary>
+    /// This value is automatically clamped to [0; duration].
+    /// It is optimized to do nothing when the time did not change.
+    /// </summary>
     public float timePassed {
       get => _timePassed;
       set => setTimePassed(value, true);

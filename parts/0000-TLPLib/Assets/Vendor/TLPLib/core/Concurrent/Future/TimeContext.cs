@@ -14,7 +14,7 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
   }
 
   public class RealTimeButPauseWhenAdIsShowing : ITimeContext {
-    public static readonly RealTimeButPauseWhenAdIsShowing instance = new RealTimeButPauseWhenAdIsShowing();
+    public static readonly RealTimeButPauseWhenAdIsShowing instance = new();
 
     readonly IRxRef<bool> externalPause;
     float totalSecondsPaused, totalSecondsPassed;
