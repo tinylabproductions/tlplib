@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using com.tinylabproductions.TLPLib.Concurrent;
 using com.tinylabproductions.TLPLib.Extensions;
 using GenerationAttributes;
 using pzd.lib.collection;
@@ -10,6 +11,7 @@ using pzd.lib.functional;
 using pzd.lib.log;
 using pzd.lib.reactive;
 using TMPro;
+using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
   public static class TextMeshProBind {
@@ -156,7 +158,31 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
         dropdown.SetValueWithoutNotify(selectedIdx);
       }
     }
-    
+
+    /// <summary>
+    /// Emits an event each frame that you are hovering with a pointer over a TextMeshPro link.
+    ///
+    /// If <see cref="getPointerPosition"/> returns None for that frame, the detection is not performed.
+    /// </summary>
+    public static IRxObservable<TMP_LinkInfo> onHoverOnLink(
+      this TMP_Text text, Func<Option<Vector3>> getPointerPosition, Camera camera = null
+    ) {
+      // Try to resolve the camera from canvas if it's not provided. If that resolves to null, it is also supported by
+      // FindIntersectingLink.
+      if (camera == null) camera = text.canvas.worldCamera;
+
+      return ASync.onLateUpdate.collect(_ => {
+        var maybePosition = getPointerPosition();
+        if (!maybePosition.valueOut(out var pointerPosition)) return None._;
+        
+        // Can be optimized: calculate the RectTransform bounding box and abort immediately if the pointer is outside of
+        // that bounding box. This fails if your text overflows the bounding box, thus this behaviour should be
+        // toggleable via method parameters.
+        var linkIndex = TMP_TextUtilities.FindIntersectingLink(text, pointerPosition, camera);
+        return linkIndex != -1 ? Some.a(text.textInfo.linkInfo[linkIndex]) : None._;
+      });
+    }
+
     public static void setDropdownOptions(this TMP_Dropdown dropdown, IEnumerable<TMP_Dropdown.OptionData> options) {
       dropdown.ClearOptions();
       dropdown.options.AddRange(options);
