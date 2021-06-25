@@ -36,9 +36,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
     /// when tween ends at the same time as the whole timeline.
     /// ToggleTweenBase implements this feature.
     /// </param>
+    /// <param name="isReset">
+    /// Is set when we want to reset all elements to start/end. Also this flag is used to determine whether to invoke
+    /// some of the callback events. (ex. it doesn't make sense to invoke 'play sound' callback on tween reset)
+    /// </param>
     void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, 
-      bool applyEffectsForRelativeTweens, bool exitTween
+      bool applyEffectsForRelativeTweens, bool exitTween, bool isReset
     );
 
     // Not an option for performance.
@@ -82,12 +86,18 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
       }
     }
 
+    /// <summary>Duration in seconds</summary>
     public float duration { get; }
     public readonly Effect[] effects;
 
     bool lastDirectionWasForwards;
 
     float _timePassed;
+    
+    /// <summary>
+    /// This value is automatically clamped to [0; duration].
+    /// It is optimized to do nothing when the time did not change.
+    /// </summary>
     public float timePassed {
       get => _timePassed;
       set => setTimePassed(value, true);
@@ -101,9 +111,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         
       setRelativeTimePassed(
         previousTimePassed: _timePassed, timePassed: newTimePassed, playingForwards: playingForwards, 
-        applyEffectsForRelativeTweens: applyEffectsForRelativeTweens, exitTween: false
+        applyEffectsForRelativeTweens: applyEffectsForRelativeTweens, exitTween: false, isReset: false
       );
     }
+
+    public void setTimePassedToStart() => timePassed = 0;
+    public void setTimePassedToEnd() => timePassed = duration;
+    public void setTimePassedPercentage(float percentage) => timePassed = duration * percentage;
 
     TweenTimeline(float duration, Effect[] effects) {
       this.duration = duration;
@@ -120,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) {
       _timePassed = Mathf.Clamp(timePassed, 0, duration);
 
@@ -139,14 +153,15 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
                   effect.duration, effect.duration, true, applyEffectsForRelativeTweens,
                   // We might want to use here `timePassed > effect.endsAt || exitTween` here,
                   // but that would cause undesired results when nesting different tween timelines.
-                  exitTween: timePassed > effect.endsAt
+                  exitTween: timePassed > effect.endsAt,
+                  isReset: isReset
                 );
             }
             else {
               float t(float x) => x <= effect.endsAt ? effect.relativize(x) : effect.duration;
               effect.element.setRelativeTimePassed(
                 t(previousTimePassed), t(timePassed), true, applyEffectsForRelativeTweens,
-                exitTween: timePassed > effect.endsAt
+                exitTween: timePassed > effect.endsAt, isReset: isReset
               );
             }
           }
@@ -160,14 +175,16 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
             if (previousTimePassed == effect.startsAt) {
               if (directionChanged) effect.element.setRelativeTimePassed(
                 0, 0, false, applyEffectsForRelativeTweens, 
-                exitTween: timePassed < effect.startsAt
+                exitTween: timePassed < effect.startsAt,
+                isReset: isReset
               );
             }
             else {
               float t(float x) => x >= effect.startsAt ? effect.relativize(x) : 0;
               effect.element.setRelativeTimePassed(
                 t(previousTimePassed), t(timePassed), false, applyEffectsForRelativeTweens,
-                exitTween: timePassed < effect.startsAt
+                exitTween: timePassed < effect.startsAt,
+                isReset: isReset
               );
             }
           }
@@ -311,14 +328,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) =>
       original.setRelativeTimePassed(
         previousTimePassed: original.duration - previousTimePassed,
         timePassed: original.duration - timePassed, 
         playingForwards: !playingForwards,
         applyEffectsForRelativeTweens: applyEffectsForRelativeTweens,
-        exitTween: exitTween
+        exitTween: exitTween, isReset: isReset
       );
 
     public bool asApplyStateAt(out IApplyStateAt applyStateAt) => original.asApplyStateAt(out applyStateAt);
@@ -375,7 +392,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         timePassed: 0,
         playingForwards: false,
         applyEffectsForRelativeTweens: false,
-        exitTween: false
+        exitTween: false,
+        isReset: true
       );
     }
 
@@ -388,7 +406,8 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
         timePassed: tt.duration,
         playingForwards: true,
         applyEffectsForRelativeTweens: false,
-        exitTween: false
+        exitTween: false,
+        isReset: true
       );
     }
 

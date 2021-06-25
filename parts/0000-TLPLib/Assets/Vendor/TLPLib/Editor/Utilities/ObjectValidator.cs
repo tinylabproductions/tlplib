@@ -134,7 +134,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
     [PublicAPI]
     public static ImmutableArray<Object> collectDependencies(Object[] roots) => 
       EditorUtility.CollectDependencies(roots)
-        .Where(o => o is GameObject || o is ScriptableObject)
+        .Where(o => o is GameObject or ScriptableObject)
         .Distinct()
         .ToImmutableArray();
 
@@ -217,10 +217,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       // Creating errors might involve Unity API thus we defer it to main thread.
       void addError(Func<Error> e) => jobController.enqueueMainThreadJob(() => errors.Add(e()));
       
-      var structureCache = new StructureCache(
-        getFieldsForType: (type, cache) => 
-          type.type.getAllFields().Select(fi => new StructureCache.Field(fi, cache)).toImmutableArrayC()
-      );
+      var structureCache = StructureCache.defaultInstance;
       var unityTags = UnityEditorInternal.InternalEditorUtility.tags.ToImmutableHashSet();
       var scanned = 0;
 
@@ -464,12 +461,23 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
       public override string ToString() => $"{nameof(FieldHierarchy)}({s})";
     }
 
-    [Record] sealed partial class FieldHierarchy {
+    [Record(GenerateComparer = false)] public sealed partial class FieldHierarchy {
       readonly ImmutableStack<string> stack;
+      
+      public FieldHierarchy() : this(ImmutableStack<string>.Empty) { }
       
       public FieldHierarchy push(string s) => new FieldHierarchy(stack.Push(s));
 
       public FieldHierarchyStr asString() => new FieldHierarchyStr(stack.Reverse().mkString('.'));
+
+      public static bool operator ==(FieldHierarchy left, FieldHierarchy right) {
+        if (ReferenceEquals(left, right)) return true;
+        if (ReferenceEquals(null, right)) return false;
+        if (ReferenceEquals(null, left)) return false;
+        return left.stack.structuralEquals() == right.stack.structuralEquals();
+      }
+
+      public static bool operator !=(FieldHierarchy left, FieldHierarchy right) => !(left == right);
     }
 
     static void validateFields(
@@ -544,13 +552,18 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           else jobController.enqueueMainThreadJob(run);
 
           void run() {
-            var customValidatorErrors =
-              customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
-            if (customValidatorErrors.Length > 0) {
-              var hierarchy = fieldHierarchy.asString();
-              foreach (var error in customValidatorErrors) {
-                addError(() => createError.custom(hierarchy, error, true));
+            try {
+              var customValidatorErrors =
+                customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
+              if (customValidatorErrors.Length > 0) {
+                var hierarchy = fieldHierarchy.asString();
+                foreach (var error in customValidatorErrors) {
+                  addError(() => createError.custom(hierarchy, error, true));
+                }
               }
+            }
+            catch (Exception e) {
+              addError(() => createError.exceptionInCustomValidator(fieldHierarchy.asString(), e));
             }
           }
         }
@@ -644,7 +657,7 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
               if (!maybeMethod.valueOut(out var method) ) {
                 addFailedError(
-                  $"Validator method not found. Lokkedt for method {attribute.Condition} " +
+                  $"Validator method not found. Looked for method {attribute.Condition} " +
                   $"on type {objectBeingValidated.GetType().FullName}"
                 );
               }

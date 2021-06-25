@@ -33,7 +33,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) {
       var prevInRange = timeInRange(previousTimePassed);
       var nextInRange = !exitTween;
@@ -79,5 +79,20 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   [Serializable]
   public class ToggleRenderer : ToggleTweenBase<Renderer> {
     protected override void invoke(bool value) => _target.enabled = value;
+  }
+  
+  [Serializable]
+  public class ToggleParticleSystem : ToggleTweenBase<ParticleSystem> {
+#pragma warning disable 649
+    // ReSharper disable NotNullMemberIsNotInitialized
+    [SerializeField, NotNull] bool _withChildren = true;
+    [SerializeField, NotNull] ParticleSystemStopBehavior _stopBehavior = ParticleSystemStopBehavior.StopEmitting;
+    // ReSharper restore NotNullMemberIsNotInitialized
+#pragma warning restore 649
+    
+    protected override void invoke(bool value) {
+      if (value) _target.Play(withChildren: _withChildren);
+      else _target.Stop(withChildren: _withChildren, stopBehavior: _stopBehavior);
+    }
   }
 }

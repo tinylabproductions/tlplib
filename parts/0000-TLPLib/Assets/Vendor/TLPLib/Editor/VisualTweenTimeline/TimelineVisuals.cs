@@ -155,7 +155,7 @@ namespace com.tinylabproductions.TLPLib.Editor.VisualTweenTimeline {
       List<TimelineNode> selectedNodesList, bool snapping, Option<TimelineNode> rootNode,
       Option<TimelineEditor.NodeSnappedTo> nodeSnappedToOpt
     ) {
-      var duration = funTweenManager.map(_ => _.timeline.duration).nullable();
+      var duration = funTweenManager.map(_ => _.timeline.duration).toNullable();
       applicationPlaying = Application.isPlaying;
       timelineRect = position;
       if (_visualsSettings.timeZoomFactor == 0) {

@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
 
     public virtual void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) => applyStateAt(timePassed);
 
     public bool asApplyStateAt(out IApplyStateAt applyStateAt) {
@@ -567,15 +567,22 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     }
 
     public override void applyStateAt(float time) {
-      _target.timeline.timePassed = _reversed ? 1f - time : time;
+      _target.timeline.timePassed = _reversed ? duration - time : time;
     }
     
     public override void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
-    ) => _target.timeline.setRelativeTimePassed(
-      previousTimePassed, timePassed, playingForwards, applyEffectsForRelativeTweens, exitTween
-    );
+      bool exitTween, bool isReset
+    ) {
+      var duration_ = duration;
+      var previousTimePassed_ = _reversed ? duration_ - previousTimePassed : previousTimePassed;
+      var timePassed_ = _reversed ? duration_ - timePassed : timePassed;
+      var playingForwards_ = _reversed ? !playingForwards : playingForwards;
+      _target.timeline.setRelativeTimePassed(
+        previousTimePassed_, timePassed_, playingForwards_, applyEffectsForRelativeTweens, 
+        exitTween: exitTween, isReset: isReset
+      );
+    }
   }
 
   // ReSharper restore NotNullMemberIsNotInitialized

@@ -21,7 +21,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
     public void setRelativeTimePassed(
       float previousTimePassed, float timePassed, bool playingForwards, bool applyEffectsForRelativeTweens, 
-      bool exitTween
+      bool exitTween, bool isReset
     ) {
       if (applyEffectsForRelativeTweens || !tween.isRelative) {
         changeState(tween.eval(previousTimePassed, timePassed, playingForwards), t, tween.isRelative);
