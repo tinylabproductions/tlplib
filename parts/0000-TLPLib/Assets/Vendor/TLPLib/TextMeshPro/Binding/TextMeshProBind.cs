@@ -162,6 +162,9 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
     /// <summary>
     /// Emits an event each frame that you are hovering with a pointer over a TextMeshPro link.
     ///
+    /// WARNING: this method does not respect the hierarchy of rendering. For example: the link can be at the bottom
+    /// of the render tree but this method will detect the pointer hovering on the link. 
+    ///
     /// If <see cref="getPointerPosition"/> returns None for that frame, the detection is not performed.
     /// </summary>
     public static IRxObservable<TMP_LinkInfo> onHoverOnLink(
