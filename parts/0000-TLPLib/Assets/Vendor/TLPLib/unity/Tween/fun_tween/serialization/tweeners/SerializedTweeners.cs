@@ -1,4 +1,5 @@
 ﻿using System;
+using com.tinylabproductions.TLPLib.Components.gradient;
 using com.tinylabproductions.TLPLib.Components.ui;
 using com.tinylabproductions.TLPLib.Extensions;
 using com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.eases;
@@ -543,6 +544,27 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   public sealed class ImageFillAmount : SerializedTweenerFloat<Image> {
     protected override float get => _target.fillAmount;
     protected override void set(float value) => _target.fillAmount = value;
+  }
+
+  [Serializable]
+  public sealed class GradientSimpleColors : SerializedTweenerV2<GradientSimple, GradientSimpleColors.Colors> {
+    protected override Colors lerp(float percentage) => new(
+      top: Color.Lerp(_start.top, _end.top, percentage),  
+      bottom: Color.Lerp(_start.bottom, _end.bottom, percentage)  
+    );
+
+    protected override Colors add(Colors a, Colors b) => new(top: a.top + b.top, bottom: a.bottom + b.bottom);
+    protected override Colors subtract(Colors a, Colors b) => new(top: a.top - b.top, bottom: a.bottom - b.bottom);
+    protected override Colors get => new (top: _target.topColor_, bottom: _target.bottomColor_);
+    protected override void set(Colors value) => _target.setColor(top: value.top, bottom: value.bottom);
+
+    [Serializable, InlineProperty] public struct Colors {
+      public Color top, bottom;
+      public Colors(Color top, Color bottom) {
+        this.top = top;
+        this.bottom = bottom;
+      }
+    }
   }
   
   [Serializable]
