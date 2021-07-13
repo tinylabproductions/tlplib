@@ -8,10 +8,11 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
   public static partial class ObjectValidator {
     public interface CustomObjectValidator {
       bool isThreadSafe { get; }
-      
+
       /// <param name="containingObject">Unity object </param>
       /// <param name="obj">Object that is being validated.</param>
-      IEnumerable<ErrorMsg> validateField(Object containingObject, object obj);
+      /// <param name="field">Field being validated.</param>
+      IEnumerable<ErrorMsg> validateField(Object containingObject, object obj, StructureCache.Field field);
       
       IEnumerable<ErrorMsg> validateComponent(Object component);
     }
