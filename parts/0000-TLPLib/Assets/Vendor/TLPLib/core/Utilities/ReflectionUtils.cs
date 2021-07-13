@@ -6,8 +6,7 @@ using System.Reflection;
 
  namespace com.tinylabproductions.TLPLib.Utilities {
   public static class ReflectionUtils {
-    static readonly ConcurrentDictionary<(MemberInfo, Type, bool), object[]> attributesCache =
-      new ConcurrentDictionary<(MemberInfo, Type, bool), object[]>();
+    static readonly ConcurrentDictionary<(MemberInfo, Type, bool), object[]> attributesCache = new();
     
     public static bool hasAttribute<T>(this MemberInfo mi) =>
       getAttributes<T>(mi).Any();

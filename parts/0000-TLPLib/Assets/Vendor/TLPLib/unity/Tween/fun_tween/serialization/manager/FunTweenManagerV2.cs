@@ -103,7 +103,9 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
       RewindWithEffectsForRelative = 8,
       ApplyZeroState = 9,
       ApplyMaxDurationState = 10,
-      StopAndRewind = 11
+      StopAndRewind = 11,
+      StopAndResetToStart = 12,
+      StopAndResetToEnd = 13,
     }
 
     public void run(Action action) {
@@ -116,11 +118,13 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.manager {
         case Action.Resume:                       manager.resume();                break;
         case Action.Stop:                         manager.stop();                  break;
         case Action.Reverse:                      manager.reverse();               break;
-        case Action.Rewind:                       manager.rewind(applyEffectsForRelativeTweens: false);     break;
-        case Action.RewindWithEffectsForRelative: manager.rewind(applyEffectsForRelativeTweens: true);      break;
-        case Action.ApplyZeroState:               manager.timeline.applyStateAt(0);                         break;
-        case Action.ApplyMaxDurationState:        manager.timeline.applyStateAt(manager.timeline.duration); break;
-        case Action.StopAndRewind:                manager.stop(); manager.rewind(); break;
+        case Action.Rewind:                       manager.rewind(applyEffectsForRelativeTweens: false);       break;
+        case Action.RewindWithEffectsForRelative: manager.rewind(applyEffectsForRelativeTweens: true);        break;
+        case Action.ApplyZeroState:               manager.timeline.applyStateAt(0);                           break;
+        case Action.ApplyMaxDurationState:        manager.timeline.applyStateAt(manager.timeline.duration);   break;
+        case Action.StopAndRewind:                manager.stop(); manager.rewind();                           break;
+        case Action.StopAndResetToStart:          manager.stop(); manager.timeline.resetAllElementsToStart(); break;
+        case Action.StopAndResetToEnd:            manager.stop(); manager.timeline.resetAllElementsToEnd();   break;
         default: throw new ArgumentOutOfRangeException(nameof(action), action, null);
       }
     }

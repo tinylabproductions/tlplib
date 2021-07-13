@@ -542,33 +542,6 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
         }
       }
 
-      // todo: mark if it's thread safe
-      foreach (var customValidator in customObjectValidatorOpt) {
-#if DO_PROFILE
-        using (new ProfiledScope(nameof(customValidator)))
-#endif
-        {
-          if (customValidator.isThreadSafe) run();
-          else jobController.enqueueMainThreadJob(run);
-
-          void run() {
-            try {
-              var customValidatorErrors =
-                customValidator.validateField(containingComponent, objectBeingValidated).ToArray();
-              if (customValidatorErrors.Length > 0) {
-                var hierarchy = fieldHierarchy.asString();
-                foreach (var error in customValidatorErrors) {
-                  addError(() => createError.custom(hierarchy, error, true));
-                }
-              }
-            }
-            catch (Exception e) {
-              addError(() => createError.exceptionInCustomValidator(fieldHierarchy.asString(), e));
-            }
-          }
-        }
-      }
-
       ImmutableArrayC<StructureCache.Field> fields;
 #if DO_PROFILE
       using (new ProfiledScope("get object fields"))
@@ -611,6 +584,33 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
       var fieldValue = field.fieldInfo.GetValue(objectBeingValidated);
       var fieldHierarchy = parentFieldHierarchy.push(field.fieldInfo.Name);
+      
+      // todo: mark if it's thread safe
+      foreach (var customValidator in customObjectValidatorOpt) {
+#if DO_PROFILE
+        using (new ProfiledScope(nameof(customValidator)))
+#endif
+        {
+          if (customValidator.isThreadSafe) run();
+          else jobController.enqueueMainThreadJob(run);
+
+          void run() {
+            try {
+              var customValidatorErrors =
+                customValidator.validateField(containingComponent, fieldValue, field).ToArray();
+              if (customValidatorErrors.Length > 0) {
+                var hierarchy = fieldHierarchy.asString();
+                foreach (var error in customValidatorErrors) {
+                  addError(() => createError.custom(hierarchy, error, true));
+                }
+              }
+            }
+            catch (Exception e) {
+              addError(() => createError.exceptionInCustomValidator(fieldHierarchy.asString(), e));
+            }
+          }
+        }
+      }
 
       {
         if (uniqueValuesCache.valueOut(out var cache)) {
@@ -815,8 +815,10 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
 
     public bool isThreadSafe => a.isThreadSafe && b.isThreadSafe;
 
-    public IEnumerable<ErrorMsg> validateField(Object containingObject, object obj) => 
-      a.validateField(containingObject, obj).Concat(b.validateField(containingObject, obj));
+    public IEnumerable<ErrorMsg> validateField(
+      Object containingObject, object obj, ObjectValidator.StructureCache.Field field
+    ) => 
+      a.validateField(containingObject, obj, field).Concat(b.validateField(containingObject, obj, field));
     
     public IEnumerable<ErrorMsg> validateComponent(Object component) =>
       a.validateComponent(component).Concat(b.validateComponent(component));

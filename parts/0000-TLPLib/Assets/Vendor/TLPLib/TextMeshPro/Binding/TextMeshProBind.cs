@@ -160,21 +160,22 @@ namespace com.tinylabproductions.TLPLib.TextMeshPro.Binding {
     }
 
     /// <summary>
-    /// Emits an event each frame that you are hovering with a pointer over a TextMeshPro link.
+    /// Emits an event each frame whether you are hovering with a pointer over a TextMeshPro link. Returns Some when
+    /// you are hovering on it and None if you are not hovering on any link in the given <see cref="text"/>.
     ///
     /// WARNING: this method does not respect the hierarchy of rendering. For example: the link can be at the bottom
     /// of the render tree but this method will detect the pointer hovering on the link. 
     ///
     /// If <see cref="getPointerPosition"/> returns None for that frame, the detection is not performed.
     /// </summary>
-    public static IRxObservable<TMP_LinkInfo> onHoverOnLink(
+    public static IRxObservable<Option<TMP_LinkInfo>> onHoverOnLink(
       this TMP_Text text, Func<Option<Vector3>> getPointerPosition, Camera camera = null
     ) {
       // Try to resolve the camera from canvas if it's not provided. If that resolves to null, it is also supported by
       // FindIntersectingLink.
       if (camera == null) camera = text.canvas.worldCamera;
 
-      return ASync.onLateUpdate.collect(_ => {
+      return ASync.onLateUpdate.map(_ => {
         var maybePosition = getPointerPosition();
         if (!maybePosition.valueOut(out var pointerPosition)) return None._;
         
