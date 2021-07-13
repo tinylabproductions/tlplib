@@ -110,11 +110,32 @@ namespace com.tinylabproductions.TLPLib.Utilities.Editor {
           type = cache.getTypeFor(fieldInfo.FieldType);
         }
 
+        /// <summary>
+        /// <see cref="NotNullAttribute"/> is contained in UnityEngine.CoreModule.dll.
+        /// But external dlls can't reference that. They reference the class contained in JetBrains.Annotations.dll.
+        /// This code finds reference to `NotNull` type that is not contained in the UnityEngine.CoreModule.dll.
+        /// </summary>
+        [LazyProperty] public Option<System.Type> additionalNotNullAttributeType { get {
+          var nameToFind = typeof(NotNullAttribute).FullName;
+          foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+            if (assembly == typeof(NotNullAttribute).Assembly) continue;
+            foreach (var type in assembly.ExportedTypes) {
+              if (type.FullName == nameToFind) {
+                return Some.a(type);
+              }
+            }
+          }
+          return None._;
+        } }
+
+        
         [LazyProperty] public bool hasNonEmptyAttribute => fieldInfo.hasAttribute<NonEmptyAttribute>();
         [LazyProperty] public bool hasNotNullAttribute =>
           fieldInfo.hasAttribute<NotNullAttribute>() 
           // SerializeReference implies notnull
-          || fieldInfo.hasAttribute<SerializeReference>();
+          || fieldInfo.hasAttribute<SerializeReference>()
+          || additionalNotNullAttributeType.valueOut(out var notNullType)
+             && fieldInfo.CustomAttributes.Any(notNullType, static (_, notNullType_) => _.AttributeType == notNullType_);
         
         [LazyProperty] public bool hasSerializeReferenceAttribute => fieldInfo.hasAttribute<SerializeReference>();
 
