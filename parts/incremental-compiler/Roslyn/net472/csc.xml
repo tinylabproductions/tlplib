@@ -68,14 +68,14 @@
             Returns the directory that contains mscorlib, or null when running on CoreCLR.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildClient.RunCompilation(System.Collections.Generic.IEnumerable{System.String},Microsoft.CodeAnalysis.BuildPaths,System.IO.TextWriter,System.String)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildClient.RunCompilation(System.Collections.Generic.IEnumerable{System.String},Microsoft.CodeAnalysis.BuildPaths,System.IO.TextWriter,System.String,System.Nullable{System.Guid})">
             <summary>
             Run a compilation through the compiler server and print the output
             to the console. If the compiler server fails, run the fallback
             compiler.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildClient.RunServerCompilation(System.IO.TextWriter,System.Collections.Generic.List{System.String},Microsoft.CodeAnalysis.BuildPaths,System.String,System.String,System.String)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildClient.RunServerCompilation(System.IO.TextWriter,System.Collections.Generic.List{System.String},Microsoft.CodeAnalysis.BuildPaths,System.String,System.String,System.String,System.Nullable{System.Guid})">
             <summary>
             Runs the provided compilation on the server.  If the compilation cannot be completed on the server then null
             will be returned.
@@ -144,7 +144,7 @@
             from the server cannot be retrieved.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.MonitorDisconnectAsync(System.IO.Pipes.PipeStream,System.String,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,System.Threading.CancellationToken)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildServerConnection.MonitorDisconnectAsync(System.IO.Pipes.PipeStream,System.Guid,Microsoft.CodeAnalysis.CommandLine.ICompilerServerLogger,System.Threading.CancellationToken)">
             <summary>
             The IsConnected property on named pipes does not detect when the client has disconnected
             if we don't attempt any new I/O after the client disconnects. We start an async I/O here
@@ -207,7 +207,7 @@
              Field Name         Type                Size (bytes)
             ----------------------------------------------------
              Length             Integer             4
-             ProtocolVersion    Integer             4
+             RequestId          Guid                16
              Language           RequestLanguage     4
              CompilerHash       String              Variable
              Argument Count     UInteger            4
@@ -218,11 +218,19 @@
             
             </summary>
         </member>
+        <member name="F:Microsoft.CodeAnalysis.CommandLine.BuildRequest.MaximumRequestSize">
+            <summary>
+            The maximum size of a request supported by the compiler server.
+            </summary>
+            <remarks>
+            Currently this limit is 5MB.
+            </remarks>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildRequest.ReadAsync(System.IO.Stream,System.Threading.CancellationToken)">
             <summary>
             Read a Request from the given stream.
             
-            The total request size must be less than 1MB.
+            The total request size must be less than <see cref="F:Microsoft.CodeAnalysis.CommandLine.BuildRequest.MaximumRequestSize"/>.
             </summary>
             <returns>null if the Request was too large, the Request otherwise.</returns>
         </member>
@@ -278,7 +286,6 @@
              Length             UInteger        4
              ReturnCode         Integer         4
              Output             String          Variable
-             ErrorOutput        String          Variable
             
             Strings are encoded via a character count prefix as a 
             32-bit integer, followed by an array of characters.
@@ -295,26 +302,9 @@
             IncorrectHash has no body.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.AnalyzerInconsistencyBuildResponse.AddResponseBody(System.IO.BinaryWriter)">
-            <summary>
-            AnalyzerInconsistency has no body.
-            </summary>
-            <param name="writer"></param>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.RejectedBuildResponse.AddResponseBody(System.IO.BinaryWriter)">
-            <summary>
-            AnalyzerInconsistency has no body.
-            </summary>
-            <param name="writer"></param>
-        </member>
         <member name="T:Microsoft.CodeAnalysis.CommandLine.BuildProtocolConstants">
             <summary>
             Constants about the protocol.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.CommandLine.BuildProtocolConstants.ProtocolVersion">
-            <summary>
-            The version number for this protocol.
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CommandLine.BuildProtocolConstants.ReadLengthPrefixedString(System.IO.BinaryReader)">
@@ -358,7 +348,7 @@
             Used to log information from within the compiler server
             </summary>
             <remarks>
-            Implementations of this interface must assume they are used on multilpe threads without any form
+            Implementations of this interface must assume they are used on multiple threads without any form
             of synchronization.
             </remarks>
         </member>
@@ -377,7 +367,7 @@
             of a file to log to. This file is logged to by both client and server components.
             </remarks>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.#ctor">
+        <member name="M:Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger.#ctor(System.String)">
             <summary>
             Static class initializer that initializes logging.
             </summary>
