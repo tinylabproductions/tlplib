@@ -153,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         public override string ToString() => $"{nameof(IpAddress)}({value})";
       }
 
-      public readonly These<Id, IpAddress> uniqueIdentifier;
+      public readonly Ior<Id, IpAddress> uniqueIdentifier;
       public readonly Option<string> email, username;
       public readonly IDictionary<string, string> extras;
 
@@ -161,7 +161,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public Option<IpAddress> ipAddress => uniqueIdentifier.thatValue;
 
       public UserInterface(
-        These<Id, IpAddress> uniqueIdentifier,
+        Ior<Id, IpAddress> uniqueIdentifier,
         Option<string> email = default(Option<string>),
         Option<string> username = default(Option<string>),
         IDictionary<string, string> extras = null
