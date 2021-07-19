@@ -16,11 +16,11 @@ using UnityEngine;
 
 namespace com.tinylabproductions.TLPLib.binding {
   [PublicAPI] public static partial class UnityBind {
-    public delegate IDisposable ItemSetupDelegate<Template, Data>(Template template, Data data, int index) 
+    public delegate IDisposable ItemSetupDelegate<in Template, in Data>(Template template, Data data, int index) 
       where Template : Component;
     
     public static ISubscription bind<A>(
-      this IRxObservable<A> observable, IDisposableTracker tracker, Func<A, ICoroutine> f
+      this IRxObservable<A> observable, ITracker tracker, Func<A, ICoroutine> f
     ) {
       var lastCoroutine = F.none<ICoroutine>();
       void stopOpt() { foreach (var c in lastCoroutine) { c.stop(); } }
@@ -37,9 +37,9 @@ namespace com.tinylabproductions.TLPLib.binding {
     
     public static void bindEnumerable<Template, Data>(
       GameObjectPool<Template> pool,
-      IRxObservable<IEnumerable<Data>> rx,
+      IRxObservable<IEnumerable<Data>> rx, 
+      ITracker tracker, 
       ItemSetupDelegate<Template, Data> setup,
-      [Implicit] ITracker tracker = default, 
       bool orderMatters = true,
       Action preUpdate = null,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
@@ -73,10 +73,8 @@ namespace com.tinylabproductions.TLPLib.binding {
     }
 
     public static IRxVal<ImmutableArrayC<Result>> bindEnumerableRx<Template, Data, Result>(
-      GameObjectPool<Template> pool,
-      IRxObservable<IEnumerable<Data>> rx,
+      GameObjectPool<Template> pool, IRxObservable<IEnumerable<Data>> rx, ITracker tracker, 
       Func<Template, Data, (IDisposable, Result)> setup,
-      [Implicit] ITracker tracker = default, 
       bool orderMatters = true,
       Action preUpdate = null,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
@@ -84,7 +82,7 @@ namespace com.tinylabproductions.TLPLib.binding {
       var resultRx = RxRef.a(ImmutableArrayC<Result>.empty);
       var resultTempList = new List<Result>();
       bindEnumerable(
-        pool, rx,
+        pool, rx, tracker: tracker,
         orderMatters: orderMatters,
         preUpdate: () => {
           resultTempList.Clear();
@@ -105,10 +103,8 @@ namespace com.tinylabproductions.TLPLib.binding {
     }
     
     public static GameObjectPool<Template> bindEnumerable<Template, Data>(
-      string gameObjectPoolName,
-      Template template, IRxObservable<IEnumerable<Data>> rx,
+      string gameObjectPoolName, Template template, IRxObservable<IEnumerable<Data>> rx, ITracker tracker,
       ItemSetupDelegate<Template, Data> setup,
-      [Implicit] ITracker tracker = default,
       Action<List<BindEnumerableEntry<Template>>> afterUpdate = null
     ) where Template : Component {
       template.gameObject.SetActive(false);
@@ -117,7 +113,7 @@ namespace com.tinylabproductions.TLPLib.binding {
         create: () => template.clone(parent: template.transform.parent),
         dontDestroyOnLoad: false
       ));
-      bindEnumerable(pool, rx, setup, afterUpdate: afterUpdate);
+      bindEnumerable(pool, rx, tracker, setup, afterUpdate: afterUpdate);
       return pool;
     }
 
