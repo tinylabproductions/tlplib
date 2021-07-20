@@ -28,10 +28,6 @@ namespace com.tinylabproductions.TLPLib.Functional {
     public static Either<A, B> left<A, B>(A value) { return new Either<A, B>(value); }
     public static Either<A, B> right<A, B>(B value) { return new Either<A, B>(value); }
 
-    public static These<A, B> thiz<A, B>(A value) { return new These<A, B>(value); }
-    public static These<A, B> that<A, B>(B value) { return new These<A, B>(value); }
-    public static These<A, B> these<A, B>(A a, B b) { return new These<A, B>(a, b); }
-
     // Exception thrower which "returns" a value for use in expressions.
     public static A throws<A>(Exception ex) { throw ex; }
     public static A matchErr<A>(string paramName, string value) =>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using com.tinylabproductions.TLPLib.Concurrent.unity_web_request;
 using com.tinylabproductions.TLPLib.Data;
 using com.tinylabproductions.TLPLib.Extensions;
@@ -11,8 +10,8 @@ using com.tinylabproductions.TLPLib.Logger;
 using com.tinylabproductions.TLPLib.Utilities;
 using pzd.lib.log;
 using pzd.lib.reactive;
-
 using JetBrains.Annotations;
+using pzd.lib.collection;
 using pzd.lib.concurrent;
 using pzd.lib.functional;
 using UnityEngine;
@@ -202,15 +201,15 @@ namespace com.tinylabproductions.TLPLib.Concurrent {
         }
         else if (!acceptedResponseCodes.contains(responseCode)) {
           var url = new Url(req.url); // Capture URL before disposing
-          var extrasB = ImmutableArray.CreateBuilder<KeyValuePair<string, string>>();
+          var extrasB = new List<KeyValuePair<string, string>>();
           foreach (var header in req.GetResponseHeaders()) {
             extrasB.Add(F.kv(header.Key, header.Value));
           }
           extrasB.Add(F.kv("response-text", req.downloadHandler.text));
           req.Dispose();
-          promise.complete(new WebRequestError(url, LogEntry.extras_(
+          promise.complete(new WebRequestError(url, new LogEntry(
             $"Received response code {responseCode} was not in {acceptedResponseCodes}",
-            extrasB.MoveToImmutableSafe()
+            extras: extrasB.toImmutableArrayC()
           )));
         }
         else {

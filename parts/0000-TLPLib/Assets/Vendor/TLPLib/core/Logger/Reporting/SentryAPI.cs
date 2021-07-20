@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using com.tinylabproductions.TLPLib.Collection;
@@ -154,7 +153,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
         public override string ToString() => $"{nameof(IpAddress)}({value})";
       }
 
-      public readonly These<Id, IpAddress> uniqueIdentifier;
+      public readonly Ior<Id, IpAddress> uniqueIdentifier;
       public readonly Option<string> email, username;
       public readonly IDictionary<string, string> extras;
 
@@ -162,7 +161,7 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
       public Option<IpAddress> ipAddress => uniqueIdentifier.thatValue;
 
       public UserInterface(
-        These<Id, IpAddress> uniqueIdentifier,
+        Ior<Id, IpAddress> uniqueIdentifier,
         Option<string> email = default(Option<string>),
         Option<string> username = default(Option<string>),
         IDictionary<string, string> extras = null
@@ -293,13 +292,13 @@ namespace com.tinylabproductions.TLPLib.Logger.Reporting {
     };
 
     public static IEnumerable<KeyValuePair<string, Tag>> convertTags(
-      ImmutableArray<KeyValuePair<string, string>> source
+      IEnumerable<KeyValuePair<string, string>> source
     ) =>
       // Sentry does not support empty tags.
       source.Select(t => F.kv(t.Key, new Tag(t.Value.isEmpty() ? "-" : t.Value)));
 
     public static IEnumerable<KeyValuePair<string, string>> convertExtras(
-      ImmutableArray<KeyValuePair<string, string>> source
+      IEnumerable<KeyValuePair<string, string>> source
     ) =>
       // Sentry does not support empty extras.
       source.Select(t => F.kv(t.Key, t.Value.isEmpty() ? "-" : t.Value));

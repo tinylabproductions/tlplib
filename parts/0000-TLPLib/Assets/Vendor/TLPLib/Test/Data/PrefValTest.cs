@@ -180,23 +180,24 @@ namespace com.tinylabproductions.TLPLib.Data {
   class PrefValTestCollection : PrefValTestBase {
     const string key = nameof(PrefValTestCollection);
 
-    static pzdf.Either<string, DeserializeInfo<int>> badDeserialize(byte[] data, int startIndex) =>
-      SerializedRW.integer.deserialize(data, startIndex).rightValue.filter(i => i.value % 2 != 0)
-        .toRight("failed");
+    class BadRW : ISerializedRW<int> {
+      public pzdf.Either<string, DeserializeInfo<int>> deserialize<S>(S stream, IStreamReader<S> reader) =>
+        SerializedRW.integer.deserialize(stream, reader).rightValue.filter(i => i.value % 2 != 0).toRight("failed");
+
+      public void serialize<S>(S stream, IStreamWriter<S> writer, int a) =>
+        SerializedRW.integer.serialize(stream, writer, a);
+    }
+
     static readonly ImmutableList<int> defaultNonEmpty = ImmutableList.Create(1, 2, 3);
 
     static PrefVal<ImmutableList<int>> create(
       ImmutableList<int> defaultVal,
-      Deserialize<DeserializeInfo<int>> deserializeFn = null,
+      ISerializedRW<int> rw = null,
       PrefVal.OnDeserializeFailure onDeserializeFailure =
         PrefVal.OnDeserializeFailure.ReturnDefault
     ) =>
       storage.collection(
-        key,
-        SerializedRW.lambda(
-          SerializedRW.integer.serialize, 
-          deserializeFn ?? ((serialized, startIndex) => SerializedRW.integer.deserialize(serialized, startIndex))
-        ),
+        key, rw ?? SerializedRW.integer,
         CollectionBuilderKnownSizeFactory<int>.immutableList, defaultVal,
         onDeserializeFailure: onDeserializeFailure,
         log: log
@@ -237,7 +238,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       Assert.Throws<SerializationException>(() =>
         create(
           ImmutableList<int>.Empty,
-          badDeserialize,
+          new BadRW(),
           PrefVal.OnDeserializeFailure.ThrowException
         )
       );
@@ -249,7 +250,7 @@ namespace com.tinylabproductions.TLPLib.Data {
       var default_ = ImmutableList.Create(1);
       create(
         default_,
-        badDeserialize,
+        new BadRW(),
         PrefVal.OnDeserializeFailure.ReturnDefault
       ).value.shouldEqual(default_);
     }

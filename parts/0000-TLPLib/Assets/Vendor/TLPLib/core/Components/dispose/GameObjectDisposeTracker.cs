@@ -51,15 +51,16 @@ namespace com.tinylabproductions.TLPLib.Components.dispose {
     );
   }
 
-  public class GameObjectOnDisableDisposeTracker : GameObjectDisposeTracker, IMB_OnDisable {
-    public void OnDisable() => Dispose();
-  }
-
   public static class GameObjectDisposeTrackerOps {
+    [Obsolete(
+      "Unity does not invoke OnDestroy() if the object was not previously invoked.\n" +
+      "This can lead to a disposable tracker never being disposed of.\n" +
+      "\n" +
+      "Instead of using this please create a tracker manually and use/dispose of it yourself.\n" +
+      "\n" +
+      "https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnDestroy.html"
+    )]
     public static IDisposableTracker asDisposableTracker(this GameObject o) =>
       o.EnsureComponent<GameObjectDisposeTracker>();
-
-    public static IDisposableTracker asOnDisableDisposableTracker(this GameObject o) =>
-      o.EnsureComponent<GameObjectOnDisableDisposeTracker>();
   }
 }
