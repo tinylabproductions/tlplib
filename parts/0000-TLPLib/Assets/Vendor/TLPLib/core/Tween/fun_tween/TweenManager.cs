@@ -36,7 +36,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween {
 
 #pragma warning disable 649
       // ReSharper disable NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
-      [SerializeField, PublicAccessor, HorizontalGroup, HideLabel, Tooltip("0 means loop forever")] uint _times_;
+      [SerializeField, PublicAccessor, HorizontalGroup, HideLabel, InfoBox("0 means loop forever")] uint _times_;
       [SerializeField, PublicAccessor, HorizontalGroup, HideLabel] Mode _mode;
       // ReSharper restore NotNullMemberIsNotInitialized, FieldCanBeMadeReadOnly.Local, ConvertToConstant.Local
 #pragma warning restore 649
