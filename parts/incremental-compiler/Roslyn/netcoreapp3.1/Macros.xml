@@ -5,62 +5,55 @@
     </assembly>
     <members>
         <member name="T:GenerationAttributes.SimpleMethodMacro">
-             <summary>
-             Replaces call to a method annotated with this attribute with the specified string.
-             </summary>
-            
-             Example usage (declaration):
-             <code><![CDATA[
-             public static class Util {
-               [SimpleMethodMacro(@"$""${obj}={${obj}}"""")]
-               public static string echo<A>(this A obj) => throw new MacroException();
-             }
-             ]]></code>
-            
-             Example usage (invocation):
-             <code><![CDATA[
-             var answer = 42;
-             // prints "Our state: answer=42"
-             Console.WriteLine($"Our state: {answer.echo()}");
-             ]]></code>
-            
-             Parameters:
-             <ul>
-             <li>${this} - pointer to self. Not replaced in static methods.</li>
-             <li>${argN} - N starts at 0 and refers to in argument list argument with index N</li>
-             <li>${argumentName} - refers to argument named 'argumentName'</li>
-             </ul>
+            <summary>
+              Replaces call to a method annotated with this attribute with the specified string.
+            </summary>
+            Example usage (declaration):
+            <code><![CDATA[
+            public static class Util {
+              [SimpleMethodMacro(@"$""${obj}={${obj}}"""")]
+              public static string echo<A>(this A obj) => throw new MacroException();
+            }
+            ]]></code>
+            Example usage (invocation):
+            <code><![CDATA[
+            var answer = 42;
+            // prints "Our state: answer=42"
+            Console.WriteLine($"Our state: {answer.echo()}");
+            ]]></code>
+            Parameters:
+            <ul>
+              <li>${this} - pointer to self. Not replaced in static methods.</li>
+              <li>${argN} - N starts at 0 and refers to in argument list argument with index N</li>
+              <li>${argumentName} - refers to argument named 'argumentName'</li>
+            </ul>
         </member>
         <member name="T:GenerationAttributes.StatementMethodMacro">
-             <summary>
-             Replaces call to a method annotated with this attribute with the specified string.
-             </summary>
-            
-             Example usage (declaration):
-             <code><![CDATA[
-             public class Log {
-               [StatementMethodMacro(@"if (${this}.isDebug()) ${this}.debugReal(${msg} /* or ${arg0} */);")]
-               public B debug(string msg) => throw new MacroException();
-             }
-             ]]></code>
-            
-             Example usage (invocation):
-             <code><![CDATA[
-             log.debug("I will only be logged in debug level!");
-             ]]></code>
-            
-             Parameters:
-             <ul>
-             <li>${this} - pointer to self. Not replaced in static methods.</li>
-             <li>${argN} - N starts at 0 and refers to in argument list argument with index N</li>
-             <li>${argumentName} - refers to argument named 'argumentName'</li>
-             </ul>
+            <summary>
+              Replaces call to a method annotated with this attribute with the specified string.
+            </summary>
+            Example usage (declaration):
+            <code><![CDATA[
+            public class Log {
+              [StatementMethodMacro(@"if (${this}.isDebug()) ${this}.debugReal(${msg} /* or ${arg0} */);")]
+              public B debug(string msg) => throw new MacroException();
+            }
+            ]]></code>
+            Example usage (invocation):
+            <code><![CDATA[
+            log.debug("I will only be logged in debug level!");
+            ]]></code>
+            Parameters:
+            <ul>
+              <li>${this} - pointer to self. Not replaced in static methods.</li>
+              <li>${argN} - N starts at 0 and refers to in argument list argument with index N</li>
+              <li>${argumentName} - refers to argument named 'argumentName'</li>
+            </ul>
         </member>
         <member name="T:GenerationAttributes.VarMethodMacro">
              <summary>
-             Replaces local variable assignment from calling a method annotated with this attribute with the specified string.
+               Replaces local variable assignment from calling a method annotated with this attribute with the specified string.
              </summary>
-            
              Example usage (declaration):
              <code><![CDATA[
              public class Either<A, B> {
@@ -79,25 +72,21 @@
                public B rightOr_RETURN2<A, B>(this Either<A, B> either) => throw new MacroException();
              }
              ]]></code>
-            
              Example usage (invocation):
              <code><![CDATA[
              var x = some.operation().rightOr_RETURN();
              ]]></code>
-            
              Parameters:
              <ul>
-             <li>${varType} - type of x</li>
-             <li>${varName} - name of x</li>
-             <li>${this} - pointer to self. Not replaced in static methods.</li>
-             <li>${argN} - N starts at 0 and refers to in argument list argument with index N</li>
-             <li>${argumentName} - refers to argument named 'argumentName'</li>
+               <li>${varType} - type of x</li>
+               <li>${varName} - name of x</li>
+               <li>${this} - pointer to self. Not replaced in static methods.</li>
+               <li>${argN} - N starts at 0 and refers to in argument list argument with index N</li>
+               <li>${argumentName} - refers to argument named 'argumentName'</li>
              </ul>
         </member>
         <member name="T:GenerationAttributes.TypesWithMacroAttributes">
-            <summary>
-            Used internally by compiler
-            </summary>
+            <summary> Used internally by compiler. </summary>
         </member>
     </members>
 </doc>
