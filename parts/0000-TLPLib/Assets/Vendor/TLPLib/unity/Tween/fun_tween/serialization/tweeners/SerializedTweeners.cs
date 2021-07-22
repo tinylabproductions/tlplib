@@ -411,7 +411,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
   }
 
   [Serializable]
-  public class AnimateGraphicMaterialOffset : SerializedTweenerVector2<GraphicMaterialOffsetModifier> {
+  public class GraphicMaterialOffset : SerializedTweenerVector2<GraphicMaterialOffsetModifier> {
     protected override Vector2 get => _target.offset;
     protected override void set(Vector2 value) => _target.offset = value;
     public override Color editorColor => cPosition;

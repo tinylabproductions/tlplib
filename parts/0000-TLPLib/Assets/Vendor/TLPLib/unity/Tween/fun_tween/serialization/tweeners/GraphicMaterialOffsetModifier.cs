@@ -3,9 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
-  /// <summary>
-  ///
-  /// </summary>
   [RequireComponent(typeof(Graphic)), ExecuteInEditMode]
   public class GraphicMaterialOffsetModifier : MonoBehaviour, IMaterialModifier, IMB_LateUpdate {
 #pragma warning disable 649
@@ -19,7 +16,7 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     // ReSharper restore NotNullMemberIsNotInitialized
 #pragma warning restore 649
 
-    Material material;
+    Material previousBaseMaterial, material;
 
     public Vector2 offset {
       get => _offset;
@@ -31,8 +28,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     }
 
     public Material GetModifiedMaterial(Material baseMaterial) {
-      var copy = new Material(baseMaterial) {mainTextureOffset = _offset};
-      material = copy;
+      if (previousBaseMaterial != baseMaterial) {
+        if (material) Destroy(material);
+
+        var copy = new Material(baseMaterial) {mainTextureOffset = _offset};
+        material = copy;
+        previousBaseMaterial = baseMaterial;
+      }
+
       return material;
     }
   }
