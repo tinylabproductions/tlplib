@@ -409,8 +409,14 @@ namespace com.tinylabproductions.TLPLib.Tween.fun_tween.serialization.tweeners {
     protected override void set(float value) => _target.localEulerAngles = _target.localEulerAngles.withY(value);
     public override Color editorColor => cRotation;
   }
-  
-  
+
+  [Serializable]
+  public class GraphicMaterialOffset : SerializedTweenerVector2<GraphicMaterialOffsetModifier> {
+    protected override Vector2 get => _target.offset;
+    protected override void set(Vector2 value) => _target.offset = value;
+    public override Color editorColor => cPosition;
+  }
+
   [Serializable]
   public sealed class ImageColor : SerializedTweenerColor<Image> {
     protected override Color get => _target.color;
